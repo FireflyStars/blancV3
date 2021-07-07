@@ -1,10 +1,10 @@
 <template>
-    <router-view />
+    <b>OrderList</b>
 </template>
 
 <script>
     export default {
-        name: "App.vue"
+        name: "OrderList"
     }
 </script>
 

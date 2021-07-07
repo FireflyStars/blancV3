@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\LoginController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
+
+Route::post('/authenticate',[LoginController::class, 'authenticate'])->name('authenticate');
+
+Route::get('{any}', function () {
     return view('welcome');
-});
+})->where('any','.*');

@@ -8,7 +8,7 @@
         <link  rel="stylesheet" href="{{ mix('css/app.css') }}">
     </head>
     <body class="antialiased">
-      <div id="app"></div>
+      <div id="app" class="container-fluid h-100"></div>
     <script src="{{ mix('js/app.js') }}"></script>
     </body>
 </html>
