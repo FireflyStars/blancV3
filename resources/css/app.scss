@@ -1,3 +1,86 @@
+@import "fonts.css";
+@import "bootstrap_override";
 @import "~bootstrap/scss/bootstrap";
 @import "~bootstrap-icons/font/bootstrap-icons.css";
+@import '~animate.css/animate.css';
+$blanc-green:#42A71E !default;
+:root{
+  --authlogoheight: 102px;
+  --mainlogoheight: 64px;
+}
+html,body{
+  height: 100%;
+}
+h1,h2{
+  font-family: Gilroy;
+  font-weight: bold;
+}
+h1{
+  font-size: 36px;
+  line-height: 38.16px;
+}
+h2{
+  font-size: 22px;
+  line-height: 24.2px;
+}
+label{
+  font-family: 'Gotham Rounded';
 
+}
+.btn-link:focus{
+  box-shadow: none;
+}
+.main-logo{
+  background-color:$gray-900;
+  height: var(--mainlogoheight);
+}
+.bg-color{
+  background-color: #F1F1F1;
+}
+.side-icons{
+  &.active{
+    rect{
+      fill: $blanc-green;
+    }
+    path,circle{
+      stroke: $white;
+    }
+  }
+  rect{
+    fill:#FFF;
+  }
+  path,circle{
+    stroke: $gray-900;
+  }
+}
+.side-icons:hover {
+  cursor: pointer;
+  rect{
+    fill: $gray-900;
+  }
+  path,circle{
+    stroke: $white;
+  }
+}
+.main-view h2{
+    margin: 48px 0 0 46px;
+}
+.user_initials{
+  text-transform: uppercase;
+  background-color:#868686;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 40px;
+  vertical-align: middle;
+  font-size: 16px;
+  font-family: 'Gotham Rounded';
+  font-weight: bold;
+  margin: auto 0 16px 0;
+  color:$white;
+  &:hover{
+    background-color: $gray-900;
+    cursor:pointer;
+  }
+}

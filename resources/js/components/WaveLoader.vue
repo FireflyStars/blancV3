@@ -1,6 +1,10 @@
 <template>
-    <div style="background:rgba(0,0,0,0.6); position: absolute;top: 0; left:0; height: 100%;width: 100%;z-index: 1000;display: flex;align-items: center;justify-content: center;">
-    <div style="text-align: center;background-color: #fff;width: 200px; display: block;padding: 10px; border-radius: 8px;">
+    <transition
+            enter-active-class="animate__animated animate__fadeIn"
+            leave-active-class="animate__animated animate__fadeOut"
+    >
+    <div v-if="show_loader" style="background:rgba(0,0,0,0.6); position: absolute;top: 0; left:0; height: 100%;width: 100%;z-index: 1000;display: flex;align-items: center;justify-content: center;">
+    <div style="text-align: center;background-color: #fff;width: 250px; display: block;padding: 10px; border-radius: 8px;">
     <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;background:transparent;display:block;"  viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
         <g transform="translate(50 50)"><g transform="scale(0.8280524253088365)">
             <path d="M0 0L0 -40A40 40 0 0 1 19.999999999999996 -34.64101615137755" transform="rotate(0 0 0)" stroke="none" fill="#000000"></path>
@@ -40,14 +44,49 @@
             <animateTransform attributeName="transform" type="scale" values="0.048224792094305635;0.7211741676986256;0.801622656254128;0.44071710492479954;0.048224792094305635" keyTimes="0;0.25;0.5;0.75;1" dur="1s" repeatCount="indefinite"></animateTransform>
         </g></g>
     </svg>
-    <b style="font-size: 20px;">Please wait..</b>
+    <p style="font-size: 16px;display: block">{{msg}}<br/>{{timer/1000}}s</p>
     </div>
     </div>
+    </transition>
 </template>
 
 <script>
+    import {watch ,ref} from 'vue';
     export default {
-        name: "WaveLoader"
+        name: "WaveLoader",
+        props:{
+            show_loader:{
+                type:Boolean
+            },
+            msg:{
+                type: String
+            },
+
+        },
+        setup(props,context){
+
+
+            const timer=ref(0);
+            let t;
+            watch(() => props.show_loader, (toval, fromval) => {
+                if(toval==true){
+                    t=setInterval(()=>{
+                        timer.value+=100;
+                    },100)
+                }else{
+                    clearInterval(t);
+                    timer.value=0;
+                }
+
+            });
+
+
+            return {
+                timer,
+
+            }
+        }
+
     }
 </script>
 

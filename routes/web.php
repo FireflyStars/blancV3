@@ -15,7 +15,7 @@ use App\Http\Controllers\LoginController;
 
 
 Route::post('/authenticate',[LoginController::class, 'authenticate'])->name('authenticate');
-
+Route::post('/logout',[LoginController::class, 'logout'])->name('logout');
 Route::get('{any}', function () {
     return view('welcome');
 })->where('any','.*');

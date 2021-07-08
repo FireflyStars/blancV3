@@ -4,11 +4,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Blanc Detailing</title>
+        <title>Blanc &copy;</title>
         <link  rel="stylesheet" href="{{ mix('css/app.css') }}">
     </head>
-    <body class="antialiased">
-      <div id="app" class="container-fluid h-100"></div>
+    <body id="app"></body>
     <script src="{{ mix('js/app.js') }}"></script>
-    </body>
 </html>
