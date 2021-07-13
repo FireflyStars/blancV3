@@ -27,31 +27,31 @@
 
 
 
-        <wave-loader :show_loader="show_loader" msg="Authenticating, please wait..."></wave-loader>
+
 
 </template>
 
 <script>
-    import WaveLoader from '../WaveLoader';
+
     import {ref} from 'vue';
     import { useRouter, useRoute } from 'vue-router'
     import axios from 'axios';
+    import {useStore} from 'vuex';
+    import {DISPLAY_LOADER,HIDE_LOADER,LOADER_MODULE} from '../../store/types/types'
     export default {
         name: "Login",
-        components:{WaveLoader},
+        components:{},
         setup(){
             const email= ref('');
             const password= ref('');
-            const show_loader= ref(false);
             const trans= ref(false);
 
             const router = useRouter();
             const route = useRoute();
+            const store = useStore();
 
             function authenticate(){
-                console.log('AUTH',email.value,password.value);
-                show_loader.value=true;
-
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,'Authenticating, please wait...']);
                 axios.post('/authenticate', {
                     email:email.value,
                     password:password.value
@@ -71,7 +71,7 @@
                     .catch(function (error) {
                         console.log(error);
                     }).finally(()=>{
-                        show_loader.value=false;
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
             }
 
@@ -85,7 +85,6 @@
                 trans,
                 email,
                 password,
-                show_loader,
                 authenticate,
                 forgotpassword
             }

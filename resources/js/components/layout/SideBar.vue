@@ -45,34 +45,35 @@
                 {{initials}}
             </div>
     </div>
-    <wave-loader :show_loader="show_loader" :msg="msg"></wave-loader>
+
 </template>
 
 <script>
-    import WaveLoader from '../WaveLoader';
+
     import {ref} from 'vue';
     import { useRouter, useRoute } from 'vue-router'
     import axios from 'axios';
+    import {useStore} from 'vuex';
+    import {DISPLAY_LOADER,HIDE_LOADER,LOADER_MODULE} from "../../store/types/types";
+
     export default {
         name: "SideBar",
-        components:{WaveLoader},
+        components:{},
         setup(){
-            const show_loader= ref(false);
-            const msg= ref('');
+            const store=useStore();
             const uname=ref(window.sessionStorage.getItem('name'));
             const initials= ref(uname.value.substr(0,2));
             const router = useRouter();
             const route = useRoute();
             function logout(){
-                msg.value='Logging out, please wait...'
-                show_loader.value=true;
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,'Logging out, please wait...']);
 
                 axios.post('/logout', {
 
                 })
                     .then(function (response) {
                         if(response.data.ok==1) {
-                            window.sessionStorage.removeItem('auth')
+                            sessionStorage.clear();
                             router.push({
                                 name:'Login',
 
@@ -82,14 +83,12 @@
                     .catch(function (error) {
                         console.log(error);
                     }).finally(()=>{
-                    show_loader.value=false;
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
             }
             return {
                 uname,
                 initials,
-                msg,
-                show_loader,
                 logout
             }
         }
