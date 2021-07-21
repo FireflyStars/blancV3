@@ -8,9 +8,22 @@ $blanc-green:#42A71E !default;
   --authlogoheight: 102px;
   --mainlogoheight: 64px;
 }
-html,body{
+html{
+  background-color: #F8F8F8;
+  min-height: 100%;
+&.NewPassword, &.Login, &.ForgotPassword,&.not-found {
   height: 100%;
+  background-color: #FFF;
+  body{
+    height: 100%;
+  }
 }
+  body{
+    min-height: 100%;
+    background-color: transparent;
+  }
+}
+
 h1,h2{
   font-family: Gilroy;
   font-weight: bold;
@@ -35,7 +48,7 @@ label{
   height: var(--mainlogoheight);
 }
 .bg-color{
-  background-color: #F1F1F1;
+  background-color: #F8F8F8;
 }
 .side-icons{
   &.active{
@@ -63,9 +76,10 @@ label{
   }
 }
 .main-view h2{
-    margin: 48px 0 0 46px;
+    margin: 48px 0 67px 46px;
 }
 .user_initials{
+  z-index: 2;
   text-transform: uppercase;
   background-color:#868686;
   width: 40px;
@@ -78,9 +92,110 @@ label{
   font-family: 'Gotham Rounded';
   font-weight: bold;
   margin: auto 0 16px 0;
+  position: fixed;
+  bottom:16px;
   color:$white;
   &:hover{
     background-color: $gray-900;
     cursor:pointer;
+  }
+}
+
+.orderlist-table {
+  .trow{
+    -webkit-transition: background-color 300ms ease-out;
+    -moz-transition: background-color 300ms ease-out;
+    -o-transition: background-color 300ms ease-out;
+    transition: background-color 300ms ease-out;
+    cursor: pointer;
+    span.chkbox{
+      border: 2px solid #FFF;
+      -webkit-transition: border-color 300ms ease-out;
+      -moz-transition: border-color 300ms ease-out;
+      -o-transition: border-color 300ms ease-out;
+      transition: border-color 300ms ease-out;
+    }
+  }
+  .trow:hover{
+    -webkit-transition: background-color 300ms ease-out;
+    -moz-transition: background-color 300ms ease-out;
+    -o-transition: background-color 300ms ease-out;
+    transition: background-color 300ms ease-out;
+    background: #F8F8F8;
+
+
+    span.chkbox{
+      border-color:#868686;
+      -webkit-transition: border-color 300ms ease-out;
+      -moz-transition: border-color 300ms ease-out;
+      -o-transition: border-color 300ms ease-out;
+      transition: border-color 300ms ease-out;
+    }
+  }
+  .trow.current_sel{
+
+  }
+  .tcol{
+    flex:1;
+    font-size: 16px;
+    line-height: 22px;
+    color: $gray-900;
+    padding:  22px 30px 22px 0;
+    min-width: 40px;
+    span{
+      display: inline-block;
+      width: 100%;
+    }
+  }
+  header{
+    margin-bottom: 3px;
+    .tcol{
+      font-size: 14px;
+      color: $gray-medium;
+      font-weight: 600;
+      text-transform: uppercase;
+      &:last-child{
+        text-align: right;
+      }
+    }
+  }
+ header,.trow,footer{
+   display: flex;
+   background: #FFFFFF;
+   box-shadow: inset 0px -1px 0px rgba(168, 168, 168, 0.25);
+   align-items: center;
+ }
+ footer{
+   box-shadow: inset 0px 1px 0px #E4E5E7;
+   .btn-link{
+     font-family: SF Pro Text;
+     font-size: 15px;
+     color: $gray_medium;
+   }
+ }
+}
+
+
+
+.orderlist-tabs{
+  padding-left: 70px;
+  padding-bottom: 5px;
+
+  .orderlist-tab {
+    width: 150px;
+    height: 40px;
+    padding: 10px;
+    text-align: center;
+    line-height: 20px;
+    background-color: $gray_middle;
+    margin-right: 8px;
+    cursor: pointer;
+    border-radius: 6px 6px 0px 0px;
+    font-size: 16px;
+    &.active{
+      background-color: #FFF;
+      font-weight: bold;
+      color:$green;
+    }
   }
 }

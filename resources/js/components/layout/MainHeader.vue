@@ -1,6 +1,6 @@
 <template>
     <div class="row main-logo">
-        <div class="col-12 p-lg-0">
+        <div class="col-12 p-0">
 
             <svg width="37" height="37" style="margin:14px 0  0 16px" viewBox="0 0 37 37" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M18.29 1.3597C8.96036 1.3597 1.36949 8.90656 1.36949 18.1824C1.36949 27.4582 8.95058 35.0051 18.29 35.0051C27.6294 35.0051 35.213 27.4582 35.213 18.1824C35.213 8.90656 27.6319 1.3597 18.29 1.3597ZM18.29 36.3648C8.2047 36.3648 0 28.209 0 18.1824C0 8.15578 8.2047 0 18.29 0C28.3753 0 36.58 8.15823 36.58 18.1824C36.58 28.2065 28.3753 36.3648 18.29 36.3648Z" fill="white"/>
@@ -22,5 +22,8 @@
 <style scoped>
 .main-logo{
     background-color:$gray-900!de;
+    position: fixed;
+    width: 100%;
+    z-index: 1;
 }
 </style>

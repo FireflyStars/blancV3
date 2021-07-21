@@ -3,7 +3,7 @@
             enter-active-class="animate__animated animate__fadeIn"
             leave-active-class="animate__animated animate__fadeOut"
     >
-    <div v-if="show_loader" style="background:rgba(0,0,0,0.6); position: absolute;top: 0; left:0; height: 100%;width: 100%;z-index: 1000;display: flex;align-items: center;justify-content: center;">
+    <div v-if="show_loader" style="background:rgba(224, 224, 224,0.6); position: fixed;top: 0; left:0; height: 100%;width: 100%;z-index: 10002;display: flex;align-items: center;justify-content: center;">
     <div style="text-align: center;background-color: #fff;width: 250px; display: block;padding: 10px; border-radius: 8px;">
     <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;background:transparent;display:block;"  viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
         <g transform="translate(50 50)"><g transform="scale(0.8280524253088365)">

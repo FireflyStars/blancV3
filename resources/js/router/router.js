@@ -14,7 +14,17 @@ const router = createRouter({
             component:()=> import('../components/orderlist/OrderList'),
             meta:{
                 authenticated:true
-            }
+            },
+            children:[
+                {
+                    path:'/order_details/:order_id',
+                    name:'OrderDetails',
+                    component:()=> import('../components/orderlist/OrderDetail'),
+                    meta:{
+                        authenticated:false
+                    }
+                }
+                ]
         },
         {
             path:'/auth/',

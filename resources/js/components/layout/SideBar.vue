@@ -1,6 +1,6 @@
 <template>
-    <div class="col-lg-6 col-sm-3 side-bar d-flex flex-column align-items-center" >
-
+    <div class="col-lg-6 col-sm-3 side-bar-wrap d-flex flex-column align-items-center" >
+<div class="d-flex flex-column side-bar align-items-center position-fixed">
         <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="side-icons">
                 <rect width="32" height="32" rx="8" fill="white"/>
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M7 16C6.44772 16 6 16.4477 6 17L6 24C6 24.5523 6.44772 25 7 25H9C9.55228 25 10 24.5523 10 24V17C10 16.4477 9.55228 16 9 16H7Z" stroke="#868686" stroke-linecap="round"/>
@@ -40,7 +40,7 @@
                 <circle cx="10" cy="21" r="2" stroke="#868686"/>
                 <circle cx="22" cy="21" r="2" stroke="#868686"/>
             </svg>
-
+</div>
             <div class="user_initials" data-bs-toggle="tooltip" data-bs-placement="right" title="Logout user " @click="logout">
                 {{initials}}
             </div>
@@ -68,7 +68,7 @@
             function logout(){
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,'Logging out, please wait...']);
 
-                axios.post('/logout', {
+                axios.get('/logout', {
 
                 })
                     .then(function (response) {
@@ -96,10 +96,15 @@
 </script>
 
 <style scoped>
+    .side-bar-wrap{
+        width: 72px;
+    }
 .side-bar{
     background: rgba(248,248,248,0.5);
     box-shadow: inset 0px 0px 6px rgba(0, 0, 0, 0.25);
     width: 72px;
+    height: 100%;
+    z-index: 1;
 }
 .side-icons:first-child{
     margin-top:114px;

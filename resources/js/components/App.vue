@@ -6,8 +6,9 @@
 <script>
     import WaveLoader from './WaveLoader';
 
-    import {computed} from 'vue';
+    import {computed,watch} from 'vue';
     import {useStore} from 'vuex';
+
     import {GET_LOADER_MSG,GET_SHOW_LOADER,LOADER_MODULE} from '../store/types/types'
     export default {
         name: "App.vue",
@@ -15,6 +16,7 @@
         setup(){
 
         const store=useStore();
+
 
         return{
             LOADER_MSG:computed(()=>store.getters[`${LOADER_MODULE}${GET_LOADER_MSG}`]),
