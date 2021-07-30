@@ -1,9 +1,11 @@
 <template>
-    <span class="tag" :class="css_class">{{status}}</span>
+    <div style="text-align: center">
+    <span class="tag" :class="css_class" >{{status}}</span>
+    </div>
 </template>
 
 <script>
-    import {ref} from 'vue';
+    import {ref,watch} from 'vue';
     export default {
         name: "Tag",
         props:['name'],
@@ -19,6 +21,13 @@
             if(css_class.value in statuses){
                 status.value=statuses[css_class.value];
             }
+            watch(() => props.name, (current_val, previous_val) => {
+                status.value=current_val.toLowerCase();
+                css_class.value=current_val.replace(/ /g,'').toLowerCase();
+                if(css_class.value in statuses){
+                    status.value=statuses[css_class.value];
+                }
+            });
             return {
                 css_class,
                 status
@@ -142,5 +151,13 @@
 .tag.onvan, .tag.deliveredtostore{
     background: rgba(234, 214, 247, 0.7);
     color: #9E44F2;
+}
+    .tag.unpaid{
+        background:rgba(238, 238, 238, 1);
+        color: #868686;
+    }
+.tag.paid{
+    background:rgba(66, 167, 30, 0.2);
+    color: #42A71E;
 }
 </style>

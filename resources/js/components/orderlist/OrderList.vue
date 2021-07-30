@@ -63,6 +63,12 @@
                    flex:"10",
                    sortable:false
                },
+                express:{
+                    name:" ",
+                    flex:"5",
+                    sortable:false,
+                    type:'express'
+                },
                 Name:{
                     name:"Name",
                     flex:"30",
@@ -79,11 +85,27 @@
                     sortable:true,
                     css:"font-weight:bold;text-align:center"
                 },
+                numitems:{
+                    name:"Items",
+                    flex:"10",
+                    sortable:true,
+                    css:"text-align:center",
+                    header_align:"center"
+                },
                 Status:{
                    name:"Order Status",
-                   flex:"30",
+                   flex:"15",
                    sortable:true,
-                    type:'tag'
+                    type:'tag',
+                    header_align:"center",
+                    css:"text-align:center",
+                },
+                paid:{
+                    name:"Payment",
+                    flex:"15",
+                    sortable:true,
+                    type:'tag',
+                    header_align:"center"
                 },
                 Total:{
                     name:"Total",

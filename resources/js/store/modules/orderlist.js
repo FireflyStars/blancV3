@@ -29,7 +29,13 @@ export const orderlist= {
                 take:10 //show more
             },
             customer_care:[],
-            with_partner:[],
+            with_partner:{
+                currently_selected:'',//currently selected line for displaying order detail
+                multi_checked:[], // currently check lines for possible mass action ex like batch delete...
+                order_list:[], // order list
+                skip:0, //show more
+                take:10 //show more
+            },
 
     },
     mutations: {
@@ -50,7 +56,7 @@ export const orderlist= {
                  state.all_order.multi_checked=  state.all_order.multi_checked.filter(item => item !== payload.id);
 
         }
-        // [SET_LOADER_MSG]: (state, payload) => state.loader_msg = payload
+
     },
     actions: {
 

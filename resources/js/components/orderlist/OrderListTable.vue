@@ -3,13 +3,14 @@
 
     <section class="orderlist-table table">
         <header>
-        <div class="tcol"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}" >{{col.name}}</div>
+        <div class="tcol"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}" >{{col.name}}</div>
         </header>
         <transition-group tag="div" class="position-relative" name="list" appear>
         <div class="trow" v-for="order in ORDER_LIST" :key="order.id" :class="{current_sel:order.id==CURRENT_SELECTED&&route.params.order_id>0}">
             <div class="tcol" v-for="(col,index) in tabledef"  :style="{flex:col.flex}" :class="{'check-box': col.type=='checkbox'}"  @click="selectrow(order.id,index)">
                 <check-box v-if="col.type=='checkbox'" :checked_checkbox="(order.id==CURRENT_SELECTED&&route.params.order_id>0)||MULTI_CHECKED.includes(order.id)" :id="order.id" @checkbox-clicked="checkboxclicked"></check-box>
-                <tag v-else-if="col.type=='tag'" :name="order[index]"></tag>
+                <tag v-else-if="col.type=='tag'" :name="order[index]" ></tag>
+                <express-icon v-else-if="col.type=='express'" :express_values="order[index]"></express-icon>
                 <span v-else :style="col.css">{{preprocess(col,order[index])}}</span></div>
             </div>
         </transition-group>
@@ -31,10 +32,11 @@
     import {ALL_ORDER_LOAD_LIST,ALL_ORDER_GET_LIST,ORDERLIST_MODULE,ALL_ORDER_GET_CURRENT_SELECTED,ALL_ORDER_SELECT_CURRENT,ALL_ORDER_GET_ALL_ORDER_MULITCHECKED,ALL_ORDER_MULITCHECKED,ALL_ORDER_MULITUNCHECKED,LOADER_MODULE,DISPLAY_LOADER} from '../../store/types/types';
     import Tag from  '../miscellaneous/Tag'
     import CheckBox from '../miscellaneous/CheckBox'
+    import ExpressIcon  from '../miscellaneous/ExpressIcon'
     export default {
         name: "OrderListTable",
         props:['tabledef',"tab"],
-        components:{Tag,CheckBox},
+        components:{Tag,CheckBox,ExpressIcon},
         setup(props){
             const router = useRouter();
             const store=useStore();
