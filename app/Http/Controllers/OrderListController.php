@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class OrderListController extends Controller
 {
@@ -23,7 +24,30 @@ class OrderListController extends Controller
             ->where('infoitems.SubOrderID','!=','');
 
         if($current_tab=='with_partner')
-        $orderlist=$orderlist->where('infoCustomer.TypeDelivery','!=','DELIVERY');
+        $orderlist=$orderlist->where('infoitems.idPartner','!=','0')
+            ->where('infoitems.PartnerINOUT','=','1');
+
+        if($current_tab=='due_today')
+            $orderlist=$orderlist->whereDate('infoOrder.DateDeliveryAsk','=',date('Y-m-d'));
+
+        if($current_tab=='due_tomorrow')
+            $orderlist=$orderlist->whereDate('infoOrder.DateDeliveryAsk','=',date('Y-m-d',strtotime('tomorrow')));
+
+        if($current_tab=='customer_care'){
+            $orderlist=$orderlist->where(
+            function($query) {
+                $query->where(function($query) {
+                    $query->whereDate('infoOrder.DateDeliveryAsk', '<=', date('Y-m-d'))
+                        ->whereNotIn('infoOrder.status', ['DELIVERED', 'DELIVERD TO STORE', 'SOLD', 'DONATED', 'DONATED TO CHARITY', 'COLLECTED', 'VOIDED', 'FULFILLED', 'VOID', 'DELETE', 'SOLD']);
+                })->orWhere(function($query){
+                    $query->where('infoOrder.Paid','=',0)->where('infoCustomer.TypeDelivery','=','DELIVERY');
+                })->orWhere(function($query){
+                    $query->whereIn('infoOrder.Status',['LATE','LATE DELIVERY','OVERDUE FOR COLLECTION','MISSED PICKUP','OVERDUE STORE','FAILED DELIVERY','FAILED PAYMENT','PART ON HOLD','PART PENDING'])
+                        ->where('infoOrder.DateDeliveryAsk','!=','2020-01-01');
+                });
+            });
+
+        }
 
         $orderlist=$orderlist->groupBy('infoOrder.id');
 
@@ -37,8 +61,11 @@ class OrderListController extends Controller
         }
 
 
-        $orderlist=$orderlist->skip($skip)->take($take)->get();
-
+        $orderlist=$orderlist->skip($skip)->take($take);
+       // $sql = Str::replaceArray('?', $orderlist->getBindings(), $orderlist->toSql());
+        $orderlist=$orderlist->get();
+// print
+     //  dd($sql);
         return response()->json($orderlist);
     }
 }
