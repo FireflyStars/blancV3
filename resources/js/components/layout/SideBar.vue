@@ -41,9 +41,15 @@
                 <circle cx="22" cy="21" r="2" stroke="#868686"/>
             </svg>
 </div>
-            <div class="user_initials" data-bs-toggle="tooltip" data-bs-placement="right" title="Logout user " @click="logout">
+            <div class="user_initials" @click="showmenu">
                 {{initials}}
             </div>
+        <transition name="usermenu" >
+            <div class="usermenu" v-if="dispmenu" >
+
+                <button class="btn btn-outline-dark"  data-bs-toggle="tooltip" data-bs-placement="right" title="Logout user" @click="logout">Sign out</button>
+            </div>
+        </transition>
     </div>
 
 </template>
@@ -65,7 +71,9 @@
             const initials= ref(uname.value.substr(0,2));
             const router = useRouter();
             const route = useRoute();
+            const dispmenu=ref(false);
             function logout(){
+                showmenu();
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,'Logging out, please wait...']);
 
                 axios.get('/logout', {
@@ -74,10 +82,11 @@
                     .then(function (response) {
                         if(response.data.ok==1) {
                             sessionStorage.clear();
-                            router.push({
-                                name:'Login',
+                           // router.push({
+                            //    name:'Login',
 
-                            })
+                            //})
+                            window.location="/";
                         }
                     })
                     .catch(function (error) {
@@ -86,10 +95,15 @@
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
             }
+            function showmenu() {
+                dispmenu.value=!dispmenu.value;
+            }
             return {
                 uname,
                 initials,
-                logout
+                logout,
+                showmenu,
+                dispmenu
             }
         }
     }
@@ -112,4 +126,46 @@
 .side-icons{
     margin-bottom: 32px;
 }
+    .usermenu{
+        background: #FFFFFF;
+
+        /* Drop shadow */
+        box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
+        border-radius: 4px;
+        min-width: 184px;
+        position: fixed;
+        left: 16px;
+        bottom: 79px;
+        z-index: 2;
+       padding:45px 1rem 37px 1rem;
+        transform-origin: left bottom;
+    }
+    .usermenu .btn{
+        min-width: 154px;
+        margin: 0 auto;
+        display: block;
+
+    }
+    .usermenu-enter-from{
+        opacity: 0;
+        transform: scale(0.6);
+    }
+    .usermenu-enter-to{
+        opacity: 1;
+        transform: scale(1);
+    }
+    .usermenu-enter-active{
+        transition: all ease 0.2s;
+    }
+    .usermenu-leave-from{
+        opacity: 1;
+        transform: scale(1);
+    }
+    .usermenu-leave-to{
+        opacity: 0;
+        transform: scale(0.6);
+    }
+    .usermenu-leave-active{
+        transition: all ease 0.2s;
+    }
 </style>

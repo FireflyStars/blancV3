@@ -12,9 +12,10 @@ axios.interceptors.response.use(
     (error) => {
         if (error.response.status !== 401&&error.response.status !== 419) return Promise.reject(error)
         sessionStorage.clear();
-        router.push({
+        window.location='/';
+        /*router.push({
             name:'Login',
-        })
+        })*/
     }
 )
 createApp(App)

@@ -16,16 +16,18 @@
             css_class.value=props.name.replace(/ /g,'').toLowerCase();
 
             const statuses={
-               // inprocess:'In progress' // if we want to show  In process as in progress
+                inprogress:'In process' // if we want to show  In progress as in process
             };
             if(css_class.value in statuses){
                 status.value=statuses[css_class.value];
+                css_class.value=status.value.replace(/ /g,'').toLowerCase();
             }
             watch(() => props.name, (current_val, previous_val) => {
                 status.value=current_val.toLowerCase();
                 css_class.value=current_val.replace(/ /g,'').toLowerCase();
                 if(css_class.value in statuses){
                     status.value=statuses[css_class.value];
+                    css_class.value=status.value.replace(/ /g,'').toLowerCase();
                 }
             });
             return {

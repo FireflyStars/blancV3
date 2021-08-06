@@ -8,14 +8,19 @@
             <side-bar></side-bar>
                 <div class="col main-view p-0">
                     <h2>Order List</h2>
+
                     <div class="container-fluid orderlist-tabs d-flex align-items-center">
-                        <div class="orderlist-tab active">Due today</div>
-                        <div class="orderlist-tab">Due tomorrow</div>
-                        <div class="orderlist-tab">all orders</div>
-                        <div class="orderlist-tab">Customer care</div>
-                        <div class="orderlist-tab">With partner</div>
+                        <div class="orderlist-tab" :class="{active:tabs.due_today.active}" @click="showtab('due_today')">{{tabs.due_today.name}}</div>
+                        <div class="orderlist-tab" :class="{active:tabs.due_tomorrow.active}" @click="showtab('due_tomorrow')">{{tabs.due_tomorrow.name}}</div>
+                        <div class="orderlist-tab" :class="{active:tabs.all_orders.active}" @click="showtab('all_orders')">{{tabs.all_orders.name}}</div>
+                        <div class="orderlist-tab" :class="{active:tabs.customer_care.active}" @click="showtab('customer_care')">{{tabs.customer_care.name}}</div>
+                        <div class="orderlist-tab" :class="{active:tabs.with_partner.active}" @click="showtab('with_partner')">{{tabs.with_partner.name}}</div>
                     </div>
-                    <order-list-table :tabledef="allordertablefields" tab="allorders"></order-list-table>
+                    <order-list-table :tabledef="allordertablefields" tab="all_orders" v-if="tabs.due_today.active"></order-list-table>
+                    <order-list-table :tabledef="allordertablefields" tab="all_orders" v-if="tabs.due_tomorrow.active"></order-list-table>
+                    <order-list-table :tabledef="allordertablefields" tab="all_orders" v-if="tabs.all_orders.active"></order-list-table>
+                    <order-list-table :tabledef="allordertablefields" tab="all_orders" v-if="tabs.customer_care.active"></order-list-table>
+                    <order-list-table :tabledef="allordertablefields" tab="all_orders" v-if="tabs.with_partner.active"></order-list-table>
                     <transition
                             enter-active-class="animate__animated animate__fadeIn"
                             leave-active-class="animate__animated animate__fadeOut"
@@ -37,19 +42,30 @@
 <script>
     import {ref,onMounted,computed,nextTick} from 'vue';
     import MainHeader from '../layout/MainHeader';
+
     import SideBar from '../layout/SideBar'
     import OrderListTable from './OrderListTable';
     import {useStore} from 'vuex';
-    import {ALL_ORDER_LOAD_LIST,ALL_ORDER_GET_LIST,ORDERLIST_MODULE,ALL_ORDER_GET_CURRENT_SELECTED} from '../../store/types/types';
+    import {ORDERLIST_LOAD_LIST,ORDERLIST_MODULE,ORDERLIST_GET_CURRENT_SELECTED,ORDERLIST_SET_CURRENTTAB,ORDERLIST_GET_LIST,ORDERLIST_LOADERMSG} from '../../store/types/types';
     import {useRoute} from 'vue-router';
 
     export default {
         name: "OrderList",
-        components: {SideBar, MainHeader,OrderListTable},
+        components: { SideBar, MainHeader,OrderListTable},
         setup(props,context){
             const showcontainer=ref(false);
             const store=useStore();
             const route=useRoute();
+            const tabs=ref({
+                due_today:{active:true,name:'Due today'},
+                due_tomorrow:{active:false,name:'Due tomorrow'},
+                all_orders:{active:false,name:'All orders'},
+                customer_care:{active:false,name:'Customer Care'},
+                with_partner:{active:false,name:'With partner'},
+            });
+
+            store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SET_CURRENTTAB}`,'due_today');
+
             const allordertablefields=ref({
                 line_select:{
                     name:" ",
@@ -124,12 +140,28 @@
             });
 
          //  store.dispatch(`${ORDERLIST_MODULE}increment`,{id:'xxx'}).then();
-            store.dispatch(`${ORDERLIST_MODULE}${ALL_ORDER_LOAD_LIST}`);
+            store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading order list. Please wait...');
+            store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`);
 
+            function showtab(tab) {
+                for (const prop in tabs.value)
+                    tabs.value[prop].active=false;
+
+                tabs.value[tab].active=true;
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SET_CURRENTTAB}`,tab);
+                if(store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_LIST}`].length==0) {
+                    store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`, `Loading ${tabs.value[tab].name.toLowerCase()}...`);
+                    store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`);
+                }
+                console.log(tabs.value);
+            }
+            
             return {
+                showtab,
+                tabs,
                 showcontainer,
                 allordertablefields,
-                showlayer:computed(()=>{return (store.getters[`${ORDERLIST_MODULE}${ALL_ORDER_GET_CURRENT_SELECTED}`])&&route.params.order_id>0;})
+                showlayer:computed(()=>{return (route.params.order_id>0&&store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_CURRENT_SELECTED}`]);})
             }
         }
     }

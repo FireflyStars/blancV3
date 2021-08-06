@@ -13,7 +13,6 @@
             check.value=props.checked_checkbox;
 
             function togglechkbox(){
-                console.log('tog');
                 check.value=!check.value;
 
             }
