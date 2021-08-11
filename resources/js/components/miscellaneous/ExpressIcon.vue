@@ -14,8 +14,12 @@
         setup(props){
             const isexpress=ref('false')
             let express_values=props.express_values.split(',');
+        // STANDARD   0,2,3
+        // EXPRESS 24  1,4,5
+        // EXPRESS 48  6
 
-            const express=["1","3","4","5","6"];
+
+            const express=["1","4","5","6"];
             let res=express_values.filter((item)=>{
                 return express.includes(item)
             });

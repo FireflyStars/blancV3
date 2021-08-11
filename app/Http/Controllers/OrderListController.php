@@ -14,6 +14,7 @@ class OrderListController extends Controller
         $take=$request->get('take');
         $current_tab=$request->get('current_tab');
         $sort=$request->get('sort');
+        $filters=$request->get('filters');
         $orderlist=DB::table('infoOrder')
             ->select(['infoOrder.id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoCustomer.TypeDelivery',DB::raw('DATE_FORMAT(infoOrder.DateDeliveryAsk, "%d/%m") as PromisedDate'),DB::raw('count(infoitems.id) as numitems'),DB::raw('GROUP_CONCAT(infoitems.express) as express'),DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid')])
             ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
@@ -48,6 +49,30 @@ class OrderListController extends Controller
             });
 
         }
+
+        //filters
+
+
+        if(!empty($filters))
+            foreach($filters as $colname=>$values){
+                if($colname=='infoitems.express'){
+                        $express=[];
+                        if(in_array('standard',$values)){
+                            $express=array_merge($express,[0,2,3]);
+                        }
+                    if(in_array('exp24',$values)){
+                        $express=array_merge($express,[1,4,5]);
+                    }
+                    if(in_array('exp48',$values)){
+                        $express=array_merge($express,[6]);
+                    }
+                    if(!empty($express))
+                        $orderlist=$orderlist->whereIn($colname,$express);
+                }else{
+                    if(!empty($values))
+                    $orderlist=$orderlist->whereIn($colname,$values);
+                }
+            }
 
         $orderlist=$orderlist->groupBy('infoOrder.id');
 

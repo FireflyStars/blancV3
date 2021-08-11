@@ -1,10 +1,11 @@
 <template>
     <div class="container-fluid position-relative">
-        <filters></filters>
+        <filters :filterDef="filterDef"></filters>
     <section class="orderlist-table" v-if="ORDER_LIST.length>0">
         <header>
         <div class="tcol noselect"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}"  @click="sort(index,col.sortable)">{{col.name}}
             <sort-arrows v-if="col.sortable" :sort="SORTCOL" :colname="index"></sort-arrows>
+            <check-box v-if="col.type=='checkbox'&&ORDER_LIST.length>0" :checked_checkbox="ORDER_LIST.length==MULTI_CHECKED.length"  @checkbox-clicked="checkboxallclicked"></check-box>
         </div>
         </header>
         <transition-group tag="div" class="position-relative" name="list" appear>
@@ -18,14 +19,20 @@
         </transition-group>
 
         <footer>
-        <div class="tcol" width="100%" style="text-align: center" :colspan="Object.keys(tabledef).length">  <button class="btn btn-link" @click="loadMore">Show more</button></div>
+        <div class="tcol" style="text-align: center" :colspan="Object.keys(tabledef).length">  <button class="btn btn-link" @click="loadMore">Show more</button></div>
+
+        </footer>
+        <footer>
+
         </footer>
     </section>
 
       <section class="nodata p-2" v-if="ORDER_LIST.length==0">
             <p v-if="!loader_running">No orders available.</p>
       </section>
-
+        <transition name="trans-batch-actions">
+        <div class=" batch-actions" v-if="MULTI_CHECKED.length>0&&CURRENT_SELECTED==''"><button class="btn btn-outline-dark">Batch Invoice</button><button class="btn btn-outline-dark">Batch Payment</button><button class="btn btn-outline-dark">Mark as late</button><button class="btn btn-outline-dark">Cancel order(s)</button></div>
+        </transition>
     </div>
 
 
@@ -35,7 +42,23 @@
     import {useRouter,useRoute} from 'vue-router'
     import {ref,computed} from 'vue';
     import {useStore} from 'vuex';
-    import {ORDERLIST_LOAD_LIST,ORDERLIST_MODULE,ORDERLIST_GET_CURRENT_SELECTED,ORDERLIST_SELECT_CURRENT,ORDERLIST_GET_ALL_ORDER_MULITCHECKED,ORDERLIST_MULITCHECKED,ORDERLIST_MULITUNCHECKED,LOADER_MODULE,DISPLAY_LOADER,ORDERLIST_GET_LIST,GET_SHOW_LOADER,ORDERLIST_SORT,ORDERLIST_GET_SORT,ORDERLIST_LOADERMSG} from '../../store/types/types';
+    import {
+        ORDERLIST_LOAD_LIST,
+        ORDERLIST_MODULE,
+        ORDERLIST_GET_CURRENT_SELECTED,
+        ORDERLIST_SELECT_CURRENT,
+        ORDERLIST_GET_ALL_ORDER_MULITCHECKED,
+        ORDERLIST_MULITCHECKED,
+        ORDERLIST_MULITUNCHECKED,
+        LOADER_MODULE,
+        DISPLAY_LOADER,
+        ORDERLIST_GET_LIST,
+        GET_SHOW_LOADER,
+        ORDERLIST_SORT,
+        ORDERLIST_GET_SORT,
+        ORDERLIST_LOADERMSG,
+        ORDERLIST_RESET_MULITCHECKED
+    } from '../../store/types/types';
     import Tag from  '../miscellaneous/Tag'
     import CheckBox from '../miscellaneous/CheckBox'
     import ExpressIcon  from '../miscellaneous/ExpressIcon'
@@ -88,7 +111,7 @@
                     },
                 })
             }
-            function checkboxclicked(check,id) {
+            function checkboxclicked(check,id,name) {
                 if(CURRENT_SELECTED.value==id&&check==false){
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SELECT_CURRENT}`,'');
                 }
@@ -99,11 +122,91 @@
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_MULITUNCHECKED}`,id);
                 }
             }
+            function checkboxallclicked(check,id,name) {
+                console.log('bangbang',check);
+                    if(check==false)
+                        store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
 
+                    if(check){
+                        const list=_.cloneDeep(ORDER_LIST.value);
+                        list.forEach(order => store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_MULITCHECKED}`,order.id));
+                        }
+            }
             function sort(colname,sortable){
 
                 if(sortable)
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SORT}`,colname);
+            }
+
+            const filterDef={
+                def:{
+                    'infoOrder.paid':{
+                        name:"Payment status",
+                        options:{
+                            0:"Unpaid",
+                            1:"Paid",
+                        }
+                    },
+                    'infoOrder.Status':{
+                        name:"Order status",
+                        options:{
+                            'ASSEMBLING':'ASSEMBLING',
+                            'AWAITING REDELIVERY':'AWAITING REDELIVERY',
+                            'AWAITING SALE':'AWAITING SALE',
+                            'CANCELLED':'CANCELLED',
+                            'CHECK IN ATELIER':'CHECK IN ATELIER',
+                            'COLLECTED':'COLLECTED',
+                            'DELETE':'DELETE',
+                            'DELIVERED':'DELIVERED',
+                            'DELIVERED TO STORE':'DELIVERED TO STORE',
+                            'DELIVERY IN STORE':'DELIVERY IN STORE',
+                            'DONATED TO CHARITY':'DONATED TO CHARITY',
+                            'DROPPED OFF':'DROPPED OFF',
+                            'FAILED DELIVERY':'FAILED DELIVERY',
+                            'FAILED PAYMENT':'FAILED PAYMENT',
+                            'FULFILLED':'FULFILLED',
+                            'IN PROCESS':'IN PROCESS',
+                            'IN STORAGE':'IN STORAGE',
+                            'LATE':'LATE',
+                            'LATE DELIVERY':'LATE DELIVERY',
+                            'MISSED PICKUP':'MISSED PICKUP',
+                            'OFFLOADED':'OFFLOADED',
+                            'ON VAN':'ON VAN',
+                            'OVERDUE FOR COLLECTION':'OVERDUE FOR COLLECTION',
+                            'OVERDUE STORE':'OVERDUE STORE',
+                            'PART ON HOLD':'PART ON HOLD',
+                            'PART PENDING':'PART PENDING',
+                            'PICKED UP':'PICKED UP',
+                            'READY':'READY',
+                            'RECURRING':'RECURRING',
+                            'READY IN STORE':'READY IN STORE',
+                            'SCHEDULED':'SCHEDULED',
+                            'SOLD':'SOLD',
+                            'VOID':'VOID',
+
+                        }
+                    },
+                    'infoCustomer.TypeDelivery':{
+                        name:"Destination",
+                        options:{
+                            'DELIVERY':'DELIVERY',
+                            'CHELSEA':'CHELSEA',
+                            'MARYLEBONE':'MARYLEBONE',
+                            'NOTTING HILL':'NOTTING HILL',
+                            'SOUTH KEN':'SOUTH KEN'
+                        }
+
+                    },
+                    'infoitems.express':{
+                        name: "Turnaround time",
+                        options:{
+                            standard:"Standard",
+                            exp24:"Express 24h",
+                            exp48:"Express 48h"
+                        }
+
+                    }
+                }
             }
             return {
                 route,
@@ -116,8 +219,9 @@
                 checkboxclicked,
                 loader_running:computed(()=>{return (store.getters[`${LOADER_MODULE}${GET_SHOW_LOADER}`]);}),
                 sort,
-                SORTCOL
-
+                SORTCOL,
+                filterDef,
+                checkboxallclicked,
             }
         }
     }
@@ -170,6 +274,41 @@
         min-height: 550px;
         display: flex;
         align-items: center;justify-content: center;
+    }
+    .batch-actions{
+        background: #EEEEEE;
+        box-shadow: inset 0px -1px 0px rgba(168, 168, 168, 0.25);
+        padding: 1rem 0;
+        position: sticky;
+        bottom: 0;
+        transform-origin: bottom center;
+    }
+    .batch-actions button{
+        margin-left: 1rem;
+
+    }
+
+    .trans-batch-actions-enter-from{
+        opacity: 0;
+        transform: scale(0.6);
+    }
+    .trans-batch-actions-enter-to{
+        opacity: 1;
+        transform: scale(1);
+    }
+    .trans-batch-actions-enter-active{
+        transition: all ease 0.2s;
+    }
+    .trans-batch-actions-leave-from{
+        opacity: 1;
+        transform: scale(1);
+    }
+    .trans-batch-actions-leave-to{
+        opacity: 0;
+        transform: scale(0.6);
+    }
+    .trans-batch-actions-leave-active{
+        transition: all ease 0.2s;
     }
 
 </style>

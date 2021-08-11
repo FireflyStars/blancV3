@@ -9,7 +9,7 @@ import {
     ORDERLIST_MULITCHECKED,
     ORDERLIST_SET_ALL_ORDER_MULITCHECKED,
     ORDERLIST_MULITUNCHECKED,
-    DISPLAY_LOADER,HIDE_LOADER,LOADER_MODULE,
+    DISPLAY_LOADER, HIDE_LOADER, LOADER_MODULE,
     ORDERLIST_CURRENTTAB,
     ORDERLIST_SET_CURRENTTAB,
     ORDERLIST_GET_LIST,
@@ -20,7 +20,10 @@ import {
     ORDERLIST_SET_LIMIT,
     ORDERLIST_RESET_ORDERLIST,
     ORDERLIST_SET_LOADERMSG,
-    ORDERLIST_LOADERMSG
+    ORDERLIST_LOADERMSG,
+    ORDERLIST_FILTER,
+    ORDERLIST_GET_FILTER,
+    ORDERLIST_SET_FILTER, ORDERLIST_RESET_MULITCHECKED, ORDERLIST_SET_MULITCHECKED
 } from "../types/types";
 
 import axios from 'axios';
@@ -37,7 +40,7 @@ export const orderlist= {
                 skip:0, //show more
                 take:10, //show more
                 sort:[],//sort col
-                filters:[],//filters
+                filters:{},//filters
             },
             due_tomorrow:{
                 currently_selected:'',//currently selected line for displaying order detail
@@ -46,7 +49,7 @@ export const orderlist= {
                 skip:0, //show more
                 take:10, //show more
                 sort:[],//sort col
-                filters:[],//filters
+                filters:{},//filters
             },
             all_orders:{
                 currently_selected:'',//currently selected line for displaying order detail
@@ -55,7 +58,7 @@ export const orderlist= {
                 skip:0, //show more
                 take:10, //show more
                 sort:[],//sort col
-                filters:[],//filters
+                filters:{},//filters
             },
             customer_care:{
                 currently_selected:'',//currently selected line for displaying order detail
@@ -64,7 +67,7 @@ export const orderlist= {
                 skip:0, //show more
                 take:10, //show more
                 sort:[],//sort col
-                filters:[],//filters
+                filters:{},//filters
             },
             with_partner:{
                 currently_selected:'',//currently selected line for displaying order detail
@@ -73,7 +76,7 @@ export const orderlist= {
                 skip:0, //show more
                 take:10, //show more
                 sort:[],//sort col
-                filters:[],//filters
+                filters:{},//filters
             },
 
     },
@@ -103,6 +106,8 @@ export const orderlist= {
         },
         [ORDERLIST_RESET_ORDERLIST]:state=>state[state.current_tab].order_list=[],
         [ORDERLIST_SET_LOADERMSG]:(state,payload)=>state.loader_msg=payload,
+        [ORDERLIST_SET_FILTER]:(state,payload)=>state[state.current_tab].filters=payload,
+        [ORDERLIST_SET_MULITCHECKED]:(state,payload)=>state[state.current_tab].multi_checked=payload,
     },
     actions: {
 
@@ -122,7 +127,8 @@ export const orderlist= {
                 skip: state[state.current_tab].skip,
                 take: state[state.current_tab].take,
                current_tab:state.current_tab,
-               sort:state[state.current_tab].sort
+               sort:state[state.current_tab].sort,
+               filters:state[state.current_tab].filters,
             })
                 .then(function (response) {
                     commit(ORDERLIST_ADD_TO_LIST, response.data);
@@ -139,7 +145,8 @@ export const orderlist= {
         [ORDERLIST_SELECT_CURRENT]:({commit}, payload)=>{
             commit(ORDERLIST_SET_CURRENT_SELECTED,payload);
         },
-        [ORDERLIST_MULITCHECKED]:({commit}, payload)=>{
+        [ORDERLIST_MULITCHECKED]:({commit,getters}, payload)=>{
+            if(!getters.ORDERLIST_GET_ALL_ORDER_MULITCHECKED.includes(payload))
             commit(ORDERLIST_SET_ALL_ORDER_MULITCHECKED,{id:payload,add:true});
         },
         [ORDERLIST_MULITUNCHECKED]:({commit}, payload)=>{
@@ -181,14 +188,23 @@ export const orderlist= {
         },
         [ORDERLIST_LOADERMSG]:({commit},payload)=>{
             commit(ORDERLIST_SET_LOADERMSG,payload);
-        }
+        },
+        [ORDERLIST_FILTER]:({commit,dispatch},payload)=>{
+            commit(ORDERLIST_SET_FILTER,payload);
+            commit(ORDERLIST_SET_LIMIT,{skip:0,take:10});
+            commit(ORDERLIST_SET_LOADERMSG,'Applying Filters...');
+            dispatch(ORDERLIST_LOAD_LIST);
+        },
+        [ORDERLIST_RESET_MULITCHECKED]:({commit})=>{
+            commit(ORDERLIST_SET_MULITCHECKED,[]);
+        },
     },
     getters: {
 
-         [ORDERLIST_GET_CURRENT_SELECTED]:state => state[state.current_tab].currently_selected,
-         [ORDERLIST_GET_ALL_ORDER_MULITCHECKED]: state=>state[state.current_tab].multi_checked,
+        [ORDERLIST_GET_CURRENT_SELECTED]:state => state[state.current_tab].currently_selected,
+        [ORDERLIST_GET_ALL_ORDER_MULITCHECKED]: state=>state[state.current_tab].multi_checked,
         [ORDERLIST_GET_LIST]:state =>state[state.current_tab].order_list,
         [ORDERLIST_GET_SORT]:state =>state[state.current_tab].sort,
-
+        [ORDERLIST_GET_FILTER]:state=> state[state.current_tab].filters,
     }
 }
