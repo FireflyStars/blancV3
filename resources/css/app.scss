@@ -116,6 +116,11 @@ label{
       -o-transition: border-color 300ms ease-out;
       transition: border-color 300ms ease-out;
     }
+    &.late{
+      span.chkbox{
+        border-color: transparent;
+      }
+    }
   }
   .trow:hover{
     -webkit-transition: background-color 300ms ease-out;
@@ -169,6 +174,18 @@ label{
    box-shadow: inset 0px -1px 0px rgba(168, 168, 168, 0.25);
    align-items: center;
  }
+  .trow.late{
+    background: #FBE2E2;
+    .tcol {
+      color: #EB5757;
+      &.Status{
+        flex:40!important;
+        padding:22px 45px;
+        font-weight: 500;
+        font-size: 16px;
+      }
+    }
+  }
  footer{
    box-shadow: inset 0px 1px 0px #E4E5E7;
    .btn-link{

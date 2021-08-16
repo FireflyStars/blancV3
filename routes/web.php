@@ -21,6 +21,8 @@ Route::post('/auth/login',function () {
     return view('welcome');
 })->name('login');
 Route::post('/getorderlist',[OrderListController::class, 'getorderlist'])->middleware('auth')->name('orderlist');
+Route::post('/cancelorders',[OrderListController::class, 'cancelorders'])->middleware('auth')->name('cancelorders');
+Route::post('/markaslate',[OrderListController::class, 'markaslate'])->middleware('auth')->name('markaslate');
 Route::get('{any}', function () {
     return view('welcome');
 })->where('any','.*');

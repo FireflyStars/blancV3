@@ -16,11 +16,11 @@
                         <div class="orderlist-tab" :class="{active:tabs.customer_care.active}" @click="showtab('customer_care')">{{tabs.customer_care.name}}</div>
                         <div class="orderlist-tab" :class="{active:tabs.with_partner.active}" @click="showtab('with_partner')">{{tabs.with_partner.name}}</div>
                     </div>
-                    <order-list-table :tabledef="allordertablefields" tab="all_orders" v-if="tabs.due_today.active"></order-list-table>
-                    <order-list-table :tabledef="allordertablefields" tab="all_orders" v-if="tabs.due_tomorrow.active"></order-list-table>
-                    <order-list-table :tabledef="allordertablefields" tab="all_orders" v-if="tabs.all_orders.active"></order-list-table>
-                    <order-list-table :tabledef="allordertablefields" tab="all_orders" v-if="tabs.customer_care.active"></order-list-table>
-                    <order-list-table :tabledef="allordertablefields" tab="all_orders" v-if="tabs.with_partner.active"></order-list-table>
+                    <order-list-table :tabledef="allordertablefields" :tab="tabs.due_today" id="due_today" v-if="tabs.due_today.active"></order-list-table>
+                    <order-list-table :tabledef="allordertablefields" :tab="tabs.due_tomorrow" id="due_tomorrow" v-if="tabs.due_tomorrow.active"></order-list-table>
+                    <order-list-table :tabledef="allordertablefields" :tab="tabs.all_orders" id="all_orders"  v-if="tabs.all_orders.active"></order-list-table>
+                    <order-list-table :tabledef="allordertablefields" :tab="tabs.customer_care" id="customer_care"  v-if="tabs.customer_care.active"></order-list-table>
+                    <order-list-table :tabledef="allordertablefields" :tab="tabs.with_partner" id="with_partner"  v-if="tabs.with_partner.active"></order-list-table>
                     <transition
                             enter-active-class="animate__animated animate__fadeIn"
                             leave-active-class="animate__animated animate__fadeOut"
@@ -46,7 +46,15 @@
     import SideBar from '../layout/SideBar'
     import OrderListTable from './OrderListTable';
     import {useStore} from 'vuex';
-    import {ORDERLIST_LOAD_LIST,ORDERLIST_MODULE,ORDERLIST_GET_CURRENT_SELECTED,ORDERLIST_SET_CURRENTTAB,ORDERLIST_GET_LIST,ORDERLIST_LOADERMSG} from '../../store/types/types';
+    import {
+        ORDERLIST_LOAD_LIST,
+        ORDERLIST_MODULE,
+        ORDERLIST_GET_CURRENT_SELECTED,
+        ORDERLIST_SET_CURRENTTAB,
+        ORDERLIST_GET_LIST,
+        ORDERLIST_LOADERMSG,
+        ORDERLIST_RESET_ORDERLIST, ORDERLIST_SET_LIMIT, ORDERLIST_LOAD_TAB
+    } from '../../store/types/types';
     import {useRoute} from 'vue-router';
 
     export default {
@@ -139,7 +147,7 @@
 
             });
 
-         //  store.dispatch(`${ORDERLIST_MODULE}increment`,{id:'xxx'}).then();
+
             store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading order list. Please wait...');
             store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`);
 
@@ -148,12 +156,17 @@
                     tabs.value[prop].active=false;
 
                 tabs.value[tab].active=true;
-                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SET_CURRENTTAB}`,tab);
-                if(store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_LIST}`].length==0) {
+
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_TAB}`,{tab:tab,name:tabs.value[tab].name});
+               /* store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SET_CURRENTTAB}`,tab);
+                store.commit(`${ORDERLIST_MODULE}${ORDERLIST_RESET_ORDERLIST}`);
+                store.commit(`${ORDERLIST_MODULE}${ORDERLIST_SET_LIMIT}`,{skip:0,take:10});
+
+               // if(store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_LIST}`].length==0) {
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`, `Loading ${tabs.value[tab].name.toLowerCase()}...`);
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`);
-                }
-                console.log(tabs.value);
+              //  }
+                console.log(tabs.value);*/
             }
             
             return {

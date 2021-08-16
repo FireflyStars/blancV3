@@ -9,13 +9,19 @@
         </div>
         </header>
         <transition-group tag="div" class="position-relative" name="list" appear>
-        <div class="trow" v-for="order in ORDER_LIST" :key="order.id" :class="{current_sel:order.id==CURRENT_SELECTED&&route.params.order_id>0}">
-            <div class="tcol" v-for="(col,index) in tabledef"  :style="{flex:col.flex}" :class="{'check-box': col.type=='checkbox'}"  @click="selectrow(order.id,index)">
+        <div class="trow" v-for="order in ORDER_LIST" :key="order.id" :class="{current_sel:order.id==CURRENT_SELECTED&&route.params.order_id>0,late:order.Status=='LATE'}">
+<template v-for="(col,index) in tabledef">
+            <div class="tcol"   :style="{flex:col.flex}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(order.id,index)" v-if="hideOnLate(order.Status,index)" >
+
+
                 <check-box v-if="col.type=='checkbox'" :checked_checkbox="(order.id==CURRENT_SELECTED&&route.params.order_id>0)||MULTI_CHECKED.includes(order.id)" :id="order.id" @checkbox-clicked="checkboxclicked"></check-box>
-                <tag v-else-if="col.type=='tag'" :name="order[index]" ></tag>
+                <tag v-else-if="col.type=='tag'&&order.Status!='LATE'" :name="order[index]" ></tag>
                 <express-icon v-else-if="col.type=='express'" :express_values="order[index]"></express-icon>
-                <span v-else :style="col.css">{{preprocess(col,order[index])}}</span></div>
+                <span v-else :style="col.css">{{preprocess(col,order[index])}}</span>
             </div>
+</template>
+            </div>
+
         </transition-group>
 
         <footer>
@@ -31,7 +37,7 @@
             <p v-if="!loader_running">No orders available.</p>
       </section>
         <transition name="trans-batch-actions">
-        <div class=" batch-actions" v-if="MULTI_CHECKED.length>0&&CURRENT_SELECTED==''"><button class="btn btn-outline-dark">Batch Invoice</button><button class="btn btn-outline-dark">Batch Payment</button><button class="btn btn-outline-dark">Mark as late</button><button class="btn btn-outline-dark">Cancel order(s)</button></div>
+        <div class=" batch-actions" v-if="MULTI_CHECKED.length>0&&CURRENT_SELECTED==''"><button class="btn btn-outline-dark disabled"  @click="featureunavailable('Batch invoice')">Batch Invoice</button><button class="btn btn-outline-dark disabled"  @click="featureunavailable('Batch payment')">Batch Payment</button><button class="btn btn-outline-dark"  @click="markaslate">Mark as late</button><button class="btn btn-outline-dark" @click="cancelorders">Cancel order(s)</button></div>
         </transition>
     </div>
 
@@ -40,7 +46,7 @@
 
 <script>
     import {useRouter,useRoute} from 'vue-router'
-    import {ref,computed} from 'vue';
+    import {ref,computed } from 'vue';
     import {useStore} from 'vuex';
     import {
         ORDERLIST_LOAD_LIST,
@@ -57,7 +63,12 @@
         ORDERLIST_SORT,
         ORDERLIST_GET_SORT,
         ORDERLIST_LOADERMSG,
-        ORDERLIST_RESET_MULITCHECKED
+        ORDERLIST_RESET_MULITCHECKED,
+        TOASTER_MODULE,
+        TOASTER_MESSAGE,
+        ORDERLIST_CANCEL_ORDERS,
+        ORDERLIST_LOAD_TAB,
+        ORDERLIST_MARK_AS_LATE
     } from '../../store/types/types';
     import Tag from  '../miscellaneous/Tag'
     import CheckBox from '../miscellaneous/CheckBox'
@@ -66,14 +77,13 @@
     import Filters from '../miscellaneous/Filters'
     export default {
         name: "OrderListTable",
-        props:['tabledef',"tab"],
+        props:['tabledef',"tab","id"],
         components:{Filters, Tag,CheckBox,ExpressIcon,SortArrows},
         setup(props){
             const router = useRouter();
             const store=useStore();
             const route = useRoute();
             const ORDER_LIST=computed(()=>{
-                //if(props.tab=="all_orders")
                 return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_LIST}`];
             });
             const CURRENT_SELECTED=computed(()=>{
@@ -94,6 +104,11 @@
             }
 
             function preprocess(def,val) {
+                if(typeof def.type!="undefined"&&def.type=="tag"){
+                    if(val=='LATE'){
+                        return 'This order is late, please suggest a new delivery date.';
+                    }
+                }
                 if(typeof def.type!="undefined"&&def.type=="price"){
 
                     return "£"+(val!=0?val.toFixed(2):0);
@@ -114,6 +129,7 @@
             function checkboxclicked(check,id,name) {
                 if(CURRENT_SELECTED.value==id&&check==false){
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SELECT_CURRENT}`,'');
+                        router.back();
                 }
                 if(check==true){
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_MULITCHECKED}`,id);
@@ -208,6 +224,45 @@
                     }
                 }
             }
+            const featureunavailable=((feature)=>{
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:feature+' feature not yet implemented.',ttl:5,type:'success'});
+            });
+            const cancelorders =(()=>{
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,`Cancelling ${MULTI_CHECKED.value.length} order(s), please wait...`);
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CANCEL_ORDERS}`,MULTI_CHECKED.value).then(()=>{
+                    if(ORDER_LIST.value.length==0){
+                            store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_TAB}`,{tab:props.id,name:props.tab.name});
+                    }
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Order(s) cancelled successfully.',ttl:5,type:'success'});
+                    store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
+                }).catch((error)=>{
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
+                });
+
+            });
+            const markaslate=(()=>{
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,`Marking ${MULTI_CHECKED.value.length} order(s) as late, please wait...`);
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_MARK_AS_LATE}`,MULTI_CHECKED.value).then(()=>{
+
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Order(s) marked as late successfully.',ttl:5,type:'success'});
+                    store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
+                }).catch((error)=>{
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
+                });
+            });
+            const hideOnLate=((status,colname)=>{
+                    if(status==='LATE'&&(colname=='numitems'||colname=='paid'))
+                    return false;
+
+                    return true;
+            });
+            const flexCol=((col,status,tabledef,colname)=>{
+                console.log(col,status,tabledef,colname);
+                    if(status=='LATE'&&colname=='status'){
+                        return col.flex
+                    }
+                return col.flex;
+            });
             return {
                 route,
                 CURRENT_SELECTED,
@@ -222,6 +277,11 @@
                 SORTCOL,
                 filterDef,
                 checkboxallclicked,
+                featureunavailable,
+                cancelorders,
+                hideOnLate,
+                flexCol,
+                markaslate
             }
         }
     }

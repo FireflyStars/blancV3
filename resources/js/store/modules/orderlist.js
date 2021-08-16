@@ -9,7 +9,9 @@ import {
     ORDERLIST_MULITCHECKED,
     ORDERLIST_SET_ALL_ORDER_MULITCHECKED,
     ORDERLIST_MULITUNCHECKED,
-    DISPLAY_LOADER, HIDE_LOADER, LOADER_MODULE,
+    DISPLAY_LOADER,
+    HIDE_LOADER,
+    LOADER_MODULE,
     ORDERLIST_CURRENTTAB,
     ORDERLIST_SET_CURRENTTAB,
     ORDERLIST_GET_LIST,
@@ -23,7 +25,13 @@ import {
     ORDERLIST_LOADERMSG,
     ORDERLIST_FILTER,
     ORDERLIST_GET_FILTER,
-    ORDERLIST_SET_FILTER, ORDERLIST_RESET_MULITCHECKED, ORDERLIST_SET_MULITCHECKED
+    ORDERLIST_SET_FILTER,
+    ORDERLIST_RESET_MULITCHECKED,
+    ORDERLIST_SET_MULITCHECKED,
+    ORDERLIST_CANCEL_ORDERS,
+    ORDERLIST_UPDATE_STATUS,
+    ORDERLIST_REMOVE_ORDERS,
+    ORDERLIST_LOAD_TAB, TOASTER_MODULE, TOASTER_MESSAGE, ORDERLIST_MARK_AS_LATE
 } from "../types/types";
 
 import axios from 'axios';
@@ -108,6 +116,18 @@ export const orderlist= {
         [ORDERLIST_SET_LOADERMSG]:(state,payload)=>state.loader_msg=payload,
         [ORDERLIST_SET_FILTER]:(state,payload)=>state[state.current_tab].filters=payload,
         [ORDERLIST_SET_MULITCHECKED]:(state,payload)=>state[state.current_tab].multi_checked=payload,
+        [ORDERLIST_UPDATE_STATUS]:(state,payload)=>{
+
+                payload.orderids.forEach(id=>{
+                    state[state.current_tab].order_list.forEach(order=>{
+                        if(order.id===id)
+                            order.Status=payload.status;
+                    })
+                })
+        },
+        [ORDERLIST_REMOVE_ORDERS]:(state,payload)=>{
+            state[state.current_tab].order_list=state[state.current_tab].order_list.filter(order=>!payload.includes(order.id));
+        }
     },
     actions: {
 
@@ -135,7 +155,7 @@ export const orderlist= {
                     console.log(response);
                 })
                 .catch(function (error) {
-                    console.log(error);
+                    dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'},{ root: true });
                 }).finally(function(){
                 dispatch(`${LOADER_MODULE}${HIDE_LOADER}`,{},{ root: true });
             });
@@ -198,6 +218,53 @@ export const orderlist= {
         [ORDERLIST_RESET_MULITCHECKED]:({commit})=>{
             commit(ORDERLIST_SET_MULITCHECKED,[]);
         },
+        [ORDERLIST_CANCEL_ORDERS]:async({commit,dispatch,state},payload)=>{
+            dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,state.loader_msg],{ root: true });
+            return axios.post('/cancelorders', {
+               orderids:payload
+
+            }).then( (response)=>{
+                    if(response.data.done=='ok'){
+                        if(state.current_tab=='all_orders'){
+                           commit(ORDERLIST_UPDATE_STATUS,{status:'DELETE',orderids:payload});
+                        }else{
+                            commit(ORDERLIST_REMOVE_ORDERS,payload);
+                        }
+                    }
+                    return Promise.resolve(response);
+                })
+                .catch((error)=>{
+                    return Promise.reject(error);
+                }).finally(()=>{
+                    dispatch(`${LOADER_MODULE}${HIDE_LOADER}`,{},{ root: true });
+                });
+        },
+        [ORDERLIST_MARK_AS_LATE]:async({commit,dispatch,state},payload)=>{
+            dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,state.loader_msg],{ root: true });
+            return axios.post('/markaslate', {
+                orderids:payload
+
+            }).then( (response)=>{
+                if(response.data.done=='ok'){
+
+                        commit(ORDERLIST_UPDATE_STATUS,{status:'LATE',orderids:payload});
+
+                }
+                return Promise.resolve(response);
+            })
+                .catch((error)=>{
+                    return Promise.reject(error);
+                }).finally(()=>{
+                    dispatch(`${LOADER_MODULE}${HIDE_LOADER}`,{},{ root: true });
+                });
+        },
+        [ORDERLIST_LOAD_TAB]:({commit,dispatch},payload)=>{
+            dispatch(ORDERLIST_SET_CURRENTTAB,payload.tab);
+            commit(ORDERLIST_RESET_ORDERLIST);
+            commit(ORDERLIST_SET_LIMIT,{skip:0,take:10});
+            dispatch(ORDERLIST_LOADERMSG, `Loading ${payload.name.toLowerCase()}...`);
+            dispatch(ORDERLIST_LOAD_LIST);
+        }
     },
     getters: {
 

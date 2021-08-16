@@ -39,7 +39,7 @@ class OrderListController extends Controller
             function($query) {
                 $query->where(function($query) {
                     $query->whereDate('infoOrder.DateDeliveryAsk', '<=', date('Y-m-d'))
-                        ->whereNotIn('infoOrder.status', ['DELIVERED', 'DELIVERD TO STORE', 'SOLD', 'DONATED', 'DONATED TO CHARITY', 'COLLECTED', 'VOIDED', 'FULFILLED', 'VOID', 'DELETE', 'SOLD']);
+                        ->whereNotIn('infoOrder.Status', ['DELIVERED', 'DELIVERD TO STORE', 'SOLD', 'DONATED', 'DONATED TO CHARITY', 'COLLECTED', 'VOIDED', 'FULFILLED', 'VOID', 'DELETE', 'SOLD']);
                 })->orWhere(function($query){
                     $query->where('infoOrder.Paid','=',0)->where('infoCustomer.TypeDelivery','=','DELIVERY');
                 })->orWhere(function($query){
@@ -49,7 +49,8 @@ class OrderListController extends Controller
             });
 
         }
-
+        if($current_tab!='all_orders')
+            $orderlist=$orderlist->whereNotIn('infoOrder.Status',['VOID', 'DELETE']);
         //filters
 
 
@@ -92,5 +93,67 @@ class OrderListController extends Controller
 // print
      //  dd($sql);
         return response()->json($orderlist);
+    }
+
+
+    public function cancelorders(Request $request){
+
+        $orderids=$request->post('orderids');
+
+        //PERFORM DELETE QUERY HERE
+        //On passe L order infoOrder.status DELETE, on passe infoInvoice.status et infoItem.status en DELETE, et infoitem.nextpost=34
+        if(!empty($orderids)){
+
+            $infoOrders=DB::table('infoOrder')->select('OrderID')->whereIn('infoOrder.id',$orderids)->get();
+            $infoOrdersIds=[];
+
+            $infoOrders->each(function ($item, $key) use(&$infoOrdersIds){
+                $infoOrdersIds[]=$item->OrderID;
+            });
+
+            $infoitems=DB::table('infoitems')->select('infoitems.id')->join('infoInvoice',function($join) use ($infoOrdersIds){
+
+                        $join->on('infoitems.SubOrderID','=','infoInvoice.SubOrderID')
+                            ->whereIn('infoInvoice.OrderID',$infoOrdersIds);
+            });
+            $infoitems=$infoitems->get();
+
+            $infoitemsIds=[];
+            $infoitems->each(function ($item, $key) use(&$infoitemsIds){
+                $infoitemsIds[]=$item->id;
+            });
+
+
+            DB::table('infoitems')->whereIn('id',$infoitemsIds)->update([
+                'Status'=>'DELETE',
+                'nextpost'=>34
+            ]);
+            DB::table('infoInvoice')->whereIn('infoInvoice.OrderID',$infoOrdersIds)->update([
+                'Status'=>'DELETE'
+            ]);
+            DB::table('infoOrder')->whereIn('infoOrder.OrderID',$infoOrdersIds)->update([
+                'Status'=>'DELETE'
+            ]);
+
+
+
+
+        }
+
+
+
+        return response()->json(['done'=>'ok']);
+    }
+
+
+    public  function  markaslate(Request $request){
+
+        $orderids=$request->post('orderids');
+        if(!empty($orderids)){
+            DB::table('infoOrder')->whereIn('infoOrder.id',$orderids)->update([
+                'Status'=>'LATE'
+            ]);
+        }
+        return response()->json(['done'=>'ok']);
     }
 }

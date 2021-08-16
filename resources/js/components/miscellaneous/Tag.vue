@@ -16,18 +16,19 @@
             css_class.value=props.name.replace(/ /g,'').toLowerCase();
 
             const statuses={
-                inprogress:'In process' // if we want to show  In progress as in process
+                inprogress:'In process', // if we want to show  In progress as in process
+                //donatedtocharity:'Donated'
             };
             if(css_class.value in statuses){
                 status.value=statuses[css_class.value];
-                css_class.value=status.value.replace(/ /g,'').toLowerCase();
+
             }
             watch(() => props.name, (current_val, previous_val) => {
                 status.value=current_val.toLowerCase();
                 css_class.value=current_val.replace(/ /g,'').toLowerCase();
                 if(css_class.value in statuses){
                     status.value=statuses[css_class.value];
-                    css_class.value=status.value.replace(/ /g,'').toLowerCase();
+
                 }
             });
             return {
@@ -50,22 +51,13 @@
     height: 24px;
     position: relative;
 }
-    .tag.scheduled, .tag.checkinatelier, .tag.pickedup, .tag.missedpickup{
+    .tag.scheduled, .tag.checkinatelier, .tag.pickedup{
         background: #E0E0E0;
     }
-    .tag.missedpickup{
-        padding-left: 20px;
-    }
-    .tag.missedpickup:before{
-        content: " ";
-        width: 12px;
-        height:12px;
-        display: inline-block;
-        border: 2px solid #000000;
-        position: absolute;
-        left: 8px;
-        top:6px;
-        border-radius: 8px;
+
+    .tag.missedpickup,.tag.faileddelivery,.tag.late,.tag.latedelivery,.tag.overdueforcollection,.tag.overduestore,.tag.delete,.tag.void{
+        color:rgba(235, 87, 87, 1);
+        background: rgba(245, 171, 171, 0.7);
     }
     .tag.inprocess,.tag.partpending,.tag.partonhold{
         background: rgba(241, 210, 164, 0.7);
@@ -162,4 +154,8 @@
     background:rgba(66, 167, 30, 0.2);
     color: #42A71E;
 }
+    .tag.instorage,.tag.donatedtocharity{
+        background: #FFFFFF;
+        border: 1px solid #000000;
+    }
 </style>

@@ -60,12 +60,13 @@
                        if(response.data.user!=null) {
                            window.sessionStorage.setItem('name',response.data.user.name);
                            window.sessionStorage.setItem('auth', window.btoa(email.value))
-                           router.push({
+                           /*router.push({
                                name:'LandingPage',
                                query: {
                                    ...route.query,
                                },
-                           })
+                           })*/
+                           window.location='/'
                        }
                     })
                     .catch(function (error) {
