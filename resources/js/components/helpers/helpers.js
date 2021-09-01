@@ -1,6 +1,6 @@
 
 
-export const hasRoles=roles=>{ return true;
+export const hasRoles=roles=>{
     const ses_roles=JSON.parse(window.atob(window.sessionStorage.getItem('roles')));
     let foundroles=[];
     roles.forEach(role=>foundroles.push(ses_roles.filter(ses_role=>ses_role.name==role)));
