@@ -31,7 +31,11 @@ import {
     ORDERLIST_CANCEL_ORDERS,
     ORDERLIST_UPDATE_STATUS,
     ORDERLIST_REMOVE_ORDERS,
-    ORDERLIST_LOAD_TAB, TOASTER_MODULE, TOASTER_MESSAGE, ORDERLIST_MARK_AS_LATE
+    ORDERLIST_LOAD_TAB,
+    TOASTER_MODULE,
+    TOASTER_MESSAGE,
+    ORDERLIST_MARK_AS_LATE,
+    ORDERLIST_UPDATE_SUGGESTED_DELIVERY_DATE
 } from "../types/types";
 
 import axios from 'axios';
@@ -86,7 +90,24 @@ export const orderlist= {
                 sort:[],//sort col
                 filters:{},//filters
             },
-
+            unfulfilled:{
+                currently_selected:'',//currently selected line for displaying order detail
+                multi_checked:[], // currently check lines for possible mass action ex like batch delete...
+                order_list:[], // order list
+                skip:0, //show more
+                take:10, //show more
+                sort:[],//sort col
+                filters:{},//filters
+            },
+            without_delivery_date:{
+                currently_selected:'',//currently selected line for displaying order detail
+                multi_checked:[], // currently check lines for possible mass action ex like batch delete...
+                order_list:[], // order list
+                skip:0, //show more
+                take:10, //show more
+                sort:[],//sort col
+                filters:{},//filters
+            },
     },
     mutations: {
          [ORDERLIST_ADD_TO_LIST]: (state, payload) => state[state.current_tab].order_list=state[state.current_tab].order_list.concat(payload),
@@ -96,7 +117,12 @@ export const orderlist= {
         [ORDERLIST_SET_CURRENT_SELECTED]:(state, payload) =>{
             state[state.current_tab].multi_checked=  state[state.current_tab].multi_checked.filter(item => item !== state[state.current_tab].currently_selected);//remove previous from multichecked
             state[state.current_tab].currently_selected=payload;
-
+            let bodytag=document.getElementsByTagName( 'body' )[0]
+            if(payload==''){
+                bodytag.className='';
+            }else{
+                bodytag.classList.add('hide-overflowY');
+            }
         },
         [ORDERLIST_SET_ALL_ORDER_MULITCHECKED]:(state, payload)=>{
 
@@ -127,7 +153,15 @@ export const orderlist= {
         },
         [ORDERLIST_REMOVE_ORDERS]:(state,payload)=>{
             state[state.current_tab].order_list=state[state.current_tab].order_list.filter(order=>!payload.includes(order.id));
+        },
+        [ORDERLIST_UPDATE_SUGGESTED_DELIVERY_DATE]:(state,payload)=>{
+            state[state.current_tab].order_list.find(order=>{
+                if(order.id==payload.infoOrder_id)
+                    order.suggestedDeliveryDate=payload.suggested_date
+                return order.id==payload.infoOrder_id;
+            });
         }
+
     },
     actions: {
 
@@ -152,9 +186,10 @@ export const orderlist= {
             })
                 .then(function (response) {
                     commit(ORDERLIST_ADD_TO_LIST, response.data);
-                    console.log(response);
+
                 })
                 .catch(function (error) {
+                    if(typeof error.response !="undefined")
                     dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'},{ root: true });
                 }).finally(function(){
                 dispatch(`${LOADER_MODULE}${HIDE_LOADER}`,{},{ root: true });

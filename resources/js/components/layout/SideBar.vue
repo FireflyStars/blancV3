@@ -68,7 +68,7 @@
         setup(){
             const store=useStore();
             const uname=ref(window.sessionStorage.getItem('name'));
-            const initials= ref(uname.value.substr(0,2));
+            const initials= ref((uname.value!=null?uname.value.substr(0,2):''));
             const router = useRouter();
             const route = useRoute();
             const dispmenu=ref(false);

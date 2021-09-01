@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Tranche;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -16,7 +19,7 @@ class OrderListController extends Controller
         $sort=$request->get('sort');
         $filters=$request->get('filters');
         $orderlist=DB::table('infoOrder')
-            ->select(['infoOrder.id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoCustomer.TypeDelivery',DB::raw('DATE_FORMAT(infoOrder.DateDeliveryAsk, "%d/%m") as PromisedDate'),DB::raw('count(infoitems.id) as numitems'),DB::raw('GROUP_CONCAT(infoitems.express) as express'),DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid')])
+            ->select(['infoOrder.id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoCustomer.TypeDelivery',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%d/%m")) as PromisedDate'),DB::raw('count(infoitems.id) as numitems'),DB::raw('GROUP_CONCAT(infoitems.express) as express'),DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),'infoOrder.suggestedDeliveryDate'])
             ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
             ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
             ->join('infoitems','infoInvoice.SubOrderID','infoitems.SubOrderID')
@@ -151,9 +154,104 @@ class OrderListController extends Controller
         $orderids=$request->post('orderids');
         if(!empty($orderids)){
             DB::table('infoOrder')->whereIn('infoOrder.id',$orderids)->update([
-                'Status'=>'LATE'
+                'Status'=>'LATE',
+                'DateDeliveryAsk'=>'2020-01-01'
             ]);
         }
         return response()->json(['done'=>'ok']);
+    }
+
+    public function getorderdetail(Request $request){
+        $infoOrder_id=$request->post('infoOrder_id');
+        $order=DB::table('infoOrder')
+            ->select(['infoOrder.id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.Phone','infoCustomer.CustomerID',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate'])
+            ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
+
+            ->where('infoOrder.id','=',$infoOrder_id)->first();
+
+            $billing_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=','BILLING')->first();
+            $delivery_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=',$order->TypeDelivery)->first();
+
+            $infoitems=DB::table('infoitems')->select(['infoInvoice.NumInvoice','infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status','TypePost.Name as station',])->join('infoInvoice',function($join) use($order){
+               $join->on('infoInvoice.SubOrderID','=','infoitems.SubOrderID')
+               ->where('infoInvoice.OrderID','=',$order->OrderID);
+            })->leftJoin('postes','postes.id','=','infoitems.nextpost')
+                ->leftJoin('TypePost','TypePost.id','=','postes.TypePost')
+                ->orderBy('infoInvoice.NumInvoice')->get();
+        $items=[];
+        $infoitems->each(function ($item) use(&$items) {
+            $items[$item->NumInvoice][]=$item;//suborder grouping
+        });
+
+        if($order->Phone!=""){
+            $order->Phone=json_decode($order->Phone);
+            if($order->suggestedDeliveryDate!=null&&$order->suggestedDeliveryDate!=''){
+                $suggestedDeliveryDate=Carbon::createFromFormat('Y-m-d',$order->suggestedDeliveryDate);
+                if($suggestedDeliveryDate->isPast()){
+                    $order->suggestedDeliveryDate=null;
+                }
+            }
+        }
+        $available_slots=[];
+        if($order->TypeDelivery=='DELIVERY'&&$delivery_add!=null&&trim($delivery_add->postcode)!=''){
+            $postcode = $delivery_add->postcode;
+
+            $sel_postcode = "";
+
+            $allpostcodes = DB::table('tranchepostcode')
+                ->select(DB::raw('DISTINCT(Postcode) AS post_code'))
+                ->get();
+
+            $postcode = str_replace(' ','',$postcode);
+            $postcode = substr($postcode,0,-3);
+
+            if (count($allpostcodes) > 0) {
+                foreach ($allpostcodes as $k=>$v){
+                    $cur_postcode = $v->post_code;
+                    if($postcode==$cur_postcode){
+                        $sel_postcode = $cur_postcode;
+                    }
+                }
+            }
+
+            $tranche_details = [];
+            $formatted_tranche = [];
+
+            if($sel_postcode !=''){
+                $tranche_details = DB::table('tranchepostcode')
+                    ->where('Postcode',$sel_postcode)
+                    ->get();
+            }
+            if(count($tranche_details) > 0){
+                foreach($tranche_details as $k=>$v){
+                    $details = json_decode($v->tranche);
+                    $formatted_tranche[$v->day] = $details;
+                    $slot_dates=Tranche::getAvailableSlotAndDates($v->day,$details,true,3);
+                    foreach ($slot_dates as $slot_key=>$dates){
+                        foreach ($dates as $date)
+                            $available_slots[$date][]=$slot_key;
+                    }
+
+                }
+            }
+        }
+
+        return response()->json(['order'=>['detail'=>$order,'billing'=>$billing_add,'delivery'=>$delivery_add,'items'=>$items,'available_slots'=>$available_slots]]);
+    }
+
+
+    public function suggestdate(Request $request){
+            $infoOrder_id=$request->post('infoOrder_id');
+            $suggested_delivery_date=$request->post('suggested_delivery_date');
+            $user=Auth::user();
+            $update=false;
+            if($user->hasRoles(['admin','Blanc Admin','user'])){ // cc cannot suggest a date
+                $update= DB::table('infoOrder')->where('id','=',$infoOrder_id)->update(
+                    [
+                        'suggestedDeliveryDate'=>$suggested_delivery_date
+                    ]
+                );
+            }
+        return response()->json(['updated'=>$update]);
     }
 }

@@ -59,7 +59,8 @@
                     .then(function (response) {
                        if(response.data.user!=null) {
                            window.sessionStorage.setItem('name',response.data.user.name);
-                           window.sessionStorage.setItem('auth', window.btoa(email.value))
+                           window.sessionStorage.setItem('auth', window.btoa(email.value));
+                           window.sessionStorage.setItem('roles',window.btoa(JSON.stringify(response.data.roles)));
                            /*router.push({
                                name:'LandingPage',
                                query: {

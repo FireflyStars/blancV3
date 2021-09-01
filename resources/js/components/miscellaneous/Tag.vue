@@ -1,14 +1,14 @@
 <template>
-    <div style="text-align: center">
-    <span class="tag" :class="css_class" >{{status}}</span>
-    </div>
+
+    <span class="tag" :style="style" :class="css_class" ><slot>{{status}}</slot></span>
+
 </template>
 
 <script>
     import {ref,watch} from 'vue';
     export default {
         name: "Tag",
-        props:['name'],
+        props:['name',"style"],
         setup(props){
             const css_class=ref('');
             const status=ref('');
@@ -50,6 +50,9 @@
     width: 120px!important;
     height: 24px;
     position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 24px;
 }
     .tag.scheduled, .tag.checkinatelier, .tag.pickedup{
         background: #E0E0E0;
@@ -157,5 +160,17 @@
     .tag.instorage,.tag.donatedtocharity{
         background: #FFFFFF;
         border: 1px solid #000000;
+    }
+
+    .tag.b2c, .tag.b2b{
+        width: auto!important;
+        color: white;
+        background-color: #47454B;
+        text-transform: uppercase;
+        padding: 0 10px;
+
+    }
+    .tag.b2b{
+        background-color: #9E44F2;
     }
 </style>

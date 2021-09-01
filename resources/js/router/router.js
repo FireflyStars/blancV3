@@ -21,10 +21,18 @@ const router = createRouter({
                     name:'OrderDetails',
                     component:()=> import('../components/orderlist/OrderDetail'),
                     meta:{
-                        authenticated:false
+                        authenticated:true
                     }
                 }
                 ]
+        },
+        {
+            path:'/component-test',
+            name:'ComponentTest',
+            component:()=> import('../components/orderlist/ComponentTest'),
+            meta:{
+                authenticated:true
+            },
         },
         {
             path:'/auth/',

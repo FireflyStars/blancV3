@@ -9,15 +9,15 @@
         </div>
         </header>
         <transition-group tag="div" class="position-relative" name="list" appear>
-        <div class="trow" v-for="order in ORDER_LIST" :key="order.id" :class="{current_sel:order.id==CURRENT_SELECTED&&route.params.order_id>0,late:order.Status=='LATE'}">
+        <div class="trow" v-for="order in ORDER_LIST" :key="order.id" :class="{current_sel:order.id==CURRENT_SELECTED&&route.params.order_id>0,late:order.Status=='LATE'&&order.suggestedDeliveryDate==null,multi:MULTI_CHECKED.includes(order.id)&&order.id!=CURRENT_SELECTED}">
 <template v-for="(col,index) in tabledef">
-            <div class="tcol"   :style="{flex:col.flex}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(order.id,index)" v-if="hideOnLate(order.Status,index)" >
+            <div class="tcol"   :style="{flex:col.flex}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(order.id,index)" v-if="hideOnLate(order.Status,index,order)" >
 
 
                 <check-box v-if="col.type=='checkbox'" :checked_checkbox="(order.id==CURRENT_SELECTED&&route.params.order_id>0)||MULTI_CHECKED.includes(order.id)" :id="order.id" @checkbox-clicked="checkboxclicked"></check-box>
-                <tag v-else-if="col.type=='tag'&&order.Status!='LATE'" :name="order[index]" ></tag>
+                <tag v-else-if="col.type=='tag'&&order.Status!='LATE'||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate!=null)" :name="order[index]" ><span  v-if="order.Status=='LATE'&&order.suggestedDeliveryDate!=null&&index=='Status'" class="tool-tip" :data-tooltip="`New Delivery date suggested, waiting for approval`"><i class="icon-late"></i>LATE</span></tag>
                 <express-icon v-else-if="col.type=='express'" :express_values="order[index]"></express-icon>
-                <span v-else :style="col.css">{{preprocess(col,order[index])}}</span>
+                <span v-else :style="col.css">{{preprocess(col,order[index],order)}}</span>
             </div>
 </template>
             </div>
@@ -46,6 +46,7 @@
 
 <script>
     import {useRouter,useRoute} from 'vue-router'
+    import {formatPrice} from '../helpers/helpers'
     import {ref,computed } from 'vue';
     import {useStore} from 'vuex';
     import {
@@ -103,15 +104,15 @@
 
             }
 
-            function preprocess(def,val) {
+            function preprocess(def,val,order) {
                 if(typeof def.type!="undefined"&&def.type=="tag"){
-                    if(val=='LATE'){
+                    if(val=='LATE'&&order.suggestedDeliveryDate==null){
                         return 'This order is late, please suggest a new delivery date.';
                     }
                 }
                 if(typeof def.type!="undefined"&&def.type=="price"){
 
-                    return "£"+(val!=0?val.toFixed(2):0);
+                    return formatPrice(val);
                 }
                 return val;
             }
@@ -250,8 +251,8 @@
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
                 });
             });
-            const hideOnLate=((status,colname)=>{
-                    if(status==='LATE'&&(colname=='numitems'||colname=='paid'))
+            const hideOnLate=((status,colname,order)=>{
+                    if(status==='LATE'&&order.suggestedDeliveryDate==null&&(colname=='numitems'||colname=='paid'))
                     return false;
 
                     return true;
@@ -288,6 +289,7 @@
 </script>
 
 <style scoped>
+
     .container-fluid{
         padding-left: 70px;
     }
@@ -370,5 +372,7 @@
     .trans-batch-actions-leave-active{
         transition: all ease 0.2s;
     }
-
+.tcol.Status,.tcol.paid{
+    text-align: center;
+}
 </style>

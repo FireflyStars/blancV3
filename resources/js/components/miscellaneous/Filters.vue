@@ -98,7 +98,8 @@
                 preselection,
                 applyFilter,
                 cancel,
-                hasActiveFilters            }
+                hasActiveFilters,
+            }
         }
     }
 </script>
@@ -189,7 +190,7 @@
         width:458px;
         min-height:445px;
         top:-8px;
-        z-index: 1;
+        z-index: 2;
         transform-origin: top center;
         padding:0 46px;
     }
@@ -271,4 +272,5 @@
         transform: rotate(-40deg);
         right: 13px;
     }
+
 </style>

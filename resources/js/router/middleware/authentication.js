@@ -7,11 +7,11 @@ export default (to,from,next)=>{
         return next('/');
     }
     if(to.meta.authenticated&&sessionStorage.getItem('auth')){
-        next();
+       return next();
     }
 
     if(!to.meta.authenticated)
-         next();
+       return next();
 
     return next('/auth/login/');
 };

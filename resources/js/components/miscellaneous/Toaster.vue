@@ -31,7 +31,7 @@
 
 <style scoped>
     .toast-wrap{
-        position: fixed;top: 75px; left:50%;transform: translate(-50%); height: auto;width: 100%;max-width:480px; z-index: 4;display: flex;align-items: center;justify-content: center;
+        position: fixed;top: 75px; left:50%;transform: translate(-50%); height: auto;width: 100%;max-width:480px; z-index: 10003;display: flex;align-items: center;justify-content: center;
         flex-direction: column;
     }
  .toaster{
@@ -46,10 +46,14 @@
     cursor: pointer;
  }
     .toaster.danger{
-        background:rgba(235, 87, 87, 0.9);
+        background:rgba(235, 87, 87, 0.95);
     }
     .toaster.success{
-        background:rgba(66, 167, 30, 0.9);
+        background:rgba(66, 167, 30, 0.95);
+    }
+    .toaster.warn{
+        background:rgba(250,222,179,0.97);
+        color:#000;
     }
 
     .list-enter-from{
