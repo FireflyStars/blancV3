@@ -59,68 +59,67 @@ import {
             const route = useRoute();
             const store = useStore();
 
-            function authenticate(){
-                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,'Authenticating, please wait...']);
+            function authenticate() {
+                let err = false;
+                let err_txt = [];
+                let email_regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+                let email_addr = email.value.replace(/ /g,'');
 
-                axios.post('/authenticate', {
-                    email:email.value,
-                    password:password.value
-                })
-                    .then(function (response) {
-                       if(response.data.user!=null) {
-                           window.sessionStorage.setItem('name',response.data.user.name);
-                           window.sessionStorage.setItem('auth', window.btoa(email.value));
-                           window.sessionStorage.setItem('roles',window.btoa(JSON.stringify(response.data.roles)));
-                           /*router.push({
-                               name:'LandingPage',
-                               query: {
-                                   ...route.query,
-                               },
-                           })*/
-                           window.location='/'
-                       }else{
-                           store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
-                               type: 'danger',
-                               message:"User not found",
-                               ttl:5,
-                           });
-                       }
+                if(email_addr==''){
+                    err = true;
+                    err_txt.push("Please enter email address");
+                }else if(email_addr !='' && !email_regex.test(email_addr)){
+                    err = true;
+                    err_txt.push("Email address format is not valid");
+                }
+                if(password.value.replace(/ /g,'')==''){
+                    err = true;
+                    err_txt.push("Please enter password");
+                }
+
+                if(err){
+                    let i = 0;
+                    for(i=0; i<err_txt.length; i++) {
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                            type: 'danger',
+                            message: err_txt[i],
+                            ttl: 5,
+                        });
+                    }
+                }else{
+                    store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Authenticating, please wait...']);
+
+
+                    axios.post('/authenticate', {
+                        email: email.value,
+                        password: password.value
                     })
-                    .catch(function (error) {
-                        console.log(error.response);
-                        let err = [];
-
-                        if(error.response.data.errors){
-                            if(error.response.data.errors.email){
-                                err.push(error.response.data.errors.email.join("<br/>"));
-                            }
-                            if(error.response.data.errors.password){
-                                err.push(error.response.data.errors.password.join("<br/>"));
-                            }
-                        }
-
-                        if(err.length > 0) {
-                            let i = 0;
-                            for(i=0; i<err.length; i++) {
+                        .then(function (response) {
+                            if (response.data.user != null) {
+                                window.sessionStorage.setItem('name', response.data.user.name);
+                                window.sessionStorage.setItem('auth', window.btoa(email.value));
+                                window.sessionStorage.setItem('roles', window.btoa(JSON.stringify(response.data.roles)));
+                                /*router.push({
+                                   name:'LandingPage',
+                                   query: {
+                                       ...route.query,
+                                   },
+                               })*/
+                                window.location = '/'
+                            } else {
                                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
                                     type: 'danger',
-                                    message: err[i],
+                                    message: "User not found",
                                     ttl: 5,
                                 });
                             }
-
-                        }else{
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
-                                type: 'danger',
-                                message: error.message
-                            });
-                        }
-
-
-
-                    }).finally(()=>{
-                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                });
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        }).finally(() => {
+                        store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    });
+                }
             }
 
             function forgotpassword() {
