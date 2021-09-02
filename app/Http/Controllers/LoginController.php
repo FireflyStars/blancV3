@@ -20,7 +20,12 @@ class LoginController extends Controller
             $request->session()->regenerate();
         }
         $user=Auth::user();
-        $roles=$user->getRoles();
+        $roles = [];
+
+        if($user) {
+            $roles = $user->getRoles();
+        }
+
         return response()->json(
             ['user'=>$user,'roles'=>$roles]
         );

@@ -33,11 +33,20 @@
 
 <script>
 
-    import {ref} from 'vue';
+import {computed, ref} from 'vue';
     import { useRouter, useRoute } from 'vue-router'
     import axios from 'axios';
     import {useStore} from 'vuex';
-    import {DISPLAY_LOADER,HIDE_LOADER,LOADER_MODULE} from '../../store/types/types'
+import {
+    DISPLAY_LOADER,
+    HIDE_LOADER,
+    LOADER_MODULE, TOASTER_GET_ALL,
+    TOASTER_MESSAGE,
+    TOASTER_MODULE,
+    TOASTER_REMOVE_TOAST
+} from '../../store/types/types'
+
+
     export default {
         name: "Login",
         components:{},
@@ -52,6 +61,7 @@
 
             function authenticate(){
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,'Authenticating, please wait...']);
+
                 axios.post('/authenticate', {
                     email:email.value,
                     password:password.value
@@ -68,10 +78,46 @@
                                },
                            })*/
                            window.location='/'
+                       }else{
+                           store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                               type: 'danger',
+                               message:"User not found",
+                               ttl:5,
+                           });
                        }
                     })
                     .catch(function (error) {
-                        console.log(error);
+                        console.log(error.response);
+                        let err = [];
+
+                        if(error.response.data.errors){
+                            if(error.response.data.errors.email){
+                                err.push(error.response.data.errors.email.join("<br/>"));
+                            }
+                            if(error.response.data.errors.password){
+                                err.push(error.response.data.errors.password.join("<br/>"));
+                            }
+                        }
+
+                        if(err.length > 0) {
+                            let i = 0;
+                            for(i=0; i<err.length; i++) {
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                                    type: 'danger',
+                                    message: err[i],
+                                    ttl: 5,
+                                });
+                            }
+
+                        }else{
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                                type: 'danger',
+                                message: error.message
+                            });
+                        }
+
+
+
                     }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
