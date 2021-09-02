@@ -62,7 +62,7 @@ import {
             function authenticate() {
                 let err = false;
                 let err_txt = [];
-                let email_regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+                let email_regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,8})+$/;
                 let email_addr = email.value.replace(/ /g,'');
 
                 if(email_addr==''){
