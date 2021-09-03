@@ -6,7 +6,7 @@
 
 <script>
     import SelectOptions from './SelectOptions';
-    import {ref} from 'vue';
+    import {ref,watch} from 'vue';
     import {useStore} from 'vuex';
     import {SELECT_MODULE, SET_CURRENT_SELECT} from "../../store/types/types";
     export default {
@@ -60,6 +60,13 @@
                     available:false
                 }
             ]);
+            watch(()=>props.availableSlots,(current_val,previous_val)=>{
+                timeslot_def.value.forEach(slot=>{
+                    slot.available=false;
+                    if(current_val.includes(slot.value))
+                        slot.available=true;
+                });
+            });
             timeslot_def.value.forEach(slot=>{
                 if(props.availableSlots.includes(slot.value))
                     slot.available=true;

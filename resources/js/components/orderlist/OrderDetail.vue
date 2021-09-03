@@ -16,7 +16,8 @@
                 <span>Please suggest a delivery date</span>
             </div>
             <div class="col-5">
-                <date-picker v-model="suggested_date" name="suggested_date" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
+
+                <date-picker v-model="suggested_date" name="suggested_date" :available-dates="availabledates" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
             </div>
             <div class="col-2">
                 <button class="btn btn-dark btn-black" @click="setSuggestedDate">OK</button>
@@ -35,8 +36,8 @@
                 <span>Please suggest a delivery date</span>
             </div>
             <div class="col-6  p-0 d-flex justify-content-evenly">
-                <date-picker v-model="suggest_date" name="suggest_date" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
-                <time-slot-picker v-model="suggest_timeslot"   name="suggest_timeslot" :available-slots="[1,5]"></time-slot-picker>
+                <date-picker v-model="suggest_date" name="suggest_date"   :available-dates="availabledates"  :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
+                <time-slot-picker v-model="suggest_timeslot"   name="suggest_timeslot" :available-slots="availabletimeslot"></time-slot-picker>
             </div>
             <div class="col-1 p-0">
                 <button class="btn btn-dark btn-black" @click="setSuggestedDate">OK</button>
@@ -129,7 +130,7 @@
 </template>
 
 <script>
-    import {ref,computed,nextTick} from 'vue';
+    import {ref,computed,nextTick,watch} from 'vue';
     import {useRoute,useRouter} from 'vue-router';
     import {useStore} from 'vuex';
     import Tag from  '../miscellaneous/Tag'
@@ -227,9 +228,32 @@
             const CURRENT_SELECTED=computed(()=>{
                 return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_CURRENT_SELECTED}`];
             });
+            const availableslots=ref([]);
+            const availabledates=ref([]);
+            const availabletimeslot=ref([]);
+
+
+
             const ORDER=computed(()=>{
-                return store.getters[`${ORDERDETAIL_MODULE}${ORDERDETAIL_GET_DETAILS}`];
+                const o= store.getters[`${ORDERDETAIL_MODULE}${ORDERDETAIL_GET_DETAILS}`];
+
+                if(typeof o.available_slots!=="undefined") {
+                     availableslots.value=o.available_slots;
+                    if(o.detail.TypeDelivery!="DELIVERY")
+                        availabletimeslot.value=[1,3,5,6,7,9,11];
+                if(Object.entries(o.available_slots).length>0){
+                    availabletimeslot.value=[];
+                   for(const date in  o.available_slots){
+                       availabledates.value.push(date);
+
+                   }
+
+                }
+
+                }
+                return o;
             });
+
 
             if(CURRENT_SELECTED.value==''&&route.params.order_id>0){
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SELECT_CURRENT}`,route.params.order_id)
@@ -267,6 +291,18 @@
 
             const suggested_date=ref('');
             const suggest_date=ref('');
+
+            watch(() => suggest_date.value, (current_val, previous_val) => {
+                if(ORDER.value.detail.TypeDelivery=="DELIVERY") {
+                    if(Object.entries(availableslots.value).length>0) {
+                        availabletimeslot.value=availableslots.value[current_val];
+                    }
+
+                }
+
+
+            });
+
             const suggest_timeslot=ref(0);
             const setSuggestedDate=()=>{
                 if(suggested_date.value=="") {
@@ -317,7 +353,10 @@
                 formatPrice,
                 hasRoles,
                 chooseSlot,
-                showslots
+                showslots,
+                availableslots,
+                availabledates,
+                availabletimeslot
             }
         }
     }

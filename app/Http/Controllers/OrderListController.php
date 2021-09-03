@@ -52,6 +52,14 @@ class OrderListController extends Controller
             });
 
         }
+        if($current_tab=='unfulfilled'){
+            $orderlist=$orderlist->whereNotIn('infoOrder.Status',['FULFILLED','DELETE','DELIVERED','SOLD','VOID','CANCEL']);
+        }
+        if($current_tab=='without_delivery_date'){
+            $orderlist=$orderlist->whereNotIn('infoOrder.status',['DELIVERED', 'DELIVERD TO STORE', 'SOLD', 'DONATED', 'DONATED TO CHARITY', 'COLLECTED','VOIDED','FULFILLED'])
+                ->where('infoOrder.DateDeliveryAsk','<=',date('Y-m-d'))
+                ->where('infoitems.ItemTrackingKey','<>','');
+        }
         if($current_tab!='all_orders')
             $orderlist=$orderlist->whereNotIn('infoOrder.Status',['VOID', 'DELETE']);
         //filters
