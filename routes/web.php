@@ -25,6 +25,7 @@ Route::post('/cancelorders',[OrderListController::class, 'cancelorders'])->middl
 Route::post('/markaslate',[OrderListController::class, 'markaslate'])->middleware('auth')->name('markaslate');
 Route::post('/getorderdetail',[OrderListController::class,'getorderdetail'])->middleware('auth')->name('getorderdetail');
 Route::post('/suggestdate',[OrderListController::class,'suggestdate'])->middleware('auth')->name('suggestdate');
+Route::post('/newdeliverydate',[OrderListController::class,'newdeliverydate'])->middleware('auth')->name('newdeliverydate');
 Route::get('{any}', function () {
     return view('welcome');
 })->where('any','.*');

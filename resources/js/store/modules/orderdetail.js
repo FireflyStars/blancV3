@@ -9,9 +9,10 @@ import {
     ORDERDETAIL_MULTI_ITEMS_UNCHECKED,
     ORDERDETAIL_MULTI_ITEMS_REMOVE,
     ORDERDETAIL_GET_ALL_ITEMS_MULITCHECKED,
-    ORDERLIST_UPDATE_STATUS,
-    ORDERDETAIL_UPDATE_STATUS,
-    ORDERDETAIL_UPDATE_SUGGESTED_DELIVERY_DATE, ORDERDETAIL_SET_SUGGESTED_DELIVERY_DATE,
+    ORDERDETAIL_UPDATE_SUGGESTED_DELIVERY_DATE,
+
+    ORDERDETAIL_NEW_DELIVERY_DATE,
+    ORDERDETAIL_UPDATE,
 
 } from "../types/types";
 import axios from "axios";
@@ -45,9 +46,16 @@ export const orderdetail= {
                 delete state.selected_items[payload.suborder];
             }
         },
-        [ORDERDETAIL_UPDATE_STATUS]:(state,payload)=> state.orderdetail.detail.Status=payload,
 
-        [ORDERDETAIL_SET_SUGGESTED_DELIVERY_DATE]:(state,payload)=>state.orderdetail.detail.suggestedDeliveryDate=payload,
+
+
+        [ORDERDETAIL_UPDATE]:(state, payload)=>{
+            for(const prop in payload){
+                if(typeof state.orderdetail.detail[prop]!=="undefined")
+                    state.orderdetail.detail[prop]=payload[prop];
+            }
+
+        },
     }
     ,
     actions:{
@@ -77,15 +85,36 @@ export const orderdetail= {
         },
         [ORDERDETAIL_MULTI_ITEMS_CHECKED]:({commit}, payload)=>commit(ORDERDETAIL_MULTI_ITEMS_ADD,payload),
         [ORDERDETAIL_MULTI_ITEMS_UNCHECKED]:({commit}, payload)=>commit(ORDERDETAIL_MULTI_ITEMS_REMOVE,payload),
-        [ORDERDETAIL_UPDATE_SUGGESTED_DELIVERY_DATE]:({commit},payload)=>{
+        [ORDERDETAIL_UPDATE_SUGGESTED_DELIVERY_DATE]:async ({commit,state},payload)=>{
+
             return axios.post('/suggestdate', {
-                infoOrder_id:payload.infoOrder_id,
-                suggested_delivery_date:payload.suggested_date
+                infoOrder_id:state.orderdetail.detail.id,
+                suggested_delivery_date:payload
 
             }).then( (response)=>{
-                if(response.data.update!==false){
+                if(response.data.updated!==false){
 
-                    commit(ORDERDETAIL_SET_SUGGESTED_DELIVERY_DATE,payload.suggested_date);
+                    commit(ORDERDETAIL_UPDATE,{suggestedDeliveryDate:payload});
+
+                }
+                return Promise.resolve(response);
+            })
+                .catch((error)=>{
+                    return Promise.reject(error);
+                }).finally(()=>{
+
+                });
+        },
+        [ORDERDETAIL_NEW_DELIVERY_DATE]:async({commit,state},payload)=>{
+            return axios.post('/newdeliverydate', {
+                infoOrder_id:state.orderdetail.detail.id,
+                PromisedDate:payload.PromisedDate,
+                timeslot:payload.timeslot
+
+            }).then( (response)=>{
+                if(response.data.updated!==false){
+
+                    commit(ORDERDETAIL_UPDATE,{suggestedDeliveryDate:null});
 
                 }
                 return Promise.resolve(response);

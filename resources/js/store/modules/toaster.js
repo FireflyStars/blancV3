@@ -18,7 +18,8 @@ export const toaster= {
     },
     mutations:{
         [TOASTER_ADD_TOAST]: (state, payload) => {
-            state.toast.unshift(payload);
+           // state.toast.unshift(payload);
+            state.toast.push(payload);
             state.auto_id=payload.id;
             },
         [TOASTER_REMOVE_TOAST]:(state,payload)=>{
@@ -27,7 +28,6 @@ export const toaster= {
     },
     actions:{
         [TOASTER_MESSAGE]:({commit,state}, payload)=>{
-            console.log(state.auto_id);
             payload.id=state.auto_id+1;
             commit(TOASTER_ADD_TOAST,payload);
             if(payload.ttl>0)

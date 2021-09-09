@@ -9,15 +9,17 @@
         </div>
         </header>
         <transition-group tag="div" class="position-relative" name="list" appear>
-        <div class="trow" v-for="order in ORDER_LIST" :key="order.id" :class="{current_sel:order.id==CURRENT_SELECTED&&route.params.order_id>0,late:order.Status=='LATE'&&order.suggestedDeliveryDate==null,multi:MULTI_CHECKED.includes(order.id)&&order.id!=CURRENT_SELECTED}">
+        <div class="trow" v-for="order in ORDER_LIST" :key="order.id" :class="{current_sel:order.id==CURRENT_SELECTED&&route.params.order_id>0,late:order.Status=='LATE'&&order.suggestedDeliveryDate==null&&!hasRoles(['cc']),multi:MULTI_CHECKED.includes(order.id)&&order.id!=CURRENT_SELECTED}">
 <template v-for="(col,index) in tabledef">
             <div class="tcol"   :style="{flex:col.flex}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(order.id,index)" v-if="hideOnLate(order.Status,index,order)" >
 
 
                 <check-box v-if="col.type=='checkbox'" :checked_checkbox="(order.id==CURRENT_SELECTED&&route.params.order_id>0)||MULTI_CHECKED.includes(order.id)" :id="order.id" @checkbox-clicked="checkboxclicked"></check-box>
-                <tag v-else-if="col.type=='tag'&&order.Status!='LATE'||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate!=null)" :name="order[index]" ><span  v-if="order.Status=='LATE'&&order.suggestedDeliveryDate!=null&&index=='Status'" class="tool-tip" :data-tooltip="`New Delivery date suggested, waiting for approval`"><i class="icon-late"></i>LATE</span></tag>
+                <tag v-else-if="col.type=='tag'&&(order.Status!='LATE')||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate!=null)||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate==null&&hasRoles(['cc']))" :name="order[index]" >
+                    <span  v-if="order.Status=='LATE'&&order.suggestedDeliveryDate!=null&&index=='Status'" class="tool-tip" :data-tooltip="`New Delivery date suggested, waiting for approval`"><i class="icon-late"></i>Late</span>
+                </tag>
                 <express-icon v-else-if="col.type=='express'" :express_values="order[index]"></express-icon>
-                <span v-else :style="col.css">{{preprocess(col,order[index],order)}}</span>
+                <span v-else :style="col.css" v-html="preprocess(col,order[index],order)"></span>
             </div>
 </template>
             </div>
@@ -46,7 +48,7 @@
 
 <script>
     import {useRouter,useRoute} from 'vue-router'
-    import {formatPrice} from '../helpers/helpers'
+    import {formatPrice, hasRoles} from '../helpers/helpers'
     import {ref,computed } from 'vue';
     import {useStore} from 'vuex';
     import {
@@ -106,9 +108,15 @@
 
             function preprocess(def,val,order) {
                 if(typeof def.type!="undefined"&&def.type=="tag"){
-                    if(val=='LATE'&&order.suggestedDeliveryDate==null){
+                    if(val=='LATE'&&order.suggestedDeliveryDate==null&&!hasRoles(['cc'])){
                         return 'This order is late, please suggest a new delivery date.';
                     }
+                }
+                if(def.name=="Promised Date"&&!hasRoles(['cc'])&&order.Status=='LATE'&&order.suggestedDeliveryDate!=null){
+                    return '<span style="color:red;">Waiting for cc approval</span>';
+                }
+                if(def.name=="Promised Date"&&hasRoles(['cc'])&&order.Status=='LATE'&&order.suggestedDeliveryDate!=null){
+                    return '<span style="color:red;">New delivery date needed</span>';
                 }
                 if(typeof def.type!="undefined"&&def.type=="price"){
 
@@ -252,7 +260,8 @@
                 });
             });
             const hideOnLate=((status,colname,order)=>{
-                    if(status==='LATE'&&order.suggestedDeliveryDate==null&&(colname=='numitems'||colname=='paid'))
+
+                    if(status==='LATE'&&order.suggestedDeliveryDate==null&&(colname=='numitems'||colname=='paid')&&!hasRoles(['cc']))
                     return false;
 
                     return true;
@@ -282,7 +291,8 @@
                 cancelorders,
                 hideOnLate,
                 flexCol,
-                markaslate
+                markaslate,
+                hasRoles
             }
         }
     }

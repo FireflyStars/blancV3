@@ -123,7 +123,7 @@
                 },
                 Name:{
                     name:"Name",
-                    flex:"30",
+                    flex:"22",
                     sortable:true
                 },
                 TypeDelivery:{
@@ -133,9 +133,10 @@
                 },
                 PromisedDate:{
                     name:"Promised Date",
-                    flex:"10",
+                    flex:"18",
                     sortable:true,
-                    css:"font-weight:bold;text-align:center"
+                    css:"font-weight:bold;text-align:center",
+                    header_align:"center"
                 },
                 numitems:{
                     name:"Items",
@@ -169,7 +170,6 @@
             });
             onMounted(()=>{
                 nextTick(()=>{
-                    console.log('mounted');
                     showcontainer.value=true;
                 });
 

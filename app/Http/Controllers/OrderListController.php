@@ -193,12 +193,7 @@ class OrderListController extends Controller
 
         if($order->Phone!=""){
             $order->Phone=json_decode($order->Phone);
-            if($order->suggestedDeliveryDate!=null&&$order->suggestedDeliveryDate!=''){
-                $suggestedDeliveryDate=Carbon::createFromFormat('Y-m-d',$order->suggestedDeliveryDate);
-                if($suggestedDeliveryDate->isPast()){
-                    $order->suggestedDeliveryDate=null;
-                }
-            }
+
         }
         $available_slots=[];
         if($order->TypeDelivery=='DELIVERY'&&$delivery_add!=null&&trim($delivery_add->postcode)!=''){
@@ -261,5 +256,87 @@ class OrderListController extends Controller
                 );
             }
         return response()->json(['updated'=>$update]);
+    }
+
+    public function newdeliverydate(Request $request){
+        $infoOrder_id=$request->post('infoOrder_id');
+        $PromisedDate=$request->post('PromisedDate');
+        $timeslot=$request->post('timeslot');
+        $user=Auth::user();
+        $update=false;
+        if($user->hasRoles(['admin','Blanc Admin','cc'])){ // Production operator cannot set a new delivery date
+
+                $infoOrder=DB::table('infoOrder')->select(['CustomerID','DeliveryaskID'])->where('id','=',$infoOrder_id)->first();
+
+                if($infoOrder==null)
+                    return response()->json(['updated'=>$update,'message'=>'Order not found.']);
+
+
+                $cust_details =  DB::table('infoCustomer')
+                    ->select('infoCustomer.id AS customer_id','infoCustomer.*','address.*')
+                    ->join('address','infoCustomer.CustomerID','address.CustomerID')
+                    ->where('infoCustomer.CustomerID',$infoOrder->CustomerID)
+                    ->whereColumn('address.status','=','infoCustomer.TypeDelivery')
+                    ->first();
+                if($cust_details==null)
+                    return response()->json(['updated'=>$update,'message'=>'Customer or address not found.']);
+
+
+                //retrieve comment on previous delivery ask
+                $previous_delivery_ask=DB::table('deliveryask')->where('DeliveryaskID','=',$infoOrder->DeliveryaskID)->first();
+
+
+
+
+                if($PromisedDate!='' && $timeslot!= '') {
+
+                    $deliveryTimeTranche=Tranche::getFormattedTranche($timeslot);
+                    $inserteddelivery= DB::table('deliveryask')
+                        ->insertGetId(
+                            [
+                                'id_customer'=>$cust_details->customer_id,
+                                'CustomerID'=>$cust_details->CustomerID,
+                                'AddressID'=>$cust_details->AddressID,
+                                'created_at'=>date('Y-m-d H:i:s'),
+                                'updated_at'=>date('Y-m-d H:i:s'),
+                                'comment'=>($previous_delivery_ask!=null?$previous_delivery_ask->comment:''),
+                                'trancheto'=>$deliveryTimeTranche['trancheto'],
+                                'trancheFrom'=>$deliveryTimeTranche['tranchefrom'],
+                                'status'=>'PMS',
+                                'date'=>$PromisedDate
+                            ]
+                        );
+                    $deliveryAsk=DB::table('deliveryask')->where('id',$inserteddelivery)->first();
+                    DB::table('infoOrder')->where('id',$infoOrder_id)->update(
+                        [
+                            'DeliveryaskID'=>$deliveryAsk->DeliveryaskID,
+                            'DateDeliveryAsk'=>$deliveryAsk->date,
+                            'Status'=>'IN PROCESS'
+                        ]
+                    );
+
+                    $infoInvoices=DB::table('infoInvoice')
+                        ->join('infoOrder',function ($join) {
+                            $join->on('infoInvoice.OrderID', '=', 'infoOrder.OrderID')->where('infoOrder.OrderID','<>','');
+                        })->where('infoOrder.id','=',$infoOrder_id)->select(['infoInvoice.InvoiceID'])->get();
+
+                    $InvoiceIDs=[];
+                    foreach ($infoInvoices as $infoInvoice) {
+                        $InvoiceIDs[]=$infoInvoice->InvoiceID;
+                    }
+                    DB::table('infoitems')->whereIn('InvoiceID',$InvoiceIDs)->update([
+                        'PromisedDate'=>$deliveryAsk->date,
+                        'dateJour'=>date('l',strtotime($deliveryAsk->date))
+                    ]);
+                    $update=true;
+                }
+
+
+
+
+
+
+        }
+        return response()->json(['updated'=>$update,'message'=>'']);
     }
 }

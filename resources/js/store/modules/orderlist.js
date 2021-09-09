@@ -35,7 +35,7 @@ import {
     TOASTER_MODULE,
     TOASTER_MESSAGE,
     ORDERLIST_MARK_AS_LATE,
-    ORDERLIST_UPDATE_SUGGESTED_DELIVERY_DATE
+    ORDERLIST_UPDATE_SUGGESTED_DELIVERY_DATE, ORDERLIST_NEW_DELIVERY_DATE
 } from "../types/types";
 
 import axios from 'axios';
@@ -150,6 +150,12 @@ export const orderlist= {
                             order.Status=payload.status;
                     })
                 })
+        },
+        [ORDERLIST_NEW_DELIVERY_DATE]:(state,payload)=>{
+            state[state.current_tab].order_list.forEach(order=>{
+                if(order.id===payload.infoOrder_id)
+                    order.PromisedDate=payload.PromisedDate;
+            })
         },
         [ORDERLIST_REMOVE_ORDERS]:(state,payload)=>{
             state[state.current_tab].order_list=state[state.current_tab].order_list.filter(order=>!payload.includes(order.id));

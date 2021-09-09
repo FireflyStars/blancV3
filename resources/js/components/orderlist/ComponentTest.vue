@@ -56,6 +56,15 @@
                     </div>
                     <div class="row">
                         <div class="col-3">
+                            <date-picker v-model="date3" name="date3" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Date picker" hint="disabled till 2021-09-10" disabled-to-date="2021-09-10"></date-picker>
+
+                        </div>
+                        <div class="col p-2">
+                            {{date2}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">
                             <time-slot-picker v-model="slot"   name="timepick1" :available-slots="[1,5]" hint="How about a very long hint" label="Time"></time-slot-picker>
                         </div>
                         <div class="col p-2">
@@ -98,6 +107,7 @@
             const sel2=ref('');
             const date=ref('');
             const date2=ref('2021-09-15');
+            const date3=ref('2021-09-15');
             onMounted(()=>{
                 nextTick(()=>{
                     showcontainer.value=true;
@@ -118,7 +128,8 @@
                 slot,
                 slot2,
                 date,
-                date2
+                date2,
+                date3
             }
         }
     }

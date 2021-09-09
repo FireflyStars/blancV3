@@ -72,6 +72,7 @@
             disabled:Boolean,
             hint:String,
             availableDates:Array,
+            disabledToDate:String,
             name:{
                 type: String,
                 required: true
@@ -261,6 +262,15 @@
                     datestr=`${displayed_dates.value[i].year}-${(parseInt(displayed_dates.value[i].month)+1).toString().padStart(2,"0")}-${displayed_dates.value[i].date.toString().padStart(2,"0")}`
                     if(typeof props.availableDates!="undefined"&& props.availableDates.includes(datestr))
                         displayed_dates.value[i].notavailable=false;
+                    //disabledToDate
+                    if(typeof props.disabledToDate!="undefined"&&props.disabledToDate!=""){
+                        let disabledto=new Date(props.disabledToDate);
+                        let curdate=new Date(datestr);
+                        if(curdate<=disabledto){
+                            displayed_dates.value[i].notavailable=true;
+                        }
+                    }
+
                     displayed_dates.value[i].selected = false;
 
                     if (count == 7) {

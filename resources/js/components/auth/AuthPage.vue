@@ -1,4 +1,5 @@
 <template>
+    <router-view v-slot="{ Component }">
     <transition
             enter-active-class="animate__animated animate__fadeIn"
     >
@@ -22,10 +23,11 @@
         </div>
         <div class="row d-flex align-content-stretch align-items-stretch flex-row hmax">
            <div class="col-lg-6 col-sm-3 auth-bg" ></div>
-            <div class="col-lg-6 auth-form col-sm-9"><router-view /></div>
+            <div class="col-lg-6 auth-form col-sm-9"><Component :is="Component" /></div>
         </div>
     </div>
     </transition>
+    </router-view>
 </template>
 
 <script>

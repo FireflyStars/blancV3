@@ -9,7 +9,7 @@
         <h2 >&numero; {{ORDER.detail.id}}</h2> <tag  :name="ORDER.detail.Status" ></tag>
         </div>
         <transition name="popinout">
-        <div v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate==null" class="section-late-production-op row">
+        <div v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate==null&&!hasRoles(['cc'])" class="section-late-production-op row">
             <div class="col" style="padding-left:32px;">
                 <b>This order is late</b>
                 <br/>
@@ -24,9 +24,9 @@
             </div>
         </div>
 
-        <div v-else-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate!=null&&!showslots" class="section-late-production-op date-suggested row" :class="{cc:hasRoles(['cc'])}">
+        <div v-else-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate!=null&&!showslots" class="section-late-production-op date-suggested row" :class="{cc:hasRoles(['cc','admin','Blanc Admin'])}">
             <div class="col">
-                <b style="vertical-align: middle">New promised date suggested: {{formatDate(ORDER.detail.suggestedDeliveryDate)}}</b> <button v-if="hasRoles(['cc'])" class="btn btn-outline-dark" @click="chooseSlot">Choose new slot</button>
+                <b style="vertical-align: middle">New promised date suggested: {{formatDate(ORDER.detail.suggestedDeliveryDate)}}</b> <button v-if="hasRoles(['cc','admin','Blanc Admin'])" class="btn btn-outline-dark" @click="chooseSlot">Choose new slot</button>
             </div>
         </div>
         <div v-else-if="showslots" class="section-late-production-op date-suggested row"  :class="{cc:hasRoles(['cc'])}">
@@ -36,13 +36,16 @@
                 <span>Please suggest a delivery date</span>
             </div>
             <div class="col-6  p-0 d-flex justify-content-evenly">
-                <date-picker v-model="suggest_date" name="suggest_date"   :available-dates="availabledates"  :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
+                <date-picker v-model="cc_new_delivery_date" name="cc_new_delivery_date" :disabled-to-date="disabledtodate" :available-dates="availabledates" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
                 <time-slot-picker v-model="suggest_timeslot"   name="suggest_timeslot" :available-slots="availabletimeslot"></time-slot-picker>
             </div>
             <div class="col-1 p-0">
-                <button class="btn btn-dark btn-black" @click="setSuggestedDate">OK</button>
+                <button class="btn btn-dark btn-black" @click="setNewDeliveryDate">OK</button>
             </div>
         </div>
+            <div v-else-if="showNewDeliveryDateMsg" class="section-late-production-op date-suggested date-suggested-ok row" :class="{cc:hasRoles(['cc'])}">
+                <div class="col"><b>New delivery date: {{ORDER.detail.PromisedDate}}</b></div>
+            </div>
 </transition>
             <div v-if="typeof ORDER['detail']!='undefined'"  class="row section2">
                 <div class="col-9">
@@ -138,7 +141,7 @@
     import DatePicker from '../miscellaneous/DatePicker'
     import TimeSlotPicker from '../miscellaneous/TimeSlotPicker';
     import OrderDetailSubOrderItemsTable from './OrderDetailSubOrderItemsTable'
-    import {formatPrice,hasRoles} from "../helpers/helpers";
+    import {formatPrice,hasRoles,formatDate} from "../helpers/helpers";
     import {
         ORDERLIST_MODULE,
         ORDERLIST_GET_CURRENT_SELECTED,
@@ -153,7 +156,12 @@
         ORDERDETAIL_SET_DETAILS,
         ORDERLIST_LOADERMSG,
         ORDERLIST_MARK_AS_LATE,
-        ORDERDETAIL_UPDATE_STATUS, ORDERDETAIL_UPDATE_SUGGESTED_DELIVERY_DATE, ORDERLIST_UPDATE_SUGGESTED_DELIVERY_DATE
+        ORDERDETAIL_UPDATE_SUGGESTED_DELIVERY_DATE,
+        ORDERLIST_UPDATE_SUGGESTED_DELIVERY_DATE,
+        ORDERLIST_UPDATE_STATUS,
+        ORDERLIST_NEW_DELIVERY_DATE,
+        ORDERDETAIL_NEW_DELIVERY_DATE,
+        ORDERDETAIL_UPDATE, ORDERLIST_REMOVE_ORDERS
     } from "../../store/types/types";
 
 
@@ -231,7 +239,7 @@
             const availableslots=ref([]);
             const availabledates=ref([]);
             const availabletimeslot=ref([]);
-
+            const disabledtodate=ref('');
 
 
             const ORDER=computed(()=>{
@@ -248,6 +256,12 @@
 
                    }
 
+                }
+                if(o.detail.suggestedDeliveryDate!=null){
+                    let d=new Date(o.detail.suggestedDeliveryDate);
+                    d.setDate(d.getDate()-1);
+
+                    disabledtodate.value=`${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${(d.getDate()).toString().padStart(2,'0')}`;
                 }
 
                 }
@@ -281,7 +295,7 @@
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_MARK_AS_LATE}`,order).then(()=>{
 
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Order marked as late successfully.',ttl:5,type:'success'});
-                    store.commit(`${ORDERDETAIL_MODULE}${ORDERDETAIL_UPDATE_STATUS}`,'LATE');
+                    store.commit(`${ORDERDETAIL_MODULE}${ORDERDETAIL_UPDATE}`,{Status:'LATE'});
                 }).catch((error)=>{
                     if(typeof error.response!="undefined")
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
@@ -290,9 +304,9 @@
             });
 
             const suggested_date=ref('');
-            const suggest_date=ref('');
+            const cc_new_delivery_date=ref('');
 
-            watch(() => suggest_date.value, (current_val, previous_val) => {
+            watch(() => cc_new_delivery_date.value, (current_val, previous_val) => {
                 if(ORDER.value.detail.TypeDelivery=="DELIVERY") {
                     if(Object.entries(availableslots.value).length>0) {
                         availabletimeslot.value=availableslots.value[current_val];
@@ -313,24 +327,62 @@
                     });
                     return false;
                 }
-                store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_UPDATE_SUGGESTED_DELIVERY_DATE}`,{infoOrder_id:ORDER.value.detail.id,suggested_date:suggested_date.value}).then(()=>{
+                store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_UPDATE_SUGGESTED_DELIVERY_DATE}`,suggested_date.value).then(()=>{
                    store.commit(`${ORDERLIST_MODULE}${ORDERLIST_UPDATE_SUGGESTED_DELIVERY_DATE}`,{infoOrder_id:ORDER.value.detail.id,suggested_date:suggested_date.value});
-                }).catch(()=>{
+                }).catch((error)=>{
                     if(typeof error.response!="undefined")
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
                 });
             }
+            const setNewDeliveryDate=()=>{
+                if(cc_new_delivery_date.value=="") {
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                        message: `Please choose a new delivery date.`,
+                        ttl: 5,
+                        type: 'danger'
+                    });
+                }
+                if(suggest_timeslot.value=="") {
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                        message: `Please choose a timeslot.`,
+                        ttl: 5,
+                        type: 'danger'
+                    });
+                }
+                if(cc_new_delivery_date.value==""||suggest_timeslot.value=="")
+                    return false;
+                store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_NEW_DELIVERY_DATE}`,{PromisedDate:cc_new_delivery_date.value,timeslot:suggest_timeslot.value}).then((response)=>{
+
+                    if(response.data.updated!==false) {
+                        store.commit(`${ORDERDETAIL_MODULE}${ORDERDETAIL_UPDATE}`, {
+                            PromisedDate: formatDate(cc_new_delivery_date.value, 'DAY DD/MM'),
+                            Status: 'IN PROCESS'
+                        });
+                        store.commit(`${ORDERLIST_MODULE}${ORDERLIST_NEW_DELIVERY_DATE}`, {
+                            infoOrder_id: ORDER.value.detail.id,
+                            PromisedDate: formatDate(cc_new_delivery_date.value)
+                        });
+                       /* store.commit(`${ORDERLIST_MODULE}${ORDERLIST_UPDATE_STATUS}`, {
+                            orderids: [ORDER.value.detail.id],
+                            status: "IN PROCESS"
+                        });*/
+                        store.commit(`${ORDERLIST_MODULE}${ORDERLIST_REMOVE_ORDERS}`,  [ORDER.value.detail.id]);
+                        showslots.value = false;
+                        showNewDeliveryDateMsg.value = true;
+                    }else{
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`Error: Unable to update. ${response.data.message}`,ttl:5,type:'danger'});
+                    }
+                }).catch((error)=>{
+                    if(typeof error.response!="undefined")
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
+                });
+            }
             const showslots=ref(false);
+            const showNewDeliveryDateMsg=ref(false);
             const chooseSlot=()=>{
                 showslots.value=true;
             }
-            function formatDate(date_str) {
-                const tmp=date_str.split('-');
-                const date=new Date(parseInt(tmp[0]),parseInt(tmp[1])-1,parseInt(tmp[2]));
-                const options = { weekday: 'short',  month: 'numeric', day: 'numeric' };
-                const dateTimeFormat = new Intl.DateTimeFormat('en-GB', options);
-                return dateTimeFormat.format(date).replace(',','').toUpperCase();
-            }
+
             return {
                 showorderdetail,
                 loaderclass:computed(()=>{
@@ -346,7 +398,7 @@
                 itemsfields,
                 markaslate,
                 suggested_date,
-                suggest_date,
+                cc_new_delivery_date: cc_new_delivery_date,
                 suggest_timeslot,
                 setSuggestedDate,
                 formatDate,
@@ -356,7 +408,10 @@
                 showslots,
                 availableslots,
                 availabledates,
-                availabletimeslot
+                availabletimeslot,
+                setNewDeliveryDate,
+                showNewDeliveryDateMsg,
+                disabledtodate
             }
         }
     }
@@ -489,6 +544,10 @@
     .date-suggested{
         background: rgba(239, 143, 0, 0.3);
         text-align: center;
+    }
+    .date-suggested-ok{
+        background: rgba(66, 167, 30, 0.3);
+        text-align: left;
     }
     .date-suggested.cc{
         text-align: left;
