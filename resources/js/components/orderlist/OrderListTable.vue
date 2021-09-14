@@ -1,17 +1,19 @@
 <template>
-    <div class="container-fluid position-relative">
+    <div class="container-fluid position-relative p-0">
         <filters :filterDef="filterDef"></filters>
-    <section class="orderlist-table" v-if="ORDER_LIST.length>0">
-        <header>
-        <div class="tcol noselect"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}"  @click="sort(index,col.sortable)">{{col.name}}
+    <table class="orderlist-table" v-if="ORDER_LIST.length>0">
+        <thead>
+        <tr>
+        <th class="tcol noselect body_small_medium"  v-for="(col,index) in tabledef" :key="index" :style="{width:col.width,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}"  @click="sort(index,col.sortable)">{{col.name}}
             <sort-arrows v-if="col.sortable" :sort="SORTCOL" :colname="index"></sort-arrows>
             <check-box v-if="col.type=='checkbox'&&ORDER_LIST.length>0" :checked_checkbox="ORDER_LIST.length==MULTI_CHECKED.length"  @checkbox-clicked="checkboxallclicked"></check-box>
-        </div>
-        </header>
-        <transition-group tag="div" class="position-relative" name="list" appear>
-        <div class="trow" v-for="order in ORDER_LIST" :key="order.id" :class="{current_sel:order.id==CURRENT_SELECTED&&route.params.order_id>0,late:order.Status=='LATE'&&order.suggestedDeliveryDate==null&&!hasRoles(['cc']),multi:MULTI_CHECKED.includes(order.id)&&order.id!=CURRENT_SELECTED}">
+        </th>
+        </tr>
+        </thead>
+        <transition-group tag="tbody"  name="list" appear>
+        <tr class="trow" v-for="order in ORDER_LIST" :key="order.id" :class="{current_sel:order.id==CURRENT_SELECTED&&route.params.order_id>0,late:order.Status=='LATE'&&order.suggestedDeliveryDate==null&&!hasRoles(['cc']),multi:MULTI_CHECKED.includes(order.id)&&order.id!=CURRENT_SELECTED}">
 <template v-for="(col,index) in tabledef">
-            <div class="tcol"   :style="{flex:col.flex}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(order.id,index)" v-if="hideOnLate(order.Status,index,order)" >
+            <td class="tcol" :colspan="colspan(index,order)"  :style="{width:col.width}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(order.id,index)" v-if="hideOnLate(order.Status,index,order)" >
 
 
                 <check-box v-if="col.type=='checkbox'" :checked_checkbox="(order.id==CURRENT_SELECTED&&route.params.order_id>0)||MULTI_CHECKED.includes(order.id)" :id="order.id" @checkbox-clicked="checkboxclicked"></check-box>
@@ -20,26 +22,26 @@
                 </tag>
                 <express-icon v-else-if="col.type=='express'" :express_values="order[index]"></express-icon>
                 <span v-else :style="col.css" v-html="preprocess(col,order[index],order)"></span>
-            </div>
+            </td>
 </template>
-            </div>
+            </tr>
 
         </transition-group>
 
-        <footer>
-        <div class="tcol" style="text-align: center" :colspan="Object.keys(tabledef).length">  <button class="btn btn-link" @click="loadMore">Show more</button></div>
+        <tfoot>
+        <tr>
+        <td class="tcol" style="text-align: center" :colspan="Object.keys(tabledef).length">  <button class="btn btn-link" @click="loadMore">Show more</button></td>
+        </tr>
 
-        </footer>
-        <footer>
+        </tfoot>
 
-        </footer>
-    </section>
+    </table>
 
       <section class="nodata p-2" v-if="ORDER_LIST.length==0">
             <p v-if="!loader_running">No orders available.</p>
       </section>
         <transition name="trans-batch-actions">
-        <div class=" batch-actions" v-if="MULTI_CHECKED.length>0&&CURRENT_SELECTED==''"><button class="btn btn-outline-dark disabled"  @click="featureunavailable('Batch invoice')">Batch Invoice</button><button class="btn btn-outline-dark disabled"  @click="featureunavailable('Batch payment')">Batch Payment</button><button class="btn btn-outline-dark"  @click="markaslate">Mark as late</button><button class="btn btn-outline-dark" @click="cancelorders">Cancel order(s)</button></div>
+        <div class=" batch-actions" v-if="MULTI_CHECKED.length>0&&CURRENT_SELECTED==''"><button class="btn btn-outline-dark disabled body_medium"  @click="featureunavailable('Batch invoice')">Batch Invoice</button><button class="btn btn-outline-dark disabled body_medium"  @click="featureunavailable('Batch payment')">Batch Payment</button><button class="btn btn-outline-dark body_medium"  @click="markaslate">Mark as late</button><button class="btn btn-outline-dark body_medium" @click="cancelorders">Cancel order(s)</button></div>
         </transition>
     </div>
 
@@ -109,7 +111,7 @@
             function preprocess(def,val,order) {
                 if(typeof def.type!="undefined"&&def.type=="tag"){
                     if(val=='LATE'&&order.suggestedDeliveryDate==null&&!hasRoles(['cc'])){
-                        return 'This order is late, please suggest a new delivery date.';
+                        return '<span class="body_medium">This order is late, please suggest a new delivery date.</span>';
                     }
                 }
                 if(def.name=="Promised Date"&&!hasRoles(['cc'])&&order.Status=='LATE'&&order.suggestedDeliveryDate!=null){
@@ -121,6 +123,9 @@
                 if(typeof def.type!="undefined"&&def.type=="price"){
 
                     return formatPrice(val);
+                }
+                if(def.name=="Name"||def.name=="Destination"){
+                    return val.toLowerCase();
                 }
                 return val;
             }
@@ -266,13 +271,13 @@
 
                     return true;
             });
-            const flexCol=((col,status,tabledef,colname)=>{
-                console.log(col,status,tabledef,colname);
-                    if(status=='LATE'&&colname=='status'){
-                        return col.flex
-                    }
-                return col.flex;
-            });
+
+            const colspan=(colname,order)=>{
+                if(order.Status=='LATE'&&order.suggestedDeliveryDate==null&&colname=='Status'&&!hasRoles(['cc']))
+                    return 3
+                return 1;
+            }
+
             return {
                 route,
                 CURRENT_SELECTED,
@@ -290,9 +295,9 @@
                 featureunavailable,
                 cancelorders,
                 hideOnLate,
-                flexCol,
                 markaslate,
-                hasRoles
+                hasRoles,
+                colspan
             }
         }
     }
@@ -301,7 +306,13 @@
 <style scoped>
 
     .container-fluid{
-        padding-left: 70px;
+        padding-left: 0;
+    }
+    @media only screen and (max-width: 1089px) {
+        .container-fluid{
+            padding-left: 10px;
+            padding-right: 10px;
+        }
     }
     .current_sel{
         position: relative;
@@ -354,6 +365,7 @@
         position: sticky;
         bottom: 0;
         transform-origin: bottom center;
+        z-index: 1;
     }
     .batch-actions button{
         margin-left: 1rem;

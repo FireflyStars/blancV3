@@ -41,12 +41,13 @@
 
 <style scoped>
 .tag{
+    font-family: "Gotham Rounded";
     text-transform: capitalize;
     background: #DDD;
     border-radius: 70px;
     text-align: center;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 400;
     width: 120px!important;
     height: 24px;
     position: relative;

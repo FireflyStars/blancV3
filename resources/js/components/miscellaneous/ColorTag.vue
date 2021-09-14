@@ -1,7 +1,7 @@
 <template>
     <div :style="style">
     <template  v-for="(color,index) in colortags" >
-    <span v-if="typeof colors[color.replace(/ /g, '')]!='undefined'" class="tool-tip colortag" :data-tooltip="colors[color.replace(/ /g, '')].tooltip" :style="{backgroundColor:colors[color.replace(/ /g, '')].color}"></span>
+    <span v-if="typeof colors[color.replace(/ /g, '')]!='undefined'" class="tool-tip colortag" :class="{colortagbordered:colors[color.replace(/ /g, '')].color=='#FFFFFF'}" :data-tooltip="colors[color.replace(/ /g, '')].tooltip" :style="{backgroundColor:colors[color.replace(/ /g, '')].color}"></span>
         <span v-else  class="tool-tip colortag undefinedcolor" :data-tooltip="`undefined ${color.replace(/ /g, '')}`"></span>
     </template>
     </div>
@@ -34,5 +34,8 @@
     .undefinedcolor{
         border:1px dotted #0a58ca;
         background: white;
+    }
+    .colortagbordered{
+        border: 1px solid #DDD;
     }
 </style>

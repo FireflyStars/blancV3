@@ -1,6 +1,6 @@
 <template>
     <select-options :placeholder="'00-00 AM'" :options="timeslot_def" v-model="timeslot" :name="name" :classnames="'timeslotpicker'" :hint="hint" :label="label" :disabled="disabled" :valid="valid">
-        <div class="timeslot" v-for="(time,index) in timeslot_def" :class="{disabled:!time.available,current:time.value==timeslot}" @click="selectTimeSlot(time.value)">{{time.display}}</div>
+        <div class="timeslot body_small_bold" v-for="(time,index) in timeslot_def" :class="{disabled:!time.available,current:time.value==timeslot}" @click="selectTimeSlot(time.value)">{{time.display}}</div>
     </select-options>
 </template>
 
@@ -102,7 +102,6 @@
         height: 36px;
         margin: 20px auto;
         transition: background-color 0.2s ease-in-out;
-        font-size: 16px;
     }
     .timeslot.disabled{
         pointer-events: none;

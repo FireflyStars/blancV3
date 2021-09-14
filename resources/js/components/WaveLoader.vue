@@ -6,7 +6,7 @@
     <div v-if="show_loader" style="background:rgba(224, 224, 224,0.6); position: fixed;top: 0; left:0; height: 100%;width: 100%;z-index: 10002;display: flex;align-items: center;justify-content: center;">
     <div style="text-align: center;background-color: #fff;width: 420px; display: block;padding: 30px 10px 30px 10px; border-radius: 8px;">
         <bar-loader></bar-loader>
-    <p style="font-size: 16px;display: block;font-weight: 600">{{msg.charAt(0).toUpperCase() + msg.slice(1)}}<br/>{{timer/1000}}s</p>
+    <p style="display: block;" class="body_medium">{{msg.charAt(0).toUpperCase() + msg.slice(1)}}<br/>{{timer/1000}}s</p>
     </div>
     </div>
     </transition>

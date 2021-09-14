@@ -512,7 +512,8 @@
         box-shadow: 0px 1px 1px rgba(0, 14, 51, 0.05);
         border-radius: 6px;
         line-height: 44px;
-        font-weight: 700;
+        font-weight: 800;
+        font-family: Gilroy;
         cursor: pointer;
         transition: all 0.2s ease-in-out;
     }
@@ -586,12 +587,13 @@
         box-shadow: 0px 1px 1px rgba(0, 14, 51, 0.05);
         border-radius: 6px;
         height: 44px;
-        font-weight: 700;
+        font-weight: 800;
+        font-family: Gilroy;
         vertical-align: middle;
         font-size: 22px;
-        padding-right: 22px;
         position: relative;
         transition: all 0.2s ease-in-out;
+        padding: 7px 22px 7px 14px;
     }
     .btn-month{
         margin-right: 2px;

@@ -167,10 +167,13 @@ class Tranche extends Model
 
                 $NbrBookingDaybySlot=round(($NbrBookingDay/$NbrSlot));
 
-
+                $max=$NbrDeliverySlotMax;
+                if($slotkey==3&&in_array(strtoupper($day),['MONDAY',"WEDNESDAY",'THURSDAY','FRIDAY'])){
+                    $max=12;
+                }
 
                 //calcul
-                if($NbrBookingBySlot+$NbrBookingDaybySlot<$NbrDeliverySlotMax){
+                if($NbrBookingBySlot+$NbrBookingDaybySlot<$max){
                     //do nothing
                 }else{
                     $date='';

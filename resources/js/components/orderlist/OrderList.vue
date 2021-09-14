@@ -5,14 +5,16 @@
     >
         <div class="container-fluid h-100 bg-color" v-if="showcontainer">
             <main-header></main-header>
-            <div class="row d-flex align-content-stretch align-items-stretch flex-row hmax">
+            <div class="row d-flex align-content-stretch align-items-stretch flex-row hmax main-view-wrap" >
             <side-bar></side-bar>
                 <div class="col main-view p-0">
-                    <h2>Order List</h2>
+
+                    <h2 class="subtitle">Order List</h2>
+
 
                     <div class="container-fluid orderlist-tabs d-flex align-items-center">
                         <template v-for="(tab,tab_index) in tabs">
-                            <div class="orderlist-tab" :class="{active:tab.active}" @click="showtab(tab_index)">{{tab.name}}</div>
+                            <div class="orderlist-tab body_bold" :class="{active:tab.active}" @click="showtab(tab_index)">{{tab.name}}</div>
                         </template>
 
                     </div>
@@ -105,49 +107,51 @@
             const allordertablefields=ref({
                 line_select:{
                     name:" ",
-                    flex:3,
+                    width:"3%",
                     sortable:false,
                     identifier:"id",
                     type:'checkbox',
                 },
                 id:{
                    name:"Order N°",
-                   flex:"10",
+                    width:"10%",
                    sortable:false
                },
                 express:{
                     name:" ",
-                    flex:"5",
+                    width:"4%",
                     sortable:false,
                     type:'express'
                 },
                 Name:{
                     name:"Name",
-                    flex:"22",
+                    width:"22%",
                     sortable:true
                 },
                 TypeDelivery:{
                     name:"Destination",
-                    flex:"10",
-                    sortable:true
+                    width:"10%",
+                    css:"text-align:center",
+                    sortable:true,
+                    header_align:"center"
                 },
                 PromisedDate:{
                     name:"Promised Date",
-                    flex:"18",
+                    width:"13%",
                     sortable:true,
                     css:"font-weight:bold;text-align:center",
                     header_align:"center"
                 },
                 numitems:{
                     name:"Items",
-                    flex:"10",
+                    width:"7%",
                     sortable:true,
                     css:"text-align:center",
                     header_align:"center"
                 },
                 Status:{
                    name:"Order Status",
-                   flex:"15",
+                   width:"13%",
                    sortable:true,
                     type:'tag',
                     header_align:"center",
@@ -155,14 +159,14 @@
                 },
                 paid:{
                     name:"Payment",
-                    flex:"15",
+                    width:"13%",
                     sortable:true,
                     type:'tag',
                     header_align:"center"
                 },
                 Total:{
                     name:"Total",
-                    flex:"10",
+                    width:"5%",
                     sortable:true,
                     type:'price',
                     css:"font-weight:bold;text-align:right;"

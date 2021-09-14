@@ -2,7 +2,7 @@ export const _COLORS_={
         white:{
             name:"White",
             color:"#FFFFFF",
-            tooltip:"White."
+            tooltip:"White.",
         },
         beige:{
             name:"Beige",
@@ -115,6 +115,16 @@ export const _COLORS_={
         inprocess:{
             name:"In process",
             color:"#EF8F00",
+            tooltip:"In process"
+        },
+        ready:{
+            name:"Ready",
+            color:"#42A71E",
+            tooltip:"In process"
+        },
+        late:{
+            name:"Late",
+            color:"#EB5757",
             tooltip:"In process"
         }
 

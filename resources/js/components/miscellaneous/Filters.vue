@@ -1,8 +1,8 @@
 <template>
-    <button class="btn btn-outline-dark position-absolute filter" :class="{active:showfilter,hasfilters:hasActiveFilters}" @click="toggleShow">Filters <span></span></button>
+    <button class="btn btn-outline-dark position-absolute filter body_small_bold" :class="{active:showfilter,hasfilters:hasActiveFilters}" @click="toggleShow">Filters <span></span></button>
     <transition name="trans-filter" >
     <div class="filters position-absolute" v-if="showfilter">
-        <h2>Filter by</h2>
+        <h2 class="subtitle">Filter by</h2>
         <div class="row" v-for="(select,ind) in filterDef.def" :key="ind">
             <div class="col">
         <div class="select" :class="{active: current_filter==ind}" @click="selectclick(ind)">{{select.name}}
@@ -15,8 +15,8 @@
             </div>
         </div>
         <div class="row buttons">
-            <div class="col text-center"><button class="btn btn-link" @click="cancel">Cancel</button></div>
-            <div class="col text-right"><button class="btn btn-dark" @click="applyFilter">Apply</button></div>
+            <div class="col text-center"><button class="btn btn-link  body_regular" @click="cancel">Cancel</button></div>
+            <div class="col text-right"><button class="btn btn-dark body_medium" @click="applyFilter">Apply</button></div>
         </div>
     </div>
     </transition>
@@ -109,11 +109,10 @@
         text-align: right;
     }
     .filters .buttons button{
-     font-size: 16px;
+        width: 130px;
+        height: 56px;
     }
-    .filters .buttons button.btn-dark{
-        font-weight: 600;
-    }
+
 
     .filters .buttons{
         margin-top: 51px;
@@ -121,10 +120,7 @@
     .filter{
         top:-62px;
         right: 22px;
-        font-size: 14px;
-        font-weight: bold;
         padding: 10px 16px;
-        font-family: "Gotham Rounded";
     }
     .filter.hasfilters:not(:hover){
         background:#42A71E ;

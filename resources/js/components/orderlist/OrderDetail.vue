@@ -13,7 +13,7 @@
             <div class="col" style="padding-left:32px;">
                 <b>This order is late</b>
                 <br/>
-                <span>Please suggest a delivery date</span>
+                <span class="f14">Please suggest a delivery date</span>
             </div>
             <div class="col-5">
 
@@ -26,14 +26,14 @@
 
         <div v-else-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate!=null&&!showslots" class="section-late-production-op date-suggested row" :class="{cc:hasRoles(['cc','admin','Blanc Admin'])}">
             <div class="col">
-                <b style="vertical-align: middle">New promised date suggested: {{formatDate(ORDER.detail.suggestedDeliveryDate)}}</b> <button v-if="hasRoles(['cc','admin','Blanc Admin'])" class="btn btn-outline-dark" @click="chooseSlot">Choose new slot</button>
+                <b style="vertical-align: middle">New promised date suggested: {{formatDate(ORDER.detail.suggestedDeliveryDate)}}</b> <button v-if="hasRoles(['cc','admin','Blanc Admin'])" class="btn btn-outline-dark body_medium" @click="chooseSlot">Choose new slot</button>
             </div>
         </div>
         <div v-else-if="showslots" class="section-late-production-op date-suggested row"  :class="{cc:hasRoles(['cc'])}">
             <div class="col" style="padding-left:32px;">
                 <b style="margin-left: 0">This order is late</b>
                 <br/>
-                <span>Please suggest a delivery date</span>
+                <span class="f14">Please suggest a delivery date</span>
             </div>
             <div class="col-6  p-0 d-flex justify-content-evenly">
                 <date-picker v-model="cc_new_delivery_date" name="cc_new_delivery_date" :disabled-to-date="disabledtodate" :available-dates="availabledates" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
@@ -47,12 +47,12 @@
                 <div class="col"><b>New delivery date: {{ORDER.detail.PromisedDate}}</b></div>
             </div>
 </transition>
-            <div v-if="typeof ORDER['detail']!='undefined'"  class="row section2">
+            <div v-if="typeof ORDER['detail']!='undefined'"  class="row section2 align-items-center">
                 <div class="col-9">
                 <svg width="24" height="24" class="truckicon">
                     <image xlink:href="/images/truck.svg"  width="24" height="24"/>
                 </svg>
-                    <span>Delivery</span>
+                    <span class="body_medium valign-middle">Delivery</span>
                 </div>
                 <div class="col-3 text-center">
                     <tag  :name="ORDER.detail.paid" ></tag>
@@ -61,9 +61,9 @@
             </div>
         <div v-if="typeof ORDER['detail']!='undefined'"  class="row section3">
             <div class="col-9">
-                <u>Promised date: {{ORDER.detail.PromisedDate.toUpperCase()}}  <button type="button" class="btn-link-green"  @click="featureunavailable('Edit promised date')">Edit</button></u>
+                <span class="body_medium">Promised date: {{ORDER.detail.PromisedDate.toUpperCase()}}  <button type="button" class="btn-link-green body_regular"  @click="featureunavailable('Edit promised date')">Edit</button></span>
             </div>
-            <div class="col-3 text-center">
+            <div class="col-3 text-center body_bold">
                <b> {{formatPrice(ORDER.detail.Total)}}</b>
             </div>
 
@@ -71,8 +71,8 @@
         <hr v-if="typeof ORDER['detail']!='undefined'" />
         <div  v-if="typeof ORDER['detail']!='undefined'" class="row section4">
             <div class="col">
-                <span class="customername  semi-bold text-decoration-underline text-capitalize d-inline-block
-">{{ORDER.detail.Name.replace(',','').toLowerCase()}} <button type="button" class="btn-link-green"  @click="featureunavailable('Edit customer')">Edit</button></span>
+                <span class="customername  body_bold text-decoration-underline text-capitalize d-inline-block
+">{{ORDER.detail.Name.replace(',','').toLowerCase()}} <button type="button" class="btn-link-green body_regular"  @click="featureunavailable('Edit customer')">Edit</button></span>
             </div>
             <div class="col">
                 <tag   v-if="ORDER.detail.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
@@ -93,24 +93,24 @@
             <div class="col" v-if="ORDER.detail.Phone!=''&&ORDER.detail.Phone!=null">
                 <div class="row" v-for="(phone,index) in ORDER.detail.Phone">
                     <div class="col">
-                        <div class="h7">Phone number {{index+1}}</div>
-                        <div class="phone">+{{phone.replace('|',' ')}}</div>
+                        <div class="body_small_medium">Phone number {{index+1}}</div>
+                        <div class="phone body_small">+{{phone.replace('|',' ')}}</div>
                     </div>
                 </div>
             </div>
             <div v-else class="col">
-                <div class="h7">Phone number</div>
-                <div class="phone">--</div>
+                <div class="body_small_medium">Phone number</div>
+                <div class="phone body_small">--</div>
             </div>
             <div class="col">
                 <div class="row ">
                     <div class="col">
-                        <div class="h7">Payment method</div>
-                        <span>--</span>
+                        <div class="body_small_medium">Payment method</div>
+                        <span class="body_small">--</span>
                     </div>
                     <div class="col">
-                        <div class="h7">Payment details</div>
-                        <span>--</span>
+                        <div class="body_small_medium">Payment details</div>
+                        <span class="body_small">--</span>
                     </div>
                 </div>
             </div>
@@ -123,10 +123,10 @@
         </div>
         <div class="mt-3 mb-3 row" v-if="typeof ORDER['detail']!='undefined'">
             <div class="col-2">
-                <button class="btn btn-outline-dark"  @click="featureunavailable('Open')">Open</button>
+                <button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Open')">Open</button>
             </div>
-            <div class="col-3">
-                <button class="btn btn-outline-danger" @click="markaslate" v-if="ORDER['detail'].Status!='LATE'">Mark as late</button>
+            <div class="col-4">
+                <button class="btn btn-outline-danger body_medium" @click="markaslate" v-if="ORDER['detail'].Status!='LATE'">Mark as late</button>
             </div>
         </div>
     </div>
@@ -230,7 +230,7 @@
                     flex:"8",
                     sortable:true,
                     type:'price',
-                    css:"font-weight:bold;text-align:right;"
+                    css:"text-align:right;"
                 }
             });
             const CURRENT_SELECTED=computed(()=>{
@@ -426,7 +426,7 @@
     }
     .section2,.section3{
         color:#47454B;
-        font-weight: 500;
+        font-weight: 400;
         margin-left: 3px;
         margin-top:31px;
     }
@@ -435,9 +435,20 @@
      }
     .section4{
         margin-bottom: 8px;
+        margin-left: -2px;
+        margin-right: -2px;
     }
     .section5{
         margin-bottom: 30px;
+        margin-left: -2px;
+        margin-right: -2px;
+    }
+    .section6{
+        margin-left: -2px;
+        margin-right: -2px;
+    }
+    .section6 .body_small_medium{
+        color: #C3C3C3;
     }
     .truckicon{
         margin-right: 8px;
@@ -539,7 +550,7 @@
         align-items: center;
     }
     .section-late-production-op b{
-        font-weight: 600;
+        font-weight: bold;
     }
     .date-suggested{
         background: rgba(239, 143, 0, 0.3);
@@ -562,6 +573,7 @@
         text-indent: -80px;
         overflow: hidden;
         position: relative;
+        padding: inherit;
     }
     .btn-black:after{
         content: "";

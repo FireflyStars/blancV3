@@ -1,19 +1,19 @@
 <template>
     <div class="container-fluid login-form p-0 pt-5">
         <div class="row justify-content-center mt-5">
-            <h1 class="col h1 p-0">Forgot your password?</h1>
+            <h1 class="col h1 p-0 tile_h1">Forgot your password?</h1>
         </div>
         <div class="row justify-content-center mt-5">
             <div class="col p-0">
 
                 <form>
                     <div class="mb-5 ">
-                        <label for="exampleInputEmail1" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" v-model="email" placeholder="Enter your email">
+                        <label for="exampleInputEmail1" class="form-label body_medium">Email</label>
+                        <input type="email" class="form-control body_regular" id="exampleInputEmail1" aria-describedby="emailHelp" v-model="email" placeholder="Enter your email">
 
                     </div>
 
-                    <button type="button" @click="authenticate" class="btn btn-dark mt-5 btn-login">Send Recovery Link</button>
+                    <button type="button" @click="authenticate" class="btn btn-dark mt-5 btn-login body_medium">Send Recovery Link</button>
                 </form>
 
             </div>

@@ -5,7 +5,7 @@
 
         <div class="suborder" v-for="(ITEMS,suborder) in ITEM_LIST" :key="suborder">
             <transition-group tag="div" class="position-relative" name="list" appear>
-            <div class="subordernum " v-if="Object.entries(ITEM_LIST).length !== 0">Sub order {{suborder}}</div>
+            <div class="subordernum body_small_medium" v-if="Object.entries(ITEM_LIST).length !== 0">Sub order {{suborder}}</div>
         <header v-if="Object.entries(ITEM_LIST).length !== 0">
         <div class="tcol noselect"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}" >{{col.name}}
             <check-box v-if="col.type=='checkbox'&&ITEMS.length>0" :checked_checkbox="typeof MULTI_CHECKED[suborder]!=='undefined'&&ITEMS.length==MULTI_CHECKED[suborder].length"  @checkbox-clicked="checkboxallclicked" :name="suborder"></check-box>
@@ -19,9 +19,9 @@
 
                 <check-box v-if="col.type=='checkbox'" :checked_checkbox="typeof MULTI_CHECKED[suborder]!=='undefined'&&MULTI_CHECKED[suborder].includes(ITEM.infoitems_id)" :id="ITEM.infoitems_id" @checkbox-clicked="checkboxclicked" :name="suborder"></check-box>
 
-                <tag v-else-if="col.type=='tag'" :name="ITEM[index]" :style="{backgroundColor:'#FFFFFF',border:'1px solid #000000',color:'#000000'}"></tag>
+                <tag v-else-if="col.type=='tag'" :name="ITEM[index]" :style="{backgroundColor:'transparent',border:'1px solid #000000',color:'#000000'}"></tag>
                 <color-tag :style="col.css" v-else-if="col.type=='color'" :colors="ITEM[index].toLowerCase()"></color-tag>
-                <span v-else :style="col.css" class="tool-tip" :data-tooltip="preprocess(col,ITEM[index])">{{preprocess(col,ITEM[index])}}</span>
+                <span v-else :style="col.css" class="tool-tip"  :class="{body_small_medium:col.name=='',body_small:col.name!=''}" :data-tooltip="preprocess(col,ITEM[index])">{{preprocess(col,ITEM[index])}}</span>
             </div>
 </template>
             </div>
@@ -37,7 +37,7 @@
 
         <transition name="trans-batch-actions">
 
-        <div class=" batch-actions" v-if="Object.entries(MULTI_CHECKED).length !== 0"><button class="btn btn-outline-dark"  @click="featureunavailable('Split')">Split</button><button class="btn btn-outline-dark"  @click="featureunavailable('Delete items')">Delete</button></div>
+        <div class=" batch-actions" v-if="Object.entries(MULTI_CHECKED).length !== 0"><button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Split')">Split</button><button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Delete items')">Delete</button></div>
         </transition>
 
 

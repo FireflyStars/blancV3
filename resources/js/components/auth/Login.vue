@@ -1,23 +1,23 @@
 <template>
     <div class="container-fluid login-form p-0 pt-5">
     <div class="row justify-content-center mt-5">
-        <h1 class="col h1 p-0">Welcome</h1>
+        <h1 class="col h1 p-0 tile_h1">Welcome</h1>
     </div>
     <div class="row justify-content-center mt-5">
         <div class="col p-0">
 
     <form>
         <div class="mb-5 ">
-            <label for="exampleInputEmail1" class="form-label">Email</label>
-            <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" v-model="email" placeholder="Enter your email">
+            <label for="exampleInputEmail1" class="form-label body_medium">Email</label>
+            <input type="email" class="form-control body_small" id="exampleInputEmail1" aria-describedby="emailHelp" v-model="email" placeholder="Enter your email">
 
         </div>
         <div class="mb-4 ">
-            <label for="exampleInputPassword1" class="form-label">Password</label>
-            <input type="password" class="form-control" id="exampleInputPassword1" v-model="password" placeholder="Enter your password">
-            <div class="form-text text-end"><button type="button" class="btn btn-link p-0" @click="forgotpassword">Forgot your password?</button></div>
+            <label for="exampleInputPassword1" class="form-label body_medium">Password</label>
+            <input type="password" class="form-control body_small" id="exampleInputPassword1" v-model="password" placeholder="Enter your password">
+            <div class="form-text text-end"><button type="button" class="btn btn-link p-0 body_regular" @click="forgotpassword">Forgot your password?</button></div>
         </div>
-        <button type="button" @click="authenticate" class="btn btn-dark mt-5 btn-login">Login</button>
+        <button type="button" @click="authenticate" class="btn btn-dark mt-5 btn-login body_medium">Login</button>
     </form>
 
         </div>

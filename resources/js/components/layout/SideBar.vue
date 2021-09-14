@@ -1,5 +1,5 @@
 <template>
-    <div class="col-lg-6 col-sm-3 side-bar-wrap d-flex flex-column align-items-center" >
+    <div class="col-lg-6 col-sm-3 side-bar-wrap d-flex flex-column align-items-center" :class="{slidein:slidesidebar}">
 <div class="d-flex flex-column side-bar align-items-center position-fixed">
         <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="side-icons">
                 <rect width="32" height="32" rx="8" fill="white"/>
@@ -41,13 +41,13 @@
                 <circle cx="22" cy="21" r="2" stroke="#868686"/>
             </svg>
 </div>
-            <div class="user_initials" @click="showmenu">
+            <div class="user_initials body_bold" @click="showmenu">
                 {{initials}}
             </div>
         <transition name="usermenu" >
             <div class="usermenu" v-if="dispmenu" >
 
-                <button class="btn btn-outline-dark"  data-bs-toggle="tooltip" data-bs-placement="right" title="Logout user" @click="logout">Sign out</button>
+                <button class="btn btn-outline-dark body_medium"  data-bs-toggle="tooltip" data-bs-placement="right" title="Logout user" @click="logout">Sign out</button>
             </div>
         </transition>
     </div>
@@ -56,11 +56,17 @@
 
 <script>
 
-    import {ref} from 'vue';
+    import {ref,computed} from 'vue';
     import { useRouter, useRoute } from 'vue-router'
     import axios from 'axios';
     import {useStore} from 'vuex';
-    import {DISPLAY_LOADER,HIDE_LOADER,LOADER_MODULE} from "../../store/types/types";
+    import {
+        DISPLAY_LOADER,
+        HIDE_LOADER,
+        LOADER_MODULE,
+        SIDEBAR_GET_SLIDEIN,
+        SIDEBAR_MODULE
+    } from "../../store/types/types";
 
     export default {
         name: "SideBar",
@@ -98,12 +104,16 @@
             function showmenu() {
                 dispmenu.value=!dispmenu.value;
             }
+            const slidesidebar=computed(()=>{
+                return store.getters[`${SIDEBAR_MODULE}${SIDEBAR_GET_SLIDEIN}`];
+            });
             return {
                 uname,
                 initials,
                 logout,
                 showmenu,
-                dispmenu
+                dispmenu,
+                slidesidebar
             }
         }
     }
@@ -112,7 +122,9 @@
 <style scoped>
     .side-bar-wrap{
         width: 72px;
+        transition: left ease-in-out 0.5s;
     }
+
 .side-bar{
     background: rgba(248,248,248,0.5);
     box-shadow: inset 0px 0px 6px rgba(0, 0, 0, 0.25);

@@ -4,7 +4,9 @@
 @import "~bootstrap/scss/bootstrap";
 @import "~bootstrap-icons/font/bootstrap-icons.css";
 @import '~animate.css/animate.css';
-
+.btn{
+  padding: 10px 22px;
+}
 $blanc-green:#42A71E !default;
 :root{
   --authlogoheight: 102px;
@@ -25,7 +27,9 @@ html{
     background-color: transparent;
   }
 }
-
+.btn-link{
+  font-family: "Gotham Rounded";
+}
 h1,h2{
   font-family: Gilroy;
   font-weight: bold;
@@ -78,8 +82,9 @@ label{
   }
 }
 .main-view h2{
-    margin: 48px 0 67px 46px;
+    margin: 48px 0 67px -24px;
 }
+
 .user_initials{
   z-index: 2;
   text-transform: uppercase;
@@ -91,8 +96,6 @@ label{
   line-height: 40px;
   vertical-align: middle;
   font-size: 16px;
-  font-family: 'Gotham Rounded';
-  font-weight: bold;
   margin: auto 0 16px 0;
   position: fixed;
   bottom:16px;
@@ -104,6 +107,25 @@ label{
 }
 
 .orderlist-table {
+  width: 100%;
+  tbody{
+   position: relative;
+    top: 3px;
+  }
+  tfoot{
+    position: relative;
+    top:3px;
+  }
+  .check-box{
+    position: relative;
+    .chkbox_wrap{
+      height:20px;
+      position: absolute;
+      left: 50%;
+      top:50%;
+      transform: translate(-50%,-50%);
+    }
+  }
   .check-box label{
     display: none;
   }
@@ -114,6 +136,7 @@ label{
     -o-transition: background-color 300ms ease-out;
     transition: background-color 300ms ease-out;
     cursor: pointer;
+    display: table-row;
     span.chkbox{
       border: 2px solid #FFF;
       -webkit-transition: border-color 300ms ease-out;
@@ -147,24 +170,40 @@ label{
 
   }
   .tcol{
-    flex:1;
+    &:last-child{
+      padding-right: 36px;
+    }
     font-size: 16px;
     line-height: 22px;
+    font-weight: 400;
+    font-style: normal;
+    letter-spacing: 0em;
     color: $gray-900;
-    padding:  22px 30px 22px 0;
-    min-width: 40px;
+    padding:  22px 10px 22px 5px;
+    vertical-align: middle;
+    &.express{
+      text-align: center;
+    }
+    &.Total,&.PromisedDate{
+      font-family: "Gotham Rounded Bold";
+      font-size: 14px;
+    }
+    &.Name,&.TypeDelivery{
+      text-transform: capitalize;
+    }
     span{
       display: inline-block;
       width: 100%;
     }
   }
-  header{
+  thead{
     margin-bottom: 3px;
     .tcol{
       font-size: 14px;
       color: $gray-medium;
       font-weight: 600;
       text-transform: uppercase;
+      white-space: nowrap;
       &.sortable{
         cursor: pointer;
       }
@@ -173,8 +212,7 @@ label{
       }
     }
   }
- header,.trow,footer{
-   display: flex;
+ thead,.trow,tfoot{
    background: #FFFFFF;
    box-shadow: inset 0px -1px 0px rgba(168, 168, 168, 0.25);
    align-items: center;
@@ -184,14 +222,12 @@ label{
     .tcol {
       color: #EB5757;
       &.Status{
-        flex:40!important;
-        padding:22px 45px;
         font-weight: 500;
         font-size: 16px;
       }
     }
   }
- footer{
+ tfoot{
    box-shadow: inset 0px 1px 0px #E4E5E7;
    .btn-link{
      font-family: SF Pro Text;
@@ -253,8 +289,7 @@ label{
   }
 }
 .orderlist-tabs{
-  padding-left: 70px;
-  padding-bottom: 5px;
+  padding:0 0 5px 0;
 
   .orderlist-tab {
     min-width: 150px;
@@ -294,13 +329,9 @@ padding:0 1.2rem;
 }
 
 .semi-bold{
-  font-weight: 500;
+  font-weight: 700;
 }
-.h7{
-  font-size: 12px;
-  color:#C3C3C3;
-  font-weight: 400;
-}
+
 .hide-overflowY{
   overflow-y: hidden;
 }
@@ -491,4 +522,98 @@ padding:0 1.2rem;
 .section-late-production-op .timeslotpicker{
   background-color: transparent!important;
   border-color:#000!important;
+}
+.main-view{
+  margin:0 70px;
+}
+.side-bar-wrap{
+  transition: ease-in-out left 0.2s ;
+
+}
+@media only screen and (max-width: 1280px) {
+  .main-view h2 {
+    margin: 48px 0 67px 22px;
+  }
+}
+@media only screen and (max-width: 1280px) {
+   .tcol:last-child{
+     padding-right: 10px!important;
+   }
+  .orderlist-tabs{
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+   .main-view{
+    margin-left: 0;
+     margin-right: 0;
+  }
+  .side-bar-wrap{
+    background-color: #F8F8F8;
+    left:-70px;
+    width: 70px;
+    height: 100%;
+    position: fixed;
+    z-index: 2;
+  }
+  .slidein{
+    left:0;
+  }
+.hide-overflowY .slidein{
+  left:-70px;
+}
+  .orderlist-tabs .orderlist-tab {
+    min-width: max-content;
+  }
+
+  .filter {
+    top: -145px!important;
+
+  }
+  .filters{
+    top: -93px !important;
+  }
+}
+.f14{
+  font-size: 14px;
+}
+
+/**typo**/
+
+.tile_h1{
+  font-family: "Gilroy Extra Bold";
+  font-size: 36px;
+}
+
+.subtitle{
+  font-family: "Gilroy Extra Bold";
+  font-size: 22px;
+}
+
+.body_regular{
+  font-family: "Gotham Rounded Light";
+  font-size: 16px;
+}
+.body_bold{
+  font-family: "Gotham Rounded";
+  font-size: 16px;
+}
+.body_medium{
+  font-family: "Gotham Rounded Medium";
+  font-size: 16px;
+}
+
+.body_small{
+  font-family: "Gotham Rounded Light";
+  font-size: 14px;
+}
+.body_small_medium{
+  font-family: "Gotham Rounded Medium";
+  font-size: 14px;
+}
+.body_small_bold{
+  font-family: "Gotham Rounded Bold";
+  font-size: 14px;
+}
+.valign-middle{
+  vertical-align: middle;
 }

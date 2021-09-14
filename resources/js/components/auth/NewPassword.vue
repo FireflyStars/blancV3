@@ -1,22 +1,22 @@
 <template>
     <div class="container-fluid login-form p-0 pt-5">
         <div class="row justify-content-center mt-5">
-            <h1 class="col h1 p-0">Enter a new password.</h1>
+            <h1 class="col h1 p-0 tile_h1">Enter a new password.</h1>
         </div>
         <div class="row justify-content-center mt-5">
             <div class="col p-0">
 
                 <form>
                     <div class="mb-4 ">
-                        <label for="exampleInputPassword1" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="exampleInputPassword1" v-model="password" placeholder="Enter your password">
+                        <label for="exampleInputPassword1" class="form-label body_medium">Password</label>
+                        <input type="password" class="form-control body_regular" id="exampleInputPassword1" v-model="password" placeholder="Enter your password">
 
                     </div>
                     <div class="mb-4 ">
-                        <label for="exampleInputPassword2" class="form-label">Confirm Password</label>
-                        <input type="password" class="form-control" id="exampleInputPassword2" v-model="password" placeholder="Confirm your password">
+                        <label for="exampleInputPassword2" class="form-label body_medium">Confirm Password</label>
+                        <input type="password" class="form-control body_regular" id="exampleInputPassword2" v-model="password" placeholder="Confirm your password">
                     </div>
-                    <button type="button" @click="authenticate" class="btn btn-dark mt-5 btn-login">Save</button>
+                    <button type="button" @click="authenticate" class="btn btn-dark mt-5 btn-login body_medium">Save</button>
                 </form>
 
             </div>

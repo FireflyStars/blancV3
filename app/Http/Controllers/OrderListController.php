@@ -22,10 +22,11 @@ class OrderListController extends Controller
             ->select(['infoOrder.id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoCustomer.TypeDelivery',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%d/%m")) as PromisedDate'),DB::raw('count(infoitems.id) as numitems'),DB::raw('GROUP_CONCAT(infoitems.express) as express'),DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),'infoOrder.suggestedDeliveryDate'])
             ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
             ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
-            ->join('infoitems','infoInvoice.SubOrderID','infoitems.SubOrderID')
+            ->leftJoin('infoitems','infoInvoice.SubOrderID','infoitems.SubOrderID')
             ->where('infoOrder.OrderID','!=','')
             ->where('infoInvoice.OrderID','!=','')
-            ->where('infoitems.SubOrderID','!=','');
+            ->where('infoitems.SubOrderID','!=','')
+        ;
 
         if($current_tab=='with_partner')
         $orderlist=$orderlist->where('infoitems.idPartner','!=','0')

@@ -1,5 +1,5 @@
 <template>
-    <div @click.stop="togglechkbox" class="chkbox_wrap"><span class="chkbox" :class="{checked:check}" ></span><label class="noselect"><slot></slot></label></div>
+    <div @click.stop="togglechkbox" class="chkbox_wrap"><span class="chkbox" :class="{checked:check}" ></span><label class="noselect body_regular"><slot></slot></label></div>
 </template>
 
 <script>
@@ -63,7 +63,7 @@
         -webkit-transition: opacity 0.3s ease-out;
         -moz-transition:  opacity 0.3s ease-out;
     }
-    .filters span.chkbox,header span.chkbox{
+    .filters span.chkbox,thead span.chkbox,header span.chkbox{
         border:#868686 2px solid;
     }
     .filters span.chkbox.checked,header span.chkbox.checked{
