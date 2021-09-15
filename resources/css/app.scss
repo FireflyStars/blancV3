@@ -341,10 +341,10 @@ padding:0 1.2rem;
 .itemlist-table {
   margin-bottom: 1px;
   .trow{
-    -webkit-transition: background-color 300ms ease-out;
-    -moz-transition: background-color 300ms ease-out;
-    -o-transition: background-color 300ms ease-out;
-    transition: background-color 300ms ease-out;
+    -webkit-transition: all 300ms ease-out;
+    -moz-transition: all 300ms ease-out;
+    -o-transition: all 300ms ease-out;
+    transition: all 300ms ease-out;
     cursor: pointer;
     span.chkbox{
       border: 1px solid #f8f8f8;
@@ -375,10 +375,6 @@ padding:0 1.2rem;
     }
   }
   .trow:hover{
-    -webkit-transition: background-color 300ms ease-out;
-    -moz-transition: background-color 300ms ease-out;
-    -o-transition: background-color 300ms ease-out;
-    transition: background-color 300ms ease-out;
     background: #FFF;
 
 
