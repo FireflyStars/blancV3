@@ -29,7 +29,7 @@
                 <b style="vertical-align: middle">New promised date suggested: {{formatDate(ORDER.detail.suggestedDeliveryDate)}}</b> <button v-if="hasRoles(['cc','admin','Blanc Admin'])" class="btn btn-outline-dark body_medium" @click="chooseSlot">Choose new slot</button>
             </div>
         </div>
-        <div v-else-if="showslots" class="section-late-production-op date-suggested row"  :class="{cc:hasRoles(['cc'])}">
+        <div v-else-if="showslots" class="section-late-production-op date-suggested row"  :class="{cc:hasRoles(['cc','admin','Blanc Admin'])}">
             <div class="col" style="padding-left:32px;">
                 <b style="margin-left: 0">This order is late</b>
                 <br/>
@@ -71,7 +71,7 @@
         <hr v-if="typeof ORDER['detail']!='undefined'" />
         <div  v-if="typeof ORDER['detail']!='undefined'" class="row section4">
             <div class="col">
-                <span class="customername  body_bold text-decoration-underline text-capitalize d-inline-block
+                <span class="customername  body_bold  text-capitalize d-inline-block
 ">{{ORDER.detail.Name.replace(',','').toLowerCase()}} <button type="button" class="btn-link-green body_regular"  @click="featureunavailable('Edit customer')">Edit</button></span>
             </div>
             <div class="col">

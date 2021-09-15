@@ -13,7 +13,10 @@
         props:['express_values'],
         setup(props){
             const isexpress=ref('false')
-            let express_values=props.express_values.split(',');
+            let express_values =[];
+            if(props.express_values!=null) {
+                express_values=props.express_values.split(',');
+            }
         // STANDARD   0,2,3
         // EXPRESS 24  1,4,5
         // EXPRESS 48  6
@@ -26,11 +29,13 @@
             isexpress.value=(res.length>0?true:false);
 
             watch(() => props.express_values, (current_val, previous_val) => {
-                let express_values=current_val.split(',');
-                let res=express_values.filter((item)=>{
-                    return express.includes(item)
-                });
-                isexpress.value=(res.length>0?true:false);
+                if(current_val!=null) {
+                    let express_values = current_val.split(',');
+                    let res = express_values.filter((item) => {
+                        return express.includes(item)
+                    });
+                    isexpress.value = (res.length > 0 ? true : false);
+                }
             });
 
             return {

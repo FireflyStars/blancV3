@@ -169,7 +169,7 @@ class Tranche extends Model
 
                 $max=$NbrDeliverySlotMax;
                 if($slotkey==3&&in_array(strtoupper($day),['MONDAY',"WEDNESDAY",'THURSDAY','FRIDAY'])){
-                    $max=12;
+                    $max=20;
                 }
 
                 //calcul
