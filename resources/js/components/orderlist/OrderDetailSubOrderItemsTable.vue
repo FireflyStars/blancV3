@@ -37,7 +37,7 @@
 
         <transition name="trans-batch-actions">
 
-        <div class=" batch-actions" v-if="Object.entries(MULTI_CHECKED).length !== 0"><button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Split')">Split</button><button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Delete items')">Delete</button></div>
+        <div class=" batch-actions" v-if="Object.entries(MULTI_CHECKED).length !== 0"><button class="btn btn-outline-dark body_medium"  @click="show_split_conf">Split</button><button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Delete items')">Delete</button></div>
         </transition>
 
 
@@ -76,7 +76,7 @@
         name: "OrderDetailSubOrderItemsTable",
         props:['tabledef',"tab","id"],
         components:{ColorTag, Tag,CheckBox},
-        setup(props){
+        setup(props,context){
             const router = useRouter();
             const store=useStore();
             const route = useRoute();
@@ -151,7 +151,9 @@
 */
             });
 
-
+            const show_split_conf=()=>{
+                context.emit("show_conf");
+            }
 
             return {
                 route,
@@ -162,7 +164,7 @@
                 preprocess,
                 selectrow,
                 checkboxclicked,
-
+                show_split_conf,
 
 
 
@@ -246,7 +248,7 @@
         position: sticky;
         bottom: 0;
         transform-origin: bottom center;
-        z-index: 2;
+        z-index: 1;
     }
     .batch-actions button{
         margin-left: 1rem;

@@ -184,6 +184,12 @@ label{
     &.express{
       text-align: center;
     }
+    &.PromisedDate{
+      padding: 0;
+      .btn{
+        padding: 0.375rem 0.75rem;
+      }
+    }
     &.Total,&.PromisedDate{
       font-family: "Gotham Rounded Bold";
       font-size: 14px;
@@ -612,4 +618,15 @@ padding:0 1.2rem;
 }
 .valign-middle{
   vertical-align: middle;
+}
+
+.Permissions .chkbox{
+  border:#868686 2px solid;
+  + label{
+    display: none;
+  }
+}
+.Permissions .chkbox_wrap{
+  line-height:13px;
+  text-align: center;
 }

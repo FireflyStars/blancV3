@@ -10,7 +10,7 @@ import {
     ORDERDETAIL_MULTI_ITEMS_REMOVE,
     ORDERDETAIL_GET_ALL_ITEMS_MULITCHECKED,
     ORDERDETAIL_UPDATE_SUGGESTED_DELIVERY_DATE,
-
+    ORDERDETAIL_SPLIT,
     ORDERDETAIL_NEW_DELIVERY_DATE,
     ORDERDETAIL_UPDATE,
 
@@ -59,6 +59,31 @@ export const orderdetail= {
     }
     ,
     actions:{
+        [ORDERDETAIL_SPLIT]:async ({commit,state})=>{
+            commit(ORDERDETAIL_SET_LOADER,'animate40');
+
+
+            return axios.post('/getorderdetail', {
+                infoOrder_id:state.orderdetail.detail.id,
+                items:state.selected_items
+
+            }).then( (response)=>{
+                if(response.data.order.detail!=null){
+
+                    commit(ORDERDETAIL_SET_DETAILS,response.data.order);
+
+
+
+                }
+                return Promise.resolve(response);
+            })
+                .catch((error)=>{
+                    return Promise.reject(error);
+                }).finally(()=>{
+                    commit(ORDERDETAIL_SET_LOADER,'animate40 animate100');
+                });
+        },
+
         [ORDERDETAIL_LOAD_DETAIL]:async ({commit},infoOrder_id)=>{
             commit(ORDERDETAIL_SET_LOADER,'animate40');
 

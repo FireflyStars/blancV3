@@ -35,6 +35,15 @@ const router = createRouter({
             },
         },
         {
+            path:'/permissions',
+            name:'Permissions',
+            component:()=> import('../components/permission/Permission'),
+            meta:{
+                authenticated:true,
+                superadmin:true,
+            },
+        },
+        {
             path:'/auth/',
             name:'AuthPage',
             component:()=> import('../components/auth/AuthPage'),

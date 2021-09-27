@@ -15,7 +15,20 @@ export const hasRoles=roles=>{
 
     return foundroles.length>0;
 };
+export const usePermission=task=>new Promise((resolve,reject)=>{
+    if(hasRoles(['admin'])) {
+        resolve({allowed: true});
+    }else{
+        const ses_profile_permissions=JSON.parse(window.atob(window.sessionStorage.getItem('profile_permissions')));
+       for(const key in ses_profile_permissions){
+           const permission=ses_profile_permissions[key].filter(permission=>permission.name===task&&permission.allow===1);
+           if(permission.length>0)
+               resolve({allowed: true});
+       }
 
+        reject({allow:false});
+    }
+});
 export const formatPrice=price=>`£${price !== 0 ? price.toFixed(2) : 0}`;
 
 /**

@@ -1,5 +1,6 @@
 <template>
     <div v-if="showorderdetail" class="odv container ">
+
         <div class="order-detail-progressbar" :class="loaderclass"></div>
         <i class="icon-close" @click="close"></i>
         <div v-if="typeof ORDER['detail']!='undefined'" class="section1" >
@@ -118,7 +119,7 @@
         <hr v-if="typeof ORDER['detail']!='undefined'"/>
         <div class="row">
             <div class="col">
-                <order-detail-sub-order-items-table :tabledef="itemsfields"  :id="'items_table'" v-if="typeof ORDER['detail']!='undefined'"></order-detail-sub-order-items-table>
+                <order-detail-sub-order-items-table @show_conf="show_split_conf=true" :tabledef="itemsfields"  :id="'items_table'" v-if="typeof ORDER['detail']!='undefined'"></order-detail-sub-order-items-table>
             </div>
         </div>
         <div class="mt-3 mb-3 row" v-if="typeof ORDER['detail']!='undefined'">
@@ -129,6 +130,7 @@
                 <button class="btn btn-outline-danger body_medium" @click="markaslate" v-if="ORDER['detail'].Status!='LATE'">Mark as late</button>
             </div>
         </div>
+        <split-confirmation :show_conf="show_split_conf" @close="show_split_conf=false"></split-confirmation>
     </div>
 </template>
 
@@ -142,6 +144,7 @@
     import TimeSlotPicker from '../miscellaneous/TimeSlotPicker';
     import OrderDetailSubOrderItemsTable from './OrderDetailSubOrderItemsTable'
     import {formatPrice,hasRoles,formatDate} from "../helpers/helpers";
+    import SplitConfirmation from '../miscellaneous/SplitConfirmation'
     import {
         ORDERLIST_MODULE,
         ORDERLIST_GET_CURRENT_SELECTED,
@@ -168,11 +171,13 @@
 
     export default {
         name: "OrderDetail",
-        components:{Tag,AddressFormat,OrderDetailSubOrderItemsTable,DatePicker,TimeSlotPicker},
+        components:{Tag,AddressFormat,OrderDetailSubOrderItemsTable,DatePicker,TimeSlotPicker,SplitConfirmation},
         setup(){
             const route =useRoute();
             const router=useRouter();
             const store =useStore();
+
+            const show_split_conf=ref(false);
 
             const itemsfields=ref({
                 line_select:{
@@ -411,7 +416,8 @@
                 availabletimeslot,
                 setNewDeliveryDate,
                 showNewDeliveryDateMsg,
-                disabledtodate
+                disabledtodate,
+                show_split_conf
             }
         }
     }
