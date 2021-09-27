@@ -5,6 +5,7 @@ import {toaster as TOASTER_MODULE} from "./modules/toaster";
 import {orderdetail as ORDERDETAIL_MODULE} from "./modules/orderdetail";
 import {select as SELECT_MODULE} from "./modules/select";
 import {sidebar as SIDEBAR_MODULE} from "./modules/sidebar";
+import {search as CUSTOMERLIST_MODULE} from "./modules/search";
 
 export default createStore({
     modules:{
@@ -13,6 +14,7 @@ export default createStore({
         TOASTER_MODULE,
         ORDERDETAIL_MODULE,
         SELECT_MODULE,
-        SIDEBAR_MODULE
+        SIDEBAR_MODULE,
+        CUSTOMERLIST_MODULE
     }
 })

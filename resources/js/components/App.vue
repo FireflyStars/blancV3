@@ -6,7 +6,7 @@
 
 <script>
     import WaveLoader from './WaveLoader';
-    import Toaster from './miscellaneous/Toaster'
+    import Toaster from './miscellaneous/Toaster';
 
     import {computed,watch} from 'vue';
     import {useStore} from 'vuex';

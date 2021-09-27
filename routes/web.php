@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OrderListController;
+use App\Http\Controllers\SearchController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -16,6 +17,7 @@ use App\Http\Controllers\OrderListController;
 
 
 Route::post('/authenticate',[LoginController::class, 'authenticate'])->name('authenticate');
+Route::post('/register',[LoginController::class, 'register'])->name('register');
 Route::get('/logout',[LoginController::class, 'logout'])->name('logout');
 Route::post('/auth/login',function () {
     return view('welcome');
@@ -29,3 +31,6 @@ Route::post('/newdeliverydate',[OrderListController::class,'newdeliverydate'])->
 Route::get('{any}', function () {
     return view('welcome');
 })->where('any','.*');
+Route::post('/SearchCustomerByOrder', [SearchController::class, 'SearchCustomerByOrder'])->name('SearchCustomerByOrder');
+Route::post('/SearchCustomerByName', [SearchController::class, 'SearchCustomerByName'])->name('SearchCustomerByName');
+Route::post('/SearchCustomerByEmail', [SearchController::class, 'SearchCustomerByEmail'])->name('SearchCustomerByEmail');
