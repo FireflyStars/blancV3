@@ -31,6 +31,4 @@ Route::post('/newdeliverydate',[OrderListController::class,'newdeliverydate'])->
 Route::get('{any}', function () {
     return view('welcome');
 })->where('any','.*');
-Route::post('/SearchCustomerByOrder', [SearchController::class, 'SearchCustomerByOrder'])->name('SearchCustomerByOrder');
-Route::post('/SearchCustomerByName', [SearchController::class, 'SearchCustomerByName'])->name('SearchCustomerByName');
-Route::post('/SearchCustomerByEmail', [SearchController::class, 'SearchCustomerByEmail'])->name('SearchCustomerByEmail');
+Route::post('/SearchCustomer', [SearchController::class, 'SearchCustomer'])->name('SearchCustomer');

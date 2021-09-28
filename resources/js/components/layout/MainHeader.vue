@@ -31,6 +31,7 @@
             }
            return {
                featureunavailable,
+               slideinMenu
            }
         }
     }

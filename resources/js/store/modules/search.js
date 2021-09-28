@@ -1,14 +1,12 @@
 import {
-    CUSTOMERLIST_SET_DETAILS,
-    CUSTOMERLIST_LOAD_DETAILS,
-    CUSTOMERLIST_SET_LOADER,
-    CUSTOMERLIST_GET_DETAILS,
-    CUSTOMERLIST_GET_LOADER,
+    CUSTOMER_SET_LIST,
+    CUSTOMER_LOAD_LIST,
+    CUSTOMER_SET_LOADER,
+    CUSTOMER_GET_LIST,
+    CUSTOMER_GET_LOADER,
     CUSTOMEREMAILS_SET_LIST,
-    CUSTOMEREMAILS_LOAD_LIST,
     CUSTOMEREMAILS_GET_LIST,
     CUSTOMERORDERS_SET_LIST,
-    CUSTOMERORDERS_LOAD_LIST,
     CUSTOMERORDERS_GET_LIST
 
 } from "../types/types";
@@ -30,69 +28,37 @@ export const search= {
         },
     },
     mutations: {
-        [CUSTOMERLIST_SET_DETAILS]: (state,payload) =>state.listcustomers=payload,
+        [CUSTOMER_SET_LIST]: (state,payload) =>state.listcustomers=payload,
         [CUSTOMEREMAILS_SET_LIST]: (state,payload) =>state.listemailscustomers=payload,
         [CUSTOMERORDERS_SET_LIST]: (state,payload) =>state.listorderscustomers=payload,
-        [CUSTOMERLIST_SET_LOADER]: (state, payload) => state.loader = payload,
+        [CUSTOMER_SET_LOADER]: (state, payload) => state.loader = payload,
        
     },
     actions: {
-        [CUSTOMERLIST_LOAD_DETAILS]:async ({commit},query)=>{
-            commit(CUSTOMERLIST_SET_LOADER,'animate40');
+        [CUSTOMER_LOAD_LIST]:async ({commit},query ,PerPage)=>{
+            commit(CUSTOMER_SET_LOADER,'animate40');
 
-            return axios.post('/SearchCustomerByName', query)
+            return axios.post('/SearchCustomer', query , PerPage)
             .then( (response)=>{
                 console.log(response)
                 if(response.data.customers.data!=null){
-                        commit(CUSTOMERLIST_SET_DETAILS ,response.data.customers.data);
-                }
-                return Promise.resolve(response.data.customers.data);
-            })
-                .catch((error)=>{
-                    return Promise.reject(error);
-                }).finally(()=>{
-                    commit(CUSTOMERLIST_SET_LOADER,'animate40 animate100');
-                });
-
-        },
-
-        [CUSTOMEREMAILS_LOAD_LIST]:async ({commit},query)=>{
-
-            return axios.post('/SearchCustomerByEmail', query)
-            .then( (response)=>{
-                console.log(response)
-                if(response.data.customers_emails.data!=null){
+                        commit(CUSTOMER_SET_LIST ,response.data.customers.data);
                         commit(CUSTOMEREMAILS_SET_LIST ,response.data.customers_emails.data);
-                }
-                return Promise.resolve(response.data.customers_emails.data);
-            })
-                .catch((error)=>{
-                    return Promise.reject(error);
-                }).finally(()=>{
-                   
-                });
-
-        },
-
-        [CUSTOMERORDERS_LOAD_LIST]:async ({commit},query)=>{
-
-            return axios.post('/SearchCustomerByOrder', query)
-            .then( (response)=>{
-                if(response.data.customers_orders.data!=null){
                         commit(CUSTOMERORDERS_SET_LIST ,response.data.customers_orders.data);
                 }
-                return Promise.resolve(response.data.customers_orders.data);
+                return Promise.resolve(response);
             })
                 .catch((error)=>{
                     return Promise.reject(error);
                 }).finally(()=>{
+                    commit(CUSTOMER_SET_LOADER,'animate40 animate100');
                 });
 
         },
     },
     getters: {
-        [CUSTOMERLIST_GET_LOADER]:state=>state.loader,
-        [CUSTOMERLIST_GET_DETAILS]:state=>state.listcustomers,
+        [CUSTOMER_GET_LOADER]:state=>state.loader,
+        [CUSTOMER_GET_LIST]:state=>state.listcustomers,
         [CUSTOMEREMAILS_GET_LIST]:state=>state.listemailscustomers,
         [CUSTOMERORDERS_GET_LIST]:state=>state.listorderscustomers,
        

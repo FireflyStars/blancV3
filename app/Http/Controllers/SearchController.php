@@ -11,50 +11,34 @@ class SearchController extends Controller
 {
    
 
- public function SearchCustomerByOrder(Request $request)
+ public function SearchCustomer(Request $request)
 {
     $query = $request['query'];
-    $orders = DB::table('infoorder')->join('infoCustomer','infoorder.CustomerID','=','infoCustomer.CustomerID')
+    $PerPage = $request['PerPage'];
+    $orders = DB::table('infoOrder')->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
     ->where('FirstName', 'LIKE', $query . '%')
     ->whereNotIn('Status',['DELETE','VOID'])
-    ->groupBy('infoorder.CustomerID')
+    ->groupBy('infoOrder.CustomerID')
     ->orderBy('Name')
-    ->paginate(3);
-    return response()->json( ['customers_orders'=>$orders ]);
-     
-}
+    ->paginate($PerPage);
 
-public function SearchCustomerByName(Request $request)
-{
-    $query = $request['query'];
-
-    $users = DB::table('infocustomer')
+    $users = DB::table('infoCustomer')
     ->where('FirstName', 'LIKE', $query . '%')
-    ->paginate(3);
-
+    ->paginate($PerPage);
     foreach ($users as $item) {
         $item->Phone=json_decode($item->Phone);
     }
 
-    return response()->json(
-        ['customers'=>$users ]
-    );
-}
-
-public function SearchCustomerByEmail(Request $request)
-{
-    $query = $request['query'];
-
-    $emails = DB::table('infocustomer')
+    $emails = DB::table('infoCustomer')
     ->where('EmailAddress', 'LIKE', $query . '%')
-    ->paginate(3);
+    ->paginate($PerPage);
     
     foreach ($emails as $item) {
         $item->Phone=json_decode($item->Phone);
     }
-    return response()->json(
-        ['customers_emails'=>$emails ]
-    );
-}
+
+        return response()->json( ['customers_orders'=>$orders ,  'customers_emails'=>$emails , 'customers'=>$users  ]);
 
 }
+}
+
