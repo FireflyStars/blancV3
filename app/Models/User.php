@@ -6,6 +6,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
@@ -64,5 +65,9 @@ class User extends Authenticatable
                 return true;
 
             return false;
+    }
+
+    public function profiles(){
+        return $this->belongsToMany(Profile::class,'profile_users','user_id','profile_id');
     }
 }

@@ -37,8 +37,11 @@ import {
     ORDERLIST_MARK_AS_LATE,
     ORDERLIST_UPDATE_SUGGESTED_DELIVERY_DATE, ORDERLIST_NEW_DELIVERY_DATE
 } from "../types/types";
-
+import {PERMISSIONS} from "../types/permission_types";
+import {usePermission} from "../../components/helpers/helpers";
 import axios from 'axios';
+
+const perm=usePermission;
 
 export const orderlist= {
     namespaced:true,
@@ -260,44 +263,63 @@ export const orderlist= {
             commit(ORDERLIST_SET_MULITCHECKED,[]);
         },
         [ORDERLIST_CANCEL_ORDERS]:async({commit,dispatch,state},payload)=>{
-            dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,state.loader_msg],{ root: true });
-            return axios.post('/cancelorders', {
-               orderids:payload
+            return perm(PERMISSIONS.VOID_AN_ORDER).then(()=> {
+                dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, state.loader_msg], {root: true});
+                return axios.post('/cancelorders', {
+                    orderids: payload
 
-            }).then( (response)=>{
-                    if(response.data.done=='ok'){
-                        if(state.current_tab=='all_orders'){
-                           commit(ORDERLIST_UPDATE_STATUS,{status:'DELETE',orderids:payload});
-                        }else{
-                            commit(ORDERLIST_REMOVE_ORDERS,payload);
+                }).then((response) => {
+                    if (response.data.done == 'ok') {
+                        if (state.current_tab == 'all_orders') {
+                            commit(ORDERLIST_UPDATE_STATUS, {status: 'DELETE', orderids: payload});
+                        } else {
+                            commit(ORDERLIST_REMOVE_ORDERS, payload);
                         }
                     }
                     return Promise.resolve(response);
                 })
-                .catch((error)=>{
-                    return Promise.reject(error);
-                }).finally(()=>{
-                    dispatch(`${LOADER_MODULE}${HIDE_LOADER}`,{},{ root: true });
+                    .catch((error) => {
+                        return Promise.reject(error);
+                    }).finally(() => {
+                        dispatch(`${LOADER_MODULE}${HIDE_LOADER}`, {}, {root: true});
+                    });
+            }).catch(err=>{
+                return Promise.reject({
+                    response:{
+                        status:'',
+                        statusText:'Unauthorised. You do not have the required permission to delete an order.'
+                    }
                 });
+            })
         },
         [ORDERLIST_MARK_AS_LATE]:async({commit,dispatch,state},payload)=>{
-            dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,state.loader_msg],{ root: true });
-            return axios.post('/markaslate', {
-                orderids:payload
 
-            }).then( (response)=>{
-                if(response.data.done=='ok'){
+           return perm(PERMISSIONS.MARK_AS_LATE).then((res)=> {
+                dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, state.loader_msg], {root: true});
+                return axios.post('/markaslate', {
+                    orderids: payload
 
-                        commit(ORDERLIST_UPDATE_STATUS,{status:'LATE',orderids:payload});
+                }).then((response) => {
+                    if (response.data.done == 'ok') {
 
-                }
-                return Promise.resolve(response);
+                        commit(ORDERLIST_UPDATE_STATUS, {status: 'LATE', orderids: payload});
+
+                    }
+                    return Promise.resolve(response);
+                })
+                    .catch((error) => {
+                        return Promise.reject(error);
+                    }).finally(() => {
+                        dispatch(`${LOADER_MODULE}${HIDE_LOADER}`, {}, {root: true});
+                    });
+            }).catch((err)=>{
+               return Promise.reject({
+                   response:{
+                       status:'',
+                       statusText:'Unauthorised. You do not have the required permission to mark an order as late.'
+                   }
+               });
             })
-                .catch((error)=>{
-                    return Promise.reject(error);
-                }).finally(()=>{
-                    dispatch(`${LOADER_MODULE}${HIDE_LOADER}`,{},{ root: true });
-                });
         },
         [ORDERLIST_LOAD_TAB]:({commit,dispatch},payload)=>{
             dispatch(ORDERLIST_SET_CURRENTTAB,payload.tab);

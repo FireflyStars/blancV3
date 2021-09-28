@@ -118,7 +118,7 @@
                     return '<span style="color:red;">Waiting for cc approval</span>';
                 }
                 if(def.name=="Promised Date"&&hasRoles(['cc'])&&order.Status=='LATE'&&order.suggestedDeliveryDate!=null){
-                    return '<span style="color:red;">New delivery date needed</span>';
+                    return '<button class="btn btn-dark body_medium">Add date</button>';
                 }
                 if(typeof def.type!="undefined"&&def.type=="price"){
 

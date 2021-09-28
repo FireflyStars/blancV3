@@ -81,6 +81,19 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col">
+                            <tab-pane :tabs="{first:'First tab',second:'second tab'}">
+                                <template v-slot:first>
+                                    1st
+                                </template>
+                                <template v-slot:second>
+                                    2nd
+                                </template>
+                            </tab-pane>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>
@@ -94,9 +107,13 @@
     import SelectOptions from '../miscellaneous/SelectOptions'
     import TimeSlotPicker from '../miscellaneous/TimeSlotPicker'
     import DatePicker from '../miscellaneous/DatePicker'
+    import TabPane from '../miscellaneous/TabPane'
+    import {usePermission} from "../helpers/helpers";
+    import {PERMISSIONS} from "../../store/types/permission_types";
+
     export default {
         name: "ComponentTest",
-        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker},
+        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane},
         setup(props,context){
             const showcontainer=ref(false);
 
@@ -115,7 +132,17 @@
                 });
 
             });
-
+            const perm=usePermission;
+            perm(PERMISSIONS.MARK_AS_LATE).then((res)=>{
+               console.log(res);
+            }).catch((err)=>{
+                console.log(err)
+            });
+            perm(PERMISSIONS.MARK_AS_LATE).then((res)=>{
+                console.log(res);
+            }).catch((err)=>{
+                console.log(err)
+            });
 
 
             

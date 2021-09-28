@@ -10,7 +10,7 @@
 
 
 
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="side-icons active" >
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="side-icons" :class="{active:route_name=='LandingPage'||route_name=='OrderDetails'}" @click="router.push({name:'LandingPage'})">
             <rect width="32" height="32" rx="8" fill="#42A71E"/>
             <path fill-rule="evenodd" clip-rule="evenodd" d="M8.71045 11H23.1138C23.731 11 24.2009 11.5537 24.1005 12.1627L23.0843 18.3254C22.9251 19.2913 22.09 20 21.111 20H11.8917C10.9127 20 10.0776 19.2913 9.9183 18.3254L8.71045 11Z" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
             <path fill-rule="evenodd" clip-rule="evenodd" d="M12 25C12.5523 25 13 24.5523 13 24C13 23.4477 12.5523 23 12 23C11.4477 23 11 23.4477 11 24C11 24.5523 11.4477 25 12 25Z" stroke="white"/>
@@ -46,8 +46,10 @@
             </div>
         <transition name="usermenu" >
             <div class="usermenu" v-if="dispmenu" >
-
+                <button class="btn btn-link body_medium mb-3" v-if="hasRoles(['admin'])" @click="gotoPermissions">Permissions</button>
                 <button class="btn btn-outline-dark body_medium"  data-bs-toggle="tooltip" data-bs-placement="right" title="Logout user" @click="logout">Sign out</button>
+
+
             </div>
         </transition>
     </div>
@@ -56,8 +58,9 @@
 
 <script>
 
-    import {ref,computed} from 'vue';
+    import {ref,computed,watch} from 'vue';
     import { useRouter, useRoute } from 'vue-router'
+    import {hasRoles} from "../helpers/helpers";
     import axios from 'axios';
     import {useStore} from 'vuex';
     import {
@@ -78,6 +81,11 @@
             const router = useRouter();
             const route = useRoute();
             const dispmenu=ref(false);
+            const route_name=ref(route.name);
+            watch(() =>route.name, (current_val, previous_val) => {
+                route_name.value=current_val;
+                // emit('checkbox-clicked', current_val,props.id,props.name)
+            });
             function logout(){
                 showmenu();
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,'Logging out, please wait...']);
@@ -107,13 +115,25 @@
             const slidesidebar=computed(()=>{
                 return store.getters[`${SIDEBAR_MODULE}${SIDEBAR_GET_SLIDEIN}`];
             });
+
+            function gotoPermissions(){
+                router.push({
+                    name:'Permissions',
+                    params: {
+
+                    },});
+            }
             return {
                 uname,
                 initials,
                 logout,
                 showmenu,
                 dispmenu,
-                slidesidebar
+                slidesidebar,
+                hasRoles,
+                gotoPermissions,
+                route_name,
+                router
             }
         }
     }

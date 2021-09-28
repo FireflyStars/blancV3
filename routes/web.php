@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\PermissionController;
+use App\Models\Authorization;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OrderListController;
@@ -26,8 +29,21 @@ Route::post('/getorderlist',[OrderListController::class, 'getorderlist'])->middl
 Route::post('/cancelorders',[OrderListController::class, 'cancelorders'])->middleware('auth')->name('cancelorders');
 Route::post('/markaslate',[OrderListController::class, 'markaslate'])->middleware('auth')->name('markaslate');
 Route::post('/getorderdetail',[OrderListController::class,'getorderdetail'])->middleware('auth')->name('getorderdetail');
+Route::post('/splititems',[OrderListController::class,'splititems'])->middleware('auth')->name('splititems');
 Route::post('/suggestdate',[OrderListController::class,'suggestdate'])->middleware('auth')->name('suggestdate');
 Route::post('/newdeliverydate',[OrderListController::class,'newdeliverydate'])->middleware('auth')->name('newdeliverydate');
+Route::get('/getpermissions',[PermissionController::class,'getPermissions'])->middleware('superadmin')->name('getpermissions');
+Route::post('/setpermission',[PermissionController::class,'setPermission'])->middleware('superadmin')->name('setpermission');
+Route::post('/setprofile',[PermissionController::class,'setProfile'])->middleware('superadmin')->name('setprofile');
+Route::get('/permissions-test',function(){
+    $user=User::find(56);
+ foreach ($user->profiles as $profile){
+     $_authorization = Authorization::find($profile->authorizations[0]->pivot->authorization_id);
+     dump($_authorization);
+     dump($profile->authorizations[0]->pivot);
+     dump($profile->authorizations[0]->group);
+ }
+})->name('permissions');
 Route::get('{any}', function () {
     return view('welcome');
 })->where('any','.*');
