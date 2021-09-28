@@ -63,14 +63,14 @@ export const orderdetail= {
             commit(ORDERDETAIL_SET_LOADER,'animate40');
 
 
-            return axios.post('/getorderdetail', {
+            return axios.post('/splititems', {
                 infoOrder_id:state.orderdetail.detail.id,
                 items:state.selected_items
 
             }).then( (response)=>{
                 if(response.data.order.detail!=null){
 
-                    commit(ORDERDETAIL_SET_DETAILS,response.data.order);
+                    //commit(ORDERDETAIL_SET_DETAILS,response.data.order);
 
 
 

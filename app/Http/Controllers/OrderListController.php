@@ -345,4 +345,8 @@ class OrderListController extends Controller
         }
         return response()->json(['updated'=>$update,'message'=>'']);
     }
+
+    public function splititems(Request $request){
+
+    }
 }
