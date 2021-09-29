@@ -1,6 +1,10 @@
 <template>
-	
-  <input id="icon" class="btn input-search body_medium" @keyup.prevent="submit" v-model="clear" type="search"  placeholder="Search ..." />
+
+<div class="position-relative ">
+  <input id="icon" class="btn input-search body_medium" @keyup.prevent="submit" v-model="clear" type="texte" placeholder="Search a name, email, barcode, etc"/>
+   <span v-if="showbutton" @click='clearSearch' class="position-absolute"><i class="icon-close"></i></span>
+</div>
+
  <transition
             enter-active-class="animate__animated animate__fadeIn"
  >
@@ -11,94 +15,84 @@
   
      <ul  v-else class="list-group list-group-flush pt-3" style="background: #FFFFFF;" >
         <li class="list-group-item" v-if ="Customer.length > 0">
-            <div class=" row content-wraper ">
+            <div class="content-wraper ">
                 <span class="subtitle col-6">Name</span>
                 <a class="d-flex justify-content-end col-6 show-more" @click="featureunavailable('Show more')" >Show more</a>
              </div>
              <ul  class="list-group list-group-flush pt-2" >
                 <li v-for ="customer in Customer" :key="customer">
-                  <div class="container pt-3">
+                  <div class="container">
                     <div class="row">
-                        <div class="col">
-                         <span class="body_medium">{{customer.FirstName}} {{customer.LastName}}</span>
-                        </div>
-                      
-                          <div class="col-2" style="text-align: end;">
+                       <div class="col">
+                          <span class="body_medium">{{customer.Name.replace(',','').toLowerCase()}}</span>
+                            <div  v-if="customer.Phone!=''&&customer.Phone!=null" >
+                              <div v-for="phone in customer.Phone.slice(0,1)" :key="phone">
+                               <b class ="body_regular">+{{phone.replace('|',' ')}}</b>
+                              </div>
+                            </div>
+                            <div v-else>
+                         
+                              <div class="phone body_small">--</div>
+                            </div>
+                       </div>
+                      <div class="col-6">
+                             <b class ="body_regular">{{customer.EmailAddress}}</b>   
+                       </div>
+                       <div class="col-2" style="text-align: end;">
                             <tag   v-if="customer.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
                             <tag   v-else :name="'B2B'" ></tag>
-                         </div>
+                        </div>
                      
                      </div>                      
-                     <div class="row ">
-                         <div class="col-4" v-if="customer.Phone!=''&&customer.Phone!=null" >
-                            <div v-for="phone in customer.Phone.slice(0,1)" :key="phone">
-                           <b class ="body_regular">+{{phone.replace('|',' ')}}</b>
-                            </div>
-                        </div>
-                         <div class="col-4" v-else  >
-                            <div class="phone body_small">--</div>
-                        </div>
-                        <div class="col-md-auto">
-                       <b class ="body_regular">{{customer.EmailAddress}}</b>   
-                        </div>
-                     
-                     </div>
-
                     </div>
                </li>
               
              </ul>
         </li>
         <li class="list-group-item" v-if="CustomerEmails.length > 0">
-             <div class=" row content-wraper ">
+             <div class="content-wraper ">
                 <span class="subtitle col-6">Email</span>
                 <a class="d-flex justify-content-end col-6 show-more" @click="featureunavailable('Show more')" >Show more</a>
              </div>
              <ul  class="list-group list-group-flush pt-2">
                 <li v-for ="customer in CustomerEmails" :key="customer">
-                  <div class="container pt-3">
+                  <div class="container">
                     <div class="row">
                         <div class="col">
-                         <b class = "body_regular" >{{customer.FirstName}} {{customer.LastName}}</b>
+                          <b class = "body_regular" >{{customer.Name.replace(',','').toLowerCase()}}</b>
+                            <div v-if="customer.Phone!=''&&customer.Phone!=null" >
+                              <div v-for="phone in customer.Phone.slice(0,1)" :key="phone">
+                            <b class ="body_regular">+{{phone.replace('|',' ')}}</b>
+                              </div>
+                          </div>
+                          <div v-else  >
+                              <div class="phone body_small">--</div>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                         <span class="body_medium">{{customer.EmailAddress}}</span>
                         </div>
                           <div class="col-2" style="text-align: end;">
                             <tag   v-if="customer.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
                             <tag   v-else :name="'B2B'" ></tag>
                          </div>
                      </div>                      
-                     <div class="row ">
-    
-                        <div class="col-4 " v-if="customer.Phone!=''&&customer.Phone!=null" >
-                            <div v-for="phone in customer.Phone.slice(0,1)" :key="phone">
-                           <b class ="body_regular">+{{phone.replace('|',' ')}}</b>
-                            </div>
-                        </div>
-                         <div class="col-4" v-else  >
-                            <div class="phone body_small">--</div>
-                        </div>
-
-                        <div class="col-md-auto">
-                         <span class="body_medium">{{customer.EmailAddress}}</span>
-                        </div>
-                     
-                     </div>
-
                     </div>
                </li>
              </ul>
         </li>
           <li class="list-group-item" v-if="CustomerOrders.length>0">
-             <div class=" row content-wraper">
+             <div class="content-wraper">
                 <span class="subtitle col-6">Order</span>
                 <a class="d-flex justify-content-end col-6 show-more" @click="featureunavailable('Show more')" >Show more</a>
              </div>
 
              <ul   class="list-group list-group-flush pt-2" > 
                 <li v-for ="order in CustomerOrders" :key="order">
-                  <div class="container pt-4">
+                  <div class="container">
                     <div class="row">
                         <div class="col-3">
-                         <span class="body_medium">{{order.FirstName}} {{order.LastName}}</span>
+                         <span class="body_medium">{{order.Name.replace(',','').toLowerCase()}}</span>
                         </div>
                         <div class="col-3  text-align: center;">
                         <b class = "body_small">{{order.TypeDelivery}}</b>
@@ -153,26 +147,29 @@ export default({
            const showSearch=ref(false);
            const timeout =ref('');
            const clear = ref('');
+           const showbutton = ref(false);
            const featureunavailable=((feature)=>{
                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:feature+' feature not yet implemented.',ttl:5,type:'success'});
             });
-
-         watch(
-        () => clear.value,
-        (current_val, previous_val) => {
-          if(current_val === ''){
-              showSearch.value = false;
-          }
-        }
-      )
+    
+      function clearSearch(){
+         clear.value = null;
+         showSearch.value = false;
+         showbutton.value = false;
+       }
 
             function submit(e) { 
-                clearTimeout(timeout.value);
+               showbutton.value = true;
+               clearTimeout(timeout.value);
                timeout.value = setTimeout(function(){
                   store.commit(`${CUSTOMERLIST_MODULE}${CUSTOMER_SET_LOADER}`,'');
                    nextTick(() => {
                      store.dispatch(`${CUSTOMERLIST_MODULE}${CUSTOMER_LOAD_LIST}`,{query:e.target.value , PerPage:3}).then((response)=>{
-                           showSearch.value = true;
+                            if(e.target.value){
+                              showSearch.value = true;
+                            } else {
+                              showSearch.value = false;
+                            }
                      }).catch((error)=>{
                         if(typeof error.response!="undefined")
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
@@ -181,6 +178,8 @@ export default({
                }  
               , 500)
             };
+
+      
 
            const Customer=computed(()=>{
                return store.getters[`${CUSTOMERLIST_MODULE}${CUSTOMER_GET_LIST}`];
@@ -201,6 +200,7 @@ export default({
 
             return {
                 submit,
+                clearSearch,
                 clear,
                 Customer,
                 showSearch,
@@ -208,6 +208,8 @@ export default({
                 CustomerOrders,
                 formatDate,
                 featureunavailable,
+                showbutton
+           
             }
         }
         
@@ -227,14 +229,13 @@ export default({
         display: flex;
         flex-direction: row;
         align-items: center;
-        padding: 12px 12px 12px 55px;
+        padding: 12px 55px 12px 55px;
         text-align: left;
         position: absolute;
         width: 440px;
         height: 40px;
-        left: 78px;
+        left: 28px;
         top: 12px;
-
         background: rgba(255, 255, 255, 0.3);
         border: 1px solid #ECECEC;
         box-sizing: border-box;
@@ -254,7 +255,7 @@ export default({
             font-size: 14px;
             line-height: 140%;
 
-            color: #000000;
+            color: #FFFFFF;
             flex: none;
             order: 1;
             align-self: flex-end;
@@ -293,13 +294,21 @@ export default({
     border-bottom: 1px solid #C3C3C3;
     padding-bottom: 16px;
     margin: 0 21px;
+    justify-content: center;
+    display: flex;
+    align-items: center;
    }
    .container{
     width: 75%;
     margin-left: 39px;
-    height: 79px;
     background: #F8F8F8;
     border-radius: 5px;
+   }
+   .row{
+    height: 79px;
+    justify-content: center;
+    display: flex;
+    align-items: center;
    }
    ul
 { 
@@ -310,7 +319,7 @@ export default({
     padding:0px;
 }
 li{
- margin-bottom: 18px;
+ margin-bottom: 8px;
 }
 .tag.b2c{
     color: #9E44F2;
@@ -343,6 +352,26 @@ input[type="search"]::-webkit-search-cancel-button {
     .body_medium{
       color:#000000;
     }
+    .position-relative{
+       width: calc(100% - 231px);
+       height: 100%;
+    }
+    .position-absolute{
+      left: 425px;
+      top: 22px;
+      color: white;
+    
+    }
+    .icon-close:before {
+      background: white;
+    }
+     .icon-close:after {
+      background: white;
+    }
+
+  .position-absolute:hover {
+  opacity: 1;
+}
 
  @media only screen and (max-width: 1089px) {
           .input-search{

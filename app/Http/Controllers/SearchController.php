@@ -16,14 +16,14 @@ class SearchController extends Controller
     $query = $request['query'];
     $PerPage = $request['PerPage'];
     $orders = DB::table('infoOrder')->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
-    ->where('FirstName', 'LIKE', $query . '%')
+    ->where('Name', 'LIKE', $query . '%')
     ->whereNotIn('Status',['DELETE','VOID'])
     ->groupBy('infoOrder.CustomerID')
     ->orderBy('Name')
     ->paginate($PerPage);
 
     $users = DB::table('infoCustomer')
-    ->where('FirstName', 'LIKE', $query . '%')
+    ->where('Name', 'LIKE', $query . '%')
     ->paginate($PerPage);
     foreach ($users as $item) {
         $item->Phone=json_decode($item->Phone);

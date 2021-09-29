@@ -53,5 +53,11 @@
         font-weight: 500;
         width: 178px;
     }
+    .col-12{
+    flex-direction: row;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    }
 
 </style>
