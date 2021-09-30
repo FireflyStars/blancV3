@@ -11,27 +11,41 @@ class SearchController extends Controller
 {
    
 
- public function SearchCustomer(Request $request)
+
+
+public function SearchCustomer(Request $request)
 {
     $query = $request['query'];
-    $PerPage = $request['PerPage'];
-    $orders = DB::table('infoOrder')->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
+    $PerPageOrder = $request['PerPageOrder'];
+    $PerPageUser = $request['PerPageUser'];
+    $PerPageEmails = $request['PerPageEmails'];
+
+    $orders = DB::table('infoOrder')->select(['infoOrder.id','infoOrder.Status','infoOrder.DateDeliveryAsk','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CustomerID',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate'])
+    ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
+    ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+    ->leftJoin('infoitems',function($join){
+    $join->on('infoInvoice.SubOrderID','=','infoitems.SubOrderID')
+    ->where('infoitems.SubOrderID','!=','')
+    ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+     })
     ->where('Name', 'LIKE', $query . '%')
-    ->whereNotIn('Status',['DELETE','VOID'])
+    ->orWhere('infoOrder.id',$query)
+    ->orWhere('infoitems.ItemTrackingKey',$query)
     ->groupBy('infoOrder.CustomerID')
     ->orderBy('Name')
-    ->paginate($PerPage);
+    ->paginate($PerPageOrder);
+
 
     $users = DB::table('infoCustomer')
     ->where('Name', 'LIKE', $query . '%')
-    ->paginate($PerPage);
+    ->paginate($PerPageUser);
     foreach ($users as $item) {
         $item->Phone=json_decode($item->Phone);
     }
 
     $emails = DB::table('infoCustomer')
     ->where('EmailAddress', 'LIKE', $query . '%')
-    ->paginate($PerPage);
+    ->paginate($PerPageEmails);
     
     foreach ($emails as $item) {
         $item->Phone=json_decode($item->Phone);

@@ -13,13 +13,13 @@
             <p v-if="!loader_running">we couldn't find any customers.</p>
   </section>
   
-     <ul  v-else class="list-group list-group-flush pt-3" style="background: #FFFFFF;" >
+     <ul  v-else class=" list-group-flush" style="background: #FFFFFF;" >
         <li class="list-group-item" v-if ="Customer.length > 0">
             <div class="content-wraper ">
                 <span class="subtitle col-6">Name</span>
-                <a class="d-flex justify-content-end col-6 show-more" @click="featureunavailable('Show more')" >Show more</a>
+                <a class="d-flex justify-content-end col-6 show-more" @click="featureunavailable('Show more')"  >Show more</a>
              </div>
-             <ul  class="list-group list-group-flush pt-2" >
+             <ul  class="list-group list-group-flush" >
                 <li v-for ="customer in Customer" :key="customer">
                   <div class="container">
                     <div class="row">
@@ -54,7 +54,7 @@
                 <span class="subtitle col-6">Email</span>
                 <a class="d-flex justify-content-end col-6 show-more" @click="featureunavailable('Show more')" >Show more</a>
              </div>
-             <ul  class="list-group list-group-flush pt-2">
+             <ul  class="list-group list-group-flush">
                 <li v-for ="customer in CustomerEmails" :key="customer">
                   <div class="container">
                     <div class="row">
@@ -87,10 +87,10 @@
                 <a class="d-flex justify-content-end col-6 show-more" @click="featureunavailable('Show more')" >Show more</a>
              </div>
 
-             <ul   class="list-group list-group-flush pt-2" > 
-                <li v-for ="order in CustomerOrders" :key="order">
+             <ul   class="list-group list-group-flush" > 
+                <li v-for ="(order,index) in CustomerOrders" :key="order">
                   <div class="container">
-                    <div class="row">
+                    <div class="row" @click="selectrow(order.id,index)">
                         <div class="col-3">
                          <span class="body_medium">{{order.Name.replace(',','').toLowerCase()}}</span>
                         </div>
@@ -120,10 +120,13 @@
      </ul>
 
  </div>
+  <wave-loader :show_loader="show_loader" msg="please wait..." v-else></wave-loader>
 
  </transition>
 </template>
 <script>
+   import WaveLoader from '../WaveLoader';
+    import {useRouter} from 'vue-router'
     import {ref,computed,watch, nextTick } from 'vue';
     import Tag from  '../miscellaneous/Tag'
        import {
@@ -135,18 +138,24 @@
         CUSTOMEREMAILS_GET_LIST,
         CUSTOMERORDERS_GET_LIST,
         CUSTOMER_SET_LOADER,
+        ORDERLIST_MODULE,
+        ORDERLIST_SELECT_CURRENT,
+        CUSTOMER_SET_LIMIT,
+
    
     } from "../../store/types/types";
     import {formatDate} from "../helpers/helpers";
     import {useStore} from 'vuex';
 export default({
      name: "SearchCustomer",
-     components:{Tag},
+     components:{Tag,WaveLoader},
        setup(){
+           const router = useRouter();
            const store =useStore();
            const showSearch=ref(false);
            const timeout =ref('');
            const clear = ref('');
+           const show_loader= ref(false);
            const showbutton = ref(false);
            const featureunavailable=((feature)=>{
                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:feature+' feature not yet implemented.',ttl:5,type:'success'});
@@ -156,15 +165,28 @@ export default({
          clear.value = null;
          showSearch.value = false;
          showbutton.value = false;
+         show_loader.value= false;
        }
+             function selectrow(id,colname){
+                if(colname=='line_select') return;
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SELECT_CURRENT}`,id);
+                  router.push({
+                    name:'OrderDetails',
+                    params: {
+                        order_id:id,
+                    },
+                })
+            }
+        
 
             function submit(e) { 
+           
                showbutton.value = true;
                clearTimeout(timeout.value);
                timeout.value = setTimeout(function(){
-                  store.commit(`${CUSTOMERLIST_MODULE}${CUSTOMER_SET_LOADER}`,'');
+                     show_loader.value= true;
                    nextTick(() => {
-                     store.dispatch(`${CUSTOMERLIST_MODULE}${CUSTOMER_LOAD_LIST}`,{query:e.target.value , PerPage:3}).then((response)=>{
+                     store.dispatch(`${CUSTOMERLIST_MODULE}${CUSTOMER_LOAD_LIST}`,{query:e.target.value , PerPageOrder:3 , PerPageUser:3 ,PerPageEmails:3}).then((response)=>{
                             if(e.target.value){
                               showSearch.value = true;
                             } else {
@@ -208,7 +230,9 @@ export default({
                 CustomerOrders,
                 formatDate,
                 featureunavailable,
-                showbutton
+                showbutton,
+                selectrow,
+                show_loader
            
             }
         }
@@ -268,10 +292,9 @@ export default({
     bottom: 0;
     background-color: #41464bad;
     left: 70px;
-    top: 56px;
+    top: 64px;
     right: 0;
     padding: 0 23px;
-    height: 100%;
     overflow-y: scroll;
     }
 
@@ -286,6 +309,11 @@ export default({
         text-decoration-line: underline;
         color: #000000;
     }
+    .col{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    }
    
    .list-group-flush > .list-group-item {
     border-width: 0 0 0;      
@@ -297,12 +325,14 @@ export default({
     justify-content: center;
     display: flex;
     align-items: center;
+    line-height: 22px;
    }
    .container{
-    width: 75%;
-    margin-left: 39px;
+    width: calc(100% - 87px);
     background: #F8F8F8;
     border-radius: 5px;
+    max-width: 785px;
+    margin: 0  0 0 39px !important;
    }
    .row{
     height: 79px;
@@ -319,7 +349,9 @@ export default({
     padding:0px;
 }
 li{
- margin-bottom: 8px;
+     margin: 0 0 8px 0;
+     /* width: calc(100% - 87px);
+     max-width: 785px; */
 }
 .tag.b2c{
     color: #9E44F2;
@@ -373,7 +405,7 @@ input[type="search"]::-webkit-search-cancel-button {
   opacity: 1;
 }
 
- @media only screen and (max-width: 1089px) {
+@media only screen and (max-width: 1280px)  {
           .input-search{
             width: auto !important;
 
@@ -382,11 +414,29 @@ input[type="search"]::-webkit-search-cancel-button {
             width: auto !important;
             height: auto;
         }
-        .search
-          {
-            left: 0;
-          }
         
-        
+    .search{
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    left:0px;
+  }  
+  .position-absolute {
+    left: 300px;
+    top: 26px;
+    color: white;
+}
+.icon-close:before {
+  width: 16px;
+  left: 4px;
+  top: 2px;
+} 
+.icon-close:after {
+  width: 16px;
+  top: 2px;
+  left: -2px;
+ }  
+    input::placeholder {
+            font-size: 12px;      
+    }  
     }
 </style>
