@@ -35,10 +35,10 @@ export const search= {
        
     },
     actions: {
-        [CUSTOMER_LOAD_LIST]:async ({commit},query ,PerPage)=>{
+        [CUSTOMER_LOAD_LIST]:async ({commit},query ,PerPageOrder,PerPageUser, PerPageEmails )=>{
             commit(CUSTOMER_SET_LOADER,'animate40');
 
-            return axios.post('/SearchCustomer', query , PerPage)
+            return axios.post('/SearchCustomer', query , PerPageOrder,PerPageUser, PerPageEmails)
             .then( (response)=>{
                 console.log(response)
                 if(response.data.customers.data!=null){
