@@ -22,7 +22,7 @@
              <ul  class="list-group list-group-flush" >
                 <li v-for ="customer in Customer" :key="customer">
                   <div class="container">
-                    <div class="row">
+                    <div class="row" @click="featureunavailable('Details Customer')">
                        <div class="col">
                           <span class="body_medium">{{customer.Name.replace(',','').toLowerCase()}}</span>
                             <div  v-if="customer.Phone!=''&&customer.Phone!=null" >
@@ -57,7 +57,7 @@
              <ul  class="list-group list-group-flush">
                 <li v-for ="customer in CustomerEmails" :key="customer">
                   <div class="container">
-                    <div class="row">
+                    <div class="row" @click="featureunavailable('Details Customer')">
                         <div class="col">
                           <b class = "body_regular" >{{customer.Name.replace(',','').toLowerCase()}}</b>
                             <div v-if="customer.Phone!=''&&customer.Phone!=null" >
@@ -321,6 +321,7 @@ export default({
         align-items: center;
         text-decoration-line: underline;
         color: #000000;
+        cursor: pointer;
     }
     .col{
     display: flex;
@@ -353,6 +354,7 @@ export default({
     justify-content: center;
     display: flex;
     align-items: center;
+    cursor: pointer;
    }
    ul
 { 
