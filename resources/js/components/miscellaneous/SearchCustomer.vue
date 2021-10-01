@@ -13,11 +13,11 @@
             <p v-if="!loader_running">we couldn't find any customers.</p>
   </section>
   
-     <ul  v-else class=" list-group-flush" style="background: #FFFFFF;" >
+     <ul  v-else class=" list-group-flush" style="background: #FFFFFF;cursor: default;" >
         <li class="list-group-item" v-if ="Customer.length > 0">
-            <div class="content-wraper ">
+            <div class="content-wraper " style="padding-top: 31px;">
                 <span class="subtitle col-6">Name</span>
-                <a class="d-flex justify-content-end col-6 show-more" @click="featureunavailable('Show more')"  >Show more</a>
+                <a class="d-flex justify-content-end col-6 show-more"  @click="loadMore('search_name')" >Show more</a>
              </div>
              <ul  class="list-group list-group-flush" >
                 <li v-for ="customer in Customer" :key="customer">
@@ -52,7 +52,7 @@
         <li class="list-group-item" v-if="CustomerEmails.length > 0">
              <div class="content-wraper ">
                 <span class="subtitle col-6">Email</span>
-                <a class="d-flex justify-content-end col-6 show-more" @click="featureunavailable('Show more')" >Show more</a>
+                <a class="d-flex justify-content-end col-6 show-more"  @click="loadMore('search_email')" >Show more</a>
              </div>
              <ul  class="list-group list-group-flush">
                 <li v-for ="customer in CustomerEmails" :key="customer">
@@ -82,11 +82,12 @@
              </ul>
         </li>
           <li class="list-group-item" v-if="CustomerOrders.length>0">
+             
              <div class="content-wraper">
                 <span class="subtitle col-6">Order</span>
-                <a class="d-flex justify-content-end col-6 show-more" @click="featureunavailable('Show more')" >Show more</a>
+               
+                <a class="d-flex justify-content-end col-6 show-more"  @click="loadMore('search_order')" >Show more</a>
              </div>
-
              <ul   class="list-group list-group-flush" > 
                 <li v-for ="(order,index) in CustomerOrders" :key="order">
                   <div class="container">
@@ -137,10 +138,11 @@
         CUSTOMER_GET_LIST,
         CUSTOMEREMAILS_GET_LIST,
         CUSTOMERORDERS_GET_LIST,
-        CUSTOMER_SET_LOADER,
         ORDERLIST_MODULE,
         ORDERLIST_SELECT_CURRENT,
-        CUSTOMER_SET_LIMIT,
+        LOADER_MODULE,
+        DISPLAY_LOADER,
+        HIDE_LOADER
 
    
     } from "../../store/types/types";
@@ -157,6 +159,8 @@ export default({
            const clear = ref('');
            const show_loader= ref(false);
            const showbutton = ref(false);
+
+
            const featureunavailable=((feature)=>{
                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:feature+' feature not yet implemented.',ttl:5,type:'success'});
             });
@@ -168,6 +172,8 @@ export default({
          show_loader.value= false;
        }
              function selectrow(id,colname){
+               showSearch.value = false;
+               show_loader.value= false;
                 if(colname=='line_select') return;
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SELECT_CURRENT}`,id);
                   router.push({
@@ -180,17 +186,17 @@ export default({
         
 
             function submit(e) { 
-           
                showbutton.value = true;
                clearTimeout(timeout.value);
                timeout.value = setTimeout(function(){
                      show_loader.value= true;
                    nextTick(() => {
-                     store.dispatch(`${CUSTOMERLIST_MODULE}${CUSTOMER_LOAD_LIST}`,{query:e.target.value , PerPageOrder:3 , PerPageUser:3 ,PerPageEmails:3}).then((response)=>{
+                     store.dispatch(`${CUSTOMERLIST_MODULE}${CUSTOMER_LOAD_LIST}`,{query:e.target.value}).then((response)=>{
                             if(e.target.value){
                               showSearch.value = true;
                             } else {
                               showSearch.value = false;
+                              show_loader.value= false;
                             }
                      }).catch((error)=>{
                         if(typeof error.response!="undefined")
@@ -218,7 +224,12 @@ export default({
                 return store.getters[`${CUSTOMERLIST_MODULE}${CUSTOMERORDERS_GET_LIST}`];
             }); 
 
-           
+          function loadMore(tab){
+                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
+                 store.dispatch(`${CUSTOMERLIST_MODULE}${CUSTOMER_LOAD_LIST}`,{showmore:tab,query:clear.value}).finally(()=>{
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                });
+            }
 
             return {
                 submit,
@@ -232,7 +243,8 @@ export default({
                 featureunavailable,
                 showbutton,
                 selectrow,
-                show_loader
+                show_loader,
+                loadMore
            
             }
         }
@@ -296,6 +308,7 @@ export default({
     right: 0;
     padding: 0 23px;
     overflow-y: scroll;
+    cursor: pointer;
     }
 
     .show-more{
@@ -326,6 +339,7 @@ export default({
     display: flex;
     align-items: center;
     line-height: 22px;
+    
    }
    .container{
     width: calc(100% - 87px);
