@@ -42,7 +42,7 @@
     background-color:$gray-900!de;
     position: fixed;
     width: 100%;
-    z-index: 3;
+    z-index: 10;
 }
     .btn-white{
         background: #F8F8F8;
