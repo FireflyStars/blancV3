@@ -54,5 +54,22 @@ public function SearchCustomer(Request $request)
         return response()->json( ['customers_orders'=>$orders ,  'customers_emails'=>$emails , 'customers'=>$users  ]);
 
 }
-}
 
+public function SearchByCustomer(Request $request)
+ {
+    $query = $request['query'];
+    $PerPage = $request['PerPage'];
+    $Customer = DB::table('infoCustomer')->select(['infoCustomer.id','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CustomerID','infoCustomer.Phone','infoCustomer.EmailAddress'])
+    ->where('Name', 'LIKE', '%' . $query . '%')
+    ->orWhere('EmailAddress', 'LIKE', $query . '%')
+    ->orWhere('Phone', 'LIKE', '%' . $query . '%')
+    ->orderBy('Name')
+    ->paginate($PerPage);
+     
+    foreach ($Customer as $item) {
+        $item->Phone=json_decode($item->Phone);
+    }
+    return response()->json($Customer);
+ }
+
+}

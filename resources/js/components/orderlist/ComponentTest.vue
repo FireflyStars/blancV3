@@ -8,6 +8,7 @@
             <side-bar></side-bar>
                 <div class="col main-view p-5">
                     <h2>Component library</h2>
+
                     <div class="row">
                         <div class="col-3">
 
@@ -16,6 +17,7 @@
                         <div class="col p-2">
                             {{sel}}
                         </div>
+                
                     </div>
                     <div class="row">
                         <div class="col-3">
@@ -92,8 +94,19 @@
                                 </template>
                             </tab-pane>
                         </div>
-
+                         
                     </div>
+
+    
+                            <div class="row search">
+                          
+                                    <div  style="padding: 0;" >
+                                        <search v-model="search" name="search" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Search a customer" hint="disabled till 2021-09-10" ></search>
+
+                                    </div>
+                    
+                           </div>
+                         
                 </div>
             </div>
         </div>
@@ -110,12 +123,15 @@
     import TabPane from '../miscellaneous/TabPane'
     import {usePermission} from "../helpers/helpers";
     import {PERMISSIONS} from "../../store/types/permission_types";
+    import Search from '../miscellaneous/Search';
+
 
     export default {
         name: "ComponentTest",
-        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane},
+        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search},
         setup(props,context){
             const showcontainer=ref(false);
+            
 
             const sel=ref(1);
             const slot=ref(5);
@@ -125,6 +141,7 @@
             const date=ref('');
             const date2=ref('2021-09-15');
             const date3=ref('2021-09-15');
+            const search= ref('');
             onMounted(()=>{
                 nextTick(()=>{
                     showcontainer.value=true;
@@ -143,7 +160,8 @@
             }).catch((err)=>{
                 console.log(err)
             });
-
+            
+        
 
             
             return {
@@ -156,7 +174,9 @@
                 slot2,
                 date,
                 date2,
-                date3
+                date3,
+                search,
+
             }
         }
     }
@@ -181,4 +201,14 @@
         width: 100%;
         z-index: 9999;
     }
+    .search{
+    background: #fff;
+    width: 517px;
+    height: auto;
+    box-shadow: 0px 4px 16px rgb(0 0 0 / 12%);
+    border-radius: 5px;
+    padding: 20px 18px 40px 15px;
+    margin-top: 28px;
+    }
+
 </style>

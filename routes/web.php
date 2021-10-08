@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OrderListController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\ScanController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -48,3 +49,4 @@ Route::get('{any}', function () {
     return view('welcome');
 })->where('any','.*');
 Route::post('/SearchCustomer', [SearchController::class, 'SearchCustomer'])->name('SearchCustomer');
+Route::post('/SearchByCustomer', [SearchController::class, 'SearchByCustomer'])->name('SearchByCustomer');
