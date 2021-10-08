@@ -3,7 +3,7 @@
         <label class="select-label" :class="{disabled:disabled==true}" v-if="label">{{label}}</label>
       
         <div class="position-relative ">
-            <input type="text"  placeholder="Search..." v-model="search" @keyup.prevent="submit"/> 
+            <input type="text"  placeholder="Type name..." v-model="search" @keyup.prevent="submit"/> 
              <span v-if="showbutton" @click='clearSearch' class="position-absolute"><i class="icon-close"></i></span>
         </div>
        
@@ -78,6 +78,7 @@ export default({
             label:String,
             disabled:Boolean,
             hint:String,
+            CustomerData:Object,
         },
         setup(props,context){
 
@@ -87,7 +88,6 @@ export default({
            const showSearch=ref(false);
            const showbutton = ref(false);
            const show_loader= ref(false);
-           search.value = props.modelValue;
            
      
      function clearSearch(){
@@ -101,7 +101,6 @@ export default({
                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:feature+' feature not yet implemented.',ttl:5,type:'success'});
             });
    function submit(e) { 
-
                clearTimeout(timeout.value);
                timeout.value = setTimeout(function(){
                      show_loader.value= true;
@@ -130,12 +129,13 @@ export default({
             }
 
             const selectCustomer=(value)=>{
+                context.emit('getCustomer', value)
+                
                 if( search.value==value) {
                     search.value = "";
                 }else {
-                    search.value = value['Name'];
+                    search.value = value['Name'];  
                 }
-                console.log('customer_id' , value['CustomerID'])
                 context.emit("update:modelValue",search.value);
                 showSearch.value = false;
             }
@@ -199,11 +199,14 @@ export default({
     margin-bottom: 6px;
   }
   .search{
-        background: white;
-        width:100%;
-        height:auto;
-        margin: 0 1px;
-        display: block;
+    position: absolute;
+    background: #fff;
+    width: 517px;
+    height: auto;
+    box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
+    border-radius: 5px;
+    padding: 12px 18px 32px 15px;
+    margin: 0;
   }
    .body_medium{
       color:#000000;

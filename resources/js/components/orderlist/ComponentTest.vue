@@ -97,12 +97,10 @@
                          
                     </div>
 
-    
                             <div class="row search">
                           
                                     <div  style="padding: 0;" >
-                                        <search v-model="search" name="search" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Search a customer" hint="disabled till 2021-09-10" ></search>
-
+                                        <search  v-model="search" name="search" :CustomerData="myData" v-on:getCustomer="ClickCustomer" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Search a customer"  ></search>
                                     </div>
                     
                            </div>
@@ -131,7 +129,7 @@
         components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search},
         setup(props,context){
             const showcontainer=ref(false);
-            
+            const Customer= ref('');
 
             const sel=ref(1);
             const slot=ref(5);
@@ -160,7 +158,11 @@
             }).catch((err)=>{
                 console.log(err)
             });
-            
+
+            function ClickCustomer(value){
+                Customer.value = value;
+                console.log('customer' ,value )
+             };
         
 
             
@@ -176,6 +178,8 @@
                 date2,
                 date3,
                 search,
+                Customer,
+                ClickCustomer
 
             }
         }
@@ -203,12 +207,13 @@
     }
     .search{
     background: #fff;
-    width: 517px;
-    height: auto;
+    width: 580px;
+    height: 244px;
     box-shadow: 0px 4px 16px rgb(0 0 0 / 12%);
     border-radius: 5px;
-    padding: 20px 18px 40px 15px;
+    padding: 20px 32px 40px 32px;
     margin-top: 28px;
+    position: relative;
     }
 
 </style>
