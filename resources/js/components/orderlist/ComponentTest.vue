@@ -97,8 +97,10 @@
                          
                     </div>
 
+         
+    
                             <div class="row search">
-                          
+                                    <span class= "subtitle">Customer details</span>
                                     <div  style="padding: 0;" >
                                         <search  v-model="search" name="search" :CustomerData="myData" v-on:getCustomer="ClickCustomer" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Search a customer"  ></search>
                                     </div>
@@ -122,6 +124,7 @@
     import {usePermission} from "../helpers/helpers";
     import {PERMISSIONS} from "../../store/types/permission_types";
     import Search from '../miscellaneous/Search';
+
 
 
     export default {
@@ -158,6 +161,8 @@
             }).catch((err)=>{
                 console.log(err)
             });
+
+
 
             function ClickCustomer(value){
                 Customer.value = value;
@@ -211,9 +216,12 @@
     height: 244px;
     box-shadow: 0px 4px 16px rgb(0 0 0 / 12%);
     border-radius: 5px;
-    padding: 20px 32px 40px 32px;
+    padding: 20px 32px 160px 32px;
     margin-top: 28px;
     position: relative;
+    }
+    .subtitle{
+        height: 25px;
     }
 
 </style>

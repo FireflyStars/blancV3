@@ -1,18 +1,29 @@
 <template>
     <div class="dp noselect">
-        <label class="select-label" :class="{disabled:disabled==true}" v-if="label">{{label}}</label>
+        <label v-if="!showSearch && label" class="select-label" :class="{disabled:disabled==true}">{{label}}</label>
       
-        <div class="position-relative ">
+        <div  v-if="!showSearch" class="position-relative ">
             <input type="text"  placeholder="Type name..." v-model="search" @keyup.prevent="submit"/> 
              <span v-if="showbutton" @click='clearSearch' class="position-absolute"><i class="icon-close"></i></span>
         </div>
        
        
         <transition name="trans-search">
-          <div class="row search" v-if="showSearch">
-            <section class="nodata p-2" v-if ="Customer.length == 0">
+            
+         <div class="row search" v-if="showSearch">
+         <label class="select-label" :class="{disabled:disabled==true}" v-if="label">{{label}}</label>
+         
+            <div class="input_search">
+
+            <div  v-if="showSearch" class="position-relative input_search">
+            <input type="text"  placeholder="Type name..." v-model="search" @keyup.prevent="submit"/> 
+             <span v-if="showbutton" @click='clearSearch' class="position-absolute"><i class="icon-close"></i></span>
+           </div>
+              <section class="nodata p-2" v-if ="Customer.length == 0">
                 <p >we couldn't find any customers.</p>
              </section>
+                    
+            </div>
              <ul  class="list-group list-group-flush" v-if ="Customer.length > 0" >
                  <li v-for ="customer in Customer" :key="customer">
                       <div class="container">
@@ -189,7 +200,9 @@ export default({
     .trans-search-leave-active{
         transition: all ease 0.2s;
     }
-
+  .noselect{
+     padding-top: 40px; 
+  }
   .select-label{
     font-family: Gotham Rounded;
     font-style: normal;
@@ -205,8 +218,11 @@ export default({
     height: auto;
     box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
     border-radius: 5px;
-    padding: 12px 18px 32px 15px;
+    padding: 20px 32px 40px 32px !important;
     margin: 0;
+  }
+  .input_search{
+      padding:0 !important;
   }
    .body_medium{
       color:#000000;
