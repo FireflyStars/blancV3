@@ -89,7 +89,6 @@ export default({
             label:String,
             disabled:Boolean,
             hint:String,
-            CustomerData:Object,
         },
         setup(props,context){
 

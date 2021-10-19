@@ -174,4 +174,17 @@
     .tag.b2b{
         background-color: #9E44F2;
     }
+    .tag.vip{
+        padding: 5px 8px;
+        position: absolute;
+        width: 64px !important;
+        height: 24px;
+        background: rgba(241, 210, 164, 0.7);
+        border-radius: 4px;
+        color: #B69968;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+    }
 </style>

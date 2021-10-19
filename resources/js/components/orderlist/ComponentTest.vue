@@ -97,12 +97,21 @@
                          
                     </div>
 
-         
+                    <div class="row" style="padding-top:20px">
+                        <div class="col">
+                            <button @click="scanBarcode" >Scan Barcode</button>
+                            <order-barcode  v-on:scan_Barcode="scanBarcode" class="back-layer" v-if="show_barcode" style="background: transparent;" ></order-barcode>
+                            <div  v-if="show_barcode" class= "overlay">
+                            </div>
+                        </div>
+
+                         
+                    </div>
     
                             <div class="row search">
                                     <span class= "subtitle">Customer details</span>
                                     <div  style="padding: 0;" >
-                                        <search  v-model="search" name="search" :CustomerData="myData" v-on:getCustomer="ClickCustomer" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Search a customer"  ></search>
+                                        <search  v-model="search" name="search" v-on:getCustomer="ClickCustomer" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Search a customer"  ></search>
                                     </div>
                     
                            </div>
@@ -114,7 +123,7 @@
 </template>
 
 <script>
-    import {ref,onMounted,nextTick} from 'vue';
+    import {ref,onMounted,nextTick,watch} from 'vue';
     import MainHeader from '../layout/MainHeader';
     import SideBar from '../layout/SideBar'
     import SelectOptions from '../miscellaneous/SelectOptions'
@@ -124,15 +133,17 @@
     import {usePermission} from "../helpers/helpers";
     import {PERMISSIONS} from "../../store/types/permission_types";
     import Search from '../miscellaneous/Search';
-
+    import OrderBarcode from '../miscellaneous/OrderBarcode'
 
 
     export default {
         name: "ComponentTest",
-        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search},
+        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,OrderBarcode},
         setup(props,context){
             const showcontainer=ref(false);
+            const show_barcode= ref(false);
             const Customer= ref('');
+            const Scan= ref('');
 
             const sel=ref(1);
             const slot=ref(5);
@@ -143,6 +154,17 @@
             const date2=ref('2021-09-15');
             const date3=ref('2021-09-15');
             const search= ref('');
+
+           
+              watch(() => Scan.value, (current_val, previous_val) => {
+              if(Scan.value == false) {
+                  show_barcode.value= false;
+              }else {
+                  show_barcode.value= true;
+              }
+
+            });
+
             onMounted(()=>{
                 nextTick(()=>{
                     showcontainer.value=true;
@@ -162,7 +184,9 @@
                 console.log(err)
             });
 
-
+            function scanBarcode(value){
+                Scan.value = value;
+            };
 
             function ClickCustomer(value){
                 Customer.value = value;
@@ -183,7 +207,10 @@
                 date2,
                 date3,
                 search,
+                show_barcode,
+                scanBarcode,
                 Customer,
+                Scan,
                 ClickCustomer
 
             }
@@ -219,6 +246,19 @@
     padding: 20px 32px 160px 32px;
     margin-top: 28px;
     position: relative;
+    }
+    .overlay{
+        display: block;
+        content: '';
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        left: 0;
+        top: 0;
+        background: black;
+        opacity: 0.6;
+        cursor: pointer;
+        z-index: 100;
     }
     .subtitle{
         height: 25px;
