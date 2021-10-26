@@ -111,7 +111,7 @@ export const CUSTOMER_SEARCH_SET_COUNT='CUSTOMER_SEARCH_SET_COUNT'//mutations
 export const SCAN_MODULE='SCAN_MODULE/'//namespace
 export const SCAN_GET_ITEMS='SCAN_GET_ITEMS'//getters
 export const SCAN_GET_BAGS='SCAN_GET_BAGS'//getters
-export const SCAN_ITEMS='SCAN_ITEMS';//action
+export const SCAN_ITEM='SCAN_ITEM';//action
 export const SCAN_SET_ITEMS='SCAN_SET_ITEMS';//mutations
 export const SCAN_SET_BAGS='SCAN_SET_BAGS';//mutations
 

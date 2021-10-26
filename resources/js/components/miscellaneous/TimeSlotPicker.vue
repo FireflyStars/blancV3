@@ -1,5 +1,5 @@
 <template>
-    <select-options :placeholder="'00-00 AM'" :options="timeslot_def" v-model="timeslot" :name="name" :classnames="'timeslotpicker'" :hint="hint" :label="label" :disabled="disabled" :valid="valid">
+    <select-options :placeholder="placeholder" :options="timeslot_def" v-model="timeslot" :name="name" :classnames="'timeslotpicker'" :hint="hint" :label="label" :disabled="disabled" :valid="valid">
         <div class="timeslot body_small_bold" v-for="(time,index) in timeslot_def" :class="{disabled:!time.available,current:time.value==timeslot}" @click="selectTimeSlot(time.value)">{{time.display}}</div>
     </select-options>
 </template>
@@ -23,6 +23,7 @@
             label:String,
             disabled:Boolean,
             valid:Boolean|null,
+            placeholder:String,
         },
         setup(props,context){
             const timeslot=ref('');
@@ -58,6 +59,11 @@
                     value:11,
                     display:'6-8 pm',
                     available:false
+                },
+                {
+                    value:13,
+                    display:'8-8 pm',
+                    available:true
                 }
             ]);
             watch(()=>props.availableSlots,(current_val,previous_val)=>{
@@ -80,6 +86,10 @@
                 context.emit("update:modelValue",timeslot.value);
                 store.commit(`${SELECT_MODULE}${SET_CURRENT_SELECT}`,'');
             }
+            watch(()=>props.modelValue,(current_val,previous_val)=>{
+                timeslot.value = current_val;
+            });
+
             return {
                 timeslot_def,
                 timeslot,

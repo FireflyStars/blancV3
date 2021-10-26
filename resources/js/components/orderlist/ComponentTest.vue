@@ -67,7 +67,7 @@
                     </div>
                     <div class="row">
                         <div class="col-3">
-                            <time-slot-picker v-model="slot"   name="timepick1" :available-slots="[1,5]" hint="How about a very long hint" label="Time"></time-slot-picker>
+                            <time-slot-picker placeholder="00-00 AM" v-model="slot"   name="timepick1" :available-slots="[1,5]" hint="How about a very long hint" label="Time"></time-slot-picker>
                         </div>
                         <div class="col p-2">
                             {{slot}}
@@ -76,7 +76,7 @@
 
                     <div class="row">
                         <div class="col-3">
-                            <time-slot-picker v-model="slot2"   name="timepick2" :available-slots="[1,5]" hint="Oops its disabled" label="Time" :disabled="true"></time-slot-picker>
+                            <time-slot-picker placeholder="00-00 AM" v-model="slot2"   name="timepick2" :available-slots="[1,5]" hint="Oops its disabled" label="Time" :disabled="true"></time-slot-picker>
                         </div>
                         <div class="col p-2">
                             {{slot2}}
@@ -108,13 +108,22 @@
                          
                     </div>
     
-                            <div class="row search">
-                                    <span class= "subtitle">Customer details</span>
-                                    <div  style="padding: 0;" >
-                                        <search  v-model="search" name="search" v-on:getCustomer="ClickCustomer" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Search a customer"  ></search>
-                                    </div>
+                    <div class="row search">
+                        
+                        <span class= "subtitle">Customer details</span>
+                        <div  style="padding: 0;" >
+                            <search  v-model="search" name="search" v-on:getCustomer="ClickCustomer" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Search a customer"  ></search>
+                        </div>
                     
-                           </div>
+                     </div>
+
+
+                    <div class="row recurring-form">
+                      <div class="col-4 recurring">
+                            <recurring-form  v-model="data"></recurring-form>
+                      </div>
+                       
+                    </div>      
                          
                 </div>
             </div>
@@ -134,11 +143,12 @@
     import {PERMISSIONS} from "../../store/types/permission_types";
     import Search from '../miscellaneous/Search';
     import OrderBarcode from '../miscellaneous/OrderBarcode'
+    import RecurringForm from '../miscellaneous/RecurringForm'
 
 
     export default {
         name: "ComponentTest",
-        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,OrderBarcode},
+        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,OrderBarcode, RecurringForm},
         setup(props,context){
             const showcontainer=ref(false);
             const show_barcode= ref(false);
@@ -154,8 +164,8 @@
             const date2=ref('2021-09-15');
             const date3=ref('2021-09-15');
             const search= ref('');
+            const data= ref([]);
 
-           
               watch(() => Scan.value, (current_val, previous_val) => {
               if(Scan.value == false) {
                   show_barcode.value= false;
@@ -192,6 +202,12 @@
                 Customer.value = value;
                 console.log('customer' ,value )
              };
+
+               watch(() => data.value, (current_val, previous_val) => {
+                 console.log('recurring_order', current_val)
+
+            });
+
         
 
             
@@ -211,7 +227,8 @@
                 scanBarcode,
                 Customer,
                 Scan,
-                ClickCustomer
+                ClickCustomer,
+                data
 
             }
         }
@@ -262,6 +279,14 @@
     }
     .subtitle{
         height: 25px;
+    }
+    .recurring{
+       margin: 20px;
+       width: 540px;
+    }
+    .recurring-form{
+        width: 580px;
+        flex-wrap: nowrap;
     }
 
 </style>

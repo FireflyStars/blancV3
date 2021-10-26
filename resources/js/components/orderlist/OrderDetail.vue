@@ -39,7 +39,7 @@
             </div>
             <div class="col-6  p-0 d-flex justify-content-evenly">
                 <date-picker v-model="cc_new_delivery_date" name="cc_new_delivery_date" :disabled-to-date="disabledtodate" :available-dates="availabledates" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
-                <time-slot-picker v-model="suggest_timeslot"   name="suggest_timeslot" :available-slots="availabletimeslot"></time-slot-picker>
+                <time-slot-picker placeholder="00-00 AM" v-model="suggest_timeslot"   name="suggest_timeslot" :available-slots="availabletimeslot"></time-slot-picker>
             </div>
             <div class="col-1 p-0">
                 <button class="btn btn-dark btn-black" @click="setNewDeliveryDate">OK</button>
