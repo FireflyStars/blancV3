@@ -1,8 +1,8 @@
 <template>
-    <div class="dp noselect">
+    <div class="dp noselect position-relative">
         <label v-if="!showSearch && label" class="select-label" :class="{disabled:disabled==true}">{{label}}</label>
       
-        <div  v-if="!showSearch" class="position-relative ">
+        <div  v-if="!showSearch" class="position-relative " >
             <input type="text"  placeholder="Type name..." v-model="search" @keyup.prevent="submit"/> 
              <span v-if="showbutton" @click='clearSearch' class="position-absolute"><i class="icon-close"></i></span>
         </div>
@@ -16,7 +16,7 @@
             <div class="input_search">
 
             <div  v-if="showSearch" class="position-relative input_search">
-            <input type="text"  placeholder="Type name..." v-model="search" @keyup.prevent="submit"/> 
+            <input type="text"  ref="inputsearch" placeholder="Type name..." v-model="search" @keyup.prevent="submit"/>
              <span v-if="showbutton" @click='clearSearch' class="position-absolute"><i class="icon-close"></i></span>
            </div>
               <section class="nodata p-2" v-if ="Customer.length == 0">
@@ -59,7 +59,7 @@
                  <span v-if="CountCustomer >0 " class="show-more body_medium" @click="loadMore()">{{CountCustomer}} more customers</span>
              </div>
             </div>
-            <wave-loader :show_loader="show_loader" msg="please wait..." v-else></wave-loader>
+
         </transition>
 
     </div>
@@ -67,7 +67,7 @@
 </template>
 
 <script>
-  import {ref,nextTick,computed} from 'vue';
+  import {ref,nextTick,computed,watchEffect} from 'vue';
   import WaveLoader from '../WaveLoader';
     import {
         CUSTOMERLIST_MODULE,
@@ -98,7 +98,7 @@ export default({
            const showSearch=ref(false);
            const showbutton = ref(false);
            const show_loader= ref(false);
-           
+           const inputsearch=ref(null);
      
      function clearSearch(){
         
@@ -139,14 +139,14 @@ export default({
             }
 
             const selectCustomer=(value)=>{
-                context.emit('getCustomer', value)
+
                 
                 if( search.value==value) {
                     search.value = "";
                 }else {
                     search.value = value['Name'];  
                 }
-                context.emit("update:modelValue",search.value);
+                context.emit("update:modelValue",value.CustomerID);
                 showSearch.value = false;
             }
 
@@ -158,6 +158,13 @@ export default({
                return store.getters[`${CUSTOMERLIST_MODULE}${CUSTOMER_GET_SEARCH_COUNT}`];
 
             });
+            watchEffect(() => {
+                if(inputsearch.value!=null)
+                    inputsearch.value.focus();
+            },
+                {
+                    flush: 'post'
+                });
 
         return {
             search,
@@ -170,7 +177,8 @@ export default({
             showbutton,
             loadMore,
             show_loader,
-            selectCustomer
+            selectCustomer,
+            inputsearch
         }
     },
 })
@@ -199,9 +207,7 @@ export default({
     .trans-search-leave-active{
         transition: all ease 0.2s;
     }
-  .noselect{
-     padding-top: 40px; 
-  }
+
   .select-label{
     font-family: Gotham Rounded;
     font-style: normal;
@@ -213,12 +219,13 @@ export default({
   .search{
     position: absolute;
     background: #fff;
-    width: 517px;
+    width: 100%;
     height: auto;
     box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
     border-radius: 5px;
     padding: 20px 32px 40px 32px !important;
     margin: 0;
+      top:-10px;
   }
   .input_search{
       padding:0 !important;
@@ -257,7 +264,7 @@ export default({
         font-weight: normal;
     }
     input:focus-visible{
-       outline-color: transparent;
+       outline:2px #000000 solid;
     }
     ul{ 
         border-radius: 5px;

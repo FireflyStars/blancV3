@@ -12,7 +12,7 @@ import {
     ORDERDETAIL_UPDATE_SUGGESTED_DELIVERY_DATE,
     ORDERDETAIL_SPLIT,
     ORDERDETAIL_NEW_DELIVERY_DATE,
-    ORDERDETAIL_UPDATE,
+    ORDERDETAIL_UPDATE, ORDERDETAIL_SET_ITEMS,
 
 } from "../types/types";
 import axios from "axios";
@@ -56,6 +56,9 @@ export const orderdetail= {
             }
 
         },
+        [ORDERDETAIL_SET_ITEMS]:(state,payload)=>{
+            state.orderdetail.items=payload;
+        }
     }
     ,
     actions:{
@@ -68,11 +71,9 @@ export const orderdetail= {
                 items:state.selected_items
 
             }).then( (response)=>{
-                if(response.data.order.detail!=null){
+                if(response.data.items!=null){
 
-                    //commit(ORDERDETAIL_SET_DETAILS,response.data.order);
-
-
+                    commit(ORDERDETAIL_SET_ITEMS,response.data.items);
 
                 }
                 return Promise.resolve(response);

@@ -1,5 +1,5 @@
 <template>
-    <label class="select-label" :class="{disabled:disabled==true}" v-if="label">{{label}}</label>
+    <label class="select-label body_medium" :class="{disabled:disabled==true}" v-if="label">{{label}}</label>
     <div class="select noselect" :class="cname" @click.self="selectclick"><span class="disp" :class="{placeholder:current_display=='',disabled: disabled==true}" @click.self="selectclick"><template v-if="current_display==''">{{placeholder}}</template><template v-else>{{current_display}}</template></span>
         <transition name="trans-select">
             <div class="select-options"  v-if="sel===name"  >
@@ -96,6 +96,7 @@
             });
             watch(() =>props.disabled, (current_val, previous_val) => {
                 cname.value = classNames();
+                store.commit(`${SELECT_MODULE}${SET_CURRENT_SELECT}`,'');
             });
 
             return{
@@ -153,7 +154,7 @@
 
         background: #EEEEEE;
         border: 1px solid #EEEEEE;
-        outline: 2px #000000 auto;
+        outline: 2px #000000 solid;
     }
     .select.active .disp{
         font-weight: 600;

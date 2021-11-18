@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Conveyor extends Model
 {
     use HasFactory;
 
-
+    //copied from blancpos
     public static function addLineIn($tracking='',$NumInvoice,$Type,$suborder_id=false){
         $to_insert = [];
         $inv = false;

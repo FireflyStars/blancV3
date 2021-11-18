@@ -8,6 +8,8 @@ import {sidebar as SIDEBAR_MODULE} from "./modules/sidebar";
 import {search as CUSTOMERLIST_MODULE} from "./modules/search";
 import {permission as PERMISSION_MODULE} from "./modules/permission";
 import {scan as SCAN_MODULE} from "./modules/scan";
+import {neworder as NEWORDER_MODULE} from "./modules/neworder";
+
 
 export default createStore({
     modules:{
@@ -19,7 +21,7 @@ export default createStore({
         SIDEBAR_MODULE,
         CUSTOMERLIST_MODULE,
         PERMISSION_MODULE,
-        SCAN_MODULE
-
+        SCAN_MODULE,
+        NEWORDER_MODULE,
     }
 })

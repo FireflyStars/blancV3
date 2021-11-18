@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Conveyor;
 use App\Tranche;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -347,6 +348,167 @@ class OrderListController extends Controller
     }
 
     public function splititems(Request $request){
+        $suborder_items= $request->post('items');
+        $infoOrder_id= $request->post('infoOrder_id');
+        $upsert = false;
+        $infoOrder_idS=[];
+        foreach ($suborder_items as $suborder=>$items) {
+            //copied from blancpos
+            foreach ($items as $item_id) {
+
+
+                $item = DB::table('infoitems')
+                    ->select('infoitems.id_items', 'infoOrder.id AS order_id', 'infoitems.PromisedDate', 'infoOrder.CustomerID', 'infoInvoice.*', 'infoitems.nextpost', 'infoitems.ItemTrackingKey', 'infoInvoice.Client')
+                    ->join('infoInvoice', 'infoitems.SubOrderID', 'infoInvoice.SubOrderID')
+                    ->join('infoOrder', 'infoInvoice.OrderID', 'infoOrder.orderID')
+                    ->where('infoitems.id', $item_id)
+                    ->first();
+
+                if ($item) {
+
+                    Conveyor::addLineIn($item->ItemTrackingKey, $item->NumInvoice, 'Split');
+
+
+                    $other_items = DB::table('infoitems')
+                        ->join('infoInvoice', 'infoitems.SubOrderID', 'infoInvoice.SubOrderID')
+                        ->join('infoOrder', 'infoInvoice.OrderID', 'infoOrder.OrderID')
+                        ->where('infoOrder.id', '=', $item->order_id)
+                        ->where('infoitems.id', '!=', $item_id)
+                        ->get();
+
+
+                    if (count($other_items) > 0) { //si on a > 1 item pour le sub-order
+
+                        //Create new order
+                        $order = DB::table('infoOrder')->where('id', $item->order_id)->first();
+                        $new_order = (array)$order;
+
+                        foreach ($new_order as $k => $v) {
+                            if (in_array($k, ['id', 'DatePickup', 'DateDeliveryAsk', 'PickupID', 'DeliveryAskID'])) {
+                                unset($new_order[$k]);
+                            }
+                        }
+
+                        $new_order_uuid = Str::uuid()->toString();
+
+                        $new_order['created_at'] = date('Y-m-d H:i:s');
+                        $new_order['updated_at'] = date('Y-m-d H:i:s');
+                        $new_order['OrderID'] = $new_order_uuid;
+
+                        $last_id_order_inserted = DB::table('infoOrder')->insertGetId($new_order);
+                        $infoOrder_idS[]=$last_id_order_inserted;
+
+                        //Create new suborder
+
+                        $new_invoice = (array)$item;
+
+                        foreach ($new_invoice as $k => $v) {
+                            if (in_array($k, ['id_items', 'order_id', 'id', 'PromisedDate', 'InvoiceID', 'nextpost', 'ItemTrackingKey'])) {
+                                unset($new_invoice[$k]);
+                            }
+                        }
+
+
+                        $inv_part1 = date('m');
+
+
+                        $last_id_split = 0;
+                        $last_split = DB::table('split')->latest('id')->first();
+
+                        if ($last_split) {
+                            $last_id_split = $last_split->id;
+                        }
+
+                        $inv_part2 = 900000 + $last_id_split + 1;
+
+                        $new_invoice_uuid = Str::uuid()->toString();
+                        $new_invoice['NumInvoice'] = $inv_part1 . "-" . $inv_part2;
+                        $new_invoice['date_add'] = date('Y-m-d H:i:s');
+                        $new_invoice['OrderID'] = $new_order_uuid;
+                        $new_invoice['id_invoice'] = 0;
+                        $new_invoice['InvoiceID'] = $new_invoice_uuid;
+                        $new_invoice['SubOrderID'] = '';
+
+                        $last_id_invoice_inserted = DB::table('infoInvoice')->insertGetId($new_invoice);
+
+
+                        $new_inv = DB::table('infoInvoice')->where('id', $last_id_invoice_inserted)->first();
+
+
+                        if ($new_inv) {
+                            $upsert = DB::table('infoitems')->where('id_items', $item->id_items)
+                                ->update([
+                                    'PromisedDate' => '2000-01-01',
+                                    'InvoiceID' => $new_invoice_uuid,
+                                    'id_invoice' => 0,
+                                    'SubOrderID' => $new_inv->SubOrderID,
+                                ]);
+
+                            DB::table('infoOrder')->where('id', $item->order_id)->update(['Split' => 1]);
+                        }
+
+                        $upsert = DB::table('split')->insert([
+                            'item_id' => $item_id,
+                            'old_order_id' => $item->order_id,
+                            'order_id' => $last_id_order_inserted,
+                            'old_suborder_id' => $item->id_invoice,
+                            'suborder_id' => $last_id_invoice_inserted,
+                            'old_promised_date' => $item->PromisedDate,
+                            'created_at' => date('Y-m-d H:i:s'),
+                        ]);
+
+                        Conveyor::addLineIn($item->ItemTrackingKey, $new_inv->NumInvoice, 'New Record');
+
+
+                    } else {
+                        //Mettre date item, order a 2000-01-01
+                        $upsert = DB::table('infoitems')->where('id_items', $item->id_items)->update(['PromisedDate' => '2000-01-01']);
+                    }
+
+
+                }
+            }
+        }
+
+        $order=DB::table('infoOrder')->where('id','=',$infoOrder_id)->first();
+
+        $infoitems=DB::table('infoitems')->select(['infoInvoice.NumInvoice','infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status','TypePost.Name as station',])->join('infoInvoice',function($join) use($order){
+            $join->on('infoInvoice.SubOrderID','=','infoitems.SubOrderID')
+                ->where('infoInvoice.OrderID','=',$order->OrderID);
+        })->leftJoin('postes','postes.id','=','infoitems.nextpost')
+            ->leftJoin('TypePost','TypePost.id','=','postes.TypePost')
+            ->whereNotIn('infoitems.Status',['DELETE','VOID'])
+            ->orderBy('infoInvoice.NumInvoice')->get();
+        $items=[];
+        $infoitems->each(function ($item) use(&$items) {
+            $items[$item->NumInvoice][]=$item;//suborder grouping
+        });
+
+        return response()->json([
+            'updated'=>$upsert,
+            'items'=>$items,
+            'add_order_to_list'=>$this->getOrders($infoOrder_idS)
+        ]);
+    }
+
+
+    public function getOrders($infoOrder_idS=[]){
+
+        $orderlist=DB::table('infoOrder')
+            ->select(['infoOrder.id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoCustomer.TypeDelivery',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%d/%m")) as PromisedDate'),DB::raw('count(infoitems.id) as numitems'),DB::raw('GROUP_CONCAT(infoitems.express) as express'),DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),'infoOrder.suggestedDeliveryDate'])
+            ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
+            ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+            ->leftJoin('infoitems',function($join){
+                $join->on('infoInvoice.SubOrderID','=','infoitems.SubOrderID')
+                    ->where('infoitems.SubOrderID','!=','')
+                    ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+            })
+            ->whereIn('infoOrder.id',$infoOrder_idS)
+            ->where('infoInvoice.OrderID','!=','');
+
+            return $orderlist;
+
+
 
     }
 }

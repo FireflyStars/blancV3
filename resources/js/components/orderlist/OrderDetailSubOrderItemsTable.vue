@@ -237,7 +237,7 @@
     }
     .nodata{
         background: #FFFFFF;
-        min-height: 550px;
+        min-height: 350px;
         display: flex;
         align-items: center;justify-content: center;
     }

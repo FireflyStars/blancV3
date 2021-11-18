@@ -124,9 +124,6 @@
             </div>
         </div>
         <div class="mt-3 mb-3 row" v-if="typeof ORDER['detail']!='undefined'">
-            <div class="col-2">
-                <button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Open')">Open</button>
-            </div>
             <div class="col-4">
                 <button class="btn btn-outline-danger body_medium" @click="markaslate" v-if="ORDER['detail'].Status!='LATE'">Mark as late</button>
             </div>

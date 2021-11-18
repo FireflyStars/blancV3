@@ -8,7 +8,20 @@
             <side-bar></side-bar>
                 <div class="col main-view p-5">
                     <h2>Component library</h2>
+                    <div class="row">
+                        <div class="col-3">
 
+                           <switch-btn v-model="swtch" label-left="Label left" label-right="Label right" ></switch-btn>
+                        </div>
+                        <div class="col-1 p-2">
+{{swtch}}
+                        </div>
+                        <div class="col-3">
+
+                            <switch-btn  label-left="Disabled" label-right="xxxx" :disabled="true"></switch-btn>
+                        </div>
+
+                    </div>
                     <div class="row">
                         <div class="col-3">
 
@@ -113,10 +126,11 @@
                         <span class= "subtitle">Customer details</span>
                         <div  style="padding: 0;" >
                             <search  v-model="search" name="search" v-on:getCustomer="ClickCustomer" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Search a customer"  ></search>
+                      {{search}}
                         </div>
+    
                     
-                     </div>
-
+   </div>
 
                     <div class="row recurring-form">
                       <div class="col-4 recurring">
@@ -125,8 +139,9 @@
                        
                     </div>      
                          
-                </div>
+             
             </div>
+        </div>
         </div>
     </transition>
 </template>
@@ -142,18 +157,22 @@
     import {usePermission} from "../helpers/helpers";
     import {PERMISSIONS} from "../../store/types/permission_types";
     import Search from '../miscellaneous/Search';
+    import SwitchBtn from '../miscellaneous/SwitchBtn'
     import OrderBarcode from '../miscellaneous/OrderBarcode'
     import RecurringForm from '../miscellaneous/RecurringForm'
 
 
     export default {
         name: "ComponentTest",
-        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,OrderBarcode, RecurringForm},
+        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,SwitchBtn,OrderBarcode, RecurringForm},
         setup(props,context){
             const showcontainer=ref(false);
             const show_barcode= ref(false);
             const Customer= ref('');
             const Scan= ref('');
+
+            
+            const swtch=ref(true);
 
             const sel=ref(1);
             const slot=ref(5);
@@ -194,6 +213,7 @@
                 console.log(err)
             });
 
+
             function scanBarcode(value){
                 Scan.value = value;
             };
@@ -228,7 +248,8 @@
                 Customer,
                 Scan,
                 ClickCustomer,
-                data
+                data,
+                swtch
 
             }
         }
@@ -256,11 +277,11 @@
     }
     .search{
     background: #fff;
-    width: 580px;
-    height: 244px;
+    width: 517px;
+    height: auto;
     box-shadow: 0px 4px 16px rgb(0 0 0 / 12%);
     border-radius: 5px;
-    padding: 20px 32px 160px 32px;
+    padding: 20px 18px 40px 15px;
     margin-top: 28px;
     position: relative;
     }

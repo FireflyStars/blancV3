@@ -146,7 +146,7 @@
     }
 
 .side-bar{
-    background: rgba(248,248,248,0.5);
+    background:#FBFBFB;
     box-shadow: inset 0px 0px 6px rgba(0, 0, 0, 0.25);
     width: 72px;
     height: 100%;

@@ -35,6 +35,14 @@ const router = createRouter({
             },
         },
         {
+            path:'/neworder',
+            name:'NewOrder',
+            component:()=> import('../components/neworder/NewOrder'),
+            meta:{
+                authenticated:true
+            },
+        },
+        {
             path:'/permissions',
             name:'Permissions',
             component:()=> import('../components/permission/Permission'),

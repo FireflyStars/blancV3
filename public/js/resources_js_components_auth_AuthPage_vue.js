@@ -163,7 +163,7 @@ __webpack_require__.r(__webpack_exports__);
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 var ___CSS_LOADER_URL_REPLACEMENT_0___ = _node_modules_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_img_non_toxic_png__WEBPACK_IMPORTED_MODULE_2__.default);
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n.hmax[data-v-164b91c3]{\n    height: calc(100% - var(--authlogoheight));\n}\n.auth-logo[data-v-164b91c3]{\n    height: var(--authlogoheight);\n}\n.auth-bg[data-v-164b91c3]{\n    background: #EEEEEE url(" + ___CSS_LOADER_URL_REPLACEMENT_0___ + ") no-repeat  right bottom;\n}\n.auth-form[data-v-164b91c3]{\n}\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n.hmax[data-v-164b91c3]{\r\n    height: calc(100% - var(--authlogoheight));\n}\n.auth-logo[data-v-164b91c3]{\r\n    height: var(--authlogoheight);\n}\n.auth-bg[data-v-164b91c3]{\r\n    background: #EEEEEE url(" + ___CSS_LOADER_URL_REPLACEMENT_0___ + ") no-repeat  right bottom;\n}\n.auth-form[data-v-164b91c3]{\n}\r\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
