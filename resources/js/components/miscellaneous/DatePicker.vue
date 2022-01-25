@@ -73,6 +73,7 @@
             hint:String,
             availableDates:Array,
             disabledToDate:String,
+            disabledFromDate:String,
             name:{
                 type: String,
                 required: true
@@ -267,6 +268,14 @@
                         let disabledto=new Date(props.disabledToDate);
                         let curdate=new Date(datestr);
                         if(curdate<=disabledto){
+                            displayed_dates.value[i].notavailable=true;
+                        }
+                    }
+                     //disabledFromDate
+                    if(typeof props.disabledFromDate!="undefined"&&props.disabledFromDate!=""){
+                        let disabledFrom=new Date(props.disabledFromDate);
+                        let curdate=new Date(datestr);
+                        if(curdate>disabledFrom){
                             displayed_dates.value[i].notavailable=true;
                         }
                     }

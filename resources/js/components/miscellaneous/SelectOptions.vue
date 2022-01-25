@@ -135,7 +135,9 @@
     .trans-select-leave-active{
         transition: all ease 0.2s;
     }
-
+    .black-border{
+        border: 1px solid #000000 !important;
+    }
     .select{
         background: #FFFFFF;
         border: 0.5px solid #E0E0E0;
