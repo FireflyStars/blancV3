@@ -11,6 +11,8 @@
                     <div class="main-view-2 row">
                         <div class="col">
                         <h2 class="subtitle">Choose item type</h2>
+
+                        content
                         </div>
                     </div>
                 </div>
