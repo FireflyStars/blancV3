@@ -94,6 +94,14 @@ const router = createRouter({
             }
         },
         {
+            path:'/stats',
+            name:'Statistics',
+            component:()=> import('../components/statistics/Statistics'),
+            meta:{
+                authenticated:true
+            },
+        },
+        {
             path: '/:pathMatch(.*)',
             name: 'not-found',
             component:NotFound

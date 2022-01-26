@@ -125,3 +125,8 @@ export const SCAN_SET_ITEMS='SCAN_SET_ITEMS';//mutations
 export const SCAN_SET_BAGS='SCAN_SET_BAGS';//mutations
 
 
+export const STATISTICS_MODULE='STATISTICS_MODULE/';//namespace
+export const STATISTICS_SET_CURRENTTAB='STATISTICS_SET_CURRENTTAB';//action
+export const SET_STATISTICS='SET_STATISTICS';//mutations
+export const GET_STATISTICS='GET_STATISTICS';//getters
+export const STATISTICS_LOAD_LIST='STATISTICS_LOAD_LIST';//action

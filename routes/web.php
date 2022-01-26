@@ -10,6 +10,7 @@ use App\Http\Controllers\OrderListController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\StatisticsController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -57,3 +58,5 @@ Route::get('{any}', function () {
 Route::post('/SearchCustomer', [SearchController::class, 'SearchCustomer'])->name('SearchCustomer');
 Route::post('/SearchByCustomer', [SearchController::class, 'SearchByCustomer'])->name('SearchByCustomer');
 Route::post('/ScanItemAndBag', [ScanController::class, 'ScanItemAndBag'])->name('ScanItemAndBag');
+
+Route::post('/get-statistics',[StatisticsController::class, 'getStatistics'])->name('get-statistics')->middleware('auth');

@@ -699,3 +699,120 @@ padding:0 1.2rem;
   line-height:13px;
   text-align: center;
 }
+
+
+.container-stat {
+  background-color: #edebe9;
+  padding: 10px;
+  border-radius: 5px;
+  width: 100%;
+}
+.text-bold {
+  font-family: "Gotham Rounded";
+  font-size: 14px;
+}
+.text-under-bar {
+  font-size: 14px;
+}
+.label-under-bar {
+  width: 45px;
+  padding-left: 40px;
+}
+.bar-progress {
+  margin: 10px 0 10px 0;
+  transform-style: preserve-3d;
+}
+
+.bar-progress div {
+  text-align: center;
+  border-radius: 20px;
+  color: white;
+  width: 125px;
+  height: 25px;
+  font-family: "Gotham Rounded";
+  display: inline-block;
+  transform: rotateY(-0.1deg);
+  padding-left: 15px;
+}
+@media only screen and (max-width: 1400px) {
+  .bar-progress div {
+      width: 90px;
+      font-size: 10px;
+      padding-left: 30px;
+  }
+}
+.bar-progress div:not(:first-child) {
+  margin-left: -45px;
+}
+
+.first-bar {
+  background: #4a86e8;
+}
+.second-bar {
+  background: #8e7cc3;
+}
+.third-bar {
+  background: #ffab40;
+}
+.fourth-bar {
+  background: #6aa84f;
+}
+
+#stats_today {
+  .chart-bar {
+    height:15px;
+    background: #e7e7e7;
+  }
+}
+.chart-title-row{
+  font-family: "Gotham Rounded";
+  font-size: 16px;
+  color: rgb(184, 184, 184);
+
+}
+.chart-row {
+  padding-top: 6px !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+  font-family: "Gotham Rounded Light";
+  font-size: 14px;
+  text-align: right !important;
+}
+.each-dept-name, .today_count{
+  font-family: "Gotham Rounded Light";
+  font-size: 14px;
+}
+.pl-0 {
+  padding-left: 0 !important;
+}
+.px-0 {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.float-right{
+  float: right !important;
+}
+.mt-10 {
+  margin-top: 10px !important;
+}
+.mb-10 {
+  margin-bottom: 10px !important;
+}
+.text-align-center{
+  text-align: center !important;
+}
+.text-align-right{
+  text-align: right !important;
+}
+.bi-arrow-up.green{
+  color:#42A71E;
+}
+.bi-arrow-down.red{
+  color: red;
+}
+.width-fit-content{
+  min-width: fit-content !important;
+}
+.width-auto{
+  width: auto !important;
+}

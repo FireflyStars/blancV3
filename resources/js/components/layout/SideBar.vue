@@ -1,7 +1,7 @@
 <template>
     <div class="col-lg-6 col-sm-3 side-bar-wrap d-flex flex-column align-items-center" :class="{slidein:slidesidebar}">
 <div class="d-flex flex-column side-bar align-items-center position-fixed">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="side-icons">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="side-icons" :class="{active:route_name=='Statistics'}" @click="router.push({name:'Statistics'})">
                 <rect width="32" height="32" rx="8" fill="white"/>
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M7 16C6.44772 16 6 16.4477 6 17L6 24C6 24.5523 6.44772 25 7 25H9C9.55228 25 10 24.5523 10 24V17C10 16.4477 9.55228 16 9 16H7Z" stroke="#868686" stroke-linecap="round"/>
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M15 7C14.4477 7 14 7.44772 14 8L14 24C14 24.5523 14.4477 25 15 25H17C17.5523 25 18 24.5523 18 24V8C18 7.44772 17.5523 7 17 7H15Z" stroke="#868686" stroke-linecap="round"/>
