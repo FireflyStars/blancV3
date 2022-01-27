@@ -32,7 +32,7 @@ export default {
                         item_type:type_picto,
                         zones:JSON.stringify(zones),
                         all_zones:1,
-                        face:'front', //all
+                        face:'front', //all or front
                     })
                     .then((res) => {
                        	//console.log(res.data);
