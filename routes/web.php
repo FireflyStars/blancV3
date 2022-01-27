@@ -11,6 +11,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StatisticsController;
+use App\Http\Controllers\ItemController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -60,3 +61,5 @@ Route::post('/SearchByCustomer', [SearchController::class, 'SearchByCustomer'])-
 Route::post('/ScanItemAndBag', [ScanController::class, 'ScanItemAndBag'])->name('ScanItemAndBag');
 
 Route::post('/get-statistics',[StatisticsController::class, 'getStatistics'])->name('get-statistics')->middleware('auth');
+Route::post('/item-picto',[ItemController::class, 'getItemPicto'])->name('item-picto');
+Route::post('/get-picto-names',[ItemController::class,'getPictoNames'])->name('get-picto-names');
