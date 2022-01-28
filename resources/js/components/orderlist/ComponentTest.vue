@@ -151,6 +151,14 @@
                         </div>
                     </div>
 
+                    <div class="row detailing-right-panel">
+                            <detailing-right-panel
+                            customerName="Test"
+                            item_price="200"
+                            item_id="12345678"
+                            step="1"
+                        ></detailing-right-panel>
+                    </div>
             </div>
         </div>
         </div>
@@ -172,11 +180,12 @@
     import OrderBarcode from '../miscellaneous/OrderBarcode'
     import RecurringForm from '../miscellaneous/RecurringForm'
     import ItemPicto from '../miscellaneous/ItemPicto.vue'
+    import DetailingRightPanel from '../detailing/DetailingRightPanel.vue';
 
 
     export default {
         name: "ComponentTest",
-        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,SwitchBtn,OrderBarcode, RecurringForm,ItemPicto},
+        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,SwitchBtn,OrderBarcode, RecurringForm,ItemPicto,DetailingRightPanel},
         setup(props,context){
             const showcontainer=ref(false);
             const show_barcode= ref(false);

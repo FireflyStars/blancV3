@@ -254,4 +254,7 @@ export default {
     align-items: flex-end;
     color: #c3c3c3;
 }
+.accordion-header {
+        margin: 0px !important;
+}
 </style>
