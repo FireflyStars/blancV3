@@ -11,6 +11,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StatisticsController;
+use App\Http\Controllers\DetailingController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -60,3 +61,7 @@ Route::post('/SearchByCustomer', [SearchController::class, 'SearchByCustomer'])-
 Route::post('/ScanItemAndBag', [ScanController::class, 'ScanItemAndBag'])->name('ScanItemAndBag');
 
 Route::post('/get-statistics',[StatisticsController::class, 'getStatistics'])->name('get-statistics')->middleware('auth');
+
+
+Route::post('/init-detailing',[DetailingController::class, 'initDetailing'])->name('init-detailing')->middleware('auth');
+Route::post('/update-detailing',[DetailingController::class, 'updateItemDetailing'])->name('update-detailing')->middleware('auth');

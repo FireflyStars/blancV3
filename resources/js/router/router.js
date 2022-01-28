@@ -27,6 +27,14 @@ const router = createRouter({
                 ]
         },
         {
+            path:'/detailing_item/:order_id/:item_id',
+            name:'DetailingItem',
+            component:()=> import('../components/detailing/DetailingItem'),
+            meta:{
+                authenticated:true
+            }
+        },
+        {
             path:'/component-test',
             name:'ComponentTest',
             component:()=> import('../components/orderlist/ComponentTest'),

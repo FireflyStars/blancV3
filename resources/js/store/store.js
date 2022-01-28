@@ -10,6 +10,7 @@ import {permission as PERMISSION_MODULE} from "./modules/permission";
 import {scan as SCAN_MODULE} from "./modules/scan";
 import {neworder as NEWORDER_MODULE} from "./modules/neworder";
 import {statistics as STATISTICS_MODULE} from "./modules/statistics";
+import {detailingItem as DETAILING_MODULE} from "./modules/detailingItem";
 
 
 export default createStore({
@@ -24,6 +25,7 @@ export default createStore({
         PERMISSION_MODULE,
         SCAN_MODULE,
         NEWORDER_MODULE,
-        STATISTICS_MODULE
+        STATISTICS_MODULE,
+        DETAILING_MODULE
     }
 })

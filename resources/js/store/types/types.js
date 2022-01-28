@@ -129,3 +129,9 @@ export const STATISTICS_SET_CURRENTTAB='STATISTICS_SET_CURRENTTAB';//action
 export const SET_STATISTICS='SET_STATISTICS';//mutations
 export const GET_STATISTICS='GET_STATISTICS';//getters
 export const STATISTICS_LOAD_LIST='STATISTICS_LOAD_LIST';//action
+
+export const DETAILING_MODULE='DETAILING_MODULE/';//namespace
+export const SET_DETAILING='SET_DETAILING';//mutations
+export const GET_DETAILING='GET_DETAILING';//getters
+export const INIT_DETAILING='INIT_DETAILING';//action
+export const UPDATE_DETAILING='UPDATE_DETAILING';//action

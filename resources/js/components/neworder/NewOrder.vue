@@ -11,6 +11,13 @@
                     <div class="main-view-2 row">
                         <div class="col">
                         <h1 class="tile_h1">New order</h1>
+                         <div class="row">
+                            <div class="col-2">
+                                <button class="btn btn-outline-dark body_small_bold" @click="proceedToDetailling">
+                                Proceed to detailing
+                                </button>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col">
                         <div class="barcode-scan col p-0" @click="featureUnavailable('Scan barcode')"><svg width="41" height="40" viewBox="0 0 41 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -125,7 +132,7 @@
                     </div>
 
                     </div>
-
+                   
                 </div>
             </div>
         </div>
@@ -143,6 +150,7 @@
     import TimeSlotPicker from '../miscellaneous/TimeSlotPicker';
     import CustomerDetailsPanel from './CustomerDetailsPanel';
 
+    import { useRouter, useRoute } from 'vue-router';
 
     import {ref,onMounted,nextTick,computed,watch} from 'vue';
     import {
@@ -155,6 +163,8 @@
         name: "NewOrder",
         components:{BreadCrumb,SideBar,SelectOptions,SwitchBtn,DatePicker,TimeSlotPicker,CustomerDetailsPanel},
         setup(){
+            const router = useRouter();
+
             const showcontainer=ref(false);
             const deliverymethod =ref('');
             //isc : in store collection
@@ -228,7 +238,9 @@
                 })
             })*/
             const order=computed(()=>store.getters[`${NEWORDER_MODULE}${NEWORDER_PRELOAD_ORDER_GET}`]);
-
+            function proceedToDetailling() {
+                router.push('/detailing_item/57908/12345678');
+            }
             return {
                 showcontainer,
                 paths,
@@ -252,7 +264,8 @@
                 shp_received,
                 shp_received_timeslot,
                 shp_delivery,
-                order
+                order,
+                proceedToDetailling
             }
         }
     }
