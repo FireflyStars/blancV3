@@ -69,6 +69,8 @@ import {
     INIT_DETAILING,
     UPDATE_DETAILING
 } from "../../store/types/types";
+import {LOADER_MODULE,SET_LOADER_MSG,DISPLAY_LOADER,HIDE_LOADER} from '../../store/types/types';
+
 export default {
     name: "DetailingItem",
     components: { BreadCrumb, SideBar, MainHeader, DetailingRightPanel, DetailingDepartement },
@@ -90,6 +92,7 @@ export default {
         const customerName = ref('');
         const item_price = ref(0);
         const step = ref(1);
+        store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,'Please wait....']);
 
         order_id.value = route.params.order_id;
         item_id.value = route.params.item_id;
@@ -113,6 +116,9 @@ export default {
                 itemDept.value = response.data.detailingitem.department_id;
                 step.value = response.data.detailingitem.etape;
 
+            })
+            .finally(()=>{
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
             });
         function submitSearch(e) {
             store
