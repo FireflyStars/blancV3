@@ -8,6 +8,7 @@ import {
     NEWORDER_PRELOAD_FORM_SET,
     NEWORDER_PRELOAD_ORDER_CUSTOMER_SET,
     NEWORDER_PRELOAD_ORDER_GET,
+    NEWORDER_CUR_CUSTOMER
 } from "../types/types";
 import axios from "axios";
 
@@ -56,6 +57,7 @@ export const neworder= {
                 CustomerID:payload.CustomerID
 
             }).then((response) => {
+                //console.log(response.data);
                 commit(NEWORDER_PRELOAD_ORDER_CUSTOMER_SET,response.data);
                 return Promise.resolve(response);
             })
@@ -71,5 +73,6 @@ export const neworder= {
     getters:{
         [NEWORDER_PRELOAD_FORM_GET]:state=>state.form,
         [NEWORDER_PRELOAD_ORDER_GET]:state=>state.order,
+        [NEWORDER_CUR_CUSTOMER]:state=>state.order.infoCustomer,
     }
 }

@@ -40,7 +40,7 @@
                                     <h2 class="subtitle">Order Details</h2>
                                     <div class="row border-bottom m-0">
                                         <div class="col p-0"><h2 class="subtitle">Slot</h2></div>
-                                        <div class="col p-0 justify-content-end d-flex rec_switch"><switch-btn v-model="isRecurring" label-left="Recurring"></switch-btn></div>
+                                        <div class="col p-0 justify-content-end d-flex rec_switch" v-if="showRecurring"><switch-btn v-model="isRecurring" label-left="Recurring"></switch-btn></div>
                                     </div>
                                     <div class="row mt-4">
                                         <div class="" :class="{'col-4':isRecurring,'col-12':!isRecurring}">
@@ -115,17 +115,40 @@
                                         </div>
                                         <div :class="{'col-8':isRecurring}" v-if="isRecurring">
                                             <transition name="popinout">
-                                            <div v-if="isRecurring">Component Recurring</div>
+                                                <div v-if="isRecurring">
+                                                    <recurring-form></recurring-form>
+                                                </div>
                                             </transition>
-
-
                                         </div>
                                     </div>
 
-                                    <div class="row border-bottom m-0">
-                                        <div class="col p-0 detailsection"><h2 class="subtitle">Details</h2></div>
-
+                                    <div class="row border-bottom">
+                                        <div class="col detailsection"><h2 class="subtitle">Details</h2></div>
                                     </div>
+                                    <div class="row mt-3" v-if="deliverymethod=='shipping'">
+                                        <h3 class="body_medium">Delivery Address</h3>
+                                        <div class="col-6 body_medium mt-3">
+                                            <div class="row form-group mx-0">
+                                                <input type="text" v-model="shp_address1" class="form-control" placeholder="Address1"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3" v-else>
+                                        <h3 class="body_medium">Delivery Address</h3>
+                                        <div class="body_medium mt-3" v-if="cur_cust">
+                                            <span v-if="cur_cust.address1 && cur_cust.address1!=''">{{cur_cust.address1}}</span>
+                                            <br/>
+                                            <span v-if="cur_cust.postcode && cur_cust.postcode!=''">{{cur_cust.postcode}}</span><span v-if="cur_cust.Town && cur_cust.Town!=''">, {{cur_cust.Town}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mx-0 mt-5 mb-4 justify-content-end align-items-center">
+                                <div class="col-2">
+                                    <a href="javascript:void(0)" id="cancel_new_order">Cancel</a>
+                                </div>
+                                <div class="col-2 px-0">
+                                    <button class="btn btn-grey w-100">Proceed to detailing</button>
                                 </div>
                             </div>
                         </div>
@@ -154,14 +177,16 @@
 
     import {ref,onMounted,nextTick,computed,watch} from 'vue';
     import {
+      NEWORDER_CUR_CUSTOMER,
         NEWORDER_MODULE,
         NEWORDER_PRELOAD_FORM,
         NEWORDER_PRELOAD_FORM_GET,
         NEWORDER_PRELOAD_ORDER_GET
     } from "../../store/types/types";
+import RecurringForm from '../miscellaneous/RecurringForm.vue';
     export default {
         name: "NewOrder",
-        components:{BreadCrumb,SideBar,SelectOptions,SwitchBtn,DatePicker,TimeSlotPicker,CustomerDetailsPanel},
+        components:{BreadCrumb,SideBar,SelectOptions,SwitchBtn,DatePicker,TimeSlotPicker,CustomerDetailsPanel,RecurringForm},
         setup(){
             const router = useRouter();
 
@@ -181,25 +206,29 @@
 
             //hd : home delivery
             const hd_pickup =ref('');
-            const hd_pickup_timeslot=ref('');
+            const hd_pickup_timeslot=ref(0);
             const hd_delivery=ref('');
-            const hd_delivery_timeslot=ref('');
+            const hd_delivery_timeslot=ref(0);
 
             //shp : shipping
             const shp_received =ref('');
             const shp_received_timeslot=ref('');
             const shp_delivery=ref('');
+            const shp_address1=ref('');
+            const shp_postcode = ref('');
+            const shp_town = ref('');
 
 
             const deliverymethod_disabled=ref(false);
             const isRecurring=ref(false);
+            const recurring_date = ref([]);
+
             const paths=ref([{name:'Order',route:'LandingPage'},{name:'New Order',route:'NewOrder'}]);
             const store=useStore();
             store.dispatch(`${NEWORDER_MODULE}${NEWORDER_PRELOAD_FORM}`);
             onMounted(()=>{
                 nextTick(()=>{
                     showcontainer.value=true;
-
                 });
 
             });
@@ -222,6 +251,18 @@
                 },
             ]);
 
+            const showRecurring = ref(true);
+
+
+            watch(()=>deliverymethod.value,(val)=>{
+                if(val=='home_delivery' || val==''){
+                    showRecurring.value=true;
+                }else{
+                    showRecurring.value=false;
+                }
+            });
+
+
             watch(() =>isRecurring.value, (current_val, previous_val) => {
                     if(current_val===true) {
                         deliverymethod.value = 'home_delivery';
@@ -241,6 +282,18 @@
             function proceedToDetailling() {
                 router.push('/detailing_item/57908/12345678');
             }
+            const cur_cust = computed(()=>{
+                const cust_cur = store.getters[`${NEWORDER_MODULE}${NEWORDER_CUR_CUSTOMER}`];
+                console.log(cust_cur);
+
+                if(cust_cur){
+                    shp_address1.value = cust_cur.address1;
+                }
+
+                return cust_cur;
+            });
+
+
             return {
                 showcontainer,
                 paths,
@@ -265,7 +318,12 @@
                 shp_received_timeslot,
                 shp_delivery,
                 order,
-                proceedToDetailling
+                proceedToDetailling,
+                showRecurring,
+                cur_cust,
+                shp_address1,
+                shp_postcode,
+                shp_town
             }
         }
     }
@@ -284,6 +342,17 @@
         margin-top: 30px;
     }
 
+    .btn-grey{
+        background: #E0E0E0;
+    }
+
+    .btn-grey:hover{
+        background: #42A71E;
+    }
+
+    h3.body_medium{
+        color:#868686;
+    }
 
 
 </style>

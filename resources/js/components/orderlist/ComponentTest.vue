@@ -30,7 +30,7 @@
                         <div class="col p-2">
                             {{sel}}
                         </div>
-                
+
                     </div>
                     <div class="row">
                         <div class="col-3">
@@ -107,7 +107,7 @@
                                 </template>
                             </tab-pane>
                         </div>
-                         
+
                     </div>
 
                     <div class="row" style="padding-top:20px">
@@ -118,28 +118,39 @@
                             </div>
                         </div>
 
-                         
+
                     </div>
-    
+
                     <div class="row search">
-                        
+
                         <span class= "subtitle">Customer details</span>
                         <div  style="padding: 0;" >
                             <search  v-model="search" name="search" v-on:getCustomer="ClickCustomer" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Search a customer"  ></search>
                       {{search}}
                         </div>
-    
-                    
+
+
    </div>
 
                     <div class="row recurring-form">
                       <div class="col-4 recurring">
                             <recurring-form  v-model="data"></recurring-form>
                       </div>
-                       
-                    </div>      
-                         
-             
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-4">
+                              <select-options v-model="sel_picto" placeholder="Choose a picto" :options="picto_names" name="select3" hint=""></select-options>
+                        </div>
+                        <div class="col">{{sel_picto}}</div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-4">
+                            <item-picto :pictoname="picto"></item-picto>
+                        </div>
+                    </div>
+
             </div>
         </div>
         </div>
@@ -160,18 +171,19 @@
     import SwitchBtn from '../miscellaneous/SwitchBtn'
     import OrderBarcode from '../miscellaneous/OrderBarcode'
     import RecurringForm from '../miscellaneous/RecurringForm'
+    import ItemPicto from '../miscellaneous/ItemPicto.vue'
 
 
     export default {
         name: "ComponentTest",
-        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,SwitchBtn,OrderBarcode, RecurringForm},
+        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,SwitchBtn,OrderBarcode, RecurringForm,ItemPicto},
         setup(props,context){
             const showcontainer=ref(false);
             const show_barcode= ref(false);
             const Customer= ref('');
             const Scan= ref('');
 
-            
+
             const swtch=ref(true);
 
             const sel=ref(1);
@@ -184,6 +196,10 @@
             const date3=ref('2021-09-15');
             const search= ref('');
             const data= ref([]);
+            const picto = ref('');
+            const picto_names = ref([]);
+            const sel_picto = ref('shirt');
+
 
               watch(() => Scan.value, (current_val, previous_val) => {
               if(Scan.value == false) {
@@ -228,9 +244,35 @@
 
             });
 
-        
+            function getAllPictoNames(){
+                 axios.post('/get-picto-names',{})
+                    .then((res)=>{
+                        if(res.data.details){
+                            let pictos = res.data.details;
 
-            
+                            pictos.forEach(v => {
+                                picto_names.value.push({value:v.name,display:v.name});
+                            });
+                        }
+                    }).catch((error)=>{
+
+                    }).finally(()=>{
+
+                    });
+            }
+
+            getAllPictoNames();
+
+             picto.value = sel_picto.value;
+
+             watch(() => sel_picto.value, (current_val, previous_val) => {
+
+
+                picto.value=current_val;
+
+            });
+
+
             return {
 
                 showcontainer,
@@ -249,10 +291,14 @@
                 Scan,
                 ClickCustomer,
                 data,
-                swtch
-
+                swtch,
+                picto,
+                picto_names,
+                getAllPictoNames,
+                sel_picto,
             }
-        }
+        },
+
     }
 </script>
 

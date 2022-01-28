@@ -12,6 +12,7 @@ use App\Http\Controllers\ScanController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\DetailingController;
+use App\Http\Controllers\ItemController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -65,3 +66,6 @@ Route::post('/get-statistics',[StatisticsController::class, 'getStatistics'])->n
 
 Route::post('/init-detailing',[DetailingController::class, 'initDetailing'])->name('init-detailing')->middleware('auth');
 Route::post('/update-detailing',[DetailingController::class, 'updateItemDetailing'])->name('update-detailing')->middleware('auth');
+
+Route::post('/item-picto',[ItemController::class, 'getItemPicto'])->name('item-picto');
+Route::post('/get-picto-names',[ItemController::class,'getPictoNames'])->name('get-picto-names');
