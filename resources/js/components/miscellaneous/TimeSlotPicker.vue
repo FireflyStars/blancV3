@@ -26,7 +26,7 @@
             placeholder:String,
         },
         setup(props,context){
-            const timeslot=ref('');
+            const timeslot=ref(0);
             const store=useStore();
             timeslot.value=props.modelValue;
             const timeslot_def=ref([
@@ -79,7 +79,7 @@
             });
             const selectTimeSlot=(value)=>{
                 if( timeslot.value==value) {
-                    timeslot.value = "";
+                    timeslot.value = 0;
                 }else {
                     timeslot.value = value;
                 }
