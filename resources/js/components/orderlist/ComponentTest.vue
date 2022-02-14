@@ -154,8 +154,8 @@
                     <div class="row detailing-right-panel">
                             <detailing-right-panel
                             customerName="Test"
-                            item_price="200"
-                            item_id="12345678"
+                            :item_description="item_description"
+                            :detailingitem="detailingitem"
                             step="1"
                         ></detailing-right-panel>
                     </div>
@@ -209,6 +209,10 @@
             const picto_names = ref([]);
             const sel_picto = ref('shirt');
 
+            const item_description = ref({});
+            const detailingitem= ref({});
+            detailingitem.value={item_id:12345678,pricecleaning:20};
+            item_description.value={typeitem_name:'shirt'};
 
               watch(() => Scan.value, (current_val, previous_val) => {
               if(Scan.value == false) {
@@ -305,6 +309,8 @@
                 picto_names,
                 getAllPictoNames,
                 sel_picto,
+                item_description,
+                detailingitem
             }
         },
 

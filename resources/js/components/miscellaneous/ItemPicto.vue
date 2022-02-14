@@ -11,7 +11,7 @@ import {LOADER_MODULE,SET_LOADER_MSG,DISPLAY_LOADER,HIDE_LOADER} from '../../sto
 
 export default {
     name:"ItemPicto",
-    props:['pictoname'],
+    props:['pictoname','face'],
     setup(props) {
         const svg_viewpoint = ref('');
         const svg_scale = ref('');
@@ -26,13 +26,13 @@ export default {
                 let details = '';
 
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,'Please wait....']);
-
+                console.log(props.face)
                 axios.post('/item-picto',
                     {
                         item_type:type_picto,
                         zones:JSON.stringify(zones),
                         all_zones:1,
-                        face:'front', //all or front
+                        face:props.face?props.face:'front', //all or front
                     })
                     .then((res) => {
                        	//console.log(res.data);

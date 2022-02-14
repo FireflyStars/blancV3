@@ -9,18 +9,37 @@
                 <side-bar></side-bar>
                 <div class="col main">
                     <bread-crumb :paths="paths"></bread-crumb>
-                    <button class="pause-detailing-btn" @click="pauseDetailling">Pause detailing</button>
+                    <button
+                        class="pause-detailing-btn"
+                        @click="detailingitem.status == 'In Process'?show_pause_popup = true:pauseDetailling()"
+                        v-if="detailingitem.status == 'In Process' || detailingitem.status == 'Pause'"
+                    >{{ detailingitem.status == 'In Process' ? 'Pause detailing' : 'Resume detailing' }}</button>
                     <div class="row">
                         <div class="col-8 left-panel">
                             <div class="new-order-text">New order n°{{ order_id }}</div>
-                            <h2 class="subtitle">Choose item type</h2>
-                            <div class="row">
+                            <h2 class="subtitle" v-if="detailingitem.etape === 1">Choose item type</h2>
+                            <h2 class="subtitle" v-else-if="detailingitem.etape === 2">Describe item</h2>
+                            <h2
+                                class="subtitle"
+                                v-else-if="[3, 4, 5, 6, 7, 8].includes(detailingitem.etape)"
+                            >Describe {{ item_description.typeitem_name }}</h2>
+                            <h2
+                                class="subtitle"
+                                v-else-if="detailingitem.etape === 9"
+                            >Select item complexities</h2>
+                            <h2
+                                class="subtitle"
+                                v-else-if="detailingitem.etape === 10"
+                            >Describe item issuses</h2>
+                            <div
+                                class="row"
+                                v-if="detailingitem.etape === 1 || detailingitem.etape === 2"
+                            >
                                 <div class="col-6">
                                     <div class="label">What type of item is it?</div>
-                                    <div class="position-relative input_search">
+                                    <div class="position-relative">
                                         <input
                                             type="text"
-                                            ref="inputsearch"
                                             placeholder="Type the item name"
                                             v-model="search"
                                             @keyup.enter="submitSearch"
@@ -36,19 +55,77 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <detailing-departement
-                                    :departements="departements"
+                                <detailing-item-departement
+                                    v-if="detailingitem.etape === 1"
+                                    :departements="detailingData.departements"
                                     :itemDept="itemDept"
                                     @update-departement="chooseDepartement"
-                                ></detailing-departement>
+                                ></detailing-item-departement>
+                                <detailing-item-type
+                                    v-else-if="detailingitem.etape === 2"
+                                    :categories="detailingData.categories"
+                                    :typeitems="detailingData.typeitems"
+                                    :detailingitem="detailingitem"
+                                    @save-type-item="saveItemDetails"
+                                    @back-previous-step="backPreviousStep"
+                                ></detailing-item-type>
+                                <detailing-item-description
+                                    v-else-if="detailingitem.etape > 2 && detailingitem.etape <= 8"
+                                    :detailingData="detailingData"
+                                    :detailingitem="detailingitem"
+                                    :item_description="item_description"
+                                    @save-item-description="saveItemDetails"
+                                    @back-previous-step="backPreviousStep"
+                                ></detailing-item-description>
+                                <detailing-item-complexities
+                                    v-if="detailingitem.etape === 9"
+                                    :detailingData="detailingData"
+                                    :detailingitem="detailingitem"
+                                    @save-item-complexities="saveItemDetails"
+                                    @back-previous-step="backPreviousStep"
+                                ></detailing-item-complexities>
+                                <detailing-item-issues
+                                    v-if="detailingitem.etape === 10"
+                                    :detailingData="detailingData"
+                                    :detailingitem="detailingitem"
+                                    :typeitemPicto="item_description.typeitem_picto"
+                                    @save-item-complexities="saveItemDetails"
+                                    @back-previous-step="backPreviousStep"
+                                ></detailing-item-issues>
                             </div>
                         </div>
                         <detailing-right-panel
                             :customerName="customerName"
-                            :item_price="item_price"
-                            :item_id="item_id"
+                            :item_description="item_description"
+                            :detailingitem="detailingitem"
                             :step="step"
                         ></detailing-right-panel>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+    <transition
+        enter-active-class="animate__animated animate__fadeIn"
+        leave-active-class="animate__animated animate__fadeOut"
+    >
+        <div v-if="show_pause_popup" class="popup-pause">
+            <div class="popup-container">
+                <div class="popup-title">
+                    Are you shure you want to pause item's detailing ?
+                    <i
+                        class="icon-close popup-close"
+                        @click="show_pause_popup = !show_pause_popup"
+                    ></i>
+                </div>
+                <div class="popup-body">
+                    <div class="popup-label">
+                        You are about to quit this detailing.
+                        <br />The status of the detailing will be "partial" as some information is still missing.
+                    </div>
+                    <div class="row button-row">
+                        <button class="col btn btn-link" @click="show_pause_popup = false">cancel</button>
+                        <button class="col btn popup-btn" @click="pauseDetailling">Pause detailing</button>
                     </div>
                 </div>
             </div>
@@ -57,49 +134,53 @@
 </template>
 <script>
 import DetailingRightPanel from './DetailingRightPanel.vue';
-import DetailingDepartement from './DetailingDepartement.vue';
+import DetailingItemDepartement from './DetailingItemDepartement.vue';
+import DetailingItemType from './DetailingItemType.vue';
+import DetailingItemDescription from './DetailingItemDescription.vue';
+import DetailingItemComplexities from './DetailingItemComplexities.vue';
 import MainHeader from '../layout/MainHeader';
 import BreadCrumb from '../layout/BreadCrumb';
 import SideBar from '../layout/SideBar';
-import { ref,onMounted, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useStore } from "vuex";
 import {
-    DETAILING_MODULE,
-    INIT_DETAILING,
-    UPDATE_DETAILING
+    DETAILING_MODULE, INIT_DETAILING, UPDATE_DETAILING,
+    TOASTER_MESSAGE, TOASTER_MODULE,
+    LOADER_MODULE, SET_LOADER_MSG, DISPLAY_LOADER, HIDE_LOADER
 } from "../../store/types/types";
-import {LOADER_MODULE,SET_LOADER_MSG,DISPLAY_LOADER,HIDE_LOADER} from '../../store/types/types';
+import DetailingItemIssues from './DetailingItemIssues.vue';
 
 export default {
     name: "DetailingItem",
-    components: { BreadCrumb, SideBar, MainHeader, DetailingRightPanel, DetailingDepartement },
+    components: { BreadCrumb, SideBar, MainHeader, DetailingRightPanel, DetailingItemDepartement, DetailingItemType, DetailingItemDescription, DetailingItemComplexities, DetailingItemIssues },
     setup() {
         const router = useRouter();
         const route = useRoute();
         const store = useStore();
         const user = ref({});
-        const search = ref({});
+        const search = ref("");
         const departements = ref({});
+        const detailingData = ref([]);
         const showSearch = ref(false);
         const showbutton = ref(false);
-        const inputsearch = ref(null);
         const itemDept = ref(0);
         const order_id = ref(0);
         const item_id = ref(0);
         const detailingitem_id = ref(0);
         const detailingitem = ref({});
+        const item_description = ref({});
         const customerName = ref('');
-        const item_price = ref(0);
         const step = ref(1);
-        store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,'Please wait....']);
+        const show_pause_popup = ref(false);
+        store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Please wait....']);
 
         order_id.value = route.params.order_id;
         item_id.value = route.params.item_id;
         const paths = ref([
             { name: 'All orders', route: 'LandingPage' },
             { name: 'Order n°' + order_id.value, route: 'NewOrder' },
-            { name: 'Detailing item ' + item_id.value, route: 'DetailingItemType' }
+            { name: 'Detailing item ' + item_id.value, route: 'DetailingItem' }
         ]);
         watch(() => itemDept.value, (current_val, previous_val) => {
             itemDept.value = current_val;
@@ -107,17 +188,27 @@ export default {
         store
             .dispatch(`${DETAILING_MODULE}${INIT_DETAILING}`, { detailingitem_id: detailingitem_id.value, order_id: order_id.value, item_id: item_id.value, search: "" })
             .then((response) => {
-                user.value = response.data.user;
-                search.value = response.data.search;
-                departements.value = response.data.departements;
-                customerName.value = response.data.user.name;
-                detailingitem_id.value = response.data.detailingitem.id;
-                detailingitem.value = response.data.detailingitem;
-                itemDept.value = response.data.detailingitem.department_id;
-                step.value = response.data.detailingitem.etape;
+                if (response.data.user) {
+                    user.value = response.data.user;
+                    search.value = response.data.search;
+                    customerName.value = response.data.user.name;
+                    detailingitem_id.value = response.data.detailingitem.id;
+                    detailingitem.value = response.data.detailingitem;
+                    itemDept.value = response.data.detailingitem.department_id;
+                    step.value = response.data.detailingitem.etape;
+                    detailingData.value = response.data.detailing_data;
+                    item_description.value = response.data.item_description;
+                } else {
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                        message: response.data.message ? response.data.message : 'An error has occured',
+                        ttl: 5,
+                        type: 'danger'
+                    });
+
+                }
 
             })
-            .finally(()=>{
+            .finally(() => {
                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
             });
         function submitSearch(e) {
@@ -127,7 +218,12 @@ export default {
                     if (e.target.value) {
                         showSearch.value = true;
                         showbutton.value = true;
-                        itemDept.value = response.data.searched_dept.dept_id;
+                        itemDept.value = response.data.searched_item.department_id;
+                        step.value = response.data.detailingitem.etape;
+                        detailingitem.value = response.data.detailingitem;
+                        detailingData.value = response.data.detailing_data;
+
+
                     } else {
                         showSearch.value = false;
                         showbutton.value = false;
@@ -140,21 +236,56 @@ export default {
             showSearch.value = false;
             showbutton.value = false;
         }
-        
+
         function chooseDepartement(id) {
             itemDept.value = id;
             store.dispatch(`${DETAILING_MODULE}${UPDATE_DETAILING}`, { detailingitem_id: detailingitem_id.value, dept_id: itemDept.value })
                 .then((response) => {
                     detailingitem.value = response.data.detailingitem;
                     itemDept.value = response.data.detailingitem.department_id;
+                    step.value = response.data.detailingitem.etape;
+                    item_description.value = response.data.item_description;
+                    detailingData.value = response.data.detailing_data;
+
+                });
+        }
+        function saveItemDetails(data) {
+            store.dispatch(`${DETAILING_MODULE}${UPDATE_DETAILING}`, data)
+                .then((response) => {
+                    detailingitem.value = response.data.detailingitem;
+                    step.value = response.data.detailingitem.etape;
+                    item_description.value = response.data.item_description;
+                    detailingData.value = response.data.detailing_data;
+
+                });
+        }
+        function backPreviousStep(newstep) {
+            store.dispatch(`${DETAILING_MODULE}${UPDATE_DETAILING}`, { detailingitem_id: detailingitem_id.value, step: newstep })
+                .then((response) => {
+                    detailingitem.value = response.data.detailingitem;
+                    step.value = response.data.detailingitem.etape;
+                    item_description.value = response.data.item_description;
+                    detailingData.value = response.data.detailing_data;
 
                 });
         }
         function pauseDetailling() {
+            // store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Please wait....']);
             const status = detailingitem.value.status == 'In Process' ? 'Pause' : 'In Process'
             store.dispatch(`${DETAILING_MODULE}${UPDATE_DETAILING}`, { detailingitem_id: detailingitem_id.value, status: status })
                 .then((response) => {
-                    detailingitem.value = response.data.detailingitem;
+                    if (response) {
+                        detailingitem.value = response.data.detailingitem;
+                        show_pause_popup.value=false;
+                    }
+                })
+                .finally(() => {
+                    // store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                        message: status == 'Pause' ? `Detailing is paused` : `Detailing is resumed`,
+                        ttl: 5,
+                        type: 'success'
+                    });
                 });
 
         }
@@ -164,25 +295,31 @@ export default {
             search,
             departements,
             showSearch,
-            inputsearch,
             showbutton,
             order_id,
             item_id,
             customerName,
-            item_price,
             step,
             itemDept,
             detailingitem_id,
             detailingitem,
+            item_description,
+            detailingData,
+            show_pause_popup,
             submitSearch,
             clearSearch,
             chooseDepartement,
+            saveItemDetails,
+            backPreviousStep,
             pauseDetailling
         };
     },
 }
 </script>
 <style scoped>
+.breadcrumb{
+    margin-bottom: 0;
+}
 .container-fluid {
     font-family: Gotham Rounded;
     font-style: normal;
@@ -193,11 +330,9 @@ export default {
 .main {
     padding: 50px 0px 50px 61px;
 }
-.breadcrumb {
-    margin-bottom: 0px;
-}
 .left-panel {
     margin-top: 10px;
+    padding-right: 30px;
 }
 .new-order-text {
     display: flex;
@@ -255,5 +390,81 @@ input:focus-visible {
     background: #ffffff;
     border: 1px solid #47454b;
     border-radius: 4px;
+}
+
+.popup-pause {
+    background: rgba(224, 224, 224, 0.6);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 10002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.popup-container {
+    text-align: center;
+    background-color: #fff;
+    width: 660px;
+    height: 450px;
+    display: block;
+    border-radius: 6px;
+    box-shadow: 0px 8px 36px rgb(0 0 0 / 16%);
+}
+.popup-title {
+    height: 100px;
+    background: #f8f8f8;
+    border-radius: 6px;
+    font-family: Gilroy;
+    font-style: normal;
+    font-weight: 800;
+    font-size: 22px;
+    line-height: 110%;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    place-content: center;
+    color: #000000;
+    padding: 20px;
+}
+.popup-body {
+    padding: 60px;
+}
+.popup-label {
+    font-family: Gotham Rounded;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 16px;
+    line-height: 140%;
+    display: flex;
+    align-items: flex-end;
+    color: #000000;
+    flex: none;
+    order: 0;
+    align-self: stretch;
+    flex-grow: 0;
+    margin: 6px 0px;
+}
+.popup-btn {
+    display: flex;
+    justify-content: center;
+    background: #47454b;
+    border-radius: 4px;
+    font-family: Gotham Rounded;
+    line-height: 140%;
+    align-items: center;
+    text-align: center;
+    color: #ffffff;
+    outline: none !important;
+    box-shadow: none !important;
+}
+.popup-close {
+    position: relative;
+    left: 45px;
+}
+.button-row{
+    padding: 100px 10px 10px 10px;
 }
 </style>
