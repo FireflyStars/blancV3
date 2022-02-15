@@ -136,3 +136,9 @@ export const SET_DETAILING='SET_DETAILING';//mutations
 export const GET_DETAILING='GET_DETAILING';//getters
 export const INIT_DETAILING='INIT_DETAILING';//action
 export const UPDATE_DETAILING='UPDATE_DETAILING';//action
+
+
+export const SHIPPING_MODULE='SHIPPING_MODULE/'; //namespace
+export const GET_PARTNERS='GET_PARTNERS'; //getters
+export const SET_PARTNERS='SET_PARTNERS'; //mutation
+export const SHIPPING_LOAD_LIST = 'SHIPPING_LOAD_LIST'; //action

@@ -47,12 +47,15 @@
     export default {
         name: "CustomerDetailsPanel",
         components:{Search},
-        setup(){
+        setup(props,context){
             const CustomerID=ref('');
             const edit_customer=ref(false);
             const store=useStore();
             watch(()=>CustomerID.value,(current_val,previous_val)=>{
-                store.dispatch(`${NEWORDER_MODULE}${NEWORDER_GET_CUSTOMER}`,{CustomerID:current_val}).then(()=>{
+                //context.emit('')
+
+                store.dispatch(`${NEWORDER_MODULE}${NEWORDER_GET_CUSTOMER}`,{CustomerID:current_val}).then((res)=>{
+                    console.log('res',res);
                     edit_customer.value=false;
                 });
 

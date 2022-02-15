@@ -35,7 +35,9 @@
                                     <h2 class="subtitle">Payment method</h2>
                                 </div>
                             </div>
-                            <div class="panel-col-2 col  ">
+
+                            <!-- Step 1 : Input data -->
+                            <div class="panel-col-2 col" v-if="process_step==1">
                                 <div class="panel">
                                     <h2 class="subtitle">Order Details</h2>
                                     <div class="row border-bottom m-0">
@@ -126,12 +128,30 @@
                                         <div class="col detailsection"><h2 class="subtitle">Details</h2></div>
                                     </div>
                                     <div class="row mt-3" v-if="deliverymethod=='shipping'">
-                                        <h3 class="body_medium">Delivery Address</h3>
+
                                         <div class="col-6 body_medium mt-3">
-                                            <div class="row form-group mx-0">
-                                                <input type="text" v-model="shp_address1" class="form-control" placeholder="Address1"/>
+                                            <h3 class="body_medium">Delivery Address</h3>
+                                            <div class="row mb-3">
+                                                <div class="col-12 form-group">
+                                                    <input type="text" v-model="shp_address1" class="form-control" placeholder="Address1"/>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-6 form-group">
+                                                    <input type="text" class="form-control" placeholder="Postcode" v-model="shp_postcode"/>
+                                                </div>
+                                                <div class="col-6 form-group  pr-0">
+                                                    <input type="text" class="form-control" placeholder="Town" v-model="shp_town"/>
+                                                </div>
                                             </div>
                                         </div>
+                                        <div class="col-2"></div>
+                                         <div class="col-4 mt-3">
+                                            <h3 class="body_medium">Delivery partner</h3>
+                                            <div class="row mx-0">
+                                                 <select-options  v-model="shipping_partner_id" placeholder="Choose a partner" :options="shipping_partners" name="shipping_partner_id" hint=""  label=""></select-options>
+                                            </div>
+                                         </div>
                                     </div>
                                     <div class="row mt-3" v-else>
                                         <h3 class="body_medium">Delivery Address</h3>
@@ -143,19 +163,30 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Step 2 - SUMMARY -->
+                             <div class="panel-col-2 col" v-if="process_step==2">
+                                <div class="panel">
+                                        <h2 class="subtitle">Order Details <a class="ml-3" id="edit_order_link" @click="changeStep(1)">Edit</a></h2>
+
+                                </div>
+                            </div>
+
+
                             <div class="row mx-0 mt-5 mb-4 justify-content-end align-items-center">
+                                <div class="d-none">{{cur_cust}}</div>
                                 <div class="col-2">
                                     <a href="javascript:void(0)" id="cancel_new_order">Cancel</a>
                                 </div>
                                 <div class="col-2 px-0">
-                                    <button class="btn btn-grey w-100">Proceed to detailing</button>
+                                    <button class="btn btn-grey w-100" @click="validateDetails">Proceed to detailing</button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     </div>
-                   
+
                 </div>
             </div>
         </div>
@@ -181,28 +212,34 @@
         NEWORDER_MODULE,
         NEWORDER_PRELOAD_FORM,
         NEWORDER_PRELOAD_FORM_GET,
-        NEWORDER_PRELOAD_ORDER_GET
+        NEWORDER_PRELOAD_ORDER_GET,
+        SHIPPING_MODULE,
+        GET_PARTNERS,
+        SHIPPING_LOAD_LIST,
+        TOASTER_MODULE,
+        TOASTER_ADD_TOAST,
+        TOASTER_MESSAGE,
     } from "../../store/types/types";
 import RecurringForm from '../miscellaneous/RecurringForm.vue';
     export default {
         name: "NewOrder",
         components:{BreadCrumb,SideBar,SelectOptions,SwitchBtn,DatePicker,TimeSlotPicker,CustomerDetailsPanel,RecurringForm},
-        setup(){
+        setup(props,context){
             const router = useRouter();
 
             const showcontainer=ref(false);
             const deliverymethod =ref('');
             //isc : in store collection
             const isc_dropoff =ref('');
-            const isc_dropoff_timeslot=ref('');
+            const isc_dropoff_timeslot=ref(0);
             const isc_pickup=ref('');
-            const isc_pickup_timeslot=ref('');
+            const isc_pickup_timeslot=ref(0);
 
             //do : delivery only
             const do_dropoff =ref('');
-            const do_dropoff_timeslot=ref('');
+            const do_dropoff_timeslot=ref(0);
             const do_delivery=ref('');
-            const do_delivery_timeslot=ref('');
+            const do_delivery_timeslot=ref(0);
 
             //hd : home delivery
             const hd_pickup =ref('');
@@ -212,7 +249,7 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
             //shp : shipping
             const shp_received =ref('');
-            const shp_received_timeslot=ref('');
+            const shp_received_timeslot=ref(0);
             const shp_delivery=ref('');
             const shp_address1=ref('');
             const shp_postcode = ref('');
@@ -223,8 +260,18 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             const isRecurring=ref(false);
             const recurring_date = ref([]);
 
+            const CustomerID=ref('');
+            const cur_customer = ref({});
+
+            const shipping_partner_id = ref('');
+
             const paths=ref([{name:'Order',route:'LandingPage'},{name:'New Order',route:'NewOrder'}]);
             const store=useStore();
+
+
+            //New ORDER object
+            const new_order = ref({});
+
             store.dispatch(`${NEWORDER_MODULE}${NEWORDER_PRELOAD_FORM}`);
             onMounted(()=>{
                 nextTick(()=>{
@@ -252,6 +299,7 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             ]);
 
             const showRecurring = ref(true);
+            const process_step = ref(1);
 
 
             watch(()=>deliverymethod.value,(val)=>{
@@ -272,6 +320,7 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                         deliverymethod.value = '';
                     }
                 });
+
             /*const FORM=computed(()=>store.getters[`${NEWORDER_MODULE}${NEWORDER_PRELOAD_FORM_GET}`]);
             watch(() =>_.cloneDeep(FORM.value), (current_val, previous_val) => {
                 current_val.TypeDeliveries.forEach(item=>{
@@ -282,17 +331,160 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             function proceedToDetailling() {
                 router.push('/detailing_item/57908/12345678');
             }
-            const cur_cust = computed(()=>{
-                const cust_cur = store.getters[`${NEWORDER_MODULE}${NEWORDER_CUR_CUSTOMER}`];
-                console.log(cust_cur);
 
-                if(cust_cur){
-                    shp_address1.value = cust_cur.address1;
+
+            const cur_cust = computed(()=>{
+                const current_customer = store.getters[`${NEWORDER_MODULE}${NEWORDER_CUR_CUSTOMER}`];
+
+                if(current_customer){
+                    shp_address1.value = current_customer.address1;
+                    shp_postcode.value = current_customer.postcode;
+                    shp_town.value = current_customer.Town;
+                    CustomerID.value = current_customer.CustomerID;
                 }
 
-                return cust_cur;
+                return current_customer;
             });
 
+            store.dispatch(`${SHIPPING_MODULE}${SHIPPING_LOAD_LIST}`);
+            const shipping_partners = computed(()=>store.getters[`${SHIPPING_MODULE}${GET_PARTNERS}`]);
+
+
+            function validateDetails(){
+               if(process_step.value==1){
+                   let err = false;
+                   let err_txt = [];
+
+
+                   if(CustomerID.value==''){
+                       err = true;
+                       err_txt.push('No customer selected');
+                   }
+
+                   else if(deliverymethod.value==''){
+                       err = true;
+                       err_txt.push('Please choose a delivery method');
+
+                   }else{
+
+                       let err_method = validateByDeliveryMethod(deliverymethod.value);
+
+                        err_txt = err_txt.concat(err_method);
+
+
+
+                   }
+
+                   if(err_txt.length > 0){
+                       err_txt.forEach(function(v,i){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                       {
+                            message: v,
+                            ttl: 3,
+                            type: 'danger'
+                        });
+                       })
+
+                   }else{
+                    changeStep(2);
+                   }
+               }else if(process_step.value==2){
+
+               }
+            }
+
+
+
+            function validateByDeliveryMethod(val){
+                let err_arr = [];
+                if(val=='in_store_collection'){
+                    if(isc_dropoff.value==''){
+                        err_arr.push('Dropoff date is empty');
+                    }
+                    if(isc_dropoff_timeslot.value==0){
+                        err_arr.push('Dropoff time is empty');
+                    }
+                    if(isc_pickup.value==''){
+                        err_arr.push('Pickup date is empty');
+                    }
+                    if(isc_pickup_timeslot.value==0){
+                        err_arr.push('Pickup time is empty');
+                    }
+
+                    if(isc_dropoff.value > isc_pickup.value){
+                        err_arr.push('Dropoff date is greater than pickup date');
+                    }
+                }
+
+                if(val=='delivery_only'){
+                    if(do_dropoff.value==''){
+                        err_arr.push('Dropoff date is empty');
+                    }
+                    if(do_dropoff_timeslot.value==0){
+                        err_arr.push('Dropoff time is empty');
+                    }
+                    if(do_delivery.value==''){
+                        err_arr.push('Delivery date is empty');
+                    }
+                    if(do_delivery_timeslot.value==0){
+                        err_arr.push('Delivery time is empty');
+                    }
+                    if(do_dropoff > do_delivery){
+                        err_arr.push('Dropoff date is greater than delivery date');
+                    }
+                }
+
+                if(val=='home_delivery'){
+                    if(hd_pickup.value==''){
+                        err_arr.push('Pickup date is empty');
+                    }
+                    if(hd_pickup_timeslot.value==0){
+                        err_arr.push('Pickup time is empty');
+                    }
+                    if(hd_delivery.value==''){
+                        err_arr.push('Delivery date is empty');
+                    }
+                    if(hd_delivery_timeslot.value==0){
+                        err_arr.push('Delivery time is empty');
+                    }
+                    if(hd_pickup > hd_delivery){
+                        err_arr.push('Pickup date is greater than delivery date');
+                    }
+                }
+
+                if(val=='shipping'){
+                    if(shp_received.value==''){
+                        err_arr.push('Shipping received date is empt(y');
+                    }
+                    if(shp_received_timeslot.value==0){
+                        err_arr.push('Shipping received time is empty');
+                    }
+                    if(shp_address1.value==''){
+                        err_arr.push('Shipping address1 is empty');
+                    }
+                    if(shp_postcode.value==''){
+                        err_arr.push('Shipping postcode is empty');
+                    }
+                    if(shipping_partner_id.value==''){
+                        err_arr.push('Shipping partner not selected');
+                    }
+                }
+
+                if(val !='in_store_collection'){
+                    if(!shp_address1.value || shp_address1.value==''){
+                        err_arr.push('No address1 for this customer');
+                    }
+                    if(!shp_postcode.value || shp_postcode.value==''){
+                        err_arr.push('No postcode for this customer');
+                    }
+                }
+
+                return err_arr;
+            }
+
+            function changeStep(num){
+                process_step.value = num;
+            }
 
             return {
                 showcontainer,
@@ -323,7 +515,13 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                 cur_cust,
                 shp_address1,
                 shp_postcode,
-                shp_town
+                shp_town,
+                cur_customer,
+                shipping_partners,
+                shipping_partner_id,
+                validateDetails,
+                process_step,
+                changeStep,
             }
         }
     }
@@ -354,5 +552,15 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
         color:#868686;
     }
 
+    #edit_order_link{
+        font: normal 16px "Gotham Rounded";
+        color:#42A71E;
+        margin-left:1rem;
+    }
+
+    #edit_order_link:hover{
+        cursor:pointer;
+        text-decoration: none;
+    }
 
 </style>
