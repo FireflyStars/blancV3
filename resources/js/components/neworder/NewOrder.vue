@@ -29,13 +29,16 @@
                         </div>
 
                         <div class="panel-wrapper row">
+
                             <div class="panel-col-1 col  ">
-                                <customer-details-panel></customer-details-panel>
+                                <customer-details-panel @setcustomerid="setCustomerID"></customer-details-panel>
                                 <div class="panel">
                                     <h2 class="subtitle">Payment method</h2>
                                 </div>
                             </div>
 
+
+                         <transition name="popinout">
                             <!-- Step 1 : Input data -->
                             <div class="panel-col-2 col" v-if="process_step==1">
                                 <div class="panel">
@@ -53,13 +56,13 @@
                                             </div>
                                             <transition name="popinout">
                                             <div class="row mt-3" v-if="deliverymethod=='in_store_collection'">
-                                                <div class="col-3"><date-picker v-model="isc_dropoff" name="isc_dropoff" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Drop off" ></date-picker>
+                                                <div class="col-3"><date-picker v-model="isc_dropoff" name="isc_dropoff" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Drop off" :disabledToDate="yesterday"></date-picker>
                                                 </div>
                                                 <div class="col-3">
                                                     <time-slot-picker v-model="isc_dropoff_timeslot"   name="isc_dropoff_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
                                                 </div>
 
-                                                <div class="col-3"><date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pickup" ></date-picker>
+                                                <div class="col-3"><date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pickup" :disabledToDate="yesterday"></date-picker>
                                                 </div>
                                                 <div class="col-3">
                                                     <time-slot-picker v-model="isc_pickup_timeslot"   name="isc_pickup_timeslot" :available-slots="[1]"  label="Pick up Time"></time-slot-picker>
@@ -70,13 +73,13 @@
 
                                             <transition name="popinout">
                                                 <div class="row mt-3" v-if="deliverymethod=='delivery_only'">
-                                                    <div class="col-3"><date-picker v-model="do_dropoff" name="do_dropoff" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Drop off" ></date-picker>
+                                                    <div class="col-3"><date-picker v-model="do_dropoff" name="do_dropoff" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Drop off" :disabledToDate="yesterday"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="do_dropoff_timeslot"   name="do_dropoff_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
                                                     </div>
 
-                                                    <div class="col-3"><date-picker v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" ></date-picker>
+                                                    <div class="col-3"><date-picker v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="yesterday"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="do_delivery_timeslot"   name="do_delivery_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
@@ -87,13 +90,13 @@
 
                                             <transition name="popinout">
                                                 <div class="row mt-3" v-if="deliverymethod=='home_delivery'&&!isRecurring">
-                                                    <div class="col-3"><date-picker v-model="hd_pickup" name="hd_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pick up" ></date-picker>
+                                                    <div class="col-3"><date-picker v-model="hd_pickup" name="hd_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pick up" :disabledToDate="yesterday"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="hd_pickup_timeslot"   name="hd_pickup_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
                                                     </div>
 
-                                                    <div class="col-3"><date-picker v-model="hd_delivery" name="hd_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" ></date-picker>
+                                                    <div class="col-3"><date-picker v-model="hd_delivery" name="hd_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="yesterday"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="hd_delivery_timeslot"   name="hd_delivery_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
@@ -103,13 +106,13 @@
 
                                             <transition name="popinout">
                                                 <div class="row mt-3" v-if="deliverymethod=='shipping'">
-                                                    <div class="col-3"><date-picker v-model="shp_received" name="shp_received" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Received" ></date-picker>
+                                                    <div class="col-3"><date-picker v-model="shp_received" name="shp_received" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Received" :disabledToDate="yesterday"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="shp_received_timeslot"   name="shp_received_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
                                                     </div>
 
-                                                    <div class="col-3"><date-picker v-model="shp_delivery" name="shp_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" ></date-picker>
+                                                    <div class="col-3"><date-picker v-model="shp_delivery" name="shp_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="yesterday"></date-picker>
                                                     </div>
 
                                                 </div>
@@ -164,16 +167,22 @@
                                 </div>
                             </div>
 
+                            </transition>
                             <!-- Step 2 - SUMMARY -->
-                             <div class="panel-col-2 col" v-if="process_step==2">
-                                <div class="panel">
-                                        <h2 class="subtitle">Order Details <a class="ml-3" id="edit_order_link" @click="changeStep(1)">Edit</a></h2>
+                             <transition name="popinout">
 
+                                <div class="panel-col-2 col" v-if="process_step==2">
+
+                                    <div class="panel">
+                                            <h2 class="subtitle">Order Details <a class="ml-3" id="edit_order_link" @click="changeStep(1)">Edit</a></h2>
+
+                                    </div>
                                 </div>
-                            </div>
+                            </transition>
 
 
                             <div class="row mx-0 mt-5 mb-4 justify-content-end align-items-center">
+                                {{CustomerID}}
                                 <div class="d-none">{{cur_cust}}</div>
                                 <div class="col-2">
                                     <a href="javascript:void(0)" id="cancel_new_order">Cancel</a>
@@ -207,6 +216,7 @@
     import { useRouter, useRoute } from 'vue-router';
 
     import {ref,onMounted,nextTick,computed,watch} from 'vue';
+
     import {
       NEWORDER_CUR_CUSTOMER,
         NEWORDER_MODULE,
@@ -219,6 +229,8 @@
         TOASTER_MODULE,
         TOASTER_ADD_TOAST,
         TOASTER_MESSAGE,
+        TOASTER_GET_ALL,
+        TOASTER_REMOVE_TOAST,
     } from "../../store/types/types";
 import RecurringForm from '../miscellaneous/RecurringForm.vue';
     export default {
@@ -268,9 +280,21 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             const paths=ref([{name:'Order',route:'LandingPage'},{name:'New Order',route:'NewOrder'}]);
             const store=useStore();
 
+            const yesterday = ref('');
+
+            const d = new Date();
+            d.setDate(d.getDate() - 1);
+
+            let dd = String(d.getDate()). padStart(2, '0');
+            let mm = String(d.getMonth() + 1). padStart(2, '0'); //January is 0!
+            var yyyy = d.getFullYear();
+
+
 
             //New ORDER object
             const new_order = ref({});
+
+            yesterday.value = yyyy+'-'+mm+'-'+dd;
 
             store.dispatch(`${NEWORDER_MODULE}${NEWORDER_PRELOAD_FORM}`);
             onMounted(()=>{
@@ -346,11 +370,12 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                 return current_customer;
             });
 
+
             store.dispatch(`${SHIPPING_MODULE}${SHIPPING_LOAD_LIST}`);
             const shipping_partners = computed(()=>store.getters[`${SHIPPING_MODULE}${GET_PARTNERS}`]);
 
-
             function validateDetails(){
+
                if(process_step.value==1){
                    let err = false;
                    let err_txt = [];
@@ -376,6 +401,15 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                    }
 
                    if(err_txt.length > 0){
+                       const toasts = store.getters[`${TOASTER_MODULE}${TOASTER_GET_ALL}`];
+                       if(toasts.length > 0){
+                           toasts.forEach(function(v,i){
+                               //console.log(v.id);
+                               store.commit(`${TOASTER_MODULE}${TOASTER_REMOVE_TOAST}`,v.id);
+                           });
+
+                       }
+
                        err_txt.forEach(function(v,i){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
                        {
@@ -386,7 +420,31 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                        })
 
                    }else{
-                    changeStep(2);
+
+                    new_order.value = {};
+                    new_order.CustomerID = CustomerID.value;
+                    new_order.deliverymethod = deliverymethod.value;
+
+                    let arr = [];
+
+                    arr['in_store_collection'] = ['isc_dropoff','isc_dropoff_timeslot','isc_pickup','isc_pickup_timeslot'];
+                    arr['delivery_only'] = ['do_dropoff','do_dropoff_timeslot','','do_delivery','do_delivery_timeslot'];
+                    arr['home_delivery'] = ['hd_pickup','hd_pickup_timeslot','hd_delivery','hd_delivery_timeslot'];
+                    arr['shipping'] = ['shp_received','shp_received_timeslot'];
+
+
+
+                    if(typeof(arr[deliverymethod.value])!='undefined'){
+                        new_order['delivery_params'] = JSON.stringify(arr[deliverymethod.value]);
+
+                        arr[deliverymethod.value].forEach(function(v,i){
+                            const var_tmp = eval(v);
+                            new_order[v] = var_tmp.value;
+                        });
+                    }
+
+                    process_step.value=2;
+
                    }
                }else if(process_step.value==2){
 
@@ -454,7 +512,7 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
                 if(val=='shipping'){
                     if(shp_received.value==''){
-                        err_arr.push('Shipping received date is empt(y');
+                        err_arr.push('Shipping received date is empty');
                     }
                     if(shp_received_timeslot.value==0){
                         err_arr.push('Shipping received time is empty');
@@ -484,6 +542,14 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
             function changeStep(num){
                 process_step.value = num;
+            }
+
+            function setCustomerID(val){
+                //console.log('emit called');
+                CustomerID.value=val;
+                if(val==''){
+                    process_step.value=1;
+                }
             }
 
             return {
@@ -522,6 +588,9 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                 validateDetails,
                 process_step,
                 changeStep,
+                yesterday,
+                CustomerID,
+                setCustomerID,
             }
         }
     }

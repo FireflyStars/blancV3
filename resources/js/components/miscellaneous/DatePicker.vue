@@ -334,7 +334,7 @@
                 currentView.value='months'
                 renderMonthsView();
             }
-            
+
             function renderMonthsView() {
 
                 displayed_months_rows.value= {0: [], 1: [], 2: [], 3: []};
@@ -420,7 +420,7 @@
         border: 1px solid #000000;
         box-sizing: border-box;
         border-radius: 5px;
-        background: transparent url('../../../img/calendar.svg') no-repeat center right 20px;
+        background: transparent url('../../../img/calendar.svg') no-repeat center right 10px;
         background-size: 12px;
         width: 154px;
         height: 40px;

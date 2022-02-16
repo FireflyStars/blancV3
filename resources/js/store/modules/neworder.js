@@ -58,7 +58,7 @@ export const neworder= {
 
             }).then((response) => {
                 //console.log(response.data);
-                commit(NEWORDER_PRELOAD_ORDER_CUSTOMER_SET,response.data);
+                commit(NEWORDER_PRELOAD_ORDER_CUSTOMER_SET,response.data.customer);
                 return Promise.resolve(response);
             })
                 .catch((error) => {
