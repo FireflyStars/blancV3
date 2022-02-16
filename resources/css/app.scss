@@ -8,6 +8,7 @@
   padding: 10px 22px;
 }
 $blanc-green:#42A71E !default;
+
 :root{
   --authlogoheight: 102px;
   --mainlogoheight: 64px;
@@ -815,4 +816,12 @@ padding:0 1.2rem;
 }
 .width-auto{
   width: auto !important;
+}
+
+.medium-grey{
+    color:$gray_medium;
+}
+
+.dark-grey{
+    color:$gray-900;
 }

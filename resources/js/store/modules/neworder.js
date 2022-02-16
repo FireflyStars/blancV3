@@ -8,7 +8,8 @@ import {
     NEWORDER_PRELOAD_FORM_SET,
     NEWORDER_PRELOAD_ORDER_CUSTOMER_SET,
     NEWORDER_PRELOAD_ORDER_GET,
-    NEWORDER_CUR_CUSTOMER
+    NEWORDER_CUR_CUSTOMER,
+    NEWORDER_GET_ALL_TIMESLOTS
 } from "../types/types";
 import axios from "axios";
 
@@ -23,7 +24,44 @@ export const neworder= {
        },
         form:{
            TypeDeliveries:[]
-        }
+        },
+        timeslot_def:[
+            {
+                value:1,
+                display:'8-10 am',
+                available:false
+            },
+            {
+                value:3,
+                display:'10-12 pm',
+                available:false
+            },
+            {
+                value:5,
+                display:'12-2 pm',
+                available:false
+            },
+            {
+                value:7,
+                display:'2-4 pm',
+                available:false
+            },
+            {
+                value:9,
+                display:'4-6 pm',
+                available:false
+            },
+            {
+                value:11,
+                display:'6-8 pm',
+                available:false
+            },
+            {
+                value:13,
+                display:'8-8 pm',
+                available:true
+            }
+        ]
     },
     mutations:{
         [NEWORDER_PRELOAD_FORM_SET]:(state,payload)=>{
@@ -74,5 +112,6 @@ export const neworder= {
         [NEWORDER_PRELOAD_FORM_GET]:state=>state.form,
         [NEWORDER_PRELOAD_ORDER_GET]:state=>state.order,
         [NEWORDER_CUR_CUSTOMER]:state=>state.order.infoCustomer,
+        [NEWORDER_GET_ALL_TIMESLOTS]:state=>state.timeslot_def,
     }
 }
