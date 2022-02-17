@@ -544,17 +544,18 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                    let err_txt = [];
 
 
+
                    if(CustomerID.value==''){
                        err = true;
                        err_txt.push('No customer selected');
                    }
-                   else if(showRecurring){
+                   else if(isRecurring.value){
                        if(recurring_data.value.length==0){
                            err = true;
                            err_txt.push('Recurring booking empty');
                        }
                    }
-                   else if(!showRecurring && deliverymethod.value==''){
+                   else if(!isRecurring.value && deliverymethod.value==''){
                        err = true;
                        err_txt.push('Please choose a delivery method');
 
