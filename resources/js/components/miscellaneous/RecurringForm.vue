@@ -1,6 +1,6 @@
 <template>
     <div class="fields-wrapper">
-        
+
         <ul class="days-of-week">
             <li v-for="(day, index) in slotsByDay " :key="index">
                 <a  @click="setSlots(day.value)"  class="day" :class="{disabled:!day.selected, selected:day.selected}">
@@ -41,7 +41,7 @@
 
                     <li>
                         <time-slot-picker placeholder="Time" class="data-picker"   v-model= reccuring[0].slot   v-bind:name= reccuring[0].value :available-slots="[1,6]"  label="Select first slot"></time-slot-picker>
-                    </li> 
+                    </li>
 
                     <li v-if="reccuring[3]">
                         <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[3].slot  v-bind:name= reccuring[3].value :available-slots="[1,6]"  label="Select 4th slot"></time-slot-picker>
@@ -50,7 +50,7 @@
                     <li v-if="reccuring[1]">
                         <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[1].slot  v-bind:name= reccuring[1].value :available-slots="[1,6]"  label="Select second slot"></time-slot-picker>
                     </li>
-                    
+
                     <li v-if="reccuring[4]">
                         <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[4].slot    v-bind:name= reccuring[4].value :available-slots="[1,6]"  label="Select 5th slot"></time-slot-picker>
                     </li>
@@ -62,15 +62,15 @@
                     <li v-if="reccuring[5]">
                         <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[5].slot v-bind:name= reccuring[5].value :available-slots="[1,6]"  label="Select 6th slot"></time-slot-picker>
                     </li>
-             </div>        
+             </div>
 
-        </ul> 
+        </ul>
     </div>
 
 </template>
 <script>
 
-import {ref, watch} from 'vue';
+import {ref, watch,defineExpose} from 'vue';
 import TimeSlotPicker from '../miscellaneous/TimeSlotPicker';
 
 export default ({
@@ -115,40 +115,50 @@ export default ({
                     slot:0,
                 }
             ]);
- 
+
 
         function setSlots(day){
 
-            slotsByDay.value.forEach((slotDay)=>{       
-                if(slotDay.value == day){  
-                    if(slotDay.selected == true){  
+            slotsByDay.value.forEach((slotDay)=>{
+                if(slotDay.value == day){
+                    if(slotDay.selected == true){
                         slotDay.selected = false;
                         slotDay.slot = 0;
                     }
                      else if(slotDay.selected == false){
                         slotDay.selected = true;
-                    }                   
-                }      
-        
+                    }
+                }
+
             });
-                
+
                 reccuring.value =  slotsByDay.value.filter(function (el) {
                  return el.selected == true;
-                 
+
                 });
 
         }
 
-            watch(()=>_.cloneDeep(reccuring.value),(current_val,previous_val)=>{
-                context.emit("update:modelValue",current_val);
-            });
+        watch(()=>_.cloneDeep(reccuring.value),(current_val,previous_val)=>{
+            context.emit("update:modelValue",current_val);
+        });
+
+        function returnedData(arr){
+            console.log("call from parent",arr);
+        }
+
+        defineExpose({
+            returnedData
+        });
+
 
     return {
         setSlots,
         slotsByDay,
         reccuring,
+        returnedData,
         }
-  
+
     },
 })
 </script>
@@ -181,7 +191,7 @@ export default ({
     }
     .selected {
         font-family: GothamRoundedBook;
-        font-size: 14px;    
+        font-size: 14px;
         line-height: 140%;
         color: white;
         background-color: #42A71E;
@@ -207,11 +217,11 @@ export default ({
     .time-slot li {
     width: 156px;
     padding-bottom: 24px;
-    
+
     }
     .time-slot .data-picker {
     width: 156px;
     padding-bottom: 24px;
-    
+
     }
 </style>

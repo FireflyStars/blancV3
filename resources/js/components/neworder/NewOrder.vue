@@ -40,7 +40,7 @@
 
                          <transition name="popinout">
                             <!-- Step 1 : Input data -->
-                            <div class="panel-col-2 col" v-if="process_step==1">
+                            <div class="panel-col-2 col" :class="{'d-none':process_step!=1}">
                                 <div class="panel">
                                     <h2 class="subtitle">Order Details</h2>
                                     <div class="row border-bottom m-0">
@@ -118,19 +118,19 @@
                                                 </div>
                                             </transition>
                                         </div>
-                                        <div :class="{'col-8':isRecurring}" v-if="isRecurring">
+                                        <div :class="{'col-8':isRecurring,'d-none':!isRecurring}">
                                             <transition name="popinout">
-                                                <div v-if="isRecurring">
-                                                    <recurring-form></recurring-form>
+                                                <div>
+                                                    <recurring-form v-model="recurring_data"></recurring-form>
                                                 </div>
                                             </transition>
                                         </div>
                                     </div>
 
-                                    <div class="row border-bottom">
+                                    <div class="row border-bottom" v-if="deliverymethod !='' &&deliverymethod !='in_store_collection'">
                                         <div class="col detailsection"><h2 class="subtitle">Details</h2></div>
                                     </div>
-                                    <div class="row mt-3" v-if="deliverymethod=='shipping' || deliverymethod=='delivery_only' || deliverymethod=='home_delivery'">
+                                    <div class="row mt-3" v-if="!isRecurring && (deliverymethod=='shipping' || deliverymethod=='delivery_only' || deliverymethod=='home_delivery')">
 
                                         <div class="col-6 body_medium mt-3">
                                             <h3 class="body_medium">Delivery Address</h3>
@@ -158,20 +158,21 @@
                                          <div class="col-6 mt-3" v-if="deliverymethod=='delivery_only' || deliverymethod=='home_delivery'">
                                               <h3 class="body_medium">&nbsp;</h3>
                                              <div class="row mx-0 form-group mb-2">
-                                                 <textarea class="form-control" v-model="customer_instructions" rows="3"></textarea>
+                                                 <textarea class="form-control" v-model="customer_instructions" rows="3" :readonly="isRecurring"></textarea>
                                             </div>
-                                            <div class="row mx-0 form-group mb-4 align-items-center">
+                                            <div class="row mx-0 form-group mb-4 align-items-center" v-if="!showRecurring">
                                                 <input type="checkbox" id="save_instruction_check" class="float-left mr-3" v-model="save_instruction_check"/>
                                                 <span class="col px-0">Save instructions for next time</span>
                                             </div>
-                                            <h3 class="body_medium">Alternate contact</h3>
-                                            <div class="row mx-0 form-group">
+
+                                            <div class="row mx-0 form-group" v-if="!showRecurring">
+                                                <h3 class="body_medium">Alternate contact</h3>
                                                  <input type="text" class="form-control" v-model="alternate_contact"/>
                                             </div>
                                          </div>
                                     </div>
-                                    <div class="row mt-3" v-else>
-                                        <h3 class="body_medium">Delivery Address</h3>
+                                    <div class="row mt-3" v-else-if="isRecurring && deliverymethod !='in_store_collection'">
+                                         <h3 class="body_medium">Delivery Address</h3>
                                         <div class="body_medium mt-3" v-if="cur_cust">
                                             <span v-if="cur_cust.address1 && cur_cust.address1!=''">{{cur_cust.address1}}</span>
                                             <br/>
@@ -211,7 +212,7 @@
                                             <div class="col p-0"><h2 class="slot-text">Slot</h2></div>
                                         </div>
 
-                                        <div class="row">
+                                        <div class="row" v-if="!isRecurring">
                                             <div class="col-6">
                                                 <span class="medium-grey each-timeslot-label body_medium d-block mb-2">
                                                     <span v-if="['in_store_collection','delivery_only'].includes(deliverymethod)">Drop off</span>
@@ -220,7 +221,7 @@
                                                 </span>
                                                 <div class="row">
                                                     <div class="col-2">
-                                                        <img src="/images/calendar_icon.svg" class="each-timeslot-icon" v-if="deliverymethod !='' && deliverymethod!='shipping'"/>
+                                                        <img src="/images/calendar_icon.svg" class="each-timeslot-icon" v-if="!isRecurring && deliverymethod !='' && deliverymethod!='shipping'"/>
                                                         <img src="/images/express.svg" class="each-timeslot-icon" v-if="deliverymethod=='shipping'"/>
                                                     </div>
                                                     <div class="col-10 pl-0">
@@ -252,7 +253,9 @@
                                                     <span  v-if="deliverymethod=='shipping'">Delivery time</span>
                                                 </span>
                                                 <div class="row" :class="{'align-items-center':deliverymethod=='shipping'}">
-                                                    <div class="col-2"><img src="/images/calendar_icon.svg" class="each-timeslot-icon"/></div>
+                                                    <div class="col-2">
+                                                        <img src="/images/calendar_icon.svg" class="each-timeslot-icon"/>
+                                                    </div>
                                                     <div class="col-10 pl-0">
                                                         <div class="body_medium dark-grey"  v-if="deliverymethod=='in_store_collection'">
                                                             <span>{{formatDate(isc_pickup)}}</span><br/>
@@ -274,6 +277,54 @@
 
                                             </div>
                                         </div>
+                                        <div v-if="isRecurring" class="row">
+                                            <div class="col-6 mb-4" v-for="(a,i) in recurring_data">
+                                                <div class="row">
+                                                    <div class="col-12 medium-grey each-timeslot-label body_medium d-block mb-1">
+                                                        Pickup and delivery slot {{i+1}}
+                                                    </div>
+                                                    <div class="col-2">
+                                                            <img src="/images/recurrence_icon.svg" class="each-timeslot-icon"/>
+                                                    </div>
+                                                    <div class="col-10 body_regular dark-grey">
+                                                        <span>{{recurring_days[a.value]}}</span><br/>
+                                                        <span>{{all_timeslots[a.slot]}}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                         <div class="row border-bottom mx-0 mt-5 mb-3" v-if="isRecurring || (deliverymethod!='' && deliverymethod!='in_store_collection')">
+                                            <div class="col p-0"><h2 class="slot-text">Details</h2></div>
+                                        </div>
+                                        <div class="row mt-3" v-if="isRecurring || (deliverymethod!='' && deliverymethod!='in_store_collection')">
+                                            <div class="col-6">
+                                                <h4 class="body_regular medium-grey">Delivery address</h4>
+                                                <div v-if="cur_cust" class="body_regular dark-grey">
+                                                    <span v-if="cur_cust.address1!=''">{{cur_cust.address1}}<br/></span>
+                                                    <span v-if="cur_cust.postcode!=''">{{cur_cust.postcode}}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6"  v-if="isRecurring || ['home_delivery','delivery_only'].includes(deliverymethod)">
+                                                <h4 class="body_regular medium-grey mb-3">Delivery instructions</h4>
+                                                <div class="row mx-0 form-group">
+                                                    <textarea class="form-control" readonly>{{customer_instructions}}</textarea>
+                                                </div>
+
+
+                                                <div class="row mx-0 mt-4 form-group" v-if="deliverymethod=='delivery_only'">
+                                                    <h4 class="body_regular medium-grey mb-3">Alternate contact</h4>
+                                                    <textarea class="form-control" readonly>{{alternate_contact}}</textarea>
+                                                </div>
+
+                                            </div>
+
+                                            <div class="col-6"  v-if="deliverymethod=='shipping'">
+                                                <h4 class="body_regular medium-grey mb-2">Delivery partner</h4>
+                                                <p class="body_regular dark-grey">{{getDisplayFromSelectArray(shipping_partners,shipping_partner_id)}}</p>
+                                            </div>
+                                        </div>
+
 
                                     </div>
                                 </div>
@@ -313,7 +364,7 @@
 
     import { useRouter, useRoute } from 'vue-router';
 
-    import {ref,onMounted,nextTick,computed,watch} from 'vue';
+    import {ref,onMounted,nextTick,computed,watch, reactive} from 'vue';
 
     import {
       NEWORDER_CUR_CUSTOMER,
@@ -386,6 +437,8 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             const save_instruction_check = ref(false);
             const cust_type_delivery = ref('');
 
+            const recurring_data = ref([]);
+
             const yesterday = ref('');
 
             const d = new Date();
@@ -443,7 +496,7 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
             watch(() =>isRecurring.value, (current_val, previous_val) => {
                     if(current_val===true) {
-                        deliverymethod.value = 'home_delivery';
+                        deliverymethod.value = '';
                         deliverymethod_disabled.value=true;
                     }else {
                         deliverymethod_disabled.value=false;
@@ -485,6 +538,8 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             function validateDetails(){
 
                if(process_step.value==1){
+
+
                    let err = false;
                    let err_txt = [];
 
@@ -493,8 +548,13 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                        err = true;
                        err_txt.push('No customer selected');
                    }
-
-                   else if(deliverymethod.value==''){
+                   else if(showRecurring){
+                       if(recurring_data.value.length==0){
+                           err = true;
+                           err_txt.push('Recurring booking empty');
+                       }
+                   }
+                   else if(!showRecurring && deliverymethod.value==''){
                        err = true;
                        err_txt.push('Please choose a delivery method');
 
@@ -559,7 +619,15 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                         });
                     }
 
+                    if(showRecurring){
+                        new_order.deliverymethod = 'recurring';
+                        new_order.recurring_data = JSON.stringify(recurring_data.value);
+                        new_order['delivery_params'] = '';
+                    }
+
                     new_order_obj.value = new_order;
+
+
 
                     console.log(new_order_obj);
 
@@ -668,7 +736,13 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
             function changeStep(num){
                 process_step.value = num;
+
+                if(num==1 && recurring_data.value.length > 0){
+
+                }
+
             }
+
 
             function setCustomerID(val){
                 //console.log('emit called');
@@ -677,6 +751,8 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                     process_step.value=1;
                 }
             }
+
+            //Filters
 
             function formatDate(date_txt){
                 let weekdays = [];
@@ -697,6 +773,21 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                 return weekdays[day_num]+" "+dt_dd+"/"+dt_mm;
             }
 
+
+            function getDisplayFromSelectArray(arr,value){
+                let label = "";
+                arr.forEach(function(v,i){
+                    if(v.value==value){
+                        label = v.display;
+                    }
+                });
+
+                return label;
+            }
+
+            //End filters
+
+
             const all_timeslots_def = store.getters[`${NEWORDER_MODULE}${NEWORDER_GET_ALL_TIMESLOTS}`];
             const all_timeslots = ref([]);
             const all_timeslots_arr = [];
@@ -706,6 +797,22 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             });
 
             all_timeslots.value = all_timeslots_arr;
+
+
+
+
+            let recur_day_map = [];
+
+            recur_day_map['DeliveryMon'] = 'Monday';
+            recur_day_map['DeliveryTu'] = 'Tuesday';
+            recur_day_map['DeliveryWed'] = 'Wednesday';
+            recur_day_map['DeliveryTh'] = 'Thursday';
+            recur_day_map['DeliveryFri'] = 'Friday';
+            recur_day_map['DeliverySat'] = 'Saturday';
+
+            const recurring_days = ref([]);
+            recurring_days.value = recur_day_map;
+
 
             return {
                 showcontainer,
@@ -752,6 +859,9 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                 cust_type_delivery,
                 all_timeslots,
                 formatDate,
+                getDisplayFromSelectArray,
+                recurring_data,
+                recurring_days,
             }
         }
     }
