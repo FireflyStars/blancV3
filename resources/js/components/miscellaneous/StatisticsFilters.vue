@@ -10,7 +10,7 @@
         </div>
     </div>
     <transition name="trans-filter" >
-    <div class="filters position-absolute" v-if="showfilter">
+    <div class="filters position-absolute" v-if="showfilter" v-click-outside="onClickOutside">
         <h2 class="subtitle">Date range</h2>
         <div class="row">
             <switch-btn v-model="customFilter" label-left="Custom Filter" label-right="" ></switch-btn>
@@ -23,12 +23,12 @@
         <div v-if="customFilter">
             <div class="row mt-10">
                 <div class="col-3">
-                    <date-picker v-model="startDate" name="start_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Starting" :disabled-from-date="startDisabledtodate"></date-picker>
+                    <date-picker v-model="startDate" @update:modelValue="newValue => startDate = newValue" name="start_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Starting" :disabled-from-date="startDisabledtodate"></date-picker>
                 </div>
             </div>
             <div class="row mt-10">
                 <div class="col-3">
-                    <date-picker v-model="endDate" name="end_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Ending" :disabled-from-date="endDisabledtodate"></date-picker>
+                    <date-picker v-model="endDate" @update:modelValue="newValue => endDate = newValue" name="end_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Ending" :disabled-from-date="endDisabledtodate"></date-picker>
                 </div>
             </div>
         </div>
@@ -47,9 +47,14 @@
     import SelectOptions from '../miscellaneous/SelectOptions';
     import DatePicker from '../miscellaneous/DatePicker';
     import SwitchBtn from '../miscellaneous/SwitchBtn';
+    import vClickOutside from 'click-outside-vue3';
     export default {
         name: "StatisticsFilters",
+        directives: {
+            clickOutside: vClickOutside.directive
+        },           
         props:['filterVal'],
+        emits: ['update:filterVal'],
         components:{CheckBox,SelectOptions,DatePicker,SwitchBtn},
          setup(props,context){
             let monthNames =["Jan","Feb","Mar","Apr",
@@ -80,20 +85,19 @@
                 { value: "Last 90 days", display: "Last 90 days" },
                 { value: "Last Month", display: "Last Month" },
                 { value: "Year to date", display: "Year to date" },
-                { value: "4th Quarter (2021)", display: "4th Quarter (2021)" },
-                { value: "3rd Quarter (2021)", display: "3rd Quarter (2021)" },
-                { value: "2nd Quarter (2021)", display: "2nd Quarter (2021)" },
-                { value: "1st Quarter (2021)", display: "1st Quarter (2021)" }
+                { value: "4th Quarter", display: "4th Quarter ("+`${current.getFullYear()-1}`+")" },
+                { value: "3rd Quarter", display: "3rd Quarter ("+`${current.getFullYear()-1}`+")" },
+                { value: "2nd Quarter", display: "2nd Quarter ("+`${current.getFullYear()-1}`+")" },
+                { value: "1st Quarter", display: "1st Quarter ("+`${current.getFullYear()-1}`+")" }
             ];
-            customFilterText.value=`Compared From ${new Date(startDate.value).getDate()} ${monthNames[new Date(startDate.value).getMonth()+1]}, ${new Date(startDate.value).getFullYear()} To ${new Date(endDate.value).getDate()} ${monthNames[new Date(endDate.value).getMonth()+1]}, ${new Date(endDate.value).getFullYear()}`;
-            console.log(customFilterText.value);
             function applyFilter() {
                 const data = {
                     customFilter:customFilter.value,
-                    startDate:endDate.value,
+                    startDate:startDate.value,
                     endDate:endDate.value,
                     dateRangeType:selectedValue.value
                 };
+                customFilterText.value=`Compared From ${new Date(startDate.value).getDate()} ${monthNames[new Date(startDate.value).getMonth()]}, ${new Date(startDate.value).getFullYear()} To ${new Date(endDate.value).getDate()} ${monthNames[new Date(endDate.value).getMonth()]}, ${new Date(endDate.value).getFullYear()}`;
                 context.emit("update:filterVal", data);
                 // store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
                 // store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,_.cloneDeep(preselection.value));
@@ -120,7 +124,13 @@
                 startDate,
                 startDisabledtodate,
                 endDate,
-                endDisabledtodate
+                endDisabledtodate,
+                customFilterText
+            }
+        },
+        methods:{
+            onClickOutside (event) {
+                this.showfilter = false;
             }
         }
     }
