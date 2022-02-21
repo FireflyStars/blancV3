@@ -18,23 +18,23 @@ class StatisticsController extends Controller
         $endDate        =   $request->post('endDate');
         $dateRangeType  =   $request->post('dateRangeType');
 
-        $period         = [ Carbon::parse($startDate)->subYear()->startOfDay(), Carbon::parse($endDate)->subYear()->endOfDay() ];
+        $period         = [ Carbon::parse($startDate)->startOfDay(), Carbon::parse($endDate)->endOfDay() ];
         // new code added by YH
         if( !$customFilter ){
             $start_first_quarter_day = Carbon::now()->subYear()->startOfYear();
             $end_first_quarter_day = Carbon::parse($start_first_quarter_day)->lastOfQuarter();
             if( $dateRangeType == 'Today' ){
-                $period = [Carbon::now()->subYear()->startOfDay(), Carbon::now()->subYear()->endOfDay()];
+                $period = [Carbon::now()->startOfDay(), Carbon::now()->endOfDay()];
             }else if ( $dateRangeType == 'Yesterday' ){
-                $period = [Carbon::yesterday()->subYear()->startOfDay(), Carbon::yesterday()->subYear()->endOfDay()];
+                $period = [Carbon::yesterday()->startOfDay(), Carbon::yesterday()->endOfDay()];
             }else if ( $dateRangeType == 'Last 7 days' ){
-                $period = [Carbon::now()->subYear()->subDays(7)->startOfDay(), Carbon::now()->subYear()->endOfDay()];
+                $period = [Carbon::now()->subYear()->startOfDay(), Carbon::now()->endOfDay()];
             }else if ( $dateRangeType == 'Last 90 days' ){
-                $period = [Carbon::now()->subYear()->subDays(90)->startOfDay(), Carbon::now()->subYear()->endOfDay()];
+                $period = [Carbon::now()->subDays(90)->startOfDay(), Carbon::now()->endOfDay()];
             }else if ( $dateRangeType == 'Last Month' ){
-                $period = [Carbon::now()->subYear()->subMonth()->startOfDay(), Carbon::now()->subYear()->endOfDay()];
+                $period = [Carbon::now()->subMonth()->startOfDay(), Carbon::now()->endOfDay()];
             }else if ( $dateRangeType == 'Year to date' ){
-                $period = [Carbon::now()->subYear()->startOfYear(), Carbon::now()->subYear()->endOfDay()];
+                $period = [Carbon::now()->startOfYear(), Carbon::now()->endOfDay()];
             }else if ( $dateRangeType == '4th Quarter' ){
                 $period = [Carbon::parse($start_first_quarter_day)->addMonths(9), Carbon::parse($end_first_quarter_day)->addMonths(9)];
             }else if ( $dateRangeType == '3rd Quarter' ){
