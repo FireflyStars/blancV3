@@ -512,7 +512,7 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             })*/
             const order=computed(()=>store.getters[`${NEWORDER_MODULE}${NEWORDER_PRELOAD_ORDER_GET}`]);
             function proceedToDetailling() {
-                router.push('/detailing_item/57908/12345678');
+                router.push('/order-content/57907');
             }
 
 

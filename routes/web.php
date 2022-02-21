@@ -67,6 +67,7 @@ Route::post('/get-statistics',[StatisticsController::class, 'getStatistics'])->n
 
 Route::post('/init-detailing',[DetailingController::class, 'initDetailing'])->name('init-detailing')->middleware('auth');
 Route::post('/update-detailing',[DetailingController::class, 'updateItemDetailing'])->name('update-detailing')->middleware('auth');
+Route::post('/get-detailing-list',[DetailingController::class, 'getDetailingList'])->name('get-detailing-list')->middleware('auth');
 
 Route::post('/item-picto',[ItemController::class, 'getItemPicto'])->name('item-picto');
 Route::post('/get-picto-names',[ItemController::class,'getPictoNames'])->name('get-picto-names');

@@ -137,7 +137,8 @@ export const SET_DETAILING='SET_DETAILING';//mutations
 export const GET_DETAILING='GET_DETAILING';//getters
 export const INIT_DETAILING='INIT_DETAILING';//action
 export const UPDATE_DETAILING='UPDATE_DETAILING';//action
-
+export const GET_DETAILING_LIST='GET_DETAILING_LIST';//getters
+export const SET_DETAILING_LIST='SET_DETAILING_LIST';//mutations
 
 export const SHIPPING_MODULE='SHIPPING_MODULE/'; //namespace
 export const GET_PARTNERS='GET_PARTNERS'; //getters

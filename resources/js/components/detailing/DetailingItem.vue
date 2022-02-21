@@ -14,7 +14,7 @@
                         @click="detailingitem.status == 'In Process'?show_pause_popup = true:pauseDetailling()"
                         v-if="detailingitem.status == 'In Process' || detailingitem.status == 'Pause'"
                     >{{ detailingitem.status == 'In Process' ? 'Pause detailing' : 'Resume detailing' }}</button>
-                    <div class="row">
+                    <div class="row container-detailing">
                         <div class="col-8 left-panel">
                             <div class="new-order-text">New order n°{{ order_id }}</div>
                             <h2 class="subtitle" v-if="detailingitem.etape === 1">Choose item type</h2>
@@ -277,6 +277,9 @@ export default {
                     if (response) {
                         detailingitem.value = response.data.detailingitem;
                         show_pause_popup.value=false;
+                        if(detailingitem.value.status == 'Pause'){
+                            router.push('/order-content/'+order_id.value);
+                        }
                     }
                 })
                 .finally(() => {
@@ -329,6 +332,9 @@ export default {
 }
 .main {
     padding: 50px 0px 50px 61px;
+}
+.container-detailing{
+    height: 100%;
 }
 .left-panel {
     margin-top: 10px;
@@ -393,7 +399,7 @@ input:focus-visible {
 }
 
 .popup-pause {
-    background: rgba(224, 224, 224, 0.6);
+    background: rgba(0, 0, 0, 0.6);
     position: fixed;
     top: 0;
     left: 0;

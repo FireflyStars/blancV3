@@ -198,7 +198,7 @@
             <button class="btn btn-link btn-previous" @click="back">Previous</button>
         </div>
         <div class="col-2 text-align-right">
-            <button class="btn btn-next text-white" :disabled="!valid" @click="save">Next</button>
+            <button class="btn btn-next text-white" :disabled="!valid" @click="next">Next</button>
         </div>
     </div>
     <transition
@@ -255,6 +255,8 @@ export default {
         const search = ref("");
         const show_popup = ref(false);
         const brand_suggested_name = ref("");
+        const steps = ref({});
+        steps.value = props.detailingData.steps;
         for (let i = "A".charCodeAt(0); i <= "Z".charCodeAt(0); i++) {
             letters.value.push(String.fromCharCode([i]));
         }
@@ -264,9 +266,36 @@ export default {
         color_id.value = props.detailingitem.color_id != null ? JSON.parse(props.detailingitem.color_id) : [];
         pattern_id.value = props.detailingitem.pattern_id != null ? props.detailingitem.pattern_id : (props.detailingData.patterns.length > 0 ? 0 : -1);
         condition_id.value = props.detailingitem.condition_id != null ? props.detailingitem.condition_id : (props.detailingData.conditions.length > 0 ? 0 : -1);
-        valid.value = size_id.value != 0 && brand_id.value != 0 && fabric_id.value != 0
-            && ((color_id.value.length > 0 && props.detailingData.colours.length > 0)||(color_id.value.length == 0 && props.detailingData.colours.length == 0))
-            && pattern_id.value != 0 && condition_id.value != 0;
+        switch (props.detailingitem.etape) {
+            case 3:
+                desc_type.value = 'size';
+                valid.value = size_id.value != 0;
+                break;
+            case 4:
+                desc_type.value = 'brand';
+                valid.value = brand_id.value != 0;
+                break;
+            case 5:
+                desc_type.value = 'fabric';
+                valid.value = fabric_id.value != 0;
+                break;
+            case 6:
+                desc_type.value = 'colour';
+                valid.value = ((color_id.value.length > 0 && props.detailingData.colours.length > 0) || (color_id.value.length == 0 && props.detailingData.colours.length == 0));
+                break;
+            case 7:
+                desc_type.value = 'pattern';
+                valid.value = pattern_id.value != 0;
+                break;
+            case 8:
+                desc_type.value = 'condition';
+                valid.value = condition_id.value != 0;
+                break;
+            default:
+                desc_type.value = 'size';
+                valid.value = size_id.value != 0;
+        }
+
         watch(() => props.detailingitem, (current_val, previous_val) => {
             size_id.value = current_val.size_id != null ? current_val.size_id : (props.detailingData.sizes.length > 0 ? 0 : -1);
             brand_id.value = current_val.brand_id != null ? current_val.brand_id : (props.detailingData.brands.length > 0 ? 0 : -1);
@@ -274,38 +303,37 @@ export default {
             color_id.value = current_val.color_id != null ? JSON.parse(current_val.color_id) : [];
             pattern_id.value = current_val.pattern_id != null ? current_val.pattern_id : (props.detailingData.patterns.length > 0 ? 0 : -1);
             condition_id.value = current_val.condition_id != null ? current_val.condition_id : (props.detailingData.conditions.length > 0 ? 0 : -1);
+            switch (current_val.etape) {
+                case 3:
+                    desc_type.value = 'size';
+                    valid.value = size_id.value != 0;
+                    break;
+                case 4:
+                    desc_type.value = 'brand';
+                    valid.value = brand_id.value != 0;
+                    break;
+                case 5:
+                    desc_type.value = 'fabric';
+                    valid.value = fabric_id.value != 0;
+                    break;
+                case 6:
+                    desc_type.value = 'colour';
+                    valid.value = ((color_id.value.length > 0 && props.detailingData.colours.length > 0) || (color_id.value.length == 0 && props.detailingData.colours.length == 0));
+                    break;
+                case 7:
+                    desc_type.value = 'pattern';
+                    valid.value = pattern_id.value != 0;
+                    break;
+                case 8:
+                    desc_type.value = 'condition';
+                    valid.value = condition_id.value != 0;
+                    break;
+                default:
+                    desc_type.value = 'size';
+                    valid.value = size_id.value != 0;
+            }
+        });
 
-        });
-        watch(() => [size_id.value, brand_id.value, fabric_id.value, color_id.value, pattern_id.value, condition_id.value], ([current_size, current_brand, current_fabric, current_color, current_pattern, current_condition], [previous_size, previous_brand, previous_fabric, previous_color]) => {
-            valid.value = current_size != 0 && current_brand != 0 && current_fabric != 0
-                && ((current_color.length > 0 && props.detailingData.colours.length > 0)||(current_color.length == 0 && props.detailingData.colours.length == 0))
-                && current_pattern != 0 && current_condition != 0;
-        });
-        switch (props.detailingitem.etape) {
-            case 3:
-                desc_type.value = 'size';
-                break;
-            case 4:
-                desc_type.value = 'brand';
-                break;
-            case 5:
-                desc_type.value = 'fabric';
-                break;
-            case 6:
-                desc_type.value = 'colour';
-                break;
-            case 7:
-                desc_type.value = 'pattern';
-                break;
-            case 8:
-                desc_type.value = 'condition';
-                break;
-            case 9:
-                desc_type.value = 'complexities';
-                break;
-            default:
-                desc_type.value = 'size';
-        }
         function descTypeClick(type) {
             desc_type.value = type;
         }
@@ -379,14 +407,16 @@ export default {
                 });
             }
         }
-        function save() {
+        function next() {
+            const index = steps.value.findIndex((step) => step.id === props.detailingitem.etape);
             context.emit("save-item-description", {
                 detailingitem_id: props.detailingitem.id,
-                step: 9
+                step: steps.value[index + 1].id
             });
         }
         function back() {
-            context.emit("back-previous-step", 2);
+            const index = steps.value.findIndex((step) => step.id === props.detailingitem.etape);
+            context.emit("back-previous-step", steps.value[index - 1].id);
         }
         function saveBrand() {
             context.emit("save-item-description", {
@@ -417,7 +447,7 @@ export default {
             clearSearch,
             filteredBrand,
             select,
-            save,
+            next,
             back,
             saveBrand
         };
