@@ -83,14 +83,16 @@ class StatisticsController extends Controller
                 $statistique['ch'] = number_format($store->total, 2);
             }
             if($store->TypeDelivery == 'DELIVERY') {
-                $toal_delivery_sale += $store->avg;
+                $toal_delivery_sale += $store->total;
                 $delivery_count ++;
                 // $avg_delivery_order +=  $store->avg;
             }
         }
         // end total sales store
+        
         // start total sales deliveries (B2B, B2C)
-        $statistique['avg_store_order'] = number_format( $total_sales_store / ($total_sale_stores->count() - $delivery_count), 2);
+
+        $statistique['avg_store_order'] = ($total_sale_stores->count() - $delivery_count) <= 0 ? 0 : number_format( $total_sales_store / ($total_sale_stores->count() - $delivery_count), 2);
         $statistique['avg_delivery_order'] = number_format( $avg_delivery_order, 2);
         $total_sales_b2b = InfoOrder::join('infoCustomer', 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                     ->whereBetween('infoOrder.created_at', $period)
@@ -118,7 +120,7 @@ class StatisticsController extends Controller
                                     ->first();
         $statistique['b2c'] = number_format( $total_sales_b2c->total, 2);
         $statistique['avg_b2c_order'] = number_format( $total_sales_b2c->avg, 2);
-        $statistique['avg_total_order'] = number_format( ($total_sales_store + $total_sales_b2b->total + $total_sales_b2c->total + $toal_delivery_sale ) / ($total_sale_stores->count() + $total_sales_b2b->count()+ $total_sales_b2c->count()), 2);
+        $statistique['avg_total_order'] = ($total_sale_stores->count() + $total_sales_b2b->count()+ $total_sales_b2c->count()) <= 0 ? 0 : number_format( ($total_sales_store + $total_sales_b2b->total + $total_sales_b2c->total + $toal_delivery_sale ) / ($total_sale_stores->count() + $total_sales_b2b->count()+ $total_sales_b2c->count()), 2);
         $statistique['total_sales'] = number_format( $total_sales_store + $total_sales_b2c->total + $total_sales_b2b->total, 2 );
         $first_time_total_sale_stores = InfoOrder::whereBetween('created_at', $period)
                                     ->where('firstorder', 1)
@@ -140,6 +142,7 @@ class StatisticsController extends Controller
             if($store->TypeDelivery == 'CHELSEA') $statistique['first_time_ch'] = number_format($store->total, 2);
         }
         // end total sales store
+
         // start total sales deliveries (B2B, B2C)
         $first_time_total_sales_b2b = InfoOrder::join('infoCustomer', 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                     ->whereBetween('infoOrder.created_at', $period)
@@ -198,7 +201,7 @@ class StatisticsController extends Controller
         $statistique['stores_new_signup'] = $stores_new_signup;
         // end new signup data
 
-
+        // service section data
         $service_items = Infoitem::whereBetween('PromisedDate', $period)
                                 ->select(DB::raw('SUM(priceTotal) as total'), 'DepartmentName')
                                 ->groupBy('DepartmentName')
