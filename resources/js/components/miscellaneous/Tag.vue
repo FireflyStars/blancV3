@@ -66,7 +66,7 @@
     .tag.inprocess,.tag.partpending,.tag.partonhold{
         background: rgba(241, 210, 164, 0.7);
     }
-    .tag.inprocess:before,.tag.partpending:before,.tag.partonhold:before{
+    .tag.inprocess:before,.tag.partpending:before,.tag.partonhold:before,.tag.partiallydetailed:before{
         content: " ";
         background: #EF8F00;
         width: 12px;
@@ -80,7 +80,7 @@
         border-bottom-right-radius: 8px;
         border-top: 0;
     }
-    .tag.inprocess:after,.tag.partpending:after,.tag.partonhold:after{
+    .tag.inprocess:after,.tag.partpending:after,.tag.partonhold:after,.tag.partiallydetailed:after{
         content: " ";
         width: 12px;
         height: 6px;
@@ -186,5 +186,38 @@
         flex-direction: row;
         justify-content: center;
         align-items: center;
+    }
+    .tag.partiallydetailed,.tag.tobedetailed{
+        color: #EF8F00;
+        background: rgba(241, 210, 164, 0.7);
+        width: 160px!important;
+    }
+    .tag.detailed{
+        background: #E0E0E0;
+        color: #000000;
+    }
+    .tag.tobedetailed:before{
+        content: " ";
+        border: 2px solid #EF8F00;
+        width: 12px;
+        height:12px;
+        display: inline-block;
+        position: absolute;
+        left: 8px;
+        top:6px;
+        border-radius: 8px;
+    }
+    .tag.detailed:before{
+        content: " ";
+        background: #000000;
+        width: 12px;
+        height:12px;
+        display: inline-block;
+        position: absolute;
+        left: 8px;
+        top:6px;
+        border-radius: 8px;
+        border: 2px solid #FFFFFF;
+
     }
 </style>

@@ -3,6 +3,8 @@ import {
     GET_DETAILING,
     INIT_DETAILING,
     UPDATE_DETAILING,
+    GET_DETAILING_LIST,
+    SET_DETAILING_LIST
 } from "../types/types";
 import axios from "axios";
 
@@ -10,10 +12,12 @@ export const detailingItem = {
     namespaced: true,
     state: {
         loader: "",
-        statistics: {},
+        detailing_item: {},
+        detailingList: {}
     },
     mutations: {
-        [SET_DETAILING]: (state, payload) => (state.statistics = payload),
+        [SET_DETAILING]: (state, payload) => state.detailing_item = payload,
+        [SET_DETAILING_LIST]: (state, payload) => state.detailingList = payload
     },
     actions: {
         [INIT_DETAILING]: async ({ commit, state }, payload) => {
@@ -44,8 +48,23 @@ export const detailingItem = {
                 })
                 .finally(() => { });
         },
+        [GET_DETAILING_LIST]: async ({ commit, state }, payload) => {
+            return axios
+                .post("/get-detailing-list", payload)
+                .then((response) => {
+                    if (response.data != null) {
+                        commit(SET_DETAILING_LIST, response.data);
+                    }
+                    return Promise.resolve(response);
+                })
+                .catch((error) => {
+                    return Promise.reject(error);
+                })
+                .finally(() => { });
+        },
     },
     getters: {
-        [GET_DETAILING]: (state) => state.statistics,
+        [GET_DETAILING]: (state) => state.detailing_item,
+        [GET_DETAILING_LIST]: (state) => state.detailingList,
     },
 };

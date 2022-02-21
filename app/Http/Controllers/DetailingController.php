@@ -6,10 +6,40 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
-use function PHPUnit\Framework\returnSelf;
-
 class DetailingController extends Controller
 {
+    public function getDetailingList(Request $request)
+    {
+        $order_id = $request->post('order_id');
+        $user = Auth::user();
+
+        $customer = DB::table('infoOrder')
+            ->select('infoCustomer.*')
+            ->join('infoCustomer', 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
+            ->where('infoOrder.id', $order_id)
+            ->get();
+
+        $customer = (array) $customer->first();
+
+        $detailingitemlist = DB::table('detailingitem')
+            ->select('infoitems.NoBag','infoInvoice.NumInvoice as sub_order','typeitem.name as typeitem_name','infoitems.ItemTrackingKey as item_number','detailingitem.etape','detailingitem.pricecleaning as price')
+            ->join('typeitem','typeitem.id', 'detailingitem.typeitem_id')
+            ->join('infoitems', 'infoitems.ItemTrackingKey', '=', 'detailingitem.item_id')
+            ->join('infoInvoice', 'infoInvoice.SubOrderID', '=', 'infoitems.SubOrderID')
+            ->where('detailingitem.order_id', '=', $order_id)
+            ->orderBy('infoitems.NoBag')
+            ->orderBy('infoInvoice.NumInvoice')
+            ->get();
+
+        echo json_encode(
+            [
+                'user' => $user,
+                'detailing_list' => $detailingitemlist,
+                'customer' => $customer
+            ]
+        );
+    }
+
     public function initDetailing(Request $request)
     {
         $search = $request->post('search');
@@ -56,7 +86,6 @@ class DetailingController extends Controller
         $searched_item = null;
         if ($search) {
             $searched_item = DB::table('typeitem')
-                // ->join('departments', 'typeitem.department_id', '=', 'departments.id')
                 ->where('typeitem.name', 'LIKE', '%' . $search . '%')
                 ->first();
             DB::table('detailingitem')->where('id', $detailingitem_id)->update([
@@ -252,55 +281,39 @@ class DetailingController extends Controller
     public function getDetailingData($department_id = 0, $typeitem_id = 0)
     {
         $detailing_data = null;
-        $steps = DB::table('etape')->where('deleted_at', NULL)->get();
-        $step_size = $steps->first(function ($step) {
-            return $step->id == 3;
-        });
-        $step_brand = $steps->first(function ($step) {
-            return $step->id == 4;
-        });
-        $step_fabric = $steps->first(function ($step) {
-            return $step->id == 5;
-        });
-        $step_colour = $steps->first(function ($step) {
-            return $step->id == 6;
-        });
-        $step_pattern = $steps->first(function ($step) {
-            return $step->id == 7;
-        });
-        $step_condition = $steps->first(function ($step) {
-            return $step->id == 8;
-        });
+        $query = DB::table('etape')->where('Actif', 1)->where('deleted_at', NULL);
+        $detailing_data['steps'] = $query->select('id', 'name')->get();
         $detailing_data['departements'] = DB::table('departments')->where('deleted_at', NULL)->get();
         $detailing_data['categories'] = DB::table('categories')->where('department_id', $department_id)->where('deleted_at', NULL)->get();
         $detailing_data['typeitems'] = DB::table('typeitem')->where('department_id', $department_id)->where('deleted_at', NULL)->get();
-        //  return $step_size->Actif;
-        if ($step_size->Actif == 1) {
+
+        $steps = $query->get()->pluck('id')->toArray();
+        if (in_array(3, $steps)) {
             $detailing_data['sizes'] = DB::table('sizes')->where('typeitem_id', $typeitem_id)->where('deleted_at', NULL)->get();
         } else {
             $detailing_data['sizes'] = [];
         }
-        if ($step_brand->Actif == 1) {
+        if (in_array(4, $steps)) {
             $detailing_data['brands'] = DB::table('brands')->where('deleted_at', NULL)->get();
         } else {
             $detailing_data['brands'] = [];
         }
-        if ($step_fabric->Actif == 1) {
+        if (in_array(5, $steps)) {
             $detailing_data['fabrics'] = DB::table('fabrics')->where('deleted_at', NULL)->get();
         } else {
             $detailing_data['fabrics'] = [];
         }
-        if ($step_colour->Actif == 1) {
+        if (in_array(6, $steps)) {
             $detailing_data['colours'] = DB::table('colours')->where('deleted_at', NULL)->get();
         } else {
             $detailing_data['colours'] = [];
         }
-        if ($step_pattern->Actif == 1) {
+        if (in_array(7, $steps)) {
             $detailing_data['patterns'] = DB::table('patterns')->where('deleted_at', NULL)->get();
         } else {
             $detailing_data['patterns'] = [];
         }
-        if ($step_condition->Actif == 1) {
+        if (in_array(8, $steps)) {
             $detailing_data['conditions'] = DB::table('conditions')->where('deleted_at', NULL)->get();
         } else {
             $detailing_data['conditions'] = [];
