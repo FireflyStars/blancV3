@@ -98,7 +98,7 @@ class StatisticsController extends Controller
         $statistique['avg_delivery_order'] = number_format( $avg_delivery_order, 2);
         $total_sales_b2b = InfoOrder::join('infoCustomer', 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                     ->whereBetween('infoOrder.created_at', $period)
-                                    // ->where('infoOrder.TypeDelivery', 'DELIVERY')
+                                    ->where('infoOrder.TypeDelivery', 'DELIVERY')
                                     ->where( function( $query ) {
                                         $query->where('infoCustomer.CustomerIDMaster', '!=', '')
                                                 ->orWhere('infoCustomer.CustomerIDMasterAccount', '!=', '')
@@ -111,7 +111,7 @@ class StatisticsController extends Controller
         $statistique['avg_b2b_order'] = number_format( $total_sales_b2b->avg, 2);
         $total_sales_b2c = InfoOrder::join('infoCustomer', 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                     ->whereBetween('infoOrder.created_at', $period)
-                                    // ->where('infoOrder.TypeDelivery', 'DELIVERY')
+                                    ->where('infoOrder.TypeDelivery', 'DELIVERY')
                                     ->where( function( $query ) {
                                         $query->where('infoCustomer.CustomerIDMaster', '')
                                                 ->orWhere('infoCustomer.CustomerIDMasterAccount', '')
@@ -148,7 +148,7 @@ class StatisticsController extends Controller
         // start total sales deliveries (B2B, B2C)
         $first_time_total_sales_b2b = InfoOrder::join('infoCustomer', 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                     ->whereBetween('infoOrder.created_at', $period)
-                                    // ->where('infoOrder.TypeDelivery', 'DELIVERY')
+                                    ->where('infoOrder.TypeDelivery', 'DELIVERY')
                                     ->where('infoOrder.firstorder', 1)
                                     ->where( function( $query ) {
                                         $query->where('infoCustomer.CustomerIDMaster', '!=', '')
