@@ -67,22 +67,22 @@ class StatisticsController extends Controller
             if($store->TypeDelivery == 'MARYLEBONE') {
                 $total_sales_store  +=  $store->total;
                 // $avg_store_order    +=  $store->avg;
-                $statistique['mb'] = number_format($store->total, 2) ;
+                $statistique['mb'] = number_format($store->total, 0) ;
             }
             if($store->TypeDelivery == 'NOTTING HILL') {
                 $total_sales_store  += $store->total;
                 // $avg_store_order    +=  $store->avg;
-                $statistique['nh'] = number_format($store->total, 2);
+                $statistique['nh'] = number_format($store->total, 0);
             }
             if($store->TypeDelivery == 'SOUTH KEN') {
                 $total_sales_store  += $store->total;
                 // $avg_store_order    +=  $store->avg;
-                $statistique['sk'] = number_format($store->total, 2);
+                $statistique['sk'] = number_format($store->total, 0);
             }
             if($store->TypeDelivery == 'CHELSEA') {
                 $total_sales_store  += $store->total;
                 // $avg_store_order    +=  $store->avg;
-                $statistique['ch'] = number_format($store->total, 2);
+                $statistique['ch'] = number_format($store->total, 0);
             }
             if($store->TypeDelivery == 'DELIVERY') {
                 $toal_delivery_sale += $store->total;
@@ -94,8 +94,8 @@ class StatisticsController extends Controller
         
         // start total sales deliveries (B2B, B2C)
 
-        $statistique['avg_store_order'] = ($total_sale_stores->count() - $delivery_count) <= 0 ? 0 : number_format( $total_sales_store / ($total_sale_stores->count() - $delivery_count), 2);
-        $statistique['avg_delivery_order'] = number_format( $avg_delivery_order, 2);
+        $statistique['avg_store_order'] = ($total_sale_stores->count() - $delivery_count) <= 0 ? 0 : number_format( $total_sales_store / ($total_sale_stores->count() - $delivery_count), 0);
+        $statistique['avg_delivery_order'] = number_format( $avg_delivery_order, 0);
         $total_sales_b2b = InfoOrder::join('infoCustomer', 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                     ->whereBetween('infoOrder.created_at', $period)
                                     ->where('infoOrder.TypeDelivery', 'DELIVERY')
@@ -107,8 +107,8 @@ class StatisticsController extends Controller
                                     } )                                    
                                     ->select(DB::raw('AVG(Total) as avg'), DB::raw('SUM(Total) as total'))
                                     ->first();
-        $statistique['b2b'] = number_format( $total_sales_b2b->total, 2);
-        $statistique['avg_b2b_order'] = number_format( $total_sales_b2b->avg, 2);
+        $statistique['b2b'] = number_format( $total_sales_b2b->total, 0);
+        $statistique['avg_b2b_order'] = number_format( $total_sales_b2b->avg, 0);
         $total_sales_b2c = InfoOrder::join('infoCustomer', 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                     ->whereBetween('infoOrder.created_at', $period)
                                     ->where('infoOrder.TypeDelivery', 'DELIVERY')
@@ -120,10 +120,10 @@ class StatisticsController extends Controller
                                     } )                                    
                                     ->select(DB::raw('AVG(Total) as avg'), DB::raw('SUM(Total) as total'))
                                     ->first();
-        $statistique['b2c'] = number_format( $total_sales_b2c->total, 2);
-        $statistique['avg_b2c_order'] = number_format( $total_sales_b2c->avg, 2);
-        $statistique['avg_total_order'] = ($total_sale_stores->count() + $total_sales_b2b->count()+ $total_sales_b2c->count()) <= 0 ? 0 : number_format( ($total_sales_store + $total_sales_b2b->total + $total_sales_b2c->total + $toal_delivery_sale ) / ($total_sale_stores->count() + $total_sales_b2b->count()+ $total_sales_b2c->count()), 2);
-        $statistique['total_sales'] = number_format( $total_sales_store + $total_sales_b2c->total + $total_sales_b2b->total, 2 );
+        $statistique['b2c'] = number_format( $total_sales_b2c->total, 0);
+        $statistique['avg_b2c_order'] = number_format( $total_sales_b2c->avg, 0);
+        $statistique['avg_total_order'] = ($total_sale_stores->count() + $total_sales_b2b->count()+ $total_sales_b2c->count()) <= 0 ? 0 : number_format( ($total_sales_store + $total_sales_b2b->total + $total_sales_b2c->total + $toal_delivery_sale ) / ($total_sale_stores->count() + $total_sales_b2b->count()+ $total_sales_b2c->count()), 0);
+        $statistique['total_sales'] = number_format( $total_sales_store + $total_sales_b2c->total + $total_sales_b2b->total, 0 );
         $first_time_total_sale_stores = InfoOrder::whereBetween('created_at', $period)
                                     ->where('firstorder', 1)
                                     ->whereIn('TypeDelivery', ['MARYLEBONE', 'NOTTING HILL', 'SOUTH KEN', 'CHELSEA'])
@@ -138,10 +138,10 @@ class StatisticsController extends Controller
         $first_time_total_sales_store = 0;
         foreach ($first_time_total_sale_stores as $key => $store) {
             $first_time_total_sales_store += $store->total;
-            if($store->TypeDelivery == 'MARYLEBONE') $statistique['first_time_mb'] = number_format($store->total, 2) ;
-            if($store->TypeDelivery == 'NOTTING HILL') $statistique['first_time_nh'] = number_format($store->total, 2);
-            if($store->TypeDelivery == 'SOUTH KEN') $statistique['first_time_sk'] = number_format($store->total, 2);
-            if($store->TypeDelivery == 'CHELSEA') $statistique['first_time_ch'] = number_format($store->total, 2);
+            if($store->TypeDelivery == 'MARYLEBONE') $statistique['first_time_mb'] = number_format($store->total, 0) ;
+            if($store->TypeDelivery == 'NOTTING HILL') $statistique['first_time_nh'] = number_format($store->total, 0);
+            if($store->TypeDelivery == 'SOUTH KEN') $statistique['first_time_sk'] = number_format($store->total, 0);
+            if($store->TypeDelivery == 'CHELSEA') $statistique['first_time_ch'] = number_format($store->total, 0);
         }
         // end total sales store
 
@@ -158,23 +158,23 @@ class StatisticsController extends Controller
                                     } )
                                     ->select(DB::raw('SUM(Total) as total'))
                                     ->first()->total;
-        $statistique['first_time_b2b'] = number_format( $first_time_total_sales_b2b, 2);
+        $statistique['first_time_b2b'] = number_format( $first_time_total_sales_b2b, 0);
         
         $first_time_total_sales_app = InfoOrder::whereBetween('infoOrder.created_at', $period)
                                         ->where('firstorder', 1)
                                         ->where('fromapp', 1)
                                         ->select(DB::raw('SUM(Total) as total'))
                                         ->first()->total;
-        $statistique['first_time_app'] = number_format( $first_time_total_sales_app, 2);
+        $statistique['first_time_app'] = number_format( $first_time_total_sales_app, 0);
         
         $first_time_total_sales_normal = InfoOrder::whereBetween('infoOrder.created_at', $period)
                                         ->where('firstorder', 1)
                                         ->where('fromapp', 0)
                                         ->select(DB::raw('SUM(Total) as total'))
                                         ->first()->total;
-        $statistique['first_time_normal'] = number_format( $first_time_total_sales_normal, 2);
+        $statistique['first_time_normal'] = number_format( $first_time_total_sales_normal, 0);
 
-        $statistique['first_time_total_sales'] = number_format( $first_time_total_sales_store + $first_time_total_sales_app + $first_time_total_sales_b2b + $first_time_total_sales_normal, 2 );
+        $statistique['first_time_total_sales'] = number_format( $first_time_total_sales_store + $first_time_total_sales_app + $first_time_total_sales_b2b + $first_time_total_sales_normal, 0);
 
         // start new signup data
         $stores_new_signup = InfoCustomer::whereBetween('SignupDate', $period)
@@ -210,14 +210,14 @@ class StatisticsController extends Controller
                                 ->orderByRaw("FIELD(DepartmentName, 'Garment Care','Shirts Hung','Shirts Folded','Shirts','Business','Laundry','Bedlinen','Household','Suede/Leather/Wax','Laundry Bag','Other')")
                                 ->get();
         $statistique['service_items'] = $service_items;        
-        $statistique['service_items_total'] = number_format($service_items->sum('total'), 2);
+        $statistique['service_items_total'] = number_format($service_items->sum('total'), 0);
         $services_group = Infoitem::whereBetween('PromisedDate', $period)
                                 ->select(DB::raw('SUM(priceTotal) as total'), 'DepartmentName')
                                 ->groupBy('DepartmentName')
                                 ->orderByRaw("FIELD(DepartmentName, 'Garment Care','Shirts Hung','Shirts Folded','Shirts','Business','Laundry','Bedlinen','Household','Suede/Leather/Wax','Laundry Bag','Other')")
                                 ->get();
         $statistique['services_group'] = $services_group;        
-        $statistique['services_group_total'] = number_format($services_group->sum('total'), 2);                                
+        $statistique['services_group_total'] = number_format($services_group->sum('total'), 0);                                
         return response()->json(
             [
                 'statistique'=> $statistique
