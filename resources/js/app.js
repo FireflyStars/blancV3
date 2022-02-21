@@ -5,7 +5,7 @@ require('./bootstrap');
 import axios from 'axios';
 import { createApp } from 'vue';
 import App from './components/App';
-
+import vClickOutside from "click-outside-vue3";
 import router from './router/router';
 import store from './store/store'
 
@@ -24,6 +24,7 @@ axios.interceptors.response.use(
 createApp(App)
     .use(router)
     .use(store)
+    .use(vClickOutside)
     .mount('#app');
 
 

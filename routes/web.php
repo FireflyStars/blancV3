@@ -13,6 +13,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\DetailingController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\ShippingController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -70,3 +71,5 @@ Route::post('/get-detailing-list',[DetailingController::class, 'getDetailingList
 
 Route::post('/item-picto',[ItemController::class, 'getItemPicto'])->name('item-picto');
 Route::post('/get-picto-names',[ItemController::class,'getPictoNames'])->name('get-picto-names');
+
+Route::post('/get-shipping-partners',[ShippingController::class,'getPartnerList'])->name('get-shipping-partners')->middleware('auth');

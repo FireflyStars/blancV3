@@ -8,6 +8,7 @@
   padding: 10px 22px;
 }
 $blanc-green:#42A71E !default;
+
 :root{
   --authlogoheight: 102px;
   --mainlogoheight: 64px;
@@ -661,9 +662,16 @@ padding:0 1.2rem;
 }
 
 .body_regular{
-  font-family: "Gotham Rounded Light";
+  font-family: "Gotham Rounded";
   font-size: 16px;
+  font-weight: 400;
 }
+
+.body_light{
+    font-family: "Gotham Rounded Light";
+    font-size: 16px;
+  }
+
 .body_bold{
   font-family: "Gotham Rounded";
   font-size: 16px;
@@ -815,4 +823,12 @@ padding:0 1.2rem;
 }
 .width-auto{
   width: auto !important;
+}
+
+.medium-grey{
+    color:$gray_medium;
+}
+
+.dark-grey{
+    color:$gray-900;
 }

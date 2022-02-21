@@ -11,6 +11,7 @@ import {scan as SCAN_MODULE} from "./modules/scan";
 import {neworder as NEWORDER_MODULE} from "./modules/neworder";
 import {statistics as STATISTICS_MODULE} from "./modules/statistics";
 import {detailingItem as DETAILING_MODULE} from "./modules/detailingItem";
+import {shipping as SHIPPING_MODULE } from './modules/shipping';
 
 
 export default createStore({
@@ -26,6 +27,7 @@ export default createStore({
         SCAN_MODULE,
         NEWORDER_MODULE,
         STATISTICS_MODULE,
-        DETAILING_MODULE
+        DETAILING_MODULE,
+        SHIPPING_MODULE,
     }
 })

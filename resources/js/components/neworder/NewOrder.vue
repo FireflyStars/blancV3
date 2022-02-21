@@ -29,17 +29,22 @@
                         </div>
 
                         <div class="panel-wrapper row">
+
                             <div class="panel-col-1 col  ">
-                                <customer-details-panel></customer-details-panel>
+                                <customer-details-panel @setcustomerid="setCustomerID"></customer-details-panel>
                                 <div class="panel">
                                     <h2 class="subtitle">Payment method</h2>
                                 </div>
                             </div>
-                            <div class="panel-col-2 col  ">
+
+
+                         <transition name="popinout">
+                            <!-- Step 1 : Input data -->
+                            <div class="panel-col-2 col" :class="{'d-none':process_step!=1}">
                                 <div class="panel">
                                     <h2 class="subtitle">Order Details</h2>
                                     <div class="row border-bottom m-0">
-                                        <div class="col p-0"><h2 class="subtitle">Slot</h2></div>
+                                        <div class="col p-0"><h2 class="slot-text">Slot</h2></div>
                                         <div class="col p-0 justify-content-end d-flex rec_switch" v-if="showRecurring"><switch-btn v-model="isRecurring" label-left="Recurring"></switch-btn></div>
                                     </div>
                                     <div class="row mt-4">
@@ -51,13 +56,13 @@
                                             </div>
                                             <transition name="popinout">
                                             <div class="row mt-3" v-if="deliverymethod=='in_store_collection'">
-                                                <div class="col-3"><date-picker v-model="isc_dropoff" name="isc_dropoff" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Drop off" ></date-picker>
+                                                <div class="col-3"><date-picker v-model="isc_dropoff" name="isc_dropoff" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Drop off" :disabledToDate="yesterday"></date-picker>
                                                 </div>
                                                 <div class="col-3">
                                                     <time-slot-picker v-model="isc_dropoff_timeslot"   name="isc_dropoff_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
                                                 </div>
 
-                                                <div class="col-3"><date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pickup" ></date-picker>
+                                                <div class="col-3"><date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pickup" :disabledToDate="yesterday"></date-picker>
                                                 </div>
                                                 <div class="col-3">
                                                     <time-slot-picker v-model="isc_pickup_timeslot"   name="isc_pickup_timeslot" :available-slots="[1]"  label="Pick up Time"></time-slot-picker>
@@ -68,13 +73,13 @@
 
                                             <transition name="popinout">
                                                 <div class="row mt-3" v-if="deliverymethod=='delivery_only'">
-                                                    <div class="col-3"><date-picker v-model="do_dropoff" name="do_dropoff" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Drop off" ></date-picker>
+                                                    <div class="col-3"><date-picker v-model="do_dropoff" name="do_dropoff" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Drop off" :disabledToDate="yesterday"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="do_dropoff_timeslot"   name="do_dropoff_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
                                                     </div>
 
-                                                    <div class="col-3"><date-picker v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" ></date-picker>
+                                                    <div class="col-3"><date-picker v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="yesterday"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="do_delivery_timeslot"   name="do_delivery_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
@@ -85,13 +90,13 @@
 
                                             <transition name="popinout">
                                                 <div class="row mt-3" v-if="deliverymethod=='home_delivery'&&!isRecurring">
-                                                    <div class="col-3"><date-picker v-model="hd_pickup" name="hd_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pick up" ></date-picker>
+                                                    <div class="col-3"><date-picker v-model="hd_pickup" name="hd_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pick up" :disabledToDate="yesterday"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="hd_pickup_timeslot"   name="hd_pickup_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
                                                     </div>
 
-                                                    <div class="col-3"><date-picker v-model="hd_delivery" name="hd_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" ></date-picker>
+                                                    <div class="col-3"><date-picker v-model="hd_delivery" name="hd_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="yesterday"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="hd_delivery_timeslot"   name="hd_delivery_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
@@ -101,40 +106,73 @@
 
                                             <transition name="popinout">
                                                 <div class="row mt-3" v-if="deliverymethod=='shipping'">
-                                                    <div class="col-3"><date-picker v-model="shp_received" name="shp_received" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Received" ></date-picker>
+                                                    <div class="col-3"><date-picker v-model="shp_received" name="shp_received" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Received" :disabledToDate="yesterday"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="shp_received_timeslot"   name="shp_received_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
                                                     </div>
 
-                                                    <div class="col-3"><date-picker v-model="shp_delivery" name="shp_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" ></date-picker>
+                                                    <div class="col-3"><date-picker v-model="shp_delivery" name="shp_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="yesterday"></date-picker>
                                                     </div>
 
                                                 </div>
                                             </transition>
                                         </div>
-                                        <div :class="{'col-8':isRecurring}" v-if="isRecurring">
+                                        <div :class="{'col-8':isRecurring,'d-none':!isRecurring}">
                                             <transition name="popinout">
-                                                <div v-if="isRecurring">
-                                                    <recurring-form></recurring-form>
+                                                <div>
+                                                    <recurring-form v-model="recurring_data"></recurring-form>
                                                 </div>
                                             </transition>
                                         </div>
                                     </div>
 
-                                    <div class="row border-bottom">
+                                    <div class="row border-bottom" v-if="deliverymethod !='' &&deliverymethod !='in_store_collection'">
                                         <div class="col detailsection"><h2 class="subtitle">Details</h2></div>
                                     </div>
-                                    <div class="row mt-3" v-if="deliverymethod=='shipping'">
-                                        <h3 class="body_medium">Delivery Address</h3>
+                                    <div class="row mt-3" v-if="!isRecurring && (deliverymethod=='shipping' || deliverymethod=='delivery_only' || deliverymethod=='home_delivery')">
+
                                         <div class="col-6 body_medium mt-3">
-                                            <div class="row form-group mx-0">
-                                                <input type="text" v-model="shp_address1" class="form-control" placeholder="Address1"/>
+                                            <h3 class="body_medium">Delivery Address</h3>
+                                            <div class="row mb-3">
+                                                <div class="col-12 form-group">
+                                                    <input type="text" v-model="shp_address1" class="form-control" placeholder="Address1"/>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-6 form-group">
+                                                    <input type="text" class="form-control" placeholder="Postcode" v-model="shp_postcode"/>
+                                                </div>
+                                                <div class="col-6 form-group  pr-0">
+                                                    <input type="text" class="form-control" placeholder="Town" v-model="shp_town"/>
+                                                </div>
                                             </div>
                                         </div>
+                                        <div v-if="deliverymethod=='shipping'" class="col-2"></div>
+                                         <div class="col-4 mt-3" v-if="deliverymethod=='shipping'">
+                                            <h3 class="body_medium">Delivery partner</h3>
+                                            <div class="row mx-0">
+                                                 <select-options  v-model="shipping_partner_id" placeholder="Choose a partner" :options="shipping_partners" name="shipping_partner_id" hint=""  label=""></select-options>
+                                            </div>
+                                         </div>
+                                         <div class="col-6 mt-3" v-if="deliverymethod=='delivery_only' || deliverymethod=='home_delivery'">
+                                              <h3 class="body_medium">&nbsp;</h3>
+                                             <div class="row mx-0 form-group mb-2">
+                                                 <textarea class="form-control" v-model="customer_instructions" rows="3" :readonly="isRecurring"></textarea>
+                                            </div>
+                                            <div class="row mx-0 form-group mb-4 align-items-center" v-if="!showRecurring">
+                                                <input type="checkbox" id="save_instruction_check" class="float-left mr-3" v-model="save_instruction_check"/>
+                                                <span class="col px-0">Save instructions for next time</span>
+                                            </div>
+
+                                            <div class="row mx-0 form-group" v-if="!showRecurring">
+                                                <h3 class="body_medium">Alternate contact</h3>
+                                                 <input type="text" class="form-control" v-model="alternate_contact"/>
+                                            </div>
+                                         </div>
                                     </div>
-                                    <div class="row mt-3" v-else>
-                                        <h3 class="body_medium">Delivery Address</h3>
+                                    <div class="row mt-3" v-else-if="isRecurring && deliverymethod !='in_store_collection'">
+                                         <h3 class="body_medium">Delivery Address</h3>
                                         <div class="body_medium mt-3" v-if="cur_cust">
                                             <span v-if="cur_cust.address1 && cur_cust.address1!=''">{{cur_cust.address1}}</span>
                                             <br/>
@@ -143,12 +181,163 @@
                                     </div>
                                 </div>
                             </div>
+
+                            </transition>
+                            <!-- Step 2 - SUMMARY -->
+                             <transition name="popinout">
+
+                                <div class="panel-col-2 col" v-if="process_step==2">
+
+                                    <div class="panel">
+                                        <div class="row">
+                                            <div class="col">
+                                                <h2 class="subtitle">Order Details <a class="ml-3" id="edit_order_link" @click="changeStep(1)">Edit</a></h2>
+                                            </div>
+                                            <div class="col" v-if="deliverymethod=='in_store_collection'">
+                                                <span class="float-right each-summary-delivery-type">{{cust_type_delivery}}</span>
+                                                <img class="float-right each-summary-icon" src="/images/picto_store.svg" />
+                                            </div>
+
+
+                                            <div class="col" v-if="deliverymethod=='delivery_only' || deliverymethod=='home_delivery'">
+                                                <span class="float-right each-summary-delivery-type">Delivery<span v-if="deliverymethod=='delivery_only'"> only</span></span>
+                                                <img class="float-right each-summary-icon" src="/images/truck.svg" />
+                                            </div>
+                                            <div class="col" v-if="deliverymethod=='shipping'">
+                                                <span class="float-right each-summary-delivery-type">Shipping</span>
+                                                <img class="float-right each-summary-icon" src="/images/homepage_icon.svg" />
+                                            </div>
+                                        </div>
+                                        <div class="row border-bottom m-0 mb-3">
+                                            <div class="col p-0"><h2 class="slot-text">Slot</h2></div>
+                                        </div>
+
+                                        <div class="row" v-if="!isRecurring">
+                                            <div class="col-6">
+                                                <span class="medium-grey each-timeslot-label body_medium d-block mb-2">
+                                                    <span v-if="['in_store_collection','delivery_only'].includes(deliverymethod)">Drop off</span>
+                                                    <span v-if="deliverymethod=='home_delivery'">Pick up time</span>
+                                                    <span v-if="deliverymethod=='shipping'">Received</span>
+                                                </span>
+                                                <div class="row">
+                                                    <div class="col-2">
+                                                        <img src="/images/calendar_icon.svg" class="each-timeslot-icon" v-if="!isRecurring && deliverymethod !='' && deliverymethod!='shipping'"/>
+                                                        <img src="/images/express.svg" class="each-timeslot-icon" v-if="deliverymethod=='shipping'"/>
+                                                    </div>
+                                                    <div class="col-10 pl-0">
+                                                        <div class="body_medium dark-grey"  v-if="deliverymethod=='in_store_collection'">
+                                                            <span>{{formatDate(isc_dropoff)}}</span><br/>
+                                                            <span>{{all_timeslots[isc_dropoff_timeslot]}}</span>
+                                                        </div>
+                                                        <div class="body_medium dark-grey"  v-if="deliverymethod=='delivery_only'">
+                                                            <span>{{formatDate(do_dropoff)}}</span><br/>
+                                                            <span>{{all_timeslots[do_dropoff_timeslot]}}</span>
+                                                        </div>
+                                                         <div class="body_medium dark-grey"  v-if="deliverymethod=='home_delivery'">
+                                                            <span>{{formatDate(hd_pickup)}}</span><br/>
+                                                            <span>{{all_timeslots[hd_pickup_timeslot]}}</span>
+                                                        </div>
+                                                        <div class="body_medium dark-grey"  v-if="deliverymethod=='shipping'" id="shp_received_txt">
+                                                            <span>{{formatDate(shp_received)}}</span><br/>
+                                                            <span>{{all_timeslots[shp_received_timeslot]}}</span>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <span class="medium-grey each-timeslot-label body_medium d-block mb-2">
+                                                    <span  v-if="deliverymethod=='in_store_collection'">Pickup</span>
+                                                    <span  v-if="deliverymethod=='delivery_only'">Delivery slot</span>
+                                                    <span  v-if="deliverymethod=='home_delivery'">Delivery time</span>
+                                                    <span  v-if="deliverymethod=='shipping'">Delivery time</span>
+                                                </span>
+                                                <div class="row" :class="{'align-items-center':deliverymethod=='shipping'}">
+                                                    <div class="col-2">
+                                                        <img src="/images/calendar_icon.svg" class="each-timeslot-icon"/>
+                                                    </div>
+                                                    <div class="col-10 pl-0">
+                                                        <div class="body_medium dark-grey"  v-if="deliverymethod=='in_store_collection'">
+                                                            <span>{{formatDate(isc_pickup)}}</span><br/>
+                                                            <span>{{all_timeslots[isc_pickup_timeslot]}}</span>
+                                                        </div>
+                                                        <div class="body_medium dark-grey"  v-if="deliverymethod=='delivery_only'">
+                                                            <span>{{formatDate(do_delivery)}}</span><br/>
+                                                            <span>{{all_timeslots[do_delivery_timeslot]}}</span>
+                                                        </div>
+                                                        <div class="body_medium dark-grey"  v-if="deliverymethod=='home_delivery'">
+                                                            <span>{{formatDate(hd_delivery)}}</span><br/>
+                                                            <span>{{all_timeslots[hd_delivery_timeslot]}}</span>
+                                                        </div>
+                                                        <div class="body_medium dark-grey"  v-if="deliverymethod=='shipping'">
+                                                            <span>{{formatDate(shp_delivery)}}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <div v-if="isRecurring" class="row">
+                                            <div class="col-6 mb-4" v-for="(a,i) in recurring_data">
+                                                <div class="row">
+                                                    <div class="col-12 medium-grey each-timeslot-label body_medium d-block mb-1">
+                                                        Pickup and delivery slot {{i+1}}
+                                                    </div>
+                                                    <div class="col-2">
+                                                            <img src="/images/recurrence_icon.svg" class="each-timeslot-icon"/>
+                                                    </div>
+                                                    <div class="col-10 body_regular dark-grey">
+                                                        <span>{{recurring_days[a.value]}}</span><br/>
+                                                        <span>{{all_timeslots[a.slot]}}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                         <div class="row border-bottom mx-0 mt-5 mb-3" v-if="isRecurring || (deliverymethod!='' && deliverymethod!='in_store_collection')">
+                                            <div class="col p-0"><h2 class="slot-text">Details</h2></div>
+                                        </div>
+                                        <div class="row mt-3" v-if="isRecurring || (deliverymethod!='' && deliverymethod!='in_store_collection')">
+                                            <div class="col-6">
+                                                <h4 class="body_regular medium-grey">Delivery address</h4>
+                                                <div v-if="cur_cust" class="body_regular dark-grey">
+                                                    <span v-if="cur_cust.address1!=''">{{cur_cust.address1}}<br/></span>
+                                                    <span v-if="cur_cust.postcode!=''">{{cur_cust.postcode}}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6"  v-if="isRecurring || ['home_delivery','delivery_only'].includes(deliverymethod)">
+                                                <h4 class="body_regular medium-grey mb-3">Delivery instructions</h4>
+                                                <div class="row mx-0 form-group">
+                                                    <textarea class="form-control" readonly>{{customer_instructions}}</textarea>
+                                                </div>
+
+
+                                                <div class="row mx-0 mt-4 form-group" v-if="deliverymethod=='delivery_only'">
+                                                    <h4 class="body_regular medium-grey mb-3">Alternate contact</h4>
+                                                    <textarea class="form-control" readonly>{{alternate_contact}}</textarea>
+                                                </div>
+
+                                            </div>
+
+                                            <div class="col-6"  v-if="deliverymethod=='shipping'">
+                                                <h4 class="body_regular medium-grey mb-2">Delivery partner</h4>
+                                                <p class="body_regular dark-grey">{{getDisplayFromSelectArray(shipping_partners,shipping_partner_id)}}</p>
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </transition>
+
+
                             <div class="row mx-0 mt-5 mb-4 justify-content-end align-items-center">
+                                <div class="d-none">{{cur_cust}}</div>
                                 <div class="col-2">
                                     <a href="javascript:void(0)" id="cancel_new_order">Cancel</a>
                                 </div>
                                 <div class="col-2 px-0">
-                                    <button class="btn btn-grey w-100">Proceed to detailing</button>
+                                    <button class="btn btn-grey w-100" @click="validateDetails">Proceed to detailing</button>
                                 </div>
                             </div>
                         </div>
@@ -175,34 +364,44 @@
 
     import { useRouter, useRoute } from 'vue-router';
 
-    import {ref,onMounted,nextTick,computed,watch} from 'vue';
+    import {ref,onMounted,nextTick,computed,watch, reactive} from 'vue';
+
     import {
       NEWORDER_CUR_CUSTOMER,
         NEWORDER_MODULE,
         NEWORDER_PRELOAD_FORM,
         NEWORDER_PRELOAD_FORM_GET,
-        NEWORDER_PRELOAD_ORDER_GET
+        NEWORDER_PRELOAD_ORDER_GET,
+        SHIPPING_MODULE,
+        GET_PARTNERS,
+        SHIPPING_LOAD_LIST,
+        TOASTER_MODULE,
+        TOASTER_ADD_TOAST,
+        TOASTER_MESSAGE,
+        TOASTER_GET_ALL,
+        TOASTER_REMOVE_TOAST,
+        NEWORDER_GET_ALL_TIMESLOTS,
     } from "../../store/types/types";
 import RecurringForm from '../miscellaneous/RecurringForm.vue';
     export default {
         name: "NewOrder",
         components:{BreadCrumb,SideBar,SelectOptions,SwitchBtn,DatePicker,TimeSlotPicker,CustomerDetailsPanel,RecurringForm},
-        setup(){
+        setup(props,context){
             const router = useRouter();
 
             const showcontainer=ref(false);
             const deliverymethod =ref('');
             //isc : in store collection
             const isc_dropoff =ref('');
-            const isc_dropoff_timeslot=ref('');
+            const isc_dropoff_timeslot=ref(0);
             const isc_pickup=ref('');
-            const isc_pickup_timeslot=ref('');
+            const isc_pickup_timeslot=ref(0);
 
             //do : delivery only
             const do_dropoff =ref('');
-            const do_dropoff_timeslot=ref('');
+            const do_dropoff_timeslot=ref(0);
             const do_delivery=ref('');
-            const do_delivery_timeslot=ref('');
+            const do_delivery_timeslot=ref(0);
 
             //hd : home delivery
             const hd_pickup =ref('');
@@ -212,8 +411,11 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
             //shp : shipping
             const shp_received =ref('');
-            const shp_received_timeslot=ref('');
+            const shp_received_timeslot=ref(0);
             const shp_delivery=ref('');
+            const shipping_partner_id = ref('');
+
+            //General address
             const shp_address1=ref('');
             const shp_postcode = ref('');
             const shp_town = ref('');
@@ -223,8 +425,36 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             const isRecurring=ref(false);
             const recurring_date = ref([]);
 
+            const CustomerID=ref('');
+            const cur_customer = ref({});
+
+
             const paths=ref([{name:'Order',route:'LandingPage'},{name:'New Order',route:'NewOrder'}]);
             const store=useStore();
+
+            const alternate_contact = ref('');
+            const customer_instructions = ref('');
+            const save_instruction_check = ref(false);
+            const cust_type_delivery = ref('');
+
+            const recurring_data = ref([]);
+
+            const yesterday = ref('');
+
+            const d = new Date();
+            d.setDate(d.getDate() - 1);
+
+            let dd = String(d.getDate()). padStart(2, '0');
+            let mm = String(d.getMonth() + 1). padStart(2, '0'); //January is 0!
+            var yyyy = d.getFullYear();
+
+
+
+            //New ORDER object
+            const new_order_obj = ref({});
+
+            yesterday.value = yyyy+'-'+mm+'-'+dd;
+
             store.dispatch(`${NEWORDER_MODULE}${NEWORDER_PRELOAD_FORM}`);
             onMounted(()=>{
                 nextTick(()=>{
@@ -252,6 +482,7 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             ]);
 
             const showRecurring = ref(true);
+            const process_step = ref(1);
 
 
             watch(()=>deliverymethod.value,(val)=>{
@@ -265,13 +496,14 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
             watch(() =>isRecurring.value, (current_val, previous_val) => {
                     if(current_val===true) {
-                        deliverymethod.value = 'home_delivery';
+                        deliverymethod.value = '';
                         deliverymethod_disabled.value=true;
                     }else {
                         deliverymethod_disabled.value=false;
                         deliverymethod.value = '';
                     }
                 });
+
             /*const FORM=computed(()=>store.getters[`${NEWORDER_MODULE}${NEWORDER_PRELOAD_FORM_GET}`]);
             watch(() =>_.cloneDeep(FORM.value), (current_val, previous_val) => {
                 current_val.TypeDeliveries.forEach(item=>{
@@ -282,16 +514,305 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             function proceedToDetailling() {
                 router.push('/order-content/57907');
             }
-            const cur_cust = computed(()=>{
-                const cust_cur = store.getters[`${NEWORDER_MODULE}${NEWORDER_CUR_CUSTOMER}`];
-                console.log(cust_cur);
 
-                if(cust_cur){
-                    shp_address1.value = cust_cur.address1;
+
+            const cur_cust = computed(()=>{
+                const current_customer = store.getters[`${NEWORDER_MODULE}${NEWORDER_CUR_CUSTOMER}`];
+
+                if(current_customer){
+                    shp_address1.value = current_customer.address1;
+                    shp_postcode.value = current_customer.postcode;
+                    shp_town.value = current_customer.Town;
+                    CustomerID.value = current_customer.CustomerID;
+                    customer_instructions.value = current_customer.commentDelivery;
+                    cust_type_delivery.value = (current_customer.TypeDelivery=='DELIVERY'?'Atelier':current_customer.TypeDelivery);
                 }
 
-                return cust_cur;
+                return current_customer;
             });
+
+
+            store.dispatch(`${SHIPPING_MODULE}${SHIPPING_LOAD_LIST}`);
+            const shipping_partners = computed(()=>store.getters[`${SHIPPING_MODULE}${GET_PARTNERS}`]);
+
+            function validateDetails(){
+
+               if(process_step.value==1){
+
+
+                   let err = false;
+                   let err_txt = [];
+
+
+
+                   if(CustomerID.value==''){
+                       err = true;
+                       err_txt.push('No customer selected');
+                   }
+                   else if(isRecurring.value){
+                       if(recurring_data.value.length==0){
+                           err = true;
+                           err_txt.push('Recurring booking empty');
+                       }
+                   }
+                   else if(!isRecurring.value && deliverymethod.value==''){
+                       err = true;
+                       err_txt.push('Please choose a delivery method');
+
+                   }else{
+
+                       let err_method = validateByDeliveryMethod(deliverymethod.value);
+
+                        err_txt = err_txt.concat(err_method);
+
+
+
+                   }
+
+                   //console.log(err_txt);
+
+                   if(err_txt.length > 0){
+                       const toasts = store.getters[`${TOASTER_MODULE}${TOASTER_GET_ALL}`];
+                       if(toasts.length > 0){
+                           toasts.forEach(function(v,i){
+                               //console.log(v.id);
+                               store.commit(`${TOASTER_MODULE}${TOASTER_REMOVE_TOAST}`,v.id);
+                           });
+
+                       }
+
+                       err_txt.forEach(function(v,i){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                       {
+                            message: v,
+                            ttl: 3,
+                            type: 'danger'
+                        });
+                       })
+
+                   }else{
+
+                    const new_order = {};
+                    new_order.CustomerID = CustomerID.value;
+                    new_order.deliverymethod = deliverymethod.value;
+                    new_order.address1 = shp_address1.value;
+                    new_order.postcode = shp_postcode.value;
+                    new_order.town = shp_town.value;
+
+                    let arr = [];
+
+                    arr['in_store_collection'] = ['isc_dropoff','isc_dropoff_timeslot','isc_pickup','isc_pickup_timeslot'];
+
+                    arr['delivery_only'] = ['do_dropoff','do_dropoff_timeslot','do_delivery','do_delivery_timeslot','customer_instructions','alternate_contact','save_instruction_check'];
+
+                    arr['home_delivery'] = ['hd_pickup','hd_pickup_timeslot','hd_delivery','hd_delivery_timeslot','customer_instructions','alternate_contact','save_instruction_check'];
+
+                    arr['shipping'] = ['shp_received','shp_received_timeslot','shp_delivery','shipping_partner_id'];
+
+
+
+                    if(typeof(arr[deliverymethod.value])!='undefined'){
+                        new_order['delivery_params'] = JSON.stringify(arr[deliverymethod.value]);
+
+                        arr[deliverymethod.value].forEach(function(v,i){
+                            const var_tmp = eval(v);
+                            new_order[v] = var_tmp.value;
+                        });
+                    }
+
+                    if(showRecurring){
+                        new_order.deliverymethod = 'recurring';
+                        new_order.recurring_data = JSON.stringify(recurring_data.value);
+                        new_order['delivery_params'] = '';
+                    }
+
+                    new_order_obj.value = new_order;
+
+
+
+                    console.log(new_order_obj);
+
+                    process_step.value=2;
+
+                   }
+               }else if(process_step.value==2){
+
+               }
+            }
+
+
+
+            function validateByDeliveryMethod(val){
+                let err_arr = [];
+                if(val=='in_store_collection'){
+                    if(isc_dropoff.value==''){
+                        err_arr.push('Dropoff date is empty');
+                    }
+                    if(isc_dropoff_timeslot.value==0){
+                        err_arr.push('Dropoff time is empty');
+                    }
+                    if(isc_pickup.value==''){
+                        err_arr.push('Pickup date is empty');
+                    }
+                    if(isc_pickup_timeslot.value==0){
+                        err_arr.push('Pickup time is empty');
+                    }
+
+                    if(isc_dropoff.value > isc_pickup.value){
+                        err_arr.push('Dropoff date is greater than pickup date');
+                    }
+                }
+
+                if(val=='delivery_only'){
+                    if(do_dropoff.value==''){
+                        err_arr.push('Dropoff date is empty');
+                    }
+                    if(do_dropoff_timeslot.value==0){
+                        err_arr.push('Dropoff time is empty');
+                    }
+                    if(do_delivery.value==''){
+                        err_arr.push('Delivery date is empty');
+                    }
+                    if(do_delivery_timeslot.value==0){
+                        err_arr.push('Delivery time is empty');
+                    }
+                    if(do_dropoff.value > do_delivery.value){
+                        err_arr.push('Dropoff date is greater than delivery date');
+                    }
+                }
+
+                if(val=='home_delivery'){
+                    if(hd_pickup.value==''){
+                        err_arr.push('Pickup date is empty');
+                    }
+                    if(hd_pickup_timeslot.value==0){
+                        err_arr.push('Pickup time is empty');
+                    }
+                    if(hd_delivery.value==''){
+                        err_arr.push('Delivery date is empty');
+                    }
+                    if(hd_delivery_timeslot.value==0){
+                        err_arr.push('Delivery time is empty');
+                    }
+                    if(hd_pickup.value > hd_delivery.value){
+                        err_arr.push('Pickup date is greater than delivery date');
+                    }
+                }
+
+                if(val=='shipping'){
+                    if(shp_received.value==''){
+                        err_arr.push('Shipping received date is empty');
+                    }
+                    if(shp_received_timeslot.value==0){
+                        err_arr.push('Shipping received time is empty');
+                    }
+                    if(shp_delivery.value==''){
+                        err_arr.push('Shipping delivery date is empty');
+                    }
+                    if(shp_received.value > shp_delivery.value){
+                        err_arr.push('Shipping delivery date is greater than received date');
+                    }
+                    if(shp_address1.value==''){
+                        err_arr.push('Shipping address1 is empty');
+                    }
+                    if(shp_postcode.value==''){
+                        err_arr.push('Shipping postcode is empty');
+                    }
+                    if(shipping_partner_id.value==''){
+                        err_arr.push('Shipping partner not selected');
+                    }
+                }
+
+                if(val !='in_store_collection'){
+                    if(!shp_address1.value || shp_address1.value==''){
+                        err_arr.push('No address1 for this customer');
+                    }
+                    if(!shp_postcode.value || shp_postcode.value==''){
+                        err_arr.push('No postcode for this customer');
+                    }
+                }
+
+                return err_arr;
+            }
+
+            function changeStep(num){
+                process_step.value = num;
+
+                if(num==1 && recurring_data.value.length > 0){
+
+                }
+
+            }
+
+
+            function setCustomerID(val){
+                //console.log('emit called');
+                CustomerID.value=val;
+                if(val==''){
+                    process_step.value=1;
+                }
+            }
+
+            //Filters
+
+            function formatDate(date_txt){
+                let weekdays = [];
+                weekdays[0] = 'Sunday';
+                weekdays[1] = 'Monday';
+                weekdays[2] = 'Tuesday';
+                weekdays[3] = 'Wednesday';
+                weekdays[4] = 'Thursday';
+                weekdays[5] = 'Friday';
+                weekdays[6] = 'Satuday';
+
+                let dt = new Date(date_txt);
+
+                let day_num =  dt.getDay();
+                let dt_dd = String(dt.getDate()). padStart(2, '0');
+                let dt_mm = String(dt.getMonth() + 1). padStart(2, '0');
+
+                return weekdays[day_num]+" "+dt_dd+"/"+dt_mm;
+            }
+
+
+            function getDisplayFromSelectArray(arr,value){
+                let label = "";
+                arr.forEach(function(v,i){
+                    if(v.value==value){
+                        label = v.display;
+                    }
+                });
+
+                return label;
+            }
+
+            //End filters
+
+
+            const all_timeslots_def = store.getters[`${NEWORDER_MODULE}${NEWORDER_GET_ALL_TIMESLOTS}`];
+            const all_timeslots = ref([]);
+            const all_timeslots_arr = [];
+
+            all_timeslots_def.forEach(function(v,i){
+                all_timeslots_arr[v.value] = v.display
+            });
+
+            all_timeslots.value = all_timeslots_arr;
+
+
+
+
+            let recur_day_map = [];
+
+            recur_day_map['DeliveryMon'] = 'Monday';
+            recur_day_map['DeliveryTu'] = 'Tuesday';
+            recur_day_map['DeliveryWed'] = 'Wednesday';
+            recur_day_map['DeliveryTh'] = 'Thursday';
+            recur_day_map['DeliveryFri'] = 'Friday';
+            recur_day_map['DeliverySat'] = 'Saturday';
+
+            const recurring_days = ref([]);
+            recurring_days.value = recur_day_map;
 
 
             return {
@@ -323,7 +844,25 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                 cur_cust,
                 shp_address1,
                 shp_postcode,
-                shp_town
+                shp_town,
+                cur_customer,
+                shipping_partners,
+                shipping_partner_id,
+                validateDetails,
+                process_step,
+                changeStep,
+                yesterday,
+                CustomerID,
+                setCustomerID,
+                alternate_contact,
+                customer_instructions,
+                save_instruction_check,
+                cust_type_delivery,
+                all_timeslots,
+                formatDate,
+                getDisplayFromSelectArray,
+                recurring_data,
+                recurring_days,
             }
         }
     }
@@ -354,5 +893,52 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
         color:#868686;
     }
 
+    #edit_order_link{
+        font: normal 16px "Gotham Rounded";
+        color:#42A71E;
+        margin-left:1rem;
+    }
 
+    #edit_order_link:hover{
+        cursor:pointer;
+        text-decoration: none;
+    }
+
+    #save_instruction_check{
+        width:20px;
+        height:20px;
+        margin-right: 10px;
+    }
+
+    #save_instruction_check:checked{
+        background: #333;
+    }
+
+    .each-summary-icon{
+        height: 24px;
+        margin-right:10px;
+    }
+
+    .each-summary-delivery-type{
+        font:normal 16px/24px "Gotham Rounded";
+    }
+
+    .slot-text{
+        font:normal 20px "Gotham Rounded";
+    }
+
+    .subtitle{
+        font: normal 22px "Gilroy";
+        font-weight: 800;
+        margin-bottom: 30px;
+    }
+
+    .each-timeslot-icon{
+        height: 3em;
+        margin-left:-8px;
+    }
+
+    #shp_received_txt{
+        margin-left: -8px;
+    }
 </style>
