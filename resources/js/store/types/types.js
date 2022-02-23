@@ -144,3 +144,7 @@ export const SHIPPING_MODULE='SHIPPING_MODULE/'; //namespace
 export const GET_PARTNERS='GET_PARTNERS'; //getters
 export const SET_PARTNERS='SET_PARTNERS'; //mutation
 export const SHIPPING_LOAD_LIST = 'SHIPPING_LOAD_LIST'; //action
+
+// assembly home page types
+export const ASSEMBLY_HOME_MODULE = 'ASSEMBLY_HOME_MODULE'; //action
+export const RESET_ASSEMBLY_STATE = 'RESET_ASSEMBLY_STATE'; //action

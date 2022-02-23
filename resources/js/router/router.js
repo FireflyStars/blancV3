@@ -4,6 +4,7 @@ import {
 } from  'vue-router';
 import NotFound from '../components/NotFound';
 import AuthenticationMiddleware from './middleware/authentication';
+import AssemblyHome from '../components/assembly/AssemblyHome';
 
 const router = createRouter({
     history:createWebHistory(),
@@ -122,7 +123,14 @@ const router = createRouter({
             name: 'not-found',
             component:NotFound
         },
-
+        {
+            path: '/assembly-home',
+            name: 'AssemblyHome',
+            meta:{
+                authenticated: true
+            },
+            component: AssemblyHome,
+        },
     ]
 });
 

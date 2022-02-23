@@ -2,10 +2,7 @@
     <transition enter-active-class="animate__animated animate__fadeIn">
         <div class="container-fluid h-100 bg-color">
             <main-header></main-header>
-            <div
-                class="row d-flex align-content-stretch align-items-stretch flex-row hmax"
-                style="z-index: 100"
-            >
+            <div class="row d-flex align-content-stretch align-items-stretch flex-row hmax" style="z-index: 100">
                 <side-bar></side-bar>
                 <div class="col main-view p-5">
                     <h2>Statistics</h2>
@@ -347,9 +344,7 @@ export default {
         const router = useRouter();
         const route = useRoute();
         const route_name = ref(route.name);
-        watch(
-            () => route.name,
-            (current_val, previous_val) => {
+        watch(() => route.name, (current_val, previous_val) => {
                 route_name.value = current_val;
             }
         );
@@ -357,6 +352,7 @@ export default {
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
             store.dispatch(`${STATISTICS_MODULE}${STATISTICS_LOAD_LIST}`, current_val)
                 .then((response) => {
+                    console.log(response.data);
                     statistique.value = response.data.statistique;
                     // stats_today.value = response.data.statistique.stats_today;
                     // top_3_today.value = response.data.statistique.top_3_today;
@@ -369,6 +365,7 @@ export default {
         store
             .dispatch(`${STATISTICS_MODULE}${STATISTICS_LOAD_LIST}`, filterVal.value)
             .then((response) => {
+                console.log(response.data);
                 statistique.value = response.data.statistique;
                 // stats_today.value = response.data.statistique.stats_today;
                 // top_3_today.value = response.data.statistique.top_3_today;

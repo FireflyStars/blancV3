@@ -12,6 +12,7 @@ import {neworder as NEWORDER_MODULE} from "./modules/neworder";
 import {statistics as STATISTICS_MODULE} from "./modules/statistics";
 import {detailingItem as DETAILING_MODULE} from "./modules/detailingItem";
 import {shipping as SHIPPING_MODULE } from './modules/shipping';
+import {assemblyHome as ASSEMBLY_HOME_MODULE } from './modules/assembly';
 
 
 export default createStore({
@@ -29,5 +30,6 @@ export default createStore({
         STATISTICS_MODULE,
         DETAILING_MODULE,
         SHIPPING_MODULE,
+        ASSEMBLY_HOME_MODULE,
     }
 })

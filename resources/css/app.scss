@@ -832,3 +832,113 @@ padding:0 1.2rem;
 .dark-grey{
     color:$gray-900;
 }
+
+// assembly home
+#assembly-home{
+  .each-home-stats{
+    border-radius: 10px;
+
+    .total_stats_num{
+      font:normal 18px/30px 'Gotham Medium';
+    }
+
+    .as-stats-label{
+      font:normal 16px/1.3em 'Gotham Medium';
+    }
+
+    .red-stats{
+      background:#eb5757;
+      font:normal 12px 'Gotham Medium';
+      border-radius:20px;
+
+      .standard-bar{
+        background: #4f4f4f;
+        border-radius:20px;
+      }
+
+      &.is_percent{
+        background: #42a71e;
+
+        .standard-bar{
+          background: #e0e0e0;
+          color:#000;
+        }
+      }
+
+    }
+    .count-under-label{
+      font:normal 14px/1.5em 'Gotham Book';
+    }
+  }
+
+  #order_status_heading{
+    font:normal 24px 'Gotham Medium';
+  }
+
+  .each-poste-bloc {
+    // &:not(.is_bloc_disabled):hover, &.is_bloc_active {
+    &.is_bloc_active {
+      cursor: pointer;
+
+      .each-poste-stats {
+        background: #42a71e;
+      }
+    }
+    &:not(.is_bloc_disabled):hover{
+      .each-poste-stats {
+        background: #42a71e;
+      }
+    }
+
+    .each-poste-stats {
+      font: normal 20px/1em "Gotham Medium";
+      &.is_stats_active {
+        background: #42a71e;
+      }
+      a{
+        color: #000;
+      }
+    }
+  }
+
+  .each-poste-label{
+    font:normal 12px/1.3em 'Gotham Book';
+  }
+
+  .standard-label{
+    font:normal 16px/1.3em 'Gotham Medium';
+    &.is-express{
+      color:#eb5757;
+    }
+  }
+
+  .each-poste-stats{
+    font:normal 20px/1em 'Gotham Medium';
+
+    a{
+      color:#000;
+    }
+  }
+
+  .grey-bg{
+    background:#e0e0e0;
+
+    &.poste-stats-top{
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+
+    &.poste-stats-bottom{
+      color:#fff;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+
+      &.has_exp_item {
+        span,a {
+          color: #eb5757;
+        }
+      }
+
+    }
+  }
+}
