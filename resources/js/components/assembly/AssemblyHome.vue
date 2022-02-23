@@ -388,12 +388,17 @@
                                             <table class="table table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <th v-for="(item, index) in columns" :class="item.thClass" :key="index">{{ item.label ? item.label : '' }}</th>
+                                                        <th v-for="(item, index) in columns" :class="item.thClass" :key="index" v-html="item.label ? item.label : ''" style="border-bottom: 2px solid #dee2e6 !important"></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr v-for="(invoiceRow, index) in items" :key="index">
-                                                        <td></td>
+                                                    <tr v-for="(invoiceRow, index) in items" :key="index" @click="onRowSelected(invoiceRow.order_id)">
+                                                        <td class="visible-hidden">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" value="" :id="'invoice-'+invoiceRow.order_id">
+                                                                <label class="form-check-label" :for="'invoice-'+invoiceRow.order_id"></label>
+                                                            </div>
+                                                        </td>
                                                         <td class="text-capitalize fw-16" v-if="invoiceRow.order_id != 1575">
                                                             <span>{{ invoiceRow.order_id }}</span>&nbsp;&nbsp;
                                                             <svg width="32" height="32" viewBox="0 0 44 45" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -505,28 +510,28 @@
             const selectMode = ref('multi');
             const selectAll = ref(false);
             onBeforeMount( () => {
-                // store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
-                // axios.post('/assembly-home-stats')
-                //     .then((res) => {
-                //         let gp = res.data.grouped_postes;
-                //         let width = 0;
-                //         if(parseInt(gp.length) > 0){
-                //             width = 80/parseInt(gp.length);
-                //             groupedPosteWidth.value = width;
-                //         }
-                //         groupedPostes.value = gp;
-                //         mainStats.value = res.data.main_stats;
-                //         assemblyStatsTotal.value = res.data.stats_total;
-                //         assemblyStatsToday.value = res.data.stats_today;
-                //         assemblyStatsTomorrow.value = res.data.stats_tomorrow;
-                //         assemblyStatsOverdue.value = res.data.stats_overdue;
-                //         assemblyStatsLater.value = res.data.stats_later;
-                //     })
-                //     .catch(error => {
-                //         console.log(error);
-                //     }).finally(() => {
-                //         store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                //     });                
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
+                axios.post('/assembly-home-stats')
+                    .then((res) => {
+                        let gp = res.data.grouped_postes;
+                        let width = 0;
+                        if(parseInt(gp.length) > 0){
+                            width = 80/parseInt(gp.length);
+                            groupedPosteWidth.value = width;
+                        }
+                        groupedPostes.value = gp;
+                        mainStats.value = res.data.main_stats;
+                        assemblyStatsTotal.value = res.data.stats_total;
+                        assemblyStatsToday.value = res.data.stats_today;
+                        assemblyStatsTomorrow.value = res.data.stats_tomorrow;
+                        assemblyStatsOverdue.value = res.data.stats_overdue;
+                        assemblyStatsLater.value = res.data.stats_later;
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    }).finally(() => {
+                        store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    });                
             });
 
             onMounted(() =>{
@@ -536,6 +541,9 @@
             onUnmounted(()=>{
 
             })
+            function onRowSelected(order_id){
+                alert(order_id);
+            }
             return {
                 groupedPosteWidth,
                 // data,
@@ -557,7 +565,7 @@
                 selectMode,
                 // isBusy,
                 selectAll,
-                // onRowSelected
+                onRowSelected
             }
         },
         data:function(){
@@ -575,7 +583,7 @@
                         tdClass: 'visible-hidden'
                     },
                     {
-                        label: 'Order N',
+                        label: 'Order N&deg;',
                         key: 'order_id',
                         thClass: 'text-uppercase invoice-table-th',
 
@@ -748,6 +756,9 @@
 }
 .visible-hidden .form-check{ 
     visibility : hidden;
+}
+tr:hover .visible-hidden .form-check{ 
+    visibility : visible;
 }
 .visible-hidden:hover .form-check{
     visibility: visible;
