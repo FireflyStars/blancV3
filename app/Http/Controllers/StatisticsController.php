@@ -88,7 +88,7 @@ class StatisticsController extends Controller
             if($store->TypeDelivery == 'DELIVERY') {
                 $toal_delivery_sale += $store->total;
                 $delivery_count ++;
-                // $avg_delivery_order +=  $store->avg;
+                $avg_delivery_order +=  $store->avg;
             }
         }
         // end total sales store
@@ -123,7 +123,9 @@ class StatisticsController extends Controller
                                     ->first();
         $statistique['b2c'] = number_format( $total_sales_b2c->total, 0);
         $statistique['avg_b2c_order'] = number_format( $total_sales_b2c->avg, 0);
-        $statistique['avg_total_order'] = ($total_sale_stores->count() + $total_sales_b2b->count()+ $total_sales_b2c->count()) <= 0 ? 0 : number_format( ($total_sales_store + $total_sales_b2b->total + $total_sales_b2c->total + $toal_delivery_sale ) / ($total_sale_stores->count() + $total_sales_b2b->count()+ $total_sales_b2c->count()), 0);
+        $statistique['avg_total_order'] = number_format(InfoOrder::whereBetween('created_at', $period)
+                                                    ->where('total', '!=', 0)
+                                                    ->select(DB::raw('AVG(total) as total'))->value('total'), 0);
         $statistique['total_sales'] = number_format( $total_sales_store + $total_sales_b2c->total + $total_sales_b2b->total, 0 );
         $first_time_total_sale_stores = InfoOrder::whereBetween('created_at', $period)
                                     ->where('firstorder', 1)
@@ -179,9 +181,9 @@ class StatisticsController extends Controller
 
         // start new signup data
         $stores_new_signup = InfoCustomer::whereBetween('SignupDate', $period)
-                                        ->select(DB::raw('count(*) as count'))->first()->count;
+                                        ->select(DB::raw('count(*) as count'))->where('TypeDelivery', '!=','DELIVERY')->value('count');
         $delivery_new_signup = InfoCustomer::whereBetween('SignupDateOnline', $period)
-                                        ->select(DB::raw('count(*) as count'))->first()->count;
+                                        ->select(DB::raw('count(*) as count'))->where('TypeDelivery' ,'DELIVERY')->value('count');
         $b2b_new_signup = InfoCustomer::whereBetween('SignupDateOnline', $period)
                                         ->where( function( $query ) {
                                             $query->where('CustomerIDMaster', '!=', '')
@@ -196,7 +198,7 @@ class StatisticsController extends Controller
                                                     ->orWhere('CustomerIDMasterAccount', '')
                                                     ->orWhere('IsMaster', '!=',1)
                                                     ->orWhere('IsMasterAccount', '!=',1);
-                                        } )        
+                                        } )
                                         ->select(DB::raw('count(*) as count'))->first()->count;
         $statistique['b2c_new_signup'] = $b2c_new_signup;
         $statistique['b2b_new_signup'] = $b2b_new_signup;

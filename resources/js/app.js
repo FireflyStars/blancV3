@@ -7,16 +7,7 @@ import { createApp } from 'vue';
 import App from './components/App';
 import vClickOutside from "click-outside-vue3";
 import router from './router/router';
-import store from './store/store'
-
-import BootstrapVue3 from 'bootstrap-vue-3'
-
-// Optional, since every component import their Bootstrap funcionality
-// the following line is not necessary
-// import 'bootstrap'
-
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
+import store from './store/store';
 
 axios.interceptors.response.use(
     (response) => response,
@@ -24,7 +15,6 @@ axios.interceptors.response.use(
         if (error.response.status !== 401&&error.response.status !== 419) return Promise.reject(error)
         sessionStorage.clear();
         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Session expired. Please login again.',ttl:8,type:'danger'});
-        //window.location='/';
         router.push({
             name:'Login',
         })
@@ -33,7 +23,6 @@ axios.interceptors.response.use(
 createApp(App)
     .use(router)
     .use(store)
-    .use(BootstrapVue3)
     .use(vClickOutside)
     .mount('#app');
 
