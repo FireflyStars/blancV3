@@ -272,15 +272,12 @@ class StatisticsController extends Controller
                 'std'=>0,
                 'exp'=>0,
             ];
-
-
-
         }
 
 
         $stats = DB::table('infoitems')
             ->join('postes','infoitems.nextpost','=','postes.id')
-            ->whereIn('PromisedDate',[$today,$tomorrow])
+            ->whereIn('PromisedDate',[$today, $tomorrow])
             ->get();
 
         $other_stats = DB::table('infoitems')
@@ -744,7 +741,7 @@ class StatisticsController extends Controller
                                 }
                             }
                         }
-                }
+                    }
                 }
             }
         }
@@ -1516,10 +1513,47 @@ class StatisticsController extends Controller
         $main_stats->percent_inprocess_tomorrow = round($percent_inprocess_tomorrow,2);
         $main_stats->percent_done_tomorrow = round($percent_done_tomorrow,2);
 
+        //overdue
         $main_stats->overdue_std = $overdue_std;
         $main_stats->overdue_exp = $overdue_exp;
+
+        // later
         $main_stats->later_std  = $later_std;
         $main_stats->later_exp = $later_exp;
+        $main_stats->total_due_later = $later_std + $later_exp;
+
+        $done_later= $stats_per_postes_later['Storage']['all'] + $stats_per_postes_later['shelving']['all'];
+
+        $main_stats->inprocess_later = $main_stats->total_due_later - $done_later;
+
+        $percent_inprocess_later = 0;
+        $percent_done_later = 0;
+        $percent_std_later = 0;
+        $percent_exp_later = 0;
+
+        if($main_stats->total_due_later > 0){
+            $percent_std_later = ($later_std/$main_stats->total_due_later)*100;
+            $percent_exp_later = ($later_exp/$main_stats->total_due_later)*100;
+        }else{
+            $percent_std_later = 50;
+            $percent_exp_later = 50;
+        }
+
+        $main_stats->percent_std_later =  round($percent_std_later,2);
+        $main_stats->percent_exp_later =  round($percent_exp_later,2);
+
+
+        if($main_stats->total_due_later > 0) {
+
+            $percent_inprocess_later = ($main_stats->inprocess_later / $main_stats->total_due_later) * 100;
+            $percent_done_later = ($done_later / $main_stats->total_due_later) * 100;
+        }else{
+
+        }
+
+
+        $main_stats->percent_inprocess_later = round($percent_inprocess_later,2);
+        $main_stats->percent_done_later = round($percent_done_later,2);
 
         // new stats for today
         $main_stats->due_today_deliveries = Db::table('infoitems')->where('PromisedDate',$today)->where('StoreName','ATELIER')->count();
@@ -1565,6 +1599,7 @@ class StatisticsController extends Controller
             $main_stats->percent_today_inprocess_stores=50;
         }
         // new stats for tomorrow
+
         $main_stats->due_tomorrow_deliveries = Db::table('infoitems')->where('PromisedDate',$tomorrow)->where('StoreName','ATELIER')->count();
         $main_stats->due_tomorrow_stores = Db::table('infoitems')->where('PromisedDate',$tomorrow)->where('StoreName','!=','ATELIER')->count();
         $main_stats->total_due_tomorrow = $main_stats->due_tomorrow_deliveries + $main_stats->due_tomorrow_stores;
@@ -1592,22 +1627,68 @@ class StatisticsController extends Controller
             $main_stats->percent_tomorrow_inprocess_deliveries=50;
         }
         if($main_stats->due_tomorrow_stores > 0) {
-        $main_stats->percent_tomorrow_done_stores =  round(
-            (Db::table('infoitems')
-            ->where('PromisedDate',$tomorrow)
-            ->where('StoreName','!=','ATELIER')
-            ->whereIn('Status',['READY','ON VAN','OFFLOADED', 'DELIVERED', 'SOLD', 'FULFILLED'])->count()
-            / $main_stats->due_tomorrow_stores) * 100,2);
-        $main_stats->percent_tomorrow_inprocess_stores =  round(
-            (Db::table('infoitems')
-            ->where('PromisedDate',$tomorrow)
-            ->where('StoreName','!=','ATELIER')
-            ->whereNotIn('Status',['READY','ON VAN','OFFLOADED', 'DELIVERED', 'SOLD', 'FULFILLED'])->count()
-            / $main_stats->due_tomorrow_stores) * 100,2);
+            $main_stats->percent_tomorrow_done_stores =  round(
+                (Db::table('infoitems')
+                ->where('PromisedDate',$tomorrow)
+                ->where('StoreName','!=','ATELIER')
+                ->whereIn('Status',['READY','ON VAN','OFFLOADED', 'DELIVERED', 'SOLD', 'FULFILLED'])->count()
+                / $main_stats->due_tomorrow_stores) * 100,2);
+            $main_stats->percent_tomorrow_inprocess_stores =  round(
+                (Db::table('infoitems')
+                ->where('PromisedDate',$tomorrow)
+                ->where('StoreName','!=','ATELIER')
+                ->whereNotIn('Status',['READY','ON VAN','OFFLOADED', 'DELIVERED', 'SOLD', 'FULFILLED'])->count()
+                / $main_stats->due_tomorrow_stores) * 100,2);
         }else{
             $main_stats->percent_tomorrow_done_stores=50;
             $main_stats->percent_tomorrow_inprocess_stores=50;
         }
+        // main stats for later
+        
+        $main_stats->due_later_deliveries = Db::table('infoitems')->where('PromisedDate', '>',$tomorrow)->where('StoreName','ATELIER')->count();
+        $main_stats->due_later_stores = Db::table('infoitems')->where('PromisedDate', '>',$tomorrow)->where('StoreName','!=','ATELIER')->count();
+        $main_stats->total_due_later = $main_stats->due_later_deliveries + $main_stats->due_later_stores;
+
+        $main_stats->percent_later_deliveries=
+        $main_stats->total_due_later > 0 ? round(($main_stats->due_later_deliveries/$main_stats->total_due_later)*100,2): 50;
+        $main_stats->percent_later_stores =
+        $main_stats->total_due_later > 0 ? round(($main_stats->due_later_stores/$main_stats->total_due_later)*100,2) : 50;
+
+        if($main_stats->due_later_deliveries > 0) {
+            $main_stats->percent_later_done_deliveries = round(
+                (Db::table('infoitems')
+                ->where('PromisedDate', '>', $tomorrow)
+                ->where('StoreName','ATELIER')
+                ->whereIn('Status',['READY','ON VAN','OFFLOADED', 'DELIVERED', 'SOLD', 'FULFILLED'])->count()
+                / $main_stats->due_later_deliveries) * 100,2);
+            $main_stats->percent_later_inprocess_deliveries = round(
+                (Db::table('infoitems')
+                ->where('PromisedDate', '>', $tomorrow)
+                ->where('StoreName','ATELIER')
+                ->whereNotIn('Status',['READY','ON VAN','OFFLOADED', 'DELIVERED', 'SOLD', 'FULFILLED'])->count()
+                / $main_stats->due_later_deliveries) * 100,2);
+        } else{
+            $main_stats->percent_later_done_deliveries=50;
+            $main_stats->percent_later_inprocess_deliveries=50;
+        }
+        if($main_stats->due_later_stores > 0) {
+            $main_stats->percent_later_done_stores =  round(
+                (Db::table('infoitems')
+                ->where('PromisedDate', '>', $tomorrow)
+                ->where('StoreName','!=','ATELIER')
+                ->whereIn('Status',['READY','ON VAN','OFFLOADED', 'DELIVERED', 'SOLD', 'FULFILLED'])->count()
+                / $main_stats->due_later_stores) * 100,2);
+            $main_stats->percent_later_inprocess_stores =  round(
+                (Db::table('infoitems')
+                ->where('PromisedDate', '>', $tomorrow)
+                ->where('StoreName','!=','ATELIER')
+                ->whereNotIn('Status',['READY','ON VAN','OFFLOADED', 'DELIVERED', 'SOLD', 'FULFILLED'])->count()
+                / $main_stats->due_later_stores) * 100,2);
+        }else{
+            $main_stats->percent_later_done_stores=50;
+            $main_stats->percent_later_inprocess_stores=50;
+        }
+
         // new stats for total row
         $stats_total['Loading Station']=
             $stats_per_postes_today['Loading Station']['all']+
@@ -1667,7 +1748,7 @@ class StatisticsController extends Controller
 
 
         echo json_encode([
-           'grouped_postes'=>$grouped_postes,
+            'grouped_postes'=>$grouped_postes,
             'main_stats'=>$main_stats,
             'stats_today'=>$stats_per_postes_today,
             'stats_tomorrow'=>$stats_per_postes_tomorrow,
@@ -1684,11 +1765,11 @@ class StatisticsController extends Controller
         $type = $request->post('type');
         $typepost = $request->post('typepost');
 
-        $tableprops = json_decode($request->post('tableprops'));
+        // $tableprops = json_decode($request->post('tableprops'));
 
-        $orderBy = $tableprops->column;
-        $orderSort = $tableprops->dir;
-        $limit = $tableprops->length;
+        // $orderBy = $tableprops->column;
+        // $orderSort = $tableprops->dir;
+        // $limit = $tableprops->length;
 
          $operator = "=";
 
@@ -1787,8 +1868,8 @@ class StatisticsController extends Controller
                 ->whereIn('infoitems.express', $arr)
                 ->leftJoin('infoInvoice', 'infoitems.SubOrderID', '=', 'infoInvoice.SubOrderID')
                 ->where('infoitems.SubOrderID','!=','')
-                ->orderBy($orderBy, $orderSort)
-                ->limit($limit)
+                // ->orderBy($orderBy, $orderSort)
+                // ->limit($limit)
                 ->get();
         
 

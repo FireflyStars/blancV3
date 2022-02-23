@@ -876,8 +876,7 @@ padding:0 1.2rem;
   }
 
   .each-poste-bloc {
-    // &:not(.is_bloc_disabled):hover, &.is_bloc_active {
-    &.is_bloc_active {
+    &:not(.is_bloc_disabled):hover, &.is_bloc_active {
       cursor: pointer;
 
       .each-poste-stats {
@@ -897,7 +896,12 @@ padding:0 1.2rem;
       }
       a{
         color: #000;
+        text-decoration: none;
       }
+      a:hover{
+        text-decoration: underline;
+        color: white;
+      }      
     }
   }
 

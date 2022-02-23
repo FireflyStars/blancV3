@@ -176,15 +176,15 @@
                                     <div class="bg-white p-2 m-2 rounded-3">
                                     <div class="d-flex mb-3">
                                         <div class="col-2 as-stats-label pl-4">Due<br/>Day after</div>
-                                        <div class="col-2 px-2 text-end total_stats_num">{{mainStats.total_due_tomorrow ? mainStats.total_due_tomorrow : 0}}</div>
+                                        <div class="col-2 px-2 text-end total_stats_num">{{mainStats.total_due_later ? mainStats.total_due_later : 0}}</div>
                                         <div class="col-8 pr-5">
                                             <div class="red-stats text-white d-flex justify-content-between text-center">
-                                                <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_deliveries<10?
-                                                10:(mainStats.percent_tomorrow_deliveries>90?90:mainStats.percent_tomorrow_deliveries))+'%'}">
-                                                {{mainStats.due_tomorrow_deliveries ? mainStats.due_tomorrow_deliveries : 0 }}</div>
-                                                <div class="py-1 px-2" :style="{'width':+(mainStats.percent_exp_tomorrow<10?
-                                                10:(mainStats.percent_tomorrow_stores>90?90:mainStats.percent_tomorrow_stores))+'%'}">
-                                                {{mainStats.due_tomorrow_stores ? mainStats.due_tomorrow_stores : 0}}</div>
+                                                <div class="standard-bar py-1 px-2" 
+                                                    :style="{'width':+ ( mainStats.percent_later_deliveries < 10 ? 10: ( mainStats.percent_later_deliveries>90?90:mainStats.percent_later_deliveries))+'%'}">
+                                                {{mainStats.due_later_deliveries ? mainStats.due_later_deliveries : 0 }}</div>
+                                                <div class="py-1 px-2" :style="{'width':+(mainStats.percent_exp_later<10?
+                                                10:(mainStats.percent_later_stores>90?90:mainStats.percent_later_stores))+'%'}">
+                                                {{mainStats.due_later_stores ? mainStats.due_later_stores : 0}}</div>
                                             </div>
                                             <div class="d-flex count-under-label">
                                                 <div class="col-9">Deliveries</div>
@@ -195,21 +195,21 @@
                                     <!--Percent-->
                                     <div class="d-flex mb-3">
                                         <div class="col-2 as-stats-label pl-4">Deliveries</div>
-                                        <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_tomorrow_deliveries ? mainStats.due_tomorrow_deliveries : 0}}</div>
+                                        <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_later_deliveries ? mainStats.due_later_deliveries : 0}}</div>
                                         <div class="col-8 pr-5">
                                             <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
                                                 <div class="standard-bar py-1 px-2" 
-                                                :style="{'width':+(mainStats.percent_tomorrow_inprocess_deliveries<10?
-                                                10:(mainStats.percent_tomorrow_inprocess_deliveries>90?
-                                                90:mainStats.percent_tomorrow_inprocess_deliveries))+'%'}" 
-                                                :class="{'col-6':mainStats.due_tomorrow_deliveries==0,'px-0':mainStats.due_tomorrow_deliveries==0}">
-                                                {{mainStats.percent_tomorrow_inprocess_deliveries ? parseInt(mainStats.percent_tomorrow_inprocess_deliveries) : 0}}%
+                                                :style="{'width':+(mainStats.percent_later_inprocess_deliveries<10?
+                                                10:(mainStats.percent_later_inprocess_deliveries>90?
+                                                90:mainStats.percent_later_inprocess_deliveries))+'%'}" 
+                                                :class="{'col-6':mainStats.due_later_deliveries==0,'px-0':mainStats.due_later_deliveries==0}">
+                                                {{mainStats.percent_later_inprocess_deliveries ? parseInt(mainStats.percent_later_inprocess_deliveries) : 0}}%
                                                 </div>
-                                                <div class="py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_done_deliveries<10?
-                                                10:(mainStats.percent_tomorrow_done_deliveries>90?
-                                                90:mainStats.percent_tomorrow_done_deliveries))+'%'}" 
-                                                :class="{'col-6':mainStats.due_tomorrow_deliveries==0,'px-0':mainStats.due_tomorrow_deliveries==0}">
-                                                {{ mainStats.percent_tomorrow_done_deliveries ? parseInt(mainStats.percent_tomorrow_done_deliveries) : 0}}%
+                                                <div class="py-1 px-2" :style="{'width':+(mainStats.percent_later_done_deliveries<10?
+                                                10:(mainStats.percent_later_done_deliveries>90?
+                                                90:mainStats.percent_later_done_deliveries))+'%'}" 
+                                                :class="{'col-6':mainStats.due_later_deliveries==0,'px-0':mainStats.due_later_deliveries==0}">
+                                                {{ mainStats.percent_later_done_deliveries ? parseInt(mainStats.percent_later_done_deliveries) : 0}}%
                                                 </div>
                                             </div>
                                             <div class="row count-under-label">
@@ -220,20 +220,20 @@
                                     </div>
                                     <div class="d-flex">
                                         <div class="col-2 as-stats-label pl-4">Stores</div>
-                                        <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_tomorrow_stores ? mainStats.due_tomorrow_stores : 0}}</div>
+                                        <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_later_stores ? mainStats.due_later_stores : 0}}</div>
                                         <div class="col-8 pr-5">
                                             <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
-                                                <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_inprocess_stores<10?
-                                                10:(mainStats.percent_tomorrow_inprocess_stores>90?
-                                                90:mainStats.percent_tomorrow_inprocess_stores))+'%'}" 
-                                                :class="{'col-6':mainStats.due_tomorrow_stores==0,'px-0':mainStats.due_tomorrow_stores==0}">
-                                                {{ mainStats.percent_tomorrow_inprocess_stores ? parseInt(mainStats.percent_tomorrow_inprocess_stores) : 0}}%
+                                                <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_later_inprocess_stores<10?
+                                                10:(mainStats.percent_later_inprocess_stores>90?
+                                                90:mainStats.percent_later_inprocess_stores))+'%'}" 
+                                                :class="{'col-6':mainStats.due_later_stores==0,'px-0':mainStats.due_later_stores==0}">
+                                                {{ mainStats.percent_later_inprocess_stores ? parseInt(mainStats.percent_later_inprocess_stores) : 0}}%
                                                 </div>
-                                                <div class="py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_done_stores<10?
-                                                10:(mainStats.percent_tomorrow_done_stores>90?
-                                                90:mainStats.percent_tomorrow_done_stores))+'%'}" 
-                                                :class="{'col-6':mainStats.due_tomorrow_stores==0,'px-0':mainStats.due_tomorrow_stores==0}">
-                                                {{mainStats.percent_tomorrow_done_stores ? parseInt(mainStats.percent_tomorrow_done_stores) : 0}}%
+                                                <div class="py-1 px-2" :style="{'width':+(mainStats.percent_later_done_stores<10?
+                                                10:(mainStats.percent_later_done_stores>90?
+                                                90:mainStats.percent_later_done_stores))+'%'}" 
+                                                :class="{'col-6':mainStats.due_later_stores==0,'px-0':mainStats.due_later_stores==0}">
+                                                {{mainStats.percent_later_done_stores ? parseInt(mainStats.percent_later_done_stores) : 0}}%
                                                 </div>
                                             </div>
                                             <div class="row count-under-label">
@@ -298,11 +298,11 @@
                                                 <div class="d-flex justify-content-between">
                                                     <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsToday[a.group_name].std === 0 && assemblyStatsToday[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'today','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
                                                         <div class="w-100 text-center each-poste-stats poste-stats-top grey-bg py-1">
-                                                            <a class="text-decoration-none" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'today','all')">{{assemblyStatsToday[a.group_name].all}}</a>
+                                                            <a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'today','all')">{{assemblyStatsToday[a.group_name].all}}</a>
                                                         </div>
                                                         <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg py-1 delivery_store" >
-                                                            <p class="mb-0"><a class="text-decoration-none" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'today','delivery')">{{assemblyStatsToday[a.group_name].delivery}}</a></p>
-                                                            <p class="mb-0"><a class="text-decoration-none" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'today','store')">{{assemblyStatsToday[a.group_name].store}}</a></p>
+                                                            <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'today','delivery')">{{assemblyStatsToday[a.group_name].delivery}}</a></p>
+                                                            <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'today','store')">{{assemblyStatsToday[a.group_name].store}}</a></p>
                                                         </div>
 
                                                     </div>
@@ -323,11 +323,11 @@
                                                     <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsTomorrow[a.group_name].std === 0 && assemblyStatsTomorrow[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'tomorrow','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
 
                                                         <div class="w-100 text-center each-poste-stats poste-stats-top grey-bg py-1">
-                                                            <a class="text-decoration-none" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'tomorrow','all')">{{assemblyStatsTomorrow[a.group_name].all}}</a>
+                                                            <a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'tomorrow','all')">{{assemblyStatsTomorrow[a.group_name].all}}</a>
                                                         </div>
                                                         <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg py-1 delivery_store" >
-                                                            <p class="mb-0"><a class="text-decoration-none" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'tomorrow','delivery')">{{assemblyStatsTomorrow[a.group_name].delivery}}</a></p>
-                                                            <p class="mb-0"><a class="text-decoration-none" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'tomorrow','store')">{{assemblyStatsTomorrow[a.group_name].store}}</a></p>
+                                                            <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'tomorrow','delivery')">{{assemblyStatsTomorrow[a.group_name].delivery}}</a></p>
+                                                            <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'tomorrow','store')">{{assemblyStatsTomorrow[a.group_name].store}}</a></p>
                                                         </div>
 
                                                     </div>
@@ -348,11 +348,11 @@
                                                 <div class="d-flex justify-content-between">
                                                     <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsOverdue[a.group_name].std === 0 && assemblyStatsOverdue[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'overdue','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
                                                         <div class="w-100 text-center each-poste-stats poste-stats-top grey-bg py-1">
-                                                            <a class="text-decoration-none" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'overdue','all')">{{assemblyStatsOverdue[a.group_name].all}}</a>
+                                                            <a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'overdue','all')">{{assemblyStatsOverdue[a.group_name].all}}</a>
                                                         </div>
                                                         <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg py-1 delivery_store" >
-                                                            <p class="mb-0"><a class="text-decoration-none" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'overdue','delivery')">{{assemblyStatsOverdue[a.group_name].delivery}}</a></p>
-                                                            <p class="mb-0"><a class="text-decoration-none" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'overdue','store')">{{assemblyStatsOverdue[a.group_name].store}}</a></p>
+                                                            <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'overdue','delivery')">{{assemblyStatsOverdue[a.group_name].delivery}}</a></p>
+                                                            <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'overdue','store')">{{assemblyStatsOverdue[a.group_name].store}}</a></p>
                                                         </div>
 
                                                     </div>
@@ -372,11 +372,11 @@
                                                 <div class="d-flex justify-content-between">
                                                     <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsLater[a.group_name].std === 0 && assemblyStatsLater[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'later','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
                                                         <div class="w-100 text-center each-poste-stats poste-stats-top grey-bg py-1">
-                                                            <a class="text-decoration-none" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'later','all')">{{assemblyStatsLater[a.group_name].all}}</a>
+                                                            <a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'later','all')">{{assemblyStatsLater[a.group_name].all}}</a>
                                                         </div>
                                                         <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg py-1 delivery_store" >
-                                                            <p class="mb-0"><a class="text-decoration-none" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'later','delivery')">{{assemblyStatsLater[a.group_name].delivery}}</a></p>
-                                                            <p class="mb-0"><a class="text-decoration-none" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'later','store')">{{assemblyStatsLater[a.group_name].store}}</a></p>
+                                                            <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'later','delivery')">{{assemblyStatsLater[a.group_name].delivery}}</a></p>
+                                                            <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'later','store')">{{assemblyStatsLater[a.group_name].store}}</a></p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -392,7 +392,7 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr v-for="(invoiceRow, index) in items" :key="index" @click="onRowSelected(invoiceRow.order_id)">
+                                                    <tr v-for="(invoiceRow, index) in items" :key="index" @click="onRowSelected($event, invoiceRow.order_id)">
                                                         <td class="visible-hidden">
                                                             <div class="form-check">
                                                                 <input class="form-check-input" type="checkbox" value="" :id="'invoice-'+invoiceRow.order_id">
@@ -422,7 +422,7 @@
                                                             &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>
                                                         </td>
                                                         <td class="text-capitalize fw-16">{{ invoiceRow.iteminfo }}</td>
-                                                        <td class="text-capitalize fw-16"><a href="javascript:;" class="text-decoration-none text-primary">{{ invoiceRow.barcode }}</a></td>
+                                                        <td class="text-capitalize fw-16"><a href="javascript:;" class=" text-primary">{{ invoiceRow.barcode }}</a></td>
                                                         <td>
                                                             <div v-if="invoiceRow.location == 'On Van'" class="invoice-location on-van rounded-pill">
                                                                 {{ invoiceRow.location }}
@@ -509,75 +509,14 @@
             const numberoflines = ref(0);
             const selectMode = ref('multi');
             const selectAll = ref(false);
-            onBeforeMount( () => {
-                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
-                axios.post('/assembly-home-stats')
-                    .then((res) => {
-                        let gp = res.data.grouped_postes;
-                        let width = 0;
-                        if(parseInt(gp.length) > 0){
-                            width = 80/parseInt(gp.length);
-                            groupedPosteWidth.value = width;
-                        }
-                        groupedPostes.value = gp;
-                        mainStats.value = res.data.main_stats;
-                        assemblyStatsTotal.value = res.data.stats_total;
-                        assemblyStatsToday.value = res.data.stats_today;
-                        assemblyStatsTomorrow.value = res.data.stats_tomorrow;
-                        assemblyStatsOverdue.value = res.data.stats_overdue;
-                        assemblyStatsLater.value = res.data.stats_later;
-                    })
-                    .catch(error => {
-                        console.log(error);
-                    }).finally(() => {
-                        store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                    });                
-            });
-
-            onMounted(() =>{
-
-            })
-
-            onUnmounted(()=>{
-
-            })
-            function onRowSelected(order_id){
-                alert(order_id);
-            }
-            return {
-                groupedPosteWidth,
-                // data,
-                poste,
-                day,
-                type,
-                total_today,
-                total_tommorow,
-                linesPerPage,
-                groupedPostes,
-                mainStats,
-                assemblyStatsTotal,
-                assemblyStatsToday,
-                assemblyStatsTomorrow,
-                assemblyStatsOverdue,
-                assemblyStatsLater,
-                numberoflines,
-                selected_nav,
-                selectMode,
-                // isBusy,
-                selectAll,
-                onRowSelected
-            }
-        },
-        data:function(){
-            return {
-                items: [
+            const items = ref([
                     { order_id: 1575, customer_name: 'Gras Marion', store: 'Delivery', sub_order: '02-002018', iteminfo: 'Down-Filled Coat', barcode: '02224123', location: 'On Van', prod: '24/02', deliv: '24/02' },
                     { order_id: 1576, customer_name: 'Eva Spaeter', store: 'Delivery', sub_order: '02-002015', iteminfo: 'Cushion cover, Small', barcode: '02224123', location: 'On Van', prod: '24/02', deliv: '24/02' },
                     { order_id: 1577, customer_name: 'James Morres', store: 'Store', sub_order: '02-002017', iteminfo: 'Evening Dress', barcode: '02224145', location: 'Storage', prod: '24/02', deliv: '24/02' },
                     { order_id: 1578, customer_name: 'Soumya Jaga', store: 'Store', sub_order: '02-002019', iteminfo: 'Jeans', barcode: '02224146', location: 'Assembling', prod: '24/02', deliv: '24/02' },
                     { order_id: 1579, customer_name: 'Jaga Pala', store: 'Store', sub_order: '02-002333', iteminfo: 'Shorts', barcode: '02224148', location: 'Cleaning', prod: '24/02', deliv: '24/02' },
-                ],                
-                columns: [
+            ]);
+            const columns = ref([
                     {
                         key: 'selected',
                         tdClass: 'visible-hidden'
@@ -630,72 +569,115 @@
                         key: 'deliv',
                         thClass: 'text-uppercase invoice-table-th',
                     },
-                ]
+            ]);
+            onBeforeMount( () => {
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
+                axios.post('/assembly-home-stats')
+                    .then((res) => {
+                        let gp = res.data.grouped_postes;
+                        let width = 0;
+                        if(parseInt(gp.length) > 0){
+                            width = 80/parseInt(gp.length);
+                            groupedPosteWidth.value = width;
+                        }
+                        groupedPostes.value = gp;
+                        mainStats.value = res.data.main_stats;
+                        assemblyStatsTotal.value = res.data.stats_total;
+                        assemblyStatsToday.value = res.data.stats_today;
+                        assemblyStatsTomorrow.value = res.data.stats_tomorrow;
+                        assemblyStatsOverdue.value = res.data.stats_overdue;
+                        assemblyStatsLater.value = res.data.stats_later;
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    }).finally(() => {
+                        store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    });                
+            });
+
+            onMounted(() =>{
+
+            })
+
+            onUnmounted(()=>{
+
+            })
+            function onRowSelected(event, order_id){
+                let selectedRowCheckbox = document.querySelector('#invoice-' + order_id);
+                event.target.parentElement.classList.toggle('selected-row');
+
+                if(selectedRowCheckbox.hasAttribute('checked')){
+                    selectedRowCheckbox.removeAttribute('checked');
+                }else{
+                    selectedRowCheckbox.setAttribute('checked', true);
+                }
             }
-        },
-        filters:{
-            formatName(value){
-                return value.replace(' Partner','');
-            },
-        },
-        methods:{
-            getTableStats(event,poste,day,type){
-                // $('body').find('.each-poste-bloc').removeClass('is_bloc_active');
-                // let el = $(event.target);
-                // el.closest('.each-poste-bloc').addClass('is_bloc_active');
-                this.getTable(poste,day,type);
-            },
-            getTableByBloc(event,poste,day,type){
-
-                // let el = $(event.target);
-                // let parent_div = el.closest('.each-poste-bloc');
-
-                // if(!parent_div.hasClass('is_bloc_disabled')) {
-                //     $('body').find('.each-poste-bloc').removeClass('is_bloc_active');
-
-                //     el.closest('.each-poste-bloc').addClass('is_bloc_active');
-                //     this.getTable(poste, day, type);
-                // }
-            },
-            getTable(poste,day,type){
-                this.poste = poste;
-                this.day = day;
-                this.type = type;
+            function getTableStats(event, tmp_poste, tmp_day, tmp_type){
+                document.querySelectorAll('.each-poste-bloc').forEach((element)=>{
+                    element.classList.remove('is_bloc_active');
+                })
+                event.target.closest('.each-poste-bloc').classList.add('is_bloc_active');
+                getTable(tmp_poste, tmp_day, tmp_type);
+            }
+            function getTableByBloc(event, tmp_poste, tmp_day, tmp_type){
+                let parentDIV = event.target.closest('.each-poste-bloc');
+                if( ! parentDIV.classList.contains('is_bloc_disabled') ) {
+                    document.querySelectorAll('.each-poste-bloc').forEach((element)=>{
+                        element.classList.remove('is_bloc_active');
+                    })                    
+                    event.target.closest('.each-poste-bloc').classList.add('is_bloc_active');
+                    getTable(tmp_poste, tmp_day, tmp_type);
+                }
+            }
+            function getTable(tmp_poste,tmp_day,tmp_type){
+                poste.value = tmp_poste;
+                day.value = tmp_day;
+                type.value = tmp_type;
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading Partner Data...']);
                 // $('#invoice-list-main').hide();
-                // this.showLoader = true;
                 axios.post('/partner-details', {
                     poste:'',
-                    typepost:poste,
-                    day:day,
-                    type:type,
-                    tableprops:JSON.stringify(this.$refs.partnerstable.tableProps),
+                    typepost: poste,
+                    day: day,
+                    type: type,
+                    // tableprops: JSON.stringify(this.$refs.partnerstable.tableProps),
                 }).then((res) => {
-
-                    // $('#invoice-list-main').show();
-                    this.items = res.data;
-                    this.numberoflines=res.data.count_data;
-                    this.$store.dispatch('setAssemblyHomeStats');
-                }).catch((error) => {
-                }).finally(() => {
-                    // always executed
-                    // this.showLoader = false;
+                    items = res.data;
+                    numberoflines=res.data.count_data;
                     // this.$store.dispatch('setAssemblyHomeStats');
-
-                //     let nav_height = $('nav').height();
-                //     let div_pos = $("body").find("#stats_table").offset().top;
-                //    $('html, body').animate({
-                //         scrollTop: div_pos - nav_height
-                //     }, 2000);
-                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                }).catch((error) => {
+                    console.log(error)
+                }).finally(() => {
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
-            },
-            changeNbLines(event){
-                let nb_lines = event.target.value;
-                this.$refs.partnerstable.tableProps.length = nb_lines;
-                this.getTable(this.poste,this.day,this.type);
-            },
-        },
+            }
+            return {
+                groupedPosteWidth,
+                poste,
+                day,
+                type,
+                total_today,
+                total_tommorow,
+                linesPerPage,
+                groupedPostes,
+                mainStats,
+                assemblyStatsTotal,
+                assemblyStatsToday,
+                assemblyStatsTomorrow,
+                assemblyStatsOverdue,
+                assemblyStatsLater,
+                numberoflines,
+                selected_nav,
+                selectMode,
+                items,
+                selectAll,
+                columns,
+                onRowSelected,
+                getTableByBloc,
+                getTableStats,
+                getTable,
+            }
+        }
     }
 </script>
 
@@ -757,11 +739,9 @@
 .visible-hidden .form-check{ 
     visibility : hidden;
 }
+.selected-row .visible-hidden .form-check,
 tr:hover .visible-hidden .form-check{ 
     visibility : visible;
-}
-.visible-hidden:hover .form-check{
-    visibility: visible;
 }
 @media (min-width: 1600px) {
   .total_row {
