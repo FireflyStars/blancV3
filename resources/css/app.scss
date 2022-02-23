@@ -882,6 +882,10 @@ padding:0 1.2rem;
       .each-poste-stats {
         background: #42a71e;
       }
+      a:hover{
+        text-decoration: underline;
+        color: white;
+      }       
     }
     &:not(.is_bloc_disabled):hover{
       .each-poste-stats {
@@ -897,11 +901,7 @@ padding:0 1.2rem;
       a{
         color: #000;
         text-decoration: none;
-      }
-      a:hover{
-        text-decoration: underline;
-        color: white;
-      }      
+      }     
     }
   }
 

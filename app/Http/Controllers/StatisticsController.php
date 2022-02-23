@@ -9,6 +9,7 @@ use App\Models\InfoOrder;
 use App\Models\InfoCustomer;
 use App\Models\Infoitem;
 use App\Models\Poste;
+use App\Models\Item;
 
 class StatisticsController extends Controller
 {
@@ -1747,7 +1748,7 @@ class StatisticsController extends Controller
             $stats_per_postes_later['shelving']['all'];
 
 
-        echo json_encode([
+        return response()->json([
             'grouped_postes'=>$grouped_postes,
             'main_stats'=>$main_stats,
             'stats_today'=>$stats_per_postes_today,
@@ -1773,15 +1774,15 @@ class StatisticsController extends Controller
 
          $operator = "=";
 
-         if($day=='overdue'){
+         if($day == 'overdue'){
              $day = 'today';
              $operator = "<";
-         }elseif ($day=='later'){
+         }elseif ( $day=='later' ){
              $day = 'tomorrow';
              $operator = ">";
          }
 
-        $date_stats = date('Y-m-d',strtotime($day));
+        $date_stats = date('Y-m-d', strtotime($day));
 
         $arr = [];
 
@@ -1799,9 +1800,9 @@ class StatisticsController extends Controller
         $postes = Poste::all();
         $postes_id = [];
 
-        if($orderBy=='status'){
-            $orderBy = 'infoitems.nextpost';
-        }
+        // if($orderBy=='status'){
+        //     $orderBy = 'infoitems.nextpost';
+        // }
 
         $partners = [];
 
@@ -1814,7 +1815,12 @@ class StatisticsController extends Controller
 
 
             $invoices = Db::table('infoitems')
-                ->select('infoitems.id_items','infoInvoice.client', 'infoInvoice.NumInvoice AS invoice', 'infoitems.ItemTrackingKey as barcode', 'infoitems.typeitem AS orders', 'infoitems.PromisedDate', 'infoitems.nextpost', 'infoitems.store','infoitems.PartnerINOUT','infoitems.idPartner')
+                ->select( 
+                    'infoitems.id_items','infoInvoice.client', 'infoInvoice.CustomerID',
+                    'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode', 
+                    'infoitems.typeitem', 'infoitems.PromisedDate as prod', 'infoInvoice.id AS order_id',
+                    'infoitems.nextpost', 'infoitems.store',
+                    'infoitems.PartnerINOUT','infoitems.idPartner')
                 ->where('infoitems.PromisedDate', $operator, $date_stats);
         
  
@@ -1868,8 +1874,8 @@ class StatisticsController extends Controller
                 ->whereIn('infoitems.express', $arr)
                 ->leftJoin('infoInvoice', 'infoitems.SubOrderID', '=', 'infoInvoice.SubOrderID')
                 ->where('infoitems.SubOrderID','!=','')
-                // ->orderBy($orderBy, $orderSort)
-                // ->limit($limit)
+                ->orderBy('order_id')
+                ->limit(10)
                 ->get();
         
 
@@ -1878,7 +1884,7 @@ class StatisticsController extends Controller
         if(!empty($invoices)) {
             foreach ($invoices as $k=>$v) {
                 $poste = Poste::find($v->nextpost);
-
+                $customer = InfoCustomer::where('CustomerID', $v->CustomerID)->first();
                 $id_partner = $v->idPartner;
                 $partner_txt = "WAIT";
                 $partner_status = $v->PartnerINOUT;
@@ -1887,26 +1893,30 @@ class StatisticsController extends Controller
                     $partner_txt = "OUT";
                 }
 
-                $data[$k]['id_items'] = $v->id_items;
-                $data[$k]['client'] = $v->client;
-                $data[$k]['invoice'] = $v->invoice;
-
-                $data[$k]['typeitem'] = $v->orders;
-
-                if($typepost!=''){
-                    $data[$k]['status'] = $poste->nominterface;
-                }
-                elseif($poste_id !=''){
-                    $data[$k]['PartnerINOUT'] = $partner_txt;
-                }
-
+                $data[$k]['order_id'] = $v->order_id;
+                $data[$k]['customer_name'] = $customer->Name;
+                $data[$k]['store'] = $v->store;
+                $data[$k]['sub_order'] = $v->sub_order;
+                $data[$k]['iteminfo'] = $v->typeitem;
+                $data[$k]['location'] = $poste->nom;
+                $data[$k]['prod'] = $v->prod;
+                $data[$k]['deliv'] = $v->prod;
                 $data[$k]['barcode'] = $v->barcode;
 
-                $data[$k]['store'] = $v->store;
+                // if($typepost!=''){
+                //     $data[$k]['status'] = $poste->nominterface;
+                // }
+                // elseif($poste_id !=''){
+                //     $data[$k]['PartnerINOUT'] = $partner_txt;
+                // }
 
-                $data[$k]['promise_date'] = date('d/m/Y',strtotime($v->PromisedDate));
+                
 
-                $data[$k]['idPartner'] = (isset($partners[$v->idPartner])?$partners[$v->idPartner]:"");
+                // $data[$k]['store'] = $v->store;
+
+                // $data[$k]['promise_date'] = date('d/m',strtotime($v->PromisedDate));
+
+                // $data[$k]['idPartner'] = (isset($partners[$v->idPartner])?$partners[$v->idPartner]:"");
 
             }
         }
@@ -1915,7 +1925,7 @@ class StatisticsController extends Controller
             'post'=>$request->all(),
             'invoices'=>$invoices,
             'count_data'=>count($data),
-            'data'=>$data,
+            'data'=> $data,
             "payload"=>array("search"=>"","dir"=>"asc","column"=>"id","length"=>"100000","draw"=>"0"),
             "poste_id"=>$postes_id,
         ]);

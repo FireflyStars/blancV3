@@ -383,9 +383,9 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="d-flex bg-white mb-3" id="stats_table">
+                                    <div class="d-flex bg-white mb-3 d-none" id="stats_table">
                                         <div class="text-white col-12 dttable" id="invoice-list-main">
-                                            <table class="table table-hover">
+                                            <table class="table table-hover mb-0">
                                                 <thead>
                                                     <tr>
                                                         <th v-for="(item, index) in columns" :class="item.thClass" :key="index" v-html="item.label ? item.label : ''" style="border-bottom: 2px solid #dee2e6 !important"></th>
@@ -399,7 +399,8 @@
                                                                 <label class="form-check-label" :for="'invoice-'+invoiceRow.order_id"></label>
                                                             </div>
                                                         </td>
-                                                        <td class="text-capitalize fw-16" v-if="invoiceRow.order_id != 1575">
+                                                        
+                                                        <td class="text-capitalize fw-16" v-if="invoiceRow.order_id == 'xxx'">
                                                             <span>{{ invoiceRow.order_id }}</span>&nbsp;&nbsp;
                                                             <svg width="32" height="32" viewBox="0 0 44 45" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                 <path d="M20.7344 16.763V23.0131C20.7344 23.2514 20.8394 23.474 21.0208 23.6225L24.8403 26.7475L25.7952 25.5268L22.2621 22.6381V16.7631L20.7344 16.763Z" fill="#EB5757"/>
@@ -407,9 +408,15 @@
                                                             </svg>
                                                         </td>
                                                         <td class="text-capitalize fw-16" v-else><span>{{ invoiceRow.order_id }}</span></td>
+
+                                                        <!-- Customer Name -->
                                                         <td class="text-capitalize fw-16">{{ invoiceRow.customer_name }}</td>
+                                                        
+                                                        <!-- Destination -->
                                                         <td class="text-capitalize fw-16">{{ invoiceRow.store }}</td>
-                                                        <td class="text-capitalize fw-16" v-if="invoiceRow.sub_order == '02-002018'">
+                                                        
+                                                        <!-- sub order -->
+                                                        <td class="text-capitalize fw-16" v-if="invoiceRow.sub_order == 'xxx'">
                                                             <svg width="11" height="11" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                 <circle cx="6.5" cy="6.5" r="6.5" fill="#9E44F2"/>
                                                             </svg>
@@ -421,8 +428,12 @@
                                                             </svg>
                                                             &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>
                                                         </td>
+                                                        
+                                                        <!-- Item -->
                                                         <td class="text-capitalize fw-16">{{ invoiceRow.iteminfo }}</td>
-                                                        <td class="text-capitalize fw-16"><a href="javascript:;" class=" text-primary">{{ invoiceRow.barcode }}</a></td>
+                                                        <!-- BarCode -->
+                                                        <td class="text-capitalize fw-16"><a href="javascript:;" class="text-decoration-none text-primary">{{ invoiceRow.barcode }}</a></td>
+                                                        <!-- Location -->
                                                         <td>
                                                             <div v-if="invoiceRow.location == 'On Van'" class="invoice-location on-van rounded-pill">
                                                                 {{ invoiceRow.location }}
@@ -454,7 +465,9 @@
                                                                 &nbsp;&nbsp;<span class="d-block text-center" :style="{ width: 'calc( 100% - 12px )'}">{{ invoiceRow.location }}</span>
                                                             </div>
                                                         </td>
+                                                        <!-- Prod -->
                                                         <td class="text-capitalize fw-16">{{ invoiceRow.prod }}</td>
+                                                        <!-- Deliv -->
                                                         <td class="text-capitalize fw-16 fw-bold">{{ invoiceRow.deliv }}</td>
                                                     </tr>
                                                 </tbody>
@@ -510,11 +523,11 @@
             const selectMode = ref('multi');
             const selectAll = ref(false);
             const items = ref([
-                    { order_id: 1575, customer_name: 'Gras Marion', store: 'Delivery', sub_order: '02-002018', iteminfo: 'Down-Filled Coat', barcode: '02224123', location: 'On Van', prod: '24/02', deliv: '24/02' },
-                    { order_id: 1576, customer_name: 'Eva Spaeter', store: 'Delivery', sub_order: '02-002015', iteminfo: 'Cushion cover, Small', barcode: '02224123', location: 'On Van', prod: '24/02', deliv: '24/02' },
-                    { order_id: 1577, customer_name: 'James Morres', store: 'Store', sub_order: '02-002017', iteminfo: 'Evening Dress', barcode: '02224145', location: 'Storage', prod: '24/02', deliv: '24/02' },
-                    { order_id: 1578, customer_name: 'Soumya Jaga', store: 'Store', sub_order: '02-002019', iteminfo: 'Jeans', barcode: '02224146', location: 'Assembling', prod: '24/02', deliv: '24/02' },
-                    { order_id: 1579, customer_name: 'Jaga Pala', store: 'Store', sub_order: '02-002333', iteminfo: 'Shorts', barcode: '02224148', location: 'Cleaning', prod: '24/02', deliv: '24/02' },
+                    // { order_id: 1575, customer_name: 'Gras Marion', store: 'Delivery', sub_order: '02-002018', iteminfo: 'Down-Filled Coat', barcode: '02224123', location: 'On Van', prod: '24/02', deliv: '24/02' },
+                    // { order_id: 1576, customer_name: 'Eva Spaeter', store: 'Delivery', sub_order: '02-002015', iteminfo: 'Cushion cover, Small', barcode: '02224123', location: 'On Van', prod: '24/02', deliv: '24/02' },
+                    // { order_id: 1577, customer_name: 'James Morres', store: 'Store', sub_order: '02-002017', iteminfo: 'Evening Dress', barcode: '02224145', location: 'Storage', prod: '24/02', deliv: '24/02' },
+                    // { order_id: 1578, customer_name: 'Soumya Jaga', store: 'Store', sub_order: '02-002019', iteminfo: 'Jeans', barcode: '02224146', location: 'Assembling', prod: '24/02', deliv: '24/02' },
+                    // { order_id: 1579, customer_name: 'Jaga Pala', store: 'Store', sub_order: '02-002333', iteminfo: 'Shorts', barcode: '02224148', location: 'Cleaning', prod: '24/02', deliv: '24/02' },
             ]);
             const columns = ref([
                     {
@@ -602,6 +615,7 @@
             onUnmounted(()=>{
 
             })
+
             function onRowSelected(event, order_id){
                 let selectedRowCheckbox = document.querySelector('#invoice-' + order_id);
                 event.target.parentElement.classList.toggle('selected-row');
@@ -630,25 +644,27 @@
                 }
             }
             function getTable(tmp_poste,tmp_day,tmp_type){
+                document.querySelector('#stats_table').classList.add('d-none');
                 poste.value = tmp_poste;
                 day.value = tmp_day;
                 type.value = tmp_type;
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading Partner Data...']);
-                // $('#invoice-list-main').hide();
                 axios.post('/partner-details', {
                     poste:'',
-                    typepost: poste,
-                    day: day,
-                    type: type,
+                    typepost: tmp_poste,
+                    day: tmp_day,
+                    type: tmp_type,
                     // tableprops: JSON.stringify(this.$refs.partnerstable.tableProps),
                 }).then((res) => {
-                    items = res.data;
-                    numberoflines=res.data.count_data;
+                    items.value  = res.data.data;
+                    numberoflines.value = res.data.count_data;
                     // this.$store.dispatch('setAssemblyHomeStats');
                 }).catch((error) => {
+                    items.value = [];
                     console.log(error)
                 }).finally(() => {
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    document.querySelector('#stats_table').classList.remove('d-none');
                 });
             }
             return {
