@@ -9,6 +9,15 @@ import vClickOutside from "click-outside-vue3";
 import router from './router/router';
 import store from './store/store'
 
+import BootstrapVue3 from 'bootstrap-vue-3'
+
+// Optional, since every component import their Bootstrap funcionality
+// the following line is not necessary
+// import 'bootstrap'
+
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
+
 axios.interceptors.response.use(
     (response) => response,
     (error) => {
@@ -24,6 +33,7 @@ axios.interceptors.response.use(
 createApp(App)
     .use(router)
     .use(store)
+    .use(BootstrapVue3)
     .use(vClickOutside)
     .mount('#app');
 

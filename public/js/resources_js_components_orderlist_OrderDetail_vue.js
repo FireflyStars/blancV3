@@ -648,55 +648,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/Tag.vue?vue&type=script&lang=js":
-/*!***********************************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/Tag.vue?vue&type=script&lang=js ***!
-  \***********************************************************************************************************************************************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
-
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  name: "Tag",
-  props: ['name', "style"],
-  setup: function setup(props) {
-    var css_class = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)('');
-    var status = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)('');
-    status.value = props.name.toLowerCase();
-    css_class.value = props.name.replace(/ /g, '').toLowerCase();
-    var statuses = {
-      inprogress: 'In process' // if we want to show  In progress as in process
-      //donatedtocharity:'Donated'
-
-    };
-
-    if (css_class.value in statuses) {
-      status.value = statuses[css_class.value];
-    }
-
-    (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(function () {
-      return props.name;
-    }, function (current_val, previous_val) {
-      status.value = current_val.toLowerCase();
-      css_class.value = current_val.replace(/ /g, '').toLowerCase();
-
-      if (css_class.value in statuses) {
-        status.value = statuses[css_class.value];
-      }
-    });
-    return {
-      css_class: css_class,
-      status: status
-    };
-  }
-});
-
-/***/ }),
-
 /***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/TimeSlotPicker.vue?vue&type=script&lang=js":
 /*!**********************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/TimeSlotPicker.vue?vue&type=script&lang=js ***!
@@ -1818,33 +1769,6 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
 /***/ }),
 
-/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/Tag.vue?vue&type=template&id=25590a9e&scoped=true":
-/*!***************************************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/Tag.vue?vue&type=template&id=25590a9e&scoped=true ***!
-  \***************************************************************************************************************************************************************************************************************************************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "render": () => (/* binding */ render)
-/* harmony export */ });
-/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
-
-function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", {
-    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["tag", $setup.css_class]),
-    style: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeStyle)($props.style)
-  }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "default", {}, function () {
-    return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.status), 1
-    /* TEXT */
-    )];
-  }, true)], 6
-  /* CLASS, STYLE */
-  );
-}
-
-/***/ }),
-
 /***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/TimeSlotPicker.vue?vue&type=template&id=aea5eff6&scoped=true":
 /*!**************************************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/TimeSlotPicker.vue?vue&type=template&id=aea5eff6&scoped=true ***!
@@ -2822,29 +2746,6 @@ ___CSS_LOADER_EXPORT___.push([module.id, "\n.confirmation-overlay[data-v-4c300ff
 
 /***/ }),
 
-/***/ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/Tag.vue?vue&type=style&index=0&id=25590a9e&scoped=true&lang=css":
-/*!************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/Tag.vue?vue&type=style&index=0&id=25590a9e&scoped=true&lang=css ***!
-  \************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
-/***/ ((module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
-/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
-// Imports
-
-var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
-// Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n.tag[data-v-25590a9e]{\n    font-family: \"Gotham Rounded\";\n    text-transform: capitalize;\n    background: #DDD;\n    border-radius: 70px;\n    text-align: center;\n    font-size: 12px;\n    font-weight: 400;\n    width: 120px!important;\n    height: 24px;\n    position: relative;\n    display: inline-block;\n    vertical-align: middle;\n    line-height: 24px;\n}\n.tag.scheduled[data-v-25590a9e], .tag.checkinatelier[data-v-25590a9e], .tag.pickedup[data-v-25590a9e]{\n        background: #E0E0E0;\n}\n.tag.missedpickup[data-v-25590a9e],.tag.faileddelivery[data-v-25590a9e],.tag.late[data-v-25590a9e],.tag.latedelivery[data-v-25590a9e],.tag.overdueforcollection[data-v-25590a9e],.tag.overduestore[data-v-25590a9e],.tag.delete[data-v-25590a9e],.tag.void[data-v-25590a9e]{\n        color:rgba(235, 87, 87, 1);\n        background: rgba(245, 171, 171, 0.7);\n}\n.tag.inprocess[data-v-25590a9e],.tag.partpending[data-v-25590a9e],.tag.partonhold[data-v-25590a9e]{\n        background: rgba(241, 210, 164, 0.7);\n}\n.tag.inprocess[data-v-25590a9e]:before,.tag.partpending[data-v-25590a9e]:before,.tag.partonhold[data-v-25590a9e]:before{\n        content: \" \";\n        background: #EF8F00;\n        width: 12px;\n        height: 6px;\n        display: inline-block;\n        border: 2px solid #EF8F00;\n        position: absolute;\n        left: 8px;\n        top:12px;\n        border-bottom-left-radius: 8px;\n        border-bottom-right-radius: 8px;\n        border-top: 0;\n}\n.tag.inprocess[data-v-25590a9e]:after,.tag.partpending[data-v-25590a9e]:after,.tag.partonhold[data-v-25590a9e]:after{\n        content: \" \";\n        width: 12px;\n        height: 6px;\n        display: inline-block;\n        border: 2px solid #EF8F00;\n        position: absolute;\n        left: 8px;\n        top:6px;\n        border-top-left-radius: 8px;\n        border-top-right-radius: 8px;\n        border-bottom: 0;\n}\n.tag.fulfilled[data-v-25590a9e],.tag.ready[data-v-25590a9e],.tag.readyinstore[data-v-25590a9e]{\n    background: rgba(66, 167, 30, 0.2);\n    color:#42A71E;\n}\n.tag.fulfilled[data-v-25590a9e]:before,.tag.ready[data-v-25590a9e]:before,.tag.readyinstore[data-v-25590a9e]:before{\n    content: \" \";\n    background: #42A71E;\n    width: 12px;\n    height:12px;\n    display: inline-block;\n\n    position: absolute;\n    left: 8px;\n    top:6px;\n    border-radius: 8px;\n}\n.tag.assembling[data-v-25590a9e],.tag.offloaded[data-v-25590a9e]{\n    background: rgba(212, 221, 247, 0.7);\n    color:#4E58E7;\n}\n.tag.assembling[data-v-25590a9e]:before,.tag.offloaded[data-v-25590a9e]:before{\n    content: \" \";\n    background: #4E58E7;\n    width: 12px;\n    height: 6px;\n    display: inline-block;\n    border: 2px solid #4E58E7;\n    position: absolute;\n    left: 8px;\n    top:12px;\n    border-bottom-left-radius: 8px;\n    border-bottom-right-radius: 8px;\n    border-top: 0;\n}\n.tag.assembling[data-v-25590a9e]:after,.tag.offloaded[data-v-25590a9e]:after{\n    content: \" \";\n    width: 12px;\n    height: 6px;\n    display: inline-block;\n    border: 2px solid #4E58E7;\n    position: absolute;\n    left: 8px;\n    top:6px;\n    border-top-left-radius: 8px;\n    border-top-right-radius: 8px;\n    border-bottom: 0;\n}\n.tag.onvan[data-v-25590a9e], .tag.deliveredtostore[data-v-25590a9e]{\n    background: rgba(234, 214, 247, 0.7);\n    color: #9E44F2;\n}\n.tag.unpaid[data-v-25590a9e]{\n        background:rgba(238, 238, 238, 1);\n        color: #868686;\n}\n.tag.paid[data-v-25590a9e]{\n    background:rgba(66, 167, 30, 0.2);\n    color: #42A71E;\n}\n.tag.instorage[data-v-25590a9e],.tag.donatedtocharity[data-v-25590a9e]{\n        background: #FFFFFF;\n        border: 1px solid #000000;\n}\n.tag.b2c[data-v-25590a9e], .tag.b2b[data-v-25590a9e]{\n        width: auto!important;\n        color: white;\n        background-color: #47454B;\n        text-transform: uppercase;\n        padding: 0 10px;\n}\n.tag.b2b[data-v-25590a9e]{\n        background-color: #9E44F2;\n}\n.tag.vip[data-v-25590a9e]{\n        padding: 5px 8px;\n        position: absolute;\n        width: 64px !important;\n        height: 24px;\n        background: rgba(241, 210, 164, 0.7);\n        border-radius: 4px;\n        color: #B69968;\n        display: flex;\n        flex-direction: row;\n        justify-content: center;\n        align-items: center;\n}\n", ""]);
-// Exports
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
-
-
-/***/ }),
-
 /***/ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/TimeSlotPicker.vue?vue&type=style&index=0&id=aea5eff6&scoped=true&lang=css":
 /*!***********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/TimeSlotPicker.vue?vue&type=style&index=0&id=aea5eff6&scoped=true&lang=css ***!
@@ -3173,35 +3074,6 @@ var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js
 
 /***/ }),
 
-/***/ "./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/Tag.vue?vue&type=style&index=0&id=25590a9e&scoped=true&lang=css":
-/*!****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/Tag.vue?vue&type=style&index=0&id=25590a9e&scoped=true&lang=css ***!
-  \****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! !../../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
-/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Tag_vue_vue_type_style_index_0_id_25590a9e_scoped_true_lang_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !!../../../../node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../../../node_modules/vue-loader/dist/stylePostLoader.js!../../../../node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!../../../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./Tag.vue?vue&type=style&index=0&id=25590a9e&scoped=true&lang=css */ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/Tag.vue?vue&type=style&index=0&id=25590a9e&scoped=true&lang=css");
-
-            
-
-var options = {};
-
-options.insert = "head";
-options.singleton = false;
-
-var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default()(_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Tag_vue_vue_type_style_index_0_id_25590a9e_scoped_true_lang_css__WEBPACK_IMPORTED_MODULE_1__["default"], options);
-
-
-
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Tag_vue_vue_type_style_index_0_id_25590a9e_scoped_true_lang_css__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
-
-/***/ }),
-
 /***/ "./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/TimeSlotPicker.vue?vue&type=style&index=0&id=aea5eff6&scoped=true&lang=css":
 /*!***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/TimeSlotPicker.vue?vue&type=style&index=0&id=aea5eff6&scoped=true&lang=css ***!
@@ -3469,36 +3341,6 @@ if (false) {}
 
 /***/ }),
 
-/***/ "./resources/js/components/miscellaneous/Tag.vue":
-/*!*******************************************************!*\
-  !*** ./resources/js/components/miscellaneous/Tag.vue ***!
-  \*******************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _Tag_vue_vue_type_template_id_25590a9e_scoped_true__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Tag.vue?vue&type=template&id=25590a9e&scoped=true */ "./resources/js/components/miscellaneous/Tag.vue?vue&type=template&id=25590a9e&scoped=true");
-/* harmony import */ var _Tag_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Tag.vue?vue&type=script&lang=js */ "./resources/js/components/miscellaneous/Tag.vue?vue&type=script&lang=js");
-/* harmony import */ var _Tag_vue_vue_type_style_index_0_id_25590a9e_scoped_true_lang_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Tag.vue?vue&type=style&index=0&id=25590a9e&scoped=true&lang=css */ "./resources/js/components/miscellaneous/Tag.vue?vue&type=style&index=0&id=25590a9e&scoped=true&lang=css");
-/* harmony import */ var D_YongHuan_blanc_detailing_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
-
-
-
-
-;
-
-
-const __exports__ = /*#__PURE__*/(0,D_YongHuan_blanc_detailing_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Tag_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Tag_vue_vue_type_template_id_25590a9e_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-25590a9e"],['__file',"resources/js/components/miscellaneous/Tag.vue"]])
-/* hot reload */
-if (false) {}
-
-
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__exports__);
-
-/***/ }),
-
 /***/ "./resources/js/components/miscellaneous/TimeSlotPicker.vue":
 /*!******************************************************************!*\
   !*** ./resources/js/components/miscellaneous/TimeSlotPicker.vue ***!
@@ -3679,21 +3521,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./resources/js/components/miscellaneous/Tag.vue?vue&type=script&lang=js":
-/*!*******************************************************************************!*\
-  !*** ./resources/js/components/miscellaneous/Tag.vue?vue&type=script&lang=js ***!
-  \*******************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Tag_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__["default"])
-/* harmony export */ });
-/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Tag_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./Tag.vue?vue&type=script&lang=js */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/Tag.vue?vue&type=script&lang=js");
- 
-
-/***/ }),
-
 /***/ "./resources/js/components/miscellaneous/TimeSlotPicker.vue?vue&type=script&lang=js":
 /*!******************************************************************************************!*\
   !*** ./resources/js/components/miscellaneous/TimeSlotPicker.vue?vue&type=script&lang=js ***!
@@ -3829,21 +3656,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./resources/js/components/miscellaneous/Tag.vue?vue&type=template&id=25590a9e&scoped=true":
-/*!*************************************************************************************************!*\
-  !*** ./resources/js/components/miscellaneous/Tag.vue?vue&type=template&id=25590a9e&scoped=true ***!
-  \*************************************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "render": () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Tag_vue_vue_type_template_id_25590a9e_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render)
-/* harmony export */ });
-/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Tag_vue_vue_type_template_id_25590a9e_scoped_true__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../../node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!../../../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./Tag.vue?vue&type=template&id=25590a9e&scoped=true */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/Tag.vue?vue&type=template&id=25590a9e&scoped=true");
-
-
-/***/ }),
-
 /***/ "./resources/js/components/miscellaneous/TimeSlotPicker.vue?vue&type=template&id=aea5eff6&scoped=true":
 /*!************************************************************************************************************!*\
   !*** ./resources/js/components/miscellaneous/TimeSlotPicker.vue?vue&type=template&id=aea5eff6&scoped=true ***!
@@ -3957,18 +3769,6 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _node_modules_style_loader_dist_cjs_js_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_SplitConfirmation_vue_vue_type_style_index_0_id_4c300ff3_scoped_true_lang_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/style-loader/dist/cjs.js!../../../../node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../../../node_modules/vue-loader/dist/stylePostLoader.js!../../../../node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!../../../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./SplitConfirmation.vue?vue&type=style&index=0&id=4c300ff3&scoped=true&lang=css */ "./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/SplitConfirmation.vue?vue&type=style&index=0&id=4c300ff3&scoped=true&lang=css");
-
-
-/***/ }),
-
-/***/ "./resources/js/components/miscellaneous/Tag.vue?vue&type=style&index=0&id=25590a9e&scoped=true&lang=css":
-/*!***************************************************************************************************************!*\
-  !*** ./resources/js/components/miscellaneous/Tag.vue?vue&type=style&index=0&id=25590a9e&scoped=true&lang=css ***!
-  \***************************************************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_style_loader_dist_cjs_js_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Tag_vue_vue_type_style_index_0_id_25590a9e_scoped_true_lang_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/style-loader/dist/cjs.js!../../../../node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../../../node_modules/vue-loader/dist/stylePostLoader.js!../../../../node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!../../../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./Tag.vue?vue&type=style&index=0&id=25590a9e&scoped=true&lang=css */ "./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/miscellaneous/Tag.vue?vue&type=style&index=0&id=25590a9e&scoped=true&lang=css");
 
 
 /***/ }),
