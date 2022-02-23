@@ -22,8 +22,8 @@ class DetailingController extends Controller
         $customer = (array) $customer->first();
 
         $detailingitemlist = DB::table('detailingitem')
-            ->select('infoitems.NoBag','infoInvoice.NumInvoice as sub_order','typeitem.name as typeitem_name','infoitems.ItemTrackingKey as item_number','detailingitem.etape','detailingitem.pricecleaning as price')
-            ->join('typeitem','typeitem.id', 'detailingitem.typeitem_id')
+            ->select('infoitems.NoBag', 'infoInvoice.NumInvoice as sub_order', 'typeitem.name as typeitem_name', 'infoitems.ItemTrackingKey as item_number', 'detailingitem.etape', 'detailingitem.pricecleaning as price')
+            ->join('typeitem', 'typeitem.id', 'detailingitem.typeitem_id')
             ->join('infoitems', 'infoitems.ItemTrackingKey', '=', 'detailingitem.item_id')
             ->join('infoInvoice', 'infoInvoice.SubOrderID', '=', 'infoitems.SubOrderID')
             ->where('detailingitem.order_id', '=', $order_id)
@@ -148,7 +148,6 @@ class DetailingController extends Controller
                 'typeitem_id' => $typeitem_id,
                 'size_id' => null,
                 'pricecleaning' => $typeitem->pricecleaning,
-                'etape' => 3,
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
         }
@@ -244,6 +243,10 @@ class DetailingController extends Controller
             DB::table('detailingitem')->where('id', $detailingitem_id)->update(['status' => $status, 'updated_at' => date('Y-m-d H:i:s')]);
         }
         if (isset($step)) {
+            if ($step == 3 && isset($typeitem_id)) {
+                $sizes = DB::table('sizes')->where('typeitem_id', $typeitem_id)->where('deleted_at', NULL)->get();
+                $step= count($sizes) == 0 ? $step+1 : $step;
+            }
             DB::table('detailingitem')->where('id', $detailingitem_id)->update(['etape' => $step, 'updated_at' => date('Y-m-d H:i:s')]);
         }
         $detailingitem = DB::table('detailingitem')->where('id', '=', $detailingitem_id)->get();
@@ -304,7 +307,7 @@ class DetailingController extends Controller
             $detailing_data['fabrics'] = [];
         }
         if (in_array(6, $steps)) {
-            $detailing_data['colours'] = DB::table('colours')->where('deleted_at', NULL)->get();
+            $detailing_data['colours'] = DB::table('colours')->where('code', '!=', '')->where('deleted_at', NULL)->get();
         } else {
             $detailing_data['colours'] = [];
         }

@@ -181,7 +181,7 @@ export default {
             router.push('/detailing_item/' + order_id.value + '/' + item_id);
         }
         function addItem() {
-            router.push('/detailing_item/57908/12345678');
+            router.push('/detailing_item/57907/10021619');
         }
         return {
             paths,
