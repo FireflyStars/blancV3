@@ -388,7 +388,30 @@
                                             <table class="table table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <td v-for="(item, index) in columns" :key="index"></td>
+                                                        <th v-for="(item, index) in columns" :class="item.thClass" :key="index">{{ item.label ? item.label : '' }}</th>
+                                                    </tr>
+                                                </thead>
+                                                <thead>
+                                                    <tr v-for="(invoiceRow, index) in items" :key="index">
+                                                        <td></td>
+                                                        <td class="text-capitalize fw-16" v-if="invoiceRow.order_id != 1575">
+                                                            <span>{{ invoiceRow.order_id }}</span>&nbsp;&nbsp;
+                                                            <svg width="32" height="32" viewBox="0 0 44 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M20.7344 16.763V23.0131C20.7344 23.2514 20.8394 23.474 21.0208 23.6225L24.8403 26.7475L25.7952 25.5268L22.2621 22.6381V16.7631L20.7344 16.763Z" fill="#EB5757"/>
+                                                                <path d="M30.9284 22.5C30.9284 27.5601 26.9204 31.6429 21.9999 31.6429C17.0793 31.6429 13.0713 27.5601 13.0713 22.5C13.0713 17.4399 17.0793 13.3571 21.9999 13.3571C26.9204 13.3571 30.9284 17.4399 30.9284 22.5Z" stroke="#EB5757"/>
+                                                            </svg>
+                                                        </td>
+                                                        <td v-else><span>{{ invoiceRow.order_id }}</span></td>
+                                                        <td>{{ invoiceRow.customer_name }}</td>
+                                                        <td>{{ invoiceRow.store }}</td>
+                                                        <td class="text-capitalize fw-16" v-if="invoiceRow.sub_order != 1575">
+                                                            <span>{{ invoiceRow.order_id }}</span>&nbsp;&nbsp;
+                                                            <svg width="32" height="32" viewBox="0 0 44 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M20.7344 16.763V23.0131C20.7344 23.2514 20.8394 23.474 21.0208 23.6225L24.8403 26.7475L25.7952 25.5268L22.2621 22.6381V16.7631L20.7344 16.763Z" fill="#EB5757"/>
+                                                                <path d="M30.9284 22.5C30.9284 27.5601 26.9204 31.6429 21.9999 31.6429C17.0793 31.6429 13.0713 27.5601 13.0713 22.5C13.0713 17.4399 17.0793 13.3571 21.9999 13.3571C26.9204 13.3571 30.9284 17.4399 30.9284 22.5Z" stroke="#EB5757"/>
+                                                            </svg>
+                                                        </td>
+                                                        <td v-else><span>{{ invoiceRow.order_id }}</span></td>
                                                     </tr>
                                                 </thead>
                                             </table>
@@ -516,7 +539,6 @@
                         label: 'Order N',
                         key: 'order_id',
                         thClass: 'text-uppercase invoice-table-th',
-                        tdClass: 'text-capitalize fw-16',
 
                     },
                     {
@@ -529,44 +551,37 @@
                         label: 'Destination',
                         key: 'store',
                         thClass: 'text-uppercase invoice-table-th',
-                        tdClass: 'text-capitalize fw-16',                        
                     },
 
                     {
                         label: 'Sub Order',
                         key: 'sub_order',
                         thClass: 'text-uppercase invoice-table-th',
-                        tdClass: 'text-capitalize fw-16',                        
                     },
                     {
                         label: 'Item',
                         key: 'iteminfo',
                         thClass: 'text-uppercase invoice-table-th',
-                        tdClass: 'text-capitalize fw-16',                        
                     },
                     {
                         label: 'Barcode',
                         key: 'barcode',
                         thClass: 'text-uppercase invoice-table-th',
-                        tdClass: 'text-capitalize fw-16',                        
                     },
                     {
                         label: 'Location',
                         key: 'location',
                         thClass: 'text-uppercase invoice-table-th',
-                        tdClass: 'text-capitalize fw-16',                        
                     },
                     {
                         label: 'Prod',
                         key: 'prod',
                         thClass: 'text-uppercase invoice-table-th',
-                        tdClass: 'text-capitalize fw-16',                        
                     },
                     {
                         label: 'Deliv',
                         key: 'deliv',
                         thClass: 'text-uppercase invoice-table-th',
-                        tdClass: 'text-capitalize fw-16 fw-bold',                        
                     },
                 ]
             }
@@ -578,22 +593,22 @@
         },
         methods:{
             getTableStats(event,poste,day,type){
-                $('body').find('.each-poste-bloc').removeClass('is_bloc_active');
-                let el = $(event.target);
-                el.closest('.each-poste-bloc').addClass('is_bloc_active');
+                // $('body').find('.each-poste-bloc').removeClass('is_bloc_active');
+                // let el = $(event.target);
+                // el.closest('.each-poste-bloc').addClass('is_bloc_active');
                 this.getTable(poste,day,type);
             },
             getTableByBloc(event,poste,day,type){
 
-                let el = $(event.target);
-                let parent_div = el.closest('.each-poste-bloc');
+                // let el = $(event.target);
+                // let parent_div = el.closest('.each-poste-bloc');
 
-                if(!parent_div.hasClass('is_bloc_disabled')) {
-                    $('body').find('.each-poste-bloc').removeClass('is_bloc_active');
+                // if(!parent_div.hasClass('is_bloc_disabled')) {
+                //     $('body').find('.each-poste-bloc').removeClass('is_bloc_active');
 
-                    el.closest('.each-poste-bloc').addClass('is_bloc_active');
-                    this.getTable(poste, day, type);
-                }
+                //     el.closest('.each-poste-bloc').addClass('is_bloc_active');
+                //     this.getTable(poste, day, type);
+                // }
             },
             getTable(poste,day,type){
                 this.poste = poste;
