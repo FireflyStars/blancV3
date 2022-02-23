@@ -89,7 +89,7 @@
                                     :detailingData="detailingData"
                                     :detailingitem="detailingitem"
                                     :typeitemPicto="item_description.typeitem_picto"
-                                    @save-item-complexities="saveItemDetails"
+                                    @save-item-issues="saveItemDetails"
                                     @back-previous-step="backPreviousStep"
                                 ></detailing-item-issues>
                             </div>

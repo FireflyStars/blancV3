@@ -52,7 +52,7 @@
             <button class="btn btn-link btn-previous" @click="back">Previous</button>
         </div>
         <div class="col-2 text-align-right">
-            <button class="btn btn-next text-white" :disabled="!valid" @click="save">Next</button>
+            <button class="btn btn-next text-white" id="btn-next" :disabled="!valid" @click="save">Next</button>
         </div>
     </div>
 </template>
@@ -92,12 +92,19 @@ export default {
         }
         function typeItemClick(id) {
             typeitem_id.value = id;
+            context.emit("save-type-item", { detailingitem_id: props.detailingitem.id, category_id: category_id.value, typeitem_id: typeitem_id.value });
+            this.scrollToNext();
         }
         function save() {
-            context.emit("save-type-item", { detailingitem_id: props.detailingitem.id, category_id: category_id.value, typeitem_id: typeitem_id.value });
+            context.emit("save-type-item", { detailingitem_id: props.detailingitem.id, step: 3,typeitem_id:typeitem_id.value});
         }
         function back() {
             context.emit("back-previous-step", 1);
+        }
+        function  scrollToNext() {
+            let element = document.getElementById("btn-next");
+            let top = element.offsetTop;
+            window.scrollTo(0, top);
         }
         return {
             category_id,
@@ -107,7 +114,8 @@ export default {
             categoryClick,
             typeItemClick,
             save,
-            back
+            back,
+            scrollToNext
         };
     },
 }

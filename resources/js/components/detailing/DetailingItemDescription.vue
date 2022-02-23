@@ -198,7 +198,12 @@
             <button class="btn btn-link btn-previous" @click="back">Previous</button>
         </div>
         <div class="col-2 text-align-right">
-            <button class="btn btn-next text-white" :disabled="!valid" @click="next">Next</button>
+            <button
+                class="btn btn-next text-white"
+                id="btn-next"
+                :disabled="!valid"
+                @click="next"
+            >Next</button>
         </div>
     </div>
     <transition
@@ -406,6 +411,7 @@ export default {
                     condition_id: condition_id.value
                 });
             }
+            this.scrollToNext();
         }
         function next() {
             const index = steps.value.findIndex((step) => step.id === props.detailingitem.etape);
@@ -415,8 +421,14 @@ export default {
             });
         }
         function back() {
-            const index = steps.value.findIndex((step) => step.id === props.detailingitem.etape);
+            let index = steps.value.findIndex((step) => step.id === props.detailingitem.etape);
+            index = index === 3 && props.detailingData.sizes.length === 0 ? index - 1 : index;
             context.emit("back-previous-step", steps.value[index - 1].id);
+        }
+        function scrollToNext() {
+            let element = document.getElementById("btn-next");
+            let top = element.offsetTop;
+            window.scrollTo(0, top);
         }
         function saveBrand() {
             context.emit("save-item-description", {
@@ -449,6 +461,7 @@ export default {
             select,
             next,
             back,
+            scrollToNext,
             saveBrand
         };
     },
