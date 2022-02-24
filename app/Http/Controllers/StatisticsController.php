@@ -1899,10 +1899,29 @@ class StatisticsController extends Controller
                 $data[$k]['sub_order'] = $v->sub_order;
                 $data[$k]['iteminfo'] = $v->typeitem;
                 $data[$k]['location'] = $poste->nom;
-                $data[$k]['prod'] = $v->prod;
-                $data[$k]['deliv'] = $v->prod;
+                $data[$k]['prod'] = Carbon::parse($v->prod)->format('d/m');
                 $data[$k]['barcode'] = $v->barcode;
 
+                $pick_up_status_to_include = ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP'];
+                $pick_up_date = DB::table('pickup')
+                                    ->where('CustomerID', $v->CustomerID)
+                                    ->whereIn('status', $pick_up_status_to_include)->value('date');
+                
+                $deliveryask_status_to_include = ['NEW','API','PMS','DONE', 'PMS-DONE', 'API-DONE','REC','REC-DONE','REC-NOK','PMS-NOK','API-NOK'];
+                $deliveryask_date = DB::table('deliveryask')
+                                    ->where('CustomerID', $v->CustomerID)
+                                    ->whereIn('status', $deliveryask_status_to_include)->value('date');
+                if($deliveryask_date && $pick_up_date){
+                    if(Carbon::parse($deliveryask_date)->gt(Carbon::parse($pick_up_date)))
+                        $data[$k]['deliv'] = Carbon::parse($deliveryask_date)->format('d/m');
+                    else
+                        $data[$k]['deliv'] = Carbon::parse($pick_up_date)->format('d/m');
+                }else if( $deliveryask_date && $pick_up_date == ''){
+                    $data[$k]['deliv'] = Carbon::parse($deliveryask_date)->format('d/m');
+                }else{
+                    $data[$k]['deliv'] = Carbon::parse($pick_up_date)->format('d/m');
+                }
+                
                 // if($typepost!=''){
                 //     $data[$k]['status'] = $poste->nominterface;
                 // }

@@ -648,7 +648,7 @@
                 poste.value = tmp_poste;
                 day.value = tmp_day;
                 type.value = tmp_type;
-                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading Partner Data...']);
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading Invoice Data...']);
                 axios.post('/partner-details', {
                     poste:'',
                     typepost: tmp_poste,
