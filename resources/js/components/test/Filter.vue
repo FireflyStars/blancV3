@@ -106,8 +106,6 @@
         margin-top: 51px;
     }
     .filter{
-        /* top:-62px;
-        right: 22px; */
         padding: 10px 16px;
     }
     .filter.hasfilters:not(:hover){
