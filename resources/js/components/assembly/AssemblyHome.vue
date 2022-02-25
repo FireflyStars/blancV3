@@ -5,15 +5,15 @@
             <div class="row d-flex align-content-stretch align-items-stretch flex-row hmax" style="z-index: 100">
                 <side-bar></side-bar>
                 <div class="col main-view mx-5 py-5" id="assembly-home">
-                    <h2 class="mx-0 mb-3">Production Track</h2>
+                    <h2 class="mx-0 mb-3 font-22">Production Track</h2>
                     <div class="nav-panel d-flex justify-content-between mb-1">
                         <ul class="assembly-home-nav list-inline mb-0">
-                            <li class="assembly-home-nav-item fw-bold list-inline-item px-3 py-2" :class="selected_nav == 'Stations' ? 'bg-white' : ''" @click="selected_nav = 'Stations'">Stations</li>
-                            <li class="assembly-home-nav-item fw-bold list-inline-item px-3 py-2" :class="selected_nav == 'Commitment' ? 'bg-white' : ''" @click="selected_nav = 'Commitment'">Commitment</li>
-                            <li class="assembly-home-nav-item fw-bold list-inline-item px-3 py-2" :class="selected_nav == 'All items' ? 'bg-white' : ''" @click="selected_nav = 'All items'">All items</li>
-                            <li class="assembly-home-nav-item fw-bold list-inline-item px-3 py-2" :class="selected_nav == 'Overdue' ? 'bg-white' : ''" @click="selected_nav = 'Overdue'">Overdue</li>
+                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'Stations' ? 'bg-white active' : ''" @click="selected_nav = 'Stations'">Stations</li>
+                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'Commitment' ? 'bg-white active' : ''" @click="selected_nav = 'Commitment'">Commitment</li>
+                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'All items' ? 'bg-white active' : ''" @click="selected_nav = 'All items'">All items</li>
+                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'Overdue' ? 'bg-white active' : ''" @click="selected_nav = 'Overdue'">Overdue</li>
                         </ul>
-                        <button class="filter-btn d-flex align-items-center justify-content-between p-2 rounded-3 fw-bold">
+                        <button class="filter-btn d-flex align-items-center justify-content-between p-2 rounded-3 font-16">
                             Filter &nbsp;&nbsp;&nbsp;&nbsp;
                             <svg width="21" height="16" viewBox="0 0 21 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect y="0.941162" width="21" height="2.41033" rx="1.20516" fill="#47454B"/>
@@ -392,7 +392,7 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr v-for="(invoiceRow, index) in items" :key="index" @click="onRowSelected($event, invoiceRow.order_id)">
+                                                    <tr v-for="(invoiceRow, index) in invoiceList" :key="index" @click="onRowSelected($event, invoiceRow.order_id)">
                                                         <td class="visible-hidden">
                                                             <div class="form-check">
                                                                 <input class="form-check-input" type="checkbox" value="" :id="'invoice-'+invoiceRow.order_id">
@@ -435,7 +435,14 @@
                                                         <td class="text-capitalize fw-16"><a href="javascript:;" class="text-decoration-none text-primary">{{ invoiceRow.barcode }}</a></td>
                                                         <!-- Location -->
                                                         <td>
-                                                            <div v-if="invoiceRow.location == 'On Van'" class="invoice-location on-van rounded-pill">
+                                                            <div class="invoice-location assembling rounded-pill" :style="{'background-color': '#'+invoiceRow.location_color }">
+                                                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" fill="#4E58E7"/>
+                                                                <circle cx="6" cy="6" r="5" stroke="#4E58E7" stroke-width="2"/>
+                                                                </svg>
+                                                                &nbsp;&nbsp;<span class="d-block text-center" :style="{ width: 'calc( 100% - 12px )'}">{{ invoiceRow.location }}</span>
+                                                            </div>
+                                                            <!-- <div v-if="invoiceRow.location == 'On Van'" class="invoice-location on-van rounded-pill">
                                                                 {{ invoiceRow.location }}
                                                             </div>
                                                             <div v-else-if="invoiceRow.location == 'Storage'" class="invoice-location storage rounded-pill">
@@ -463,7 +470,7 @@
                                                                     </defs>
                                                                 </svg>
                                                                 &nbsp;&nbsp;<span class="d-block text-center" :style="{ width: 'calc( 100% - 12px )'}">{{ invoiceRow.location }}</span>
-                                                            </div>
+                                                            </div> -->
                                                         </td>
                                                         <!-- Prod -->
                                                         <td class="text-capitalize fw-16">{{ invoiceRow.prod }}</td>
@@ -493,6 +500,8 @@
         DISPLAY_LOADER,
         HIDE_LOADER,
         RESET_ASSEMBLY_STATE,
+        SET_ASSEMBLY_STATE,
+        SET_ASSEMBLY_INVOICE,
     } from "../../store/types/types";
     import { useStore } from "vuex";    
     import { ref, onBeforeMount, onMounted, onUnmounted } from "vue";
@@ -522,7 +531,7 @@
             const numberoflines = ref(0);
             const selectMode = ref('multi');
             const selectAll = ref(false);
-            const items = ref([
+            const invoiceList = ref([
                     // { order_id: 1575, customer_name: 'Gras Marion', store: 'Delivery', sub_order: '02-002018', iteminfo: 'Down-Filled Coat', barcode: '02224123', location: 'On Van', prod: '24/02', deliv: '24/02' },
                     // { order_id: 1576, customer_name: 'Eva Spaeter', store: 'Delivery', sub_order: '02-002015', iteminfo: 'Cushion cover, Small', barcode: '02224123', location: 'On Van', prod: '24/02', deliv: '24/02' },
                     // { order_id: 1577, customer_name: 'James Morres', store: 'Store', sub_order: '02-002017', iteminfo: 'Evening Dress', barcode: '02224145', location: 'Storage', prod: '24/02', deliv: '24/02' },
@@ -584,36 +593,37 @@
                     },
             ]);
             onBeforeMount( () => {
-                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
-                axios.post('/assembly-home-stats')
-                    .then((res) => {
-                        let gp = res.data.grouped_postes;
-                        let width = 0;
-                        if(parseInt(gp.length) > 0){
-                            width = 80/parseInt(gp.length);
-                            groupedPosteWidth.value = width;
-                        }
-                        groupedPostes.value = gp;
-                        mainStats.value = res.data.main_stats;
-                        assemblyStatsTotal.value = res.data.stats_total;
-                        assemblyStatsToday.value = res.data.stats_today;
-                        assemblyStatsTomorrow.value = res.data.stats_tomorrow;
-                        assemblyStatsOverdue.value = res.data.stats_overdue;
-                        assemblyStatsLater.value = res.data.stats_later;
-                    })
-                    .catch(error => {
-                        console.log(error);
-                    }).finally(() => {
-                        store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                    });                
+                // store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
+                // axios.post('/assembly-home-stats')
+                //     .then((res) => {
+                //         let gp = res.data.grouped_postes;
+                //         let width = 0;
+                //         if(parseInt(gp.length) > 0){
+                //             width = 80/parseInt(gp.length);
+                //             groupedPosteWidth.value = width;
+                //         }
+                //         groupedPostes.value = gp;
+                //         mainStats.value = res.data.main_stats;
+                //         assemblyStatsTotal.value = res.data.stats_total;
+                //         assemblyStatsToday.value = res.data.stats_today;
+                //         assemblyStatsTomorrow.value = res.data.stats_tomorrow;
+                //         assemblyStatsOverdue.value = res.data.stats_overdue;
+                //         assemblyStatsLater.value = res.data.stats_later;
+                //         store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_ASSEMBLY_STATE}`, res.data);
+                //     })
+                //     .catch(error => {
+                //         console.log(error);
+                //     }).finally(() => {
+                //         store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                //     });                
             });
 
             onMounted(() =>{
-
+                
             })
 
             onUnmounted(()=>{
-
+                store.dispatch(`${ASSEMBLY_HOME_MODULE}${RESET_ASSEMBLY_STATE}`);
             })
 
             function onRowSelected(event, order_id){
@@ -656,11 +666,11 @@
                     type: tmp_type,
                     // tableprops: JSON.stringify(this.$refs.partnerstable.tableProps),
                 }).then((res) => {
-                    items.value  = res.data.data;
+                    invoiceList.value  = res.data.data;
                     numberoflines.value = res.data.count_data;
-                    // this.$store.dispatch('setAssemblyHomeStats');
+                    store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_ASSEMBLY_INVOICE}`, res.data.data);
                 }).catch((error) => {
-                    items.value = [];
+                    invoiceList.value = [];
                     console.log(error)
                 }).finally(() => {
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
@@ -685,7 +695,7 @@
                 numberoflines,
                 selected_nav,
                 selectMode,
-                items,
+                invoiceList,
                 selectAll,
                 columns,
                 onRowSelected,
@@ -698,6 +708,12 @@
 </script>
 
 <style scoped>
+*{
+    font-family: 'Gotham Rounded Book';
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;    
+}
 .is-delivery-stores{
     font:normal 16px/1.3em "Gotham Book"!important;
 }
@@ -724,6 +740,10 @@
     cursor: pointer;
     font-family: 'Gotham Rounded';
     font-weight: 400;
+}
+.assembly-home-nav-item.active{
+    color: #42A71E;
+    font-weight: bold;
 }
 .invoice-location{
     display: flex;
@@ -758,6 +778,12 @@
 .selected-row .visible-hidden .form-check,
 tr:hover .visible-hidden .form-check{ 
     visibility : visible;
+}
+.font-22{
+    font-size: 22px;
+}
+.font-16{
+    font-size: 16px;
 }
 @media (min-width: 1600px) {
   .total_row {

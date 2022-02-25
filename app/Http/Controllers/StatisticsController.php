@@ -1816,11 +1816,10 @@ class StatisticsController extends Controller
 
             $invoices = Db::table('infoitems')
                 ->select( 
-                    'infoitems.id_items','infoInvoice.client', 'infoInvoice.CustomerID',
-                    'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode', 
+                    'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode', 
                     'infoitems.typeitem', 'infoitems.PromisedDate as prod', 'infoInvoice.id AS order_id',
-                    'infoitems.nextpost', 'infoitems.store',
-                    'infoitems.PartnerINOUT','infoitems.idPartner')
+                    'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
+                    'infoitems.idPartner', 'TypePost.couleur as location_color')
                 ->where('infoitems.PromisedDate', $operator, $date_stats);
         
  
@@ -1872,7 +1871,10 @@ class StatisticsController extends Controller
             }
             $invoices=$invoices->where('infoitems.Actif',1)
                 ->whereIn('infoitems.express', $arr)
-                ->leftJoin('infoInvoice', 'infoitems.SubOrderID', '=', 'infoInvoice.SubOrderID')
+                ->join('infoInvoice', 'infoitems.SubOrderID', '=', 'infoInvoice.SubOrderID')
+                ->join('infoCustomer', 'infoInvoice.CustomerID', '=', 'infoCustomer.CustomerID')
+                ->join('postes', 'infoitems.nextpost', '=', 'postes.id')
+                ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
                 ->where('infoitems.SubOrderID','!=','')
                 ->orderBy('order_id')
                 ->limit(10)
@@ -1883,22 +1885,23 @@ class StatisticsController extends Controller
         $data = [];
         if(!empty($invoices)) {
             foreach ($invoices as $k=>$v) {
-                $poste = Poste::find($v->nextpost);
-                $customer = InfoCustomer::where('CustomerID', $v->CustomerID)->first();
-                $id_partner = $v->idPartner;
-                $partner_txt = "WAIT";
-                $partner_status = $v->PartnerINOUT;
+                // $poste = Poste::find($v->nextpost);
+                // $customer = InfoCustomer::where('CustomerID', $v->CustomerID)->first();
+                // $id_partner = $v->idPartner;
+                // $partner_txt = "WAIT";
+                // $partner_status = $v->PartnerINOUT;
 
-                if($partner_status==1){
-                    $partner_txt = "OUT";
-                }
+                // if($partner_status==1){
+                //     $partner_txt = "OUT";
+                // }
 
                 $data[$k]['order_id'] = $v->order_id;
-                $data[$k]['customer_name'] = $customer->Name;
+                $data[$k]['customer_name'] = $v->customer_name;
                 $data[$k]['store'] = $v->store;
                 $data[$k]['sub_order'] = $v->sub_order;
                 $data[$k]['iteminfo'] = $v->typeitem;
-                $data[$k]['location'] = $poste->nom;
+                $data[$k]['location'] = $v->location;
+                $data[$k]['location_color'] = $v->location_color;
                 $data[$k]['prod'] = Carbon::parse($v->prod)->format('d/m');
                 $data[$k]['barcode'] = $v->barcode;
 
