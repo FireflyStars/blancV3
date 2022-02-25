@@ -9,7 +9,10 @@ import {
     NEWORDER_PRELOAD_ORDER_CUSTOMER_SET,
     NEWORDER_PRELOAD_ORDER_GET,
     NEWORDER_CUR_CUSTOMER,
-    NEWORDER_GET_ALL_TIMESLOTS
+    NEWORDER_GET_ALL_TIMESLOTS,
+    NEW_ORDER_GET_TRANCHE_POSTCODE,
+    NEW_ORDER_TRANCHE_POSTCODE,
+    NEW_ORDER_SET_TRANCHE_POSTCODE,
 } from "../types/types";
 import axios from "axios";
 
@@ -61,7 +64,8 @@ export const neworder= {
                 display:'8-8 pm',
                 available:true
             }
-        ]
+        ],
+        tranches:[],
     },
     mutations:{
         [NEWORDER_PRELOAD_FORM_SET]:(state,payload)=>{
@@ -104,7 +108,19 @@ export const neworder= {
                 }).finally(() => {
                   //  dispatch(`${LOADER_MODULE}${HIDE_LOADER}`, {}, {root: true});
                 });
+        },
+        [NEW_ORDER_SET_TRANCHE_POSTCODE]:async ({commit},payload)=>{
+            return axios.post('/get-tranche-by-postcode',{
+                postcode: payload
+            }).then((response)=>{
+                console.log(response);
+            }).catch((error)=>{
+
+            }).finally(()=>{
+
+            });
         }
+
 
 
     },

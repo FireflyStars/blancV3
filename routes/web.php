@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\PermissionController;
 use App\Models\Authorization;
@@ -14,6 +15,7 @@ use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\DetailingController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ShippingController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -76,3 +78,4 @@ Route::post('/item-picto',[ItemController::class, 'getItemPicto'])->name('item-p
 Route::post('/get-picto-names',[ItemController::class,'getPictoNames'])->name('get-picto-names');
 
 Route::post('/get-shipping-partners',[ShippingController::class,'getPartnerList'])->name('get-shipping-partners')->middleware('auth');
+Route::post('/get-tranche-by-postcode',[BookingController::class,'getTrancheByPostcode'])->name('get-tranche-by-postcode')->middleware('auth');
