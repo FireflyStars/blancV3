@@ -13,14 +13,9 @@
                             <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'All items' ? 'bg-white active' : ''" @click="selected_nav = 'All items'">All items</li>
                             <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'Overdue' ? 'bg-white active' : ''" @click="selected_nav = 'Overdue'">Overdue</li>
                         </ul>
-                        <button class="filter-btn d-flex align-items-center justify-content-between p-2 rounded-3 font-16">
-                            Filter &nbsp;&nbsp;&nbsp;&nbsp;
-                            <svg width="21" height="16" viewBox="0 0 21 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect y="0.941162" width="21" height="2.41033" rx="1.20516" fill="#47454B"/>
-                            <rect x="3.66309" y="6.96704" width="13.6744" height="2.41033" rx="1.20516" fill="#47454B"/>
-                            <rect x="7.3252" y="12.9928" width="6.34883" height="2.41033" rx="1.20517" fill="#47454B"/>
-                            </svg>
-                        </button>
+                        <div class="filter-section position-relative">
+                            <filters :filterDef="filterDef"></filters>
+                        </div>
                     </div>
                     <div class="w-100 position-relative bg-black">
                         <div class="d-flex flex-wrap p-2">
@@ -253,7 +248,7 @@
                                 <div v-if="groupedPostes">
                                     <div class="bg-white mb-3 p-3">
                                         <div class="d-flex mb-1">
-                                            <div class="col-2"><h2 id="order_status_heading" class="mt-3 mb-0 mx-0">Items in <br>Production</h2></div>
+                                            <div class="col-2"><h2 id="order_status_heading" class="font-22 mt-3 mb-0 mx-0">Items in <br>Production</h2></div>
                                             <div class="col-10 mt-auto">
                                                 <div class="d-flex justify-content-between">
                                                     <div v-for="(a, index) in groupedPostes" :style="{width: parseInt(90/groupedPostes.length)+'%'}" class="text-center each-poste-label" :key="index">
@@ -279,7 +274,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center d-none">
                                             <div class="col-2"><span class="fst-italic">Avg time</span></div>
                                             <div class="col-10">
                                                 <div class="d-flex justify-content-between total_row">
@@ -505,11 +500,13 @@
     } from "../../store/types/types";
     import { useStore } from "vuex";    
     import { ref, onBeforeMount, onMounted, onUnmounted } from "vue";
+    import Filters from '../test/Filter';
     export default {
         name: "AssemblyHome",
         components:{
             SideBar, 
-            MainHeader
+            MainHeader,
+            Filters
         },
         setup(){
             const store = useStore();
@@ -593,29 +590,29 @@
                     },
             ]);
             onBeforeMount( () => {
-                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
-                axios.post('/assembly-home-stats')
-                    .then((res) => {
-                        let gp = res.data.grouped_postes;
-                        let width = 0;
-                        if(parseInt(gp.length) > 0){
-                            width = 80/parseInt(gp.length);
-                            groupedPosteWidth.value = width;
-                        }
-                        groupedPostes.value = gp;
-                        mainStats.value = res.data.main_stats;
-                        assemblyStatsTotal.value = res.data.stats_total;
-                        assemblyStatsToday.value = res.data.stats_today;
-                        assemblyStatsTomorrow.value = res.data.stats_tomorrow;
-                        assemblyStatsOverdue.value = res.data.stats_overdue;
-                        assemblyStatsLater.value = res.data.stats_later;
-                        store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_ASSEMBLY_STATE}`, res.data);
-                    })
-                    .catch(error => {
-                        console.log(error);
-                    }).finally(() => {
-                        store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                    });                
+                // store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
+                // axios.post('/assembly-home-stats')
+                //     .then((res) => {
+                //         let gp = res.data.grouped_postes;
+                //         let width = 0;
+                //         if(parseInt(gp.length) > 0){
+                //             width = 80/parseInt(gp.length);
+                //             groupedPosteWidth.value = width;
+                //         }
+                //         groupedPostes.value = gp;
+                //         mainStats.value = res.data.main_stats;
+                //         assemblyStatsTotal.value = res.data.stats_total;
+                //         assemblyStatsToday.value = res.data.stats_today;
+                //         assemblyStatsTomorrow.value = res.data.stats_tomorrow;
+                //         assemblyStatsOverdue.value = res.data.stats_overdue;
+                //         assemblyStatsLater.value = res.data.stats_later;
+                //         store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_ASSEMBLY_STATE}`, res.data);
+                //     })
+                //     .catch(error => {
+                //         console.log(error);
+                //     }).finally(() => {
+                //         store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                //     });                
             });
 
             onMounted(() =>{
@@ -677,6 +674,76 @@
                     document.querySelector('#stats_table').classList.remove('d-none');
                 });
             }
+            const filterDef={
+                def:{
+                    'infoOrder.paid':{
+                        name:"Payment status",
+                        options:{
+                            0:"Unpaid",
+                            1:"Paid",
+                        }
+                    },
+                    'infoOrder.Status':{
+                        name:"Order status",
+                        options:{
+                            'ASSEMBLING':'ASSEMBLING',
+                            'AWAITING REDELIVERY':'AWAITING REDELIVERY',
+                            'AWAITING SALE':'AWAITING SALE',
+                            'CANCELLED':'CANCELLED',
+                            'CHECK IN ATELIER':'CHECK IN ATELIER',
+                            'COLLECTED':'COLLECTED',
+                            'DELETE':'DELETE',
+                            'DELIVERED':'DELIVERED',
+                            'DELIVERED TO STORE':'DELIVERED TO STORE',
+                            'DELIVERY IN STORE':'DELIVERY IN STORE',
+                            'DONATED TO CHARITY':'DONATED TO CHARITY',
+                            'DROPPED OFF':'DROPPED OFF',
+                            'FAILED DELIVERY':'FAILED DELIVERY',
+                            'FAILED PAYMENT':'FAILED PAYMENT',
+                            'FULFILLED':'FULFILLED',
+                            'IN PROCESS':'IN PROCESS',
+                            'IN STORAGE':'IN STORAGE',
+                            'LATE':'LATE',
+                            'LATE DELIVERY':'LATE DELIVERY',
+                            'MISSED PICKUP':'MISSED PICKUP',
+                            'OFFLOADED':'OFFLOADED',
+                            'ON VAN':'ON VAN',
+                            'OVERDUE FOR COLLECTION':'OVERDUE FOR COLLECTION',
+                            'OVERDUE STORE':'OVERDUE STORE',
+                            'PART ON HOLD':'PART ON HOLD',
+                            'PART PENDING':'PART PENDING',
+                            'PICKED UP':'PICKED UP',
+                            'READY':'READY',
+                            'RECURRING':'RECURRING',
+                            'READY IN STORE':'READY IN STORE',
+                            'SCHEDULED':'SCHEDULED',
+                            'SOLD':'SOLD',
+                            'VOID':'VOID',
+
+                        }
+                    },
+                    'infoCustomer.TypeDelivery':{
+                        name:"Destination",
+                        options:{
+                            'DELIVERY':'DELIVERY',
+                            'CHELSEA':'CHELSEA',
+                            'MARYLEBONE':'MARYLEBONE',
+                            'NOTTING HILL':'NOTTING HILL',
+                            'SOUTH KEN':'SOUTH KEN'
+                        }
+
+                    },
+                    'infoitems.express':{
+                        name: "Turnaround time",
+                        options:{
+                            standard:"Standard",
+                            exp24:"Express 24h",
+                            exp48:"Express 48h"
+                        }
+
+                    }
+                }
+            }            
             return {
                 groupedPosteWidth,
                 poste,
@@ -698,6 +765,7 @@
                 invoiceList,
                 selectAll,
                 columns,
+                filterDef,
                 onRowSelected,
                 getTableByBloc,
                 getTableStats,
@@ -715,10 +783,10 @@
     font-display: swap;    
 }
 .is-delivery-stores{
-    font:normal 16px/1.3em "Gotham Book"!important;
+    font:normal 16px/1.3em "Gotham Rounded Book"!important;
 }
 .delivery_store a{
-    font:normal 16px/1.3em "Gotham Book"!important;
+    font:normal 16px/1.3em "Gotham Rounded Book"!important;
 }
 .delivery_store{
     padding-top:10px!important
@@ -727,18 +795,13 @@
     font-size: 14px;
     color: #868686;
 }
-.fw-16{
-    font-size: 16px;
-    font-weight: 400;
-    color: #47454B;
-}
 .assembly-home-nav-item{
     border-radius: 10px;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
     background: #EEEEEE;
     cursor: pointer;
-    font-family: 'Gotham Rounded';
+    font-family: 'Gotham Rounded Book';
     font-weight: 400;
 }
 .assembly-home-nav-item.active{
@@ -751,7 +814,7 @@
     justify-content: space-evenly;
     align-items: center;
     padding: 5px 16px 5px 8px;
-    font-family: 'Gotham Rounded';
+    font-family: 'Gotham Rounded Book';
     font-style: normal;
     font-weight: normal;
     font-size: 12px;
@@ -778,12 +841,6 @@
 .selected-row .visible-hidden .form-check,
 tr:hover .visible-hidden .form-check{ 
     visibility : visible;
-}
-.font-22{
-    font-size: 22px;
-}
-.font-16{
-    font-size: 16px;
 }
 @media (min-width: 1600px) {
   .total_row {
