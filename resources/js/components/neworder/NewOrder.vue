@@ -56,16 +56,26 @@
                                             </div>
                                             <transition name="popinout">
                                             <div class="row mt-3" v-if="deliverymethod=='in_store_collection'">
-                                                <div class="col-3"><date-picker v-model="isc_dropoff" name="isc_dropoff" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Drop off" :disabledToDate="yesterday"></date-picker>
+                                                <div class="col-3">
+                                                    <!--<date-picker v-model="isc_dropoff" name="isc_dropoff" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Drop off" :disabledToDate="yesterday"></date-picker>
+                                                    -->
+                                                    <label for="isc_dropoff">Drop off</label>
+                                                    <input type="text" class="form-control" :value="getCurDateTime('date')" readonly id="isc_dropoff"/>
                                                 </div>
                                                 <div class="col-3">
+                                                    <label for="isc_dropoff_time"></label>
+                                                    <input type="text" class="form-control" :value="getCurDateTime('time')" readonly id="isc_dropoff_time"/>
+
+                                                    <!--
                                                     <time-slot-picker v-model="isc_dropoff_timeslot"   name="isc_dropoff_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
+                                                    -->
                                                 </div>
 
-                                                <div class="col-3"><date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pickup" :disabledToDate="yesterday"></date-picker>
+                                                <div class="col-3">
+                                                    <date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pickup" :disabledToDate="yesterday"></date-picker>
                                                 </div>
                                                 <div class="col-3">
-                                                    <time-slot-picker v-model="isc_pickup_timeslot"   name="isc_pickup_timeslot" :available-slots="[1]"  label="Pick up Time"></time-slot-picker>
+                                                    <time-slot-picker v-model="isc_pickup_timeslot"   name="isc_pickup_timeslot" :available-slots="[1,3,5,7,9,11]"  label="Pick up Time"></time-slot-picker>
                                                 </div>
                                             </div>
                                             </transition>
@@ -73,43 +83,59 @@
 
                                             <transition name="popinout">
                                                 <div class="row mt-3" v-if="deliverymethod=='delivery_only'">
-                                                    <div class="col-3"><date-picker v-model="do_dropoff" name="do_dropoff" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Drop off" :disabledToDate="yesterday"></date-picker>
+                                                    <div class="col-3">
+                                                        <!--
+                                                        <date-picker v-model="do_dropoff" name="do_dropoff" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Drop off" :disabledToDate="yesterday"></date-picker>
+                                                        -->
+                                                        <label for="do_dropoff">Drop off</label>
+                                                        <input type="text" class="form-control" :value="getCurDateTime('date')" readonly id="do_dropoff"/>
                                                     </div>
                                                     <div class="col-3">
+                                                        <!--
                                                         <time-slot-picker v-model="do_dropoff_timeslot"   name="do_dropoff_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
+                                                        -->
+                                                        <label for="do_dropoff_time"></label>
+                                                        <input type="text" class="form-control" :value="getCurDateTime('time')" readonly id="do_dropoff_time"/>
                                                     </div>
 
-                                                    <div class="col-3"><date-picker v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="yesterday"></date-picker>
+                                                    <div class="col-3">
+                                                        <date-picker v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="yesterday" @loadtranche="loadtranche('do_delivery')"></date-picker>
                                                     </div>
                                                     <div class="col-3">
-                                                        <time-slot-picker v-model="do_delivery_timeslot"   name="do_delivery_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
+                                                        <time-slot-picker v-model="do_delivery_timeslot"   name="do_delivery_timeslot" :available-slots="do_delivery_tranche"  label=" "></time-slot-picker>
                                                     </div>
                                                 </div>
                                             </transition>
 
-
                                             <transition name="popinout">
                                                 <div class="row mt-3" v-if="deliverymethod=='home_delivery'&&!isRecurring">
-                                                    <div class="col-3"><date-picker v-model="hd_pickup" name="hd_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pick up" :disabledToDate="yesterday"></date-picker>
+                                                    <div class="col-3">
+                                                        <date-picker v-model="hd_pickup" name="hd_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pick up" :disabledToDate="yesterday" :disabledFromDate="hd_delivery"  @loadtranche="loadtranche('hd_pickup')"></date-picker>
                                                     </div>
                                                     <div class="col-3">
-                                                        <time-slot-picker v-model="hd_pickup_timeslot"   name="hd_pickup_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
+                                                        <time-slot-picker v-model="hd_pickup_timeslot"   name="hd_pickup_timeslot" :available-slots="hd_pickup_tranche"  label=" "></time-slot-picker>
                                                     </div>
 
-                                                    <div class="col-3"><date-picker v-model="hd_delivery" name="hd_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="yesterday"></date-picker>
+                                                    <div class="col-3">
+                                                        <date-picker v-model="hd_delivery" name="hd_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="hd_pickup"   @loadtranche="loadtranche('hd_delivery')" ref="hd_delivery_datepicker"></date-picker>
                                                     </div>
                                                     <div class="col-3">
-                                                        <time-slot-picker v-model="hd_delivery_timeslot"   name="hd_delivery_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
+                                                        <time-slot-picker v-model="hd_delivery_timeslot"   name="hd_delivery_timeslot" :available-slots="hd_delivery_tranche"  label=" "></time-slot-picker>
                                                     </div>
                                                 </div>
                                             </transition>
 
                                             <transition name="popinout">
                                                 <div class="row mt-3" v-if="deliverymethod=='shipping'">
-                                                    <div class="col-3"><date-picker v-model="shp_received" name="shp_received" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Received" :disabledToDate="yesterday"></date-picker>
+                                                    <div class="col-3">
+                                                        <!--<date-picker v-model="shp_received" name="shp_received" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Received" :disabledToDate="yesterday"></date-picker>-->
+                                                        <label for="shp_received">Received</label>
+                                                        <input type="text" class="form-control" :value="getCurDateTime('date')" readonly id="shp_received"/>
                                                     </div>
                                                     <div class="col-3">
-                                                        <time-slot-picker v-model="shp_received_timeslot"   name="shp_received_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
+                                                        <!--<time-slot-picker v-model="shp_received_timeslot"   name="shp_received_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>-->
+                                                        <label for="shp_received_time"></label>
+                                                        <input type="text" class="form-control" :value="getCurDateTime('time')" readonly id="shp_received_time"/>
                                                     </div>
 
                                                     <div class="col-3"><date-picker v-model="shp_delivery" name="shp_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="yesterday"></date-picker>
@@ -226,20 +252,20 @@
                                                     </div>
                                                     <div class="col-10 pl-0">
                                                         <div class="body_medium dark-grey"  v-if="deliverymethod=='in_store_collection'">
-                                                            <span>{{formatDate(isc_dropoff)}}</span><br/>
-                                                            <span>{{all_timeslots[isc_dropoff_timeslot]}}</span>
+                                                            <span>{{formatDate(cur_date)}}</span><br/>
+                                                            <span>{{formatTime(cur_date)}}</span>
                                                         </div>
                                                         <div class="body_medium dark-grey"  v-if="deliverymethod=='delivery_only'">
-                                                            <span>{{formatDate(do_dropoff)}}</span><br/>
-                                                            <span>{{all_timeslots[do_dropoff_timeslot]}}</span>
+                                                            <span>{{formatDate(cur_date)}}</span><br/>
+                                                            <span>{{formatTime(cur_date)}}</span>
                                                         </div>
                                                          <div class="body_medium dark-grey"  v-if="deliverymethod=='home_delivery'">
                                                             <span>{{formatDate(hd_pickup)}}</span><br/>
                                                             <span>{{all_timeslots[hd_pickup_timeslot]}}</span>
                                                         </div>
                                                         <div class="body_medium dark-grey"  v-if="deliverymethod=='shipping'" id="shp_received_txt">
-                                                            <span>{{formatDate(shp_received)}}</span><br/>
-                                                            <span>{{all_timeslots[shp_received_timeslot]}}</span>
+                                                            <span>{{formatDate(cur_date)}}</span><br/>
+                                                            <span>{{formatTime(cur_date)}}</span>
                                                         </div>
 
                                                     </div>
@@ -308,13 +334,13 @@
                                             <div class="col-6"  v-if="isRecurring || ['home_delivery','delivery_only'].includes(deliverymethod)">
                                                 <h4 class="body_regular medium-grey mb-3">Delivery instructions</h4>
                                                 <div class="row mx-0 form-group">
-                                                    <textarea class="form-control" readonly>{{customer_instructions}}</textarea>
+                                                    <textarea class="form-control" readonly v-model="customer_instructions"></textarea>
                                                 </div>
 
 
                                                 <div class="row mx-0 mt-4 form-group" v-if="deliverymethod=='delivery_only'">
                                                     <h4 class="body_regular medium-grey mb-3">Alternate contact</h4>
-                                                    <textarea class="form-control" readonly>{{alternate_contact}}</textarea>
+                                                    <textarea class="form-control" readonly v-model="alternate_contact"></textarea>
                                                 </div>
 
                                             </div>
@@ -381,6 +407,9 @@
         TOASTER_GET_ALL,
         TOASTER_REMOVE_TOAST,
         NEWORDER_GET_ALL_TIMESLOTS,
+        LOADER_MODULE,
+        DISPLAY_LOADER,
+        HIDE_LOADER,
     } from "../../store/types/types";
 import RecurringForm from '../miscellaneous/RecurringForm.vue';
     export default {
@@ -392,26 +421,31 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             const showcontainer=ref(false);
             const deliverymethod =ref('');
             //isc : in store collection
-            const isc_dropoff =ref('');
-            const isc_dropoff_timeslot=ref(0);
+            //const isc_dropoff =ref('');
+            //const isc_dropoff_timeslot=ref(0);
             const isc_pickup=ref('');
             const isc_pickup_timeslot=ref(0);
 
             //do : delivery only
-            const do_dropoff =ref('');
-            const do_dropoff_timeslot=ref(0);
+            //const do_dropoff =ref('');
+            //const do_dropoff_timeslot=ref(0);
             const do_delivery=ref('');
             const do_delivery_timeslot=ref(0);
+            const do_delivery_tranche = ref([]);
 
             //hd : home delivery
             const hd_pickup =ref('');
             const hd_pickup_timeslot=ref(0);
+            const hd_pickup_tranche = ref([]);
             const hd_delivery=ref('');
             const hd_delivery_timeslot=ref(0);
+            const hd_delivery_tranche = ref([]);
+            const hd_delivery_datepicker = ref();
+
 
             //shp : shipping
-            const shp_received =ref('');
-            const shp_received_timeslot=ref(0);
+            //const shp_received =ref('');
+            //const shp_received_timeslot=ref(0);
             const shp_delivery=ref('');
             const shipping_partner_id = ref('');
 
@@ -441,14 +475,18 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
             const yesterday = ref('');
 
+            const cur_date = ref('');
+
             const d = new Date();
+            //console.log(d.getHours());
+
             d.setDate(d.getDate() - 1);
 
             let dd = String(d.getDate()). padStart(2, '0');
             let mm = String(d.getMonth() + 1). padStart(2, '0'); //January is 0!
             var yyyy = d.getFullYear();
 
-
+            cur_date.value = d.getDate();
 
             //New ORDER object
             const new_order_obj = ref({});
@@ -486,6 +524,10 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
 
             watch(()=>deliverymethod.value,(val)=>{
+                let updated_date = new Date();
+
+                cur_date.value = updated_date;
+
                 if(val=='home_delivery' || val==''){
                     showRecurring.value=true;
                 }else{
@@ -526,11 +568,20 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                     CustomerID.value = current_customer.CustomerID;
                     customer_instructions.value = current_customer.commentDelivery;
                     cust_type_delivery.value = (current_customer.TypeDelivery=='DELIVERY'?'Atelier':current_customer.TypeDelivery);
+
+                    //store.dispatch(`${NEWORDER_MODULE}${NEW_ORDER_SET_TRANCHE_POSTCODE}`,current_customer.postcode);
+
                 }
 
                 return current_customer;
             });
 
+/*
+            watch(()=>_.cloneDeep(cur_cust.postcode),(current_val,previous_val)=>{
+                console.log('previous',previous_val);
+                console.log('current',current_val);
+            });
+*/
 
             store.dispatch(`${SHIPPING_MODULE}${SHIPPING_LOAD_LIST}`);
             const shipping_partners = computed(()=>store.getters[`${SHIPPING_MODULE}${GET_PARTNERS}`]);
@@ -583,11 +634,11 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
                        err_txt.forEach(function(v,i){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
-                       {
-                            message: v,
-                            ttl: 3,
-                            type: 'danger'
-                        });
+                            {
+                                message: v,
+                                ttl: 3,
+                                type: 'danger'
+                            });
                        })
 
                    }else{
@@ -601,13 +652,13 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
                     let arr = [];
 
-                    arr['in_store_collection'] = ['isc_dropoff','isc_dropoff_timeslot','isc_pickup','isc_pickup_timeslot'];
+                    arr['in_store_collection'] = ['isc_pickup','isc_pickup_timeslot'];
 
-                    arr['delivery_only'] = ['do_dropoff','do_dropoff_timeslot','do_delivery','do_delivery_timeslot','customer_instructions','alternate_contact','save_instruction_check'];
+                    arr['delivery_only'] = ['do_delivery','do_delivery_timeslot','customer_instructions','alternate_contact','save_instruction_check'];
 
                     arr['home_delivery'] = ['hd_pickup','hd_pickup_timeslot','hd_delivery','hd_delivery_timeslot','customer_instructions','alternate_contact','save_instruction_check'];
 
-                    arr['shipping'] = ['shp_received','shp_received_timeslot','shp_delivery','shipping_partner_id'];
+                    arr['shipping'] = ['shp_delivery','shipping_partner_id'];
 
 
 
@@ -645,40 +696,47 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             function validateByDeliveryMethod(val){
                 let err_arr = [];
                 if(val=='in_store_collection'){
+                    /*
                     if(isc_dropoff.value==''){
                         err_arr.push('Dropoff date is empty');
                     }
                     if(isc_dropoff_timeslot.value==0){
                         err_arr.push('Dropoff time is empty');
                     }
+                    */
                     if(isc_pickup.value==''){
                         err_arr.push('Pickup date is empty');
                     }
                     if(isc_pickup_timeslot.value==0){
                         err_arr.push('Pickup time is empty');
                     }
-
+                    /*
                     if(isc_dropoff.value > isc_pickup.value){
                         err_arr.push('Dropoff date is greater than pickup date');
                     }
+                    */
                 }
 
                 if(val=='delivery_only'){
+                    /*
                     if(do_dropoff.value==''){
                         err_arr.push('Dropoff date is empty');
                     }
                     if(do_dropoff_timeslot.value==0){
                         err_arr.push('Dropoff time is empty');
                     }
+                    */
                     if(do_delivery.value==''){
                         err_arr.push('Delivery date is empty');
                     }
                     if(do_delivery_timeslot.value==0){
                         err_arr.push('Delivery time is empty');
                     }
+                    /*
                     if(do_dropoff.value > do_delivery.value){
                         err_arr.push('Dropoff date is greater than delivery date');
                     }
+                    */
                 }
 
                 if(val=='home_delivery'){
@@ -700,17 +758,19 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                 }
 
                 if(val=='shipping'){
+                    /*
                     if(shp_received.value==''){
                         err_arr.push('Shipping received date is empty');
                     }
                     if(shp_received_timeslot.value==0){
                         err_arr.push('Shipping received time is empty');
                     }
-                    if(shp_delivery.value==''){
-                        err_arr.push('Shipping delivery date is empty');
-                    }
                     if(shp_received.value > shp_delivery.value){
                         err_arr.push('Shipping delivery date is greater than received date');
+                    }
+                    */
+                    if(shp_delivery.value==''){
+                        err_arr.push('Shipping delivery date is empty');
                     }
                     if(shp_address1.value==''){
                         err_arr.push('Shipping address1 is empty');
@@ -736,12 +796,12 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             }
 
             function changeStep(num){
-                process_step.value = num;
-
-                if(num==1 && recurring_data.value.length > 0){
-
+                if(num==1){
+                    let dt = new Date();
+                    cur_date.value = dt;
                 }
 
+                process_step.value = num;
             }
 
 
@@ -775,6 +835,12 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             }
 
 
+            function formatTime(date_txt){
+                let dt = new Date(date_txt);
+
+                return dt.toLocaleString('en-GB', { hour: 'numeric', minute: 'numeric', hour12: true });
+            }
+
             function getDisplayFromSelectArray(arr,value){
                 let label = "";
                 arr.forEach(function(v,i){
@@ -787,7 +853,6 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             }
 
             //End filters
-
 
             const all_timeslots_def = store.getters[`${NEWORDER_MODULE}${NEWORDER_GET_ALL_TIMESLOTS}`];
             const all_timeslots = ref([]);
@@ -815,6 +880,110 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             recurring_days.value = recur_day_map;
 
 
+            function getCurDateTime(type){
+                let cur_dt = new Date(cur_date.value);
+
+                let dd = String(cur_dt.getDate()). padStart(2, '0');
+                let mm = String(cur_dt.getMonth() + 1). padStart(2, '0');
+                let yyyy = String(cur_dt.getFullYear());
+
+                let hh = cur_dt.getTime();
+
+               if(type=='date'){
+                   return dd+'/'+mm+'/'+yyyy.substring(2);
+               }
+
+               if(type=='time'){
+                   return cur_dt.toLocaleString('en-GB', { hour: 'numeric', minute: 'numeric', hour12: true });
+               }
+
+            }
+
+            getCurDateTime();
+
+            //Watch dates and load tranches
+
+            /*
+            let dates_to_watch = ['do_delivery','hd_pickup','hd_delivery','shp_delivery'];
+
+
+            dates_to_watch.forEach(function(v,i){
+                 const var_tmp_date = eval(v);
+
+                watch(() =>var_tmp_date.value, (current_val, previous_val) => {
+                    if(current_val != previous_val && shp_postcode.value !=''){
+
+                        store.dispatch(`${NEWORDER_MODULE}${NEW_ORDER_SET_TRANCHE_POSTCODE}`,shp_postcode.value);
+                    }
+                });
+            });
+            */
+
+           function loadtranche(comp){
+                const var_tmp_date = eval(comp);
+                //console.log(var_tmp_date.value);
+
+                let mapped_timeslot_tranche = comp+'_tranche';
+                const temp_var_tranche = eval(mapped_timeslot_tranche);
+
+                let all_tranches = [1,3,5,7,9,11];
+                let available_tranches = [];
+
+                let cur_date = var_tmp_date.value;
+
+/*
+                if(comp=='hd_pickup'){
+                    //hd_delivery_datepicker.value.setMonth(cur_date.toString().substring(2,2));
+                }else if(comp=='hd_delivery'){
+                }
+*/
+
+                if(shp_postcode.value !=''){
+                    store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading available slots'], {root: true});
+
+                    axios.post('/get-tranche-by-postcode',{
+                        postcode: shp_postcode.value
+                    }).then((response)=>{
+                        let tranches = response.data.available_slots;
+
+                        all_tranches.forEach(function(v,i){
+                            if(tranches[v] && tranches[v].includes(var_tmp_date.value)){
+                                if(!available_tranches.includes(v)){
+                                    available_tranches.push(v);
+                                }
+                            }
+                        });
+
+                        //console.log(available_tranches);
+
+                        temp_var_tranche.value = available_tranches;
+
+                    }).catch((error)=>{
+                       console.log(error);
+                    }).finally(()=>{
+                        store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`, {}, {root: true});
+                    });
+
+                }else{
+
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                    {
+                        message: 'No postcode set',
+                        ttl: 3,
+                        type: 'danger'
+                    });
+                }
+           }
+/*
+            const tranches = computed(()=>{
+
+
+                do_delivery_tranche.value = slots;
+
+                return slots;
+            });
+            */
+
             return {
                 showcontainer,
                 paths,
@@ -823,20 +992,24 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                 deliverymethod_disabled,
                 deliverymethods,
                 isRecurring,
-                isc_dropoff,
-                isc_dropoff_timeslot,
+                //isc_dropoff,
+                //isc_dropoff_timeslot,
                 isc_pickup,
                 isc_pickup_timeslot,
-                do_dropoff,
-                do_dropoff_timeslot,
+                //do_dropoff,
+                //do_dropoff_timeslot,
                 do_delivery,
                 do_delivery_timeslot,
+                do_delivery_tranche,
                 hd_pickup,
                 hd_pickup_timeslot,
+                hd_pickup_tranche,
                 hd_delivery,
                 hd_delivery_timeslot,
-                shp_received,
-                shp_received_timeslot,
+                hd_delivery_tranche,
+                hd_delivery_datepicker,
+                //shp_received,
+                //shp_received_timeslot,
                 shp_delivery,
                 order,
                 proceedToDetailling,
@@ -860,9 +1033,13 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                 cust_type_delivery,
                 all_timeslots,
                 formatDate,
+                formatTime,
                 getDisplayFromSelectArray,
                 recurring_data,
                 recurring_days,
+                getCurDateTime,
+                cur_date,
+                loadtranche,
             }
         }
     }
