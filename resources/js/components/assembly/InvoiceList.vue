@@ -91,34 +91,7 @@ export default {
     name: 'InvoiceList',
     setup(){
         const store = useStore();
-        const invoiceList = computed(()=>{
-            return store.getters[`${INVOICE_MODULE}${GET_INVOICE_LIST}`];
-        });
-        const currentLoadedInvoiceCount = computed(()=>{
-            return store.getters[`${INVOICE_MODULE}${GET_LOADED_INVOICE_COUNT}`];
-        });
-        const totalInvoiceCount = computed(()=>{
-            return store.getters[`${INVOICE_MODULE}${GET_TOTAL_INVOICE_COUNT}`];
-        })
-
-        const loadMoreInvoice = ()=>{
-            // store.dispatch(`${INVOICE_MODULE}${SET_INVOICE_FILTER_FLAG}`, true);
-            store.dispatch(`${INVOICE_MODULE}${LOAD_MORE_INVOICE}`);
-        }
-        onMounted(()=>{
-            // store.dispatch(`${INVOICE_MODULE}${SET_INVOICE_FILTER_FLAG}`, false);
-            store.dispatch(`${INVOICE_MODULE}${SET_INVOICE_LIST}`);
-        })
-        return {
-            invoiceList,
-            totalInvoiceCount,
-            currentLoadedInvoiceCount,
-            loadMoreInvoice
-        }
-    },
-    data(){
-        return{
-            tableColumnsDef : [
+        const tableColumnsDef = ref( [
                 {
                     key: 'selected',
                     tdClass: 'visible-hidden'
@@ -171,7 +144,30 @@ export default {
                     key: 'deliv',
                     thClass: 'text-uppercase invoice-table-th',
                 },
-            ]
+            ]);
+        const invoiceList = computed(()=>{
+            return store.getters[`${INVOICE_MODULE}${GET_INVOICE_LIST}`];
+        });
+        const currentLoadedInvoiceCount = computed(()=>{
+            return store.getters[`${INVOICE_MODULE}${GET_LOADED_INVOICE_COUNT}`];
+        });
+        const totalInvoiceCount = computed(()=>{
+            return store.getters[`${INVOICE_MODULE}${GET_TOTAL_INVOICE_COUNT}`];
+        })
+
+        const loadMoreInvoice = ()=>{
+            // store.dispatch(`${INVOICE_MODULE}${SET_INVOICE_FILTER_FLAG}`, true);
+            store.dispatch(`${INVOICE_MODULE}${LOAD_MORE_INVOICE}`);
+        }
+        onMounted(()=>{
+            // store.dispatch(`${INVOICE_MODULE}${SET_INVOICE_FILTER_FLAG}`, false);
+            store.dispatch(`${INVOICE_MODULE}${SET_INVOICE_LIST}`);
+        })
+        return {
+            invoiceList,
+            totalInvoiceCount,
+            currentLoadedInvoiceCount,
+            loadMoreInvoice
         }
     }
 }
