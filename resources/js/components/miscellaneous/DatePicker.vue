@@ -14,12 +14,12 @@
             <div v-if="currentView=='dates'" class="position-absolute mw-picker">
         <div class="row">
             <div class="col dp-dayname" v-for="day in days" :key="day">
-                {{day.dayName}}
+                {{ day.dayName }}
             </div>
         </div>
         <div class="row" v-for="row in displayed_dates_rows" :key="row">
             <template v-for="(day,index) in row" :key="index">
-            <div class="col dp-dates" :class="{disabled:!day.current_month,current:day.selected,notavailable:day.notavailable}" @click="setDate(day.year,day.month,day.date)" >
+            <div class="col dp-dates" :class="{ disabled:!day.current_month, current:day.selected, notavailable:day.notavailable}" @click="setDate(day.year,day.month,day.date)" >
                 {{day.date}}
             </div>
             </template>

@@ -5,7 +5,7 @@
         <div class="row d-flex align-content-stretch align-items-stretch flex-row hmax" style="z-index: 100">
             <side-bar></side-bar>
                 <div class="col main-view mx-5 py-5" id="assembly-home">
-                    <h2 class="mx-0 mb-3 font-22">Production Track</h2>
+                    <h2 class="mx-0 font-22">Production Track</h2>
                     <div class="nav-panel d-flex justify-content-between mb-1">
                         <ul class="assembly-home-nav list-inline mb-0">
                             <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'AssemblyHome' ? 'bg-white active' : ''" @click="selected_nav = 'AssemblyHome'">Stations</li>
@@ -13,7 +13,7 @@
                             <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'InvoceList' ? 'bg-white active' : ''" @click="selected_nav = 'InvoceList'">All items</li>
                             <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'Overdue' ? 'bg-white active' : ''" @click="selected_nav = 'Overdue'">Overdue</li>
                         </ul>
-                        <div class="filter-section position-relative">
+                        <div class="filter-section position-relative" v-if="selected_nav == 'InvoceList'">
                             <filters :filterDef="filterDef"></filters>
                         </div>
                     </div>
@@ -46,36 +46,6 @@
         setup(){
             const selected_nav = ref('AssemblyHome');
             const filterDef =  ref({
-                    first_name: {
-                        label: 'First Name',
-                        id: 'first_name',
-                        type: 'input',
-                        value: ''
-                    },
-                    last_name: {
-                        label: 'Last Name',
-                        id: 'last_name',
-                        type: 'input',
-                        value: ''
-                    },
-                    order_id: {
-                        label: 'Order #',
-                        id: 'order_id',
-                        type: 'input',
-                        value: ''
-                    },
-                    sub_order: {
-                        label: 'Sub-Order',
-                        id: 'sub_order_id',
-                        type: 'input',
-                        value: ''
-                    },
-                    item: {
-                        label: 'Item',
-                        id: 'item_name',
-                        type: 'input',
-                        value: ''
-                    },
                     status: {
                         label: 'Sub Order Status',
                         id: 'sub_order_status',
@@ -132,14 +102,15 @@
     font-style: normal;
     font-display: swap;    
 }
+.main-view .h2,
+.main-view h2{
+    margin: 48px 0 32px -24px;
+}
 .is-delivery-stores{
     font:normal 16px/1.3em "Gotham Rounded Book"!important;
 }
 .delivery_store a{
     font:normal 16px/1.3em "Gotham Rounded Book"!important;
-}
-.delivery_store{
-    padding-top:10px!important
 }
 .invoice-table-th{
     font-size: 14px;

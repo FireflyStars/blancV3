@@ -230,35 +230,35 @@
                     <div v-if="groupedPostes">
                         <div class="bg-white mb-3 p-3">
                             <div class="d-flex mb-1">
-                                <div class="col-2"><h2 id="order_status_heading" class="font-22 mt-3 mb-0 mx-0">Items in <br>Production</h2></div>
-                                <div class="col-10 mt-auto">
+                                <div class="w-13"><h2 id="order_status_heading" class="font-22 mt-3 mb-0 mx-0">Items in <br>Production</h2></div>
+                                <div class="w-87 mt-auto">
                                     <div class="d-flex justify-content-between">
                                         <div v-for="(a, index) in groupedPostes" :style="{width: parseInt(90/groupedPostes.length)+'%'}" class="text-center each-poste-label" :key="index">
                                             <span class="text-capitalize" v-if="a.group_name=='Partner'">With<br/></span>
                                             <span class="text-capitalize" v-else-if="a.group_name!='Storage'&&a.group_name!='Conveyor'">In<br/></span>
                                             <span class="text-capitalize" v-if="a.group_name!='QC 1' && a.group_name!='QC 2'"></span>
                                             <span class="text-capitalize" v-else>&nbsp;</span>
-                                            <span class="text-capitalize" v-if="a.group_name=='Conveyor'">On Assembly Conveyor</span>
-                                            <span class="text-capitalize" v-else-if="a.group_name=='Storage'">On Storage Conveyor</span>
-                                            <span class="text-capitalize" v-else>{{ a.formatted_name }}</span>
+                                            <span class="text-capitalize" v-if="a.group_name == 'Conveyor'">On <br> <span class="text-nowrap">Assembly Conveyor</span></span>
+                                            <span class="text-capitalize" v-else-if="a.group_name=='Storage'">On<br> <span class="text-nowrap">Storage Conveyor</span></span>
+                                            <span class="text-capitalize text-nowrap" v-else>{{ a.formatted_name }}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <!--Row today-->
                             <div class="d-flex align-items-center">
-                                <div class="col-2"></div>
-                                <div class="col-10">
+                                <div class="w-13"></div>
+                                <div class="w-87">
                                     <div class="d-flex justify-content-between total_row">
                                         <div v-for="(a, index) in groupedPostes" :style="{width:groupedPosteWidth+'%'}" class="text-center" :key="index">
-                                            <span class="w-100 each-poste-stats ps-xl-2 pe-xl-2">{{assemblyStatsTotal[a.group_name]}}</span>
+                                            <span class="w-100 each-poste-stats ps-xl-2 pe-xl-2 fw-bold">{{assemblyStatsTotal[a.group_name]}}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="d-flex align-items-center d-none">
-                                <div class="col-2"><span class="fst-italic">Avg time</span></div>
-                                <div class="col-10">
+                                <div class="w-13"><span class="fst-italic">Avg time</span></div>
+                                <div class="w-87">
                                     <div class="d-flex justify-content-between total_row">
                                         <div v-for="(a, index) in groupedPostes" :style="{width:groupedPosteWidth+'%'}" class="text-center" :key="index">
                                             <span class=""> 4 hr </span>
@@ -267,11 +267,11 @@
                                 </div>
                             </div>
                             <div class="d-flex align-items-center">
-                                <div class="col-2">
+                                <div class="w-13">
                                     <div class="w-100 standard-label fw-bold">Due<br/>Today</div>
                                     <div class="w-100 standard-label is-delivery-stores">Delivery<br/>Stores</div>
                                 </div>
-                                <div class="col-10">
+                                <div class="w-87">
                                     <div class="d-flex justify-content-between">
                                         <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsToday[a.group_name].std === 0 && assemblyStatsToday[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'today','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
                                             <div class="w-100 text-center each-poste-stats poste-stats-top grey-bg py-1">
@@ -291,11 +291,11 @@
                             <div class="d-flex py-2"></div>
                             <!--Row tommorow-->
                             <div class="d-flex align-items-center">
-                                <div class="col-2">
+                                <div class="w-13">
                                     <div class="w-100 standard-label pb-1 fw-bold">Due<br/>Tomorrow</div>
                                     <div class="w-100 standard-label is-delivery-stores">Delivery<br/>Stores</div>
                                 </div>
-                                <div class="col-10">
+                                <div class="w-87">
                                     <div class="d-flex justify-content-between">
                                         <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsTomorrow[a.group_name].std === 0 && assemblyStatsTomorrow[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'tomorrow','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
 
@@ -317,11 +317,11 @@
 
                             <!--Row Overdue-->
                             <div class="d-flex align-items-center">
-                                <div class="col-2">
+                                <div class="w-13">
                                     <div class="w-100 standard-label pb-1 fw-bold">All<br/>Overdues</div>
                                     <div class="w-100 standard-label is-delivery-stores">Delivery<br/>Stores</div>
                                 </div>
-                                <div class="col-10">
+                                <div class="w-87">
                                     <div class="d-flex justify-content-between">
                                         <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsOverdue[a.group_name].std === 0 && assemblyStatsOverdue[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'overdue','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
                                             <div class="w-100 text-center each-poste-stats poste-stats-top grey-bg py-1">
@@ -341,11 +341,11 @@
 
                             <!--Row Later-->
                             <div class="d-flex align-items-center">
-                                <div class="col-2">
+                                <div class="w-13">
                                     <div class="w-100 standard-label pb-1 fw-bold">Due<br/>Later</div>
                                     <div class="w-100 standard-label is-delivery-stores">Delivery<br/>Stores</div>
                                 </div>
-                                <div class="col-10">
+                                <div class="w-87">
                                     <div class="d-flex justify-content-between">
                                         <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsLater[a.group_name].std === 0 && assemblyStatsLater[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'later','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
                                             <div class="w-100 text-center each-poste-stats poste-stats-top grey-bg py-1">
@@ -640,76 +640,6 @@
                     document.querySelector('#stats_table').classList.remove('d-none');
                 });
             }
-            const filterDef={
-                def:{
-                    'infoOrder.paid':{
-                        name:"Payment status",
-                        options:{
-                            0:"Unpaid",
-                            1:"Paid",
-                        }
-                    },
-                    'infoOrder.Status':{
-                        name:"Order status",
-                        options:{
-                            'ASSEMBLING':'ASSEMBLING',
-                            'AWAITING REDELIVERY':'AWAITING REDELIVERY',
-                            'AWAITING SALE':'AWAITING SALE',
-                            'CANCELLED':'CANCELLED',
-                            'CHECK IN ATELIER':'CHECK IN ATELIER',
-                            'COLLECTED':'COLLECTED',
-                            'DELETE':'DELETE',
-                            'DELIVERED':'DELIVERED',
-                            'DELIVERED TO STORE':'DELIVERED TO STORE',
-                            'DELIVERY IN STORE':'DELIVERY IN STORE',
-                            'DONATED TO CHARITY':'DONATED TO CHARITY',
-                            'DROPPED OFF':'DROPPED OFF',
-                            'FAILED DELIVERY':'FAILED DELIVERY',
-                            'FAILED PAYMENT':'FAILED PAYMENT',
-                            'FULFILLED':'FULFILLED',
-                            'IN PROCESS':'IN PROCESS',
-                            'IN STORAGE':'IN STORAGE',
-                            'LATE':'LATE',
-                            'LATE DELIVERY':'LATE DELIVERY',
-                            'MISSED PICKUP':'MISSED PICKUP',
-                            'OFFLOADED':'OFFLOADED',
-                            'ON VAN':'ON VAN',
-                            'OVERDUE FOR COLLECTION':'OVERDUE FOR COLLECTION',
-                            'OVERDUE STORE':'OVERDUE STORE',
-                            'PART ON HOLD':'PART ON HOLD',
-                            'PART PENDING':'PART PENDING',
-                            'PICKED UP':'PICKED UP',
-                            'READY':'READY',
-                            'RECURRING':'RECURRING',
-                            'READY IN STORE':'READY IN STORE',
-                            'SCHEDULED':'SCHEDULED',
-                            'SOLD':'SOLD',
-                            'VOID':'VOID',
-
-                        }
-                    },
-                    'infoCustomer.TypeDelivery':{
-                        name:"Destination",
-                        options:{
-                            'DELIVERY':'DELIVERY',
-                            'CHELSEA':'CHELSEA',
-                            'MARYLEBONE':'MARYLEBONE',
-                            'NOTTING HILL':'NOTTING HILL',
-                            'SOUTH KEN':'SOUTH KEN'
-                        }
-
-                    },
-                    'infoitems.express':{
-                        name: "Turnaround time",
-                        options:{
-                            standard:"Standard",
-                            exp24:"Express 24h",
-                            exp48:"Express 48h"
-                        }
-
-                    }
-                }
-            }
             return {
                 groupedPosteWidth,
                 poste,
@@ -746,14 +676,26 @@
     font-style: normal;
     font-display: swap;
 }
+.w-13{
+    width: 13% !important;
+}
+.w-87{
+    width: 87% !important;
+}
+.bg-black{
+    background-color: black;
+}
 .is-delivery-stores{
-    font:normal 16px/1.3em "Gotham Rounded Book"!important;
+    font:normal 16px/1.3em "Gotham Rounded Book" !important;
 }
 .delivery_store a{
-    font:normal 16px/1.3em "Gotham Rounded Book"!important;
+    font:normal 16px/1.3em "Gotham Rounded Book" !important;
 }
-.delivery_store{
-    padding-top:10px!important
+#assembly-home .each-poste-bloc .each-poste-stats a{
+    font-weight: bold;
+}
+.each-poste-label{
+    font: normal 10px/1.3em 'Gotham Book' !important;
 }
 .invoice-table-th{
     font-size: 14px;

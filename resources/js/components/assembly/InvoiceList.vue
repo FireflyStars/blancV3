@@ -156,11 +156,9 @@ export default {
         })
 
         const loadMoreInvoice = ()=>{
-            // store.dispatch(`${INVOICE_MODULE}${SET_INVOICE_FILTER_FLAG}`, true);
             store.dispatch(`${INVOICE_MODULE}${LOAD_MORE_INVOICE}`);
         }
         onMounted(()=>{
-            // store.dispatch(`${INVOICE_MODULE}${SET_INVOICE_FILTER_FLAG}`, false);
             store.dispatch(`${INVOICE_MODULE}${SET_INVOICE_LIST}`);
         })
         return {

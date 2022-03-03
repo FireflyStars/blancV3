@@ -4,18 +4,15 @@
         <div class="filters position-absolute" v-if="showfilter">
             <h2 class="subtitle">Filter by</h2>
             <div class="row">
-                <div class="mb-2" :class="{ 'col-6': filterItem.type == 'input', 'col-12': filterItem.type != 'input'}" v-for="(filterItem, key) in filterDef" :key="key">
-                    <div class="form-group" v-if="filterItem.type == 'input'">
-                        <input type="text" :placeholder="filterItem.label" v-model="filterItem.value" :id="filterItem.label" class="form-control form-control-sm">
-                    </div>
+                <div class="mb-2 col-12" v-for="(filterItem, key) in filterDef" :key="key">
                     <div class="form-group" v-if="filterItem.id == 'sub_order_status'">
-                        <Multiselect :label="filterItem.label" :placeholder="filterItem.label" v-model="filterItem.value" :mode="filterItem.mode" :options="orderStatus" />
+                        <Multiselect :label="filterItem.label" style="font-size: 0.875rem !important" :placeholder="filterItem.label" v-model="filterItem.value" :mode="filterItem.mode" :options="orderStatus" />
                     </div>
                     <div class="form-group" v-if="filterItem.id == 'destination'">
-                        <Multiselect :label="filterItem.label" :placeholder="filterItem.label" v-model="filterItem.value" :mode="filterItem.mode" :options="destinations" />
+                        <Multiselect :label="filterItem.label" style="font-size: 0.875rem !important" :placeholder="filterItem.label" v-model="filterItem.value" :mode="filterItem.mode" :options="destinations" />
                     </div>
                     <div class="form-group" v-if="filterItem.id == 'location'">
-                        <Multiselect :label="filterItem.label" :placeholder="filterItem.label" v-model="filterItem.value" :mode="filterItem.mode" :options="locations" />
+                        <Multiselect :label="filterItem.label" style="font-size: 0.875rem !important" :placeholder="filterItem.label" v-model="filterItem.value" :mode="filterItem.mode" :options="locations" />
                     </div>
                     <div class="form-group " v-if="filterItem.type == 'datepicker'">
                         <label  :for="filterItem.label">{{ filterItem.label }} :</label>

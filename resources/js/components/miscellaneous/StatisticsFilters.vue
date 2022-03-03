@@ -10,7 +10,7 @@
         </div>
     </div>
     <transition name="trans-filter" >
-    <div class="filters position-absolute" v-if="showfilter" v-click-outside="onClickOutside">
+    <div class="filters position-absolute" v-if="showfilter">
         <h2 class="subtitle">Date range</h2>
         <div class="row">
             <switch-btn v-model="customFilter" label-left="Custom Filter" label-right="" ></switch-btn>

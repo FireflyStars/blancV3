@@ -1976,29 +1976,14 @@ class StatisticsController extends Controller
                                 ->where('infoitems.SubOrderID','!=','')
                                 ->whereNotIn('infoOrder.Status',['VOID', 'DELETE'])
                                 ->orderBy('order_id');
-        if($request->first_name != ''){
-            $invoices   = $invoices->where('infoCustomer.FirstName', 'like', '%'.$request->first_name.'%');
-        }
-        if($request->last_name != ''){
-            $invoices   = $invoices->where('infoCustomer.LastName', 'like', '%'.$request->last_name.'%');
-        }
-        if($request->order_id != ''){
-            $invoices   = $invoices->where('infoInvoice.id', $request->order_id);
-        }
-        if($request->sub_order != ''){
-            $invoices   = $invoices->where('infoInvoice.NumInvoice', $request->order_id);
-        }
-        if($request->item != ''){
-            $invoices   = $invoices->where('infoitems.typeitem', $request->item);
-        }
         if($request->status != ''){
             $invoices   = $invoices->where('infoitems.Status', $request->status);
         }
         if($request->dest != ''){
-            $invoices   = $invoices->whereIn('infoitems.store', explode($request->status, ','));
+            $invoices   = $invoices->whereIn('infoitems.store', explode(',', $request->dest));
         }
         if($request->location != ''){
-            $invoices   = $invoices->whereIn('postes.nom', explode($request->location, ','));
+            $invoices   = $invoices->whereIn('postes.nom', explode(',', $request->location));
         }
         if($request->prod_date_from != '' && $request->prod_date_to != ''){
             $invoices   = $invoices->whereBetween('infoitems.PromisedDate', 
