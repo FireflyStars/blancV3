@@ -1,6 +1,6 @@
 <template>
     <transition enter-active-class="animate__animated animate__fadeIn">
-        <table class="table table-hover mb-0">
+        <table class="table table-hover mb-0 bg-white">
             <thead>
                 <tr>
                     <th v-for="(item, index) in tableColumnsDef" :class="item.thClass" :key="index" v-html="item.label ? item.label : ''" style="border-bottom: 2px solid #dee2e6 !important"></th>
