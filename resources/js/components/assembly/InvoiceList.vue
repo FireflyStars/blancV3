@@ -76,7 +76,7 @@
     </transition>
 </template>
 <script>
-import { onMounted, computed } from "vue";
+import { ref, onMounted, computed } from "vue";
 import {
     INVOICE_MODULE, 
     SET_INVOICE_LIST,
@@ -167,6 +167,7 @@ export default {
             invoiceList,
             totalInvoiceCount,
             currentLoadedInvoiceCount,
+            tableColumnsDef,
             loadMoreInvoice
         }
     }
