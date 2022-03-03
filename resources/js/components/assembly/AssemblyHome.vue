@@ -27,16 +27,16 @@
                                 <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_today_deliveries ? mainStats.due_today_deliveries : 0}}</div>
                                 <div class="col-8 pr-5">
                                     <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
-                                        <div class="standard-bar py-1 px-2" 
+                                        <div class="standard-bar py-1 px-2"
                                         :style="{'width':+(mainStats.percent_today_inprocess_deliveries<10?
                                         10:(mainStats.percent_today_inprocess_deliveries>90?
-                                        90:mainStats.percent_today_inprocess_deliveries))+'%'}" 
+                                        90:mainStats.percent_today_inprocess_deliveries))+'%'}"
                                         :class="{'col-6':mainStats.due_today_deliveries==0,'px-0':mainStats.due_today_deliveries==0}">
                                         {{ mainStats.percent_today_inprocess_deliveries ? parseInt(mainStats.percent_today_inprocess_deliveries) : 0}}%
                                         </div>
                                         <div class="py-1 px-2" :style="{'width':+(mainStats.percent_today_done_deliveries<10?
                                         10:(mainStats.percent_today_done_deliveries>90?
-                                        90:mainStats.percent_today_done_deliveries))+'%'}" 
+                                        90:mainStats.percent_today_done_deliveries))+'%'}"
                                         :class="{'col-6':mainStats.due_today_deliveries==0,'px-0':mainStats.due_today_deliveries==0}">
                                         {{mainStats.percent_today_done_deliveries ? parseInt(mainStats.percent_today_done_deliveries) : 0}}%
                                         </div>
@@ -54,13 +54,13 @@
                                     <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
                                         <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_today_inprocess_stores<10?
                                         10:(mainStats.percent_today_inprocess_stores>90?
-                                        90:mainStats.percent_today_inprocess_stores))+'%'}" 
+                                        90:mainStats.percent_today_inprocess_stores))+'%'}"
                                         :class="{'col-6':mainStats.due_today_stores==0,'px-0':mainStats.due_today_stores==0}">
                                         {{ mainStats.percent_today_inprocess_stores? parseInt(mainStats.percent_today_inprocess_stores) : 0}}%
                                         </div>
                                         <div class="py-1 px-2" :style="{'width':+(mainStats.percent_today_done_stores<10?
                                         10:(mainStats.percent_today_done_stores>90?
-                                        90:mainStats.percent_today_done_stores))+'%'}" 
+                                        90:mainStats.percent_today_done_stores))+'%'}"
                                         :class="{'col-6':mainStats.due_today_stores==0,'px-0':mainStats.due_today_stores==0}">
                                         {{ mainStats.percent_today_done_stores? parseInt(mainStats.percent_today_done_stores) : 0 }}%
                                         </div>
@@ -101,16 +101,16 @@
                                 <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_tomorrow_deliveries ? mainStats.due_tomorrow_deliveries : 0}}</div>
                                 <div class="col-8 pr-5">
                                     <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
-                                        <div class="standard-bar py-1 px-2" 
+                                        <div class="standard-bar py-1 px-2"
                                         :style="{'width':+(mainStats.percent_tomorrow_inprocess_deliveries<10?
                                         10:(mainStats.percent_tomorrow_inprocess_deliveries>90?
-                                        90:mainStats.percent_tomorrow_inprocess_deliveries))+'%'}" 
+                                        90:mainStats.percent_tomorrow_inprocess_deliveries))+'%'}"
                                         :class="{'col-6':mainStats.due_tomorrow_deliveries==0,'px-0':mainStats.due_tomorrow_deliveries==0}">
                                         {{mainStats.percent_tomorrow_inprocess_deliveries ? parseInt(mainStats.percent_tomorrow_inprocess_deliveries) : 0}}%
                                         </div>
                                         <div class="py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_done_deliveries<10?
                                         10:(mainStats.percent_tomorrow_done_deliveries>90?
-                                        90:mainStats.percent_tomorrow_done_deliveries))+'%'}" 
+                                        90:mainStats.percent_tomorrow_done_deliveries))+'%'}"
                                         :class="{'col-6':mainStats.due_tomorrow_deliveries==0,'px-0':mainStats.due_tomorrow_deliveries==0}">
                                         {{ mainStats.percent_tomorrow_done_deliveries ? parseInt(mainStats.percent_tomorrow_done_deliveries) : 0}}%
                                         </div>
@@ -128,13 +128,13 @@
                                     <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
                                         <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_inprocess_stores<10?
                                         10:(mainStats.percent_tomorrow_inprocess_stores>90?
-                                        90:mainStats.percent_tomorrow_inprocess_stores))+'%'}" 
+                                        90:mainStats.percent_tomorrow_inprocess_stores))+'%'}"
                                         :class="{'col-6':mainStats.due_tomorrow_stores==0,'px-0':mainStats.due_tomorrow_stores==0}">
                                         {{ mainStats.percent_tomorrow_inprocess_stores ? parseInt(mainStats.percent_tomorrow_inprocess_stores) : 0}}%
                                         </div>
                                         <div class="py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_done_stores<10?
                                         10:(mainStats.percent_tomorrow_done_stores>90?
-                                        90:mainStats.percent_tomorrow_done_stores))+'%'}" 
+                                        90:mainStats.percent_tomorrow_done_stores))+'%'}"
                                         :class="{'col-6':mainStats.due_tomorrow_stores==0,'px-0':mainStats.due_tomorrow_stores==0}">
                                         {{mainStats.percent_tomorrow_done_stores ? parseInt(mainStats.percent_tomorrow_done_stores) : 0}}%
                                         </div>
@@ -156,7 +156,7 @@
                             <div class="col-2 px-2 text-end total_stats_num">{{mainStats.total_due_later ? mainStats.total_due_later : 0}}</div>
                             <div class="col-8 pr-5">
                                 <div class="red-stats text-white d-flex justify-content-between text-center">
-                                    <div class="standard-bar py-1 px-2" 
+                                    <div class="standard-bar py-1 px-2"
                                         :style="{'width':+ ( mainStats.percent_later_deliveries < 10 ? 10: ( mainStats.percent_later_deliveries>90?90:mainStats.percent_later_deliveries))+'%'}">
                                     {{mainStats.due_later_deliveries ? mainStats.due_later_deliveries : 0 }}</div>
                                     <div class="py-1 px-2" :style="{'width':+(mainStats.percent_exp_later<10?
@@ -175,16 +175,16 @@
                             <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_later_deliveries ? mainStats.due_later_deliveries : 0}}</div>
                             <div class="col-8 pr-5">
                                 <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
-                                    <div class="standard-bar py-1 px-2" 
+                                    <div class="standard-bar py-1 px-2"
                                     :style="{'width':+(mainStats.percent_later_inprocess_deliveries<10?
                                     10:(mainStats.percent_later_inprocess_deliveries>90?
-                                    90:mainStats.percent_later_inprocess_deliveries))+'%'}" 
+                                    90:mainStats.percent_later_inprocess_deliveries))+'%'}"
                                     :class="{'col-6':mainStats.due_later_deliveries==0,'px-0':mainStats.due_later_deliveries==0}">
                                     {{mainStats.percent_later_inprocess_deliveries ? parseInt(mainStats.percent_later_inprocess_deliveries) : 0}}%
                                     </div>
                                     <div class="py-1 px-2" :style="{'width':+(mainStats.percent_later_done_deliveries<10?
                                     10:(mainStats.percent_later_done_deliveries>90?
-                                    90:mainStats.percent_later_done_deliveries))+'%'}" 
+                                    90:mainStats.percent_later_done_deliveries))+'%'}"
                                     :class="{'col-6':mainStats.due_later_deliveries==0,'px-0':mainStats.due_later_deliveries==0}">
                                     {{ mainStats.percent_later_done_deliveries ? parseInt(mainStats.percent_later_done_deliveries) : 0}}%
                                     </div>
@@ -202,13 +202,13 @@
                                 <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
                                     <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_later_inprocess_stores<10?
                                     10:(mainStats.percent_later_inprocess_stores>90?
-                                    90:mainStats.percent_later_inprocess_stores))+'%'}" 
+                                    90:mainStats.percent_later_inprocess_stores))+'%'}"
                                     :class="{'col-6':mainStats.due_later_stores==0,'px-0':mainStats.due_later_stores==0}">
                                     {{ mainStats.percent_later_inprocess_stores ? parseInt(mainStats.percent_later_inprocess_stores) : 0}}%
                                     </div>
                                     <div class="py-1 px-2" :style="{'width':+(mainStats.percent_later_done_stores<10?
                                     10:(mainStats.percent_later_done_stores>90?
-                                    90:mainStats.percent_later_done_stores))+'%'}" 
+                                    90:mainStats.percent_later_done_stores))+'%'}"
                                     :class="{'col-6':mainStats.due_later_stores==0,'px-0':mainStats.due_later_stores==0}">
                                     {{mainStats.percent_later_done_stores ? parseInt(mainStats.percent_later_done_stores) : 0}}%
                                     </div>
@@ -376,7 +376,7 @@
                                                     <label class="form-check-label" :for="'invoice-'+invoiceRow.order_id"></label>
                                                 </div>
                                             </td>
-                                            
+
                                             <td class="text-capitalize fw-16" v-if="invoiceRow.order_id == 'xxx'">
                                                 <span>{{ invoiceRow.order_id }}</span>&nbsp;&nbsp;
                                                 <svg width="32" height="32" viewBox="0 0 44 45" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -388,16 +388,16 @@
 
                                             <!-- Customer Name -->
                                             <td class="text-capitalize fw-16">{{ invoiceRow.customer_name }}</td>
-                                            
+
                                             <!-- Destination -->
                                             <td class="text-capitalize fw-16">{{ invoiceRow.store }}</td>
-                                            
+
                                             <!-- sub order -->
                                             <td class="text-capitalize fw-16" v-if="invoiceRow.sub_order == 'xxx'">
                                                 <svg width="11" height="11" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <circle cx="6.5" cy="6.5" r="6.5" fill="#9E44F2"/>
                                                 </svg>
-                                                &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>                                                            
+                                                &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>
                                             </td>
                                             <td class="text-capitalize fw-16" v-else>
                                                 <svg width="11" height="11" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -405,7 +405,7 @@
                                                 </svg>
                                                 &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>
                                             </td>
-                                            
+
                                             <!-- Item -->
                                             <td class="text-capitalize fw-16">{{ invoiceRow.iteminfo }}</td>
                                             <!-- BarCode -->
@@ -474,7 +474,7 @@
         SET_ASSEMBLY_STATE,
         SET_ASSEMBLY_INVOICE,
     } from "../../store/types/types";
-    import { useStore } from "vuex";    
+    import { useStore } from "vuex";
     import { ref, onBeforeMount, onMounted, onUnmounted } from "vue";
     export default {
         name: "AssemblyHome",
@@ -522,7 +522,7 @@
                         label: 'Customer',
                         key: 'customer_name',
                         thClass: 'text-uppercase invoice-table-th',
-                        tdClass: 'text-capitalize fw-16',                        
+                        tdClass: 'text-capitalize fw-16',
                     },
                     {
                         label: 'Destination',
@@ -562,33 +562,33 @@
                     },
             ]);
             onBeforeMount( () => {
-                // store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
-                // axios.post('/assembly-home-stats')
-                //     .then((res) => {
-                //         let gp = res.data.grouped_postes;
-                //         let width = 0;
-                //         if(parseInt(gp.length) > 0){
-                //             width = 80/parseInt(gp.length);
-                //             groupedPosteWidth.value = width;
-                //         }
-                //         groupedPostes.value = gp;
-                //         mainStats.value = res.data.main_stats;
-                //         assemblyStatsTotal.value = res.data.stats_total;
-                //         assemblyStatsToday.value = res.data.stats_today;
-                //         assemblyStatsTomorrow.value = res.data.stats_tomorrow;
-                //         assemblyStatsOverdue.value = res.data.stats_overdue;
-                //         assemblyStatsLater.value = res.data.stats_later;
-                //         store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_ASSEMBLY_STATE}`, res.data);
-                //     })
-                //     .catch(error => {
-                //         console.log(error);
-                //     }).finally(() => {
-                //         store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                //     });                
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
+                axios.post('/assembly-home-stats')
+                    .then((res) => {
+                        let gp = res.data.grouped_postes;
+                        let width = 0;
+                        if(parseInt(gp.length) > 0){
+                            width = 80/parseInt(gp.length);
+                            groupedPosteWidth.value = width;
+                        }
+                        groupedPostes.value = gp;
+                        mainStats.value = res.data.main_stats;
+                        assemblyStatsTotal.value = res.data.stats_total;
+                        assemblyStatsToday.value = res.data.stats_today;
+                        assemblyStatsTomorrow.value = res.data.stats_tomorrow;
+                        assemblyStatsOverdue.value = res.data.stats_overdue;
+                        assemblyStatsLater.value = res.data.stats_later;
+                        store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_ASSEMBLY_STATE}`, res.data);
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    }).finally(() => {
+                        store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    });
             });
 
             onMounted(() =>{
-                
+
             })
 
             onUnmounted(()=>{
@@ -617,7 +617,7 @@
                 if( ! parentDIV.classList.contains('is_bloc_disabled') ) {
                     document.querySelectorAll('.each-poste-bloc').forEach((element)=>{
                         element.classList.remove('is_bloc_active');
-                    })                    
+                    })
                     event.target.closest('.each-poste-bloc').classList.add('is_bloc_active');
                     getTable(tmp_poste, tmp_day, tmp_type);
                 }
@@ -715,7 +715,7 @@
 
                     }
                 }
-            }            
+            }
             return {
                 groupedPosteWidth,
                 poste,
@@ -750,7 +750,7 @@
     font-family: 'Gotham Rounded Book';
     font-weight: normal;
     font-style: normal;
-    font-display: swap;    
+    font-display: swap;
 }
 .is-delivery-stores{
     font:normal 16px/1.3em "Gotham Rounded Book"!important;
@@ -790,7 +790,7 @@
     font-size: 12px;
     line-height: 14px;
     background: rgba(241, 210, 164, 0.7);;
-    color: #000000;    
+    color: #000000;
     max-width: 113px;
 }
 .on-van{
@@ -805,11 +805,11 @@
     background: rgba(212, 221, 247, 0.7);
     color: #4E58E7;
 }
-.visible-hidden .form-check{ 
+.visible-hidden .form-check{
     visibility : hidden;
 }
 .selected-row .visible-hidden .form-check,
-tr:hover .visible-hidden .form-check{ 
+tr:hover .visible-hidden .form-check{
     visibility : visible;
 }
 @media (min-width: 1600px) {
