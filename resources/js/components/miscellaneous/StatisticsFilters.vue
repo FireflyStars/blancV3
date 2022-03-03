@@ -47,11 +47,11 @@
     import SelectOptions from '../miscellaneous/SelectOptions';
     import DatePicker from '../miscellaneous/DatePicker';
     import SwitchBtn from '../miscellaneous/SwitchBtn';
-    import vClickOutside from 'click-outside-vue3';
+    // import vClickOutside from 'click-outside-vue3';
     export default {
         name: "StatisticsFilters",
         directives: {
-            clickOutside: vClickOutside.directive
+            // clickOutside: vClickOutside.directive
         },           
         props:['filterVal'],
         emits: ['update:filterVal'],
