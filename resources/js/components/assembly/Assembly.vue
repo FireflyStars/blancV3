@@ -142,7 +142,8 @@
     line-height: 14px;
     background: rgba(241, 210, 164, 0.7);;
     color: #000000;    
-    max-width: 113px;
+    width: max-content;
+    min-width: 135px;
 }
 .visible-hidden .form-check{ 
     visibility : hidden;
