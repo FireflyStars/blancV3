@@ -1952,4 +1952,122 @@ class StatisticsController extends Controller
             "poste_id"=>$postes_id,
         ]);
     }
+
+    /**
+     * return all invoices
+     */
+    public function getAllInvoices(Request $request){
+        $invoices = Db::table('infoitems')
+                        ->select( 
+                            'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode', 
+                            'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as prod'), 'infoInvoice.id AS order_id',
+                            'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
+                            'infoitems.idPartner', 'TypePost.couleur as location_color', DB::raw('DATE_FORMAT(infoOrder.DateDeliveryAsk,"%m/%d") as deliv'),
+                            DB::raw('DATE_FORMAT(infoOrder.DatePickup, "%m/%d") as deliv_tmp')
+                        );
+        $arr = [0, 1, 2, 3, 4, 5, 6];
+        $invoices   =  $invoices->where('infoitems.Actif',1)
+                                ->whereIn('infoitems.express', $arr)
+                                ->join('infoInvoice', 'infoitems.SubOrderID', '=', 'infoInvoice.SubOrderID')
+                                ->join('infoOrder', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID')
+                                ->join('infoCustomer', 'infoInvoice.CustomerID', '=', 'infoCustomer.CustomerID')
+                                ->join('postes', 'infoitems.nextpost', '=', 'postes.id')
+                                ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
+                                ->where('infoitems.SubOrderID','!=','')
+                                ->whereNotIn('infoOrder.Status',['VOID', 'DELETE'])
+                                ->orderBy('order_id');
+        if($request->first_name != ''){
+            $invoices   = $invoices->where('infoCustomer.FirstName', 'like', '%'.$request->first_name.'%');
+        }
+        if($request->last_name != ''){
+            $invoices   = $invoices->where('infoCustomer.LastName', 'like', '%'.$request->last_name.'%');
+        }
+        if($request->order_id != ''){
+            $invoices   = $invoices->where('infoInvoice.id', $request->order_id);
+        }
+        if($request->sub_order != ''){
+            $invoices   = $invoices->where('infoInvoice.NumInvoice', $request->order_id);
+        }
+        if($request->item != ''){
+            $invoices   = $invoices->where('infoitems.typeitem', $request->item);
+        }
+        if($request->status != ''){
+            $invoices   = $invoices->where('infoitems.Status', $request->status);
+        }
+        if($request->dest != ''){
+            $invoices   = $invoices->whereIn('infoitems.store', explode($request->status, ','));
+        }
+        if($request->location != ''){
+            $invoices   = $invoices->whereIn('postes.nom', explode($request->location, ','));
+        }
+        if($request->prod_date_from != '' && $request->prod_date_to != ''){
+            $invoices   = $invoices->whereBetween('infoitems.PromisedDate', 
+                                    [ 
+                                        Carbon::parse($request->prod_date_from)->toDateString(),
+                                        Carbon::parse($request->prod_date_to)->toDateString(),
+                                    ]
+                                );
+        }else if( $request->prod_date_from != '' && $request->prod_date_to == '' ){
+            $invoices   = $invoices->whereDate('infoitems.PromisedDate', '>=', Carbon::parse($request->prod_date_from)->toDateString());
+        } else if( $request->prod_date_from == '' && $request->prod_date_to != '' ){
+            $invoices   = $invoices->whereDate('infoitems.PromisedDate', '<=', Carbon::parse($request->prod_date_to)->toDateString());
+        }
+
+        if($request->deliv_date_from != '' && $request->deliv_date_to != ''){
+            $invoices   = $invoices->whereBetween('infoOrder.DateDeliveryAsk', 
+                                    [ 
+                                        Carbon::parse($request->deliv_date_from)->toDateString(),
+                                        Carbon::parse($request->deliv_date_to)->toDateString(),
+                                    ]
+                                );
+        }else if( $request->deliv_date_from != '' && $request->deliv_date_to == '' ){
+            $invoices   = $invoices->whereDate('infoOrder.DateDeliveryAsk', '>=', Carbon::parse($request->prod_date_from)->toDateString());
+        } else if( $request->deliv_date_from == '' && $request->deliv_date_to != '' ){
+            $invoices   = $invoices->whereDate('infoOrder.DateDeliveryAsk', '<=', Carbon::parse($request->prod_date_to)->toDateString());
+        }
+        $total_invoice_count = $invoices->count();
+        $invoices   =  $invoices->skip($request->skip ? $request->skip+1 : 0)
+                                ->take(20)
+                                ->get();
+
+        // $data = [];
+        // if(!empty($invoices)) {
+        //     foreach ($invoices as $k =>$v) {
+        //         $data[$k]['order_id'] = $v->order_id;
+        //         $data[$k]['customer_name'] = $v->customer_name;
+        //         $data[$k]['store'] = $v->store;
+        //         $data[$k]['sub_order'] = $v->sub_order;
+        //         $data[$k]['iteminfo'] = $v->typeitem;
+        //         $data[$k]['location'] = $v->location;
+        //         $data[$k]['location_color'] = $v->location_color;
+        //         // $data[$k]['prod'] = Carbon::parse($v->prod)->format('d/m');
+        //         $data[$k]['barcode'] = $v->barcode;
+
+        //         // $pick_up_status_to_include = ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP'];
+        //         // $pick_up_date = DB::table('pickup')
+        //         //                     ->where('CustomerID', $v->CustomerID)
+        //         //                     ->whereIn('status', $pick_up_status_to_include)->value('date');
+                
+        //         // $deliveryask_status_to_include = ['NEW','API','PMS','DONE', 'PMS-DONE', 'API-DONE','REC','REC-DONE','REC-NOK','PMS-NOK','API-NOK'];
+        //         // $deliveryask_date = DB::table('deliveryask')
+        //         //                     ->where('CustomerID', $v->CustomerID)
+        //         //                     ->whereIn('status', $deliveryask_status_to_include)->value('date');
+        //         // if($deliveryask_date && $pick_up_date){
+        //         //     if(Carbon::parse($deliveryask_date)->gt(Carbon::parse($pick_up_date)))
+        //         //         $data[$k]['deliv'] = Carbon::parse($deliveryask_date)->format('d/m');
+        //         //     else
+        //         //         $data[$k]['deliv'] = Carbon::parse($pick_up_date)->format('d/m');
+        //         // }else if( $deliveryask_date && $pick_up_date == ''){
+        //         //     $data[$k]['deliv'] = Carbon::parse($deliveryask_date)->format('d/m');
+        //         // }else{
+        //         //     $data[$k]['deliv'] = Carbon::parse($pick_up_date)->format('d/m');
+        //         // }
+        //     }
+        // }
+
+        return response()->json([
+            'invoices'      =>  $invoices,
+            'total_count'   =>  $total_invoice_count
+        ]);
+    }
 }

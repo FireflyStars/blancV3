@@ -3,14 +3,26 @@
     <transition name="trans-filter" >
         <div class="filters position-absolute" v-if="showfilter">
             <h2 class="subtitle">Filter by</h2>
-            <div class="row" v-for="(select,ind) in filterDef.def" :key="ind">
-                <div class="col">
-                    <div class="select" :class="{active: current_filter==ind}" @click="selectclick(ind)">{{select.name}}
-                        <transition name="trans-filter" >
-                            <div class="select-options" v-if="current_filter==ind" >
-                                <check-box v-for="(option,index) in select.options" :key="index" @checkbox-clicked="checkboxclicked" :id="index" :name="ind" :checked_checkbox="ind in preselection && preselection[ind].includes(index)">{{option}}</check-box>
-                            </div>
-                        </transition>
+            <div class="row">
+                <div class="mb-2" :class="{ 'col-6': filterItem.type == 'input', 'col-12': filterItem.type != 'input'}" v-for="(filterItem, key) in filterDef" :key="key">
+                    <div class="form-group" v-if="filterItem.type == 'input'">
+                        <input type="text" :placeholder="filterItem.label" v-model="filterItem.value" :id="filterItem.label" class="form-control form-control-sm">
+                    </div>
+                    <div class="form-group" v-if="filterItem.id == 'sub_order_status'">
+                        <Multiselect :label="filterItem.label" :placeholder="filterItem.label" v-model="filterItem.value" :mode="filterItem.mode" :options="orderStatus" />
+                    </div>
+                    <div class="form-group" v-if="filterItem.id == 'destination'">
+                        <Multiselect :label="filterItem.label" :placeholder="filterItem.label" v-model="filterItem.value" :mode="filterItem.mode" :options="destinations" />
+                    </div>
+                    <div class="form-group" v-if="filterItem.id == 'location'">
+                        <Multiselect :label="filterItem.label" :placeholder="filterItem.label" v-model="filterItem.value" :mode="filterItem.mode" :options="locations" />
+                    </div>
+                    <div class="form-group " v-if="filterItem.type == 'datepicker'">
+                        <label  :for="filterItem.label">{{ filterItem.label }} :</label>
+                        <div class="d-flex justify-content-between">
+                            <date-picker v-model="filterItem.value.from" @update:modelValue="newValue => filterItem.value.from = newValue" :name="filterItem.id+'_from'" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="From" :disabled-from-date="startDisabledtodate"></date-picker>
+                            <date-picker v-model="filterItem.value.to" @update:modelValue="newValue => filterItem.value.to = newValue" :name="filterItem.id+'_to'" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto', transformOrigin:'top right'}" label="To" :disabled-from-date="endDisabledtodate"></date-picker>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -23,71 +35,70 @@
 </template>
 
 <script>
-    import {ref,computed} from 'vue';
+    import { ref, computed } from 'vue';
+    import {
+        INVOICE_MODULE, 
+        SET_INVOICE_FILTER,
+        FILTER_INVOICE_LIST,
+        GET_INVOICE_STATUS, 
+        GET_INVOICE_DESTINATION, 
+        GET_INVOICE_LOCATION,                
+    } from '../../store/types/types';
     import CheckBox from '../miscellaneous/CheckBox';
-    import {useStore} from 'vuex';
-    // import {ORDERLIST_FILTER, ORDERLIST_GET_FILTER, ORDERLIST_MODULE,ORDERLIST_RESET_MULITCHECKED} from "../../store/types/types";
+    import { useStore } from 'vuex';
+    import DatePicker from '../miscellaneous/DatePicker';
+    import Multiselect from '@vueform/multiselect';
     export default {
         name: "Filters",
         props:['filterDef'],
-        components:{CheckBox},
-        setup(){
+        emits: ['update:filterDef'],
+        components:{ 
+            CheckBox,
+            DatePicker,
+            Multiselect
+        },
+        setup( props ){
+            const store = useStore();
+            const current = new Date();
+            const currentDate = `${current.getFullYear()}-${current.getMonth()+1}-${current.getDate()}`;
+            const startDisabledtodate = ref(currentDate);
+            const endDisabledtodate = ref(currentDate);
             const showfilter=ref(false);
-            const current_filter=ref('');
-            const preselection=ref({});
-            const store=useStore();
-            function selectclick(sel) {
-                if(current_filter.value != sel) {
-                    current_filter.value = sel;
-                }else  if(current_filter.value==sel){
-                        current_filter.value='';
-                }
+            const applyFilter = ()=>{
+                toggleShow();
+                store.dispatch(`${INVOICE_MODULE}${SET_INVOICE_FILTER}`, props.filterDef);
+                store.dispatch(`${INVOICE_MODULE}${FILTER_INVOICE_LIST}`);
             }
-            const toggleShow=(()=> {
-                showfilter.value=!showfilter.value
-            });
-            function checkboxclicked(check,id,name) {
-                if(check)
-                    if(name in preselection.value) {
-                        preselection.value[name].push(id);
-                    }else {
-                        preselection.value[name] = [];
-                        preselection.value[name].push(id);
-                    }
+            const cancel = ()=>{
+                toggleShow();
+            }
+            const toggleShow = ()=>{
+                showfilter.value =! showfilter.value;
+            }
+            const orderStatus = computed(()=>{
+                return store.getters[`${INVOICE_MODULE}${GET_INVOICE_STATUS}`];
+            })
 
-                if(!check)
-                    if(name in preselection.value) {
-                        preselection.value[name]= preselection.value[name].filter(item=>item!=id);
-                    }
-            }
-            const hasActiveFilters=computed(()=>{
-                // const filters= _.cloneDeep(store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_FILTER}`]);
-                // const allEmpty= Object.values(filters).every((element) => element.length===0);
-                // return !allEmpty;
-                return false
-            });            
-            function applyFilter() {
-                // store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
-                // store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,_.cloneDeep(preselection.value));
-                current_filter.value='';
-                toggleShow();
-            }
-            function cancel() {
-                current_filter.value='';
-                // const filters=store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_FILTER}`];
-                // preselection.value=_.cloneDeep(filters);
-                toggleShow();
-            }            
+            const destinations = computed(()=>{
+                return store.getters[`${INVOICE_MODULE}${GET_INVOICE_DESTINATION}`];
+            })
+
+            const locations = computed(()=>{
+                return store.getters[`${INVOICE_MODULE}${GET_INVOICE_LOCATION}`];
+            })            
             return {
                 showfilter,
-                current_filter,
-                selectclick,
-                checkboxclicked,
+                startDisabledtodate,
+                endDisabledtodate,
+                orderStatus,
+                destinations,
+                locations,                
                 applyFilter,
                 cancel,
-                hasActiveFilters,
                 toggleShow
             }
+        },
+        methods:{
         }
     }
 </script>
@@ -255,3 +266,4 @@
     }
 
 </style>
+<style src="@vueform/multiselect/themes/default.css"></style>
