@@ -161,3 +161,20 @@ export const GET_STATS_OVERDUE = 'GET_STATS_OVERDUE';
 export const GET_STATS_LATER = 'GET_STATS_LATER';
 export const GET_ASSEMBLY_INVOICE = 'GET_ASSEMBLY_INVOICE';
 export const SET_ASSEMBLY_INVOICE = 'SET_ASSEMBLY_INVOICE';
+
+// assembly home page Invoice
+export const INVOICE_MODULE = 'INVOICE_MODULE/'; //namespace
+
+export const SET_INVOICE_LIST = 'SET_INVOICE_LIST'; //action
+export const SET_INVOICE_FILTER_FLAG = 'SET_INVOICE_FILTER_FLAG'; //action
+export const SET_INVOICE_FILTER = 'SET_INVOICE_FILTER'; //action
+export const FILTER_INVOICE_LIST = 'FILTER_INVOICE_LIST'; //action
+export const LOAD_MORE_INVOICE = 'LOAD_MORE_INVOICE'; //action
+export const ADD_MORE_INVOICE_TO_LIST = 'ADD_MORE_INVOICE_TO_LIST'; //mutation
+
+export const GET_INVOICE_LIST = 'GET_INVOICE_LIST'; //getter
+export const GET_TOTAL_INVOICE_COUNT = 'GET_TOTAL_INVOICE_COUNT'; //getter
+export const GET_LOADED_INVOICE_COUNT = 'GET_LOADED_INVOICE_COUNT'; //getter
+export const GET_INVOICE_STATUS = 'GET_INVOICE_STATUS'; //getter
+export const GET_INVOICE_DESTINATION = 'GET_INVOICE_DESTINATION'; //getter
+export const GET_INVOICE_LOCATION = 'GET_INVOICE_LOCATION'; //getter
