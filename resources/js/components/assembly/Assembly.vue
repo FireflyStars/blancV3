@@ -44,6 +44,7 @@
             AssemblyHome
         },
         setup(){
+            const selected_nav = ref('AssemblyHome');
             const filterDef =  ref({
                     first_name: {
                         label: 'First Name',
@@ -117,12 +118,8 @@
                     },
                 });  
             return {
-                filterDef
-            }
-        },
-        data(){
-            return{
-                selected_nav: 'AssemblyHome',
+                filterDef,
+                selected_nav
             }
         }
     }
