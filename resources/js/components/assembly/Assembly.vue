@@ -10,10 +10,10 @@
                         <ul class="assembly-home-nav list-inline mb-0">
                             <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'AssemblyHome' ? 'bg-white active' : ''" @click="selected_nav = 'AssemblyHome'">Stations</li>
                             <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'Commitment' ? 'bg-white active' : ''" @click="selected_nav = 'Commitment'">Commitment</li>
-                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'InvoceList' ? 'bg-white active' : ''" @click="selected_nav = 'InvoceList'">All items</li>
+                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'InvoiceList' ? 'bg-white active' : ''" @click="selected_nav = 'InvoiceList'">All items</li>
                             <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'Overdue' ? 'bg-white active' : ''" @click="selected_nav = 'Overdue'">Overdue</li>
                         </ul>
-                        <div class="filter-section position-relative" v-if="selected_nav == 'InvoceList'">
+                        <div class="filter-section position-relative" v-if="selected_nav == 'InvoiceList'">
                             <filters :filterDef="filterDef"></filters>
                         </div>
                     </div>
@@ -30,7 +30,7 @@
     import SideBar from "../layout/SideBar";
     import MainHeader from "../layout/MainHeader";
     import Filters from '../test/Filter';
-    import InvoceList from './InvoiceList';
+    import InvoiceList from './InvoiceList';
     import AssemblyHome from './AssemblyHome';
     import { ref } from "vue";
 
@@ -40,11 +40,11 @@
             SideBar, 
             MainHeader,
             Filters,
-            InvoceList,
+            InvoiceList,
             AssemblyHome
         },
         setup(){
-            const selected_nav = ref('AssemblyHome');
+            const selected_nav = ref('InvoiceList');
             const filterDef =  ref({
                     status: {
                         label: 'Sub Order Status',

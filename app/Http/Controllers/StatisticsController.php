@@ -1962,19 +1962,25 @@ class StatisticsController extends Controller
                             'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode', 
                             'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as prod'), 'infoInvoice.id AS order_id',
                             'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
-                            'infoitems.idPartner', 'TypePost.couleur as location_color', DB::raw('DATE_FORMAT(infoOrder.DateDeliveryAsk,"%m/%d") as deliv'),
-                            DB::raw('DATE_FORMAT(infoOrder.DatePickup, "%m/%d") as deliv_tmp')
+                            'infoitems.idPartner', 'TypePost.couleur as location_color',
+                            DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),
+                            /* DB::raw('DATE_FORMAT(pickup.date,"%m/%d") as pickup_date'), */
+                            /* DB::raw('DATE_FORMAT(deliveryask.date, "%m/%d") as deliveryask_date') */
                         );
         $arr = [0, 1, 2, 3, 4, 5, 6];
         $invoices   =  $invoices->where('infoitems.Actif',1)
                                 ->whereIn('infoitems.express', $arr)
                                 ->join('infoInvoice', 'infoitems.SubOrderID', '=', 'infoInvoice.SubOrderID')
-                                ->join('infoOrder', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID')
+                                // ->join('infoOrder', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID')
+                                // ->leftJoin('pickup', 'infoOrder.PickupID', '=', 'pickup.PickupID')
+                                // ->leftJoin('deliveryask', 'infoOrder.DeliveryaskID', '=', 'deliveryask.DeliveryaskID')
                                 ->join('infoCustomer', 'infoInvoice.CustomerID', '=', 'infoCustomer.CustomerID')
                                 ->join('postes', 'infoitems.nextpost', '=', 'postes.id')
                                 ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
                                 ->where('infoitems.SubOrderID','!=','')
-                                ->whereNotIn('infoOrder.Status',['VOID', 'DELETE'])
+                                // ->whereIN('deliveryask.status', ['NEW','API','PMS','DONE', 'PMS-DONE', 'API-DONE','REC','REC-DONE','REC-NOK','PMS-NOK','API-NOK'])
+                                // ->whereIN('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP'])
+                                // ->whereNotIn('infoOrder.Status',['VOID', 'DELETE'])
                                 ->orderBy('order_id');
         if($request->status != ''){
             $invoices   = $invoices->where('infoitems.Status', $request->status);
@@ -1999,16 +2005,16 @@ class StatisticsController extends Controller
         }
 
         if($request->deliv_date_from != '' && $request->deliv_date_to != ''){
-            $invoices   = $invoices->whereBetween('infoOrder.DateDeliveryAsk', 
+            $invoices   = $invoices->whereBetween('infoitems.PromisedDate', 
                                     [ 
                                         Carbon::parse($request->deliv_date_from)->toDateString(),
                                         Carbon::parse($request->deliv_date_to)->toDateString(),
                                     ]
                                 );
         }else if( $request->deliv_date_from != '' && $request->deliv_date_to == '' ){
-            $invoices   = $invoices->whereDate('infoOrder.DateDeliveryAsk', '>=', Carbon::parse($request->prod_date_from)->toDateString());
+            $invoices   = $invoices->whereDate('infoitems.PromisedDate', '>=', Carbon::parse($request->prod_date_from)->toDateString());
         } else if( $request->deliv_date_from == '' && $request->deliv_date_to != '' ){
-            $invoices   = $invoices->whereDate('infoOrder.DateDeliveryAsk', '<=', Carbon::parse($request->prod_date_to)->toDateString());
+            $invoices   = $invoices->whereDate('infoitems.PromisedDate', '<=', Carbon::parse($request->prod_date_to)->toDateString());
         }
         $total_invoice_count = $invoices->count();
         $invoices   =  $invoices->skip($request->skip ? $request->skip+1 : 0)
