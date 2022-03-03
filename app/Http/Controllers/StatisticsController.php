@@ -1816,10 +1816,16 @@ class StatisticsController extends Controller
 
             $invoices = Db::table('infoitems')
                 ->select( 
+                    // 'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode', 
+                    // 'infoitems.typeitem', 'infoitems.PromisedDate as prod', 'infoInvoice.id AS order_id',
+                    // 'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
+                    // 'infoitems.idPartner', 'TypePost.couleur as location_color'
                     'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode', 
-                    'infoitems.typeitem', 'infoitems.PromisedDate as prod', 'infoInvoice.id AS order_id',
+                    'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as prod'), 'infoInvoice.id AS order_id',
                     'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
-                    'infoitems.idPartner', 'TypePost.couleur as location_color')
+                    'infoitems.idPartner', 'TypePost.couleur as location_color',
+                    DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),                    
+                    )
                 ->where('infoitems.PromisedDate', $operator, $date_stats);
         
  
@@ -1872,6 +1878,9 @@ class StatisticsController extends Controller
             $invoices=$invoices->where('infoitems.Actif',1)
                 ->whereIn('infoitems.express', $arr)
                 ->join('infoInvoice', 'infoitems.SubOrderID', '=', 'infoInvoice.SubOrderID')
+                // ->join('infoOrder', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID')
+                // ->leftJoin('pickup', 'infoOrder.PickupID', '=', 'pickup.PickupID')
+                // ->leftJoin('deliveryask', 'infoOrder.DeliveryaskID', '=', 'deliveryask.DeliveryaskID')
                 ->join('infoCustomer', 'infoInvoice.CustomerID', '=', 'infoCustomer.CustomerID')
                 ->join('postes', 'infoitems.nextpost', '=', 'postes.id')
                 ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
@@ -1882,72 +1891,72 @@ class StatisticsController extends Controller
         
 
 
-        $data = [];
-        if(!empty($invoices)) {
-            foreach ($invoices as $k=>$v) {
-                // $poste = Poste::find($v->nextpost);
-                // $customer = InfoCustomer::where('CustomerID', $v->CustomerID)->first();
-                // $id_partner = $v->idPartner;
-                // $partner_txt = "WAIT";
-                // $partner_status = $v->PartnerINOUT;
+        // $data = [];
+        // if(!empty($invoices)) {
+        //     foreach ($invoices as $k=>$v) {
+        //         // $poste = Poste::find($v->nextpost);
+        //         // $customer = InfoCustomer::where('CustomerID', $v->CustomerID)->first();
+        //         // $id_partner = $v->idPartner;
+        //         // $partner_txt = "WAIT";
+        //         // $partner_status = $v->PartnerINOUT;
 
-                // if($partner_status==1){
-                //     $partner_txt = "OUT";
-                // }
+        //         // if($partner_status==1){
+        //         //     $partner_txt = "OUT";
+        //         // }
 
-                $data[$k]['order_id'] = $v->order_id;
-                $data[$k]['customer_name'] = $v->customer_name;
-                $data[$k]['store'] = $v->store;
-                $data[$k]['sub_order'] = $v->sub_order;
-                $data[$k]['iteminfo'] = $v->typeitem;
-                $data[$k]['location'] = $v->location;
-                $data[$k]['location_color'] = $v->location_color;
-                $data[$k]['prod'] = Carbon::parse($v->prod)->format('d/m');
-                $data[$k]['barcode'] = $v->barcode;
+        //         $data[$k]['order_id'] = $v->order_id;
+        //         $data[$k]['customer_name'] = $v->customer_name;
+        //         $data[$k]['store'] = $v->store;
+        //         $data[$k]['sub_order'] = $v->sub_order;
+        //         $data[$k]['iteminfo'] = $v->typeitem;
+        //         $data[$k]['location'] = $v->location;
+        //         $data[$k]['location_color'] = $v->location_color;
+        //         $data[$k]['prod'] = Carbon::parse($v->prod)->format('d/m');
+        //         $data[$k]['barcode'] = $v->barcode;
 
-                $pick_up_status_to_include = ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP'];
-                $pick_up_date = DB::table('pickup')
-                                    ->where('CustomerID', $v->CustomerID)
-                                    ->whereIn('status', $pick_up_status_to_include)->value('date');
+        //         $pick_up_status_to_include = ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP'];
+        //         $pick_up_date = DB::table('pickup')
+        //                             ->where('CustomerID', $v->CustomerID)
+        //                             ->whereIn('status', $pick_up_status_to_include)->value('date');
                 
-                $deliveryask_status_to_include = ['NEW','API','PMS','DONE', 'PMS-DONE', 'API-DONE','REC','REC-DONE','REC-NOK','PMS-NOK','API-NOK'];
-                $deliveryask_date = DB::table('deliveryask')
-                                    ->where('CustomerID', $v->CustomerID)
-                                    ->whereIn('status', $deliveryask_status_to_include)->value('date');
-                if($deliveryask_date && $pick_up_date){
-                    if(Carbon::parse($deliveryask_date)->gt(Carbon::parse($pick_up_date)))
-                        $data[$k]['deliv'] = Carbon::parse($deliveryask_date)->format('d/m');
-                    else
-                        $data[$k]['deliv'] = Carbon::parse($pick_up_date)->format('d/m');
-                }else if( $deliveryask_date && $pick_up_date == ''){
-                    $data[$k]['deliv'] = Carbon::parse($deliveryask_date)->format('d/m');
-                }else{
-                    $data[$k]['deliv'] = Carbon::parse($pick_up_date)->format('d/m');
-                }
+        //         $deliveryask_status_to_include = ['NEW','API','PMS','DONE', 'PMS-DONE', 'API-DONE','REC','REC-DONE','REC-NOK','PMS-NOK','API-NOK'];
+        //         $deliveryask_date = DB::table('deliveryask')
+        //                             ->where('CustomerID', $v->CustomerID)
+        //                             ->whereIn('status', $deliveryask_status_to_include)->value('date');
+        //         if($deliveryask_date && $pick_up_date){
+        //             if(Carbon::parse($deliveryask_date)->gt(Carbon::parse($pick_up_date)))
+        //                 $data[$k]['deliv'] = Carbon::parse($deliveryask_date)->format('d/m');
+        //             else
+        //                 $data[$k]['deliv'] = Carbon::parse($pick_up_date)->format('d/m');
+        //         }else if( $deliveryask_date && $pick_up_date == ''){
+        //             $data[$k]['deliv'] = Carbon::parse($deliveryask_date)->format('d/m');
+        //         }else{
+        //             $data[$k]['deliv'] = Carbon::parse($pick_up_date)->format('d/m');
+        //         }
                 
-                // if($typepost!=''){
-                //     $data[$k]['status'] = $poste->nominterface;
-                // }
-                // elseif($poste_id !=''){
-                //     $data[$k]['PartnerINOUT'] = $partner_txt;
-                // }
+        //         // if($typepost!=''){
+        //         //     $data[$k]['status'] = $poste->nominterface;
+        //         // }
+        //         // elseif($poste_id !=''){
+        //         //     $data[$k]['PartnerINOUT'] = $partner_txt;
+        //         // }
 
                 
 
-                // $data[$k]['store'] = $v->store;
+        //         // $data[$k]['store'] = $v->store;
 
-                // $data[$k]['promise_date'] = date('d/m',strtotime($v->PromisedDate));
+        //         // $data[$k]['promise_date'] = date('d/m',strtotime($v->PromisedDate));
 
-                // $data[$k]['idPartner'] = (isset($partners[$v->idPartner])?$partners[$v->idPartner]:"");
+        //         // $data[$k]['idPartner'] = (isset($partners[$v->idPartner])?$partners[$v->idPartner]:"");
 
-            }
-        }
+        //     }
+        // }
 
         return response()->json([
             'post'=>$request->all(),
             'invoices'=>$invoices,
-            'count_data'=>count($data),
-            'data'=> $data,
+            'count_data'=>$invoices->count(),
+            'data'=> $invoices,
             "payload"=>array("search"=>"","dir"=>"asc","column"=>"id","length"=>"100000","draw"=>"0"),
             "poste_id"=>$postes_id,
         ]);
