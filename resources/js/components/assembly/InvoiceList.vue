@@ -159,7 +159,7 @@ export default {
             store.dispatch(`${INVOICE_MODULE}${LOAD_MORE_INVOICE}`);
         }
         onMounted(()=>{
-            store.dispatch(`${INVOICE_MODULE}${SET_INVOICE_LIST}`);
+            // store.dispatch(`${INVOICE_MODULE}${SET_INVOICE_LIST}`);
         })
         return {
             invoiceList,

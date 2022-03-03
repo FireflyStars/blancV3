@@ -44,7 +44,7 @@
             AssemblyHome
         },
         setup(){
-            const selected_nav = ref('InvoiceList');
+            const selected_nav = ref('AssemblyHome');
             const filterDef =  ref({
                     status: {
                         label: 'Sub Order Status',

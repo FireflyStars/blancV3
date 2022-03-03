@@ -17,8 +17,8 @@
                     <div class="form-group " v-if="filterItem.type == 'datepicker'">
                         <label  :for="filterItem.label">{{ filterItem.label }} :</label>
                         <div class="d-flex justify-content-between">
-                            <date-picker v-model="filterItem.value.from" @update:modelValue="newValue => filterItem.value.from = newValue" :name="filterItem.id+'_from'" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="From" :disabled-from-date="startDisabledtodate"></date-picker>
-                            <date-picker v-model="filterItem.value.to" @update:modelValue="newValue => filterItem.value.to = newValue" :name="filterItem.id+'_to'" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto', transformOrigin:'top right'}" label="To" :disabled-from-date="endDisabledtodate"></date-picker>
+                            <date-range-picker v-model="filterItem.value.from" @update:modelValue="newValue => filterItem.value.from = newValue" :name="filterItem.id+'_from'" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="From" :disabled-from-date="startDisabledtodate"></date-range-picker>
+                            <date-range-picker v-model="filterItem.value.to" @update:modelValue="newValue => filterItem.value.to = newValue" :name="filterItem.id+'_to'" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto', transformOrigin:'top right'}" label="To" :disabled-from-date="endDisabledtodate"></date-range-picker>
                         </div>
                     </div>
                 </div>
@@ -43,7 +43,7 @@
     } from '../../store/types/types';
     import CheckBox from '../miscellaneous/CheckBox';
     import { useStore } from 'vuex';
-    import DatePicker from '../miscellaneous/DatePicker';
+    import DateRangePicker from '../miscellaneous/DateRangePicker';
     import Multiselect from '@vueform/multiselect';
     export default {
         name: "Filters",
@@ -51,7 +51,7 @@
         emits: ['update:filterDef'],
         components:{ 
             CheckBox,
-            DatePicker,
+            DateRangePicker,
             Multiselect
         },
         setup( props ){

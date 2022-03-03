@@ -1,62 +1,57 @@
 <template>
     <div class="dp noselect">
-        <label class="select-label" :class="{disabled:disabled==true}" v-if="label">{{label}}</label>
+        <label class="select-label" :class="{disabled:disabled==true}" v-if="label">{{ label }}</label>
         <input type="text" readonly placeholder="Day" v-model="formated_date" @click="toggleshowDp"/>
         <transition name="trans-dp-picker" >
-        <div class="dp-picker" v-if="sel===name" :class="{row6:displayed_dates_rows[5].length>0&&currentView=='dates' }" :style="{top:droppos.top,right:droppos.right,bottom:droppos.bottom,left:droppos.left,transformOrigin:droppos.transformOrigin}">
+            <div class="dp-picker" v-if="sel===name" :class="{row6:displayed_dates_rows[5].length>0&&currentView=='dates' }" :style="{top:droppos.top,right:droppos.right,bottom:droppos.bottom,left:droppos.left,transformOrigin:droppos.transformOrigin}">
 
-            <div class="row">
-                <div class="col-2"><button @click="minusMonth" class="btn btn-dp minus"></button></div>
-                <div class="col-8 text-center"><button class="btn btn-month" @click="showMonths">{{monthsName[MonthYear.month].name}}</button><button class="btn btn-year" @click="showYears">{{MonthYear.year}}</button></div>
-                <div class="col-2"><button @click="plusMonth" class="btn btn-dp "></button></div>
-            </div>
-            <transition name="trans-dp-picker-zoom" >
-            <div v-if="currentView=='dates'" class="position-absolute mw-picker">
-        <div class="row">
-            <div class="col dp-dayname" v-for="day in days" :key="day">
-                {{ day.dayName }}
-            </div>
-        </div>
-        <div class="row" v-for="row in displayed_dates_rows" :key="row">
-            <template v-for="(day,index) in row" :key="index">
-            <div class="col dp-dates" :class="{ disabled:!day.current_month, current:day.selected, notavailable:day.notavailable}" @click="setDate(day.year,day.month,day.date)" >
-                {{day.date}}
-            </div>
-            </template>
-
-        </div>
-            </div>
-            </transition>
-            <transition name="trans-dp-picker-zoom" class="position-absolute mw-picker">
-            <div v-if="currentView=='months'">
-
-                <div class="row row-months" v-for="(row,i) in displayed_months_rows" :key="i" :class="{'mt-5':i==0}">
-                    <template v-for="(month,index) in row" :key="index">
-                        <div class="col dp-months" :class="{current:month.current}" @click="setMonth(month.jsMonth)" >
-                            {{month.name.substr(0,3)}}
-                        </div>
-                    </template>
-
+                <div class="row">
+                    <div class="col-2"><button @click="minusMonth" class="btn btn-dp minus"></button></div>
+                    <div class="col-8 text-center"><button class="btn btn-month" @click="showMonths">{{monthsName[MonthYear.month].name}}</button><button class="btn btn-year" @click="showYears">{{MonthYear.year}}</button></div>
+                    <div class="col-2"><button @click="plusMonth" class="btn btn-dp "></button></div>
                 </div>
-            </div>
-            </transition>
-            <transition name="trans-dp-picker-zoom" class="position-absolute mw-picker">
-            <div v-if="currentView=='years'">
-                <div class="row row-years" v-for="(row,i) in displayed_year_rows" :key="i" :class="{'mt-5':i==0}">
-                    <template v-for="(y,index) in row" :key="index">
-                        <div class="col dp-years" :class="{current:y.current}" @click="setYear(y.year)" >
-                            {{y.year}}
+                <transition name="trans-dp-picker-zoom" >
+                    <div v-if="currentView=='dates'" class="position-absolute mw-picker">
+                        <div class="row">
+                            <div class="col dp-dayname" v-for="day in days" :key="day">
+                                {{ day.dayName }}
+                            </div>
                         </div>
-                    </template>
-
+                        <div class="row" v-for="row in displayed_dates_rows" :key="row">
+                            <template v-for="(day,index) in row" :key="index">
+                                <div class="col dp-dates" :class="{ disabled:!day.current_month, current:day.selected, notavailable:day.notavailable}" @click="setDate(day.year,day.month,day.date)" >
+                                    {{day.date}}
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </transition>
+                <transition name="trans-dp-picker-zoom" class="position-absolute mw-picker">
+                <div v-if="currentView=='months'">
+                    <div class="row row-months" v-for="(row,i) in displayed_months_rows" :key="i" :class="{'mt-5':i==0}">
+                        <template v-for="(month,index) in row" :key="index">
+                            <div class="col dp-months" :class="{current:month.current}" @click="setMonth(month.jsMonth)" >
+                                {{ month.name.substr(0,3) }}
+                            </div>
+                        </template>
+                    </div>
                 </div>
+                </transition>
+                <transition name="trans-dp-picker-zoom" class="position-absolute mw-picker">
+                    <div v-if="currentView=='years'">
+                        <div class="row row-years" v-for="(row,i) in displayed_year_rows" :key="i" :class="{'mt-5':i==0}">
+                            <template v-for="(y,index) in row" :key="index">
+                                <div class="col dp-years" :class="{current:y.current}" @click="setYear(y.year)" >
+                                    {{y.year}}
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </transition>
             </div>
-            </transition>
-        </div>
         </transition>
-
     </div>
-    <div class="hint" v-if="hint">{{hint}}</div>
+    <div class="hint" v-if="hint"> {{ hint }} </div>
 </template>
 
 <script>
