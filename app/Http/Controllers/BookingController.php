@@ -40,6 +40,7 @@ class BookingController extends Controller {
         }
 
         $available_slots=[];
+
         if(count($tranche_details) > 0){
             foreach($tranche_details as $k=>$v){
                 $details = json_decode($v->tranche);
@@ -55,11 +56,9 @@ class BookingController extends Controller {
         }
 
 
-
         return response()->json([
             'postcode'=>$postcode,
-            //'tranche_details'=>$tranche_details,
-            'available_slots'=>$available_slots,
+            'available_slots'=>$available_slots, //$tranche_details
         ]);
     }
 

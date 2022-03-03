@@ -74,7 +74,9 @@ export const neworder= {
         [NEWORDER_PRELOAD_ORDER_CUSTOMER_SET]:(state,payload)=>{
             state.order.infoCustomer=payload;
         },
-
+        [NEW_ORDER_TRANCHE_POSTCODE]:(state,payload)=>{
+            state.tranches = payload;
+        },
 
     },
     actions:{
@@ -109,15 +111,19 @@ export const neworder= {
                   //  dispatch(`${LOADER_MODULE}${HIDE_LOADER}`, {}, {root: true});
                 });
         },
-        [NEW_ORDER_SET_TRANCHE_POSTCODE]:async ({commit},payload)=>{
+        [NEW_ORDER_SET_TRANCHE_POSTCODE]:async ({commit,dispatch},payload)=>{
+            dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading tranche'], {root: true});
             return axios.post('/get-tranche-by-postcode',{
                 postcode: payload
             }).then((response)=>{
-                console.log(response);
+                commit(NEW_ORDER_TRANCHE_POSTCODE,response.data.available_slots);
+                return Promise.resolve(response);
+
+                //console.log(response);
             }).catch((error)=>{
-
+                return Promise.reject(error);
             }).finally(()=>{
-
+                dispatch(`${LOADER_MODULE}${HIDE_LOADER}`, {}, {root: true});
             });
         }
 
@@ -129,5 +135,6 @@ export const neworder= {
         [NEWORDER_PRELOAD_ORDER_GET]:state=>state.order,
         [NEWORDER_CUR_CUSTOMER]:state=>state.order.infoCustomer,
         [NEWORDER_GET_ALL_TIMESLOTS]:state=>state.timeslot_def,
+        [NEW_ORDER_GET_TRANCHE_POSTCODE]:state=>state.tranches,
     }
 }

@@ -34,8 +34,6 @@
         </div>
     </div>
 
-
-
     </transition-group>
 
 </template>
