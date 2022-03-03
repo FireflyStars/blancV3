@@ -60,16 +60,16 @@
 </template>
 
 <script>
-    import {ref,nextTick,watch,computed} from 'vue';
+    import {ref,nextTick,watch,computed,defineExpose} from 'vue';
     import {useStore} from 'vuex';
     import {GET_CURRENT_SELECT, SELECT_MODULE, SET_CURRENT_SELECT} from "../../store/types/types";
     import vClickOutside from 'click-outside-vue3';
-    
+
     export default {
         name: "DatePicker",
         directives: {
             clickOutside: vClickOutside.directive
-        },        
+        },
         props:{
             modelValue: String,
             droppos: Object,
@@ -84,7 +84,7 @@
                 required: true
             },
         },
-        emits: ['update:modelValue'],
+        emits: ['update:modelValue','loadtranche'],
         setup(props,context){
 
             const store=useStore();
@@ -92,6 +92,11 @@
             const displayed_months_rows = ref({});
             const displayed_year_rows = ref({});
             let sel=computed(()=>store.getters[`${SELECT_MODULE}${GET_CURRENT_SELECT}`]);
+
+            defineExpose({
+                renderPicker,
+            });
+
             const days=[
                 {
                     dayName:'Mo',
@@ -320,10 +325,15 @@
                 default_date.value[1]=parseInt(m)+1;
                 default_date.value[2]=parseInt(d);
                 context.emit("update:modelValue",`${default_date.value[0]}-${default_date.value[1].toString().padStart(2, "0")}-${default_date.value[2].toString().padStart(2, "0")}`);
+
+
+                context.emit("loadtranche");
+
                 toggleshowDp();
             }
             function setMonth(m){
                // default_date.value[1]=parseInt(m)+1;
+               console.log('called from parent');
                 MonthYear.value.month=parseInt(m);
                 currentView.value='dates';
 
@@ -412,10 +422,12 @@
                 setMonth,
                 setYear,
                 toggleshowDp,
+                renderPicker,
             }
 
         },
         methods:{
+
 
         }
     }
