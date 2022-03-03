@@ -15,11 +15,16 @@
                         <Multiselect :label="filterItem.label" style="font-size: 0.875rem !important" :placeholder="filterItem.label" v-model="filterItem.value" :mode="filterItem.mode" :options="locations" />
                     </div>
                     <div class="form-group " v-if="filterItem.type == 'datepicker'">
-                        <label  :for="filterItem.label">{{ filterItem.label }} :</label>
-                        <div class="d-flex justify-content-between">
-                            <date-range-picker v-model="filterItem.value.from" @update:modelValue="newValue => filterItem.value.from = newValue" :name="filterItem.id+'_from'" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="From" :disabled-from-date="startDisabledtodate"></date-range-picker>
-                            <date-range-picker v-model="filterItem.value.to" @update:modelValue="newValue => filterItem.value.to = newValue" :name="filterItem.id+'_to'" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto', transformOrigin:'top right'}" label="To" :disabled-from-date="endDisabledtodate"></date-range-picker>
-                        </div>
+                        <KeepAlive>
+                        <date-range-picker 
+                            v-model="filterItem.value" 
+                            @update:filterVal="newValue => console.log(newValue)" 
+                            :name="filterItem.id"
+                            :placeholder="filterItem.label"
+                            :droppos="{ top:'auto', right: 0, bottom:'auto', left:'auto', transformOrigin:'top right'}" 
+                            :disabled-from-date="startDisabledtodate">
+                        </date-range-picker>
+                        </KeepAlive>
                     </div>
                 </div>
             </div>
@@ -82,7 +87,7 @@
 
             const locations = computed(()=>{
                 return store.getters[`${INVOICE_MODULE}${GET_INVOICE_LOCATION}`];
-            })            
+            })     
             return {
                 showfilter,
                 startDisabledtodate,

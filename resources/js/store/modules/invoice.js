@@ -143,11 +143,11 @@ export const invoicelist= {
             state.filter.status = payload.status.value;            
             state.filter.dest = payload.dest.value.join(',');            
             state.filter.location = payload.location.value.join(',');            
-            state.filter.prod_date_from = payload.prod_date.value.from;            
-            state.filter.prod_date_to = payload.prod_date.value.to;            
-            state.filter.deliv_date_from = payload.deliv_date.value.from;            
-            state.filter.deliv_date_to = payload.deliv_date.value.to;            
-            state.filter.skip = 0;            
+            state.filter.prod_date_from = payload.prod_date.value.start;            
+            state.filter.prod_date_to = payload.prod_date.value.end;            
+            state.filter.deliv_date_from = payload.deliv_date.value.start;            
+            state.filter.deliv_date_to = payload.deliv_date.value.end;            
+            state.filter.skip = 0;
         },
         [FILTER_INVOICE_LIST]: (state, payload) => { 
             state.invoice_list = payload.invoices;

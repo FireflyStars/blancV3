@@ -1,7 +1,7 @@
 <template>
     <div class="dp noselect">
         <label class="select-label" :class="{disabled:disabled==true}" v-if="label">{{ label }}</label>
-        <input type="text" readonly placeholder="Day" v-model="formated_date" @click="toggleshowDp"/>
+        <input type="text" readonly :placeholder="placeholder" class="w-100 bg-white" v-model="formated_date" @click="toggleshowDp"/>
         <transition name="trans-dp-picker" >
             <div class="dp-picker" v-if="sel===name" :class="{row6:displayed_dates_rows[5].length>0&&currentView=='dates' }" :style="{top:droppos.top,right:droppos.right,bottom:droppos.bottom,left:droppos.left,transformOrigin:droppos.transformOrigin}">
 
@@ -19,7 +19,7 @@
                         </div>
                         <div class="row" v-for="row in displayed_dates_rows" :key="row">
                             <template v-for="(day,index) in row" :key="index">
-                                <div class="col dp-dates" :class="{ disabled:!day.current_month, current:day.selected, notavailable:day.notavailable}" @click="setDate(day.year,day.month,day.date)" >
+                                <div class="col dp-dates" :class="{ disabled:!day.current_month, current:day.selected, notavailable:day.notavailable, period: day.period}" @click="setDate(day.year,day.month,day.date)" >
                                     {{day.date}}
                                 </div>
                             </template>
@@ -58,17 +58,17 @@
     import {ref,nextTick,watch,computed} from 'vue';
     import {useStore} from 'vuex';
     import {GET_CURRENT_SELECT, SELECT_MODULE, SET_CURRENT_SELECT} from "../../store/types/types";
-    import vClickOutside from 'click-outside-vue3';
     
     export default {
         name: "DateRangePicker",
-        directives: {
-            clickOutside: vClickOutside.directive
-        },        
         props:{
-            modelValue: String,
+            modelValue: Object,
             droppos: Object,
             label:String,
+            placeholder:{
+                type: String,
+                default: 'Day'
+            },
             disabled:Boolean,
             hint:String,
             availableDates:Array,
@@ -83,7 +83,9 @@
         setup(props,context){
 
             const store=useStore();
-            const default_date=ref([]);
+            const selectedCount = ref(0);
+            const start_date=ref([]);
+            const end_date=ref([]);
             const displayed_months_rows = ref({});
             const displayed_year_rows = ref({});
             let sel = computed(()=>store.getters[`${SELECT_MODULE}${GET_CURRENT_SELECT}`]);
@@ -156,19 +158,20 @@
                         name:"December"
                     }
                 };
-            const currentView=ref('dates');
+            const currentView = ref('dates');
 
-            const MonthYear=ref({});
-            const formated_date=ref('');
+            const MonthYear = ref({});
+            const formated_date = ref('');
 
-            if(props.modelValue!==""){
-                default_date.value=props.modelValue.split('-');
-                MonthYear.value.month=(default_date.value[1]-1);
-                MonthYear.value.year=parseInt(default_date.value[0]);
+            if(props.modelValue.start !=="" ){
+                start_date.value = props.modelValue.start.split('-');
+                end_date.value = props.modelValue.end.split('-');
+                MonthYear.value.month=(start_date.value[1]-1);
+                MonthYear.value.year=parseInt(start_date.value[0]);
             }else{
-                const d=new Date();
-                MonthYear.value.month=d.getMonth();
-                MonthYear.value.year=d.getFullYear();
+                const d = new Date();
+                MonthYear.value.month= d.getMonth();
+                MonthYear.value.year = d.getFullYear();
             }
             function minusMonth() {
                 if(MonthYear.value.month==0){
@@ -190,19 +193,27 @@
             const displayed_dates_rows = ref({});
 
             function renderPicker() {
-
-                if(typeof default_date.value[0]!="undefined"&&typeof default_date.value[1]!="undefined"&&typeof default_date.value[2]!="undefined")
-                formated_date.value=`${default_date.value[1]}/${default_date.value[2]}/${default_date.value[0]}`
+                if( 
+                    typeof start_date.value[0]!="undefined" &&
+                    typeof start_date.value[1]!="undefined" && 
+                    typeof start_date.value[2]!="undefined" &&
+                    typeof end_date.value[0]!="undefined" &&
+                    typeof end_date.value[1]!="undefined" &&
+                    typeof end_date.value[2]!="undefined" ){
+                    formated_date.value = `${start_date.value[1].toString().padStart(2, "0")}/${start_date.value[2].toString().padStart(2, "0")}/${start_date.value[0]} ~ ${end_date.value[1].toString().padStart(2, "0")}/${end_date.value[2].toString().padStart(2, "0")}/${end_date.value[0]}`;
+                }
                 displayed_dates_rows.value = {0: [], 1: [], 2: [], 3: [], 4: [], 5: []};
                 displayed_dates.value = [];
+
                 let firstDayofMonth = new Date(MonthYear.value.year, MonthYear.value.month, 1).getDay();
                 let lastDateofMonth = new Date(MonthYear.value.year, MonthYear.value.month + 1, 0).getDate();
+
                 let lastMonth = (MonthYear.value.month == 0 ? 11 : MonthYear.value.month - 1);
                 let lastMonthYear = (MonthYear.value.month == 0 ? MonthYear.value.year - 1 : MonthYear.value.year);
 
                 let lastMonthEnd = new Date(lastMonthYear, lastMonth + 1, 0).getDate();
                 let calendarStarts = (lastMonthEnd - firstDayofMonth + 2);
-                let notavailable=typeof props.availableDates!="undefined"&&props.availableDates.length>0;
+                let notavailable = typeof props.availableDates !="undefined" && props.availableDates.length > 0;
                 while (calendarStarts <= lastMonthEnd) {
                     displayed_dates.value.push({
                         date: calendarStarts,
@@ -210,6 +221,7 @@
                         year: lastMonthYear,
                         current_month: false,
                         selected: false,
+                        period: false,
                         notavailable:notavailable,
                     })
                     calendarStarts++;
@@ -223,6 +235,7 @@
                         year: MonthYear.value.year,
                         current_month: true,
                         selected: false,
+                        period: false,
                         notavailable:notavailable,
                     });
                     date++;
@@ -236,6 +249,7 @@
                         year: (MonthYear.value.month == 11 ? MonthYear.value.year + 1 : MonthYear.value.year),
                         current_month: false,
                         selected: false,
+                        period: false,
                         notavailable:notavailable,
                     });
                     date++;
@@ -249,6 +263,7 @@
                             year: (MonthYear.value.month == 11 ? MonthYear.value.year + 1 : MonthYear.value.year),
                             current_month: false,
                             selected: false,
+                            period: false,
                             notavailable:notavailable,
                         });
                         date++;
@@ -261,7 +276,7 @@
                 let datestr='';
 
                 for (let i in displayed_dates.value) {
-                    datestr=`${displayed_dates.value[i].year}-${(parseInt(displayed_dates.value[i].month)+1).toString().padStart(2,"0")}-${displayed_dates.value[i].date.toString().padStart(2,"0")}`
+                    datestr = `${displayed_dates.value[i].year}-${(parseInt(displayed_dates.value[i].month)+1).toString().padStart(2,"0")}-${displayed_dates.value[i].date.toString().padStart(2,"0")}`
                     if(typeof props.availableDates!="undefined"&& props.availableDates.includes(datestr))
                         displayed_dates.value[i].notavailable=false;
                     //disabledToDate
@@ -282,22 +297,38 @@
                     }
 
                     displayed_dates.value[i].selected = false;
+                    displayed_dates.value[i].period = false;
 
                     if (count == 7) {
                         index++;
                         count = 0;
                     }
-                    if (default_date.value.length > 0) {
-
-                        if (displayed_dates.value[i].date == (parseInt(default_date.value[2])) && displayed_dates.value[i].month + 1 == (parseInt(default_date.value[1])) && displayed_dates.value[i].year == (parseInt(default_date.value[0]))) {
+                    if (start_date.value.length > 0 && selectedCount.value == 1){
+                        let curdate=new Date( displayed_dates.value[i].year, parseInt(displayed_dates.value[i].month) +1,  displayed_dates.value[i].date);
+                        let start = new Date( start_date.value[0], start_date.value[1], start_date.value[2]);
+                        if (curdate.getTime() == start.getTime()) {
                             displayed_dates.value[i].selected = true;
+                            displayed_dates.value[i].period = false;
                         }
                     }
-                        displayed_dates_rows.value[index].push(displayed_dates.value[i]);
-                        count++;
-
+                    if (start_date.value.length > 0 && end_date.value.length > 0){
+                        let curdate=new Date( displayed_dates.value[i].year, parseInt(displayed_dates.value[i].month) +1,  displayed_dates.value[i].date);
+                        let start = new Date( parseInt(start_date.value[0]), parseInt(start_date.value[1]), parseInt(start_date.value[2]));
+                        let end = new Date( parseInt(end_date.value[0]), parseInt(end_date.value[1]), parseInt(end_date.value[2]) );
+                        if (curdate.getTime() == end.getTime()) {
+                            displayed_dates.value[i].selected = true;
+                        }
+                        if (curdate.getTime() == start.getTime()) {
+                            displayed_dates.value[i].selected = false;
+                            displayed_dates.value[i].period = true;
+                        }                        
+                        if( curdate.getTime() > start.getTime() && curdate.getTime() < end.getTime()){
+                            displayed_dates.value[i].period = true;
+                        }
+                    }
+                    displayed_dates_rows.value[index].push(displayed_dates.value[i]);
+                    count++;
                 }
-
             }
 
             renderPicker();
@@ -307,18 +338,44 @@
                 renderMonthsView();
                 renderYearsView();
             });
-            watch(() => _.cloneDeep(default_date), (current_val, previous_val) => {
+            watch(() => _.cloneDeep(start_date), (current_val, previous_val) => {
                 renderPicker();
             });
             function setDate(y,m,d) {
-                default_date.value[0]=parseInt(y);
-                default_date.value[1]=parseInt(m)+1;
-                default_date.value[2]=parseInt(d);
-                context.emit("update:modelValue",`${default_date.value[0]}-${default_date.value[1].toString().padStart(2, "0")}-${default_date.value[2].toString().padStart(2, "0")}`);
-                toggleshowDp();
+                if( selectedCount.value == 0 ){
+                    start_date.value[0]= parseInt(y);
+                    start_date.value[1]= parseInt(m)+1;
+                    start_date.value[2]= parseInt(d);
+                    end_date.value = [];
+                    selectedCount.value = 1;
+                }else{
+
+                    let start = new Date(start_date.value[0], start_date.value[1], start_date.value[2]);
+                    let end = new Date( parseInt(y), parseInt(m)+1, parseInt(d));
+                    if(start.getTime() >= end.getTime()){
+                        start_date.value[0] = parseInt(y);
+                        start_date.value[1] = parseInt(m)+1;
+                        start_date.value[2] = parseInt(d);
+                        end_date.value = [];
+                        return false;
+                    }else{
+                        end_date.value[0]= parseInt(y);
+                        end_date.value[1]= parseInt(m)+1;
+                        end_date.value[2]= parseInt(d);
+                        renderPicker();
+                        selectedCount.value = 0;
+                        context.emit(
+                            "update:modelValue", {
+                                start: `${start_date.value[0]}-${start_date.value[1].toString().padStart(2, "0")}-${start_date.value[2].toString().padStart(2, "0")}`,
+                                end: `${end_date.value[0]}-${end_date.value[1].toString().padStart(2, "0")}-${end_date.value[2].toString().padStart(2, "0")}`
+                            }
+                        );                
+                    }
+                    toggleshowDp();
+                }
             }
             function setMonth(m){
-               // default_date.value[1]=parseInt(m)+1;
+               // start_date.value[1]=parseInt(m)+1;
                 MonthYear.value.month=parseInt(m);
                 currentView.value='dates';
 
@@ -380,11 +437,17 @@
             }
             function toggleshowDp() {
                 nextTick(()=>{
-                    store.commit(`${SELECT_MODULE}${SET_CURRENT_SELECT}`, sel.value===props.name ? '' : props.name);
+                    store.commit(`${SELECT_MODULE}${SET_CURRENT_SELECT}`, sel.value === props.name ? '' : props.name);
                 }).then(()=>{
                     sel = computed(()=>store.getters[`${SELECT_MODULE}${GET_CURRENT_SELECT}`]);
                 });
             }
+            // document.onclick = function(e){
+            //     let element = e.target;
+            //     if( ! element.class('.dp-picker')){
+            //         store.commit(`${SELECT_MODULE}${SET_CURRENT_SELECT}`, sel.value === props.name ? '' : props.name);
+            //     }
+            // };
             return {
                 sel,
                 minusMonth,
@@ -418,18 +481,17 @@
         width: calc(100% - 48px);
     }
     input{
-        border: 1px solid #000000;
+        border: 0.5px solid #C3C3C3;
         box-sizing: border-box;
-        border-radius: 5px;
+        border-radius: 4px;
         background: transparent url('../../../img/calendar.svg') no-repeat center right 10px;
         background-size: 12px;
-        width: 154px;
         height: 40px;
         line-height: 40px;
-        padding-left: 22px;
-        color: #000000;
+        padding-left: 15px;
+        color: #47454B;
         vertical-align: middle;
-        font-size: 18px;
+        font-size: 0.875rem;
         padding-right: 30px;
     }
     .btn-dp{
@@ -441,7 +503,6 @@
         box-shadow: 0px 1px 1px rgba(0, 14, 51, 0.2);
         border-radius: 80px;
         transition: all 0.2s ease-in-out;
-
     }
 
     .btn-dp.minus{
@@ -456,7 +517,6 @@
     }
     .dp{
         position: relative;
-        width: 154px;
     }
     .dp-picker{
         position: absolute;
@@ -686,5 +746,11 @@
         background: rgba(245, 171, 171, 0.7);
         box-shadow: 0px 1px 1px rgba(0, 14, 51, 0.05);
         pointer-events: none;
+    }
+    .period{
+        color: #EB5757;
+        background: rgba(245, 171, 171, 0.7);
+        box-shadow: 0px 1px 1px rgba(0, 14, 51, 0.05);        
+        opacity: .8;
     }
 </style>

@@ -44,7 +44,7 @@
             AssemblyHome
         },
         setup(){
-            const selected_nav = ref('AssemblyHome');
+            const selected_nav = ref('InvoiceList');
             const filterDef =  ref({
                     status: {
                         label: 'Sub Order Status',
@@ -69,21 +69,21 @@
                         options: [],
                     },
                     prod_date: {
-                        label: 'Prod Date',
+                        label: 'Production Date',
                         id: 'prod_date',
                         type: 'datepicker',
                         value:{
-                            from: '',
-                            to: '',
+                            start: '',
+                            end: '',
                         }
                     },
                     deliv_date: {
-                        label: 'Deliv Date',
+                        label: 'Delivery Date',
                         id: 'deliv_date',
                         type: 'datepicker',
                         value: {
-                            from: '',
-                            to: '',
+                            start: '',
+                            end: '',
                         }
                     },
                 });  
