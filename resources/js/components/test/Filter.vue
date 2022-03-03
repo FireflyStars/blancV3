@@ -26,7 +26,7 @@
                     </div>
                 </div>
             </div>
-            <div class="row buttons">
+            <div class="row buttons mb-4">
                 <div class="col text-center"><button class="btn btn-link  body_regular" @click="cancel">Cancel</button></div>
                 <div class="col text-right"><button class="btn btn-dark body_medium" @click="applyFilter">Apply</button></div>
             </div>

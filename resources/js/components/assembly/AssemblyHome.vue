@@ -500,13 +500,7 @@
             const numberoflines = ref(0);
             const selectMode = ref('multi');
             const selectAll = ref(false);
-            const invoiceList = ref([
-                    // { order_id: 1575, customer_name: 'Gras Marion', store: 'Delivery', sub_order: '02-002018', iteminfo: 'Down-Filled Coat', barcode: '02224123', location: 'On Van', prod: '24/02', deliv: '24/02' },
-                    // { order_id: 1576, customer_name: 'Eva Spaeter', store: 'Delivery', sub_order: '02-002015', iteminfo: 'Cushion cover, Small', barcode: '02224123', location: 'On Van', prod: '24/02', deliv: '24/02' },
-                    // { order_id: 1577, customer_name: 'James Morres', store: 'Store', sub_order: '02-002017', iteminfo: 'Evening Dress', barcode: '02224145', location: 'Storage', prod: '24/02', deliv: '24/02' },
-                    // { order_id: 1578, customer_name: 'Soumya Jaga', store: 'Store', sub_order: '02-002019', iteminfo: 'Jeans', barcode: '02224146', location: 'Assembling', prod: '24/02', deliv: '24/02' },
-                    // { order_id: 1579, customer_name: 'Jaga Pala', store: 'Store', sub_order: '02-002333', iteminfo: 'Shorts', barcode: '02224148', location: 'Cleaning', prod: '24/02', deliv: '24/02' },
-            ]);
+            const invoiceList = ref([]);
             const columns = ref([
                     {
                         key: 'selected',
