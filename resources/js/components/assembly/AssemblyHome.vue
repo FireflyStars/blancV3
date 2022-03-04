@@ -6,7 +6,9 @@
                         <div class="bg-white p-2 m-2 rounded-3">
                             <div class="d-flex mb-3">
                                 <div class="col-2 as-stats-label fw-bold font-20 pl-4">Due<br/>Today</div>
-                                <div class="col-2 px-2 text-end total_stats_num"><span>{{ mainStats.total_due_today ? mainStats.total_due_today : 0}}</span></div>
+                                <div class="col-2 px-2 text-end total_stats_num">
+                                    {{ mainStats.total_due_today ? mainStats.total_due_today : 0}}
+                                </div>
                                 <div class="col-8 pr-5">
                                     <div class="red-stats text-white d-flex justify-content-between text-center rounded-pill">
                                         <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_today_deliveries<10?
@@ -152,7 +154,7 @@
                     <div class="each-home-stats">
                         <div class="bg-white p-2 m-2 rounded-3">
                         <div class="d-flex mb-3">
-                            <div class="col-2 as-stats-label fw-bold font-20 pl-4">Due<br/>Day after</div>
+                            <div class="col-2 as-stats-label fw-bold font-20 pl-4">Due<br/> <span class="text-nowrap fw-bold as-stats-label">Day after</span></div>
                             <div class="col-2 px-2 text-end total_stats_num">{{mainStats.total_due_later ? mainStats.total_due_later : 0}}</div>
                             <div class="col-8 pr-5">
                                 <div class="red-stats text-white d-flex justify-content-between text-center">
@@ -229,11 +231,11 @@
                 <div class="col-12 p-0">
                     <div v-if="groupedPostes">
                         <div class="bg-white mb-3 p-3">
-                            <div class="d-flex mb-1">
-                                <div class="w-13"><h2 id="order_status_heading" class="font-22 mt-3 mb-0 mx-0">Items in <br>Production</h2></div>
+                            <div class="d-flex mb-3">
+                                <div class="w-13"><h2 id="order_status_heading" class="mt-1 mb-0 mx-0">Items in <br>Production</h2></div>
                                 <div class="w-87 mt-auto">
                                     <div class="d-flex justify-content-between">
-                                        <div v-for="(a, index) in groupedPostes" :style="{width: parseInt(90/groupedPostes.length)+'%'}" class="text-center each-poste-label" :key="index">
+                                        <div v-for="(a, index) in groupedPostes" :style="{width: parseInt(100/groupedPostes.length)+'%'}" class="text-center each-poste-label" :key="index">
                                             <span class="text-capitalize" v-if="a.group_name=='Partner'">With<br/></span>
                                             <span class="text-capitalize" v-else-if="a.group_name!='Storage'&&a.group_name!='Conveyor'">In<br/></span>
                                             <span class="text-capitalize" v-if="a.group_name!='QC 1' && a.group_name!='QC 2'"></span>
@@ -268,20 +270,19 @@
                             </div>
                             <div class="d-flex align-items-center">
                                 <div class="w-13">
-                                    <div class="w-100 standard-label fw-bold">Due<br/>Today</div>
+                                    <div class="w-100 standard-label fw-bold mb-2">Due<br/>Today</div>
                                     <div class="w-100 standard-label is-delivery-stores">Delivery<br/>Stores</div>
                                 </div>
                                 <div class="w-87">
                                     <div class="d-flex justify-content-between">
                                         <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsToday[a.group_name].std === 0 && assemblyStatsToday[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'today','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
-                                            <div class="w-100 text-center each-poste-stats poste-stats-top grey-bg py-1">
+                                            <div class="w-100 text-center each-poste-stats poste-stats-top pt-3 pb-2 grey-bg">
                                                 <a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'today','all')">{{assemblyStatsToday[a.group_name].all}}</a>
                                             </div>
-                                            <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg py-1 delivery_store" >
+                                            <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg pb-2 delivery_store" >
                                                 <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'today','delivery')">{{assemblyStatsToday[a.group_name].delivery}}</a></p>
                                                 <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'today','store')">{{assemblyStatsToday[a.group_name].store}}</a></p>
                                             </div>
-
                                         </div>
                                     </div>
                                 </div>
@@ -292,17 +293,16 @@
                             <!--Row tommorow-->
                             <div class="d-flex align-items-center">
                                 <div class="w-13">
-                                    <div class="w-100 standard-label pb-1 fw-bold">Due<br/>Tomorrow</div>
+                                    <div class="w-100 standard-label fw-bold mb-2">Due<br/>Tomorrow</div>
                                     <div class="w-100 standard-label is-delivery-stores">Delivery<br/>Stores</div>
                                 </div>
                                 <div class="w-87">
                                     <div class="d-flex justify-content-between">
                                         <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsTomorrow[a.group_name].std === 0 && assemblyStatsTomorrow[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'tomorrow','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
-
-                                            <div class="w-100 text-center each-poste-stats poste-stats-top grey-bg py-1">
+                                            <div class="w-100 text-center each-poste-stats poste-stats-top pt-3 pb-2 grey-bg">
                                                 <a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'tomorrow','all')">{{assemblyStatsTomorrow[a.group_name].all}}</a>
                                             </div>
-                                            <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg py-1 delivery_store" >
+                                            <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg pb-2 delivery_store" >
                                                 <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'tomorrow','delivery')">{{assemblyStatsTomorrow[a.group_name].delivery}}</a></p>
                                                 <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'tomorrow','store')">{{assemblyStatsTomorrow[a.group_name].store}}</a></p>
                                             </div>
@@ -318,20 +318,19 @@
                             <!--Row Overdue-->
                             <div class="d-flex align-items-center">
                                 <div class="w-13">
-                                    <div class="w-100 standard-label pb-1 fw-bold">All<br/>Overdues</div>
+                                    <div class="w-100 standard-label mb-2 fw-bold">All<br/>Overdues</div>
                                     <div class="w-100 standard-label is-delivery-stores">Delivery<br/>Stores</div>
                                 </div>
                                 <div class="w-87">
                                     <div class="d-flex justify-content-between">
                                         <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsOverdue[a.group_name].std === 0 && assemblyStatsOverdue[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'overdue','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
-                                            <div class="w-100 text-center each-poste-stats poste-stats-top grey-bg py-1">
+                                            <div class="w-100 text-center each-poste-stats poste-stats-top pt-3 pb-2 grey-bg">
                                                 <a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'overdue','all')">{{assemblyStatsOverdue[a.group_name].all}}</a>
                                             </div>
-                                            <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg py-1 delivery_store" >
+                                            <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg pb-2 delivery_store" >
                                                 <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'overdue','delivery')">{{assemblyStatsOverdue[a.group_name].delivery}}</a></p>
                                                 <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'overdue','store')">{{assemblyStatsOverdue[a.group_name].store}}</a></p>
                                             </div>
-
                                         </div>
                                     </div>
                                 </div>
@@ -342,16 +341,16 @@
                             <!--Row Later-->
                             <div class="d-flex align-items-center">
                                 <div class="w-13">
-                                    <div class="w-100 standard-label pb-1 fw-bold">Due<br/>Later</div>
+                                    <div class="w-100 standard-label mb-2 fw-bold">Due<br/>Later</div>
                                     <div class="w-100 standard-label is-delivery-stores">Delivery<br/>Stores</div>
                                 </div>
                                 <div class="w-87">
                                     <div class="d-flex justify-content-between">
-                                        <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsLater[a.group_name].std === 0 && assemblyStatsLater[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'later','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
-                                            <div class="w-100 text-center each-poste-stats poste-stats-top grey-bg py-1">
+                                        <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc rounded-2" :class="{'is_bloc_disabled':assemblyStatsLater[a.group_name].std === 0 && assemblyStatsLater[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'later','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
+                                            <div class="w-100 text-center each-poste-stats poste-stats-top pt-3 pb-2 grey-bg">
                                                 <a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'later','all')">{{assemblyStatsLater[a.group_name].all}}</a>
                                             </div>
-                                            <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg py-1 delivery_store" >
+                                            <div class="w-100 text-center each-poste-stats poste-stats-bottom pb-2 grey-bg delivery_store" >
                                                 <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'later','delivery')">{{assemblyStatsLater[a.group_name].delivery}}</a></p>
                                                 <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'later','store')">{{assemblyStatsLater[a.group_name].store}}</a></p>
                                             </div>
@@ -413,7 +412,7 @@
                                                         <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" fill="#4E58E7"/>
                                                         <circle cx="6" cy="6" r="5" stroke="#4E58E7" stroke-width="2"/>
                                                         </svg>
-                                                        &nbsp;&nbsp;<span class="d-block text-center" :style="{ width: 'calc( 100% - 12px )'}">{{ invoiceRow.location }}</span>
+                                                        &nbsp;&nbsp;<span class="d-block text-center text-nowrap" :style="{ width: 'calc( 100% - 12px )'}">{{ invoiceRow.location }}</span>
                                                     </div>
                                                 </td>
                                                 <!-- Prod -->
@@ -538,29 +537,29 @@
                     },
             ]);
             onBeforeMount( () => {
-                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
-                axios.post('/assembly-home-stats')
-                    .then((res) => {
-                        let gp = res.data.grouped_postes;
-                        let width = 0;
-                        if(parseInt(gp.length) > 0){
-                            width = 80/parseInt(gp.length);
-                            groupedPosteWidth.value = width;
-                        }
-                        groupedPostes.value = gp;
-                        mainStats.value = res.data.main_stats;
-                        assemblyStatsTotal.value = res.data.stats_total;
-                        assemblyStatsToday.value = res.data.stats_today;
-                        assemblyStatsTomorrow.value = res.data.stats_tomorrow;
-                        assemblyStatsOverdue.value = res.data.stats_overdue;
-                        assemblyStatsLater.value = res.data.stats_later;
-                        store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_ASSEMBLY_STATE}`, res.data);
-                    })
-                    .catch(error => {
-                        console.log(error);
-                    }).finally(() => {
-                        store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                    });
+                // store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
+                // axios.post('/assembly-home-stats')
+                //     .then((res) => {
+                //         let gp = res.data.grouped_postes;
+                //         let width = 0;
+                //         if(parseInt(gp.length) > 0){
+                //             // width = 90/parseInt(gp.length);
+                //             groupedPosteWidth.value = 8.5;
+                //         }
+                //         groupedPostes.value = gp;
+                //         mainStats.value = res.data.main_stats;
+                //         assemblyStatsTotal.value = res.data.stats_total;
+                //         assemblyStatsToday.value = res.data.stats_today;
+                //         assemblyStatsTomorrow.value = res.data.stats_tomorrow;
+                //         assemblyStatsOverdue.value = res.data.stats_overdue;
+                //         assemblyStatsLater.value = res.data.stats_later;
+                //         store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_ASSEMBLY_STATE}`, res.data);
+                //     })
+                //     .catch(error => {
+                //         console.log(error);
+                //     }).finally(() => {
+                //         store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                //     });
             });
 
             onMounted(() =>{

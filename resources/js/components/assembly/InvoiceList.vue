@@ -68,12 +68,12 @@
                 </tr>
             </transition-group>
             <tr v-if="invoiceList.length == 0">
-                <td class="tcol" style="text-align: center" :colspan="Object.keys(tableColumnsDef).length">No Data</td>
+                <td class="tcol" style="text-align: center" :colspan="Object.keys(tableColumnsDef).length">No Data Available</td>
             </tr>
             </tbody>
             <tfoot>
                 <tr v-if="currentLoadedInvoiceCount < totalInvoiceCount">
-                    <td class="tcol" style="text-align: center" :colspan="Object.keys(tableColumnsDef).length">  <button class="btn btn-link" @click="loadMoreInvoice">Show more</button></td>
+                    <td class="tcol" style="text-align: center" :colspan="Object.keys(tableColumnsDef).length">  <button class="btn btn-link" @click="loadMoreInvoice">Show more ( {{ currentLoadedInvoiceCount }} / {{ totalInvoiceCount }} )</button></td>
                 </tr>
             </tfoot>
         </table>
@@ -181,7 +181,7 @@ export default {
             store.dispatch(`${INVOICE_MODULE}${LOAD_MORE_INVOICE}`);
         }
         onMounted(()=>{
-            store.dispatch(`${INVOICE_MODULE}${SET_INVOICE_LIST}`);
+            // store.dispatch(`${INVOICE_MODULE}${SET_INVOICE_LIST}`);
         })
 
         const checkboxclicked = ( check, id, name )=>{

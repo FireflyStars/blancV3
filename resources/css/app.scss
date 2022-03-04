@@ -839,16 +839,16 @@ padding:0 1.2rem;
     border-radius: 10px;
 
     .total_stats_num{
-      font:normal 18px/30px 'Gotham Medium';
+      font:normal 18px/21.6px 'Gotham Rounded';
     }
 
     .as-stats-label{
-      font:normal 16px/1.3em 'Gotham Medium';
+      font:normal 16px/1.3em 'Gotham Rounded';
     }
 
     .red-stats{
       background:#eb5757;
-      font:normal 12px 'Gotham Medium';
+      font:normal 12px 'Gotham Rounded';
       border-radius:20px;
 
       .standard-bar{
@@ -872,11 +872,12 @@ padding:0 1.2rem;
   }
 
   #order_status_heading{
-    font:normal 24px 'Gotham Medium';
+    font:normal 22px/26px 'Gotham Rounded';
   }
 
   .each-poste-bloc {
-    &:not(.is_bloc_disabled):hover, &.is_bloc_active {
+      // padding: 14px 25px 12px 20px;
+      &:not(.is_bloc_disabled):hover, &.is_bloc_active {
       cursor: pointer;
 
       .each-poste-stats {
@@ -894,7 +895,7 @@ padding:0 1.2rem;
     }
 
     .each-poste-stats {
-      font: normal 20px/1em "Gotham Medium";
+      font: normal 20px/1em "Gotham Rounded";
       &.is_stats_active {
         background: #42a71e;
       }
@@ -910,14 +911,14 @@ padding:0 1.2rem;
   }
 
   .standard-label{
-    font:normal 16px/1.3em 'Gotham Medium';
+    font:normal 16px/1.3em 'Gotham Rounded';
     &.is-express{
       color:#eb5757;
     }
   }
 
   .each-poste-stats{
-    font:normal 20px/1em 'Gotham Medium';
+    font:normal 20px/1em 'Gotham Rounded';
 
     a{
       color:#000;

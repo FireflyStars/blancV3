@@ -3,15 +3,14 @@
         <label class="select-label" :class="{disabled:disabled==true}" v-if="label">{{ label }}</label>
         <input type="text" readonly :placeholder="placeholder" class="w-100 bg-white" v-model="formated_date" @click="toggleshowDp"/>
         <transition name="trans-dp-picker" >
-            <div class="dp-picker" v-if="sel===name" :class="{row6:displayed_dates_rows[5].length>0&&currentView=='dates' }" :style="{top:droppos.top,right:droppos.right,bottom:droppos.bottom,left:droppos.left,transformOrigin:droppos.transformOrigin}">
-
-                <div class="row">
+            <div class="dp-picker" id="dateRangePicker" v-if="sel===name" :class="{row6:displayed_dates_rows[5].length>0&&currentView=='dates' }" :style="{top:droppos.top,right:droppos.right,bottom:droppos.bottom,left:droppos.left,transformOrigin:droppos.transformOrigin}">
+                <div class="row" id="dateRangePickerHeader">
                     <div class="col-2"><button @click="minusMonth" class="btn btn-dp minus"></button></div>
                     <div class="col-8 text-center"><button class="btn btn-month" @click="showMonths">{{monthsName[MonthYear.month].name}}</button><button class="btn btn-year" @click="showYears">{{MonthYear.year}}</button></div>
                     <div class="col-2"><button @click="plusMonth" class="btn btn-dp "></button></div>
                 </div>
                 <transition name="trans-dp-picker-zoom" >
-                    <div v-if="currentView=='dates'" class="position-absolute mw-picker">
+                    <div v-if="currentView=='dates'" class="position-absolute mw-picker" id="dateRangePickerBody">
                         <div class="row">
                             <div class="col dp-dayname" v-for="day in days" :key="day">
                                 {{ day.dayName }}
@@ -24,9 +23,10 @@
                                 </div>
                             </template>
                         </div>
+                        <button class="btn-sm btn-secondary reset-daterange mt-3" @click="resetFilter">Clear</button>
                     </div>
                 </transition>
-                <transition name="trans-dp-picker-zoom" class="position-absolute mw-picker">
+                <transition name="trans-dp-picker-zoom" class="position-absolute mw-picker" id="dateRangePickerBody">
                 <div v-if="currentView=='months'">
                     <div class="row row-months" v-for="(row,i) in displayed_months_rows" :key="i" :class="{'mt-5':i==0}">
                         <template v-for="(month,index) in row" :key="index">
@@ -37,7 +37,7 @@
                     </div>
                 </div>
                 </transition>
-                <transition name="trans-dp-picker-zoom" class="position-absolute mw-picker">
+                <transition name="trans-dp-picker-zoom" class="position-absolute mw-picker" id="dateRangePickerBody">
                     <div v-if="currentView=='years'">
                         <div class="row row-years" v-for="(row,i) in displayed_year_rows" :key="i" :class="{'mt-5':i==0}">
                             <template v-for="(y,index) in row" :key="index">
@@ -55,7 +55,7 @@
 </template>
 
 <script>
-    import {ref,nextTick,watch,computed} from 'vue';
+    import {ref, nextTick, watch, computed, onUpdated} from 'vue';
     import {useStore} from 'vuex';
     import {GET_CURRENT_SELECT, SELECT_MODULE, SET_CURRENT_SELECT} from "../../store/types/types";
     
@@ -174,20 +174,24 @@
                 MonthYear.value.year = d.getFullYear();
             }
             function minusMonth() {
+                                
                 if(MonthYear.value.month==0){
                     MonthYear.value.month=11;
                     MonthYear.value.year--;
                 }else{
                     MonthYear.value.month--;
                 }
+                adjustPickerHeight();
             }
             function plusMonth() {
+                
                 if(MonthYear.value.month==11){
                     MonthYear.value.month=0;
                     MonthYear.value.year++;
                 }else{
                     MonthYear.value.month++;
                 }
+                adjustPickerHeight();
             }
             const displayed_dates = ref([]);
             const displayed_dates_rows = ref({});
@@ -283,17 +287,17 @@
                     if(typeof props.disabledToDate!="undefined"&&props.disabledToDate!=""){
                         let disabledto=new Date(props.disabledToDate);
                         let curdate=new Date(datestr);
-                        if(curdate<=disabledto){
-                            displayed_dates.value[i].notavailable=true;
-                        }
+                        // if(curdate<=disabledto){
+                        //     displayed_dates.value[i].notavailable=true;
+                        // }
                     }
                      //disabledFromDate
                     if(typeof props.disabledFromDate!="undefined"&&props.disabledFromDate!=""){
                         let disabledFrom=new Date(props.disabledFromDate);
                         let curdate=new Date(datestr);
-                        if(curdate>disabledFrom){
-                            displayed_dates.value[i].notavailable=true;
-                        }
+                        // if(curdate>disabledFrom){
+                        //     displayed_dates.value[i].notavailable=true;
+                        // }
                     }
 
                     displayed_dates.value[i].selected = false;
@@ -330,7 +334,19 @@
                     count++;
                 }
             }
-
+            function adjustPickerHeight(){
+                nextTick(()=>{
+                    let paddingHeight = 50;
+                    let datePickerHeader = document.querySelector('#dateRangePickerHeader');
+                    let datePickerBody = document.querySelector('#dateRangePickerBody');
+                    let datePicker = document.querySelector('#dateRangePicker');
+                    console.log("datePickerHeader.clientHeight")
+                    console.log(datePickerHeader.clientHeight)
+                    console.log("datePickerBody.clientHeight")
+                    console.log(datePickerBody.clientHeight)
+                    datePicker.style.minHeight =  paddingHeight + datePickerHeader.clientHeight + datePickerBody.clientHeight + 'px';
+                })
+            }
             renderPicker();
 
             watch(() => _.cloneDeep(MonthYear), (current_val, previous_val) => {
@@ -341,6 +357,12 @@
             watch(() => _.cloneDeep(start_date), (current_val, previous_val) => {
                 renderPicker();
             });
+            const resetFilter = ()=>{
+                start_date.value = [];
+                end_date.value = [];
+                formated_date.value = '';
+                renderPicker();
+            }
             function setDate(y,m,d) {
                 if( selectedCount.value == 0 ){
                     start_date.value[0]= parseInt(y);
@@ -387,10 +409,12 @@
             function showYears() {
                 currentView.value='years';
                 renderYearsView();
+                adjustPickerHeight();
             }
             function showMonths() {
                 currentView.value='months'
                 renderMonthsView();
+                adjustPickerHeight();
             }
 
             function renderMonthsView() {
@@ -467,6 +491,7 @@
                 setMonth,
                 setYear,
                 toggleshowDp,
+                resetFilter
             }
 
         },
@@ -521,7 +546,7 @@
     .dp-picker{
         position: absolute;
         width: 426px;
-        min-height: 396px;
+        min-height: 426px;
         background: #F5F5F5;
         box-shadow: 0px 1px 2px rgba(0, 14, 51, 0.25);
         border-radius: 16px;
@@ -606,8 +631,6 @@
     .dp-months.disabled.current{
         opacity: 0.5;
     }
-
-
     .dp-years{
         text-align: center;
         padding: 0;
