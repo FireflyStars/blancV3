@@ -14,7 +14,7 @@ const router = createRouter({
             name:'LandingPage',
             component:()=> import('../components/orderlist/OrderList'),
             meta:{
-                authenticated:true
+                authenticated:  true
             },
             children:[
                 {
@@ -22,17 +22,17 @@ const router = createRouter({
                     name:'OrderDetails',
                     component:()=> import('../components/orderlist/OrderDetail'),
                     meta:{
-                        authenticated:true
+                        authenticated:  true
                     }
                 }
-                ]
+            ]
         },
         {
             path:'/order-content/:order_id',
             name:'DetailingItemList',
             component:()=> import('../components/detailing/DetailingItemList'),
             meta:{
-                authenticated:true
+                authenticated:  true
             }
         },
         {
@@ -40,7 +40,7 @@ const router = createRouter({
             name:'DetailingItem',
             component:()=> import('../components/detailing/DetailingItem'),
             meta:{
-                authenticated:true
+                authenticated:  true
             }
         },
         {
@@ -48,7 +48,7 @@ const router = createRouter({
             name:'ComponentTest',
             component:()=> import('../components/orderlist/ComponentTest'),
             meta:{
-                authenticated:true
+                authenticated:  true
             },
         },
         {
@@ -56,7 +56,7 @@ const router = createRouter({
             name:'NewOrder',
             component:()=> import('../components/neworder/NewOrder'),
             meta:{
-                authenticated:true
+                authenticated:  true
             },
         },
         {
@@ -64,8 +64,8 @@ const router = createRouter({
             name:'Permissions',
             component:()=> import('../components/permission/Permission'),
             meta:{
-                authenticated:true,
-                superadmin:true,
+                authenticated:  true,
+                superadmin: true,
             },
         },
         {
@@ -73,7 +73,7 @@ const router = createRouter({
             name:'AuthPage',
             component:()=> import('../components/auth/AuthPage'),
             meta:{
-                authenticated:false
+                authenticated:  false
             },
             children:[
                 {
@@ -81,7 +81,7 @@ const router = createRouter({
                     name:'Login',
                     component:()=> import('../components/auth/Login'),
                     meta:{
-                        authenticated:false
+                        authenticated:  false
                     }
                 },
                 {
@@ -89,7 +89,7 @@ const router = createRouter({
                     name:'ForgotPassword',
                     component:()=> import('../components/auth/ForgotPassword'),
                     meta:{
-                        authenticated:false
+                        authenticated:  false
                     }
                 },
                 {
@@ -97,7 +97,7 @@ const router = createRouter({
                     name:'NewPassword',
                     component:()=> import('../components/auth/NewPassword'),
                     meta:{
-                        authenticated:false
+                        authenticated:  false
                     }
                 }
             ]

@@ -1,45 +1,30 @@
 <template>
     <router-view v-slot="{ Component }">
-    <transition
-            enter-active-class="animate__animated animate__fadeIn"
-    >
-        <div class="container-fluid h-100 bg-color" v-if="showcontainer">
-            <main-header></main-header>
-            <div class="row d-flex align-content-stretch align-items-stretch flex-row hmax main-view-wrap" style="z-index:100" >
-            <side-bar></side-bar>
-                <div class="col main-view p-0">
-
-                    <h2 class="subtitle">Order List</h2>
-
-
-                    <div class="container-fluid orderlist-tabs d-flex align-items-center">
-                        <template v-for="(tab,tab_index) in tabs">
-                            <div class="orderlist-tab body_bold" :class="{active:tab.active}" @click="showtab(tab_index)">{{tab.name}}</div>
+        <transition enter-active-class="animate__animated animate__fadeIn">
+            <div class="container-fluid h-100 bg-color" v-if="showcontainer">
+                <main-header></main-header>
+                <div class="row d-flex align-content-stretch align-items-stretch flex-row hmax main-view-wrap" style="z-index:100" >
+                <side-bar></side-bar>
+                    <div class="col main-view p-0">
+                        <h2 class="subtitle">Order List</h2>
+                        <div class="container-fluid orderlist-tabs d-flex align-items-center">
+                            <template v-for="(tab,tab_index) in tabs" :key="tab_index">
+                                <div class="orderlist-tab body_bold" :class="{active:tab.active}" @click="showtab(tab_index)">{{tab.name}}</div>
+                            </template>
+                        </div>
+                        <template v-for="(tab,tab_index) in tabs" :key="tab_index">
+                            <order-list-table :tabledef="allordertablefields" :tab="tab" :id="tab_index" v-if="tab.active"></order-list-table>
                         </template>
-
-                    </div>
-                    <template v-for="(tab,tab_index) in tabs">
-                        <order-list-table :tabledef="allordertablefields" :tab="tab" :id="tab_index" v-if="tab.active"></order-list-table>
-                    </template>
-
-
-                    <transition
-                            enter-active-class="animate__animated animate__fadeIn"
-                            leave-active-class="animate__animated animate__fadeOut"
-                    >
-                    <div v-if="showlayer" class="back-layer"></div>
-                    </transition>
-
-                        <transition   enter-active-class="animate__animated animate__fadeIn"
-                                      leave-active-class="animate__animated animate__fadeOut">
+                        <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
+                            <div v-if="showlayer" class="back-layer"></div>
+                        </transition>
+                        <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
                             <component :is="Component" />
                         </transition>
-
-
+                    </div>
                 </div>
             </div>
-        </div>
-    </transition>
+        </transition>
     </router-view>
 </template>
 
@@ -100,10 +85,7 @@
                 };
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SET_CURRENTTAB}`,'all_orders');
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading order list. Please wait...');
-
             }
-
-
             const allordertablefields=ref({
                 line_select:{
                     name:" ",
@@ -176,10 +158,7 @@
                 nextTick(()=>{
                     showcontainer.value=true;
                 });
-
             });
-
-
 
             store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`);
 

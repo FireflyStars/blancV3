@@ -1,49 +1,34 @@
 <template>
     <div class="container-fluid position-relative">
-
-    <section class="itemlist-table " v-if="Object.entries(ITEM_LIST).length !== 0">
-
-        <div class="suborder" v-for="(ITEMS,suborder) in ITEM_LIST" :key="suborder">
-            <transition-group tag="div" class="position-relative" name="list" appear>
-            <div class="subordernum body_small_medium" v-if="Object.entries(ITEM_LIST).length !== 0">Sub order {{suborder}}</div>
-        <header v-if="Object.entries(ITEM_LIST).length !== 0">
-        <div class="tcol noselect"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}" >{{col.name}}
-            <check-box v-if="col.type=='checkbox'&&ITEMS.length>0" :checked_checkbox="typeof MULTI_CHECKED[suborder]!=='undefined'&&ITEMS.length==MULTI_CHECKED[suborder].length"  @checkbox-clicked="checkboxallclicked" :name="suborder"></check-box>
-        </div>
-        </header>
-
-        <div class="trow" v-for="ITEM in ITEMS" :key="ITEM.infoitems_id">
-<template v-for="(col,index) in tabledef">
-            <div class="tcol"   :style="{flex:col.flex}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(ITEM.infoitems_id,index)"  >
-
-
-                <check-box v-if="col.type=='checkbox'" :checked_checkbox="typeof MULTI_CHECKED[suborder]!=='undefined'&&MULTI_CHECKED[suborder].includes(ITEM.infoitems_id)" :id="ITEM.infoitems_id" @checkbox-clicked="checkboxclicked" :name="suborder"></check-box>
-
-                <tag v-else-if="col.type=='tag'" :name="ITEM[index]" :style="{backgroundColor:'transparent',border:'1px solid #000000',color:'#000000'}"></tag>
-                <color-tag :style="col.css" v-else-if="col.type=='color'" :colors="ITEM[index].toLowerCase()"></color-tag>
-                <span v-else :style="col.css" class="tool-tip"  :class="{body_small_medium:col.name=='',body_small:col.name!=''}" :data-tooltip="preprocess(col,ITEM[index])">{{preprocess(col,ITEM[index])}}</span>
+        <section class="itemlist-table " v-if="Object.entries(ITEM_LIST).length !== 0">
+            <div class="suborder" v-for="(ITEMS,suborder) in ITEM_LIST" :key="suborder">
+                <transition-group tag="div" class="position-relative" name="list" appear>
+                    <div class="subordernum body_small_medium" v-if="Object.entries(ITEM_LIST).length !== 0">Sub order {{suborder}}</div>
+                        <header v-if="Object.entries(ITEM_LIST).length !== 0">
+                            <div class="tcol noselect"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}" >{{col.name}}
+                                <check-box v-if="col.type=='checkbox'&&ITEMS.length>0" :checked_checkbox="typeof MULTI_CHECKED[suborder]!=='undefined'&&ITEMS.length==MULTI_CHECKED[suborder].length"  @checkbox-clicked="checkboxallclicked" :name="suborder"></check-box>
+                            </div>
+                        </header>
+                    <div class="trow" v-for="ITEM in ITEMS" :key="ITEM.infoitems_id">
+                        <template v-for="(col,index) in tabledef" :key="index">
+                            <div class="tcol"   :style="{flex:col.flex}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(ITEM.infoitems_id,index)"  >
+                                <check-box v-if="col.type=='checkbox'" :checked_checkbox="typeof MULTI_CHECKED[suborder]!=='undefined'&&MULTI_CHECKED[suborder].includes(ITEM.infoitems_id)" :id="ITEM.infoitems_id" @checkbox-clicked="checkboxclicked" :name="suborder"></check-box>
+                                <tag v-else-if="col.type=='tag'" :name="ITEM[index]" :style="{backgroundColor:'transparent',border:'1px solid #000000',color:'#000000'}"></tag>
+                                <color-tag :style="col.css" v-else-if="col.type=='color'" :colors="ITEM[index].toLowerCase()"></color-tag>
+                                <span v-else :style="col.css" class="tool-tip"  :class="{body_small_medium:col.name=='',body_small:col.name!=''}" :data-tooltip="preprocess(col,ITEM[index])">{{preprocess(col,ITEM[index])}}</span>
+                            </div>
+                        </template>
+                    </div>
+                </transition-group>
             </div>
-</template>
-            </div>
-
-        </transition-group>
-        </div>
-
-    </section>
-
-      <section class="nodata p-2" v-if="Object.entries(ITEM_LIST).length === 0">
+        </section>
+        <section class="nodata p-2" v-if="Object.entries(ITEM_LIST).length === 0">
             <p>No items available.</p>
-      </section>
-
+        </section>
         <transition name="trans-batch-actions">
-
-        <div class=" batch-actions" v-if="Object.entries(MULTI_CHECKED).length !== 0"><button class="btn btn-outline-dark body_medium"  @click="show_split_conf">Split</button><button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Delete items')">Delete</button></div>
+            <div class=" batch-actions" v-if="Object.entries(MULTI_CHECKED).length !== 0"><button class="btn btn-outline-dark body_medium"  @click="show_split_conf">Split</button><button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Delete items')">Delete</button></div>
         </transition>
-
-
     </div>
-
-
 </template>
 
 <script>

@@ -1,51 +1,42 @@
 <template>
     <div class="container-fluid position-relative p-0">
         <filters :filterDef="filterDef"></filters>
-    <table class="orderlist-table" v-if="ORDER_LIST.length>0">
-        <thead>
-        <tr>
-        <th class="tcol noselect body_small_medium"  v-for="(col,index) in tabledef" :key="index" :style="{width:col.width,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}"  @click="sort(index,col.sortable)">{{col.name}}
-            <sort-arrows v-if="col.sortable" :sort="SORTCOL" :colname="index"></sort-arrows>
-            <check-box v-if="col.type=='checkbox'&&ORDER_LIST.length>0" :checked_checkbox="ORDER_LIST.length==MULTI_CHECKED.length"  @checkbox-clicked="checkboxallclicked"></check-box>
-        </th>
-        </tr>
-        </thead>
-        <transition-group tag="tbody"  name="list" appear>
-        <tr class="trow" v-for="order in ORDER_LIST" :key="order.id" :class="{current_sel:order.id==CURRENT_SELECTED&&route.params.order_id>0,late:order.Status=='LATE'&&order.suggestedDeliveryDate==null&&!hasRoles(['cc']),multi:MULTI_CHECKED.includes(order.id)&&order.id!=CURRENT_SELECTED}">
-<template v-for="(col,index) in tabledef">
-            <td class="tcol" :colspan="colspan(index,order)"  :style="{width:col.width}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(order.id,index)" v-if="hideOnLate(order.Status,index,order)" >
-
-
-                <check-box v-if="col.type=='checkbox'" :checked_checkbox="(order.id==CURRENT_SELECTED&&route.params.order_id>0)||MULTI_CHECKED.includes(order.id)" :id="order.id" @checkbox-clicked="checkboxclicked"></check-box>
-                <tag v-else-if="col.type=='tag'&&(order.Status!='LATE')||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate!=null)||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate==null&&hasRoles(['cc']))" :name="order[index]" >
-                    <span  v-if="order.Status=='LATE'&&order.suggestedDeliveryDate!=null&&index=='Status'" class="tool-tip" :data-tooltip="`New Delivery date suggested, waiting for approval`"><i class="icon-late"></i>Late</span>
-                </tag>
-                <express-icon v-else-if="col.type=='express'" :express_values="order[index]"></express-icon>
-                <span v-else :style="col.css" v-html="preprocess(col,order[index],order)"></span>
-            </td>
-</template>
-            </tr>
-
-        </transition-group>
-
-        <tfoot>
-        <tr>
-        <td class="tcol" style="text-align: center" :colspan="Object.keys(tabledef).length">  <button class="btn btn-link" @click="loadMore">Show more</button></td>
-        </tr>
-
-        </tfoot>
-
-    </table>
-
-      <section class="nodata p-2" v-if="ORDER_LIST.length==0">
-            <p v-if="!loader_running">No orders available.</p>
-      </section>
+        <table class="orderlist-table" v-if="ORDER_LIST.length>0">
+            <thead>
+                <tr>
+                    <th class="tcol noselect body_small_medium"  v-for="(col,index) in tabledef" :key="index" :style="{width:col.width,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}"  @click="sort(index,col.sortable)">{{col.name}}
+                        <sort-arrows v-if="col.sortable" :sort="SORTCOL" :colname="index"></sort-arrows>
+                        <check-box v-if="col.type=='checkbox'&&ORDER_LIST.length>0" :checked_checkbox="ORDER_LIST.length==MULTI_CHECKED.length"  @checkbox-clicked="checkboxallclicked"></check-box>
+                    </th>
+                </tr>
+            </thead>
+            <transition-group tag="tbody"  name="list" appear>
+                <tr class="trow" v-for="order in ORDER_LIST" :key="order.id" :class="{current_sel:order.id==CURRENT_SELECTED&&route.params.order_id>0,late:order.Status=='LATE'&&order.suggestedDeliveryDate==null&&!hasRoles(['cc']),multi:MULTI_CHECKED.includes(order.id)&&order.id!=CURRENT_SELECTED}">
+                    <template v-for="(col,index) in tabledef" :key="index">
+                        <td class="tcol" :colspan="colspan(index,order)"  :style="{width:col.width}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(order.id,index)" v-if="hideOnLate(order.Status,index,order)" >
+                            <check-box v-if="col.type=='checkbox'" :checked_checkbox="(order.id==CURRENT_SELECTED&&route.params.order_id>0)||MULTI_CHECKED.includes(order.id)" :id="order.id" @checkbox-clicked="checkboxclicked"></check-box>
+                            <tag v-else-if="col.type=='tag'&&(order.Status!='LATE')||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate!=null)||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate==null&&hasRoles(['cc']))" :name="order[index]" >
+                                <span  v-if="order.Status=='LATE'&&order.suggestedDeliveryDate!=null&&index=='Status'" class="tool-tip" :data-tooltip="`New Delivery date suggested, waiting for approval`"><i class="icon-late"></i>Late</span>
+                            </tag>
+                            <express-icon v-else-if="col.type=='express'" :express_values="order[index]"></express-icon>
+                            <span v-else :style="col.css" v-html="preprocess(col,order[index],order)"></span>
+                        </td>
+                    </template>
+                </tr>
+            </transition-group>
+            <tfoot>
+                <tr>
+                    <td class="tcol" style="text-align: center" :colspan="Object.keys(tabledef).length">  <button class="btn btn-link" @click="loadMore">Show more</button></td>
+                </tr>
+            </tfoot>
+        </table>
+        <section class="nodata p-2" v-if="ORDER_LIST.length==0">
+                <p v-if="!loader_running">No orders available.</p>
+        </section>
         <transition name="trans-batch-actions">
-        <div class=" batch-actions" v-if="MULTI_CHECKED.length>0&&CURRENT_SELECTED==''"><button class="btn btn-outline-dark disabled body_medium"  @click="featureunavailable('Batch invoice')">Batch Invoice</button><button class="btn btn-outline-dark disabled body_medium"  @click="featureunavailable('Batch payment')">Batch Payment</button><button class="btn btn-outline-dark body_medium"  @click="markaslate">Mark as late</button><button class="btn btn-outline-dark body_medium" @click="cancelorders">Cancel order(s)</button></div>
+            <div class=" batch-actions" v-if="MULTI_CHECKED.length>0&&CURRENT_SELECTED==''"><button class="btn btn-outline-dark disabled body_medium"  @click="featureunavailable('Batch invoice')">Batch Invoice</button><button class="btn btn-outline-dark disabled body_medium"  @click="featureunavailable('Batch payment')">Batch Payment</button><button class="btn btn-outline-dark body_medium"  @click="markaslate">Mark as late</button><button class="btn btn-outline-dark body_medium" @click="cancelorders">Cancel order(s)</button></div>
         </transition>
     </div>
-
-
 </template>
 
 <script>
