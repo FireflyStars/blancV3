@@ -68,7 +68,7 @@ export default {
         typeitems: {},
         detailingitem: {}
     },
-    emits: ['save-type-item', 'back-previous-step'],
+    emits: ['save-type-item', 'go-to-step'],
     setup(props, context) {
         const category_id = ref(0);
         const typeitem_id = ref(0);
@@ -91,15 +91,22 @@ export default {
             category_id.value = id;
         }
         function typeItemClick(id) {
-            typeitem_id.value = id;
-            context.emit("save-type-item", { detailingitem_id: props.detailingitem.id, category_id: category_id.value, typeitem_id: typeitem_id.value });
-            this.scrollToNext();
+            if(typeitem_id.value != id){
+                typeitem_id.value = id;
+                context.emit("save-type-item", { detailingitem_id: props.detailingitem.id, category_id: category_id.value, typeitem_id: typeitem_id.value });
+                this.scrollToNext();
+            }else{
+                context.emit("save-type-item", { detailingitem_id: props.detailingitem.id, category_id: category_id.value, typeitem_id: null });
+
+            }
         }
         function save() {
             context.emit("save-type-item", { detailingitem_id: props.detailingitem.id, step: 3,typeitem_id:typeitem_id.value});
+            window.scrollTo(0,0);
         }
         function back() {
-            context.emit("back-previous-step", 1);
+            context.emit("go-to-step", 1);
+            window.scrollTo(0,0);
         }
         function  scrollToNext() {
             let element = document.getElementById("btn-next");
@@ -157,6 +164,8 @@ export default {
     background: #ffffff;
     box-shadow: 0px 0px 4px rgba(80, 80, 80, 0.2);
     border-radius: 4px;
+    font-family: Gotham Rounded;
+
 }
 .item-type:hover {
     background-color: #47454b;

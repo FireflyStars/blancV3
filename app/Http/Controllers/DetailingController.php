@@ -125,7 +125,7 @@ class DetailingController extends Controller
         $typeitem_id = $request->post('typeitem_id');
         $size_id = $request->post('size_id');
         $brand_id = $request->post('brand_id');
-        $fabric_id = $request->post('fabric_id');
+        $fabrics_id = $request->post('fabrics_id');
         $color_id = $request->post('color_id');
         $pattern_id = $request->post('pattern_id');
         $condition_id = $request->post('condition_id');
@@ -135,19 +135,30 @@ class DetailingController extends Controller
         $brand_name = $request->post('brand_name');
 
         if (isset($dept_id)) {
-            DB::table('detailingitem')->where('id', $detailingitem_id)->update([
-                'department_id' => $dept_id,
-                'etape' => 2,
-                'updated_at' => date('Y-m-d H:i:s')
-            ]);
+            $detailingitem = DB::table('detailingitem')->where('id', '=', $detailingitem_id)->get();
+            $detailingitem = (array) $detailingitem->first();
+            if( $detailingitem['department_id']!= $dept_id){
+                DB::table('detailingitem')->where('id', $detailingitem_id)->update([
+                    'department_id' => $dept_id,
+                    'category_id' => null,
+                    'typeitem_id' => null,
+                    'etape' => 2,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+            }else{
+                DB::table('detailingitem')->where('id', $detailingitem_id)->update([
+                    'etape' => 2,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+            }
         }
-        if (isset($category_id) && isset($typeitem_id)) {
+        if (isset($category_id) && isset($typeitem_id)||isset($category_id) && $typeitem_id == null) {
             $typeitem = DB::table('typeitem')->where('typeitem.id', $typeitem_id)->first();
             DB::table('detailingitem')->where('id', $detailingitem_id)->update([
                 'category_id' => $category_id,
                 'typeitem_id' => $typeitem_id,
                 'size_id' => null,
-                'pricecleaning' => $typeitem->pricecleaning,
+                'pricecleaning' => isset($typeitem)?$typeitem->pricecleaning:0,
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
         }
@@ -155,7 +166,7 @@ class DetailingController extends Controller
         if (isset($size_id)) {
             DB::table('detailingitem')->where('id', $detailingitem_id)->update([
                 'size_id' => $size_id,
-                'etape' => 3,
+                'etape' => 6,
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
         }
@@ -168,16 +179,22 @@ class DetailingController extends Controller
                 'brand_id' => $brand_id,
                 'coefcleaningbrand' => $brand->coefcleaning,
                 'coeftailoringbrand' => $brand->coeftailoring,
-                'etape' => 4,
+                'etape' => 3,
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
         }
-        if (isset($fabric_id)) {
-            $fabric = DB::table('fabrics')->where('id', $fabric_id)->first();
+        if (isset($fabrics_id)) {
+            $fabrics = DB::table('fabrics')->whereIn('id', json_decode($fabrics_id))->get();
+            $coefcleaningfabrics = 0;
+            $coeftailoringfabrics = 0;
+            foreach ($fabrics as $fab) {
+                $coefcleaningfabrics += $fab->coefcleaning;
+                $coeftailoringfabrics += $fab->coeftailoring;
+            }
             DB::table('detailingitem')->where('id', $detailingitem_id)->update([
-                'fabric_id' => $fabric_id,
-                'coefcleaningfabric' => $fabric->coefcleaning,
-                'coeftailoringfabric' => $fabric->coeftailoring,
+                'fabric_id' => $fabrics_id,
+                'coefcleaningfabric' => $coefcleaningfabrics,
+                'coeftailoringfabric' => $coeftailoringfabrics,
                 'etape' => 5,
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
@@ -185,7 +202,7 @@ class DetailingController extends Controller
         if (isset($color_id)) {
             DB::table('detailingitem')->where('id', $detailingitem_id)->update([
                 'color_id' => $color_id,
-                'etape' => 6,
+                'etape' => 4,
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
         }
@@ -291,12 +308,12 @@ class DetailingController extends Controller
         $detailing_data['typeitems'] = DB::table('typeitem')->where('department_id', $department_id)->where('deleted_at', NULL)->get();
 
         $steps = $query->get()->pluck('id')->toArray();
-        if (in_array(3, $steps)) {
+        if (in_array(6, $steps)) {
             $detailing_data['sizes'] = DB::table('sizes')->where('typeitem_id', $typeitem_id)->where('deleted_at', NULL)->get();
         } else {
             $detailing_data['sizes'] = [];
         }
-        if (in_array(4, $steps)) {
+        if (in_array(3, $steps)) {
             $detailing_data['brands'] = DB::table('brands')->where('deleted_at', NULL)->get();
         } else {
             $detailing_data['brands'] = [];
@@ -306,7 +323,7 @@ class DetailingController extends Controller
         } else {
             $detailing_data['fabrics'] = [];
         }
-        if (in_array(6, $steps)) {
+        if (in_array(4, $steps)) {
             $detailing_data['colours'] = DB::table('colours')->where('code', '!=', '')->where('deleted_at', NULL)->get();
         } else {
             $detailing_data['colours'] = [];
@@ -339,8 +356,8 @@ class DetailingController extends Controller
             $brand = (array) $brand->first();
         }
         if ($detailingitem['fabric_id'] != null) {
-            $fabric = DB::table('fabrics')->where('id', '=', $detailingitem['fabric_id'])->get();
-            $fabric = (array) $fabric->first();
+            $fabrics = DB::table('fabrics')->select('Name as name', 'coefcleaning', 'coeftailoring')->whereIn('id', json_decode($detailingitem['fabric_id']))->get();
+            // $fabric = (array) $fabric->first();
         }
         if ($detailingitem['color_id'] != null) {
             $colors = DB::table('colours')->select('name', 'code')->whereIn('id', json_decode($detailingitem['color_id']))->get();
@@ -363,8 +380,8 @@ class DetailingController extends Controller
             'size' => isset($size) ? $size['name'] : '',
             'brand_name' => isset($brand) ? $brand['name'] : '',
             'brand_coef_cleaning' => isset($brand) ? $brand['coefcleaning'] * 100 : '',
-            'fabric_name' => isset($fabric) ? $fabric['Name'] : '',
-            'fabric_coef_cleaning' => isset($fabric) ? $fabric['coefcleaning'] * $typeitem['pricecleaning'] : '',
+            'fabrics_name' => isset($fabrics) ? $fabrics : '',
+           // 'fabric_coef_cleaning' => isset($fabric) ? $fabric['coefcleaning'] * $typeitem['pricecleaning'] : '',
             'colors_name' => isset($colors) ? $colors : '',
             'pattern_name' => isset($pattern) ? $pattern['name'] : '',
             'condition_name' => isset($condition) ? $condition['name'] : '',

@@ -67,7 +67,7 @@
                                     :typeitems="detailingData.typeitems"
                                     :detailingitem="detailingitem"
                                     @save-type-item="saveItemDetails"
-                                    @back-previous-step="backPreviousStep"
+                                    @go-to-step="backPreviousStep"
                                 ></detailing-item-type>
                                 <detailing-item-description
                                     v-else-if="detailingitem.etape > 2 && detailingitem.etape <= 8"
@@ -75,14 +75,14 @@
                                     :detailingitem="detailingitem"
                                     :item_description="item_description"
                                     @save-item-description="saveItemDetails"
-                                    @back-previous-step="backPreviousStep"
+                                    @go-to-step="backPreviousStep"
                                 ></detailing-item-description>
                                 <detailing-item-complexities
                                     v-if="detailingitem.etape === 9"
                                     :detailingData="detailingData"
                                     :detailingitem="detailingitem"
                                     @save-item-complexities="saveItemDetails"
-                                    @back-previous-step="backPreviousStep"
+                                    @go-to-step="backPreviousStep"
                                 ></detailing-item-complexities>
                                 <detailing-item-issues
                                     v-if="detailingitem.etape === 10"
@@ -90,7 +90,7 @@
                                     :detailingitem="detailingitem"
                                     :typeitemPicto="item_description.typeitem_picto"
                                     @save-item-issues="saveItemDetails"
-                                    @back-previous-step="backPreviousStep"
+                                    @go-to-step="backPreviousStep"
                                 ></detailing-item-issues>
                             </div>
                         </div>
@@ -112,7 +112,7 @@
         <div v-if="show_pause_popup" class="popup-pause">
             <div class="popup-container">
                 <div class="popup-title">
-                    Are you shure you want to pause item's detailing ?
+                    Are you sure you want to pause item's detailing ?
                     <i
                         class="icon-close popup-close"
                         @click="show_pause_popup = !show_pause_popup"

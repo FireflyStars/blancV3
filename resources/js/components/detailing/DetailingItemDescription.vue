@@ -1,211 +1,216 @@
 <template>
-    <div class="accordion-container">
-        <div class="accordion accordion-flush" id="accordionFlushExample">
-            <div class="accordion-item" v-if="detailingData.sizes.length > 0">
-                <h2 class="accordion-header" id="accordion-size">
-                    <button
-                        class="accordion-button collapsed"
-                        type="button"
-                        @click="descTypeClick('size')"
-                        :class="{ opened: desc_type === 'size' }"
-                    >Size</button>
-                </h2>
-                <div
-                    id="flush-collapseOne"
-                    class="accordion-collapse collapse"
-                    :class="{ show: desc_type === 'size' }"
-                >
-                    <div class="row accordion-body">
+    <transition name="popinout">
+        <div>
+            <div class="accordion-container">
+                <div class="accordion accordion-flush" id="accordionFlushExample">
+                    <div class="accordion-item" v-if="detailingData.brands.length > 0">
+                        <h2 class="accordion-header" id="accordion-brand">
+                            <button
+                                class="accordion-button collapsed"
+                                type="button"
+                                @click="descTypeClick('brand')"
+                                :class="{ opened: desc_type === 'brand' }"
+                            >Brand</button>
+                        </h2>
                         <div
-                            class="box size"
-                            v-for="(size, j) in detailingData.sizes"
-                            :class="{ selected: size_id === size.id }"
-                            @click="select(size.id)"
+                            id="flush-collapseOne"
+                            class="accordion-collapse collapse"
+                            :class="{ show: desc_type === 'brand' }"
                         >
-                            {{ size.name }}
-                            <span class="size-comment">{{ size.comment }}</span>
+                            <div class="accordion-body">
+                                <div class="row position-relative">
+                                    <input
+                                        type="text"
+                                        class="input-search-brand"
+                                        placeholder="Type the a brand name"
+                                        v-model="search"
+                                        @keyup.enter="brandFilterClick(search)"
+                                    />
+                                    <span
+                                        v-if="showbutton"
+                                        @click="clearSearch"
+                                        class="icon-close-position"
+                                    >
+                                        <i class="icon-close"></i>
+                                    </span>
+                                    <div
+                                        class="btn btn-link btn-new-brand"
+                                        @click="show_popup = true"
+                                    >Couldn’t find the brand in the list?</div>
+                                </div>
+                                <div class="row">
+                                    <div
+                                        class="letter"
+                                        v-for="(letter) in letters"
+                                        :class="{ selected: brand_filter === letter }"
+                                        @click="brandFilterClick(letter)"
+                                    >{{ letter }}</div>
+                                </div>
+                                <div class="row">
+                                    <div
+                                        class="box brand"
+                                        :class="{ selected: brand_id === brand.id }"
+                                        v-for="(brand, j) in filteredBrand()"
+                                        @click="select(brand.id)"
+                                    >{{ brand.name }}</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="accordion-item" v-if="detailingData.brands.length > 0">
-                <h2 class="accordion-header" id="accordion-brand">
-                    <button
-                        class="accordion-button collapsed"
-                        type="button"
-                        @click="descTypeClick('brand')"
-                        :class="{ opened: desc_type === 'brand' }"
-                    >Brand</button>
-                </h2>
-                <div
-                    id="flush-collapseOne"
-                    class="accordion-collapse collapse"
-                    :class="{ show: desc_type === 'brand' }"
-                >
-                    <div class="accordion-body">
-                        <div class="row position-relative">
-                            <input
-                                type="text"
-                                class="input-search-brand"
-                                placeholder="Type the a brand name"
-                                v-model="search"
-                                @keyup.enter="brandFilterClick(search)"
-                            />
-                            <span
-                                v-if="showbutton"
-                                @click="clearSearch"
-                                class="icon-close-position"
-                            >
-                                <i class="icon-close"></i>
-                            </span>
-                            <div
-                                class="btn btn-link btn-new-brand"
-                                @click="show_popup = true"
-                            >Couldn’t find the brand in the list?</div>
-                        </div>
-                        <div class="row">
-                            <div
-                                class="letter"
-                                v-for="(letter) in letters"
-                                :class="{ selected: brand_filter === letter }"
-                                @click="brandFilterClick(letter)"
-                            >{{ letter }}</div>
-                        </div>
-                        <div class="row">
-                            <div
-                                class="box brand"
-                                :class="{ selected: brand_id === brand.id }"
-                                v-for="(brand, j) in filteredBrand()"
-                                @click="select(brand.id)"
-                            >{{ brand.name }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="accordion-item" v-if="detailingData.fabrics.length > 0">
-                <h2 class="accordion-header" id="accordion-fabric">
-                    <button
-                        class="accordion-button collapsed"
-                        type="button"
-                        @click="descTypeClick('fabric')"
-                        :class="{ opened: desc_type === 'fabric' }"
-                    >Fabrics</button>
-                </h2>
-                <div
-                    id="flush-collapseOne"
-                    class="accordion-collapse collapse"
-                    :class="{ show: desc_type === 'fabric' }"
-                >
-                    <div class="row accordion-body">
+                    <div class="accordion-item" v-if="detailingData.colours.length > 0">
+                        <h2 class="accordion-header" id="accordion-colour">
+                            <button
+                                class="accordion-button collapsed"
+                                type="button"
+                                @click="descTypeClick('colour')"
+                                :class="{ opened: desc_type === 'colour' }"
+                            >Colours</button>
+                        </h2>
                         <div
-                            class="box fabric"
-                            v-for="(fabric, j) in detailingData.fabrics"
-                            :class="{ selected: fabric_id === fabric.id }"
-                            @click="select(fabric.id)"
+                            id="flush-colour"
+                            class="accordion-collapse collapse"
+                            :class="{ show: desc_type === 'colour' }"
                         >
-                            {{ fabric.Name }}
-                            <br />
-                            <span
-                                v-if="fabric.coefcleaning != 0"
-                            >(£{{ fabric.coefcleaning * item_description.base_price }})</span>
+                            <div class="row accordion-body">
+                                <div
+                                    class="box colour"
+                                    v-for="(colour, j) in detailingData.colours"
+                                    :class="{ selected: color_id.includes(colour.id) }"
+                                    @click="select(colour.id)"
+                                >
+                                    <span
+                                        class="tool-tip colour-span"
+                                        :data-tooltip="colour.name"
+                                        :style="{ background: colour.code }"
+                                    ></span>
+                                    {{ colour.name }}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="accordion-item" v-if="detailingData.colours.length > 0">
-                <h2 class="accordion-header" id="accordion-colour">
-                    <button
-                        class="accordion-button collapsed"
-                        type="button"
-                        @click="descTypeClick('colour')"
-                        :class="{ opened: desc_type === 'colour' }"
-                    >Colours</button>
-                </h2>
-                <div
-                    id="flush-colour"
-                    class="accordion-collapse collapse"
-                    :class="{ show: desc_type === 'colour' }"
-                >
-                    <div class="row accordion-body">
+                    <div class="accordion-item" v-if="detailingData.fabrics.length > 0">
+                        <h2 class="accordion-header" id="accordion-fabric">
+                            <button
+                                class="accordion-button collapsed"
+                                type="button"
+                                @click="descTypeClick('fabric')"
+                                :class="{ opened: desc_type === 'fabric' }"
+                            >Fabrics</button>
+                        </h2>
                         <div
-                            class="box colour"
-                            v-for="(colour, j) in detailingData.colours"
-                            :class="{ selected: color_id.includes(colour.id) }"
-                            @click="select(colour.id)"
+                            id="flush-collapseOne"
+                            class="accordion-collapse collapse"
+                            :class="{ show: desc_type === 'fabric' }"
                         >
-                            <span
-                                class="tool-tip colour-span"
-                                :data-tooltip="colour.name"
-                                :style="{ background: colour.code }"
-                            ></span>
-                            {{ colour.name }}
+                            <div class="row accordion-body">
+                                <div
+                                    class="box fabric"
+                                    v-for="(fabric, j) in detailingData.fabrics"
+                                    :class="{ selected: fabric_id.includes(fabric.id) }"
+                                    @click="select(fabric.id)"
+                                >
+                                    {{ fabric.Name }}
+                                    <br />
+                                    <span
+                                        v-if="fabric.coefcleaning != 0"
+                                    >(£{{ fabric.coefcleaning * item_description.base_price }})</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item" v-if="detailingData.sizes.length > 0">
+                        <h2 class="accordion-header" id="accordion-size">
+                            <button
+                                class="accordion-button collapsed"
+                                type="button"
+                                @click="descTypeClick('size')"
+                                :class="{ opened: desc_type === 'size' }"
+                            >Size</button>
+                        </h2>
+                        <div
+                            id="flush-collapseOne"
+                            class="accordion-collapse collapse"
+                            :class="{ show: desc_type === 'size' }"
+                        >
+                            <div class="row accordion-body">
+                                <div
+                                    class="box size"
+                                    v-for="(size, j) in detailingData.sizes"
+                                    :class="{ selected: size_id === size.id }"
+                                    @click="select(size.id)"
+                                >
+                                    {{ size.name }}
+                                    <span class="size-comment">{{ size.comment }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item" v-if="detailingData.patterns.length > 0">
+                        <h2 class="accordion-header" id="accordion-pattern">
+                            <button
+                                class="accordion-button collapsed"
+                                type="button"
+                                @click="descTypeClick('pattern')"
+                                :class="{ opened: desc_type === 'pattern' }"
+                            >Patterns</button>
+                        </h2>
+                        <div
+                            id="flush-collapseOne"
+                            class="accordion-collapse collapse"
+                            :class="{ show: desc_type === 'pattern' }"
+                        >
+                            <div class="row accordion-body">
+                                <div
+                                    class="box pattern"
+                                    v-for="(pattern, j) in detailingData.patterns"
+                                    :class="{ selected: pattern_id === pattern.id }"
+                                    @click="select(pattern.id)"
+                                >{{ pattern.name }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item" v-if="detailingData.conditions.length > 0">
+                        <h2 class="accordion-header" id="accordion-condition">
+                            <button
+                                class="accordion-button collapsed"
+                                type="button"
+                                @click="descTypeClick('condition')"
+                                :class="{ opened: desc_type === 'condition' }"
+                            >Condition</button>
+                        </h2>
+                        <div
+                            id="flush-condition"
+                            class="accordion-collapse collapse"
+                            :class="{ show: desc_type === 'condition' }"
+                        >
+                            <div class="row accordion-body">
+                                <div
+                                    class="box condition"
+                                    v-for="(condition, j) in detailingData.conditions"
+                                    :class="{ selected: condition_id === condition.id }"
+                                    @click="select(condition.id)"
+                                >{{ condition.name }}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="accordion-item" v-if="detailingData.patterns.length > 0">
-                <h2 class="accordion-header" id="accordion-pattern">
-                    <button
-                        class="accordion-button collapsed"
-                        type="button"
-                        @click="descTypeClick('pattern')"
-                        :class="{ opened: desc_type === 'pattern' }"
-                    >Patterns</button>
-                </h2>
-                <div
-                    id="flush-collapseOne"
-                    class="accordion-collapse collapse"
-                    :class="{ show: desc_type === 'pattern' }"
-                >
-                    <div class="row accordion-body">
-                        <div
-                            class="box pattern"
-                            v-for="(pattern, j) in detailingData.patterns"
-                            :class="{ selected: pattern_id === pattern.id }"
-                            @click="select(pattern.id)"
-                        >{{ pattern.name }}</div>
-                    </div>
+            <div class="row buttons">
+                <div class="col-10 text-align-right">
+                    <button class="btn btn-link btn-previous" @click="back">Previous</button>
                 </div>
-            </div>
-            <div class="accordion-item" v-if="detailingData.conditions.length > 0">
-                <h2 class="accordion-header" id="accordion-condition">
+                <div class="col-2 text-align-right">
                     <button
-                        class="accordion-button collapsed"
-                        type="button"
-                        @click="descTypeClick('condition')"
-                        :class="{ opened: desc_type === 'condition' }"
-                    >Condition</button>
-                </h2>
-                <div
-                    id="flush-condition"
-                    class="accordion-collapse collapse"
-                    :class="{ show: desc_type === 'condition' }"
-                >
-                    <div class="row accordion-body">
-                        <div
-                            class="box condition"
-                            v-for="(condition, j) in detailingData.conditions"
-                            :class="{ selected: condition_id === condition.id }"
-                            @click="select(condition.id)"
-                        >{{ condition.name }}</div>
-                    </div>
+                        class="btn btn-next text-white"
+                        id="btn-next"
+                        :disabled="!valid"
+                        @click="next"
+                    >Next</button>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row buttons">
-        <div class="col-10 text-align-right">
-            <button class="btn btn-link btn-previous" @click="back">Previous</button>
-        </div>
-        <div class="col-2 text-align-right">
-            <button
-                class="btn btn-next text-white"
-                id="btn-next"
-                :disabled="!valid"
-                @click="next"
-            >Next</button>
-        </div>
-    </div>
+    </transition>
     <transition
         enter-active-class="animate__animated animate__fadeIn"
         leave-active-class="animate__animated animate__fadeOut"
@@ -234,6 +239,7 @@
     </transition>
 </template>
 <script>
+import { propsToAttrMap } from '@vue/shared';
 import { ref, onMounted, watch } from 'vue';
 export default {
     name: "DetailingItemDescription",
@@ -243,13 +249,13 @@ export default {
         detailingitem: {},
         item_description: {}
     },
-    emits: ['save-item-description', 'back-previous-step'],
+    emits: ['save-item-description', 'go-to-step'],
     setup(props, context) {
         const desc_type = ref('size');
         const brand_filter = ref('');
         const size_id = ref(0);
         const brand_id = ref(0);
-        const fabric_id = ref(0);
+        const fabric_id = ref([]);
         const color_id = ref([]);
         const pattern_id = ref([]);
         const condition_id = ref([]);
@@ -267,80 +273,100 @@ export default {
         }
         size_id.value = props.detailingitem.size_id != null ? props.detailingitem.size_id : (props.detailingData.sizes.length > 0 ? 0 : -1);
         brand_id.value = props.detailingitem.brand_id != null ? props.detailingitem.brand_id : (props.detailingData.brands.length > 0 ? 0 : -1);
-        fabric_id.value = props.detailingitem.fabric_id != null ? props.detailingitem.fabric_id : (props.detailingData.fabrics.length > 0 ? 0 : -1);
+        fabric_id.value = props.detailingitem.fabric_id != null ? JSON.parse(props.detailingitem.fabric_id) : [];
         color_id.value = props.detailingitem.color_id != null ? JSON.parse(props.detailingitem.color_id) : [];
         pattern_id.value = props.detailingitem.pattern_id != null ? props.detailingitem.pattern_id : (props.detailingData.patterns.length > 0 ? 0 : -1);
         condition_id.value = props.detailingitem.condition_id != null ? props.detailingitem.condition_id : (props.detailingData.conditions.length > 0 ? 0 : -1);
+        valid.value = brand_id.value != 0
+            && ((color_id.value.length > 0 && props.detailingData.colours.length > 0) || (color_id.value.length == 0 && props.detailingData.colours.length == 0))
+            && pattern_id.value != 0;
         switch (props.detailingitem.etape) {
             case 3:
-                desc_type.value = 'size';
-                valid.value = size_id.value != 0;
+                desc_type.value = 'brand';
                 break;
             case 4:
-                desc_type.value = 'brand';
-                valid.value = brand_id.value != 0;
+                desc_type.value = 'colour';
                 break;
             case 5:
                 desc_type.value = 'fabric';
-                valid.value = fabric_id.value != 0;
                 break;
             case 6:
-                desc_type.value = 'colour';
-                valid.value = ((color_id.value.length > 0 && props.detailingData.colours.length > 0) || (color_id.value.length == 0 && props.detailingData.colours.length == 0));
+                desc_type.value = 'size';
                 break;
             case 7:
                 desc_type.value = 'pattern';
-                valid.value = pattern_id.value != 0;
                 break;
             case 8:
                 desc_type.value = 'condition';
-                valid.value = condition_id.value != 0;
                 break;
             default:
                 desc_type.value = 'size';
-                valid.value = size_id.value != 0;
         }
-
+        watch(() => [size_id.value, brand_id.value, fabric_id.value, color_id.value, pattern_id.value, condition_id.value], ([current_size, current_brand, current_fabric, current_color, current_pattern, current_condition], [previous_size, previous_brand, previous_fabric, previous_color]) => {
+            valid.value = current_brand != 0
+                && ((current_color.length > 0 && props.detailingData.colours.length > 0) || (current_color.length == 0 && props.detailingData.colours.length == 0))
+                && current_pattern != 0 ;
+        });
         watch(() => props.detailingitem, (current_val, previous_val) => {
             size_id.value = current_val.size_id != null ? current_val.size_id : (props.detailingData.sizes.length > 0 ? 0 : -1);
             brand_id.value = current_val.brand_id != null ? current_val.brand_id : (props.detailingData.brands.length > 0 ? 0 : -1);
-            fabric_id.value = current_val.fabric_id != null ? current_val.fabric_id : (props.detailingData.fabrics.length > 0 ? 0 : -1);
+            fabric_id.value = current_val.fabric_id != null ? JSON.parse(current_val.fabric_id) : [];
             color_id.value = current_val.color_id != null ? JSON.parse(current_val.color_id) : [];
             pattern_id.value = current_val.pattern_id != null ? current_val.pattern_id : (props.detailingData.patterns.length > 0 ? 0 : -1);
             condition_id.value = current_val.condition_id != null ? current_val.condition_id : (props.detailingData.conditions.length > 0 ? 0 : -1);
             switch (current_val.etape) {
                 case 3:
-                    desc_type.value = 'size';
-                    valid.value = size_id.value != 0;
+                    desc_type.value = 'brand';
                     break;
                 case 4:
-                    desc_type.value = 'brand';
-                    valid.value = brand_id.value != 0;
+                    desc_type.value = 'colour';
                     break;
                 case 5:
                     desc_type.value = 'fabric';
-                    valid.value = fabric_id.value != 0;
                     break;
                 case 6:
-                    desc_type.value = 'colour';
-                    valid.value = ((color_id.value.length > 0 && props.detailingData.colours.length > 0) || (color_id.value.length == 0 && props.detailingData.colours.length == 0));
+                    desc_type.value = 'size';
                     break;
                 case 7:
                     desc_type.value = 'pattern';
-                    valid.value = pattern_id.value != 0;
                     break;
                 case 8:
                     desc_type.value = 'condition';
-                    valid.value = condition_id.value != 0;
                     break;
                 default:
                     desc_type.value = 'size';
-                    valid.value = size_id.value != 0;
             }
         });
 
         function descTypeClick(type) {
             desc_type.value = type;
+            let step = props.detailingitem.etape;
+            switch (desc_type.value) {
+                case 'brand':
+                    step = 3;
+                    break;
+                case 'colour':
+                    step = 4;
+                    break;
+                case 'fabric':
+                    step = 5;
+                    break;
+                case 'size':
+                    step = 6;
+                    break;
+                case 'pattern':
+                    step = 7;
+                    break;
+                case 'condition':
+                    step = 8;
+                    break;
+                case 'complexities':
+                    step = 9;
+                    break;
+                default:
+                    step = props.detailingitem.etape;
+            }
+            context.emit("go-to-step", step);
         }
         function brandFilterClick(letter) {
             brand_filter.value = letter;
@@ -365,26 +391,37 @@ export default {
             showbutton.value = false;
         }
         function select(id) {
+            let index = steps.value.findIndex((step) => step.name === desc_type.value);
+             index =(steps.value[index + 1].id == 6 && props.detailingData.sizes.length==0)?index+1:index;
             if (desc_type.value == 'size') {
                 size_id.value = id;
                 context.emit("save-item-description", {
                     detailingitem_id: props.detailingitem.id,
-                    size_id: size_id.value
+                    size_id: size_id.value,
+                    step: steps.value[index + 1].id
                 });
             }
             if (desc_type.value == 'brand') {
                 brand_id.value = id;
                 context.emit("save-item-description", {
                     detailingitem_id: props.detailingitem.id,
-                    brand_id: brand_id.value
+                    brand_id: brand_id.value,
+                    step: steps.value[index + 1].id
                 });
             }
             if (desc_type.value == 'fabric') {
-                fabric_id.value = id;
+                if (!fabric_id.value.includes(id)) {
+                    fabric_id.value.push(id);
+                } else {
+                    fabric_id.value.splice(fabric_id.value.indexOf(id), 1);
+                }
                 context.emit("save-item-description", {
                     detailingitem_id: props.detailingitem.id,
-                    fabric_id: fabric_id.value
+                    fabrics_id: JSON.stringify(fabric_id.value),
+                    step: steps.value[index + 1].id
                 });
+
+
             }
             if (desc_type.value == 'colour') {
                 if (!color_id.value.includes(id)) {
@@ -394,14 +431,16 @@ export default {
                 }
                 context.emit("save-item-description", {
                     detailingitem_id: props.detailingitem.id,
-                    color_id: JSON.stringify(color_id.value)
+                    color_id: JSON.stringify(color_id.value),
+                    step: steps.value[index + 1].id
                 });
             }
             if (desc_type.value == 'pattern') {
                 pattern_id.value = id;
                 context.emit("save-item-description", {
                     detailingitem_id: props.detailingitem.id,
-                    pattern_id: pattern_id.value
+                    pattern_id: pattern_id.value,
+                    step: steps.value[index + 1].id
                 });
             }
             if (desc_type.value == 'condition') {
@@ -411,24 +450,17 @@ export default {
                     condition_id: condition_id.value
                 });
             }
-            this.scrollToNext();
         }
         function next() {
-            const index = steps.value.findIndex((step) => step.id === props.detailingitem.etape);
             context.emit("save-item-description", {
                 detailingitem_id: props.detailingitem.id,
-                step: steps.value[index + 1].id
+                step: 9
             });
+            window.scrollTo(0,0);
         }
         function back() {
-            let index = steps.value.findIndex((step) => step.id === props.detailingitem.etape);
-            index = index === 3 && props.detailingData.sizes.length === 0 ? index - 1 : index;
-            context.emit("back-previous-step", steps.value[index - 1].id);
-        }
-        function scrollToNext() {
-            let element = document.getElementById("btn-next");
-            let top = element.offsetTop;
-            window.scrollTo(0, top);
+            context.emit("go-to-step", 2);
+             window.scrollTo(0,0);
         }
         function saveBrand() {
             context.emit("save-item-description", {
@@ -461,7 +493,6 @@ export default {
             select,
             next,
             back,
-            scrollToNext,
             saveBrand
         };
     },
@@ -498,6 +529,7 @@ export default {
     align-items: center;
     text-align: center;
     padding: 8px;
+    font-family: Gotham Rounded;
     font-size: 18px;
     margin: 15px;
     background: #ffffff;
@@ -551,8 +583,9 @@ export default {
 }
 .box:hover,
 .letter:hover {
-    background-color: #47454b;
-    color: #ffffff;
+    background-color: #d3e7cc;
+    /* background-color: #47454b;
+    color: #ffffff; */
 }
 .box.selected,
 .letter.selected {

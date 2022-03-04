@@ -15,7 +15,7 @@
                                 class="accordion-button collapsed"
                                 type="button"
                                 @click="openAccordionclick(1)"
-                                :class="{ opened: instAcc === true }"
+                                :class="{ opened: instAcc === true, done: step > 1 }"
                             >Customer instructions</button>
                         </h2>
                         <div
@@ -34,7 +34,7 @@
                                 class="accordion-button collapsed"
                                 type="button"
                                 @click="openAccordionclick(2)"
-                                :class="{ opened: descAcc === true }"
+                                :class="{ opened: descAcc === true, done: step > 9 }"
                             >Description</button>
                         </h2>
                         <div
@@ -71,15 +71,15 @@
                                     <div class="col-6">
                                         <div class="description-title">Item fabric</div>
                                         <div
-                                            v-if="item_description.fabric_name"
+                                            v-if="item_description.fabrics_name"
+                                            v-for="fab in item_description.fabrics_name"
                                             class="row description-box"
                                         >
-                                            <div
-                                                class="col description-text"
-                                            >{{ item_description.fabric_name }}</div>
+                                            <div class="col description-text">{{ fab.name }}</div>
                                             <div
                                                 class="col fabric-coefcleaning"
-                                            >£{{ item_description.fabric_coef_cleaning }}</div>
+                                                v-if="fab.coefcleaning != 0"
+                                            >£{{ fab.coefcleaning * item_description.base_price }}</div>
                                         </div>
                                     </div>
                                     <div class="col-6">
@@ -127,7 +127,7 @@
                                 class="accordion-button collapsed"
                                 type="button"
                                 @click="openAccordionclick(3)"
-                                :class="{ opened: issusesAcc === true }"
+                                :class="{ opened: issusesAcc === true, done: step > 10 }"
                             >Issues</button>
                         </h2>
                         <div
@@ -174,7 +174,7 @@ import { useRouter, useRoute } from 'vue-router';
 
 export default {
     name: "DetailingRightPanel",
-    components: { },
+    components: {},
     props: {
         customerName: String,
         item_description: {},
@@ -247,6 +247,7 @@ export default {
     align-items: center;
     color: #ffffff;
     margin: 0;
+    font-family: Gotham Rounded;
 }
 .price {
     font-family: Gilroy;
@@ -275,9 +276,9 @@ export default {
     line-height: 110%;
     color: #47454b;
 }
-.accordion-button::after {
+/* .accordion-button::after {
     background-image: none;
-}
+} */
 .accordion-item {
     margin: 10px;
     border-radius: 6px;
@@ -313,26 +314,31 @@ export default {
     padding-left: 0px;
 }
 .accordion-container {
+    font-family: Gotham Rounded;
     background-color: white;
     height: 100%;
 }
 .opened:after {
-    background-image: url("../../../../resources/img/accordion_arrow.png");
-    background-repeat: no-repeat !important;
+    /* background-image: url("../../../../resources/img/accordion_arrow.png");
+    background-repeat: no-repeat !important; */
+    transform: rotate(180deg);
 }
 .accordion-body-title {
     display: flex;
     align-items: flex-end;
     line-height: 140%;
     color: #868686;
+    font-family: Gotham Rounded;
 }
 .description-title {
     color: #868686;
     padding: 5px;
+    font-family: Gotham Rounded;
 }
 .description-text {
     color: #47454b;
     padding: 5px;
+    font-family: Gotham Rounded;
 }
 .description-box {
     background: #f8f8f8;
@@ -369,5 +375,8 @@ export default {
 }
 .img-arrow {
     transform: rotate(270deg);
+}
+.done {
+    background: #f8f8f8;
 }
 </style>

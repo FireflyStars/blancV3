@@ -1,12 +1,16 @@
 <template>
-    <div
-        class="departement"
-        v-for="(dept, index) in departements"
-        @click="chooseDepartement(dept.id)"
-        :class="{ selected: itemDept == dept.id }"
-    >
-        <div class="departement-name">{{ dept.name }}</div>
-    </div>
+    <transition name="popinout">
+        <div class="row">
+            <div
+                class="departement"
+                v-for="(dept, index) in departements"
+                @click="chooseDepartement(dept.id)"
+                :class="{ selected: itemDept == dept.id }"
+            >
+                <div class="departement-name">{{ dept.name }}</div>
+            </div>
+        </div>
+    </transition>
 </template>
 <script>
 export default {
@@ -42,8 +46,9 @@ export default {
     place-content: center;
 }
 .departement:hover {
-    background-color: #47454b;
-    color: #ffffff;
+    background-color: #d3e7cc;
+    /* background-color: #47454b;
+    color: #ffffff; */
 }
 .departement.selected {
     background-color: #47454b;

@@ -1,21 +1,25 @@
 <template>
-    <div>Select one or multiple item complexities.</div>
-    <div
-        class="box complexity"
-        v-for="(comp, index) in detailingData.complexities"
-        @click="select(comp.id)"
-        :class="{ selected: complexities_id.includes(comp.id) }"
-    >
-        <div class="complexity-name">{{ comp.name }}</div>
-    </div>
-    <div class="row buttons">
-        <div class="col-10 text-align-right">
-            <button class="btn btn-link btn-previous" @click="back">Previous</button>
+    <transition name="popinout">
+        <div class="row">
+            <div>Select one or multiple item complexities.</div>
+            <div
+                class="box complexity"
+                v-for="(comp, index) in detailingData.complexities"
+                @click="select(comp.id)"
+                :class="{ selected: complexities_id.includes(comp.id) }"
+            >
+                <div class="complexity-name">{{ comp.name }}</div>
+            </div>
+            <div class="row buttons">
+                <div class="col-10 text-align-right">
+                    <button class="btn btn-link btn-previous" @click="back">Previous</button>
+                </div>
+                <div class="col-2 text-align-right">
+                    <button class="btn btn-next text-white" :disabled="!valid" @click="save">Next</button>
+                </div>
+            </div>
         </div>
-        <div class="col-2 text-align-right">
-            <button class="btn btn-next text-white" :disabled="!valid" @click="save">Next</button>
-        </div>
-    </div>
+    </transition>
 </template>
 <script>
 import { ref, watch } from 'vue';
@@ -26,7 +30,7 @@ export default {
         detailingData: {},
         detailingitem: {}
     },
-    emits: ['save-item-complexities', 'back-previous-step'],
+    emits: ['save-item-complexities', 'go-to-step'],
     setup(props, context) {
         const complexities_id = ref([]);
         const valid = ref(false);
@@ -55,9 +59,11 @@ export default {
                 detailingitem_id: props.detailingitem.id,
                 step: 10
             });
+            window.scrollTo(0,0);
         }
         function back() {
-            context.emit("back-previous-step", 8);
+            context.emit("go-to-step", 8);
+            window.scrollTo(0,0);
         }
 
         return {
@@ -85,8 +91,9 @@ export default {
     border-radius: 4px;
 }
 .complexity {
-    height: 200px;
-    width: 200px;
+    height: 100px;
+    width: 115px;
+    word-break: break-word;
     font-family: Gotham Rounded Light;
     font-style: normal;
     font-weight: normal;
@@ -99,8 +106,9 @@ export default {
     color: #47454b;
 }
 .box:hover {
-    background-color: #47454b;
-    color: #ffffff;
+    background-color: #d3e7cc;
+    /* background-color: #47454b;
+    color: #ffffff; */
 }
 .box.selected {
     background-color: #47454b;
