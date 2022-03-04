@@ -41,6 +41,9 @@
                          <transition name="popinout">
                             <!-- Step 1 : Input data -->
                             <div class="panel-col-2 col" :class="{'d-none':process_step!=1}">
+
+                                {{order_express}}
+
                                 <div class="panel">
                                     <h2 class="subtitle">Order Details</h2>
                                     <div class="row border-bottom m-0">
@@ -99,7 +102,7 @@
                                                     </div>
 
                                                     <div class="col-3">
-                                                        <date-picker v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="yesterday" @loadtranche="loadtranche('do_delivery')"></date-picker>
+                                                        <date-picker v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="yesterday" @loadtranche="loadtranche('do_delivery')" ref="do_delivery_datepicker"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="do_delivery_timeslot"   name="do_delivery_timeslot" :available-slots="do_delivery_tranche"  label=" "></time-slot-picker>
@@ -432,6 +435,7 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             const do_delivery=ref('');
             const do_delivery_timeslot=ref(0);
             const do_delivery_tranche = ref([]);
+            const do_delivery_datepicker = ref();
 
             //hd : home delivery
             const hd_pickup =ref('');
@@ -477,6 +481,22 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             const yesterday = ref('');
 
             const cur_date = ref('');
+
+            const order_express = ref('');
+
+
+            const all_timeslots_def = store.getters[`${NEWORDER_MODULE}${NEWORDER_GET_ALL_TIMESLOTS}`];
+
+            const all_timeslots = ref([]);
+            const all_timeslots_arr = [];
+
+            all_timeslots_def.forEach(function(v,i){
+                all_timeslots_arr[v.value] = v.display
+            });
+
+            all_timeslots.value = all_timeslots_arr;
+
+
 
             const d = new Date();
             //console.log(d.getHours());
@@ -672,17 +692,19 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                         });
                     }
 
-                    if(showRecurring){
+                    if(showRecurring.value){
                         new_order.deliverymethod = 'recurring';
                         new_order.recurring_data = JSON.stringify(recurring_data.value);
                         new_order['delivery_params'] = '';
                     }
 
+                    new_order.dropoff_stamp = formatDateToDb(cur_date.value);
+
                     new_order_obj.value = new_order;
 
+                   evaluateOrderExpress(new_order);
 
-
-                    console.log(new_order_obj);
+                    //console.log(new_order_obj);
 
                     process_step.value=2;
 
@@ -690,6 +712,55 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                }else if(process_step.value==2){
 
                }
+            }
+
+
+
+
+            function evaluateOrderExpress(order){
+
+                let time_diff = 0;
+
+
+                let slot_from_arr = [];
+                let hr = 0;
+
+                for (let i = 1; i <= 13; i+=2) {
+                    hr = i+7;
+                    if(i==13){
+                        hr = 8; //To confirm for 8-8 slot
+                    }
+
+                    slot_from_arr[i] = hr.toString().padStart(2,'0')+':00:00';
+
+                }
+
+
+                if(order.deliverymethod=='in_store_collection'){
+                    let dt_from = new Date(cur_date.value);
+
+                    let isc_pickup_time = slot_from_arr[isc_pickup_timeslot.value];
+
+                    let dt_to = new Date(isc_pickup.value+' '+isc_pickup_time);
+
+                    time_diff =  (dt_to.getTime() - dt_from.getTime()) / 3600000; //3600 * 1000 milliseconds
+                }
+
+                console.log(time_diff);
+
+            }
+
+
+            function formatDateToDb(dt){
+                let d = new Date(dt);
+                let mm = d.getMonth()+1;
+                let dformat = [ d.getFullYear(),mm.toString().padStart(2, '0'),
+               d.getDate().toString().padStart(2, '0')].join('-')+' '+
+              [d.getHours(),
+               d.getMinutes(),
+               d.getSeconds()].join(':');
+
+               return dformat;
             }
 
 
@@ -855,18 +926,6 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
             //End filters
 
-            const all_timeslots_def = store.getters[`${NEWORDER_MODULE}${NEWORDER_GET_ALL_TIMESLOTS}`];
-            const all_timeslots = ref([]);
-            const all_timeslots_arr = [];
-
-            all_timeslots_def.forEach(function(v,i){
-                all_timeslots_arr[v.value] = v.display
-            });
-
-            all_timeslots.value = all_timeslots_arr;
-
-
-
 
             let recur_day_map = [];
 
@@ -932,6 +991,9 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
                 let cur_date = var_tmp_date.value;
 
+                let comp_ref_name = comp+'_datepicker';
+                const comp_ref = eval(comp_ref_name);
+
                 if(shp_postcode.value !=''){
 
 
@@ -961,12 +1023,10 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                     });
 
                 }else{
+                    //console.log('resetPicker called');
+                    var_tmp_date.value = '';
 
-                      if(comp=='hd_pickup'){
-                          console.log('resetPicker called');
-                          hd_pickup_datepicker.value.resetPicker();
-                      }
-
+                    comp_ref.value.resetPicker();
 
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
                     {
@@ -976,15 +1036,8 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                     });
                 }
            }
-/*
-            const tranches = computed(()=>{
 
 
-                do_delivery_tranche.value = slots;
-
-                return slots;
-            });
-            */
 
             return {
                 showcontainer,
@@ -1003,6 +1056,7 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                 do_delivery,
                 do_delivery_timeslot,
                 do_delivery_tranche,
+                do_delivery_datepicker,
                 hd_pickup,
                 hd_pickup_timeslot,
                 hd_pickup_tranche,
@@ -1043,6 +1097,7 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                 getCurDateTime,
                 cur_date,
                 loadtranche,
+                order_express,
             }
         }
     }
