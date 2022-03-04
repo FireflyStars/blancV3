@@ -1956,7 +1956,7 @@ class StatisticsController extends Controller
             $invoices   = $invoices->whereDate('infoitems.PromisedDate', '<=', Carbon::parse($request->prod_date_to)->toDateString());
         }
         $total_invoice_count = $invoices->count();
-        $invoices   =  $invoices->skip($request->skip ? $request->skip+1 : 0)
+        $invoices   =  $invoices->skip($request->skip ? $request->skip : 0)
                                 ->take(20)
                                 ->get();
 
