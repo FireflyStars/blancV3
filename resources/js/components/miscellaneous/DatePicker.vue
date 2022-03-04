@@ -316,6 +316,17 @@
             watch(() => _.cloneDeep(default_date), (current_val, previous_val) => {
                 renderPicker();
             });
+
+            watch(() =>props.disabledToDate, (current_val, previous_val) => {
+                renderPicker();
+            });
+
+            watch(() =>props.disabledFromDate, (current_val, previous_val) => {
+                renderPicker();
+            });
+
+
+
             function setDate(y,m,d) {
                 default_date.value[0]=parseInt(y);
                 default_date.value[1]=parseInt(m)+1;
@@ -403,6 +414,8 @@
                 console.log('reset called from parent');
                 default_date.value = [];
             }
+
+
 
             return {
                 sel,
