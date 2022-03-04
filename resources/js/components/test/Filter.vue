@@ -184,7 +184,7 @@
         box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
         width:458px;
         min-height:445px;
-        z-index: 2;
+        z-index: 20000;
         transform-origin: top center;
         padding:0 46px;
     }
