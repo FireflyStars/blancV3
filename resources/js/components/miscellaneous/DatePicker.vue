@@ -63,13 +63,13 @@
     import {ref,nextTick,watch,computed} from 'vue';
     import {useStore} from 'vuex';
     import {GET_CURRENT_SELECT, SELECT_MODULE, SET_CURRENT_SELECT} from "../../store/types/types";
-    import vClickOutside from 'click-outside-vue3';
+    // import vClickOutside from 'click-outside-vue3';
 
     export default {
         name: "DatePicker",
-        directives: {
-            clickOutside: vClickOutside.directive
-        },
+        // directives: {
+        //     clickOutside: vClickOutside.directive
+        // },
         props:{
             modelValue: String,
             droppos: Object,

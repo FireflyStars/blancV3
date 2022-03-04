@@ -537,29 +537,29 @@
                     },
             ]);
             onBeforeMount( () => {
-                // store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
-                // axios.post('/assembly-home-stats')
-                //     .then((res) => {
-                //         let gp = res.data.grouped_postes;
-                //         let width = 0;
-                //         if(parseInt(gp.length) > 0){
-                //             // width = 90/parseInt(gp.length);
-                //             groupedPosteWidth.value = 8.5;
-                //         }
-                //         groupedPostes.value = gp;
-                //         mainStats.value = res.data.main_stats;
-                //         assemblyStatsTotal.value = res.data.stats_total;
-                //         assemblyStatsToday.value = res.data.stats_today;
-                //         assemblyStatsTomorrow.value = res.data.stats_tomorrow;
-                //         assemblyStatsOverdue.value = res.data.stats_overdue;
-                //         assemblyStatsLater.value = res.data.stats_later;
-                //         store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_ASSEMBLY_STATE}`, res.data);
-                //     })
-                //     .catch(error => {
-                //         console.log(error);
-                //     }).finally(() => {
-                //         store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                //     });
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
+                axios.post('/assembly-home-stats')
+                    .then((res) => {
+                        let gp = res.data.grouped_postes;
+                        let width = 0;
+                        if(parseInt(gp.length) > 0){
+                            // width = 90/parseInt(gp.length);
+                            groupedPosteWidth.value = 8.5;
+                        }
+                        groupedPostes.value = gp;
+                        mainStats.value = res.data.main_stats;
+                        assemblyStatsTotal.value = res.data.stats_total;
+                        assemblyStatsToday.value = res.data.stats_today;
+                        assemblyStatsTomorrow.value = res.data.stats_tomorrow;
+                        assemblyStatsOverdue.value = res.data.stats_overdue;
+                        assemblyStatsLater.value = res.data.stats_later;
+                        store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_ASSEMBLY_STATE}`, res.data);
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    }).finally(() => {
+                        store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    });
             });
 
             onMounted(() =>{
