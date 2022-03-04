@@ -6,7 +6,7 @@
                     <div class="subordernum body_small_medium" v-if="Object.entries(ITEM_LIST).length !== 0">Sub order {{suborder}}</div>
                         <header v-if="Object.entries(ITEM_LIST).length !== 0">
                             <div class="tcol noselect"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}" >{{col.name}}
-                                <check-box v-if="col.type=='checkbox'&&ITEMS.length>0" :checked_checkbox="typeof MULTI_CHECKED[suborder]!=='undefined'&&ITEMS.length==MULTI_CHECKED[suborder].length"  @checkbox-clicked="checkboxallclicked" :name="suborder"></check-box>
+                                <check-box v-if="col.type=='checkbox'&& ITEMS.length>0" :checked_checkbox="typeof MULTI_CHECKED[suborder]!=='undefined'&&ITEMS.length==MULTI_CHECKED[suborder].length"  @checkbox-clicked="checkboxallclicked" :name="suborder"></check-box>
                             </div>
                         </header>
                     <div class="trow" v-for="ITEM in ITEMS" :key="ITEM.infoitems_id">

@@ -385,7 +385,7 @@
     .trans-batch-actions-leave-active{
         transition: all ease 0.2s;
     }
-.tcol.Status,.tcol.paid{
-    text-align: center;
-}
+    .tcol.Status,.tcol.paid{
+        text-align: center;
+    }
 </style>

@@ -10,7 +10,13 @@ import {
     GET_TOTAL_INVOICE_COUNT, 
     ADD_MORE_INVOICE_TO_LIST,
     GET_LOADED_INVOICE_COUNT, 
-    FILTER_INVOICE_LIST, 
+    FILTER_INVOICE_LIST,
+    INVOICELIST_GET_CURRENT_SELECTED,
+    INVOICELIST_SET_CURRENT_SELECTED,
+    INVOICELIST_SET_ALL_SELECTED,
+    INVOICELIST_GET_ALL_SELECTED,
+    INVOICELIST_SET_MULTI_UNCHECKED,
+    INVOICE_RESET_MULITCHECKED,
     LOAD_MORE_INVOICE, 
     LOADER_MODULE,
     DISPLAY_LOADER,
@@ -24,6 +30,8 @@ export const invoicelist= {
     namespaced:true,
     state: {
         invoice_list: [],
+        current_selected: '',
+        multi_selected: [],
         total_invoice_count: 0,
         order_status: [
             'ARCHIVED',
@@ -161,6 +169,25 @@ export const invoicelist= {
                 state.filter.skip = state.invoice_list.length;
             }
         },
+        [INVOICELIST_SET_CURRENT_SELECTED]:(state, payload) =>{
+            state.multi_selected    =   state.multi_selected.filter(item => item !== state.current_selected);//remove previous from multichecked
+            state.current_selected  =   payload;
+            let bodytag=document.getElementsByTagName( 'body' )[0]
+            if(payload==''){
+                bodytag.className='';
+            }else{
+                bodytag.classList.add('hide-overflowY');
+            }
+        },
+        [INVOICELIST_SET_ALL_SELECTED]:(state, payload)=>{
+             if(payload.add)// add from multi_checked
+                state.multi_selected.push( payload.id );
+             if(!payload.add) // remove from multi_checked
+                state.multi_selected  =  state.multi_selected.filter(item => item !== payload.id);
+        },        
+        [INVOICE_RESET_MULITCHECKED]:(state)=>{
+                state.multi_selected = [];
+        },        
     },
     actions: {
         [SET_INVOICE_LIST]: async({ commit, dispatch, state } )=>{
@@ -204,7 +231,20 @@ export const invoicelist= {
         },
         [SET_INVOICE_FILTER_FLAG]: ({ commit }, payload)=>{
             commit(SET_INVOICE_FILTER_FLAG, payload);
-        }
+        },
+        [INVOICELIST_SET_CURRENT_SELECTED]:({commit}, payload)=>{
+            commit(INVOICELIST_SET_CURRENT_SELECTED,payload);
+        },
+        [INVOICELIST_SET_ALL_SELECTED]:({ commit, getters }, payload)=>{
+            if(!getters.INVOICELIST_GET_ALL_SELECTED.includes(payload))
+            commit(INVOICELIST_SET_ALL_SELECTED, { id:payload, add:true } );
+        },
+        [INVOICELIST_SET_MULTI_UNCHECKED]:({ commit }, payload)=>{
+            commit(INVOICELIST_SET_ALL_SELECTED, { id:payload, add:false } );
+        },
+        [INVOICE_RESET_MULITCHECKED]:({ commit })=>{
+            commit(INVOICE_RESET_MULITCHECKED);
+        },
     },
     getters: {
         [GET_INVOICE_LIST]:state=> state.invoice_list,
@@ -213,5 +253,7 @@ export const invoicelist= {
         [GET_INVOICE_STATUS]:state=> state.order_status,
         [GET_INVOICE_DESTINATION]:state=> state.destinations,
         [GET_INVOICE_LOCATION]:state=> state.locations,
+        [INVOICELIST_GET_CURRENT_SELECTED]:state=> state.current_selected,
+        [INVOICELIST_GET_ALL_SELECTED]:state=> state.multi_selected,
     }
 }

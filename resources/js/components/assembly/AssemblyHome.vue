@@ -365,96 +365,69 @@
                                 <table class="table table-hover mb-0">
                                     <thead>
                                         <tr>
-                                            <th v-for="(item, index) in columns" :class="item.thClass" :key="index" v-html="item.label ? item.label : ''" style="border-bottom: 2px solid #dee2e6 !important"></th>
+                                            <th v-for="(item, index) in columns" :class="item.thClass" :key="index" style="border-bottom: 2px solid #dee2e6 !important">
+                                                <check-box v-if="item.key == 'selected' && invoiceList.length" :checked_checkbox="(invoiceList.length==MULTI_SELECTED.length)" @checkbox-clicked="checkboxallclicked"></check-box>
+                                                <span v-else v-html="item.label"></span>
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="(invoiceRow, index) in invoiceList" :key="index" @click="onRowSelected($event, invoiceRow.order_id)">
-                                            <td class="visible-hidden">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value="" :id="'invoice-'+invoiceRow.order_id">
-                                                    <label class="form-check-label" :for="'invoice-'+invoiceRow.order_id"></label>
-                                                </div>
-                                            </td>
+                                        <transition-group name="list" appear>
+                                            <tr v-for="(invoiceRow, index) in invoiceList" :key="index" class="trow" :class="{current_sel:invoiceRow.item_id == CURRENT_SELECTED}"
+                                                @click="selectrow(invoiceRow.item_id)"
+                                            >
+                                                <td>
+                                                    <check-box :checked_checkbox="(invoiceRow.item_id == CURRENT_SELECTED) || MULTI_SELECTED.includes(invoiceRow.item_id)" :id="invoiceRow.item_id" @checkbox-clicked="checkboxclicked"></check-box>
+                                                </td>
 
-                                            <td class="text-capitalize fw-16" v-if="invoiceRow.order_id == 'xxx'">
-                                                <span>{{ invoiceRow.order_id }}</span>&nbsp;&nbsp;
-                                                <svg width="32" height="32" viewBox="0 0 44 45" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M20.7344 16.763V23.0131C20.7344 23.2514 20.8394 23.474 21.0208 23.6225L24.8403 26.7475L25.7952 25.5268L22.2621 22.6381V16.7631L20.7344 16.763Z" fill="#EB5757"/>
-                                                    <path d="M30.9284 22.5C30.9284 27.5601 26.9204 31.6429 21.9999 31.6429C17.0793 31.6429 13.0713 27.5601 13.0713 22.5C13.0713 17.4399 17.0793 13.3571 21.9999 13.3571C26.9204 13.3571 30.9284 17.4399 30.9284 22.5Z" stroke="#EB5757"/>
-                                                </svg>
-                                            </td>
-                                            <td class="text-capitalize fw-16" v-else><span>{{ invoiceRow.order_id }}</span></td>
+                                                <td class="text-capitalize fw-16"><span>{{ invoiceRow.item_id }}</span></td>
 
-                                            <!-- Customer Name -->
-                                            <td class="text-capitalize fw-16">{{ invoiceRow.customer_name }}</td>
+                                                <!-- Customer Name -->
+                                                <td class="text-capitalize fw-16">{{ invoiceRow.customer_name }}</td>
 
-                                            <!-- Destination -->
-                                            <td class="text-capitalize fw-16">{{ invoiceRow.store }}</td>
+                                                <!-- Destination -->
+                                                <td class="text-capitalize fw-16">{{ invoiceRow.store }}</td>
 
-                                            <!-- sub order -->
-                                            <td class="text-capitalize fw-16" v-if="invoiceRow.sub_order == 'xxx'">
-                                                <svg width="11" height="11" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <circle cx="6.5" cy="6.5" r="6.5" fill="#9E44F2"/>
-                                                </svg>
-                                                &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>
-                                            </td>
-                                            <td class="text-capitalize fw-16" v-else>
-                                                <svg width="11" height="11" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <circle cx="6.5" cy="6.5" r="6.5" fill="#EF8F00"/>
-                                                </svg>
-                                                &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>
-                                            </td>
-
-                                            <!-- Item -->
-                                            <td class="text-capitalize fw-16">{{ invoiceRow.iteminfo }}</td>
-                                            <!-- BarCode -->
-                                            <td class="text-capitalize fw-16"><a href="javascript:;" class="text-decoration-none text-primary">{{ invoiceRow.barcode }}</a></td>
-                                            <!-- Location -->
-                                            <td>
-                                                <div class="invoice-location assembling rounded-pill" :style="{'background-color': '#'+invoiceRow.location_color }">
-                                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" fill="#4E58E7"/>
-                                                    <circle cx="6" cy="6" r="5" stroke="#4E58E7" stroke-width="2"/>
+                                                <!-- sub order -->
+                                                <td class="text-capitalize fw-16" v-if="invoiceRow.sub_order == 'xxx'">
+                                                    <svg width="11" height="11" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <circle cx="6.5" cy="6.5" r="6.5" fill="#9E44F2"/>
                                                     </svg>
-                                                    &nbsp;&nbsp;<span class="d-block text-center" :style="{ width: 'calc( 100% - 12px )'}">{{ invoiceRow.location }}</span>
-                                                </div>
-                                                <!-- <div v-if="invoiceRow.location == 'On Van'" class="invoice-location on-van rounded-pill">
-                                                    {{ invoiceRow.location }}
-                                                </div>
-                                                <div v-else-if="invoiceRow.location == 'Storage'" class="invoice-location storage rounded-pill">
-                                                    <svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <circle cx="6" cy="6.5" r="5" stroke="#42A71E" stroke-width="2"/>
-                                                    </svg>&nbsp;&nbsp;<span class="d-block text-center" :style="{ width: 'calc( 100% - 12px )'}">{{ invoiceRow.location }}</span>
-                                                </div>
-                                                <div v-else-if="invoiceRow.location == 'Assembling'" class="invoice-location assembling rounded-pill">
-                                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" fill="#4E58E7"/>
-                                                    <circle cx="6" cy="6" r="5" stroke="#4E58E7" stroke-width="2"/>
+                                                    &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>
+                                                </td>
+                                                <td class="text-capitalize fw-16" v-else>
+                                                    <svg width="11" height="11" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <circle cx="6.5" cy="6.5" r="6.5" fill="#EF8F00"/>
                                                     </svg>
-                                                    &nbsp;&nbsp;<span class="d-block text-center" :style="{ width: 'calc( 100% - 12px )'}">{{ invoiceRow.location }}</span>
-                                                </div>
-                                                <div v-else class="invoice-location rounded-pill">
-                                                    <svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                        <g clip-path="url(#clip0_10_4466)">
-                                                        <path d="M10.9318 6.73315H1.35156C1.35156 8.56699 2.26215 12.1588 5.90449 11.8552C9.54684 11.5517 10.7737 8.31405 10.9318 6.73315Z" fill="#EF8F00"/>
-                                                        <circle cx="6" cy="6.5" r="5" stroke="#EF8F00" stroke-width="2"/>
-                                                        </g>
-                                                        <defs>
-                                                        <clipPath id="clip0_10_4466">
-                                                        <rect width="12" height="12" fill="white" transform="translate(0 0.5)"/>
-                                                        </clipPath>
-                                                        </defs>
-                                                    </svg>
-                                                    &nbsp;&nbsp;<span class="d-block text-center" :style="{ width: 'calc( 100% - 12px )'}">{{ invoiceRow.location }}</span>
-                                                </div> -->
-                                            </td>
-                                            <!-- Prod -->
-                                            <td class="text-capitalize fw-16">{{ invoiceRow.prod }}</td>
-                                            <!-- Deliv -->
-                                            <td class="text-capitalize fw-16 fw-bold">{{ invoiceRow.deliv }}</td>
-                                        </tr>
+                                                    &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>
+                                                </td>
+
+                                                <!-- Item -->
+                                                <td class="text-capitalize fw-16">{{ invoiceRow.iteminfo }}</td>
+                                                <!-- BarCode -->
+                                                <td class="text-capitalize fw-16"><a href="javascript:;" class="text-decoration-none text-primary">{{ invoiceRow.barcode }}</a></td>
+                                                <!-- Location -->
+                                                <td>
+                                                    <div class="invoice-location assembling rounded-pill" :style="{'background-color': '#'+invoiceRow.location_color }">
+                                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" fill="#4E58E7"/>
+                                                        <circle cx="6" cy="6" r="5" stroke="#4E58E7" stroke-width="2"/>
+                                                        </svg>
+                                                        &nbsp;&nbsp;<span class="d-block text-center" :style="{ width: 'calc( 100% - 12px )'}">{{ invoiceRow.location }}</span>
+                                                    </div>
+                                                </td>
+                                                <!-- Prod -->
+                                                <td class="text-capitalize fw-16">{{ invoiceRow.prod }}</td>
+                                                <!-- Deliv -->
+                                                <td class="text-capitalize fw-16 fw-bold">{{ invoiceRow.deliv }}</td>
+                                            </tr>
+                                        </transition-group>
                                     </tbody>
+                                    <tfoot>
+                                        <tr v-if="currentLoadedInvoiceCount != totalInvoiceCount">
+                                            <td class="tcol" style="text-align: center" :colspan="Object.keys(columns).length"><button class="btn btn-link" @click="loadMoreInvoice">Show more ( {{ currentLoadedInvoiceCount }} / {{ totalInvoiceCount }})</button></td>
+                                        </tr>
+                                    </tfoot>                                    
                                 </table>
                             </div>
                         </div>
@@ -472,14 +445,25 @@
         HIDE_LOADER,
         RESET_ASSEMBLY_STATE,
         SET_ASSEMBLY_STATE,
-        SET_ASSEMBLY_INVOICE,
+        SET_INVOICE_LIST,
+        GET_INVOICE_LIST,
+        GET_TOTAL_INVOICE_COUNT, 
+        GET_LOADED_INVOICE_COUNT, 
+        LOAD_MORE_INVOICE,     
+        INVOICELIST_GET_CURRENT_SELECTED,
+        INVOICELIST_GET_ALL_SELECTED,
+        INVOICELIST_SET_CURRENT_SELECTED,
+        INVOICELIST_SET_ALL_SELECTED,
+        INVOICELIST_SET_MULTI_UNCHECKED,
+        INVOICE_RESET_MULITCHECKED,
     } from "../../store/types/types";
     import { useStore } from "vuex";
-    import { ref, onBeforeMount, onMounted, onUnmounted } from "vue";
+    import { ref, onBeforeMount, onMounted, onUnmounted, computed } from "vue";
+    import CheckBox from '../miscellaneous/CheckBox';
     export default {
         name: "AssemblyHome",
         components:{
-
+            CheckBox
         },
         setup(){
             const store = useStore();
@@ -497,18 +481,16 @@
             const assemblyStatsTomorrow = ref({});
             const assemblyStatsOverdue = ref({});
             const assemblyStatsLater = ref({});
-            const numberoflines = ref(0);
             const selectMode = ref('multi');
             const selectAll = ref(false);
-            const invoiceList = ref([]);
+            
             const columns = ref([
                     {
                         key: 'selected',
-                        tdClass: 'visible-hidden'
                     },
                     {
                         label: 'Order N&deg;',
-                        key: 'order_id',
+                        key: 'item_id',
                         thClass: 'text-uppercase invoice-table-th',
 
                     },
@@ -588,25 +570,29 @@
             onUnmounted(()=>{
                 store.dispatch(`${ASSEMBLY_HOME_MODULE}${RESET_ASSEMBLY_STATE}`);
             })
-
-            function onRowSelected(event, order_id){
-                let selectedRowCheckbox = document.querySelector('#invoice-' + order_id);
-                event.target.parentElement.classList.toggle('selected-row');
-
-                if(selectedRowCheckbox.hasAttribute('checked')){
-                    selectedRowCheckbox.removeAttribute('checked');
-                }else{
-                    selectedRowCheckbox.setAttribute('checked', true);
-                }
-            }
-            function getTableStats(event, tmp_poste, tmp_day, tmp_type){
+            const invoiceList = computed(()=>{
+                return store.getters[`${ASSEMBLY_HOME_MODULE}${GET_INVOICE_LIST}`];
+            });
+            const CURRENT_SELECTED=computed(()=>{
+                return store.getters[`${ASSEMBLY_HOME_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`];
+            });
+            const MULTI_SELECTED=computed(()=>{
+                return store.getters[`${ASSEMBLY_HOME_MODULE}${INVOICELIST_GET_ALL_SELECTED}`];
+            });        
+            const currentLoadedInvoiceCount = computed(()=>{
+                return store.getters[`${ASSEMBLY_HOME_MODULE}${GET_LOADED_INVOICE_COUNT}`];
+            });
+            const totalInvoiceCount = computed(()=>{
+                return store.getters[`${ASSEMBLY_HOME_MODULE}${GET_TOTAL_INVOICE_COUNT}`];
+            })
+            const getTableStats = (event, tmp_poste, tmp_day, tmp_type)=>{
                 document.querySelectorAll('.each-poste-bloc').forEach((element)=>{
                     element.classList.remove('is_bloc_active');
                 })
                 event.target.closest('.each-poste-bloc').classList.add('is_bloc_active');
                 getTable(tmp_poste, tmp_day, tmp_type);
             }
-            function getTableByBloc(event, tmp_poste, tmp_day, tmp_type){
+            const getTableByBloc = (event, tmp_poste, tmp_day, tmp_type)=>{
                 let parentDIV = event.target.closest('.each-poste-bloc');
                 if( ! parentDIV.classList.contains('is_bloc_disabled') ) {
                     document.querySelectorAll('.each-poste-bloc').forEach((element)=>{
@@ -616,7 +602,7 @@
                     getTable(tmp_poste, tmp_day, tmp_type);
                 }
             }
-            function getTable(tmp_poste,tmp_day,tmp_type){
+            const getTable = (tmp_poste,tmp_day,tmp_type)=>{
                 document.querySelector('#stats_table').classList.add('d-none');
                 poste.value = tmp_poste;
                 day.value = tmp_day;
@@ -627,19 +613,55 @@
                     typepost: tmp_poste,
                     day: tmp_day,
                     type: tmp_type,
-                    // tableprops: JSON.stringify(this.$refs.partnerstable.tableProps),
+                    skip: 0
                 }).then((res) => {
-                    invoiceList.value  = res.data.data;
-                    numberoflines.value = res.data.count_data;
-                    store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_ASSEMBLY_INVOICE}`, res.data.data);
+                    store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_INVOICE_LIST}`, res.data.data);
                 }).catch((error) => {
-                    invoiceList.value = [];
                     console.log(error)
                 }).finally(() => {
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                     document.querySelector('#stats_table').classList.remove('d-none');
                 });
             }
+            const loadMoreInvoice = ()=>{
+                store.dispatch(`${ASSEMBLY_HOME_MODULE}${LOAD_MORE_INVOICE}`, {
+                    poste:'',
+                    typepost: poste.value,
+                    day: day.value,
+                    type: type.value,
+                    skip: currentLoadedInvoiceCount.value
+                });
+            }
+
+            const checkboxclicked = ( check, id, name )=>{
+                if(CURRENT_SELECTED.value == id && check == false){
+                    store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`,'');
+                    // router.back();
+                }
+                if(check == true){
+                    store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_ALL_SELECTED}`, id);
+                }
+                if(check==false){
+                    store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_MULTI_UNCHECKED}`, id);
+                }
+            }
+            const checkboxallclicked = ( check, id, name )=>{
+                if(check==false)
+                    store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICE_RESET_MULITCHECKED}`);
+                if(check){
+                    const list=_.cloneDeep(invoiceList.value);
+                    list.forEach(item => store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_ALL_SELECTED}`, item.item_id));
+                }            
+            }
+            const selectrow = (item_id)=>{
+                store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`, item_id);
+                // router.push({
+                //     name:'OrderDetails',
+                //     params: {
+                //         order_id:id,
+                //     },
+                // })
+            }            
             return {
                 groupedPosteWidth,
                 poste,
@@ -655,15 +677,21 @@
                 assemblyStatsTomorrow,
                 assemblyStatsOverdue,
                 assemblyStatsLater,
-                numberoflines,
                 selectMode,
                 invoiceList,
                 selectAll,
                 columns,
-                onRowSelected,
                 getTableByBloc,
                 getTableStats,
                 getTable,
+                loadMoreInvoice,
+                checkboxclicked,
+                checkboxallclicked,
+                selectrow,
+                CURRENT_SELECTED,
+                MULTI_SELECTED,
+                currentLoadedInvoiceCount,
+                totalInvoiceCount
             }
         }
     }
@@ -753,4 +781,60 @@ tr:hover .visible-hidden .form-check{
     padding-left: 1rem !important;
   }
 }
+.trow{
+    transition: background-color 300ms ease-out;
+    cursor: pointer;
+    display: table-row;
+}
+.trow:hover,
+.trow.multi{
+    transition: background-color 300ms ease-out;
+    background: #F8F8F8;
+}    
+.current_sel{
+    position: relative;
+    z-index:10000;
+    background: rgb(247, 251, 246);
+    box-shadow: inset 0px -1px 0px rgba(168, 168, 168, 0.25);
+}
+/*list transitions*/
+.list-enter-from{
+    opacity: 0;
+    transform: scale(0.6);
+}
+.list-enter-to{
+    opacity: 1;
+    transform: scale(1);
+}
+.list-enter-active{
+    transition: all 1s ease;
+}
+
+.list-leave-from{
+    opacity: 1;
+    transform: scale(1);
+}
+.list-leave-to{
+    opacity: 0;
+    transform: scale(0.6);
+}
+.list-leave-active{
+    transition: all 1s ease;
+    position: absolute;
+    width: 100%;
+}
+.list-move{
+    transition:all 0.9s ease;
+} 
+</style>
+<style>
+    .trow span.chkbox {
+        border: 2px solid #FFF;
+        transition: border-color 300ms ease-out;
+    }    
+    .trow:hover span.chkbox, 
+    .trow.multi span.chkbox {
+        border-color: #868686;
+        transition: border-color 300ms ease-out;
+    }   
 </style>

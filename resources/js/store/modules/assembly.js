@@ -7,9 +7,25 @@ import {
     GET_STATS_TOMORROW,
     GET_STATS_OVERDUE,
     GET_STATS_LATER,
-    SET_ASSEMBLY_INVOICE,
-    GET_ASSEMBLY_INVOICE,
+    SET_INVOICE_LIST,
+    GET_INVOICE_LIST,
     GET_STATS_TOTAL,
+    INVOICELIST_GET_CURRENT_SELECTED,
+    INVOICELIST_SET_CURRENT_SELECTED,
+    INVOICELIST_SET_ALL_SELECTED,
+    INVOICELIST_GET_ALL_SELECTED,
+    INVOICELIST_SET_MULTI_UNCHECKED,
+    INVOICE_RESET_MULITCHECKED,
+    LOAD_MORE_INVOICE,
+    GET_LOADED_INVOICE_COUNT,
+    ADD_MORE_INVOICE_TO_LIST,
+    GET_TOTAL_INVOICE_COUNT,
+    LOADER_MODULE,
+    TOASTER_MODULE,
+    DISPLAY_LOADER,
+    TOASTER_MESSAGE,
+    HIDE_LOADER
+
 } from "../types/types";
 export const assemblyHome = {
     namespaced: true,
@@ -38,6 +54,10 @@ export const assemblyHome = {
         current_poste:      {},
         in_tailoring_postes:[],
         invoice_list:       [],
+        current_selected: '',
+        multi_selected: [],      
+        total_invoice_count: 0,  
+        skip: 0,
     },
     mutations: {
         [RESET_ASSEMBLY_STATE]: (state) => { 
@@ -80,19 +100,72 @@ export const assemblyHome = {
             state.stats_overdue     =   payload.stats_overdue;
             state.stats_later       =   payload.stats_later; 
         },
-        [SET_ASSEMBLY_INVOICE]: (state, payload) => { 
-            state.invoice_list      =   payload
+        [SET_INVOICE_LIST]: (state, payload) => {
+            state.invoice_list = payload.invoices;
+            state.total_invoice_count = payload.total_count;
+            state.skip = state.invoice_list.length;
+
+        },        
+        [ADD_MORE_INVOICE_TO_LIST]: (state, payload) => { 
+            if(payload.invoices.length > 0){
+                state.invoice_list = ( [ ...state.invoice_list, ...payload.invoices ]);
+                state.skip = state.invoice_list.length;
+            }
         },
+        [INVOICELIST_SET_CURRENT_SELECTED]:(state, payload) =>{
+            state.multi_selected    =   state.multi_selected.filter(item => item !== state.current_selected);//remove previous from multichecked
+            state.current_selected  =   payload;
+            let bodytag=document.getElementsByTagName( 'body' )[0]
+            if(payload==''){
+                bodytag.className='';
+            }else{
+                bodytag.classList.add('hide-overflowY');
+            }
+        },
+        [INVOICELIST_SET_ALL_SELECTED]:(state, payload)=>{
+             if(payload.add)// add from multi_checked
+                state.multi_selected.push( payload.id );
+             if(!payload.add) // remove from multi_checked
+                state.multi_selected  =  state.multi_selected.filter(item => item !== payload.id);
+        },        
+        [INVOICE_RESET_MULITCHECKED]:(state)=>{
+                state.multi_selected = [];
+        },        
     },
     actions: {
         [RESET_ASSEMBLY_STATE]: ({ commit }) => {
             commit(RESET_ASSEMBLY_STATE);
         },
-        [SET_ASSEMBLY_INVOICE]: ({ commit }, payload) => {
-            commit(SET_ASSEMBLY_INVOICE, payload);
+        [SET_INVOICE_LIST]: ({ commit }, payload) => {
+            commit(SET_INVOICE_LIST, payload);
         },
         [SET_ASSEMBLY_STATE]: ({ commit }, payload) => {
             commit('SET_ASSEMBLY_STATE', payload);
+        },
+        [LOAD_MORE_INVOICE]: async ( { commit, dispatch }, payload ) =>{
+            dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading More...'], {root: true});
+            await axios.post('/partner-details', payload).then(function (response) {
+                commit(ADD_MORE_INVOICE_TO_LIST, response.data);
+            })
+            .catch(function (error) {
+                if(typeof error.response !="undefined")
+                dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'},{ root: true });
+            }).finally(function(){
+                dispatch(`${LOADER_MODULE}${HIDE_LOADER}`,{},{ root: true });
+            });            
+        },
+        [INVOICELIST_SET_CURRENT_SELECTED]:({commit}, payload)=>{
+            commit(INVOICELIST_SET_CURRENT_SELECTED,payload);
+        },
+        [INVOICELIST_SET_ALL_SELECTED]:({ commit, getters }, payload)=>{
+            if(!getters.INVOICELIST_GET_ALL_SELECTED.includes(payload))
+            commit(INVOICELIST_SET_ALL_SELECTED, { id:payload, add:true } );
+        },
+        [INVOICELIST_SET_MULTI_UNCHECKED]:({ commit }, payload)=>{
+            commit(INVOICELIST_SET_ALL_SELECTED, { id:payload, add:false } );
+        },
+        [INVOICE_RESET_MULITCHECKED]:({ commit })=>{
+            commit(INVOICE_RESET_MULITCHECKED);
         },
     },
     getters: {
@@ -103,6 +176,10 @@ export const assemblyHome = {
         [GET_STATS_TOMORROW]:(state)            => state.stats_tomorrow,
         [GET_STATS_OVERDUE]:(state)             => state.stats_overdue,
         [GET_STATS_LATER]:(state)               => state.stats_later,
-        [GET_ASSEMBLY_INVOICE]:(state)          => state.invoice_list,
+        [GET_INVOICE_LIST]:(state)          => state.invoice_list,
+        [INVOICELIST_GET_CURRENT_SELECTED]:state=> state.current_selected,
+        [INVOICELIST_GET_ALL_SELECTED]:state=> state.multi_selected,        
+        [GET_LOADED_INVOICE_COUNT]:state=> state.invoice_list.length,
+        [GET_TOTAL_INVOICE_COUNT]:state=> state.total_invoice_count,
     },
 };

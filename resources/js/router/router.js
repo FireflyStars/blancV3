@@ -130,6 +130,16 @@ const router = createRouter({
                 authenticated: true
             },
             component: Assembly,
+            children:[
+                {
+                    path:'/item-detail/:item_id',
+                    name:'ItemDetail',
+                    component:()=> import('../components/assembly/ItemDetail'),
+                    meta:{
+                        authenticated:  true
+                    }
+                }
+            ]            
         },
     ]
 });

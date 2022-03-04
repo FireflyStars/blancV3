@@ -214,7 +214,7 @@ export const orderlist= {
             commit(ORDERLIST_SET_ALL_ORDER_MULITCHECKED,{id:payload,add:true});
         },
         [ORDERLIST_MULITUNCHECKED]:({commit}, payload)=>{
-            commit(ORDERLIST_SET_ALL_ORDER_MULITCHECKED,{id:payload,add:false});
+            commit(ORDERLIST_SET_ALL_ORDER_MULITCHECKED, { id:payload, add:false });
         },
         [ORDERLIST_SET_CURRENTTAB]:({commit},payload)=>{
             commit(ORDERLIST_CURRENTTAB,{tab:payload});
