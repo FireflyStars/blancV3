@@ -110,7 +110,7 @@
                                             <transition name="popinout">
                                                 <div class="row mt-3" v-if="deliverymethod=='home_delivery'&&!isRecurring">
                                                     <div class="col-3">
-                                                        <date-picker v-model="hd_pickup" name="hd_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pick up" :disabledToDate="yesterday" :disabledFromDate="hd_delivery"  @loadtranche="loadtranche('hd_pickup')"></date-picker>
+                                                        <date-picker v-model="hd_pickup" name="hd_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pick up" :disabledToDate="yesterday" :disabledFromDate="hd_delivery"  @loadtranche="loadtranche('hd_pickup')" ref="hd_pickup_datepicker"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="hd_pickup_timeslot"   name="hd_pickup_timeslot" :available-slots="hd_pickup_tranche"  label=" "></time-slot-picker>
@@ -437,6 +437,7 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             const hd_pickup =ref('');
             const hd_pickup_timeslot=ref(0);
             const hd_pickup_tranche = ref([]);
+            const hd_pickup_datepicker = ref();
             const hd_delivery=ref('');
             const hd_delivery_timeslot=ref(0);
             const hd_delivery_tranche = ref([]);
@@ -931,14 +932,9 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
                 let cur_date = var_tmp_date.value;
 
-/*
-                if(comp=='hd_pickup'){
-                    //hd_delivery_datepicker.value.setMonth(cur_date.toString().substring(2,2));
-                }else if(comp=='hd_delivery'){
-                }
-*/
-
                 if(shp_postcode.value !=''){
+
+
                     store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading available slots'], {root: true});
 
                     axios.post('/get-tranche-by-postcode',{
@@ -965,6 +961,12 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                     });
 
                 }else{
+
+                      if(comp=='hd_pickup'){
+                          console.log('resetPicker called');
+                          hd_pickup_datepicker.value.resetPicker();
+                      }
+
 
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
                     {
@@ -1004,6 +1006,7 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                 hd_pickup,
                 hd_pickup_timeslot,
                 hd_pickup_tranche,
+                hd_pickup_datepicker,
                 hd_delivery,
                 hd_delivery_timeslot,
                 hd_delivery_tranche,

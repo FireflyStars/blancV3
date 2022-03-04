@@ -60,12 +60,16 @@
 </template>
 
 <script>
-    import {ref,nextTick,watch,computed,defineExpose} from 'vue';
+    import {ref,nextTick,watch,computed} from 'vue';
     import {useStore} from 'vuex';
     import {GET_CURRENT_SELECT, SELECT_MODULE, SET_CURRENT_SELECT} from "../../store/types/types";
+    import vClickOutside from 'click-outside-vue3';
 
     export default {
         name: "DatePicker",
+        directives: {
+            clickOutside: vClickOutside.directive
+        },
         props:{
             modelValue: String,
             droppos: Object,
@@ -88,10 +92,6 @@
             const displayed_months_rows = ref({});
             const displayed_year_rows = ref({});
             let sel=computed(()=>store.getters[`${SELECT_MODULE}${GET_CURRENT_SELECT}`]);
-
-            defineExpose({
-                renderPicker,
-            });
 
             const days=[
                 {
@@ -322,10 +322,9 @@
                 default_date.value[2]=parseInt(d);
                 context.emit("update:modelValue",`${default_date.value[0]}-${default_date.value[1].toString().padStart(2, "0")}-${default_date.value[2].toString().padStart(2, "0")}`);
 
+                toggleshowDp();
 
                 context.emit("loadtranche");
-
-                toggleshowDp();
             }
             function setMonth(m){
                // default_date.value[1]=parseInt(m)+1;
@@ -399,6 +398,12 @@
                     sel=computed(()=>store.getters[`${SELECT_MODULE}${GET_CURRENT_SELECT}`]);
                 });
             }
+
+            function resetPicker(){
+                console.log('reset called from parent');
+                default_date.value = [];
+            }
+
             return {
                 sel,
                 minusMonth,
@@ -418,6 +423,7 @@
                 setMonth,
                 setYear,
                 toggleshowDp,
+                resetPicker,
                 renderPicker,
             }
 

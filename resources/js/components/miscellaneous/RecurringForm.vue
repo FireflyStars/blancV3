@@ -81,6 +81,12 @@ export default ({
         },
     setup(props,context) {
 
+
+        defineExpose({
+            returnedData
+        });
+
+
          const reccuring= ref([]);
 
          const slotsByDay=ref([
@@ -146,10 +152,6 @@ export default ({
         function returnedData(arr){
             console.log("call from parent",arr);
         }
-
-        defineExpose({
-            returnedData
-        });
 
 
     return {
