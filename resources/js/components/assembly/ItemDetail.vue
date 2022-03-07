@@ -271,7 +271,7 @@ export default {
                 if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
                     store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`,'');
                 else 
-                    store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`,'');
+                    store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`, '');
                 store.commit(`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_SET_DETAIL}`,{});
                 router.back();                
             }

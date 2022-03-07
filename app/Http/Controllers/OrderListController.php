@@ -151,14 +151,7 @@ class OrderListController extends Controller
             DB::table('infoOrder')->whereIn('infoOrder.OrderID',$infoOrdersIds)->update([
                 'Status'=>'DELETE'
             ]);
-
-
-
-
         }
-
-
-
         return response()->json(['done'=>'ok']);
     }
 
