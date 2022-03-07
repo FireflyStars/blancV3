@@ -458,7 +458,7 @@
         INVOICE_RESET_MULITCHECKED,
     } from "../../store/types/types";
     import { useStore } from "vuex";
-    import { useRoute } from "vue-router";
+    import { useRoute, useRouter } from "vue-router";
     import { ref, onBeforeMount, onMounted, onUnmounted, computed } from "vue";
     import CheckBox from '../miscellaneous/CheckBox';
     export default {
@@ -469,6 +469,7 @@
         setup(){
             const store = useStore();
             const route = useRoute();
+            const router = useRouter();
             const groupedPosteWidth = ref(0);
             const poste = ref("");
             const day = ref("");
