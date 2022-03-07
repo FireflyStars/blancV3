@@ -24,13 +24,16 @@ import {
     TOASTER_MODULE,
     DISPLAY_LOADER,
     TOASTER_MESSAGE,
-    HIDE_LOADER
+    HIDE_LOADER,
+    SET_SELECTED_NAV,
+    GET_SELECTED_NAV,
 
 } from "../types/types";
 export const assemblyHome = {
     namespaced: true,
     state: {
         postes:     "",
+        selected_nav: 'AssemblyHome',
         item:       {},
         reason:     {},
         item_damage:[],
@@ -131,6 +134,9 @@ export const assemblyHome = {
         [INVOICE_RESET_MULITCHECKED]:(state)=>{
                 state.multi_selected = [];
         },        
+        [SET_SELECTED_NAV]:(state, payolad)=>{
+                state.selected_nav = payolad;
+        },        
     },
     actions: {
         [RESET_ASSEMBLY_STATE]: ({ commit }) => {
@@ -167,6 +173,9 @@ export const assemblyHome = {
         [INVOICE_RESET_MULITCHECKED]:({ commit })=>{
             commit(INVOICE_RESET_MULITCHECKED);
         },
+        [SET_SELECTED_NAV]:({ commit }, payload)=>{
+            commit(SET_SELECTED_NAV, payload);
+        },
     },
     getters: {
         [GET_ASSEMBLY_GROUPED_POSTES]:(state)   => state.groupedpostes,
@@ -181,5 +190,6 @@ export const assemblyHome = {
         [INVOICELIST_GET_ALL_SELECTED]:state=> state.multi_selected,        
         [GET_LOADED_INVOICE_COUNT]:state=> state.invoice_list.length,
         [GET_TOTAL_INVOICE_COUNT]:state=> state.total_invoice_count,
+        [GET_SELECTED_NAV]:state=> state.selected_nav,
     },
 };

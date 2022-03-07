@@ -1,5 +1,5 @@
 <template>
-    <div v-if="showorderdetail" class="odv container ">
+    <div v-if="showorderdetail" class="odv container">
         <div class="order-detail-progressbar" :class="loaderclass"></div>
         <i class="icon-close" @click="close"></i>
         <div v-if="(typeof ORDER['detail']!='undefined')" class="section1">

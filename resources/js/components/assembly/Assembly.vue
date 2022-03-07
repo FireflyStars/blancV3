@@ -1,18 +1,17 @@
 <template>
-    <router-view v-slot="{ Component }">
     <transition enter-active-class="animate__animated animate__fadeIn animate__fadeOut">
-    <div class="container-fluid h-100 bg-color">
-        <main-header></main-header>
-        <div class="row d-flex align-content-stretch align-items-stretch flex-row hmax" style="z-index: 100">
-            <side-bar></side-bar>
+        <div class="container-fluid h-100 bg-color">
+            <main-header></main-header>
+            <div class="row d-flex align-content-stretch align-items-stretch flex-row hmax" style="z-index: 100">
+                <side-bar></side-bar>
                 <div class="col main-view mx-5 py-5" id="assembly-home">
                     <h2 class="mx-0 font-22">Production Track</h2>
                     <div class="nav-panel d-flex justify-content-between mb-1">
                         <ul class="assembly-home-nav list-inline mb-0">
-                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'AssemblyHome' ? 'active' : ''" @click="selected_nav = 'AssemblyHome'">Stations</li>
-                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'Commitment' ? 'active' : ''" @click="selected_nav = 'Commitment'">Commitment</li>
-                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'InvoiceList' ? 'active' : ''" @click="selected_nav = 'InvoiceList'">All items</li>
-                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'Overdue' ? 'active' : ''" @click="selected_nav = 'Overdue'">Overdue</li>
+                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'AssemblyHome' ? 'active' : ''" @click="setNav('AssemblyHome')">Stations</li>
+                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'Commitment' ? 'active' : ''" @click="setNav('Commitment')">Commitment</li>
+                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'InvoiceList' ? 'active' : ''" @click="setNav('InvoiceList')">All items</li>
+                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'Overdue' ? 'active' : ''" @click="setNav('Overdue')">Overdue</li>
                         </ul>
                         <div class="filter-section position-relative" v-if="selected_nav == 'InvoiceList'">
                             <filters :filterDef="filterDef"></filters>
@@ -22,20 +21,30 @@
                         <component :is="selected_nav"></component>
                     </KeepAlive>
                 </div>
+            </div>
+            <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
+                <div v-if="showlayer" class="back-layer"></div>
+            </transition>               
         </div>
-    </div>
     </transition>
-    </router-view>
 </template>
 
 <script>
+    import {
+        ASSEMBLY_HOME_MODULE, 
+        INVOICE_MODULE, 
+        SET_SELECTED_NAV, 
+        GET_SELECTED_NAV, 
+        INVOICELIST_GET_CURRENT_SELECTED,
+    } from "../../store/types/types";
     import SideBar from "../layout/SideBar";
     import MainHeader from "../layout/MainHeader";
     import Filters from '../test/Filter';
     import InvoiceList from './InvoiceList';
     import AssemblyHome from './AssemblyHome';
-    import { ref } from "vue";
-
+    import { ref, computed } from "vue";
+    import { useStore } from "vuex";
+    import { useRoute } from "vue-router";
     export default {
         name: "Assembly",
         components:{
@@ -46,6 +55,8 @@
             AssemblyHome
         },
         setup(){
+            const store = useStore();
+            const route = useRoute();
             const selected_nav = ref('AssemblyHome');
             const filterDef =  ref({
                     status: {
@@ -89,15 +100,35 @@
                         }
                     },
                 });  
+            
             return {
                 filterDef,
-                selected_nav
+                selected_nav: computed(()=>store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`]),
+                showlayer: computed( ()=> {
+                                if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
+                                    return (route.params.item_id>0&&store.getters[`${ASSEMBLY_HOME_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);
+                                else if (store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'InvoiceList')
+                                    return (route.params.item_id>0&&store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);
+                                else return false;
+                            }
+                        ),
+                setNav:( nav_val )=>{
+                    store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_SELECTED_NAV}`, nav_val)
+                },
             }
         }
     }
 </script>
 
 <style>
+.hmax{
+    height: calc(100% - var(--mainlogoheight));
+    padding-top:var(--mainlogoheight) ;
+}
+
+.auth-logo{
+    height: var(--authlogoheight);
+}
 *{
     font-family: 'Gotham Rounded Book';
     font-weight: normal;
@@ -139,16 +170,17 @@
     flex-direction: row;
     justify-content: space-evenly;
     align-items: center;
-    padding: 5px 16px 5px 8px;
-    font-family: 'Gotham Rounded Book';
+    padding: 0 16px 0 8px;
+    width: max-content;
+    min-width: 135px;
+}
+.invoice-location span{
+    font-family: 'Gotham Rounded';
     font-style: normal;
     font-weight: normal;
     font-size: 12px;
     line-height: 14px;
-    background: rgba(241, 210, 164, 0.7);;
-    color: #000000;    
-    width: max-content;
-    min-width: 135px;
+    color: #000000;
 }
 .visible-hidden .form-check{ 
     visibility : hidden;
@@ -161,5 +193,14 @@ tr:hover .visible-hidden .form-check{
   .total_row {
     padding-left: 1rem !important;
   }
+}
+.back-layer{
+    background:rgba(224, 224, 224,0.6);
+    position: fixed;
+    top: 0;
+    left:0;
+    height: 100%;
+    width: 100%;
+    z-index: 9999;
 }
 </style>

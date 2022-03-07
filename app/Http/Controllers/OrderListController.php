@@ -249,6 +249,43 @@ class OrderListController extends Controller
         return response()->json(['order'=>['detail'=>$order,'billing'=>$billing_add,'delivery'=>$delivery_add,'items'=>$items,'available_slots'=>$available_slots]]);
     }
 
+    public function getitemdetail(Request $request){
+        $itemInfo = DB::table('infoitems')
+                      ->join('infoInvoice', 'infoitems.SubOrderID', '=', 'infoInvoice.SubOrderID')
+                      ->join('infoCustomer', 'infoInvoice.CustomerID', '=', 'infoCustomer.CustomerID')
+                      ->join('postes', 'infoitems.nextpost', '=', 'postes.id')
+                      ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
+                      ->where('infoitems.id', $request->item_id)
+                      ->select(
+                          'infoitems.id', 'infoInvoice.NumInvoice as sub_order', 'infoitems.Colors as colors',
+                          'infoitems.Fabrics as fabrics', 'infoitems.Patterns as patterns', 'infoitems.Size as size',
+                          'infoitems.StoreName as store_name', 'infoitems.store', 'infoitems.damage', 'infoitems.id_items',
+                          'infoitems.typeitem as item_name', 'TypePost.couleur as location_color', 'postes.nom as location',
+                          'infoCustomer.Name as customer_name', 'infoCustomer.CustomerIDMaster', 'infoCustomer.CustomerIDMasterAccount',
+                          'infoCustomer.IsMaster', 'infoCustomer.IsMasterAccount'
+                          )->first();
+        
+        $location_history = DB::table('production')
+                              ->join('postes', 'production.poste_id', '=', 'postes.id')
+                              ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
+                              ->join('users', 'production.user_id', '=', 'users.id')
+                              ->select(
+                                    'TypePost.couleur as location_color', 'postes.nom as location',
+                                    DB::raw('DATE_FORMAT(production.date_add,"%a") as day'),
+                                    DB::raw('DATE_FORMAT(production.date_add,"%m/%d/%Y") as date'),
+                                    DB::raw('DATE_FORMAT(production.date_add,"%H:%i") as time'),
+                                    'users.name'
+                                )
+                              ->where('production.item_id', $request->item_id)
+                              ->get();
+        return response()->json([
+            'item_detail'=>[
+                'breif_info'        => $itemInfo,
+                'location_history'  => $location_history
+            ]
+        ]);
+    }
+
 
     public function suggestdate(Request $request){
             $infoOrder_id=$request->post('infoOrder_id');

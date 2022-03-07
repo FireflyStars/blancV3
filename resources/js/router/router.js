@@ -20,13 +20,34 @@ const router = createRouter({
                 {
                     path:'/order_details/:order_id',
                     name:'OrderDetails',
-                    component:()=> import('../components/orderlist/OrderDetail'),
+                    component:() => import('../components/orderlist/OrderDetail'),
                     meta:{
                         authenticated:  true
                     }
                 }
             ]
         },
+        {
+            path: '/assembly-home',
+            name: 'Assembly',
+            meta:{
+                authenticated: false
+            },
+            component: Assembly,
+            children:[
+                {
+                    path:'/item_detail/:item_id',
+                    name:'ItemDetails',
+                    components:{
+                        default: () => import('../components/assembly/ItemDetail'),
+                        // station: () => import('../components/assembly/StationItemDetail'),
+                    },                    
+                    meta:{
+                        authenticated:  false
+                    }
+                }
+            ]            
+        },        
         {
             path:'/order-content/:order_id',
             name:'DetailingItemList',
@@ -123,24 +144,7 @@ const router = createRouter({
             name: 'not-found',
             component:NotFound
         },
-        {
-            path: '/assembly-home',
-            name: 'Assembly',
-            meta:{
-                authenticated: true
-            },
-            component: Assembly,
-            children:[
-                {
-                    path:'/item-detail/:item_id',
-                    name:'ItemDetail',
-                    component:()=> import('../components/assembly/ItemDetail'),
-                    meta:{
-                        authenticated:  true
-                    }
-                }
-            ]            
-        },
+
     ]
 });
 

@@ -1,169 +1,95 @@
 <template>
-        <div class="w-100 position-relative bg-black">
-            <div class="d-flex flex-wrap p-2">
-                <div class="col-sm-6 col-md-4">
-                    <div class="each-home-stats">
-                        <div class="bg-white p-2 m-2 rounded-3">
-                            <div class="d-flex mb-3">
-                                <div class="col-2 as-stats-label fw-bold font-20 pl-4">Due<br/>Today</div>
-                                <div class="col-2 px-2 text-end total_stats_num">
-                                    {{ mainStats.total_due_today ? mainStats.total_due_today : 0}}
-                                </div>
-                                <div class="col-8 pr-5">
-                                    <div class="red-stats text-white d-flex justify-content-between text-center rounded-pill">
-                                        <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_today_deliveries<10?
-                                        10:(mainStats.percent_today_deliveries>90?90:mainStats.percent_today_deliveries))+'%'}">
-                                        {{ mainStats.due_today_deliveries ? parseInt(mainStats.due_today_deliveries) : 0}}</div>
-                                        <div class="py-1 px-2" :style="{'width':+(mainStats.percent_exp_today<10?
-                                        10:(mainStats.percent_today_stores>90?90:mainStats.percent_today_stores))+'%'}">
-                                        {{mainStats.due_today_stores ? parseInt(mainStats.due_today_stores) : 0}}</div>
-                                    </div>
-                                    <div class="d-flex count-under-label">
-                                        <div class="col-9">Deliveries</div>
-                                        <div class="col-3 text-end">Stores</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="d-flex mb-3">
-                                <div class="col-2 as-stats-label pl-4">Deliveries</div>
-                                <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_today_deliveries ? mainStats.due_today_deliveries : 0}}</div>
-                                <div class="col-8 pr-5">
-                                    <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
-                                        <div class="standard-bar py-1 px-2"
-                                        :style="{'width':+(mainStats.percent_today_inprocess_deliveries<10?
-                                        10:(mainStats.percent_today_inprocess_deliveries>90?
-                                        90:mainStats.percent_today_inprocess_deliveries))+'%'}"
-                                        :class="{'col-6':mainStats.due_today_deliveries==0,'px-0':mainStats.due_today_deliveries==0}">
-                                        {{ mainStats.percent_today_inprocess_deliveries ? parseInt(mainStats.percent_today_inprocess_deliveries) : 0}}%
-                                        </div>
-                                        <div class="py-1 px-2" :style="{'width':+(mainStats.percent_today_done_deliveries<10?
-                                        10:(mainStats.percent_today_done_deliveries>90?
-                                        90:mainStats.percent_today_done_deliveries))+'%'}"
-                                        :class="{'col-6':mainStats.due_today_deliveries==0,'px-0':mainStats.due_today_deliveries==0}">
-                                        {{mainStats.percent_today_done_deliveries ? parseInt(mainStats.percent_today_done_deliveries) : 0}}%
-                                        </div>
-                                    </div>
-                                    <div class="d-flex count-under-label">
-                                        <div class="col-9">In process</div>
-                                        <div class="col-3 text-end">Done</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="d-flex">
-                                <div class="col-2 as-stats-label font-20 pl-4">Stores</div>
-                                <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_today_stores ? mainStats.due_today_stores : 0}}</div>
-                                <div class="col-8 pr-5">
-                                    <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
-                                        <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_today_inprocess_stores<10?
-                                        10:(mainStats.percent_today_inprocess_stores>90?
-                                        90:mainStats.percent_today_inprocess_stores))+'%'}"
-                                        :class="{'col-6':mainStats.due_today_stores==0,'px-0':mainStats.due_today_stores==0}">
-                                        {{ mainStats.percent_today_inprocess_stores? parseInt(mainStats.percent_today_inprocess_stores) : 0}}%
-                                        </div>
-                                        <div class="py-1 px-2" :style="{'width':+(mainStats.percent_today_done_stores<10?
-                                        10:(mainStats.percent_today_done_stores>90?
-                                        90:mainStats.percent_today_done_stores))+'%'}"
-                                        :class="{'col-6':mainStats.due_today_stores==0,'px-0':mainStats.due_today_stores==0}">
-                                        {{ mainStats.percent_today_done_stores? parseInt(mainStats.percent_today_done_stores) : 0 }}%
-                                        </div>
-                                    </div>
-                                    <div class="d-flex count-under-label">
-                                        <div class="col-9">In process</div>
-                                        <div class="col-3 text-end">Done</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-md-4">
-                    <div class="each-home-stats">
-                        <div class="bg-white p-2 m-2 rounded-3">
-                            <div class="d-flex mb-3">
-                                <div class="col-2 as-stats-label fw-bold font-20 pl-4">Due<br/>Tomorrow</div>
-                                <div class="col-2 px-2 text-end total_stats_num">{{mainStats.total_due_tomorrow ? mainStats.total_due_tomorrow : 0}}</div>
-                                <div class="col-8 pr-5">
-                                    <div class="red-stats text-white d-flex justify-content-between text-center">
-                                        <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_deliveries<10?
-                                        10:(mainStats.percent_tomorrow_deliveries>90?90:mainStats.percent_tomorrow_deliveries))+'%'}">
-                                        {{mainStats.due_tomorrow_deliveries ? mainStats.due_tomorrow_deliveries : 0 }}</div>
-                                        <div class="py-1 px-2" :style="{'width':+(mainStats.percent_exp_tomorrow<10?
-                                        10:(mainStats.percent_tomorrow_stores>90?90:mainStats.percent_tomorrow_stores))+'%'}">
-                                        {{mainStats.due_tomorrow_stores ? mainStats.due_tomorrow_stores : 0}}</div>
-                                    </div>
-                                    <div class="d-flex count-under-label">
-                                        <div class="col-9">Deliveries</div>
-                                        <div class="col-3 text-end">Stores</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!--Percent-->
-                            <div class="d-flex mb-3">
-                                <div class="col-2 as-stats-label pl-4">Deliveries</div>
-                                <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_tomorrow_deliveries ? mainStats.due_tomorrow_deliveries : 0}}</div>
-                                <div class="col-8 pr-5">
-                                    <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
-                                        <div class="standard-bar py-1 px-2"
-                                        :style="{'width':+(mainStats.percent_tomorrow_inprocess_deliveries<10?
-                                        10:(mainStats.percent_tomorrow_inprocess_deliveries>90?
-                                        90:mainStats.percent_tomorrow_inprocess_deliveries))+'%'}"
-                                        :class="{'col-6':mainStats.due_tomorrow_deliveries==0,'px-0':mainStats.due_tomorrow_deliveries==0}">
-                                        {{mainStats.percent_tomorrow_inprocess_deliveries ? parseInt(mainStats.percent_tomorrow_inprocess_deliveries) : 0}}%
-                                        </div>
-                                        <div class="py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_done_deliveries<10?
-                                        10:(mainStats.percent_tomorrow_done_deliveries>90?
-                                        90:mainStats.percent_tomorrow_done_deliveries))+'%'}"
-                                        :class="{'col-6':mainStats.due_tomorrow_deliveries==0,'px-0':mainStats.due_tomorrow_deliveries==0}">
-                                        {{ mainStats.percent_tomorrow_done_deliveries ? parseInt(mainStats.percent_tomorrow_done_deliveries) : 0}}%
-                                        </div>
-                                    </div>
-                                    <div class="row count-under-label">
-                                        <div class="col-9">In process</div>
-                                        <div class="col-3 text-end">Done</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="d-flex">
-                                <div class="col-2 as-stats-label pl-4">Stores</div>
-                                <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_tomorrow_stores ? mainStats.due_tomorrow_stores : 0}}</div>
-                                <div class="col-8 pr-5">
-                                    <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
-                                        <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_inprocess_stores<10?
-                                        10:(mainStats.percent_tomorrow_inprocess_stores>90?
-                                        90:mainStats.percent_tomorrow_inprocess_stores))+'%'}"
-                                        :class="{'col-6':mainStats.due_tomorrow_stores==0,'px-0':mainStats.due_tomorrow_stores==0}">
-                                        {{ mainStats.percent_tomorrow_inprocess_stores ? parseInt(mainStats.percent_tomorrow_inprocess_stores) : 0}}%
-                                        </div>
-                                        <div class="py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_done_stores<10?
-                                        10:(mainStats.percent_tomorrow_done_stores>90?
-                                        90:mainStats.percent_tomorrow_done_stores))+'%'}"
-                                        :class="{'col-6':mainStats.due_tomorrow_stores==0,'px-0':mainStats.due_tomorrow_stores==0}">
-                                        {{mainStats.percent_tomorrow_done_stores ? parseInt(mainStats.percent_tomorrow_done_stores) : 0}}%
-                                        </div>
-                                    </div>
-                                    <div class="row count-under-label">
-                                        <div class="col-9">In process</div>
-                                        <div class="col-3 text-end">Done</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-md-4">
-                    <div class="each-home-stats">
-                        <div class="bg-white p-2 m-2 rounded-3">
+    <div class="w-100 position-relative bg-black">
+        <div class="d-flex flex-wrap p-2">
+            <div class="col-sm-6 col-md-4">
+                <div class="each-home-stats">
+                    <div class="bg-white p-2 m-2 rounded-3">
                         <div class="d-flex mb-3">
-                            <div class="col-2 as-stats-label fw-bold font-20 pl-4">Due<br/> <span class="text-nowrap fw-bold as-stats-label">Day after</span></div>
-                            <div class="col-2 px-2 text-end total_stats_num">{{mainStats.total_due_later ? mainStats.total_due_later : 0}}</div>
+                            <div class="col-2 as-stats-label fw-bold font-20 pl-4">Due<br/>Today</div>
+                            <div class="col-2 px-2 text-end total_stats_num">
+                                {{ mainStats.total_due_today ? mainStats.total_due_today : 0}}
+                            </div>
+                            <div class="col-8 pr-5">
+                                <div class="red-stats text-white d-flex justify-content-between text-center rounded-pill">
+                                    <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_today_deliveries<10?
+                                    10:(mainStats.percent_today_deliveries>90?90:mainStats.percent_today_deliveries))+'%'}">
+                                    {{ mainStats.due_today_deliveries ? parseInt(mainStats.due_today_deliveries) : 0}}</div>
+                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_exp_today<10?
+                                    10:(mainStats.percent_today_stores>90?90:mainStats.percent_today_stores))+'%'}">
+                                    {{mainStats.due_today_stores ? parseInt(mainStats.due_today_stores) : 0}}</div>
+                                </div>
+                                <div class="d-flex count-under-label">
+                                    <div class="col-9">Deliveries</div>
+                                    <div class="col-3 text-end">Stores</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex mb-3">
+                            <div class="col-2 as-stats-label pl-4">Deliveries</div>
+                            <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_today_deliveries ? mainStats.due_today_deliveries : 0}}</div>
+                            <div class="col-8 pr-5">
+                                <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
+                                    <div class="standard-bar py-1 px-2"
+                                    :style="{'width':+(mainStats.percent_today_inprocess_deliveries<10?
+                                    10:(mainStats.percent_today_inprocess_deliveries>90?
+                                    90:mainStats.percent_today_inprocess_deliveries))+'%'}"
+                                    :class="{'col-6':mainStats.due_today_deliveries==0,'px-0':mainStats.due_today_deliveries==0}">
+                                    {{ mainStats.percent_today_inprocess_deliveries ? parseInt(mainStats.percent_today_inprocess_deliveries) : 0}}%
+                                    </div>
+                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_today_done_deliveries<10?
+                                    10:(mainStats.percent_today_done_deliveries>90?
+                                    90:mainStats.percent_today_done_deliveries))+'%'}"
+                                    :class="{'col-6':mainStats.due_today_deliveries==0,'px-0':mainStats.due_today_deliveries==0}">
+                                    {{mainStats.percent_today_done_deliveries ? parseInt(mainStats.percent_today_done_deliveries) : 0}}%
+                                    </div>
+                                </div>
+                                <div class="d-flex count-under-label">
+                                    <div class="col-9">In process</div>
+                                    <div class="col-3 text-end">Done</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="col-2 as-stats-label font-20 pl-4">Stores</div>
+                            <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_today_stores ? mainStats.due_today_stores : 0}}</div>
+                            <div class="col-8 pr-5">
+                                <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
+                                    <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_today_inprocess_stores<10?
+                                    10:(mainStats.percent_today_inprocess_stores>90?
+                                    90:mainStats.percent_today_inprocess_stores))+'%'}"
+                                    :class="{'col-6':mainStats.due_today_stores==0,'px-0':mainStats.due_today_stores==0}">
+                                    {{ mainStats.percent_today_inprocess_stores? parseInt(mainStats.percent_today_inprocess_stores) : 0}}%
+                                    </div>
+                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_today_done_stores<10?
+                                    10:(mainStats.percent_today_done_stores>90?
+                                    90:mainStats.percent_today_done_stores))+'%'}"
+                                    :class="{'col-6':mainStats.due_today_stores==0,'px-0':mainStats.due_today_stores==0}">
+                                    {{ mainStats.percent_today_done_stores? parseInt(mainStats.percent_today_done_stores) : 0 }}%
+                                    </div>
+                                </div>
+                                <div class="d-flex count-under-label">
+                                    <div class="col-9">In process</div>
+                                    <div class="col-3 text-end">Done</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-4">
+                <div class="each-home-stats">
+                    <div class="bg-white p-2 m-2 rounded-3">
+                        <div class="d-flex mb-3">
+                            <div class="col-2 as-stats-label fw-bold font-20 pl-4">Due<br/>Tomorrow</div>
+                            <div class="col-2 px-2 text-end total_stats_num">{{mainStats.total_due_tomorrow ? mainStats.total_due_tomorrow : 0}}</div>
                             <div class="col-8 pr-5">
                                 <div class="red-stats text-white d-flex justify-content-between text-center">
-                                    <div class="standard-bar py-1 px-2"
-                                        :style="{'width':+ ( mainStats.percent_later_deliveries < 10 ? 10: ( mainStats.percent_later_deliveries>90?90:mainStats.percent_later_deliveries))+'%'}">
-                                    {{mainStats.due_later_deliveries ? mainStats.due_later_deliveries : 0 }}</div>
-                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_exp_later<10?
-                                    10:(mainStats.percent_later_stores>90?90:mainStats.percent_later_stores))+'%'}">
-                                    {{mainStats.due_later_stores ? mainStats.due_later_stores : 0}}</div>
+                                    <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_deliveries<10?
+                                    10:(mainStats.percent_tomorrow_deliveries>90?90:mainStats.percent_tomorrow_deliveries))+'%'}">
+                                    {{mainStats.due_tomorrow_deliveries ? mainStats.due_tomorrow_deliveries : 0 }}</div>
+                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_exp_tomorrow<10?
+                                    10:(mainStats.percent_tomorrow_stores>90?90:mainStats.percent_tomorrow_stores))+'%'}">
+                                    {{mainStats.due_tomorrow_stores ? mainStats.due_tomorrow_stores : 0}}</div>
                                 </div>
                                 <div class="d-flex count-under-label">
                                     <div class="col-9">Deliveries</div>
@@ -174,21 +100,21 @@
                         <!--Percent-->
                         <div class="d-flex mb-3">
                             <div class="col-2 as-stats-label pl-4">Deliveries</div>
-                            <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_later_deliveries ? mainStats.due_later_deliveries : 0}}</div>
+                            <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_tomorrow_deliveries ? mainStats.due_tomorrow_deliveries : 0}}</div>
                             <div class="col-8 pr-5">
                                 <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
                                     <div class="standard-bar py-1 px-2"
-                                    :style="{'width':+(mainStats.percent_later_inprocess_deliveries<10?
-                                    10:(mainStats.percent_later_inprocess_deliveries>90?
-                                    90:mainStats.percent_later_inprocess_deliveries))+'%'}"
-                                    :class="{'col-6':mainStats.due_later_deliveries==0,'px-0':mainStats.due_later_deliveries==0}">
-                                    {{mainStats.percent_later_inprocess_deliveries ? parseInt(mainStats.percent_later_inprocess_deliveries) : 0}}%
+                                    :style="{'width':+(mainStats.percent_tomorrow_inprocess_deliveries<10?
+                                    10:(mainStats.percent_tomorrow_inprocess_deliveries>90?
+                                    90:mainStats.percent_tomorrow_inprocess_deliveries))+'%'}"
+                                    :class="{'col-6':mainStats.due_tomorrow_deliveries==0,'px-0':mainStats.due_tomorrow_deliveries==0}">
+                                    {{mainStats.percent_tomorrow_inprocess_deliveries ? parseInt(mainStats.percent_tomorrow_inprocess_deliveries) : 0}}%
                                     </div>
-                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_later_done_deliveries<10?
-                                    10:(mainStats.percent_later_done_deliveries>90?
-                                    90:mainStats.percent_later_done_deliveries))+'%'}"
-                                    :class="{'col-6':mainStats.due_later_deliveries==0,'px-0':mainStats.due_later_deliveries==0}">
-                                    {{ mainStats.percent_later_done_deliveries ? parseInt(mainStats.percent_later_done_deliveries) : 0}}%
+                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_done_deliveries<10?
+                                    10:(mainStats.percent_tomorrow_done_deliveries>90?
+                                    90:mainStats.percent_tomorrow_done_deliveries))+'%'}"
+                                    :class="{'col-6':mainStats.due_tomorrow_deliveries==0,'px-0':mainStats.due_tomorrow_deliveries==0}">
+                                    {{ mainStats.percent_tomorrow_done_deliveries ? parseInt(mainStats.percent_tomorrow_done_deliveries) : 0}}%
                                     </div>
                                 </div>
                                 <div class="row count-under-label">
@@ -199,20 +125,20 @@
                         </div>
                         <div class="d-flex">
                             <div class="col-2 as-stats-label pl-4">Stores</div>
-                            <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_later_stores ? mainStats.due_later_stores : 0}}</div>
+                            <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_tomorrow_stores ? mainStats.due_tomorrow_stores : 0}}</div>
                             <div class="col-8 pr-5">
                                 <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
-                                    <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_later_inprocess_stores<10?
-                                    10:(mainStats.percent_later_inprocess_stores>90?
-                                    90:mainStats.percent_later_inprocess_stores))+'%'}"
-                                    :class="{'col-6':mainStats.due_later_stores==0,'px-0':mainStats.due_later_stores==0}">
-                                    {{ mainStats.percent_later_inprocess_stores ? parseInt(mainStats.percent_later_inprocess_stores) : 0}}%
+                                    <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_inprocess_stores<10?
+                                    10:(mainStats.percent_tomorrow_inprocess_stores>90?
+                                    90:mainStats.percent_tomorrow_inprocess_stores))+'%'}"
+                                    :class="{'col-6':mainStats.due_tomorrow_stores==0,'px-0':mainStats.due_tomorrow_stores==0}">
+                                    {{ mainStats.percent_tomorrow_inprocess_stores ? parseInt(mainStats.percent_tomorrow_inprocess_stores) : 0}}%
                                     </div>
-                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_later_done_stores<10?
-                                    10:(mainStats.percent_later_done_stores>90?
-                                    90:mainStats.percent_later_done_stores))+'%'}"
-                                    :class="{'col-6':mainStats.due_later_stores==0,'px-0':mainStats.due_later_stores==0}">
-                                    {{mainStats.percent_later_done_stores ? parseInt(mainStats.percent_later_done_stores) : 0}}%
+                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_done_stores<10?
+                                    10:(mainStats.percent_tomorrow_done_stores>90?
+                                    90:mainStats.percent_tomorrow_done_stores))+'%'}"
+                                    :class="{'col-6':mainStats.due_tomorrow_stores==0,'px-0':mainStats.due_tomorrow_stores==0}">
+                                    {{mainStats.percent_tomorrow_done_stores ? parseInt(mainStats.percent_tomorrow_done_stores) : 0}}%
                                     </div>
                                 </div>
                                 <div class="row count-under-label">
@@ -221,219 +147,294 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-4">
+                <div class="each-home-stats">
+                    <div class="bg-white p-2 m-2 rounded-3">
+                    <div class="d-flex mb-3">
+                        <div class="col-2 as-stats-label fw-bold font-20 pl-4">Due<br/> <span class="text-nowrap fw-bold as-stats-label">Day after</span></div>
+                        <div class="col-2 px-2 text-end total_stats_num">{{mainStats.total_due_later ? mainStats.total_due_later : 0}}</div>
+                        <div class="col-8 pr-5">
+                            <div class="red-stats text-white d-flex justify-content-between text-center">
+                                <div class="standard-bar py-1 px-2"
+                                    :style="{'width':+ ( mainStats.percent_later_deliveries < 10 ? 10: ( mainStats.percent_later_deliveries>90?90:mainStats.percent_later_deliveries))+'%'}">
+                                {{mainStats.due_later_deliveries ? mainStats.due_later_deliveries : 0 }}</div>
+                                <div class="py-1 px-2" :style="{'width':+(mainStats.percent_exp_later<10?
+                                10:(mainStats.percent_later_stores>90?90:mainStats.percent_later_stores))+'%'}">
+                                {{mainStats.due_later_stores ? mainStats.due_later_stores : 0}}</div>
+                            </div>
+                            <div class="d-flex count-under-label">
+                                <div class="col-9">Deliveries</div>
+                                <div class="col-3 text-end">Stores</div>
+                            </div>
                         </div>
+                    </div>
+                    <!--Percent-->
+                    <div class="d-flex mb-3">
+                        <div class="col-2 as-stats-label pl-4">Deliveries</div>
+                        <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_later_deliveries ? mainStats.due_later_deliveries : 0}}</div>
+                        <div class="col-8 pr-5">
+                            <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
+                                <div class="standard-bar py-1 px-2"
+                                :style="{'width':+(mainStats.percent_later_inprocess_deliveries<10?
+                                10:(mainStats.percent_later_inprocess_deliveries>90?
+                                90:mainStats.percent_later_inprocess_deliveries))+'%'}"
+                                :class="{'col-6':mainStats.due_later_deliveries==0,'px-0':mainStats.due_later_deliveries==0}">
+                                {{mainStats.percent_later_inprocess_deliveries ? parseInt(mainStats.percent_later_inprocess_deliveries) : 0}}%
+                                </div>
+                                <div class="py-1 px-2" :style="{'width':+(mainStats.percent_later_done_deliveries<10?
+                                10:(mainStats.percent_later_done_deliveries>90?
+                                90:mainStats.percent_later_done_deliveries))+'%'}"
+                                :class="{'col-6':mainStats.due_later_deliveries==0,'px-0':mainStats.due_later_deliveries==0}">
+                                {{ mainStats.percent_later_done_deliveries ? parseInt(mainStats.percent_later_done_deliveries) : 0}}%
+                                </div>
+                            </div>
+                            <div class="row count-under-label">
+                                <div class="col-9">In process</div>
+                                <div class="col-3 text-end">Done</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex">
+                        <div class="col-2 as-stats-label pl-4">Stores</div>
+                        <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_later_stores ? mainStats.due_later_stores : 0}}</div>
+                        <div class="col-8 pr-5">
+                            <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
+                                <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_later_inprocess_stores<10?
+                                10:(mainStats.percent_later_inprocess_stores>90?
+                                90:mainStats.percent_later_inprocess_stores))+'%'}"
+                                :class="{'col-6':mainStats.due_later_stores==0,'px-0':mainStats.due_later_stores==0}">
+                                {{ mainStats.percent_later_inprocess_stores ? parseInt(mainStats.percent_later_inprocess_stores) : 0}}%
+                                </div>
+                                <div class="py-1 px-2" :style="{'width':+(mainStats.percent_later_done_stores<10?
+                                10:(mainStats.percent_later_done_stores>90?
+                                90:mainStats.percent_later_done_stores))+'%'}"
+                                :class="{'col-6':mainStats.due_later_stores==0,'px-0':mainStats.due_later_stores==0}">
+                                {{mainStats.percent_later_done_stores ? parseInt(mainStats.percent_later_done_stores) : 0}}%
+                                </div>
+                            </div>
+                            <div class="row count-under-label">
+                                <div class="col-9">In process</div>
+                                <div class="col-3 text-end">Done</div>
+                            </div>
+                        </div>
+                    </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="w-100 d-flex bg-black" id="assembly-home-stats">
+    </div>
+    <div class="w-100 d-flex bg-black" id="assembly-home-stats">
+        <div class="col-12 p-0">
             <div class="col-12 p-0">
-                <div class="col-12 p-0">
-                    <div v-if="groupedPostes">
-                        <div class="bg-white mb-3 p-3">
-                            <div class="d-flex mb-3">
-                                <div class="w-13"><h2 id="order_status_heading" class="mt-1 mb-0 mx-0">Items in <br>Production</h2></div>
-                                <div class="w-87 mt-auto">
-                                    <div class="d-flex justify-content-between">
-                                        <div v-for="(a, index) in groupedPostes" :style="{width: parseInt(100/groupedPostes.length)+'%'}" class="text-center each-poste-label" :key="index">
-                                            <span class="text-capitalize" v-if="a.group_name=='Partner'">With<br/></span>
-                                            <span class="text-capitalize" v-else-if="a.group_name!='Storage'&&a.group_name!='Conveyor'">In<br/></span>
-                                            <span class="text-capitalize" v-if="a.group_name!='QC 1' && a.group_name!='QC 2'"></span>
-                                            <span class="text-capitalize" v-else>&nbsp;</span>
-                                            <span class="text-capitalize" v-if="a.group_name == 'Conveyor'">On <br> <span class="text-nowrap">Assembly Conveyor</span></span>
-                                            <span class="text-capitalize" v-else-if="a.group_name=='Storage'">On<br> <span class="text-nowrap">Storage Conveyor</span></span>
-                                            <span class="text-capitalize text-nowrap" v-else>{{ a.formatted_name }}</span>
-                                        </div>
+                <div v-if="groupedPostes">
+                    <div class="bg-white mb-3 p-3">
+                        <div class="d-flex mb-3">
+                            <div class="w-13"><h2 id="order_status_heading" class="mt-1 mb-0 mx-0">Items in <br>Production</h2></div>
+                            <div class="w-87 mt-auto">
+                                <div class="d-flex justify-content-between">
+                                    <div v-for="(a, index) in groupedPostes" :style="{width: parseInt(100/groupedPostes.length)+'%'}" class="text-center each-poste-label" :key="index">
+                                        <span class="text-capitalize" v-if="a.group_name=='Partner'">With<br/></span>
+                                        <span class="text-capitalize" v-else-if="a.group_name!='Storage'&&a.group_name!='Conveyor'">In<br/></span>
+                                        <span class="text-capitalize" v-if="a.group_name!='QC 1' && a.group_name!='QC 2'"></span>
+                                        <span class="text-capitalize" v-else>&nbsp;</span>
+                                        <span class="text-capitalize" v-if="a.group_name == 'Conveyor'">On <br> <span class="text-nowrap">Assembly Conveyor</span></span>
+                                        <span class="text-capitalize" v-else-if="a.group_name=='Storage'">On<br> <span class="text-nowrap">Storage Conveyor</span></span>
+                                        <span class="text-capitalize text-nowrap" v-else>{{ a.formatted_name }}</span>
                                     </div>
                                 </div>
                             </div>
-                            <!--Row today-->
-                            <div class="d-flex align-items-center">
-                                <div class="w-13"></div>
-                                <div class="w-87">
-                                    <div class="d-flex justify-content-between total_row">
-                                        <div v-for="(a, index) in groupedPostes" :style="{width:groupedPosteWidth+'%'}" class="text-center" :key="index">
-                                            <span class="w-100 each-poste-stats ps-xl-2 pe-xl-2 fw-bold">{{assemblyStatsTotal[a.group_name]}}</span>
-                                        </div>
+                        </div>
+                        <!--Row today-->
+                        <div class="d-flex align-items-center">
+                            <div class="w-13"></div>
+                            <div class="w-87">
+                                <div class="d-flex justify-content-between total_row">
+                                    <div v-for="(a, index) in groupedPostes" :style="{width:groupedPosteWidth+'%'}" class="text-center" :key="index">
+                                        <span class="w-100 each-poste-stats ps-xl-2 pe-xl-2 fw-bold">{{assemblyStatsTotal[a.group_name]}}</span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="d-flex align-items-center d-none">
-                                <div class="w-13"><span class="fst-italic">Avg time</span></div>
-                                <div class="w-87">
-                                    <div class="d-flex justify-content-between total_row">
-                                        <div v-for="(a, index) in groupedPostes" :style="{width:groupedPosteWidth+'%'}" class="text-center" :key="index">
-                                            <span class=""> 4 hr </span>
-                                        </div>
+                        </div>
+                        <div class="d-flex align-items-center d-none">
+                            <div class="w-13"><span class="fst-italic">Avg time</span></div>
+                            <div class="w-87">
+                                <div class="d-flex justify-content-between total_row">
+                                    <div v-for="(a, index) in groupedPostes" :style="{width:groupedPosteWidth+'%'}" class="text-center" :key="index">
+                                        <span class=""> 4 hr </span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="d-flex align-items-center">
-                                <div class="w-13">
-                                    <div class="w-100 standard-label fw-bold mb-2">Due<br/>Today</div>
-                                    <div class="w-100 standard-label is-delivery-stores">Delivery<br/>Stores</div>
-                                </div>
-                                <div class="w-87">
-                                    <div class="d-flex justify-content-between">
-                                        <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsToday[a.group_name].std === 0 && assemblyStatsToday[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'today','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
-                                            <div class="w-100 text-center each-poste-stats poste-stats-top pt-3 pb-2 grey-bg">
-                                                <a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'today','all')">{{assemblyStatsToday[a.group_name].all}}</a>
-                                            </div>
-                                            <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg pb-2 delivery_store" >
-                                                <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'today','delivery')">{{assemblyStatsToday[a.group_name].delivery}}</a></p>
-                                                <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'today','store')">{{assemblyStatsToday[a.group_name].store}}</a></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="w-13">
+                                <div class="w-100 standard-label fw-bold mb-2">Due<br/>Today</div>
+                                <div class="w-100 standard-label is-delivery-stores">Delivery<br/>Stores</div>
                             </div>
-
-                            <!--Spacer-->
-                            <div class="d-flex py-2"></div>
-                            <!--Row tommorow-->
-                            <div class="d-flex align-items-center">
-                                <div class="w-13">
-                                    <div class="w-100 standard-label fw-bold mb-2">Due<br/>Tomorrow</div>
-                                    <div class="w-100 standard-label is-delivery-stores">Delivery<br/>Stores</div>
-                                </div>
-                                <div class="w-87">
-                                    <div class="d-flex justify-content-between">
-                                        <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsTomorrow[a.group_name].std === 0 && assemblyStatsTomorrow[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'tomorrow','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
-                                            <div class="w-100 text-center each-poste-stats poste-stats-top pt-3 pb-2 grey-bg">
-                                                <a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'tomorrow','all')">{{assemblyStatsTomorrow[a.group_name].all}}</a>
-                                            </div>
-                                            <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg pb-2 delivery_store" >
-                                                <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'tomorrow','delivery')">{{assemblyStatsTomorrow[a.group_name].delivery}}</a></p>
-                                                <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'tomorrow','store')">{{assemblyStatsTomorrow[a.group_name].store}}</a></p>
-                                            </div>
-
+                            <div class="w-87">
+                                <div class="d-flex justify-content-between">
+                                    <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsToday[a.group_name].std === 0 && assemblyStatsToday[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'today','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
+                                        <div class="w-100 text-center each-poste-stats poste-stats-top pt-3 pb-2 grey-bg">
+                                            <a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'today','all')">{{assemblyStatsToday[a.group_name].all}}</a>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!--Spacer-->
-                            <div class="d-flex py-2"></div>
-
-                            <!--Row Overdue-->
-                            <div class="d-flex align-items-center">
-                                <div class="w-13">
-                                    <div class="w-100 standard-label mb-2 fw-bold">All<br/>Overdues</div>
-                                    <div class="w-100 standard-label is-delivery-stores">Delivery<br/>Stores</div>
-                                </div>
-                                <div class="w-87">
-                                    <div class="d-flex justify-content-between">
-                                        <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsOverdue[a.group_name].std === 0 && assemblyStatsOverdue[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'overdue','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
-                                            <div class="w-100 text-center each-poste-stats poste-stats-top pt-3 pb-2 grey-bg">
-                                                <a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'overdue','all')">{{assemblyStatsOverdue[a.group_name].all}}</a>
-                                            </div>
-                                            <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg pb-2 delivery_store" >
-                                                <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'overdue','delivery')">{{assemblyStatsOverdue[a.group_name].delivery}}</a></p>
-                                                <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'overdue','store')">{{assemblyStatsOverdue[a.group_name].store}}</a></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!--Spacer-->
-                            <div class="d-flex py-2"></div>
-
-                            <!--Row Later-->
-                            <div class="d-flex align-items-center">
-                                <div class="w-13">
-                                    <div class="w-100 standard-label mb-2 fw-bold">Due<br/>Later</div>
-                                    <div class="w-100 standard-label is-delivery-stores">Delivery<br/>Stores</div>
-                                </div>
-                                <div class="w-87">
-                                    <div class="d-flex justify-content-between">
-                                        <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc rounded-2" :class="{'is_bloc_disabled':assemblyStatsLater[a.group_name].std === 0 && assemblyStatsLater[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'later','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
-                                            <div class="w-100 text-center each-poste-stats poste-stats-top pt-3 pb-2 grey-bg">
-                                                <a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'later','all')">{{assemblyStatsLater[a.group_name].all}}</a>
-                                            </div>
-                                            <div class="w-100 text-center each-poste-stats poste-stats-bottom pb-2 grey-bg delivery_store" >
-                                                <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'later','delivery')">{{assemblyStatsLater[a.group_name].delivery}}</a></p>
-                                                <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'later','store')">{{assemblyStatsLater[a.group_name].store}}</a></p>
-                                            </div>
+                                        <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg pb-2 delivery_store" >
+                                            <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'today','delivery')">{{assemblyStatsToday[a.group_name].delivery}}</a></p>
+                                            <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'today','store')">{{assemblyStatsToday[a.group_name].store}}</a></p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="d-flex bg-white mb-3 d-none" id="stats_table">
-                            <div class="text-white col-12 dttable" id="invoice-list-main">
-                                <table class="table table-hover mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th v-for="(item, index) in columns" :class="item.thClass" :key="index" style="border-bottom: 2px solid #dee2e6 !important">
-                                                <check-box v-if="item.key == 'selected' && invoiceList.length" :checked_checkbox="(invoiceList.length==MULTI_SELECTED.length)" @checkbox-clicked="checkboxallclicked"></check-box>
-                                                <span v-else v-html="item.label"></span>
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <transition-group name="list" appear>
-                                            <tr v-for="(invoiceRow, index) in invoiceList" :key="index" class="trow" :class="{current_sel:invoiceRow.item_id == CURRENT_SELECTED}"
-                                                @click="selectrow(invoiceRow.item_id)"
-                                            >
-                                                <td>
-                                                    <check-box :checked_checkbox="(invoiceRow.item_id == CURRENT_SELECTED) || MULTI_SELECTED.includes(invoiceRow.item_id)" :id="invoiceRow.item_id" @checkbox-clicked="checkboxclicked"></check-box>
-                                                </td>
 
-                                                <td class="text-capitalize fw-16"><span>{{ invoiceRow.item_id }}</span></td>
-
-                                                <!-- Customer Name -->
-                                                <td class="text-capitalize fw-16">{{ invoiceRow.customer_name }}</td>
-
-                                                <!-- Destination -->
-                                                <td class="text-capitalize fw-16">{{ invoiceRow.store }}</td>
-
-                                                <!-- sub order -->
-                                                <td class="text-capitalize fw-16" v-if="invoiceRow.sub_order == 'xxx'">
-                                                    <svg width="11" height="11" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                        <circle cx="6.5" cy="6.5" r="6.5" fill="#9E44F2"/>
-                                                    </svg>
-                                                    &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>
-                                                </td>
-                                                <td class="text-capitalize fw-16" v-else>
-                                                    <svg width="11" height="11" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                        <circle cx="6.5" cy="6.5" r="6.5" fill="#EF8F00"/>
-                                                    </svg>
-                                                    &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>
-                                                </td>
-
-                                                <!-- Item -->
-                                                <td class="text-capitalize fw-16">{{ invoiceRow.iteminfo }}</td>
-                                                <!-- BarCode -->
-                                                <td class="text-capitalize fw-16"><a href="javascript:;" class="text-decoration-none text-primary">{{ invoiceRow.barcode }}</a></td>
-                                                <!-- Location -->
-                                                <td>
-                                                    <div class="invoice-location assembling rounded-pill" :style="{'background-color': '#'+invoiceRow.location_color }">
-                                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" fill="#4E58E7"/>
-                                                        <circle cx="6" cy="6" r="5" stroke="#4E58E7" stroke-width="2"/>
-                                                        </svg>
-                                                        &nbsp;&nbsp;<span class="d-block text-center text-nowrap" :style="{ width: 'calc( 100% - 12px )'}">{{ invoiceRow.location }}</span>
-                                                    </div>
-                                                </td>
-                                                <!-- Prod -->
-                                                <td class="text-capitalize fw-16">{{ invoiceRow.prod }}</td>
-                                                <!-- Deliv -->
-                                                <td class="text-capitalize fw-16 fw-bold">{{ invoiceRow.deliv }}</td>
-                                            </tr>
-                                        </transition-group>
-                                    </tbody>
-                                    <tfoot>
-                                        <tr v-if="currentLoadedInvoiceCount != totalInvoiceCount">
-                                            <td class="tcol" style="text-align: center" :colspan="Object.keys(columns).length"><button class="btn btn-link" @click="loadMoreInvoice">Show more ( {{ currentLoadedInvoiceCount }} / {{ totalInvoiceCount }})</button></td>
-                                        </tr>
-                                    </tfoot>                                    
-                                </table>
+                        <!--Spacer-->
+                        <div class="d-flex py-2"></div>
+                        <!--Row tommorow-->
+                        <div class="d-flex align-items-center">
+                            <div class="w-13">
+                                <div class="w-100 standard-label fw-bold mb-2">Due<br/>Tomorrow</div>
+                                <div class="w-100 standard-label is-delivery-stores">Delivery<br/>Stores</div>
                             </div>
+                            <div class="w-87">
+                                <div class="d-flex justify-content-between">
+                                    <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsTomorrow[a.group_name].std === 0 && assemblyStatsTomorrow[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'tomorrow','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
+                                        <div class="w-100 text-center each-poste-stats poste-stats-top pt-3 pb-2 grey-bg">
+                                            <a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'tomorrow','all')">{{assemblyStatsTomorrow[a.group_name].all}}</a>
+                                        </div>
+                                        <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg pb-2 delivery_store" >
+                                            <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'tomorrow','delivery')">{{assemblyStatsTomorrow[a.group_name].delivery}}</a></p>
+                                            <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'tomorrow','store')">{{assemblyStatsTomorrow[a.group_name].store}}</a></p>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Spacer-->
+                        <div class="d-flex py-2"></div>
+
+                        <!--Row Overdue-->
+                        <div class="d-flex align-items-center">
+                            <div class="w-13">
+                                <div class="w-100 standard-label mb-2 fw-bold">All<br/>Overdues</div>
+                                <div class="w-100 standard-label is-delivery-stores">Delivery<br/>Stores</div>
+                            </div>
+                            <div class="w-87">
+                                <div class="d-flex justify-content-between">
+                                    <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc" :class="{'is_bloc_disabled':assemblyStatsOverdue[a.group_name].std === 0 && assemblyStatsOverdue[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'overdue','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
+                                        <div class="w-100 text-center each-poste-stats poste-stats-top pt-3 pb-2 grey-bg">
+                                            <a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'overdue','all')">{{assemblyStatsOverdue[a.group_name].all}}</a>
+                                        </div>
+                                        <div class="w-100 text-center each-poste-stats poste-stats-bottom grey-bg pb-2 delivery_store" >
+                                            <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'overdue','delivery')">{{assemblyStatsOverdue[a.group_name].delivery}}</a></p>
+                                            <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'overdue','store')">{{assemblyStatsOverdue[a.group_name].store}}</a></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--Spacer-->
+                        <div class="d-flex py-2"></div>
+
+                        <!--Row Later-->
+                        <div class="d-flex align-items-center">
+                            <div class="w-13">
+                                <div class="w-100 standard-label mb-2 fw-bold">Due<br/>Later</div>
+                                <div class="w-100 standard-label is-delivery-stores">Delivery<br/>Stores</div>
+                            </div>
+                            <div class="w-87">
+                                <div class="d-flex justify-content-between">
+                                    <div v-for="(a, index) in groupedPostes" class="px-0 each-poste-bloc rounded-2" :class="{'is_bloc_disabled':assemblyStatsLater[a.group_name].std === 0 && assemblyStatsLater[a.group_name].exp === 0}" @click="getTableByBloc($event,a.group_name,'later','all')" :style="{width:groupedPosteWidth+'%'}" :key="index">
+                                        <div class="w-100 text-center each-poste-stats poste-stats-top pt-3 pb-2 grey-bg">
+                                            <a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'later','all')">{{assemblyStatsLater[a.group_name].all}}</a>
+                                        </div>
+                                        <div class="w-100 text-center each-poste-stats poste-stats-bottom pb-2 grey-bg delivery_store" >
+                                            <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'later','delivery')">{{assemblyStatsLater[a.group_name].delivery}}</a></p>
+                                            <p class="mb-0"><a class="" href="javascript:void(0)" @click.stop="getTableStats($event,a.group_name,'later','store')">{{assemblyStatsLater[a.group_name].store}}</a></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex bg-white mb-3 d-none" id="stats_table">
+                        <div class="text-white col-12 dttable" id="invoice-list-main">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th v-for="(item, index) in columns" :class="item.thClass" :key="index" style="border-bottom: 2px solid #dee2e6 !important">
+                                            <check-box v-if="item.key == 'selected' && invoiceList.length" :checked_checkbox="(invoiceList.length==MULTI_SELECTED.length)" @checkbox-clicked="checkboxallclicked"></check-box>
+                                            <span v-else v-html="item.label"></span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <transition-group name="list" appear>
+                                        <tr v-for="(invoiceRow, index) in invoiceList" :key="index" class="trow" :class="{current_sel:invoiceRow.item_id == CURRENT_SELECTED}"
+                                            @click="selectrow(invoiceRow.item_id)"
+                                        >
+                                            <td>
+                                                <check-box :checked_checkbox="(invoiceRow.item_id == CURRENT_SELECTED) || MULTI_SELECTED.includes(invoiceRow.item_id)" :id="invoiceRow.item_id" @checkbox-clicked="checkboxclicked"></check-box>
+                                            </td>
+
+                                            <td class="text-capitalize fw-16"><span>{{ invoiceRow.item_id }}</span></td>
+
+                                            <!-- Customer Name -->
+                                            <td class="text-capitalize fw-16">{{ invoiceRow.customer_name }}</td>
+
+                                            <!-- Destination -->
+                                            <td class="text-capitalize fw-16">{{ invoiceRow.store }}</td>
+
+                                            <!-- sub order -->
+                                            <td class="text-capitalize fw-16" v-if="invoiceRow.sub_order == 'xxx'">
+                                                <svg width="11" height="11" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <circle cx="6.5" cy="6.5" r="6.5" fill="#9E44F2"/>
+                                                </svg>
+                                                &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>
+                                            </td>
+                                            <td class="text-capitalize fw-16" v-else>
+                                                <svg width="11" height="11" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <circle cx="6.5" cy="6.5" r="6.5" fill="#EF8F00"/>
+                                                </svg>
+                                                &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>
+                                            </td>
+
+                                            <!-- Item -->
+                                            <td class="text-capitalize fw-16">{{ invoiceRow.iteminfo }}</td>
+                                            <!-- BarCode -->
+                                            <td class="text-capitalize fw-16"><a href="javascript:;" class="text-decoration-none text-primary">{{ invoiceRow.barcode }}</a></td>
+                                            <!-- Location -->
+                                            <td>
+                                                <div class="invoice-location assembling rounded-pill" :style="{'background-color': '#'+invoiceRow.location_color }">
+                                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" fill="#4E58E7"/>
+                                                    <circle cx="6" cy="6" r="5" stroke="#4E58E7" stroke-width="2"/>
+                                                    </svg>
+                                                    &nbsp;&nbsp;<span class="d-block text-center text-nowrap" :style="{ width: 'calc( 100% - 12px )'}">{{ invoiceRow.location }}</span>
+                                                </div>
+                                            </td>
+                                            <!-- Prod -->
+                                            <td class="text-capitalize fw-16">{{ invoiceRow.prod }}</td>
+                                            <!-- Deliv -->
+                                            <td class="text-capitalize fw-16 fw-bold">{{ invoiceRow.deliv }}</td>
+                                        </tr>
+                                    </transition-group>
+                                </tbody>
+                                <tfoot>
+                                    <tr v-if="currentLoadedInvoiceCount != totalInvoiceCount">
+                                        <td class="tcol" style="text-align: center" :colspan="Object.keys(columns).length"><button class="btn btn-link" @click="loadMoreInvoice">Show more ( {{ currentLoadedInvoiceCount }} / {{ totalInvoiceCount }})</button></td>
+                                    </tr>
+                                </tfoot>                                    
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div> 
+    <router-view />
 </template>
 
 <script>
@@ -457,6 +458,7 @@
         INVOICE_RESET_MULITCHECKED,
     } from "../../store/types/types";
     import { useStore } from "vuex";
+    import { useRoute } from "vue-router";
     import { ref, onBeforeMount, onMounted, onUnmounted, computed } from "vue";
     import CheckBox from '../miscellaneous/CheckBox';
     export default {
@@ -466,6 +468,7 @@
         },
         setup(){
             const store = useStore();
+            const route = useRoute();
             const groupedPosteWidth = ref(0);
             const poste = ref("");
             const day = ref("");
@@ -690,7 +693,8 @@
                 CURRENT_SELECTED,
                 MULTI_SELECTED,
                 currentLoadedInvoiceCount,
-                totalInvoiceCount
+                totalInvoiceCount,
+                showlayer:computed(()=>{return (route.params.item_id>0&&store.getters[`${ASSEMBLY_HOME_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);})
             }
         }
     }

@@ -11,12 +11,12 @@
             </thead>
             <tbody>
             <transition-group name="list" appear>
-                <tr v-for="(invoiceRow, index) in invoiceList" :key="index" class="trow" :class="{current_sel:invoiceRow.item_id == CURRENT_SELECTED}"
+                <tr v-for="(invoiceRow, index) in invoiceList" :key="index" class="trow" :class="{current_sel:invoiceRow.item_id == CURRENT_SELECTED&&route.params.item_id>0}"
                     @click="selectrow(invoiceRow.item_id)"
                     >
                     <!-- checkbox column -->
                     <td>
-                        <check-box :checked_checkbox="(invoiceRow.item_id == CURRENT_SELECTED) || MULTI_SELECTED.includes(invoiceRow.item_id)" :id="invoiceRow.item_id" @checkbox-clicked="checkboxclicked"></check-box>
+                        <check-box :checked_checkbox="(invoiceRow.item_id == CURRENT_SELECTED&&route.params.item_id>0) || MULTI_SELECTED.includes(invoiceRow.item_id)" :id="invoiceRow.item_id" @checkbox-clicked="checkboxclicked"></check-box>
                     </td>
                     <!-- <td class="text-capitalize fw-16" v-if="invoiceRow.item_id == 'xxx'">
                         <span>{{ invoiceRow.item_id }}</span>&nbsp;&nbsp;
@@ -78,6 +78,7 @@
             </tfoot>
         </table>
     </transition>
+    <router-view />
 </template>
 <script>
 import { ref, onMounted, computed } from "vue";
@@ -206,12 +207,12 @@ export default {
         }
         const selectrow = (item_id)=>{
             store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`, item_id);
-            // router.push({
-            //     name:'OrderDetails',
-            //     params: {
-            //         order_id:id,
-            //     },
-            // })
+            router.push({
+                name:'ItemDetails',
+                params: {
+                    item_id:item_id,
+                },
+            })
         }
         return {
             route,
@@ -224,7 +225,7 @@ export default {
             loadMoreInvoice,
             checkboxclicked,
             checkboxallclicked,
-            selectrow
+            selectrow,
         }
     }
 }

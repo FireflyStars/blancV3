@@ -171,6 +171,8 @@ export const SET_INVOICE_FILTER = 'SET_INVOICE_FILTER'; //action
 export const FILTER_INVOICE_LIST = 'FILTER_INVOICE_LIST'; //action
 export const LOAD_MORE_INVOICE = 'LOAD_MORE_INVOICE'; //action
 export const ADD_MORE_INVOICE_TO_LIST = 'ADD_MORE_INVOICE_TO_LIST'; //mutation
+export const SET_SELECTED_NAV = 'SET_SELECTED_NAV'; //mutation
+export const GET_SELECTED_NAV = 'GET_SELECTED_NAV'; //mutation
 
 export const GET_INVOICE_LIST = 'GET_INVOICE_LIST'; //getter
 export const GET_TOTAL_INVOICE_COUNT = 'GET_TOTAL_INVOICE_COUNT'; //getter
@@ -187,3 +189,14 @@ export const INVOICELIST_SET_ALL_SELECTED = 'INVOICELIST_SET_ALL_SELECTED'; //ac
 export const INVOICELIST_SET_MULTI_UNCHECKED = 'INVOICELIST_SET_MULTI_UNCHECKED'; //action | mutation
 
 export const INVOICE_RESET_MULITCHECKED = 'INVOICE_RESET_MULITCHECKED'; //action | mutation
+
+// item detail page contant
+
+export const ITEM_DETAIL_MODULE = 'ITEM_DETAIL_MODULE/'; //action | mutation
+export const ITEM_DETAIL_LOAD_DETAIL = 'ITEM_DETAIL_LOAD_DETAIL'; //action
+
+export const ITEM_DETAIL_GET_LOADER = 'ITEM_DETAIL_GET_LOADER'; //action | mutation
+export const ITEM_DETAIL_SET_LOADER = 'ITEM_DETAIL_SET_LOADER'; //action | mutation
+
+export const ITEM_DETAIL_SET_DETAIL = 'ITEM_DETAIL_SET_DETAIL'; //action | mutation
+export const ITEM_DETAIL_GET_DETAIL = 'ITEM_DETAIL_GET_DETAIL'; //action | mutation
