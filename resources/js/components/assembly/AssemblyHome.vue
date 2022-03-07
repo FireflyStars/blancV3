@@ -657,12 +657,12 @@
             }
             const selectrow = (item_id)=>{
                 store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`, item_id);
-                // router.push({
-                //     name:'OrderDetails',
-                //     params: {
-                //         order_id:id,
-                //     },
-                // })
+                router.push({
+                    name:'ItemDetails',
+                    params: {
+                        item_id:item_id,
+                    },
+                })
             }            
             return {
                 groupedPosteWidth,
