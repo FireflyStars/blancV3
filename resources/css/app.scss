@@ -580,8 +580,11 @@ padding:0 1.2rem;
 
 }
 .NewOrder {
-  .deliverymethod{
+  .deliverymethod, .storenames{
     max-width: 216px;
+  }
+
+  .deliverymethod{
     margin-top: 2px;
   }
   .panel .opts {
@@ -886,7 +889,7 @@ padding:0 1.2rem;
       a:hover{
         text-decoration: underline;
         color: white;
-      }       
+      }
     }
     &:not(.is_bloc_disabled):hover{
       .each-poste-stats {
@@ -902,7 +905,7 @@ padding:0 1.2rem;
       a{
         color: #000;
         text-decoration: none;
-      }     
+      }
     }
   }
 
