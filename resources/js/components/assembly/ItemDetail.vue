@@ -183,13 +183,14 @@
                     </button>
                 </div>
                 <div class="col-6 p-0 text-end">
-                    <button class="item-detail-btn item-detail-btn-print text-center">
+                    <button class="item-detail-btn item-detail-btn-print text-center" @click="openModal">
                         Print ticket(s)
                     </button>
                 </div>
             </div>
         </div>
     </div>
+    <qz-print ref="qz_printer"></qz-print>
 </template>
 <script>
 import { 
@@ -207,14 +208,19 @@ import {
     TOASTER_MESSAGE,
 
     } from '../../store/types/types';
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
+import QzPrint from "../QzPrint";
 
 export default {
     name: "ItemDetail",
+    components:{
+        QzPrint
+    },
     setup(){
         const route =useRoute();
+        const qz_printer = ref(null);
         const router=useRouter();
         const store =useStore();
         const production_panel = ref(true);
@@ -222,7 +228,9 @@ export default {
         const issues_panel = ref(false);
         const services_panel = ref(false);
         const item_history_panel = ref(false);
-
+        // const openModal = ()=>{
+        //     qz_printer.loadPrinterModal(ITEM.breif_info.id)
+        // }
         onMounted(()=>{
         })
         const showItemDetail = computed(()=>{
@@ -261,6 +269,7 @@ export default {
         }
         return{
             ITEM,
+            qz_printer,
             showItemDetail,
             loaderclass: computed(()=>{
                 return store.getters[`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_GET_LOADER}`];
@@ -283,7 +292,13 @@ export default {
                     location_history: []
                 });
                 router.back();                
-            }
+            },
+            // openModal
+        }
+    },
+    methods:{
+        openModal(){
+            this.$refs.qz_printer.loadPrinterModal(this.ITEM.breif_info.sub_order)
         }
     }    
 }

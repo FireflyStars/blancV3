@@ -250,12 +250,12 @@ class OrderListController extends Controller
                       ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
                       ->where('infoitems.id', $request->item_id)
                       ->select(
-                          'infoitems.id', 'infoInvoice.NumInvoice as sub_order', 'infoitems.Colors as colors',
+                          'infoitems.id', 'infoInvoice.NumInvoice as sub_order', 'infoitems.Colors as colors', 'infoInvoice.id as invoice_id',
                           'infoitems.Fabrics as fabrics', 'infoitems.Patterns as patterns', 'infoitems.Size as size',
                           'infoitems.StoreName as store_name', 'infoitems.store', 'infoitems.damage', 'infoitems.id_items',
                           'infoitems.typeitem as item_name', 'TypePost.couleur as location_color', 'postes.nom as location',
                           'infoCustomer.Name as customer_name', 'infoCustomer.CustomerIDMaster', 'infoCustomer.CustomerIDMasterAccount',
-                          'infoCustomer.IsMaster', 'infoCustomer.IsMasterAccount'
+                          'infoCustomer.IsMaster', 'infoCustomer.IsMasterAccount', 'postes.id as poste_id'
                           )->first();
         
         $location_history = DB::table('production')

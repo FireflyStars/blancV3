@@ -15,6 +15,7 @@ use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\DetailingController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ShippingController;
+use App\Http\Controllers\PosteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -82,3 +83,8 @@ Route::post('/get-picto-names',[ItemController::class,'getPictoNames'])->name('g
 
 Route::post('/get-shipping-partners',[ShippingController::class,'getPartnerList'])->name('get-shipping-partners')->middleware('auth');
 Route::post('/get-tranche-by-postcode',[BookingController::class,'getTrancheByPostcode'])->name('get-tranche-by-postcode')->middleware('auth');
+/*
+ * QZ Print
+ * */
+Route::post('get-site-keys', [ PosteController::class, 'getSiteKeys'])->name('get-site-keys')->middleware('auth');
+Route::post('get-suborder-and-print', [ PosteController::class, 'getSubOrderToPrint'])->name('get-suborder-and-print')->middleware('auth');

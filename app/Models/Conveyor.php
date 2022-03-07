@@ -11,7 +11,7 @@ class Conveyor extends Model
     use HasFactory;
 
     //copied from blancpos
-    public static function addLineIn($tracking='',$NumInvoice,$Type,$suborder_id=false){
+    public static function addLineIn($tracking='',$NumInvoice = '', $Type = '', $suborder_id = false){
         $to_insert = [];
         $inv = false;
         $insert = false;
@@ -135,5 +135,18 @@ class Conveyor extends Model
             $insert = DB::table('conveyor_op_in')->insert($to_insert);
         }
         return $insert;
+    }
+
+    public static function getStoreCodeByName($storename){
+        $store_codes = [
+            'ATELIER'=>'.ATAT',
+            'CHELSEA'=>'.CHCH',
+            'MARYLEBONE'=>'.MBMB',
+            'NOTTING HILL'=>'.NHNH',
+            'SOUTH KEN'=>'.BSBS',
+        ];
+
+        return ( isset($store_codes[$storename]) ? $store_codes[$storename] : '' );
+
     }
 }

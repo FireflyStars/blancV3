@@ -30,6 +30,8 @@
         "animate.css": "^4.1.1",
         "bootstrap-icons": "^1.5.0",
         "eslint-plugin-vue": "^7.0.0-beta.4",
+        "jsbarcode": "^3.11.5",
+        "jsrsasign": "^10.5.8",
         "path": "^0.12.7",
         "vue": "^3.1.4",
         "vue-input-tag": "^2.0.7",
