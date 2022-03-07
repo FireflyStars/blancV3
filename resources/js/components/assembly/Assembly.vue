@@ -1,4 +1,5 @@
 <template>
+    <router-view />
     <transition enter-active-class="animate__animated animate__fadeIn animate__fadeOut">
         <div class="container-fluid h-100 bg-color">
             <main-header></main-header>

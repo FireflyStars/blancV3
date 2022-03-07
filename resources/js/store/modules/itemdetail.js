@@ -14,7 +14,9 @@ export const itemDetail= {
     state:{
         loader:'animate40',
         itemdetail:{
-            breif_info: {},
+            breif_info: {
+                id: '',
+            },
             location_history: []
         },
         selected_items:{

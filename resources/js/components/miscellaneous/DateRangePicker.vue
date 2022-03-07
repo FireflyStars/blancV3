@@ -18,7 +18,7 @@
                         </div>
                         <div class="row" v-for="row in displayed_dates_rows" :key="row">
                             <template v-for="(day,index) in row" :key="index">
-                                <div class="col dp-dates" :class="{ disabled:!day.current_month, current:day.selected, notavailable:day.notavailable, period: day.period}" @click="setDate(day.year,day.month,day.date)" >
+                                <div class="col dp-dates" :class="{ disabled:!day.current_month, start: day.start, current:day.end, notavailable:day.notavailable, period: day.period}" @click="setDate(day.year,day.month,day.date)" >
                                     {{day.date}}
                                 </div>
                             </template>
@@ -225,8 +225,10 @@
                         year: lastMonthYear,
                         current_month: false,
                         selected: false,
+                        start: false,
+                        end: false,
                         period: false,
-                        notavailable:notavailable,
+                        notavailable: notavailable,
                     })
                     calendarStarts++;
                 }
@@ -239,6 +241,8 @@
                         year: MonthYear.value.year,
                         current_month: true,
                         selected: false,
+                        start: false,
+                        end: false,                        
                         period: false,
                         notavailable:notavailable,
                     });
@@ -253,6 +257,8 @@
                         year: (MonthYear.value.month == 11 ? MonthYear.value.year + 1 : MonthYear.value.year),
                         current_month: false,
                         selected: false,
+                        start: false,
+                        end: false,                        
                         period: false,
                         notavailable:notavailable,
                     });
@@ -267,6 +273,8 @@
                             year: (MonthYear.value.month == 11 ? MonthYear.value.year + 1 : MonthYear.value.year),
                             current_month: false,
                             selected: false,
+                            start: false,
+                            end: false,                            
                             period: false,
                             notavailable:notavailable,
                         });
@@ -301,6 +309,8 @@
                     }
 
                     displayed_dates.value[i].selected = false;
+                    displayed_dates.value[i].start = false;
+                    displayed_dates.value[i].end = false;
                     displayed_dates.value[i].period = false;
 
                     if (count == 7) {
@@ -311,6 +321,7 @@
                         let curdate=new Date( displayed_dates.value[i].year, parseInt(displayed_dates.value[i].month) +1,  displayed_dates.value[i].date);
                         let start = new Date( start_date.value[0], start_date.value[1], start_date.value[2]);
                         if (curdate.getTime() == start.getTime()) {
+                            displayed_dates.value[i].start = true;
                             displayed_dates.value[i].selected = true;
                             displayed_dates.value[i].period = false;
                         }
@@ -320,9 +331,11 @@
                         let start = new Date( parseInt(start_date.value[0]), parseInt(start_date.value[1]), parseInt(start_date.value[2]));
                         let end = new Date( parseInt(end_date.value[0]), parseInt(end_date.value[1]), parseInt(end_date.value[2]) );
                         if (curdate.getTime() == end.getTime()) {
+                            displayed_dates.value[i].end = true;
                             displayed_dates.value[i].selected = true;
                         }
                         if (curdate.getTime() == start.getTime()) {
+                            displayed_dates.value[i].start = false;
                             displayed_dates.value[i].selected = false;
                             displayed_dates.value[i].period = true;
                         }                        
@@ -340,10 +353,6 @@
                     let datePickerHeader = document.querySelector('#dateRangePickerHeader');
                     let datePickerBody = document.querySelector('#dateRangePickerBody');
                     let datePicker = document.querySelector('#dateRangePicker');
-                    console.log("datePickerHeader.clientHeight")
-                    console.log(datePickerHeader.clientHeight)
-                    console.log("datePickerBody.clientHeight")
-                    console.log(datePickerBody.clientHeight)
                     datePicker.style.minHeight =  paddingHeight + datePickerHeader.clientHeight + datePickerBody.clientHeight + 'px';
                 })
             }
@@ -361,6 +370,7 @@
                 start_date.value = [];
                 end_date.value = [];
                 formated_date.value = '';
+                selectedCount.value = 0;
                 renderPicker();
             }
             function setDate(y,m,d) {
@@ -374,7 +384,7 @@
 
                     let start = new Date(start_date.value[0], start_date.value[1], start_date.value[2]);
                     let end = new Date( parseInt(y), parseInt(m)+1, parseInt(d));
-                    if(start.getTime() >= end.getTime()){
+                    if(start.getTime() > end.getTime()){
                         start_date.value[0] = parseInt(y);
                         start_date.value[1] = parseInt(m)+1;
                         start_date.value[2] = parseInt(d);
@@ -772,6 +782,12 @@
     }
     .period{
         color: #EB5757;
+        background: rgba(245, 171, 171, 0.7);
+        box-shadow: 0px 1px 1px rgba(0, 14, 51, 0.05);        
+        opacity: .8;
+    }
+    .start{
+        color: greenyellow;
         background: rgba(245, 171, 171, 0.7);
         box-shadow: 0px 1px 1px rgba(0, 14, 51, 0.05);        
         opacity: .8;

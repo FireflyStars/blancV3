@@ -78,7 +78,7 @@
             </tfoot>
         </table>
     </transition>
-    <router-view />
+    <!-- <router-view /> -->
 </template>
 <script>
 import { ref, onMounted, computed } from "vue";
@@ -188,7 +188,7 @@ export default {
         const checkboxclicked = ( check, id, name )=>{
             if(CURRENT_SELECTED.value == id && check == false){
                 store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`,'');
-                // router.back();
+                router.back();
             }
             if(check == true){
                 store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_ALL_SELECTED}`, id);

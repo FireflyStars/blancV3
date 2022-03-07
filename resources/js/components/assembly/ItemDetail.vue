@@ -1,13 +1,13 @@
 <template>
     <div class="odv container item-detail-panel" v-if="showItemDetail">
         <div class="item-detail-progressbar" :class="loaderclass"></div>
-        <header class="item-detail-header d-flex justify-content-between" v-if="ITEM.breif_info.id">
+        <header class="item-detail-header d-flex justify-content-between" v-if="ITEM.breif_info.id !=''">
             <h3 class="m-0 item-detail-header-title">Item {{ ITEM.breif_info.id }}</h3>
             <svg class="item-detail-close" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" @click="close">
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M1.78812 0.297179C1.3976 -0.0953162 0.764438 -0.0953162 0.373917 0.297179C-0.0166053 0.689674 -0.0166053 1.32604 0.373916 1.71853L5.58834 6.9593L0.292891 12.2815C-0.0976305 12.674 -0.0976304 13.3104 0.292891 13.7029C0.683413 14.0954 1.31657 14.0954 1.7071 13.7029L7.00254 8.38065L12.293 13.6978C12.6835 14.0903 13.3166 14.0903 13.7072 13.6978C14.0977 13.3053 14.0977 12.6689 13.7072 12.2765L8.41675 6.9593L13.6261 1.72358C14.0167 1.33109 14.0167 0.694726 13.6261 0.302231C13.2356 -0.0902646 12.6025 -0.0902643 12.2119 0.302231L7.00254 5.53795L1.78812 0.297179Z" fill="white"/>
             </svg>  
         </header>
-        <div class="item-detail-body" v-if="ITEM.breif_info.id">
+        <div class="item-detail-body" v-if="ITEM.breif_info.id !=''">
             <div class="item-detail-info-section d-flex flex-wrap">
                 <div class="item-detail-name-panel">
                     <p class="m-0 item-detail-name">{{ ITEM.breif_info.item_name }}</p>
@@ -172,19 +172,19 @@
                 </div>
             </div>
         </div>
-        <div class="item-detail-footer" v-if="ITEM.breif_info.id">
+        <div class="item-detail-footer" v-if="ITEM.breif_info.id !=''">
             <div class="d-flex col-12 p-0">
                 <div class="col-6 p-0 d-flex justify-content-between">
                     <button class="item-detail-btn item-detail-btn-void text-center">
                         Void
                     </button>
-                    <button class="item-detail-btn item-detail-btn-mark-as-late text-center">
+                    <button class="item-detail-btn item-detail-btn-mark-as-late text-center" @click="markaslate">
                         Mark as late
                     </button>
                 </div>
                 <div class="col-6 p-0 text-end">
                     <button class="item-detail-btn item-detail-btn-print text-center">
-                        Print
+                        Print ticket(s)
                     </button>
                 </div>
             </div>
@@ -256,6 +256,9 @@ export default {
         const ITEM = computed( ()=>{
             return store.getters[`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_GET_DETAIL}`];
         } )
+        const markaslate = ()=>{
+
+        }
         return{
             ITEM,
             showItemDetail,
@@ -267,12 +270,18 @@ export default {
             issues_panel,
             services_panel,
             item_history_panel,
+            markaslate,
             close: ()=>{
                 if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
                     store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`,'');
                 else 
                     store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`, '');
-                store.commit(`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_SET_DETAIL}`,{});
+                store.commit(`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_SET_DETAIL}`, { 
+                    breif_info: {
+                        id: ''
+                    },
+                    location_history: []
+                });
                 router.back();                
             }
         }
@@ -344,7 +353,8 @@ export default {
         color: #767676;
     }
     .item-detail-location-type-icon{
-        width: 50px;
+        width: 55px;
+        height: 25px;
         background: #47454B;
         border-radius: 70px;
         font-family: 'Gotham Rounded';

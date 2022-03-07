@@ -434,7 +434,7 @@
             </div>
         </div>
     </div> 
-    <router-view />
+    <!-- <router-view /> -->
 </template>
 
 <script>
@@ -639,7 +639,7 @@
             const checkboxclicked = ( check, id, name )=>{
                 if(CURRENT_SELECTED.value == id && check == false){
                     store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`,'');
-                    // router.back();
+                    router.back();
                 }
                 if(check == true){
                     store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_ALL_SELECTED}`, id);
