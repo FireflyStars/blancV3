@@ -46,13 +46,13 @@ class PosteController extends Controller
                 ->first();
         }elseif($route_name=='invoice-item' || $route_name=='assembly-invoice'){
             $inv = DB::table('infoInvoice')
-                ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID','infoInvoice.StoreName','infoInvoice.InvoiceID')
+                ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID')
                 ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
                 ->where('infoInvoice.id',$invoice_id)
                 ->first();
         }else{
             $inv = DB::table('infoInvoice')
-            ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.InvoiceID','infoInvoice.OrderID')
+            ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.InvoiceID', 'infoInvoice.StoreName', 'infoInvoice.OrderID')
             ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
             ->where('infoInvoice.NumInvoice',$invoice_id)
             ->orderBy('infoInvoice.id','DESC')
@@ -64,7 +64,30 @@ class PosteController extends Controller
 
             $inv->user_initials = (!is_null($user->UserInitials)?$user->UserInitials:$user->name);
 
+            //Customer preferences
+            $preferences = [];
 
+            $cust_pref = DB::table('InfoCustomerPreference')
+                ->select('InfoCustomerPreference.*','customerpreferences.preference_type')
+                ->join('customerpreferences','InfoCustomerPreference.id_preference','customerpreferences.id')
+                ->where('InfoCustomerPreference.CustomerID','6dca981c-8a10-4200-ad68-bc6856158eb0')
+                ->where('InfoCustomerPreference.Delete',0)
+                ->get();
+
+
+            if(count($cust_pref) > 0){
+                foreach($cust_pref as $k=>$v){
+                    if($v->preference_type=='switch' && $v->Value !=0){
+                        $preferences[$v->Titre] = 'Yes';
+                    }
+                    if($v->preference_type=='radio'){
+                        if((in_array($v->id_preference,[2,7]) && $v->Value !='Always') || $v->id_preference==1 || ($v->id_preference==9 && $v->Value !='Standard')){
+                            $preferences[$v->Titre] = $v->Value;
+                        }
+                    }
+
+                }
+            }
             $inv->poste_details = "";
 
             if($route_name=='item-qc'){

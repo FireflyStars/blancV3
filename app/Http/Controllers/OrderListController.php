@@ -246,6 +246,7 @@ class OrderListController extends Controller
         $itemInfo = DB::table('infoitems')
                       ->join('infoInvoice', 'infoitems.SubOrderID', '=', 'infoInvoice.SubOrderID')
                       ->join('infoCustomer', 'infoInvoice.CustomerID', '=', 'infoCustomer.CustomerID')
+                      ->join('infoOrder','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                       ->join('postes', 'infoitems.nextpost', '=', 'postes.id')
                       ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
                       ->where('infoitems.id', $request->item_id)
@@ -255,7 +256,7 @@ class OrderListController extends Controller
                           'infoitems.StoreName as store_name', 'infoitems.store', 'infoitems.damage', 'infoitems.id_items',
                           'infoitems.typeitem as item_name', 'TypePost.couleur as location_color', 'postes.nom as location',
                           'infoCustomer.Name as customer_name', 'infoCustomer.CustomerIDMaster', 'infoCustomer.CustomerIDMasterAccount',
-                          'infoCustomer.IsMaster', 'infoCustomer.IsMasterAccount', 'postes.id as poste_id'
+                          'infoCustomer.IsMaster', 'infoCustomer.IsMasterAccount', 'postes.id as poste_id', 'infoOrder.id as order_id'
                           )->first();
         
         $location_history = DB::table('production')

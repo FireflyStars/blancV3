@@ -196,7 +196,21 @@
                 }
 
 
-                toPrint += '<hr/>';
+                toPrint += '</p><hr/>';
+                //Customer preferences
+                let cust_pref = inv.customer_preferences;
+                if(Object.entries(cust_pref).length > 0){
+                    toPrint += '<span style="font-size:12pt;">Preferences</span>';
+
+                    toPrint += '<p style="text-align:left;">';
+                    for (let [key, value] of Object.entries(cust_pref)) {
+                        toPrint += '<span style="font-size:10pt;">'+key+' : '+value+'</span><br/>';
+                    }
+
+                    toPrint += '</p><hr/>';
+                }
+
+                //end customer preferences                
                 toPrint += '<p style="font-size:10pt; margin-bottom: 20px;">'+inv.poste_details+'</p>';
 
                 let nb_pieces = 0;

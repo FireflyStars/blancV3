@@ -206,7 +206,10 @@ import {
     ITEM_DETAIL_LOAD_DETAIL,
     TOASTER_MODULE,
     TOASTER_MESSAGE,
-
+    ORDERLIST_MODULE,
+    ORDERLIST_LOADERMSG,
+    ORDERLIST_MARK_AS_LATE,
+    ORDERDETAIL_UPDATE
     } from '../../store/types/types';
 import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -228,17 +231,15 @@ export default {
         const issues_panel = ref(false);
         const services_panel = ref(false);
         const item_history_panel = ref(false);
-        // const openModal = ()=>{
-        //     qz_printer.loadPrinterModal(ITEM.breif_info.id)
-        // }
         onMounted(()=>{
         })
         const showItemDetail = computed(()=>{
-                return true;
-                if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
-                    return (store.getters[`${ASSEMBLY_HOME_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`])&&route.params.item_id>0;
-                else
-                    return (store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`])&&route.params.item_id>0;
+            // return true;
+            console.log(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`]);
+            if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
+                return (store.getters[`${ASSEMBLY_HOME_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`])&&route.params.item_id>0;
+            else
+                return (store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`])&&route.params.item_id>0;
         })
         const CURRENT_SELECTED = computed(()=>{
             if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
@@ -265,7 +266,15 @@ export default {
             return store.getters[`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_GET_DETAIL}`];
         } )
         const markaslate = ()=>{
-
+                const order= [ this.ITEM.breif_info.order_id ];
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,`Marking order as late, please wait...`);
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_MARK_AS_LATE}`,order).then(()=>{
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Order marked as late successfully.',ttl:5,type:'success'});
+                    store.commit(`${ORDERDETAIL_MODULE}${ORDERDETAIL_UPDATE}`,{Status:'LATE'});
+                }).catch((error)=>{
+                    if(typeof error.response!="undefined")
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
+                });
         }
         return{
             ITEM,
