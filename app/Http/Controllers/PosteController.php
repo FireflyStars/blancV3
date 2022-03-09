@@ -93,7 +93,6 @@ class PosteController extends Controller
             $inv->customer_preferences = $preferences;
 
             $inv->poste_details = "";
-
             if($route_name=='item-qc'){
                 $poste = Poste::find($poste_id);
                 $inv->poste_details = $poste->nominterface." ";
