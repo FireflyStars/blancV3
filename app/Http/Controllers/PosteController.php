@@ -88,8 +88,6 @@ class PosteController extends Controller
 
                 }
             }
-
-
             $inv->customer_preferences = $preferences;
 
             $inv->poste_details = "";
