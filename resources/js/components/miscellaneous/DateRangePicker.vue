@@ -292,21 +292,21 @@
                     if(typeof props.availableDates!="undefined"&& props.availableDates.includes(datestr))
                         displayed_dates.value[i].notavailable=false;
                     //disabledToDate
-                    if(typeof props.disabledToDate!="undefined"&&props.disabledToDate!=""){
-                        let disabledto=new Date(props.disabledToDate);
-                        let curdate=new Date(datestr);
+                    // if(typeof props.disabledToDate!="undefined"&&props.disabledToDate!=""){
+                        // let disabledto=new Date(props.disabledToDate);
+                        // let curdate=new Date(datestr);
                         // if(curdate<=disabledto){
                         //     displayed_dates.value[i].notavailable=true;
                         // }
-                    }
+                    // }
                      //disabledFromDate
-                    if(typeof props.disabledFromDate!="undefined"&&props.disabledFromDate!=""){
-                        let disabledFrom=new Date(props.disabledFromDate);
-                        let curdate=new Date(datestr);
+                    // if(typeof props.disabledFromDate!="undefined"&&props.disabledFromDate!=""){
+                        // let disabledFrom=new Date(props.disabledFromDate);
+                        // let curdate=new Date(datestr);
                         // if(curdate>disabledFrom){
                         //     displayed_dates.value[i].notavailable=true;
                         // }
-                    }
+                    // }
 
                     displayed_dates.value[i].selected = false;
                     displayed_dates.value[i].start = false;
@@ -371,6 +371,12 @@
                 end_date.value = [];
                 formated_date.value = '';
                 selectedCount.value = 0;
+                context.emit(
+                    "update:modelValue", {
+                        start: '',
+                        end: ''
+                    }
+                );                  
                 renderPicker();
             }
             function setDate(y,m,d) {
@@ -380,8 +386,8 @@
                     start_date.value[2]= parseInt(d);
                     end_date.value = [];
                     selectedCount.value = 1;
+                    renderPicker();
                 }else{
-
                     let start = new Date(start_date.value[0], start_date.value[1], start_date.value[2]);
                     let end = new Date( parseInt(y), parseInt(m)+1, parseInt(d));
                     if(start.getTime() > end.getTime()){
@@ -389,6 +395,7 @@
                         start_date.value[1] = parseInt(m)+1;
                         start_date.value[2] = parseInt(d);
                         end_date.value = [];
+                        renderPicker();
                         return false;
                     }else{
                         end_date.value[0]= parseInt(y);
