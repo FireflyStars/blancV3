@@ -12,12 +12,12 @@ class PosteController extends Controller
 {
     /**
      * get cert and private_key
-     * 
+     *
      */
     public function getSiteKeys(Request $request){
         $cert = DB::table('settings')->where('key', 'site.site_certificate')->value('value');
         $private_key = DB::table('settings')->where('key', 'site.site_private_key')->value('value');;
-        
+
         return response()->json([
             'cert'          =>  str_replace('\r\n','\\n" +\n"', $cert),
             'private_key'   =>  str_replace('\r\n','\\n" +\n"', $private_key)
@@ -25,7 +25,7 @@ class PosteController extends Controller
     }
 
     /**
-     * 
+     *
      */
     public function getSubOrderToPrint(Request $request){
         $invoice_id = $request->post('invoice_id');
@@ -34,7 +34,7 @@ class PosteController extends Controller
 
         $date_less_six_month = date('Y-m-d',strtotime('-6month'));
 
-      
+
 
         if($route_name=='item-qc'){
             $inv = DB::table('infoInvoice')
