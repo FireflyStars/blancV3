@@ -1,7 +1,7 @@
 <template>
     <router-view />
     <transition enter-active-class="animate__animated animate__fadeIn animate__fadeOut">
-        <div class="container-fluid h-100 bg-color">
+        <div class="container-fluid bg-color">
             <main-header></main-header>
             <div class="row d-flex align-content-stretch align-items-stretch flex-row hmax" style="z-index: 100">
                 <side-bar></side-bar>
@@ -25,17 +25,17 @@
             </div>
             <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
                 <div v-if="showlayer" class="back-layer"></div>
-            </transition>               
+            </transition>
         </div>
     </transition>
 </template>
 
 <script>
     import {
-        ASSEMBLY_HOME_MODULE, 
-        INVOICE_MODULE, 
-        SET_SELECTED_NAV, 
-        GET_SELECTED_NAV, 
+        ASSEMBLY_HOME_MODULE,
+        INVOICE_MODULE,
+        SET_SELECTED_NAV,
+        GET_SELECTED_NAV,
         INVOICELIST_GET_CURRENT_SELECTED,
     } from "../../store/types/types";
     import SideBar from "../layout/SideBar";
@@ -49,7 +49,7 @@
     export default {
         name: "Assembly",
         components:{
-            SideBar, 
+            SideBar,
             MainHeader,
             Filters,
             InvoiceList,
@@ -100,8 +100,8 @@
                             end: '',
                         }
                     },
-                });  
-            
+                });
+
             return {
                 filterDef,
                 selected_nav: computed(()=>store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`]),
@@ -134,7 +134,7 @@
     font-family: 'Gotham Rounded Book';
     font-weight: normal;
     font-style: normal;
-    font-display: swap;    
+    font-display: swap;
 }
 .main-view .h2,
 .main-view h2{
@@ -183,11 +183,11 @@
     line-height: 14px;
     color: #000000;
 }
-.visible-hidden .form-check{ 
+.visible-hidden .form-check{
     visibility : hidden;
 }
 .selected-row .visible-hidden .form-check,
-tr:hover .visible-hidden .form-check{ 
+tr:hover .visible-hidden .form-check{
     visibility : visible;
 }
 @media (min-width: 1600px) {
