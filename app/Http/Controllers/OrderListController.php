@@ -254,7 +254,7 @@ class OrderListController extends Controller
                           'infoitems.id', 'infoInvoice.NumInvoice as sub_order', 'infoitems.Colors as colors', 'infoInvoice.id as invoice_id',
                           'infoitems.Fabrics as fabrics', 'infoitems.Patterns as patterns', 'infoitems.Size as size',
                           'infoitems.StoreName as store_name', 'infoitems.store', 'infoitems.damage', 'infoitems.id_items',
-                          'infoitems.typeitem as item_name', 'TypePost.couleur as location_color', 'postes.nom as location',
+                          'infoitems.typeitem as item_name', 'TypePost.bg_color as location_color', 'postes.nom as location', 'TypePost.circle_color', 'TypePost.process',
                           'infoCustomer.Name as customer_name', 'infoCustomer.CustomerIDMaster', 'infoCustomer.CustomerIDMasterAccount',
                           'infoCustomer.IsMaster', 'infoCustomer.IsMasterAccount', 'postes.id as poste_id', 'infoOrder.id as order_id'
                           )->first();
@@ -264,7 +264,8 @@ class OrderListController extends Controller
                               ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
                               ->join('users', 'production.user_id', '=', 'users.id')
                               ->select(
-                                    'TypePost.couleur as location_color', 'postes.nom as location',
+                                    'TypePost.bg_color as location_color', 'postes.nom as location',
+                                    'TypePost.process', 'TypePost.circle_color',
                                     DB::raw('DATE_FORMAT(production.date_add,"%a") as day'),
                                     DB::raw('DATE_FORMAT(production.date_add,"%m/%d/%Y") as date'),
                                     DB::raw('DATE_FORMAT(production.date_add,"%H:%i") as time'),

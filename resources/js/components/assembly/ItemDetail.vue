@@ -72,11 +72,15 @@
                             Current location
                         </div>
                         <div class="col-3">
-                            <div class="invoice-location rounded-pill" :style="{'background-color': '#'+ ITEM.breif_info.location_color }">
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" fill="#4E58E7"/>
-                            <circle cx="6" cy="6" r="5" stroke="#4E58E7" stroke-width="2"/>
-                            </svg>
+                            <div class="invoice-location rounded-pill" :style="{'background': ITEM.breif_info.location_color }">
+                                <svg v-if="ITEM.breif_info.process != 0" width="12" height="12" viewBox="0 0 12 12" :fill="'#'+ITEM.breif_info.circle_color" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" :fill="'#'+ITEM.breif_info.circle_color"/>
+                                    <circle cx="6" cy="6" r="5" :stroke="'#'+ITEM.breif_info.circle_color" stroke-width="2"/>
+                                </svg>
+                                <svg v-else width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" :fill="'#'+ITEM.breif_info.circle_color"/>
+                                    <circle cx="6" cy="6" r="5" :stroke="'#'+ITEM.breif_info.circle_color" stroke-width="2"/>
+                                </svg>                                
                             &nbsp;&nbsp;<span class="d-block text-center" :style="{ width: 'calc( 100% - 12px )'}"> {{ ITEM.breif_info.location }}</span>
                         </div>
                         </div>

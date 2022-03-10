@@ -122,7 +122,7 @@
                                                     <div
                                                         class="w-100 today-count text-center"
                                                         :class="{' pl-0': item.total === 0,}"
-                                                    >{{ item.total.toFixed(2) }}</div>
+                                                    >{{ item.total.toFixed(0) }}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -249,13 +249,13 @@
                                             </div>
                                             <div
                                                 class="col-2 text-align-center each-dept-name pl-0"
-                                            >{{ group.total.toFixed(2) }}</div>
+                                            >{{ group.total.toFixed(0) }}</div>
                                             <div
                                                 class="col-2 text-align-center each-dept-name pl-0"
-                                            >{{ group.total.toFixed(2) }}</div>
+                                            >{{ group.total.toFixed(0) }}</div>
                                             <div
                                                 class="col-2 text-align-center each-dept-name pl-0"
-                                            >{{ group.total.toFixed(2) }}</div>
+                                            >{{ group.total.toFixed(0) }}</div>
                                         </div>
                                     </div>
                                 </div>

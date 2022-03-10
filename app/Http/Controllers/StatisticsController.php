@@ -96,40 +96,48 @@ class StatisticsController extends Controller
         
         // start total sales deliveries (B2B, B2C)
 
-        $statistique['avg_store_order'] = ($total_sale_stores->count() - $delivery_count) <= 0 ? 0 : number_format( $total_sales_store / ($total_sale_stores->count() - $delivery_count), 0);
-        $statistique['avg_delivery_order'] = number_format( $avg_delivery_order, 0);
+        // $statistique['avg_store_order'] = ($total_sale_stores->count() - $delivery_count) <= 0 ? 0 : number_format( $total_sales_store / ($total_sale_stores->count() - $delivery_count), 0);
+        $statistique['avg_store_order'] = number_format( 
+            InfoOrder::whereBetween('created_at', $period)
+                                    ->select(DB::raw('AVG(Total) as avg'))
+                                    ->where('TypeDelivery', '!=', 'DELIVERY')->value('avg') , 2);
+        $statistique['avg_delivery_order'] = number_format( 
+            InfoOrder::whereBetween('created_at', $period)
+                    ->select(DB::raw('AVG(Total) as avg'))
+                    ->where('TypeDelivery', 'DELIVERY')->value('avg'), 2);
         $total_sales_b2b = InfoOrder::join('infoCustomer', 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                     ->whereBetween('infoOrder.created_at', $period)
-                                    ->where('infoOrder.TypeDelivery', 'DELIVERY')
                                     ->where( function( $query ) {
                                         $query->where('infoCustomer.CustomerIDMaster', '!=', '')
                                                 ->orWhere('infoCustomer.CustomerIDMasterAccount', '!=', '')
                                                 ->orWhere('infoCustomer.IsMaster', 1)
                                                 ->orWhere('infoCustomer.IsMasterAccount', 1);
                                     } )                                    
+                                    ->where('total', '!=', 0)
                                     ->select(DB::raw('AVG(Total) as avg'), DB::raw('SUM(Total) as total'))
                                     ->first();
         $statistique['b2b'] = number_format( $total_sales_b2b->total, 0);
-        $statistique['avg_b2b_order'] = number_format( $total_sales_b2b->avg, 0);
+        $statistique['avg_b2b_order'] = number_format( $total_sales_b2b->avg, 2);
         $total_sales_b2c = InfoOrder::join('infoCustomer', 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                     ->whereBetween('infoOrder.created_at', $period)
-                                    ->where('infoOrder.TypeDelivery', 'DELIVERY')
-                                    ->where( function( $query ) {
-                                        $query->where('infoCustomer.CustomerIDMaster', '')
-                                                ->orWhere('infoCustomer.CustomerIDMasterAccount', '')
-                                                ->orWhere('infoCustomer.IsMaster', '!=',1)
-                                                ->orWhere('infoCustomer.IsMasterAccount', '!=',1);
-                                    } )                                    
+                                    ->where('infoCustomer.CustomerIDMaster', '')
+                                    ->where('infoCustomer.CustomerIDMasterAccount', '')
+                                    ->where('infoCustomer.IsMaster', 0)
+                                    ->where('infoCustomer.IsMasterAccount', 0)
+                                    ->where('total', '!=', 0)
+                                    // ->where( function( $query ) {
+                                    // } )                                    
                                     ->select(DB::raw('AVG(Total) as avg'), DB::raw('SUM(Total) as total'))
                                     ->first();
         $statistique['b2c'] = number_format( $total_sales_b2c->total, 0);
-        $statistique['avg_b2c_order'] = number_format( $total_sales_b2c->avg, 0);
+        $statistique['avg_b2c_order'] = number_format( $total_sales_b2c->avg, 2);
         $statistique['avg_total_order'] = number_format(InfoOrder::whereBetween('created_at', $period)
                                                     ->where('total', '!=', 0)
-                                                    ->select(DB::raw('AVG(total) as total'))->value('total'), 0);
+                                                    ->select(DB::raw('AVG(total) as total'))->value('total'), 2);
         $statistique['total_sales'] = number_format( $total_sales_store + $total_sales_b2c->total + $total_sales_b2b->total, 0 );
         $first_time_total_sale_stores = InfoOrder::whereBetween('created_at', $period)
                                     ->where('firstorder', 1)
+                                    ->where('total', '!=', 0)
                                     ->whereIn('TypeDelivery', ['MARYLEBONE', 'NOTTING HILL', 'SOUTH KEN', 'CHELSEA'])
                                     ->select(DB::raw('SUM(Subtotal) as sub_total'), DB::raw('SUM(Total) as total'), 'TypeDelivery')
                                     ->groupBy('TypeDelivery')
@@ -152,7 +160,8 @@ class StatisticsController extends Controller
         // start total sales deliveries (B2B, B2C)
         $first_time_total_sales_b2b = InfoOrder::join('infoCustomer', 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                     ->whereBetween('infoOrder.created_at', $period)
-                                    ->where('infoOrder.TypeDelivery', 'DELIVERY')
+                                    ->where('total', '!=', 0)
+                                    // ->where('infoOrder.TypeDelivery', 'DELIVERY')
                                     ->where('infoOrder.firstorder', 1)
                                     ->where( function( $query ) {
                                         $query->where('infoCustomer.CustomerIDMaster', '!=', '')
@@ -165,6 +174,7 @@ class StatisticsController extends Controller
         $statistique['first_time_b2b'] = number_format( $first_time_total_sales_b2b, 0);
         
         $first_time_total_sales_app = InfoOrder::whereBetween('infoOrder.created_at', $period)
+                                        ->where('total', '!=', 0)
                                         ->where('firstorder', 1)
                                         ->where('fromapp', 1)
                                         ->select(DB::raw('SUM(Total) as total'))
@@ -172,6 +182,7 @@ class StatisticsController extends Controller
         $statistique['first_time_app'] = number_format( $first_time_total_sales_app, 0);
         
         $first_time_total_sales_normal = InfoOrder::whereBetween('infoOrder.created_at', $period)
+                                        ->where('total', '!=', 0)
                                         ->where('firstorder', 1)
                                         ->where('fromapp', 0)
                                         ->select(DB::raw('SUM(Total) as total'))
@@ -183,24 +194,33 @@ class StatisticsController extends Controller
         // start new signup data
         $stores_new_signup = InfoCustomer::whereBetween('SignupDate', $period)
                                         ->select(DB::raw('count(*) as count'))->where('TypeDelivery', '!=','DELIVERY')->value('count');
-        $delivery_new_signup = InfoCustomer::whereBetween('SignupDateOnline', $period)
+        $delivery_new_signup = InfoCustomer::where(function($query) use ($period){
+                                                $query->whereBetween('SignupDate', $period)
+                                                    ->orWhereBetween('SignupDateOnline', $period);
+                                            })
                                         ->select(DB::raw('count(*) as count'))->where('TypeDelivery' ,'DELIVERY')->value('count');
-        $b2b_new_signup = InfoCustomer::whereBetween('SignupDateOnline', $period)
+        $b2b_new_signup = InfoCustomer::where(function($query) use ($period){
+                                            $query->whereBetween('SignupDate', $period)
+                                                ->orWhereBetween('SignupDateOnline', $period);
+                                        })
                                         ->where( function( $query ) {
                                             $query->where('CustomerIDMaster', '!=', '')
                                                     ->orWhere('CustomerIDMasterAccount', '!=', '')
                                                     ->orWhere('IsMaster', 1)
                                                     ->orWhere('IsMasterAccount', 1);
                                         } )
-                                        ->select(DB::raw('count(*) as count'))->first()->count;
-        $b2c_new_signup = InfoCustomer::whereBetween('SignupDateOnline', $period)
+                                        ->select(DB::raw('count(*) as count'))->value('count');
+        $b2c_new_signup = InfoCustomer::where(function($query) use ($period){
+                                            $query->whereBetween('SignupDate', $period)
+                                                ->orWhereBetween('SignupDateOnline', $period);
+                                        })
                                         ->where( function( $query ) {
                                             $query->where('CustomerIDMaster', '')
-                                                    ->orWhere('CustomerIDMasterAccount', '')
-                                                    ->orWhere('IsMaster', '!=',1)
-                                                    ->orWhere('IsMasterAccount', '!=',1);
+                                                    ->where('CustomerIDMasterAccount', '')
+                                                    ->where('IsMaster', 0)
+                                                    ->where('IsMasterAccount', 0);
                                         } )
-                                        ->select(DB::raw('count(*) as count'))->first()->count;
+                                        ->select(DB::raw('count(*) as count'))->value('count');
         $statistique['b2c_new_signup'] = $b2c_new_signup;
         $statistique['b2b_new_signup'] = $b2b_new_signup;
         $statistique['delivery_new_signup'] = $delivery_new_signup;
@@ -211,14 +231,16 @@ class StatisticsController extends Controller
         $service_items = Infoitem::whereBetween('PromisedDate', $period)
                                 ->select(DB::raw('SUM(priceTotal) as total'), 'DepartmentName')
                                 ->groupBy('DepartmentName')
-                                ->orderByRaw("FIELD(DepartmentName, 'Garment Care','Shirts Hung','Shirts Folded','Shirts','Business','Laundry','Bedlinen','Household','Suede/Leather/Wax','Laundry Bag','Other')")
+                                ->orderByDesc('total')
+                                // ->orderByRaw("FIELD(DepartmentName, 'Garment Care','Shirts Hung','Shirts Folded','Shirts','Business','Laundry','Bedlinen','Household','Suede/Leather/Wax','Laundry Bag','Other')")
                                 ->get();
         $statistique['service_items'] = $service_items;        
         $statistique['service_items_total'] = number_format($service_items->sum('total'), 0);
         $services_group = Infoitem::whereBetween('PromisedDate', $period)
                                 ->select(DB::raw('SUM(priceTotal) as total'), 'DepartmentName')
                                 ->groupBy('DepartmentName')
-                                ->orderByRaw("FIELD(DepartmentName, 'Garment Care','Shirts Hung','Shirts Folded','Shirts','Business','Laundry','Bedlinen','Household','Suede/Leather/Wax','Laundry Bag','Other')")
+                                ->orderByDesc('total')
+                                // ->orderByRaw("FIELD(DepartmentName, 'Garment Care','Shirts Hung','Shirts Folded','Shirts','Business','Laundry','Bedlinen','Household','Suede/Leather/Wax','Laundry Bag','Other')")
                                 ->get();
         $statistique['services_group'] = $services_group;        
         $statistique['services_group_total'] = number_format($services_group->sum('total'), 0);                                
