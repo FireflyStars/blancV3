@@ -21,8 +21,9 @@
                                     <div class="row fw-bold">
                                         <div class="col-6 p-0 text-nowrap">Total Sales (by channel)</div>
                                         <div class="col-4 float-right">£{{ statistique.total_sales }} </div>
-                                        <!-- <i class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                        <div class="col-1 px-0 float-right">50%</div> -->
+                                        <i v-if="statistique.total_sales >= statistique.last_total_sales && statistique.last_total_sales !=0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
+                                        <i v-else-if="statistique.total_sales < statistique.last_total_sales && statistique.last_total_sales !=0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
+                                        <div class="col-1 px-0 float-right" v-if="statistique.last_total_sales && statistique.last_total_sales !=0">{{ statistique.last_total_sales !=0 ? ((( statistique.total_sales*100 )/statistique.last_total_sales).toFixed(0) +'%' ) : '--'  }}</div>
                                     </div>
 
                                     <div class="row">
@@ -56,33 +57,38 @@
                                     <div class="row body_bold">
                                         <div class="col-8">Average Order Value</div>
                                         <div class="col-2 float-right">£{{ statistique.avg_total_order }}</div>
-                                        <!-- <i class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                        <div class="col-1 px-0 float-right">50%</div> -->
+                                        <i v-if="statistique.avg_total_order >= statistique.last_avg_total_order && statistique.last_avg_total_order && statistique.last_avg_total_order !=0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
+                                        <i v-else-if="statistique.last_avg_total_order && statistique.last_avg_total_order !=0" class="col-1 bi bi-arrow-down text-danger px-0 width-auto"></i>
+                                        <div class="col-1 px-0 float-right" v-if="statistique.last_avg_total_order && statistique.last_avg_total_order !=0">{{ statistique.last_avg_total_order > 0 ? ((statistique.avg_total_order*100)/statistique.last_avg_total_order).toFixed(0) +'%' : '--' }}</div>
                                     </div>
                                     <div class="row">
                                         <div class="row">
                                             <div class="col-5">Stores</div>
                                             <div class="col-4 float-right width-fit-content">£{{ statistique.avg_store_order }}</div>
-                                            <!-- <i class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                            <div class="col-2 px-0 float-right">50%</div> -->
+                                            <i v-if="statistique.avg_store_order >= statistique.last_avg_store_order && statistique.last_avg_store_order && statistique.last_avg_store_order != 0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
+                                            <i v-else-if="statistique.last_avg_store_order && statistique.last_avg_store_order != 0" class="col-1 bi bi-arrow-down text-danger px-0 width-auto"></i>
+                                            <div class="col-1 px-0 float-right" v-if="statistique.last_avg_store_order && statistique.last_avg_store_order != 0">{{ statistique.last_avg_store_order > 0 ? ((statistique.avg_store_order*100)/statistique.last_avg_store_order).toFixed(0) + '%' : '--' }}</div>
                                         </div>
                                         <div class="row">
                                             <div class="col-5">Delivery</div>
                                             <div class="col-4 float-right width-fit-content">£{{ statistique.avg_delivery_order }}</div>
-                                            <!-- <i class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                            <div class="col-2 px-0 float-right">50%</div> -->
+                                            <i v-if="statistique.avg_delivery_order > statistique.last_avg_delivery_order && statistique.last_avg_delivery_order && statistique.last_avg_delivery_order !=0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
+                                            <i v-else-if="statistique.last_avg_delivery_order && statistique.last_avg_delivery_order !=0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
+                                            <div class="col-1 px-0 float-right" v-if="statistique.last_avg_delivery_order && statistique.last_avg_delivery_order !=0">{{ statistique.last_avg_delivery_order > 0 ? ((statistique.avg_delivery_order*100)/statistique.last_avg_delivery_order).toFixed(0)+'%' : '--' }}</div>
                                         </div>
                                         <div class="row">
                                             <div class="col-5">B2B</div>
                                             <div class="col-4 float-right width-fit-content">£{{ statistique.avg_b2b_order }}</div>
-                                            <!-- <i class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                            <div class="col-2 px-0 float-right">50%</div> -->
+                                            <i v-if="statistique.avg_b2b_order >= statistique.last_avg_b2b_order && statistique.last_avg_b2b_order && statistique.last_avg_b2b_order !=0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
+                                            <i v-else-if="statistique.last_avg_b2b_order && statistique.last_avg_b2b_order !=0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
+                                            <div class="col-1 px-0 float-right" v-if="statistique.last_avg_b2b_order && statistique.last_avg_b2b_order !=0">{{ statistique.last_avg_b2b_order > 0 ? ((statistique.avg_b2b_order*100)/statistique.last_avg_b2b_order).toFixed(0)+'%' :'--' }}</div>
                                         </div>
                                         <div class="row">
                                             <div class="col-5">B2C</div>
                                             <div class="col-4 float-right width-fit-content">£{{ statistique.avg_b2c_order }}</div>
-                                            <!-- <i class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                            <div class="col-2 px-0 float-right">50%</div> -->
+                                            <i v-if="statistique.avg_b2c_order >= statistique.last_avg_b2c_order && statistique.last_avg_b2c_order && statistique.last_avg_b2c_order !=0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
+                                            <i v-else-if="statistique.last_avg_b2c_order && statistique.last_avg_b2c_order !=0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
+                                            <div class="col-1 px-0 float-right" v-if="statistique.last_avg_b2c_order && statistique.last_avg_b2c_order !=0">{{ statistique.last_avg_b2c_order > 0 ? ((statistique.avg_b2c_order*100)/statistique.last_avg_b2c_order).toFixed(0)+'%' : '--' }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -92,8 +98,9 @@
                                     <div class="row body_bold">
                                         <div class="col-8">Total Items (by service)</div>
                                         <div class="col-2 float-right">£{{ statistique.service_items_total }}</div>
-                                        <!-- <i class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                        <div class="col-1 px-0 float-right">50%</div> -->
+                                        <i v-if="statistique.service_items_total >= statistique.last_service_items_total && statistique.last_service_items_total && statistique.last_service_items_total !=0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
+                                        <i v-else-if="statistique.last_service_items_total && statistique.last_service_items_total !=0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
+                                        <div class="col-1 px-0 float-right" v-if="statistique.last_service_items_total && statistique.last_service_items_total !=0">{{ statistique.last_service_items_total > 0 ? ((statistique.service_items_total*100)/statistique.last_service_items_total).toFixed(0) +'%' : '--' }}</div>
                                     </div>
                                     <div class="col-12">
                                         <div class="row chart-title-row">
@@ -133,9 +140,10 @@
                                 <div class="container-fluid col-12 bg-white py-4 mb-3">
                                     <div class="row fw-bold">
                                         <div class="col-8 p-0 text-nowrap">Sales from 1st time Customers</div>
-                                        <div class="col-4 float-right">£{{ statistique.first_time_total_sales }}</div>
-                                        <!-- <i class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                        <div class="col-1 px-0 float-right">50%</div> -->
+                                        <div class="col-2 float-right">£{{ statistique.first_time_total_sales }}</div>
+                                        <i v-if="statistique.first_time_total_sales >= statistique.last_first_time_total_sales && statistique.last_first_time_total_sales && statistique.last_first_time_total_sales !=0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
+                                        <i v-else-if="statistique.last_first_time_total_sales && statistique.last_first_time_total_sales !=0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
+                                        <div class="col-1 px-0 float-right" v-if="statistique.last_first_time_total_sales && statistique.last_first_time_total_sales !=0">{{ statistique.last_first_time_total_sales > 0 ? ((statistique.first_time_total_sales*100)/statistique.last_first_time_total_sales).toFixed(0)+'%' :'--' }}</div>
                                     </div>
 
                                     <div class="row">
@@ -168,36 +176,69 @@
                                     </div>
                                 </div>
                                 <div class="container-fluid col-12 bg-white py-4 mb-3">
+                                    <div class="row">
+                                        <div class="row">
+                                            <div class="col-8 p-0 text-nowrap">Booking</div>
+                                            <div class="col-2 float-right">£{{ statistique.total_booking }}</div>
+                                            <i v-if="statistique.total_booking >= statistique.last_total_booking && statistique.last_total_booking && statistique.last_total_booking !=0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
+                                            <i v-else-if="statistique.last_total_booking && statistique.last_total_booking !=0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
+                                            <div class="col-1 px-0 float-right" v-if="statistique.last_total_booking && statistique.last_total_booking !=0">{{ statistique.last_total_booking > 0 ? ((statistique.total_booking*100)/statistique.last_total_booking).toFixed(0)+'%' : '--' }}</div>
+                                        </div>
+                                        <div class="row text-center">
+                                            <div class="first-bar col-4">{{ statistique.app_booking }}</div>
+                                            <div class="second-bar col-4">{{ statistique.pos_booking }}</div>
+                                            <div class="fourth-bar col-4">{{ statistique.rec_booking }}</div>
+                                        </div>
+                                        <div class="row text-center">
+                                            <div class="col-4">APP</div>
+                                            <div class="col-4">POS</div>
+                                            <div class="col-4">RECURING</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="container-fluid col-12 bg-white py-4 mb-3">
                                     <div class="row body_bold">
                                         <div class="col-8">New Sign Ups</div>
-                                        <!-- <div class="col-2 float-right">£200</div>
-                                        <i class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                        <div class="col-1 px-0 float-right">50%</div> -->
+                                        <div class="col-2 float-right width-fit-content">{{ statistique.total_new_signup }}</div>
+                                        <i v-if="statistique.total_new_signup >= statistique.last_total_new_signup && statistique.last_total_new_signup && statistique.last_total_new_signup!=0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
+                                        <i v-else-if="statistique.last_total_new_signup && statistique.last_total_new_signup!=0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
+                                        <div class="col-1 px-0 float-right" v-if="statistique.last_total_new_signup && statistique.last_total_new_signup!=0">{{ ((statistique.total_new_signup*100)/statistique.last_total_new_signup).toFixed(0) }}%</div>
                                     </div>
                                     <div class="row">
                                         <div class="row">
                                             <div class="col-5">Stores</div>
                                             <div class="col-2 float-right width-fit-content">{{ statistique.stores_new_signup }}</div>
-                                            <!-- <i class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                            <div class="col-2 px-0 float-right">50%</div> -->
+                                            <i v-if="statistique.stores_new_signup >= statistique.last_stores_new_signup && statistique.last_stores_new_signup && statistique.last_stores_new_signup!=0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
+                                            <i v-else-if="statistique.last_stores_new_signup && statistique.last_stores_new_signup!=0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
+                                            <div class="col-1 px-0 float-right" v-if="statistique.last_stores_new_signup && statistique.last_stores_new_signup!=0">{{ ((statistique.stores_new_signup*100)/statistique.last_stores_new_signup).toFixed(0) }}%</div>
                                         </div>
                                         <div class="row">
                                             <div class="col-5">Delivery</div>
                                             <div class="col-2 float-right width-fit-content">{{ statistique.delivery_new_signup }}</div>
-                                            <!-- <i class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                            <div class="col-2 px-0 float-right">50%</div> -->
+                                            <i v-if="statistique.delivery_new_signup >= statistique.last_delivery_new_signup" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
+                                            <i v-else-if="statistique.last_total_new_signup && statistique.last_total_new_signup!=0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
+                                            <div class="col-1 px-0 float-right" v-if="statistique.last_total_new_signup && statistique.last_total_new_signup!=0">{{ statistique.last_total_new_signup > 0 ? ((statistique.delivery_new_signup*100)/statistique.last_delivery_new_signup).toFixed(0) +'%' : '--'}}</div>
                                         </div>
                                         <div class="row">
                                             <div class="col-5">B2B</div>
                                             <div class="col-2 float-right width-fit-content">{{ statistique.b2b_new_signup }}</div>
-                                            <!-- <i class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                            <div class="col-2 px-0 float-right">50%</div> -->
+                                            <i v-if="statistique.b2b_new_signup >= statistique.last_b2b_new_signup && statistique.last_b2b_new_signup && statistique.last_b2b_new_signup!=0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
+                                            <i v-else-if="statistique.last_b2b_new_signup && statistique.last_b2b_new_signup!=0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
+                                            <div class="col-1 px-0 float-right" v-if="statistique.last_b2b_new_signup && statistique.last_b2b_new_signup!=0">{{ statistique.last_b2b_new_signup > 0 ? ((statistique.b2b_new_signup*100)/statistique.last_b2b_new_signup).toFixed(0)+'%' : '--' }}</div>
                                         </div>
                                         <div class="row">
                                             <div class="col-5">B2C</div>
                                             <div class="col-2 float-right width-fit-content">{{ statistique.b2c_new_signup }}</div>
-                                            <!-- <i class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                            <div class="col-2 px-0 float-right">50%</div> -->
+                                            <i v-if="statistique.b2c_new_signup >= statistique.last_b2c_new_signup && statistique.last_b2c_new_signup && statistique.last_b2c_new_signup !=0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
+                                            <i v-else-if="statistique.last_b2c_new_signup && statistique.last_b2c_new_signup !=0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
+                                            <div class="col-1 px-0 float-right" v-if="statistique.last_b2c_new_signup && statistique.last_b2c_new_signup !=0">{{ statistique.last_b2c_new_signup > 0 ? ((statistique.b2c_new_signup*100)/statistique.last_b2c_new_signup).toFixed(0) + '%' : '--'}}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5">APP</div>
+                                            <div class="col-2 float-right width-fit-content">{{ statistique.app_new_signup }}</div>
+                                            <i v-if="statistique.app_new_signup >= statistique.last_app_new_signup && statistique.last_app_new_signup && statistique.last_app_new_signup !=0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
+                                            <i v-else-if="statistique.last_app_new_signup && statistique.last_app_new_signup !=0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
+                                            <div class="col-1 px-0 float-right" v-if="statistique.last_app_new_signup && statistique.last_app_new_signup !=0">{{ ((statistique.app_new_signup*100)/statistique.last_app_new_signup).toFixed(0) }}%</div>
                                         </div>
                                     </div>
                                 </div>
@@ -211,8 +252,9 @@
                                     <div class="row body_bold">
                                         <div class="col-8">Total Items (by service)</div>
                                         <div class="col-2 float-right">£{{ statistique.services_group_total }}</div>
-                                        <!-- <i class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                        <div class="col-1 px-0 float-right">50%</div> -->
+                                        <i v-if="statistique.services_group_total >= statistique.last_services_group_total" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
+                                        <i v-else class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
+                                        <div class="col-1 px-0 float-right">{{ (statistique.services_group_total*100)/statistique.last_services_group_total }}%</div>
                                     </div>
                                     <div class="col-12">
                                         <div class="row chart-title-row">

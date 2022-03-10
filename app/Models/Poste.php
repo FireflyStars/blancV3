@@ -11,17 +11,17 @@ class Poste extends Model
 
     public static function getAssemblyPostes(){
         $formatted_postes=array(
-            ['formatted_name'=>'CC','group_name'=>'CustomerCare'],
-            ['formatted_name'=>'Partner','group_name'=>'Partner'],
-            ['formatted_name'=>'Tailoring','group_name'=>'Tailoring'],
-            ['formatted_name'=>'Cleaning','group_name'=>'Spotting'],
-            ['formatted_name'=>'Quality Control 1','group_name'=>'Quality Control 1'],
-            ['formatted_name'=>'Pressing','group_name'=>'Pressing'],
-            ['formatted_name'=>'Quality Control 2','group_name'=>'Quality Control 2'],
-            ['formatted_name'=>'Loading Station','group_name'=>'Loading Station'],
-            ['formatted_name'=>'Conveyor','group_name'=>'Conveyor'],
-            ['formatted_name'=>'Storage','group_name'=>'Storage'],
-            ['formatted_name'=>'shelving','group_name'=>'shelving'],
+            ['formatted_name'=>'In <br> CC','group_name'=>'CustomerCare'],
+            ['formatted_name'=>'With <br> Partner','group_name'=>'Partner'],
+            ['formatted_name'=>'In <br> Tailoring','group_name'=>'Tailoring'],
+            ['formatted_name'=>'Awaiting <br> Cleaning','group_name'=>'Spotting'],
+            ['formatted_name'=>'In <br> Cleaning','group_name'=>'Quality Control 1'],
+            ['formatted_name'=>'Awaiting <br> Pressing','group_name'=>'Pressing'],
+            ['formatted_name'=>'Awaiting <br> Quality Control 2','group_name'=>'Quality Control 2'],
+            ['formatted_name'=>'In <br> Loading Station','group_name'=>'Loading Station'],
+            ['formatted_name'=>'On Assembly <br> Conveyor','group_name'=>'Conveyor'],
+            ['formatted_name'=>'On Storage <br> Conveyor','group_name'=>'Storage'],
+            ['formatted_name'=>'In <br> shelving','group_name'=>'shelving'],
         );
 
         return $formatted_postes;
