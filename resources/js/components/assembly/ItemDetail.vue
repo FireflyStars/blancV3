@@ -46,8 +46,8 @@
                     </div>
                     <div class="item-detail-color mt-2 d-flex">
                         <p class="w-50 m-0 d-flex align-items-center">Colours & patterns</p>
-                        <p class="w-50 m-0">
-                            <span class="item-detail-color" v-for="(color, index) in ITEM.breif_info.colors" :key="index">{{ color }}</span>
+                        <p class="w-50 m-0 d-flex align-items-center flex-wrap">
+                            <span class="item-detail-color-item d-block me-1 mb-1 mt-1" v-for="(color, index) in (ITEM.breif_info.colors).split(',')" :style="{ 'background': color.toLowerCase().trim() }" :key="index"></span>
                         </p>
                     </div>
                 </div>
@@ -512,6 +512,14 @@ export default {
         font-size: 16px;
         line-height: 140%;
         color: #47454B;
+    }
+    .item-detail-color-item{
+        min-width: 15px;
+        height: 16px;
+        box-sizing: border-box;
+        border: 1px solid #F8F8F8;
+        box-shadow: 0px 0px 4px rgba(80, 80, 80, 0.2);
+        border-radius: 50%;
     }
     .item-detail-footer{
         padding: 30px 20px;

@@ -407,11 +407,19 @@
                                             <td class="text-capitalize fw-16"><a href="javascript:;" class="text-decoration-none text-primary">{{ invoiceRow.barcode }}</a></td>
                                             <!-- Location -->
                                             <td>
-                                                <div class="invoice-location assembling rounded-pill" :style="{'background-color': '#'+invoiceRow.location_color }">
-                                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <div class="invoice-location assembling rounded-pill" :style="{'background-color': invoiceRow.location_color }">
+                                                    <svg v-if="invoiceRow.process != 0" width="12" height="12" viewBox="0 0 12 12" :fill="'#'+invoiceRow.circle_color" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" :fill="'#'+invoiceRow.circle_color"/>
+                                                        <circle cx="6" cy="6" r="5" :stroke="'#'+invoiceRow.circle_color" stroke-width="2"/>
+                                                    </svg>
+                                                    <svg v-else width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" :fill="'#'+invoiceRow.circle_color"/>
+                                                        <circle cx="6" cy="6" r="5" :stroke="'#'+invoiceRow.circle_color" stroke-width="2"/>
+                                                    </svg>                                                    
+                                                    <!-- <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" fill="#4E58E7"/>
                                                     <circle cx="6" cy="6" r="5" stroke="#4E58E7" stroke-width="2"/>
-                                                    </svg>
+                                                    </svg> -->
                                                     &nbsp;&nbsp;<span class="d-block text-center text-nowrap" :style="{ width: 'calc( 100% - 12px )'}">{{ invoiceRow.location }}</span>
                                                 </div>
                                             </td>
@@ -456,6 +464,8 @@
         INVOICELIST_SET_ALL_SELECTED,
         INVOICELIST_SET_MULTI_UNCHECKED,
         INVOICE_RESET_MULITCHECKED,
+        ITEM_DETAIL_MODULE,
+        ITEM_DETAIL_SET_DETAIL
     } from "../../store/types/types";
     import { useStore } from "vuex";
     import { useRoute, useRouter } from "vue-router";
@@ -639,6 +649,12 @@
             const checkboxclicked = ( check, id, name )=>{
                 if(CURRENT_SELECTED.value == id && check == false){
                     store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`,'');
+                    store.commit(`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_SET_DETAIL}`, { 
+                        breif_info: {
+                            id: ''
+                        },
+                        location_history: []
+                    });                           
                     router.back();
                 }
                 if(check == true){

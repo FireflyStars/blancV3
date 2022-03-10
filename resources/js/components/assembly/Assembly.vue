@@ -58,7 +58,6 @@
         setup(){
             const store = useStore();
             const route = useRoute();
-            const selected_nav = ref('AssemblyHome');
             const filterDef =  ref({
                     status: {
                         label: 'Sub Order Status',
