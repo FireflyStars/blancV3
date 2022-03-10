@@ -1815,7 +1815,7 @@ class StatisticsController extends Controller
                 'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode', 
                 'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as prod'), 'infoitems.id AS item_id',
                 'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
-                'infoitems.idPartner', 'TypePost.couleur as location_color',
+                'infoitems.idPartner', 'TypePost.bg_color as location_color', 'TypePost.process','TypePost.circle_color',
                 DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),                    
                 )
             ->where('infoitems.PromisedDate', $operator, $date_stats);
@@ -1901,7 +1901,7 @@ class StatisticsController extends Controller
                             'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode', 
                             'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as prod'), 'infoitems.id AS item_id',
                             'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
-                            'infoitems.idPartner', 'TypePost.couleur as location_color',
+                            'infoitems.idPartner', 'TypePost.bg_color as location_color',  'TypePost.process', 'TypePost.circle_color',
                             DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),
                             /* DB::raw('DATE_FORMAT(pickup.date,"%m/%d") as pickup_date'), */
                             /* DB::raw('DATE_FORMAT(deliveryask.date, "%m/%d") as deliveryask_date') */

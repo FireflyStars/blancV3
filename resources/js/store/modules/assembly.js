@@ -33,7 +33,7 @@ export const assemblyHome = {
     namespaced: true,
     state: {
         postes:     "",
-        selected_nav: 'AssemblyHome',
+        selected_nav: 'AssemblyHome', //InvoiceList
         item:       {},
         reason:     {},
         item_damage:[],
