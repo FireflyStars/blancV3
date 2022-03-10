@@ -42,8 +42,6 @@
                             <!-- Step 1 : Input data -->
                             <div class="panel-col-2 col" :class="{'d-none':process_step!=1}">
 
-                                {{order_express}}
-
                                 <div class="panel">
                                     <h2 class="subtitle">Order Details</h2>
                                     <div class="row border-bottom m-0">
@@ -59,6 +57,13 @@
                                             </div>
                                             <transition name="popinout">
                                             <div class="row mt-3" v-if="deliverymethod=='in_store_collection'">
+                                                <div class="col-12 mb-4">
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <select-options v-model="store_name" id="isc_store_name" :options="storenames" label="Store" placeholder="Choose store" classnames="storenames"></select-options>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 <div class="col-3">
                                                     <!--<date-picker v-model="isc_dropoff" name="isc_dropoff" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Drop off" :disabledToDate="yesterday"></date-picker>
                                                     -->
@@ -220,10 +225,17 @@
                                     <div class="panel">
                                         <div class="row">
                                             <div class="col">
-                                                <h2 class="subtitle">Order Details <a class="ml-3" id="edit_order_link" @click="changeStep(1)">Edit</a></h2>
+                                                <h2 class="subtitle d-table" id="step_2_title">Order Details <a class="ml-3" id="edit_order_link" @click="changeStep(1)">Edit</a></h2>
+
+                                                <div id="order_exp_type" class="float-left d-table" v-if="order_express!=0">
+                                                    <span v-if="order_express==1">Express 24</span>
+                                                    <span v-if="order_express==6">Express 48</span>
+
+                                                </div>
+
                                             </div>
                                             <div class="col" v-if="deliverymethod=='in_store_collection'">
-                                                <span class="float-right each-summary-delivery-type">{{cust_type_delivery}}</span>
+                                                <span class="float-right each-summary-delivery-type">{{firstLetterToUppercase(store_name)}}</span>
                                                 <img class="float-right each-summary-icon" src="/images/picto_store.svg" />
                                             </div>
 
@@ -415,6 +427,7 @@
         HIDE_LOADER,
     } from "../../store/types/types";
 import RecurringForm from '../miscellaneous/RecurringForm.vue';
+import axios from 'axios';
     export default {
         name: "NewOrder",
         components:{BreadCrumb,SideBar,SelectOptions,SwitchBtn,DatePicker,TimeSlotPicker,CustomerDetailsPanel,RecurringForm},
@@ -540,6 +553,26 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                 },
             ]);
 
+
+            const storenames = ref([]);
+            const store_name = ref('');
+            let stores = ['ATELIER','CHELSEA','MARYLEBONE','NOTTING HILL','SOUTH KEN'];
+
+            stores.forEach(function(v,i){
+                let key = {};
+
+
+                key['value'] = v;
+                key['display'] =  firstLetterToUppercase(v);
+                storenames.value.push(key);
+            });
+
+
+            function firstLetterToUppercase(str2){
+                let str = str2.toString().toLowerCase();
+                return str.charAt(0).toUpperCase() + str.slice(1);
+            }
+
             const showRecurring = ref(true);
             const process_step = ref(1);
 
@@ -595,6 +628,10 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                 }
 
                 return current_customer;
+            });
+
+            watch(() =>cust_type_delivery.value, (current_val, previous_val) => {
+                store_name.value = current_val.toString().toUpperCase();
             });
 
 /*
@@ -670,6 +707,7 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                     new_order.address1 = shp_address1.value;
                     new_order.postcode = shp_postcode.value;
                     new_order.town = shp_town.value;
+                    new_order.store_name = store_name.value;
 
                     let arr = [];
 
@@ -710,6 +748,19 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
                    }
                }else if(process_step.value==2){
+                   store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Creating order'], {root: true});
+                   axios.post('/create-new-order',{
+                       new_order:new_order_obj.value
+                   }).then((res)=>{
+                       if(res.data.new_order_id > 0){
+                           let new_order_id = res.data.new_order_id;
+                           router.push('/order-content/'+new_order_id);
+                       }
+                   }).catch((err)=>{
+
+                   }).finally(()=>{
+                       store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`, {}, {root: true});
+                   });
 
                }
             }
@@ -720,8 +771,49 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             function evaluateOrderExpress(order){
 
                 let time_diff = 0;
+                let order_exp = 0;
 
 
+
+                if(order.deliverymethod=='in_store_collection'){
+                    let dt_from = new Date(cur_date.value);
+
+                    let isc_pickup_time = getTimeFromSlot(isc_pickup_timeslot.value);
+                    new_order_obj.value['isc_pickup_time'] = isc_pickup_time;
+
+                    let dt_to = new Date(isc_pickup.value+' '+isc_pickup_time);
+
+                    time_diff =  (dt_to.getTime() - dt_from.getTime()) / 3600000; //3600 * 1000 milliseconds
+                }
+
+
+
+                if(time_diff <=24){
+                    order_exp = 1; //EXPRESS24
+                }else if(time_diff > 24 && time_diff <= 48){
+                    order_exp = 6; //EXPRESS48
+                }
+
+                order_express.value = order_exp;
+
+                new_order_obj.value['express'] = order_exp;
+
+            }
+
+
+            function formatDateToDb(dt){
+                let d = new Date(dt);
+                let mm = d.getMonth()+1;
+                let dformat = [ d.getFullYear(),mm.toString().padStart(2, '0'),
+               d.getDate().toString().padStart(2, '0')].join('-')+' '+
+              [d.getHours().toString().padStart(2,0),
+               d.getMinutes().toString().padStart(2,0),
+               d.getSeconds().toString().padStart(2,0)].join(':');
+
+               return dformat;
+            }
+
+            function getTimeFromSlot(slot){
                 let slot_from_arr = [];
                 let hr = 0;
 
@@ -735,32 +827,7 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
                 }
 
-
-                if(order.deliverymethod=='in_store_collection'){
-                    let dt_from = new Date(cur_date.value);
-
-                    let isc_pickup_time = slot_from_arr[isc_pickup_timeslot.value];
-
-                    let dt_to = new Date(isc_pickup.value+' '+isc_pickup_time);
-
-                    time_diff =  (dt_to.getTime() - dt_from.getTime()) / 3600000; //3600 * 1000 milliseconds
-                }
-
-                console.log(time_diff);
-
-            }
-
-
-            function formatDateToDb(dt){
-                let d = new Date(dt);
-                let mm = d.getMonth()+1;
-                let dformat = [ d.getFullYear(),mm.toString().padStart(2, '0'),
-               d.getDate().toString().padStart(2, '0')].join('-')+' '+
-              [d.getHours(),
-               d.getMinutes(),
-               d.getSeconds()].join(':');
-
-               return dformat;
+                return slot_from_arr[slot];
             }
 
 
@@ -768,20 +835,31 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
             function validateByDeliveryMethod(val){
                 let err_arr = [];
                 if(val=='in_store_collection'){
-                    /*
-                    if(isc_dropoff.value==''){
-                        err_arr.push('Dropoff date is empty');
-                    }
-                    if(isc_dropoff_timeslot.value==0){
-                        err_arr.push('Dropoff time is empty');
-                    }
-                    */
+
                     if(isc_pickup.value==''){
                         err_arr.push('Pickup date is empty');
                     }
                     if(isc_pickup_timeslot.value==0){
                         err_arr.push('Pickup time is empty');
                     }
+                    if(store_name.value==''){
+                        err_arr.push('Please choose a store name');
+                    }
+
+                    if(isc_pickup.value!='' && isc_pickup_timeslot.value !=0){
+                        let dt_txt = isc_pickup.value+' '+getTimeFromSlot(isc_pickup_timeslot.value);
+
+                        let dt_pickup = new Date(dt_txt);
+
+                        let dt_dropoff = new Date(cur_date.value);
+
+                        let diff = (dt_pickup.getTime() - dt_dropoff.getTime())/(3600*1000);
+
+                        if(diff < 0){
+                            err_arr.push('Pickup date and time cannot be less than drop off');
+                        }
+                    }
+
                     /*
                     if(isc_dropoff.value > isc_pickup.value){
                         err_arr.push('Dropoff date is greater than pickup date');
@@ -954,12 +1032,14 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                }
 
                if(type=='time'){
-                   return cur_dt.toLocaleString('en-GB', { hour: 'numeric', minute: 'numeric', hour12: true });
+                   let hh = cur_dt.getHours();
+
+
+                   return String(cur_dt.getHours()).padStart(2,0)+':'+String(cur_dt.getMinutes()).padStart(2,0)+':'+String(cur_dt.getSeconds()).padStart(2,0);
                }
 
             }
 
-            getCurDateTime();
 
             //Watch dates and load tranches
 
@@ -1098,6 +1178,10 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
                 cur_date,
                 loadtranche,
                 order_express,
+                storenames,
+                store_name,
+                firstLetterToUppercase,
+                new_order_obj,
             }
         }
     }
@@ -1175,5 +1259,19 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 
     #shp_received_txt{
         margin-left: -8px;
+    }
+
+    #step_2_title{
+        float:left;
+        margin-right:20px;
+    }
+
+    #order_exp_type{
+        font:normal 12px "Gotham Rounded";
+        color: #eb5757;
+        border-radius: 70px;
+        padding:5px 16px;
+        background: rgba(245, 171, 171, 0.7);
+        margin-top:3px;
     }
 </style>

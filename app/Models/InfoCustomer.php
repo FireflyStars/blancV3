@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class InfoCustomer extends Model
 {
@@ -15,7 +16,7 @@ class InfoCustomer extends Model
      * @var bool
      */
     public $timestamps = false;
-    
+
     /**
      * The table associated with the model.
      *
@@ -28,5 +29,11 @@ class InfoCustomer extends Model
      *
      * @var array
      */
-    protected $guarded = [];    
+    protected $guarded = [];
+
+
+    public static function getPreviousOrders($customerid){
+        return DB::table('infoOrder')->where('CustomerID',$customerid)->get()->toArray();
+    }
+
 }

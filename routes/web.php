@@ -81,8 +81,14 @@ Route::post('/get-detailing-list',[DetailingController::class, 'getDetailingList
 Route::post('/item-picto',[ItemController::class, 'getItemPicto'])->name('item-picto');
 Route::post('/get-picto-names',[ItemController::class,'getPictoNames'])->name('get-picto-names');
 
+/*
+* NEW ORDER
+* */
 Route::post('/get-shipping-partners',[ShippingController::class,'getPartnerList'])->name('get-shipping-partners')->middleware('auth');
 Route::post('/get-tranche-by-postcode',[BookingController::class,'getTrancheByPostcode'])->name('get-tranche-by-postcode')->middleware('auth');
+Route::post('/create-new-order',[OrderController::class,'createNewOrder'])->name('create-new-order')->middleware('auth');
+
+
 /*
  * QZ Print
  * */
