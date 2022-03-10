@@ -236,13 +236,14 @@
                             <div class="w-87 mt-auto">
                                 <div class="d-flex justify-content-between">
                                     <div v-for="(a, index) in groupedPostes" :style="{width: parseInt(100/groupedPostes.length)+'%'}" class="text-center each-poste-label" :key="index">
-                                        <span class="text-capitalize" v-if="a.group_name=='Partner'">With<br/></span>
+                                        <!-- <span class="text-capitalize" v-if="a.group_name=='Partner'">With<br/></span>
                                         <span class="text-capitalize" v-else-if="a.group_name!='Storage'&&a.group_name!='Conveyor'">In<br/></span>
                                         <span class="text-capitalize" v-if="a.group_name!='QC 1' && a.group_name!='QC 2'"></span>
                                         <span class="text-capitalize" v-else>&nbsp;</span>
                                         <span class="text-capitalize" v-if="a.group_name == 'Conveyor'">On <br> <span class="text-nowrap">Assembly Conveyor</span></span>
                                         <span class="text-capitalize" v-else-if="a.group_name=='Storage'">On<br> <span class="text-nowrap">Storage Conveyor</span></span>
-                                        <span class="text-capitalize text-nowrap" v-else>{{ a.formatted_name }}</span>
+                                        <span class="text-capitalize text-nowrap" v-else>{{ a.formatted_name }}</span> -->
+                                        <span class="text-capitalize" v-html="a.formatted_name"></span>
                                     </div>
                                 </div>
                             </div>
