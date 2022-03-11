@@ -132,6 +132,8 @@ class DetailingController extends Controller
         $complexities_id = $request->post('complexities_id');
         $status = $request->post('status');
         $step = $request->post('step');
+        $stains = $request->post('stains');
+        $damages = $request->post('damages');
         $brand_name = $request->post('brand_name');
 
         if (isset($dept_id)) {
@@ -259,6 +261,12 @@ class DetailingController extends Controller
         if (isset($status)) {
             DB::table('detailingitem')->where('id', $detailingitem_id)->update(['status' => $status, 'updated_at' => date('Y-m-d H:i:s')]);
         }
+        if (isset($stains)) {
+            DB::table('detailingitem')->where('id', $detailingitem_id)->update(['stains' => $stains, 'updated_at' => date('Y-m-d H:i:s')]);
+        }
+        if (isset($damages)) {
+            DB::table('detailingitem')->where('id', $detailingitem_id)->update(['damages' => $damages, 'updated_at' => date('Y-m-d H:i:s')]);
+        }
         if (isset($step)) {
             if ($step == 3 && isset($typeitem_id)) {
                 $sizes = DB::table('sizes')->where('typeitem_id', $typeitem_id)->where('deleted_at', NULL)->get();
@@ -339,6 +347,7 @@ class DetailingController extends Controller
             $detailing_data['conditions'] = [];
         }
         $detailing_data['complexities'] = DB::table('complexities')->where('deleted_at', NULL)->get();
+        $detailing_data['issues_tags'] = DB::table('issues_tag')->get();
         return $detailing_data;
     }
     public function getItemDescription(array $detailingitem)
@@ -373,6 +382,21 @@ class DetailingController extends Controller
         if ($detailingitem['complexities_id'] != null) {
             $complexities = DB::table('complexities')->select('name', 'coefcleaning', 'coeftailoring')->whereIn('id', json_decode($detailingitem['complexities_id']))->get();
         }
+        $stains_tags=collect();
+        $damages_tags=collect();
+        $stains_zones=collect();
+        $damages_zones=collect();
+        if ($detailingitem['stains'] != null) {
+            $stains=json_decode($detailingitem['stains'],true);
+            $stains_tags = DB::table('issues_tag')->select('id','name')->whereIn('id', array_column($stains, 'id_issue'))->get();
+            $stains_zones = DB::table('itemzones')->select('id','description')->whereIn('id', array_column($stains, 'id_zone'))->get();
+        }
+        if ($detailingitem['damages'] != null) {
+            $damages=json_decode($detailingitem['damages'],true);
+            $damages_tags = DB::table('issues_tag')->select('id','name')->whereIn('id', array_column($damages, 'id_issue'))->get();
+            $damages_zones = DB::table('itemzones')->select('id','description')->whereIn('id', array_column($damages, 'id_zone'))->get();
+
+        }
         return  array(
             'typeitem_name' => isset($typeitem) ? $typeitem['name'] : '',
             'typeitem_picto' => isset($typeitem) ? $typeitem['draw1'] : '',
@@ -386,6 +410,10 @@ class DetailingController extends Controller
             'pattern_name' => isset($pattern) ? $pattern['name'] : '',
             'condition_name' => isset($condition) ? $condition['name'] : '',
             'complexities_name' => isset($complexities) ? $complexities : array(),
+            'stains' => isset($detailingitem['stains']) ? json_decode($detailingitem['stains']) : array(),
+            'damages' => isset($detailingitem['damages']) ? json_decode($detailingitem['damages']) : array(),
+            'issues_zones' => $stains_zones->merge($damages_zones) ,
+            'issues_tags' => $stains_tags->merge($damages_tags) ,
         );
     }
 }

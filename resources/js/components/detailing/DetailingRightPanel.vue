@@ -140,6 +140,42 @@
                                     <div class="col accordion-body-title">Stains</div>
                                     <div class="col accordion-body-title">Damages</div>
                                 </div>
+                                <div class="row">
+                                    <div class="col-6 stain-bloc">
+                                        <div
+                                            class="stain-row"
+                                            v-for="(stain, index) in item_description.stains"
+                                        >
+                                            <span class="stain eclipse-number">{{ index + 1 }}</span>
+                                            <span
+                                                v-if="stain.id_issue != 0"
+                                            >{{ getStainName(stain.id_issue) }} &nbsp;-&nbsp; {{ getStainZone(stain.id_zone) }}</span>
+                                            <span
+                                                v-else-if="stain.description != ''"
+                                            >{{ stain.description }} &nbsp;-&nbsp; {{ getStainZone(stain.id_zone) }}</span>
+                                            <span
+                                                v-else
+                                            >Stain &nbsp;-&nbsp; {{ getStainZone(stain.id_zone) }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div
+                                            class="stain-row"
+                                            v-for="(dam, index) in item_description.damages"
+                                        >
+                                            <span class="damage eclipse-number">{{ index + 1 }}</span>
+                                            <span
+                                                v-if="dam.id_issue != 0"
+                                            >{{ getStainName(dam.id_issue) }}&nbsp;-&nbsp; {{ getStainZone(dam.id_zone) }}</span>
+                                            <span
+                                                v-else-if="dam.description != ''"
+                                            >{{ dam.description }}&nbsp;-&nbsp; {{ getStainZone(dam.id_zone) }}</span>
+                                            <span
+                                                v-else
+                                            >Damage&nbsp;-&nbsp; {{ getStainZone(dam.id_zone) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -226,6 +262,12 @@ export default {
                 instAcc.value = false;
             }
         }
+        function getStainZone(id) {
+            return props.item_description.issues_zones.filter((zone) => zone.id === id)[0].description;
+        }
+        function getStainName(id) {
+            return props.item_description.issues_tags.filter((tag) => tag.id === id)[0].name;
+        }
         return {
             progress_percent,
             instAcc,
@@ -233,7 +275,9 @@ export default {
             issusesAcc,
             servicesAcc,
             show,
-            openAccordionclick
+            openAccordionclick,
+            getStainName,
+            getStainZone
         };
     },
 }
@@ -378,5 +422,44 @@ export default {
 }
 .done {
     background: #f8f8f8;
+}
+.stain-bloc {
+    display: block;
+    padding: 0px;
+    font-family: Gotham Rounded;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 140%;
+    align-items: center;
+    color: #47454b;
+}
+.eclipse-number {
+    margin: 0 5px;
+    font-family: Gotham Rounded;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 140%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #ffffff;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    min-width: 18px !important;
+    min-height: 18px !important;
+}
+.stain {
+    background-color: #ef8f00;
+}
+.damage {
+    background-color: #eb5757;
+}
+.stain-row {
+    word-break: break-all;
+    display: flex;
 }
 </style>

@@ -52,7 +52,12 @@
             <button class="btn btn-link btn-previous" @click="back">Previous</button>
         </div>
         <div class="col-2 text-align-right">
-            <button class="btn btn-next text-white" id="btn-next" :disabled="!valid" @click="save">Next</button>
+            <button
+                class="btn btn-next text-white"
+                id="btn-next"
+                :disabled="!valid"
+                @click="save"
+            >Next</button>
         </div>
     </div>
 </template>
@@ -91,24 +96,25 @@ export default {
             category_id.value = id;
         }
         function typeItemClick(id) {
-            if(typeitem_id.value != id){
+            if (typeitem_id.value != id) {
                 typeitem_id.value = id;
                 context.emit("save-type-item", { detailingitem_id: props.detailingitem.id, category_id: category_id.value, typeitem_id: typeitem_id.value });
                 this.scrollToNext();
-            }else{
+            } else {
+                typeitem_id.value = 0;
                 context.emit("save-type-item", { detailingitem_id: props.detailingitem.id, category_id: category_id.value, typeitem_id: null });
 
             }
         }
         function save() {
-            context.emit("save-type-item", { detailingitem_id: props.detailingitem.id, step: 3,typeitem_id:typeitem_id.value});
-            window.scrollTo(0,0);
+            context.emit("go-to-step", 3);
+            window.scrollTo(0, 0);
         }
         function back() {
             context.emit("go-to-step", 1);
-            window.scrollTo(0,0);
+            window.scrollTo(0, 0);
         }
-        function  scrollToNext() {
+        function scrollToNext() {
             let element = document.getElementById("btn-next");
             let top = element.offsetTop;
             window.scrollTo(0, top);
@@ -165,7 +171,6 @@ export default {
     box-shadow: 0px 0px 4px rgba(80, 80, 80, 0.2);
     border-radius: 4px;
     font-family: Gotham Rounded;
-
 }
 .item-type:hover {
     background-color: #47454b;

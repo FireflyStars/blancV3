@@ -331,7 +331,7 @@ export default {
     line-height: 140%;
 }
 .main {
-    padding: 50px 0px 50px 61px;
+    padding: 0px 0px 50px 61px;
 }
 .container-detailing{
     height: 100%;
