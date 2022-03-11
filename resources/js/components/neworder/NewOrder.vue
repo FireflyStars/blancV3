@@ -80,7 +80,7 @@
                                                 </div>
 
                                                 <div class="col-3">
-                                                    <date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pickup" :disabledToDate="yesterday"></date-picker>
+                                                    <date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pickup" :disabledToDate="yesterday" @loadtranche="checkStorePickup"></date-picker>
                                                 </div>
                                                 <div class="col-3">
                                                     <time-slot-picker v-model="isc_pickup_timeslot"   name="isc_pickup_timeslot" :available-slots="[1,3,5,7,9,11]"  label="Pick up Time"></time-slot-picker>
@@ -607,6 +607,9 @@ import axios from 'axios';
                 })
             })*/
             const order=computed(()=>store.getters[`${NEWORDER_MODULE}${NEWORDER_PRELOAD_ORDER_GET}`]);
+
+
+           //To remove
             function proceedToDetailling() {
                 router.push('/order-content/57907');
             }
@@ -1117,6 +1120,12 @@ import axios from 'axios';
                 }
            }
 
+           function checkStorePickup(){
+               let cur_date = getCurDateTime('date');
+
+               console.log(isc_pickup.value);
+           }
+
 
 
             return {
@@ -1182,6 +1191,7 @@ import axios from 'axios';
                 store_name,
                 firstLetterToUppercase,
                 new_order_obj,
+                checkStorePickup,
             }
         }
     }

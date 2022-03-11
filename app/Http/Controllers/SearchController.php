@@ -9,7 +9,7 @@ use App\Models\User;
 
 class SearchController extends Controller
 {
-   
+
 
 
 
@@ -22,10 +22,10 @@ public function SearchCustomer(Request $request)
 
     $orders = DB::table('infoOrder')->select(['infoOrder.id','infoOrder.Status','infoOrder.DateDeliveryAsk','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CustomerID',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate'])
     ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
-    ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+    ->leftJoin('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
     ->leftJoin('infoitems',function($join){
-    $join->on('infoInvoice.SubOrderID','=','infoitems.SubOrderID')
-    ->where('infoitems.SubOrderID','!=','')
+    $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
+    //->where('infoitems.InvoiceID','!=','')
     ->whereNotIn('infoitems.Status',['DELETE','VOID']);
      })
     ->where('Name', 'LIKE', $query . '%')
@@ -46,7 +46,7 @@ public function SearchCustomer(Request $request)
     $emails = DB::table('infoCustomer')
     ->where('EmailAddress', 'LIKE', $query . '%')
     ->paginate($PerPageEmails);
-    
+
     foreach ($emails as $item) {
         $item->Phone=json_decode($item->Phone);
     }
@@ -65,7 +65,7 @@ public function SearchByCustomer(Request $request)
     ->orWhere('Phone', 'LIKE', '%' . $query . '%')
     ->orderBy('Name')
     ->paginate($PerPage);
-     
+
     foreach ($Customer as $item) {
         $item->Phone=json_decode($item->Phone);
     }

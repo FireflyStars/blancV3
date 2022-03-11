@@ -31,6 +31,7 @@ class OrderController extends Controller
         $dropoff_stamp = $new_order['dropoff_stamp'];
 
         $new_order_id = 0;
+        $created_stamp = date('Y-m-d H:i:s');
 
         $customer = DB::table('infoCustomer')->where('CustomerID',$new_order['CustomerID'])->first();
 
@@ -42,6 +43,8 @@ class OrderController extends Controller
             'OrderID'=>'',
             'firstorder'=>(count($previous_orders)>0?0:1),
             'express'=>$new_order['express'],
+            'Status'=>'PENDING',
+            'created_at'=>$created_stamp,
         ];
 
         //Fields for in_store_collection
@@ -66,7 +69,7 @@ class OrderController extends Controller
                 'pickup_time'=>$new_order['isc_pickup_time'],
                 'pickup_timeslot'=>$new_order['isc_pickup_timeslot'],
                 'status'=>'NEW',
-                'created_at'=>date('Y-m-d H:i:s'),
+                'created_at'=>$created_stamp,
             ]);
         }
 

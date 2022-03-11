@@ -179,7 +179,7 @@ export default {
         item_id.value = route.params.item_id;
         const paths = ref([
             { name: 'All orders', route: 'LandingPage' },
-            { name: 'Order n°' + order_id.value, route: 'NewOrder' },
+            { name: 'Order n°' + order_id.value, route: 'DetailingItemList' },
             { name: 'Detailing item ' + item_id.value, route: 'DetailingItem' }
         ]);
         watch(() => itemDept.value, (current_val, previous_val) => {

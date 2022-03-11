@@ -12,7 +12,7 @@
    <section class="nodata p-2" v-if ="Customer.length == 0 && CustomerEmails.length == 0 && CustomerOrders.length == 0">
             <p v-if="!loader_running">we couldn't find any customers.</p>
   </section>
-  
+
      <ul  v-else class=" list-group-flush" style="background: #FFFFFF;cursor: default;" >
         <li class="list-group-item" v-if ="Customer.length > 0">
             <div class="content-wraper " style="padding-top: 31px;">
@@ -31,22 +31,22 @@
                               </div>
                             </div>
                             <div v-else>
-                         
+
                               <div class="phone body_small">--</div>
                             </div>
                        </div>
                       <div class="col-6">
-                             <b class ="body_regular">{{customer.EmailAddress}}</b>   
+                             <b class ="body_regular">{{customer.EmailAddress}}</b>
                        </div>
                        <div class="col-2" style="text-align: end;">
                             <tag   v-if="customer.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
                             <tag   v-else :name="'B2B'" ></tag>
                         </div>
-                     
-                     </div>                      
+
+                     </div>
                     </div>
                </li>
-              
+
              </ul>
         </li>
         <li class="list-group-item" v-if="CustomerEmails.length > 0">
@@ -76,22 +76,22 @@
                             <tag   v-if="customer.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
                             <tag   v-else :name="'B2B'" ></tag>
                          </div>
-                     </div>                      
+                     </div>
                     </div>
                </li>
              </ul>
         </li>
           <li class="list-group-item" v-if="CustomerOrders.length>0">
-             
+
              <div class="content-wraper">
                 <span class="subtitle col-6">Order</span>
-               
+
                 <a class="d-flex justify-content-end col-6 show-more"  @click="loadMore('search_order')" >Show more</a>
              </div>
-             <ul   class="list-group list-group-flush" > 
+             <ul   class="list-group list-group-flush" >
                 <li v-for ="(order,index) in CustomerOrders" :key="order">
                   <div class="container">
-                    <div class="row" @click="selectrow(order.id,index)">
+                    <div class="row" @click="selectrow(order.id,order.Status,index)">
                         <div class="col-3">
                          <span class="body_medium">{{order.Name.replace(',','').toLowerCase()}}</span>
                         </div>
@@ -101,7 +101,7 @@
                         <div class=" col-2">
                             <b class ="body_small">{{formatDate(order.DateDeliveryAsk)}}</b>
                         </div>
-                      
+
                         <div class=" col-2">
                             <tag  :name="order.Status" ></tag>
                         </div>
@@ -109,15 +109,15 @@
                             <tag   v-if="order.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
                             <tag   v-else :name="'B2B'" ></tag>
                          </div>
-                     </div>                      
-             
+                     </div>
+
 
                     </div>
                </li>
              </ul>
         </li>
-       
-       
+
+
      </ul>
 
  </div>
@@ -144,7 +144,7 @@
         DISPLAY_LOADER,
         HIDE_LOADER
 
-   
+
     } from "../../store/types/types";
     import {formatDate} from "../helpers/helpers";
     import {useStore} from 'vuex';
@@ -164,28 +164,41 @@ export default({
            const featureunavailable=((feature)=>{
                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:feature+' feature not yet implemented.',ttl:5,type:'success'});
             });
-    
+
       function clearSearch(){
          clear.value = null;
          showSearch.value = false;
          showbutton.value = false;
          show_loader.value= false;
        }
-             function selectrow(id,colname){
+         function selectrow(id,status,colname){
+               console.log(id,colname);
+
                showSearch.value = false;
                show_loader.value= false;
                 if(colname=='line_select') return;
-                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SELECT_CURRENT}`,id);
-                  router.push({
-                    name:'OrderDetails',
-                    params: {
-                        order_id:id,
-                    },
-                })
-            }
-        
 
-            function submit(e) { 
+                if(status=='PENDING'){
+                     router.push({
+                        name:'DetailingItemList',
+                        params: {
+                            order_id:id,
+                        },
+                    });
+
+                }else{
+                    store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SELECT_CURRENT}`,id);
+                    router.push({
+                        name:'OrderDetails',
+                        params: {
+                            order_id:id,
+                        },
+                    });
+                }
+            }
+
+
+            function submit(e) {
                showbutton.value = true;
                clearTimeout(timeout.value);
                timeout.value = setTimeout(function(){
@@ -203,26 +216,26 @@ export default({
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
                     });;
                 });
-               }  
+               }
               , 500)
             };
 
-      
+
 
            const Customer=computed(()=>{
                return store.getters[`${CUSTOMERLIST_MODULE}${CUSTOMER_GET_LIST}`];
-               
-               
+
+
             });
-         
+
             const CustomerEmails=computed(()=>{
                 return store.getters[`${CUSTOMERLIST_MODULE}${CUSTOMEREMAILS_GET_LIST}`];
             });
-           
+
              const CustomerOrders=computed(()=>{
-                 
+
                 return store.getters[`${CUSTOMERLIST_MODULE}${CUSTOMERORDERS_GET_LIST}`];
-            }); 
+            });
 
           function loadMore(tab){
                  store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
@@ -245,10 +258,10 @@ export default({
                 selectrow,
                 show_loader,
                 loadMore
-           
+
             }
         }
-        
+
 })
 </script>
 
@@ -257,8 +270,8 @@ export default({
 <style scoped>
 
 #icon{
-    background-image:url("/images/search.svg"); 
-    background-repeat: no-repeat; 
+    background-image:url("/images/search.svg");
+    background-repeat: no-repeat;
     background-position: 19px 10px;
 }
     .input-search{
@@ -328,9 +341,9 @@ export default({
     flex-direction: column;
     justify-content: center;
     }
-   
+
    .list-group-flush > .list-group-item {
-    border-width: 0 0 0;      
+    border-width: 0 0 0;
    }
    .content-wraper{
     border-bottom: 1px solid #C3C3C3;
@@ -340,7 +353,7 @@ export default({
     display: flex;
     align-items: center;
     line-height: 22px;
-    
+
    }
    .container{
     width: calc(100% - 87px);
@@ -357,7 +370,7 @@ export default({
     cursor: pointer;
    }
    ul
-{ 
+{
     border-radius: 5px;
     margin-top:14px;
     width:1099px;
@@ -379,7 +392,7 @@ li{
    background: rgba(212, 221, 247, 0.7);
    border-radius: 70px;
 }
- 
+
 input[type="search"]::-webkit-search-cancel-button {
   appearance: none;
     height: 27px;
@@ -387,7 +400,7 @@ input[type="search"]::-webkit-search-cancel-button {
     background-image: url(https://icon-library.com/images/close-icon-png-transparent/close-icon-png-transparent-29.jpg);
     background-repeat: no-repeat;
     background-size: 27px;
-}  
+}
  .nodata{
         background: #FFFFFF;
         min-height: 380px;
@@ -408,7 +421,7 @@ input[type="search"]::-webkit-search-cancel-button {
       left: 425px;
       top: 22px;
       color: white;
-    
+
     }
     .icon-close:before {
       background: white;
@@ -430,12 +443,12 @@ input[type="search"]::-webkit-search-cancel-button {
             width: auto !important;
             height: auto;
         }
-        
+
     .search{
     padding-left: 10px !important;
     padding-right: 10px !important;
     left:0px;
-  }  
+  }
   .position-absolute {
     left: 300px;
     top: 26px;
@@ -445,14 +458,14 @@ input[type="search"]::-webkit-search-cancel-button {
   width: 16px;
   left: 4px;
   top: 2px;
-} 
+}
 .icon-close:after {
   width: 16px;
   top: 2px;
   left: -2px;
- }  
+ }
     input::placeholder {
-            font-size: 12px;      
-    }  
+            font-size: 12px;
+    }
     }
 </style>
