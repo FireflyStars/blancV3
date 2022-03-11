@@ -31,7 +31,7 @@ const router = createRouter({
             path: '/assembly-home',
             name: 'Assembly',
             meta:{
-                authenticated: false
+                authenticated: true
             },
             component: Assembly,
             children:[
@@ -43,7 +43,7 @@ const router = createRouter({
                         // station: () => import('../components/assembly/StationItemDetail'),
                     },                    
                     meta:{
-                        authenticated:  false
+                        authenticated:  true
                     }
                 }
             ]            

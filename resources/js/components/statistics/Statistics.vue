@@ -4,8 +4,8 @@
             <main-header></main-header>
             <div class="row d-flex align-content-stretch align-items-stretch flex-row hmax" style="z-index: 100">
                 <side-bar></side-bar>
-                <div class="col main-view p-5">
-                    <h2>Statistics</h2>
+                <div class="col main-view p-0">
+                    <h2 class="ms-0">Statistics</h2>
                     <div class="container-fluid orderlist-tabs d-flex align-items-center">
                         <div class="orderlist-tab body_bold active">Sales</div>
                     </div>
@@ -16,327 +16,461 @@
                             </div>
                         </div>
                         <div class="row pb-4">
-                            <div class="col-sm-4">
-                                <div class="container-fluid col-12 bg-white py-4 mb-3">
-                                    <div class="row fw-bold">
-                                        <div class="col-6 p-0 text-nowrap">Total Sales (by channel)</div>
-                                        <div class="col-4 float-right">£{{ statistique.total_sales }} </div>
-                                        <i v-if="statistique.total_sales >= statistique.last_total_sales && statistique.last_total_sales > 0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                        <i v-else-if="statistique.last_total_sales && statistique.last_total_sales > 0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                        <div class="col-1 px-0 float-right" v-if="statistique.last_total_sales && statistique.last_total_sales > 0">{{ statistique.last_total_sales > 0 ? ((( statistique.total_sales*100 )/statistique.last_total_sales).toFixed(0) +'%' ) : '--'  }}</div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="row fst-itali">Stores</div>
-                                        <div class="row text-center">
-                                            <div class="first-bar col-3">£{{ statistique.mb }} </div>
-                                            <div class="second-bar col-3">£{{ statistique.nh }}</div>
-                                            <div class="third-bar col-3">£{{ statistique.ch }}</div>
-                                            <div class="fourth-bar col-3">£{{ statistique.sk }}</div>
+                            <div class="col-sm-3">
+                                <div class="container-fluid col-12 px-2 bg-white py-4 mb-3">
+                                    <div class="d-flex w-100 fw-bold flex-nowrap">
+                                        <div class="col-8 p-0 text-nowrap">Total Sales (by channel)</div>
+                                        <div class="col-2 float-right">£{{ stats.total_sales }} </div>
+                                        <div class="col-2 d-flex flex-nowrap" v-if="stats.total_sales >= stats.last_total_sales && stats.last_total_sales > 0 && stats.last_total_sales">
+                                            <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                            <span>{{ ( (stats.total_sales*100) / stats.last_total_sales ).toFixed(0) +'%' }}</span>
                                         </div>
-                                        <div class="row text-center">
+                                        <div class="col-2 d-flex flex-nowrap" v-if="stats.total_sales < stats.last_total_sales && stats.last_total_sales > 0 && stats.last_total_sales">
+                                            <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                            <span>{{ ( (stats.total_sales*100) / stats.last_total_sales ).toFixed(0) +'%' }}</span>
+                                        </div>
+                                        <div class="col-2 d-flex flex-nowrap" v-if="stats.last_total_sales == 0 && stats.last_total_sales">
+                                            --
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap w-100">
+                                        <div class="d-flex w-100 fst-itali">Stores</div>
+                                        <div class="d-flex w-100">
+                                            <div class="col-3 d-flex flex-nowrap justify-content-center" v-if="stats.mb >= stats.last_mb && stats.last_mb > 0 && stats.last_mb">
+                                                <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.mb*100) / stats.last_mb ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 d-flex flex-nowrap justify-content-center" v-if="stats.mb < stats.last_mb && stats.last_mb > 0 && stats.last_mb">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.mb*100) / stats.last_mb ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_mb == 0 && stats.last_mb && stats.mb ==0">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_mb == 0 && stats.last_mb && stats.mb !=0">
+                                                --
+                                            </div>
+
+                                            <div class="col-3 d-flex flex-nowrap justify-content-center" v-if="stats.nh >= stats.last_nh && stats.last_nh > 0 && stats.last_nh">
+                                                <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.nh*100) / stats.last_nh ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 d-flex flex-nowrap justify-content-center" v-if="stats.nh < stats.last_nh && stats.last_nh > 0 && stats.last_nh">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.nh*100) / stats.last_nh ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_nh == 0 && stats.last_nh && stats.nh ==0">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_nh == 0 && stats.last_nh && stats.nh !=0">
+                                                --
+                                            </div>
+
+                                            <div class="col-3 d-flex flex-nowrap justify-content-center" v-if="stats.ch >= stats.last_ch && stats.last_ch > 0 && stats.last_ch">
+                                                <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.ch*100) / stats.last_ch ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 d-flex flex-nowrap justify-content-center" v-if="stats.ch < stats.last_ch && stats.last_ch > 0 && stats.last_ch">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.ch*100) / stats.last_ch ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_ch == 0 && stats.last_ch && stats.ch ==0">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_ch == 0 && stats.last_ch && stats.ch !=0">
+                                                --
+                                            </div>                                            
+
+                                            <div class="col-3 d-flex flex-nowrap justify-content-center" v-if="stats.sk >= stats.last_sk && stats.last_sk > 0 && stats.last_sk">
+                                                <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.sk*100) / stats.last_sk ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 d-flex flex-nowrap justify-content-center" v-if="stats.sk < stats.last_sk && stats.last_sk > 0 && stats.last_sk">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.sk*100) / stats.last_sk ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_sk == 0 && stats.last_sk && stats.sk ==0">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_sk == 0 && stats.last_sk && stats.sk !=0">
+                                                --
+                                            </div>
+                                        </div>
+                                        <div class="d-flex w-100 text-center">
+                                            <div class="first-bar col-3">£{{ stats.mb }} </div>
+                                            <div class="second-bar col-3">£{{ stats.nh }}</div>
+                                            <div class="third-bar col-3">£{{ stats.ch }}</div>
+                                            <div class="fourth-bar col-3">£{{ stats.sk }}</div>
+                                        </div>
+                                        <div class="d-flex w-100 text-center">
                                             <div class="col-3">MB</div>
                                             <div class="col-3">NH</div>
                                             <div class="col-3">CH</div>
                                             <div class="col-3">SK</div>
                                         </div>
                                     </div>
-                                    <div class="row">
-                                        <div class="row fst-itali">Deliveries</div>
-                                        <div class="row text-center">
-                                            <div class="first-bar col-6">£{{ statistique.b2c }}</div>
-                                            <div class="fourth-bar col-6">£{{ statistique.b2b }}</div>
+                                    <div class="d-flex flex-wrap w-100">
+                                        <div class="d-flex w-100 fst-itali">Deliveries</div>
+                                        <div class="d-flex w-100 text-center">
+                                            <div class="col-6 d-flex flex-nowrap" v-if="stats.b2c >= stats.last_b2c && stats.last_b2c > 0 && stats.last_b2c">
+                                                <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.b2c*100) / stats.last_b2c ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-6 d-flex flex-nowrap" v-if="stats.b2c < stats.last_b2c && stats.last_b2c > 0 && stats.last_b2c">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.b2c*100) / stats.last_b2c ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-6 text-center" v-if="stats.last_b2c == 0 && stats.last_b2c && stats.b2c ==0">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="col-6 text-center" v-if="stats.last_b2c == 0 && stats.last_b2c && stats.b2c !=0">
+                                                --
+                                            </div>                                            
+
+                                            <div class="col-6 d-flex flex-nowrap" v-if="stats.b2b >= stats.last_b2b && stats.last_b2b > 0 && stats.last_b2b">
+                                                <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.b2b*100) / stats.last_b2b ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-6 d-flex flex-nowrap" v-if="stats.b2b < stats.last_b2b && stats.last_b2b > 0 && stats.last_b2b">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.b2b*100) / stats.last_b2b ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-6 text-center" v-if="stats.last_b2b == 0 && stats.last_b2b && stats.b2b ==0">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="col-6 text-center" v-if="stats.last_b2b == 0 && stats.last_b2b && stats.b2b !=0">
+                                                --
+                                            </div>
                                         </div>
-                                        <div class="row text-center">
+                                        <div class="d-flex w-100 text-center">
+                                            <div class="first-bar col-6">£{{ stats.b2c }}</div>
+                                            <div class="fourth-bar col-6">£{{ stats.b2b }}</div>
+                                        </div>
+                                        <div class="d-flex w-100 text-center">
                                             <div class="col-6">B2C</div>
                                             <div class="col-6">B2B</div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="container-fluid col-12 bg-white py-4 mb-3">
-                                    <div class="row body_bold">
-                                        <div class="col-8">Average Order Value</div>
-                                        <div class="col-2 float-right">£{{ statistique.avg_total_order }}</div>
-                                        <i v-if="statistique.avg_total_order >= statistique.last_avg_total_order && statistique.last_avg_total_order && statistique.last_avg_total_order > 0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                        <i v-else-if="statistique.last_avg_total_order && statistique.last_avg_total_order > 0" class="col-1 bi bi-arrow-down text-danger px-0 width-auto"></i>
-                                        <div class="col-1 px-0 float-right" v-if="statistique.last_avg_total_order && statistique.last_avg_total_order > 0">{{ statistique.last_avg_total_order > 0 ? ((statistique.avg_total_order*100)/statistique.last_avg_total_order).toFixed(0) +'%' : '--' }}</div>
+                                <div class="container-fluid col-12 px-2 bg-white py-4 mb-3">
+                                    <div class="d-flex w-100 body_bold">
+                                        <div class="col-8 text-nowrap">Average Order Value</div>
+                                        <div class="col-2 float-right">£{{ stats.avg_total_order }}</div>
+                                        <div class="col-2 d-flex flex-nowrap" v-if="stats.avg_total_order >= stats.last_avg_total_order && stats.last_avg_total_order > 0 && stats.last_avg_total_order">
+                                            <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                            <span>{{ ( (stats.avg_total_order*100) / stats.last_avg_total_order ).toFixed(0) +'%' }}</span>
+                                        </div>
+                                        <div class="col-2 d-flex flex-nowrap" v-if="stats.avg_total_order < stats.last_avg_total_order && stats.last_avg_total_order > 0 && stats.last_avg_total_order">
+                                            <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                            <span>{{ ( (stats.avg_total_order*100) / stats.last_avg_total_order ).toFixed(0) +'%' }}</span>
+                                        </div>
+                                        <div class="col-2 text-center" v-if="stats.last_avg_total_order == 0 && stats.last_avg_total_order && stats.avg_total_order ==0">
+                                            <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                            <span>0%</span>
+                                        </div>
+                                        <div class="col-2 text-center" v-if="stats.last_avg_total_order == 0 && stats.last_avg_total_order && stats.avg_total_order !=0">
+                                            --
+                                        </div>
                                     </div>
-                                    <div class="row">
-                                        <div class="row">
+                                    <div class="d-flex w-100 flex-wrap">
+                                        <div class="d-flex w-100">
                                             <div class="col-5">Stores</div>
-                                            <div class="col-4 float-right width-fit-content">£{{ statistique.avg_store_order }}</div>
-                                            <i v-if="statistique.avg_store_order >= statistique.last_avg_store_order && statistique.last_avg_store_order && statistique.last_avg_store_order > 0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                            <i v-else-if="statistique.last_avg_store_order && statistique.last_avg_store_order > 0" class="col-1 bi bi-arrow-down text-danger px-0 width-auto"></i>
-                                            <div class="col-1 px-0 float-right" v-if="statistique.last_avg_store_order && statistique.last_avg_store_order > 0">{{ statistique.last_avg_store_order > 0 ? ((statistique.avg_store_order*100)/statistique.last_avg_store_order).toFixed(0) + '%' : '--' }}</div>
+                                            <div class="col-4 float-right width-fit-content">£{{ stats.avg_store_order }}</div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.avg_store_order >= stats.last_avg_store_order && stats.last_avg_store_order > 0 && stats.last_avg_store_order">
+                                                <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.avg_store_order*100) / stats.last_avg_store_order ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.avg_store_order < stats.last_avg_store_order && stats.last_avg_store_order > 0 && stats.last_avg_store_order">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.avg_store_order*100) / stats.last_avg_store_order ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_avg_store_order == 0 && stats.last_avg_store_order && stats.avg_store_order ==0">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_avg_store_order == 0 && stats.last_avg_store_order && stats.avg_store_order !=0">
+                                                --
+                                            </div>
                                         </div>
-                                        <div class="row">
+                                        <div class="d-flex w-100">
                                             <div class="col-5">Delivery</div>
-                                            <div class="col-4 float-right width-fit-content">£{{ statistique.avg_delivery_order }}</div>
-                                            <i v-if="statistique.avg_delivery_order >= statistique.last_avg_delivery_order && statistique.last_avg_delivery_order && statistique.last_avg_delivery_order > 0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                            <i v-else-if="statistique.last_avg_delivery_order && statistique.last_avg_delivery_order > 0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                            <div class="col-1 px-0 float-right" v-if="statistique.last_avg_delivery_order && statistique.last_avg_delivery_order > 0">{{ statistique.last_avg_delivery_order > 0 ? ((statistique.avg_delivery_order*100)/statistique.last_avg_delivery_order).toFixed(0)+'%' : '--' }}</div>
+                                            <div class="col-4 float-right width-fit-content">£{{ stats.avg_delivery_order }}</div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.avg_delivery_order >= stats.last_avg_delivery_order && stats.last_avg_delivery_order > 0 && stats.last_avg_delivery_order">
+                                                <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.avg_delivery_order*100) / stats.last_avg_delivery_order ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.avg_delivery_order < stats.last_avg_delivery_order && stats.last_avg_delivery_order > 0 && stats.last_avg_delivery_order">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.avg_delivery_order*100) / stats.last_avg_delivery_order ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_avg_delivery_order == 0 && stats.last_avg_delivery_order && stats.avg_delivery_order ==0">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_avg_delivery_order == 0 && stats.last_avg_delivery_order && stats.avg_delivery_order !=0">
+                                                --
+                                            </div>                                            
                                         </div>
-                                        <div class="row">
+                                        <div class="d-flex w-100">
                                             <div class="col-5">B2B</div>
-                                            <div class="col-4 float-right width-fit-content">£{{ statistique.avg_b2b_order }}</div>
-                                            <i v-if="statistique.avg_b2b_order >= statistique.last_avg_b2b_order && statistique.last_avg_b2b_order && statistique.last_avg_b2b_order > 0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                            <i v-else-if="statistique.last_avg_b2b_order && statistique.last_avg_b2b_order > 0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                            <div class="col-1 px-0 float-right" v-if="statistique.last_avg_b2b_order && statistique.last_avg_b2b_order > 0">{{ statistique.last_avg_b2b_order > 0 ? ((statistique.avg_b2b_order*100)/statistique.last_avg_b2b_order).toFixed(0)+'%' :'--' }}</div>
+                                            <div class="col-4 float-right width-fit-content">£{{ stats.avg_b2b_order }}</div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.avg_b2b_order >= stats.last_avg_b2b_order && stats.last_avg_b2b_order > 0 && stats.last_avg_b2b_order">
+                                                <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.avg_b2b_order*100) / stats.last_avg_b2b_order ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.avg_b2b_order < stats.last_avg_b2b_order && stats.last_avg_b2b_order > 0 && stats.last_avg_b2b_order">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.avg_b2b_order*100) / stats.last_avg_b2b_order ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_avg_b2b_order == 0 && stats.last_avg_b2b_order && stats.avg_b2b_order ==0">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_avg_b2b_order == 0 && stats.last_avg_b2b_order && stats.avg_b2b_order !=0">
+                                                --
+                                            </div>
                                         </div>
-                                        <div class="row">
+                                        <div class="d-flex w-100">
                                             <div class="col-5">B2C</div>
-                                            <div class="col-4 float-right width-fit-content">£{{ statistique.avg_b2c_order }}</div>
-                                            <i v-if="statistique.avg_b2c_order >= statistique.last_avg_b2c_order && statistique.last_avg_b2c_order && statistique.last_avg_b2c_order > 0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                            <i v-else-if="statistique.last_avg_b2c_order && statistique.last_avg_b2c_order > 0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                            <div class="col-1 px-0 float-right" v-if="statistique.last_avg_b2c_order && statistique.last_avg_b2c_order > 0">{{ statistique.last_avg_b2c_order > 0 ? ((statistique.avg_b2c_order*100)/statistique.last_avg_b2c_order).toFixed(0)+'%' : '--' }}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="container-fluid col-12 bg-white py-4 mb-3">
-                                    <div class="row body_bold">
-                                        <div class="col-8">Total Items (by service)</div>
-                                        <div class="col-2 float-right">£{{ statistique.service_items_total }}</div>
-                                        <i v-if="statistique.service_items_total >= statistique.last_service_items_total && statistique.last_service_items_total && statistique.last_service_items_total > 0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                        <i v-else-if="statistique.last_service_items_total && statistique.last_service_items_total > 0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                        <div class="col-1 px-0 float-right" v-if="statistique.last_service_items_total > 0">{{ statistique.last_service_items_total > 0 ? ((statistique.service_items_total*100)/statistique.last_service_items_total).toFixed(0) +'%' : '--' }}</div>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="row chart-title-row">
-                                            <div class="col-6 text-align-right">Services</div>
-                                            <div class="col-6 text-align-center pl-0">Today</div>
-                                        </div>
-                                        <div
-                                            v-for="(item, i) in statistique.service_items"
-                                            class="row chart-row align-items-center"
-                                            id="stats_today"
-                                            :key="i"
-                                        >
-                                            <div
-                                                class="col-6 text-right each-dept-name pl-0"
-                                            >{{ item.DepartmentName }}</div>
-                                            <div class="col-6">
-                                                <div class="row">
-                                                    <!-- <div
-                                                        v-if="item.total > 0"
-                                                        class="chart-bar"
-                                                        :style="{
-                                                            width: parseInt(item.total) * 0.01 + '%',
-                                                            background: '#e7e7e7',
-                                                        }"
-                                                    ></div> -->
-                                                    <div
-                                                        class="w-100 today-count text-center"
-                                                        :class="{' pl-0': item.total === 0,}"
-                                                    >{{ item.total.toFixed(0) }}</div>
-                                                </div>
+                                            <div class="col-4 float-right width-fit-content">£{{ stats.avg_b2c_order }}</div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.avg_b2c_order >= stats.last_avg_b2c_order && stats.last_avg_b2c_order > 0 && stats.last_avg_b2c_order">
+                                                <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.avg_b2c_order*100) / stats.last_avg_b2c_order ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.avg_b2c_order < stats.last_avg_b2c_order && stats.last_avg_b2c_order > 0 && stats.last_avg_b2c_order">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.avg_b2c_order*100) / stats.last_avg_b2c_order ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_avg_b2c_order == 0 && stats.last_avg_b2c_order && stats.avg_b2c_order ==0">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_avg_b2c_order == 0 && stats.last_avg_b2c_order && stats.avg_b2c_order !=0">
+                                                --
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-sm-4">
-                                <div class="container-fluid col-12 bg-white py-4 mb-3">
-                                    <div class="row fw-bold">
-                                        <div class="col-8 p-0 text-nowrap">Sales from 1st time Customers</div>
-                                        <div class="col-2 float-right">£{{ statistique.first_time_total_sales }}</div>
-                                        <i v-if="statistique.first_time_total_sales >= statistique.last_first_time_total_sales && statistique.last_first_time_total_sales && statistique.last_first_time_total_sales > 0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                        <i v-else-if="statistique.last_first_time_total_sales && statistique.last_first_time_total_sales > 0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                        <div class="col-1 px-0 float-right" v-if="statistique.last_first_time_total_sales && statistique.last_first_time_total_sales > 0">{{ statistique.last_first_time_total_sales > 0 ? ((statistique.first_time_total_sales*100)/statistique.last_first_time_total_sales).toFixed(0)+'%' :'--' }}</div>
+                            <div class="col-sm-6 p-0">
+                                <div class="container-fluid col-12 px-2 bg-white py-4 mb-3">
+                                    <div class="row body_bold">
+                                        <div class="col-4">Services</div>
+                                        <div class="col-4 text-center">Sales (£)</div>
+                                        <div class="col-4 text-center">Sales (# items)</div>
                                     </div>
-
-                                    <div class="row">
-                                        <div class="row fw-italic">Stores</div>
-                                        <div class="row text-center">
-                                            <div class="first-bar col-3">£{{ statistique.first_time_mb }}</div>
-                                            <div class="second-bar col-3">£{{ statistique.first_time_nh }}</div>
-                                            <div class="third-bar col-3">£{{ statistique.first_time_ch }}</div>
-                                            <div class="fourth-bar col-3">£{{ statistique.first_time_sk }}</div>
+                                    <div class="row ">
+                                        <div class="col-4"></div>
+                                        <div class="col-4 d-flex">
+                                            <div class="col-6">Stores</div>
+                                            <div class="col-6">Deliveries</div>
                                         </div>
-                                        <div class="row text-center">
-                                            <div class="col-3">MB</div>
-                                            <div class="col-3">NH</div>
-                                            <div class="col-3">CH</div>
-                                            <div class="col-3">SK</div>
+                                        <div class="col-4 d-flex">
+                                            <div class="col-6">Stores</div>
+                                            <div class="col-6">Deliveries</div>
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="row fw-italic">Deliveries</div>
-                                        <div class="row">
-                                            <div class="first-bar col-4">£{{ statistique.first_time_app }}</div>
-                                            <div class="second-bar col-4">£200{{ statistique.first_time_normal }}</div>
-                                            <div class="fourth-bar col-4">£{{ statistique.first_time_b2b }}</div>
+                                        <div class="col-4 border-bottom">
+                                            <p class="mb-0" v-for="(item, index) in stats.dep_list" :key="index">
+                                                {{ item.DepartmentName }}
+                                            </p>
                                         </div>
-                                        <div class="row text-center">
-                                            <div class="col-4">APP</div>
-                                            <div class="col-4">CC</div>
-                                            <div class="col-4">B2B</div>
+                                        <div class="col-4 d-flex border-bottom">
+                                            <div class="col-6">
+                                                <p class="mb-0" v-for="(item, index) in stats.sale_store_by_dep" :key="index">
+                                                    {{ item }}
+                                                </p>
+                                            </div>
+                                            <div class="col-6">
+                                                <p class="mb-0" v-for="(item, index) in stats.sale_delivery_by_dep" :key="index">
+                                                    {{ item }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 d-flex border-bottom">
+                                            <div class="col-6">
+                                                <p class="mb-0" v-for="(item, index) in stats.item_store_by_dep" :key="index">
+                                                    {{ item }}
+                                                </p>
+                                            </div>
+                                            <div class="col-6">
+                                                <p class="mb-0" v-for="(item, index) in stats.item_delivery_by_dep" :key="index">
+                                                    {{ item }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-4 fw-bold">
+                                            Total
+                                        </div>
+                                        <div class="col-4 d-flex">
+                                            <div class="col-6">{{ stats.total_sale_store_by_dep }}</div>
+                                            <div class="col-6">{{ stats.total_sale_delivery_by_dep }}</div>
+                                        </div>
+                                        <div class="col-4 d-flex">
+                                            <div class="col-6">{{ stats.total_item_store_by_dep }}</div>
+                                            <div class="col-6">{{ stats.total_item_delivery_by_dep }}</div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="container-fluid col-12 bg-white py-4 mb-3">
-                                    <div class="row">
-                                        <div class="row">
-                                            <div class="col-8 p-0 text-nowrap">Booking</div>
-                                            <div class="col-2 float-right">£{{ statistique.total_booking }}</div>
-                                            <i v-if="statistique.total_booking >= statistique.last_total_booking && statistique.last_total_booking && statistique.last_total_booking > 0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                            <i v-else-if="statistique.last_total_booking && statistique.last_total_booking > 0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                            <div class="col-1 px-0 float-right" v-if="statistique.last_total_booking && statistique.last_total_booking > 0">{{ statistique.last_total_booking > 0 ? ((statistique.total_booking*100)/statistique.last_total_booking).toFixed(0)+'%' : '--' }}</div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="container-fluid col-12 px-2 bg-white py-4 mb-3">
+                                    <div class="d-flex w-100 flex-wrap">
+                                        <div class="d-flex w-100">
+                                            <div class="col-6 p-0 text-nowrap">Booking</div>
+                                            <div class="col-3 float-right">{{ stats.total_booking }}</div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.total_booking >= stats.last_total_booking && stats.last_total_booking > 0 && stats.last_total_booking">
+                                                <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.total_booking*100) / stats.last_total_booking ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.total_booking < stats.last_total_booking && stats.last_total_booking > 0 && stats.last_total_booking">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.total_booking*100) / stats.last_total_booking ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_total_booking == 0 && stats.last_total_booking && stats.total_booking ==0">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_total_booking == 0 && stats.last_total_booking && stats.total_booking !=0">
+                                                --
+                                            </div>
                                         </div>
-                                        <div class="row text-center">
-                                            <div class="first-bar col-4">{{ statistique.app_booking }}</div>
-                                            <div class="second-bar col-4">{{ statistique.pos_booking }}</div>
-                                            <div class="fourth-bar col-4">{{ statistique.rec_booking }}</div>
+                                        <div class="d-flex w-100 text-center">
+                                            <div class="first-bar col-4">{{ stats.app_booking }}</div>
+                                            <div class="second-bar col-4">{{ stats.pos_booking }}</div>
+                                            <div class="fourth-bar col-4">{{ stats.rec_booking }}</div>
                                         </div>
-                                        <div class="row text-center">
+                                        <div class="d-flex w-100 text-center">
                                             <div class="col-4">APP</div>
                                             <div class="col-4">POS</div>
                                             <div class="col-4">RECURING</div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="container-fluid col-12 bg-white py-4 mb-3">
-                                    <div class="row body_bold">
-                                        <div class="col-8">New Sign Ups</div>
-                                        <div class="col-2 float-right width-fit-content">{{ statistique.total_new_signup }}</div>
-                                        <i v-if="statistique.total_new_signup >= statistique.last_total_new_signup && statistique.last_total_new_signup && statistique.last_total_new_signup  > 0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                        <i v-else-if="statistique.last_total_new_signup && statistique.last_total_new_signup > 0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                        <div class="col-1 px-0 float-right" v-if="statistique.last_total_new_signup && statistique.last_total_new_signup > 0">{{ statistique.last_total_new_signup > 0 ? ((statistique.total_new_signup*100)/statistique.last_total_new_signup).toFixed(0)+'%' : '--' }}</div>
+                                <div class="container-fluid col-12 px-2 bg-white py-4 mb-3">
+                                    <div class="d-flex w-100 body_bold">
+                                        <div class="col-6">New Sign Ups</div>
+                                        <div class="col-3 float-right width-fit-content">{{ stats.total_new_signup }}</div>
+                                        <div class="col-3 d-flex flex-nowrap" v-if="stats.total_new_signup >= stats.last_total_new_signup && stats.last_total_new_signup > 0 && stats.last_total_new_signup">
+                                            <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                            <span>{{ ( (stats.total_new_signup*100) / stats.last_total_new_signup ).toFixed(0) +'%' }}</span>
+                                        </div>
+                                        <div class="col-3 d-flex flex-nowrap" v-if="stats.total_new_signup < stats.last_total_new_signup && stats.last_total_new_signup > 0 && stats.last_total_new_signup">
+                                            <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                            <span>{{ ( (stats.total_new_signup*100) / stats.last_total_new_signup ).toFixed(0) +'%' }}</span>
+                                        </div>
+                                        <div class="col-3 text-center" v-if="stats.last_total_new_signup == 0 && stats.last_total_new_signup && stats.total_new_signup ==0">
+                                            <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                            <span>0%</span>
+                                        </div>
+                                        <div class="col-3 text-center" v-if="stats.last_total_new_signup == 0 && stats.last_total_new_signup && stats.total_new_signup !=0">
+                                            --
+                                        </div>                                        
                                     </div>
-                                    <div class="row">
-                                        <div class="row">
-                                            <div class="col-5">Stores</div>
-                                            <div class="col-2 float-right width-fit-content">{{ statistique.stores_new_signup }}</div>
-                                            <i v-if="statistique.stores_new_signup >= statistique.last_stores_new_signup && statistique.last_stores_new_signup && statistique.last_stores_new_signup > 0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                            <i v-else-if="statistique.last_stores_new_signup && statistique.last_stores_new_signup > 0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                            <div class="col-1 px-0 float-right" v-if="statistique.last_stores_new_signup && statistique.last_stores_new_signup > 0">{{ statistique.last_stores_new_signup >0 ? ((statistique.stores_new_signup*100)/statistique.last_stores_new_signup).toFixed(0) +'%' : '--' }}</div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-5">Delivery</div>
-                                            <div class="col-2 float-right width-fit-content">{{ statistique.delivery_new_signup }}</div>
-                                            <i v-if="statistique.delivery_new_signup >= statistique.last_delivery_new_signup" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                            <i v-else-if="statistique.last_delivery_new_signup && statistique.last_delivery_new_signup > 0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                            <div class="col-1 px-0 float-right" v-if="statistique.last_delivery_new_signup && statistique.last_delivery_new_signup > 0">{{ statistique.last_delivery_new_signup > 0 ? ((statistique.delivery_new_signup*100)/statistique.last_delivery_new_signup).toFixed(0) +'%' : '--'}}</div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-5">B2B</div>
-                                            <div class="col-2 float-right width-fit-content">{{ statistique.b2b_new_signup }}</div>
-                                            <i v-if="statistique.b2b_new_signup >= statistique.last_b2b_new_signup && statistique.last_b2b_new_signup && statistique.last_b2b_new_signup> 0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                            <i v-else-if="statistique.last_b2b_new_signup && statistique.last_b2b_new_signup> 0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                            <div class="col-1 px-0 float-right" v-if="statistique.last_b2b_new_signup && statistique.last_b2b_new_signup> 0">{{ statistique.last_b2b_new_signup > 0 ? ((statistique.b2b_new_signup*100)/statistique.last_b2b_new_signup).toFixed(0)+'%' : '--' }}</div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-5">B2C</div>
-                                            <div class="col-2 float-right width-fit-content">{{ statistique.b2c_new_signup }}</div>
-                                            <i v-if="statistique.b2c_new_signup >= statistique.last_b2c_new_signup && statistique.last_b2c_new_signup && statistique.last_b2c_new_signup > 0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                            <i v-else-if="statistique.last_b2c_new_signup && statistique.last_b2c_new_signup > 0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                            <div class="col-1 px-0 float-right" v-if="statistique.last_b2c_new_signup && statistique.last_b2c_new_signup > 0">{{ statistique.last_b2c_new_signup > 0 ? ((statistique.b2c_new_signup*100)/statistique.last_b2c_new_signup).toFixed(0) + '%' : '--'}}</div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-5">APP</div>
-                                            <div class="col-2 float-right width-fit-content">{{ statistique.app_new_signup }}</div>
-                                            <i v-if="statistique.app_new_signup >= statistique.last_app_new_signup && statistique.last_app_new_signup && statistique.last_app_new_signup > 0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                            <i v-else-if="statistique.last_app_new_signup && statistique.last_app_new_signup > 0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                            <div class="col-1 px-0 float-right" v-if="statistique.last_app_new_signup && statistique.last_app_new_signup > 0">{{ statistique.last_app_new_signup > 0 ? ((statistique.app_new_signup*100)/statistique.last_app_new_signup).toFixed(0) +'%' : '--' }}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container-stat position-relative mt-10">
-                        <div class="row pb4">
-                            <div class="col-sm-8">
-                                <div class="container-fluid col-12 bg-white py-4 mb-3">
-                                    <div class="row body_bold">
-                                        <div class="col-8">Total Items (by service)</div>
-                                        <div class="col-2 float-right">£{{ statistique.services_group_total }}</div>
-                                        <i v-if="statistique.services_group_total >= statistique.last_services_group_total && statistique.last_services_group_total && statistique.last_services_group_total> 0" class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                        <i v-else-if="statistique.last_services_group_total && statistique.last_services_group_total> 0" class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                        <div class="col-1 px-0 float-right" v-if="statistique.last_services_group_total && statistique.last_services_group_total > 0">{{ statistique.last_services_group_total > 0 ? ((statistique.services_group_total*100)/statistique.last_services_group_total).toFixed(0)+'%' : '--' }}</div>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="row chart-title-row">
-                                            <div class="col-2"></div>
-                                            <div class="col-4 pl-0">TOTAL</div>
-                                            <div class="col-2 text-align-center pl-0">Stores</div>
-                                            <div class="col-2 text-align-center pl-0">App</div>
-                                            <div class="col-2 text-align-center pl-0">B2B</div>
-                                        </div>
-                                        <div
-                                            v-for="(group, i) in statistique.services_group"
-                                            class="row chart-row align-items-center"
-                                            id="stats_today"
-                                            :key="i"
-                                        >
-                                            <div
-                                                class="col-2 text-right each-dept-name pl-0"
-                                            >{{ group.DepartmentName }}</div>
-                                            <div class="col-4">
-                                                <div class="row">
-                                                    <!-- <div
-                                                        v-if="a > 0"
-                                                        class="chart-bar"
-                                                        :style="{
-                                                            width: parseInt(a) * parseFloat(width_scale) +'%',
-                                                            background: top_3_today[i]? top_3_today[i]: '#e7e7e7',
-                                                        }"
-                                                    ></div> -->
-                                                    <!-- <div
-                                                        class="col-2 today-count"
-                                                        :class="{' pl-0': group.total === 0,}"
-                                                    >{{  }}</div> -->
-                                                </div>
+                                    <div class="d-flex w-100 flex-wrap">
+                                        <div class="d-flex w-100">
+                                            <div class="col-6">Stores</div>
+                                            <div class="col-3 float-right width-fit-content">{{ stats.stores_new_signup }}</div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.stores_new_signup >= stats.last_stores_new_signup && stats.last_stores_new_signup > 0 && stats.last_stores_new_signup">
+                                                <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.stores_new_signup*100) / stats.last_stores_new_signup ).toFixed(0) +'%' }}</span>
                                             </div>
-                                            <div
-                                                class="col-2 text-align-center each-dept-name pl-0"
-                                            >{{ group.total.toFixed(0) }}</div>
-                                            <div
-                                                class="col-2 text-align-center each-dept-name pl-0"
-                                            >{{ group.total.toFixed(0) }}</div>
-                                            <div
-                                                class="col-2 text-align-center each-dept-name pl-0"
-                                            >{{ group.total.toFixed(0) }}</div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.stores_new_signup < stats.last_stores_new_signup && stats.last_stores_new_signup > 0 && stats.last_stores_new_signup">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.stores_new_signup*100) / stats.last_stores_new_signup ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_stores_new_signup == 0 && stats.last_stores_new_signup && stats.stores_new_signup ==0">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_stores_new_signup == 0 && stats.last_stores_new_signup && stats.stores_new_signup !=0">
+                                                --
+                                            </div>                                            
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-4 d-none">
-                                <div class="container-fluid col-12 bg-white py-4 mb-3">
-                                    <div class="row body_bold">
-                                        <div class="col-8">Key figures</div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="row">
-                                            <div class="col-5">YoY sales Growth</div>
-                                            <div class="col-3 float-right width-fit-content">22</div>
-                                            <!-- <i class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                            <div class="col-2 px-0 float-right">50%</div> -->
+                                        <div class="d-flex w-100">
+                                            <div class="col-6">Delivery</div>
+                                            <div class="col-3 float-right width-fit-content">{{ stats.delivery_new_signup }}</div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.delivery_new_signup >= stats.last_delivery_new_signup && stats.last_delivery_new_signup > 0 && stats.last_delivery_new_signup">
+                                                <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.delivery_new_signup*100) / stats.last_delivery_new_signup ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.delivery_new_signup < stats.last_delivery_new_signup && stats.last_delivery_new_signup > 0 && stats.last_delivery_new_signup">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.delivery_new_signup*100) / stats.last_delivery_new_signup ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_delivery_new_signup == 0 && stats.last_delivery_new_signup && stats.delivery_new_signup ==0">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_delivery_new_signup == 0 && stats.last_delivery_new_signup && stats.delivery_new_signup !=0">
+                                                --
+                                            </div>
                                         </div>
-                                        <div class="row">
-                                            <div class="col-5">CLV</div>
-                                            <div class="col-3 float-right width-fit-content">£136</div>
-                                            <!-- <i class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                            <div class="col-2 px-0 float-right">50%</div> -->
+                                        <div class="d-flex w-100">
+                                            <div class="col-6">B2B</div>
+                                            <div class="col-3 float-right width-fit-content">{{ stats.b2b_new_signup }}</div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.b2b_new_signup >= stats.last_b2b_new_signup && stats.last_b2b_new_signup > 0 && stats.last_b2b_new_signup">
+                                                <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.b2b_new_signup*100) / stats.last_b2b_new_signup ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.b2b_new_signup < stats.last_b2b_new_signup && stats.last_b2b_new_signup > 0 && stats.last_b2b_new_signup">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.b2b_new_signup*100) / stats.last_b2b_new_signup ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_b2b_new_signup == 0 && stats.last_b2b_new_signup && stats.b2b_new_signup ==0">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_b2b_new_signup == 0 && stats.last_b2b_new_signup && stats.b2b_new_signup !=0">
+                                                --
+                                            </div>                                            
                                         </div>
-                                        <div class="row">
-                                            <div class="col-5">CAC</div>
-                                            <div class="col-3 float-right width-fit-content">£10</div>
-                                            <!-- <i class="col-1 bi bi-arrow-up green px-0 width-auto"></i>
-                                            <div class="col-2 px-0 float-right">50%</div> -->
+                                        <div class="d-flex w-100">
+                                            <div class="col-6">B2C</div>
+                                            <div class="col-3 float-right width-fit-content">{{ stats.b2c_new_signup }}</div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.b2c_new_signup >= stats.last_b2c_new_signup && stats.last_b2c_new_signup > 0 && stats.last_b2c_new_signup">
+                                                <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.b2c_new_signup*100) / stats.last_b2c_new_signup ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.b2c_new_signup < stats.last_b2c_new_signup && stats.last_b2c_new_signup > 0 && stats.last_b2c_new_signup">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.b2c_new_signup*100) / stats.last_b2c_new_signup ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_b2c_new_signup == 0 && stats.last_b2c_new_signup && stats.b2c_new_signup ==0">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_b2c_new_signup == 0 && stats.last_b2c_new_signup && stats.b2c_new_signup !=0">
+                                                --
+                                            </div>                                            
                                         </div>
-                                        <div class="row">
-                                            <div class="col-5">Total cust.</div>
-                                            <div class="col-3 float-right width-fit-content">23,000</div>
-                                            <!-- <i class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                            <div class="col-2 px-0 float-right">50%</div> -->
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-5">Total active cust.</div>
-                                            <div class="col-3 float-right width-fit-content">15,000</div>
-                                            <!-- <i class="col-1 bi bi-arrow-down red px-0 width-auto"></i>
-                                            <div class="col-2 px-0 float-right">50%</div> -->
+                                        <div class="d-flex w-100">
+                                            <div class="col-6">APP</div>
+                                            <div class="col-3 float-right width-fit-content">{{ stats.app_new_signup }}</div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.app_new_signup >= stats.last_app_new_signup && stats.last_app_new_signup > 0 && stats.last_app_new_signup">
+                                                <i class="bi bi-arrow-up green px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.app_new_signup*100) / stats.last_app_new_signup ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 d-flex flex-nowrap" v-if="stats.app_new_signup < stats.last_app_new_signup && stats.last_app_new_signup > 0 && stats.last_app_new_signup">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>{{ ( (stats.app_new_signup*100) / stats.last_app_new_signup ).toFixed(0) +'%' }}</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_app_new_signup == 0 && stats.last_app_new_signup && stats.app_new_signup ==0">
+                                                <i class="bi bi-arrow-down red px-0 width-auto"></i> &nbsp;
+                                                <span>0%</span>
+                                            </div>
+                                            <div class="col-3 text-center" v-if="stats.last_app_new_signup == 0 && stats.last_app_new_signup && stats.app_new_signup !=0">
+                                                --
+                                            </div>                                            
                                         </div>
                                     </div>
                                 </div>
@@ -370,7 +504,7 @@ export default {
     components: { SideBar, MainHeader, StatisticsFilters },
     setup(props,context){
         const store = useStore();
-        const statistique = ref({});
+        const stats = ref({});
         const stats_today = ref({});
         const top_3_today = ref({});
         const width_scale = ref(0);
@@ -395,10 +529,10 @@ export default {
             store.dispatch(`${STATISTICS_MODULE}${STATISTICS_LOAD_LIST}`, current_val)
                 .then((response) => {
                     console.log(response.data);
-                    statistique.value = response.data.statistique;
-                    // stats_today.value = response.data.statistique.stats_today;
-                    // top_3_today.value = response.data.statistique.top_3_today;
-                    // width_scale.value = response.data.statistique.scale;
+                    stats.value = response.data.stats;
+                    // stats_today.value = response.data.stats.stats_today;
+                    // top_3_today.value = response.data.stats.top_3_today;
+                    // width_scale.value = response.data.stats.scale;
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
@@ -408,11 +542,11 @@ export default {
             .dispatch(`${STATISTICS_MODULE}${STATISTICS_LOAD_LIST}`, filterVal.value)
             .then((response) => {
                 console.log(response.data);
-                statistique.value = response.data.statistique;
-                // stats_today.value = response.data.statistique.stats_today;
-                // top_3_today.value = response.data.statistique.top_3_today;
-                // width_scale.value = response.data.statistique.scale;                
-                // console.log(response.data.statistique)
+                stats.value = response.data.stats;
+                // stats_today.value = response.data.stats.stats_today;
+                // top_3_today.value = response.data.stats.top_3_today;
+                // width_scale.value = response.data.stats.scale;                
+                // console.log(response.data.stats)
             }).finally(()=>{
                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
             });
@@ -425,7 +559,7 @@ export default {
             width_scale,
             route_name,
             router,
-            statistique
+            stats
         };
     },
 

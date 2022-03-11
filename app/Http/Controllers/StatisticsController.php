@@ -74,6 +74,10 @@ class StatisticsController extends Controller
         $statistique['nh'] = 0;
         $statistique['sk'] = 0;
         $statistique['ch'] = 0;
+        $statistique['last_mb'] = 0;
+        $statistique['last_nh'] = 0;
+        $statistique['last_sk'] = 0;
+        $statistique['last_ch'] = 0;
         
         $total_sales_store = 0;
         $last_total_sales_store = 0;
@@ -92,22 +96,18 @@ class StatisticsController extends Controller
         foreach ($total_sale_stores as $key => $store) {
             if($store->TypeDelivery == 'MARYLEBONE') {
                 $total_sales_store    +=  $store->total;
-                // $avg_store_order    +=  $store->avg;
                 $statistique['mb'] = number_format($store->total, 0) ;
             }
             if($store->TypeDelivery == 'NOTTING HILL') {
                 $total_sales_store  += $store->total;
-                // $avg_store_order    +=  $store->avg;
                 $statistique['nh'] = number_format($store->total, 0);
             }
             if($store->TypeDelivery == 'SOUTH KEN') {
                 $total_sales_store  += $store->total;
-                // $avg_store_order    +=  $store->avg;
                 $statistique['sk'] = number_format($store->total, 0);
             }
             if($store->TypeDelivery == 'CHELSEA') {
                 $total_sales_store  += $store->total;
-                // $avg_store_order    +=  $store->avg;
                 $statistique['ch'] = number_format($store->total, 0);
             }
             if($store->TypeDelivery == 'DELIVERY') {
@@ -118,12 +118,26 @@ class StatisticsController extends Controller
         }
         // last year
         foreach ($last_total_sale_stores as $key => $store) {
+            if($store->TypeDelivery == 'MARYLEBONE') {
+                $last_total_sales_store    +=  $store->total;
+                $statistique['last_mb'] = number_format($store->total, 0) ;
+            }
+            if($store->TypeDelivery == 'NOTTING HILL') {
+                $last_total_sales_store  += $store->total;
+                $statistique['last_nh'] = number_format($store->total, 0);
+            }
+            if($store->TypeDelivery == 'SOUTH KEN') {
+                $last_total_sales_store  += $store->total;
+                $statistique['last_sk'] = number_format($store->total, 0);
+            }
+            if($store->TypeDelivery == 'CHELSEA') {
+                $last_total_sales_store  += $store->total;
+                $statistique['last_ch'] = number_format($store->total, 0);
+            }
             if($store->TypeDelivery == 'DELIVERY') {
                 $last_toal_delivery_sale += $store->total;
                 $last_delivery_count ++;
                 $last_avg_delivery_order +=  $store->avg;
-            }else{
-                $last_total_sales_store  += $store->total;
             }
         }
         // end total sales store
@@ -212,101 +226,7 @@ class StatisticsController extends Controller
         $statistique['total_sales'] = number_format( $total_sales_store + $total_sales_b2c->total + $total_sales_b2b->total, 0 );
         $statistique['last_total_sales'] = number_format( $last_total_sales_store + $last_total_sales_b2c->total + $last_total_sales_b2b->total, 0 );
 
-        $first_time_total_sale_stores = InfoOrder::whereBetween('created_at', $period)
-                                    ->where('firstorder', 1)
-                                    ->where('total', '!=', 0)
-                                    ->whereIn('TypeDelivery', ['MARYLEBONE', 'NOTTING HILL', 'SOUTH KEN', 'CHELSEA'])
-                                    ->select(DB::raw('SUM(Subtotal) as sub_total'), DB::raw('SUM(Total) as total'), 'TypeDelivery')
-                                    ->groupBy('TypeDelivery')
-                                    ->get();
-
-        $last_first_time_total_sale_stores = InfoOrder::whereBetween('created_at', $last_period)
-                                    ->where('firstorder', 1)
-                                    ->where('total', '!=', 0)
-                                    ->whereIn('TypeDelivery', ['MARYLEBONE', 'NOTTING HILL', 'SOUTH KEN', 'CHELSEA'])
-                                    ->select(DB::raw('SUM(Subtotal) as sub_total'), DB::raw('SUM(Total) as total'), 'TypeDelivery')
-                                    ->groupBy('TypeDelivery')
-                                    ->get();
-        
-        $statistique['first_time_mb'] = 0;
-        $statistique['first_time_nh'] = 0;
-        $statistique['first_time_sk'] = 0;
-        $statistique['first_time_ch'] = 0;
-
-        $first_time_total_sales_store = $first_time_total_sale_stores->sum('total');
-        $last_first_time_total_sales_store = $last_first_time_total_sale_stores->sum('total');
-
-        foreach ($first_time_total_sale_stores as $key => $store) {
-            if($store->TypeDelivery == 'MARYLEBONE') $statistique['first_time_mb'] = number_format($store->total, 0) ;
-            if($store->TypeDelivery == 'NOTTING HILL') $statistique['first_time_nh'] = number_format($store->total, 0);
-            if($store->TypeDelivery == 'SOUTH KEN') $statistique['first_time_sk'] = number_format($store->total, 0);
-            if($store->TypeDelivery == 'CHELSEA') $statistique['first_time_ch'] = number_format($store->total, 0);
-        }
         // end total sales store
-
-        // start total sales deliveries (B2B, B2C)
-        $first_time_total_sales_b2b = InfoOrder::join('infoCustomer', 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
-                                    ->whereBetween('infoOrder.created_at', $period)
-                                    ->where('total', '!=', 0)
-                                    // ->where('infoOrder.TypeDelivery', 'DELIVERY')
-                                    ->where('infoOrder.firstorder', 1)
-                                    ->where( function( $query ) {
-                                        $query->where('infoCustomer.CustomerIDMaster', '!=', '')
-                                                ->orWhere('infoCustomer.CustomerIDMasterAccount', '!=', '')
-                                                ->orWhere('infoCustomer.IsMaster', 1)
-                                                ->orWhere('infoCustomer.IsMasterAccount', 1);
-                                    } )
-                                    ->select(DB::raw('SUM(Total) as total'))
-                                    ->first()->total;
-        $last_first_time_total_sales_b2b = InfoOrder::join('infoCustomer', 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
-                                    ->whereBetween('infoOrder.created_at', $last_period)
-                                    ->where('total', '!=', 0)
-                                    // ->where('infoOrder.TypeDelivery', 'DELIVERY')
-                                    ->where('infoOrder.firstorder', 1)
-                                    ->where( function( $query ) {
-                                        $query->where('infoCustomer.CustomerIDMaster', '!=', '')
-                                                ->orWhere('infoCustomer.CustomerIDMasterAccount', '!=', '')
-                                                ->orWhere('infoCustomer.IsMaster', 1)
-                                                ->orWhere('infoCustomer.IsMasterAccount', 1);
-                                    } )
-                                    ->select(DB::raw('SUM(Total) as total'))
-                                    ->first()->total;
-        $statistique['first_time_b2b'] = number_format( $first_time_total_sales_b2b, 0);
-        $statistique['last_first_time_b2b'] = number_format( $last_first_time_total_sales_b2b, 0);
-        
-        $first_time_total_sales_app = InfoOrder::whereBetween('infoOrder.created_at', $period)
-                                        ->where('total', '!=', 0)
-                                        ->where('firstorder', 1)
-                                        ->where('fromapp', 1)
-                                        ->select(DB::raw('SUM(Total) as total'))
-                                        ->first()->total;
-        $last_first_time_total_sales_app = InfoOrder::whereBetween('infoOrder.created_at', $period)
-                                        ->where('total', '!=', 0)
-                                        ->where('firstorder', 1)
-                                        ->where('fromapp', 1)
-                                        ->select(DB::raw('SUM(Total) as total'))
-                                        ->first()->total;
-        $statistique['first_time_app'] = number_format( $first_time_total_sales_app, 0);
-        $statistique['last_first_time_app'] = number_format( $last_first_time_total_sales_app, 0);
-        
-        $first_time_total_sales_normal = InfoOrder::whereBetween('infoOrder.created_at', $period)
-                                        ->where('total', '!=', 0)
-                                        ->where('firstorder', 1)
-                                        ->where('fromapp', 0)
-                                        ->select(DB::raw('SUM(Total) as total'))
-                                        ->first()->total;
-                                        
-        $last_first_time_total_sales_normal = InfoOrder::whereBetween('infoOrder.created_at', $period)
-                                        ->where('total', '!=', 0)
-                                        ->where('firstorder', 1)
-                                        ->where('fromapp', 0)
-                                        ->select(DB::raw('SUM(Total) as total'))
-                                        ->first()->total;
-        $statistique['first_time_normal'] = number_format( $first_time_total_sales_normal, 0);
-        $statistique['last_first_time_normal'] = number_format( $last_first_time_total_sales_normal, 0);
-
-        $statistique['first_time_total_sales'] = number_format( $first_time_total_sales_store + $first_time_total_sales_app + $first_time_total_sales_b2b + $first_time_total_sales_normal, 0);
-        $statistique['last_first_time_total_sales'] = number_format( $last_first_time_total_sales_store + $last_first_time_total_sales_app + $last_first_time_total_sales_b2b + $last_first_time_total_sales_normal, 0);
 
         // start new signup data
         $total_new_signup = InfoCustomer::where(function($query) use ($period){
@@ -441,35 +361,80 @@ class StatisticsController extends Controller
                                           ->where('status', 'LIKE', '%REC%')
                                           ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
         // end booking data
-        // service section data
-        $service_items = Infoitem::whereBetween('PromisedDate', $period)
-                                ->select(DB::raw('SUM(priceTotal) as total'), 'DepartmentName')
-                                ->groupBy('DepartmentName')
-                                ->orderByDesc('total')
-                                ->get();
-        $last_service_items_total = Infoitem::whereBetween('PromisedDate', $last_period)
-                                ->select(DB::raw('SUM(priceTotal) as total'))
-                                ->value('total');
-        $statistique['service_items'] = $service_items;        
 
-        $statistique['service_items_total'] = number_format($service_items->sum('total'), 0);
-        $statistique['last_service_items_total'] = number_format($last_service_items_total, 0);
-        
-        $services_group = Infoitem::whereBetween('PromisedDate', $period)
-                                ->select(DB::raw('SUM(priceTotal) as total'), 'DepartmentName')
-                                ->groupBy('DepartmentName')
-                                ->orderByDesc('total')
-                                // ->orderByRaw("FIELD(DepartmentName, 'Garment Care','Shirts Hung','Shirts Folded','Shirts','Business','Laundry','Bedlinen','Household','Suede/Leather/Wax','Laundry Bag','Other')")
-                                ->get();
-        $last_services_group_total = Infoitem::whereBetween('PromisedDate', $period)
-                                ->select(DB::raw('SUM(priceTotal) as total'))
-                                ->value('total');
-        $statistique['services_group'] = $services_group;        
-        $statistique['services_group_total'] = number_format($services_group->sum('total'), 0);                                
-        $statistique['last_services_group_total'] = number_format($last_services_group_total, 0);                                
+        // service section data
+        $dep_list = Infoitem::distinct('DepartmentName')
+                            ->orderByRaw("FIELD(DepartmentName, 'Garment Care','Shirts Hung','Shirts Folded','Shirts','Business','Laundry','Bedlinen','Household','Suede/Leather/Wax','Laundry Bag','Other')")
+                            ->where('DepartmentName', '!=','')
+                            ->select('DepartmentName')
+                            ->get();
+
+        $statistique['sale_store_by_dep'] = [];
+        $statistique['item_store_by_dep'] = [];
+        $statistique['sale_delivery_by_dep'] = [];
+        $statistique['item_delivery_by_dep'] = [];
+        $statistique['total_sale_store_by_dep'] = 0;
+        $statistique['total_item_store_by_dep'] = 0;
+        $statistique['total_sale_delivery_by_dep'] = 0;
+        $statistique['total_item_delivery_by_dep'] = 0;
+        foreach ($dep_list as $dep) {
+            $store = Infoitem::where('PromisedDate', $period)
+                    ->where('StoreName', '!=', 'ATELIER')
+                    ->where('DepartmentName', $dep->DepartmentName)
+                    ->select( 
+                        DB::raw('CEIL(SUM(priceTotal)) as total'), DB::raw('COUNT(*) as count'),
+                    )
+                    ->first();
+            $statistique['sale_store_by_dep'][] = $store->total ? $store->total : 0;
+            $statistique['total_sale_store_by_dep'] += $store->total ? $store->total : 0;
+            $statistique['item_store_by_dep'][] = $store->count ? $store->count : 0;
+            $statistique['total_item_store_by_dep'] += $store->count ? $store->count : 0;
+
+            $delivery = Infoitem::where('PromisedDate', $period)
+                    ->where('StoreName', 'ATELIER')
+                    ->where('DepartmentName', $dep->DepartmentName)
+                    ->select( 
+                        DB::raw('CEIL(SUM(priceTotal)) as total'), DB::raw('COUNT(*) as count'),
+                    )
+                    ->first();            
+            $statistique['sale_delivery_by_dep'][] = $delivery->total ? $delivery->total : 0;
+            $statistique['total_sale_delivery_by_dep'] += $delivery->total ? $delivery->total : 0;
+            $statistique['item_delivery_by_dep'][] = $delivery->count ? $delivery->count : 0;
+            $statistique['total_item_delivery_by_dep'] += $delivery->count ? $delivery->count : 0;
+        }
+        // $store_by_dep = Infoitem::where('PromisedDate', $period)
+        //                             ->where('StoreName', '!=', 'ATELIER')
+        //                             ->groupBy('DepartmentName')
+        //                             ->select( 
+        //                                 DB::raw('SUM(priceTotal) as total'), 'DepartmentName',
+        //                                 DB::raw('COUNT(*) as count'),
+        //                             )
+        //                             ->orderByRaw( 
+        //                                 "FIELD(DepartmentName, 'Garment Care','Shirts Hung','Shirts Folded','Shirts','Business','Laundry','Bedlinen','Household','Suede/Leather/Wax','Laundry Bag','Other')")
+        //                             ->get();
+                                    
+        // $delivery_by_dep = Infoitem::where('PromisedDate', $period)
+        //                             ->where('StoreName', 'ATELIER')
+        //                             ->groupBy('DepartmentName')
+        //                             ->select( 
+        //                                 DB::raw('(SUM(priceTotal)) as total'), 'DepartmentName',
+        //                                 DB::raw('COUNT(*) as count'),
+        //                             )
+        //                             ->orderByRaw("FIELD(DepartmentName, 'Garment Care','Shirts Hung','Shirts Folded','Shirts','Business','Laundry','Bedlinen','Household','Suede/Leather/Wax','Laundry Bag','Other')")
+        //                             ->get();
+
+        // $statistique['store_by_dep'] = $store_by_dep;
+        // $statistique['sale_store_by_dep'] = $store_by_dep->sum('total');
+        // $statistique['item_store_by_dep'] = $store_by_dep->sum('count');
+
+        // $statistique['delivery_by_dep'] = $delivery_by_dep;
+        // $statistique['sale_delivery_by_dep'] = $delivery_by_dep->sum('total');
+        // $statistique['item_delivery_by_dep'] = $delivery_by_dep->sum('count');
+        $statistique['dep_list'] = $dep_list;
+
         return response()->json(
             [
-                'statistique'=> $statistique
+                'stats'=> $statistique
             ]
         );
     }
