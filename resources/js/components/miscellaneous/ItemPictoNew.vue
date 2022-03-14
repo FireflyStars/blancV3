@@ -90,7 +90,7 @@ export default {
                                     v.face.toUpperCase() +
                                     " path_" +
                                     v.description +
-                                    '" ' +
+                                    ' '+(v.description !=''?'clickable-path':'')+'"' +
                                     (v.stroke == 1 ? 'stroke="#333333"' : "") +
                                     ' stroke-width="2" d="' +
                                     v.svg_path +
@@ -106,7 +106,7 @@ export default {
                                         " - " +
                                         v.side
                                         : "") +
-                                    '" />';
+                                    '" data-name="'+v.description+'"/>';
                                 if (fill == '#F1D2A4B2') {
                                    svg_el += " <svg width='20' height='20'> <g><circle cx='10' cy='10' r='10' stroke-width='4' fill='#EF8F00'/><text x='50%'' y='50%'' text-anchor='middle' stroke='white' stroke-width='1px' dy='.3em'>1</text></g></svg>";
                                 }else if(fill == '#F5ABABB2') {
@@ -135,9 +135,9 @@ export default {
                                     v.face.toUpperCase() +
                                     " path_" +
                                     v.description +
-                                    '" points="' +
+                                    (v.description !=''?' clickable-path':'')+'" points="' +
                                     v.svg_path +
-                                    '" />';
+                                    '" data-name="'+v.description+'"/>';
                             }
 
                             details += svg_el;
@@ -193,7 +193,7 @@ export default {
         }
 
     function getZone(){
-        let selector = '.each-svg-el';  // We bind the event handler directly to the document.
+        let selector = '.clickable-path';  // We bind the event handler directly to the document.
         document.addEventListener('mouseover', function(e) {
             let el = e.target;    // Check if it matches our previously defined selector
             if (!el.matches(selector)) {
@@ -237,4 +237,5 @@ export default {
     .svg_hover{
         background: silver;
     }
+
 </style>

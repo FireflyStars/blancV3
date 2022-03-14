@@ -37,7 +37,7 @@ class ItemController extends Controller{
         $svg = Db::table('itemzones')
             ->where('zone_type', $item_type)
             //->where('face','front')
-            ->orderBy('id', 'asc')
+            ->orderBy('description', 'desc')
             ->get();
 
         $svg_details = Db::table('itemsvg')->where('name', $item_type)->first();
@@ -71,9 +71,25 @@ class ItemController extends Controller{
             }
         }
 
+        $svg_filtered = [];
+        $has_desc = [];
+        $no_desc = [];
+
+
+        foreach($svg as $k=>$v){
+            if($v->description !='' && !in_array($v->description,['FRONT','BACK'])){
+                $has_desc[] = $v;
+            }else{
+                $no_desc[] = $v;
+            }
+        }
+
+        $svg_filtered = array_merge($no_desc,$has_desc);
+
+
 
         return response()->json([
-            'svg'=>$svg,
+            'svg'=>$svg_filtered,
             'svg_details'=>$svg_details,
             'arr_config'=>$arr_config,
         ]);
