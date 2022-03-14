@@ -8,42 +8,42 @@
         v-if="issuesStep == 4"
     >Please select location of the damage</div>
     <div class="picto" v-if="issuesStep == 0 || issuesStep == 1">
-        <item-picto
+        <item-picto-new
             :pictoname="typeitemPicto"
             face="all"
             :selectable="true"
             :stainzone="[]"
             @add-stain-zone="addStainZone"
             issue_type="stain"
-        ></item-picto>
+        ></item-picto-new>
     </div>
     <div class="picto" v-if="issuesStep == 3 || issuesStep == 4">
-        <item-picto
+        <item-picto-new
             :pictoname="typeitemPicto"
             face="all"
             :selectable="true"
             :damagezone="[]"
             @add-stain-zone="addDamageZone"
             issue_type="damage"
-        ></item-picto>
+        ></item-picto-new>
     </div>
     <div class="picto" v-if="issuesStep == 2">
-        <item-picto
+        <item-picto-new
             :pictoname="typeitemPicto"
             face="all"
             :selectable="false"
             :stainzone="stainZone"
             issue_type="stain"
-        ></item-picto>
+        ></item-picto-new>
     </div>
     <div class="picto" v-if="issuesStep == 5">
-        <item-picto
+        <item-picto-new
             :pictoname="typeitemPicto"
             face="all"
             :selectable="false"
             :damagezone="damageZone"
             issue_type="damage"
-        ></item-picto>
+        ></item-picto-new>
     </div>
     <div class="row" v-if="issuesStep == 0">
         <div class="stains-title">Any stains ?</div>
@@ -110,10 +110,10 @@
 </template>
 <script>
 import { ref, watch } from 'vue';
-import ItemPicto from '../miscellaneous/ItemPicto.vue'
+import ItemPictoNew from '../miscellaneous/ItemPictoNew.vue'
 export default {
     name: "DetailingItemIssues",
-    components: { ItemPicto },
+    components: { ItemPictoNew },
     props: {
         detailingData: {},
         detailingitem: {},

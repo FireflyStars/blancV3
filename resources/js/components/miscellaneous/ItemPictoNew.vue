@@ -77,7 +77,6 @@ export default {
                                 if (props.issue_type == "stain") {
                                     fill = v.description && props.stainzone && props.stainzone.some(z => getPictoZoneDesc(z.id_zone) === v.description) ? '#F1D2A4B2' : 'none';
                                 } else if (props.issue_type == "damage"){
-                                    console.log(props.damagezone)
                                     fill = v.description && props.damagezone && props.damagezone.some(z => getPictoZoneDesc(z.id_zone) === v.description) ? '#F5ABABB2' : 'none';
                                 }else{
                                     fill='none';
@@ -193,9 +192,11 @@ export default {
         }
 
     function getZone(){
+        let old_fill='transparent';
         let selector = '.clickable-path';  // We bind the event handler directly to the document.
         document.addEventListener('mouseover', function(e) {
             let el = e.target;    // Check if it matches our previously defined selector
+             old_fill  =el.style.fill;
             if (!el.matches(selector)) {
                 el.style.fill = 'transparent';
                 return;
@@ -214,7 +215,7 @@ export default {
             }    // The method logic
 
 
-            el.style.fill = 'transparent';
+            el.style.fill = old_fill;
         });
 
     }
