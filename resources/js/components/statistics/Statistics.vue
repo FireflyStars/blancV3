@@ -586,19 +586,19 @@ export default {
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
         });
-        // store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
-        // store
-        //     .dispatch(`${STATISTICS_MODULE}${STATISTICS_LOAD_LIST}`, filterVal.value)
-        //     .then((response) => {
-        //         console.log(response.data);
-        //         stats.value = response.data.stats;
-        //         // stats_today.value = response.data.stats.stats_today;
-        //         // top_3_today.value = response.data.stats.top_3_today;
-        //         // width_scale.value = response.data.stats.scale;                
-        //         // console.log(response.data.stats)
-        //     }).finally(()=>{
-        //         store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-        //     });
+        store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
+        store
+            .dispatch(`${STATISTICS_MODULE}${STATISTICS_LOAD_LIST}`, filterVal.value)
+            .then((response) => {
+                console.log(response.data);
+                stats.value = response.data.stats;
+                // stats_today.value = response.data.stats.stats_today;
+                // top_3_today.value = response.data.stats.top_3_today;
+                // width_scale.value = response.data.stats.scale;                
+                // console.log(response.data.stats)
+            }).finally(()=>{
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            });
         return {
             statistics : computed(() => store.getters[`${STATISTICS_MODULE}${GET_STATISTICS}`]),
             selectedValue,
