@@ -189,9 +189,9 @@ export const orderlist= {
            return axios.post('/getorderlist', {
                 skip: state[state.current_tab].skip,
                 take: state[state.current_tab].take,
-               current_tab:state.current_tab,
-               sort:state[state.current_tab].sort,
-               filters:state[state.current_tab].filters,
+                current_tab:state.current_tab,
+                sort:state[state.current_tab].sort,
+                filters:state[state.current_tab].filters,
             })
                 .then(function (response) {
                     commit(ORDERLIST_ADD_TO_LIST, response.data);

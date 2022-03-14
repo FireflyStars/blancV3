@@ -115,7 +115,7 @@
 
                     return formatPrice(val);
                 }
-                if(def.name=="Name"||def.name=="Destination"){
+                if(def.name=="Name"|| def.name=="Destination" || def.name=="Customer"){
                     return val.toLowerCase();
                 }
                 return val;
