@@ -10,6 +10,10 @@
             >
                 <div class="complexity-name">{{ comp.name }}</div>
             </div>
+            <div class="box complexity complexity-name"
+                @click="select(0)"
+                :class="{ selected: complexities_id.includes(0) }"
+                >None</div>
             <div class="row buttons">
                 <div class="col-10 text-align-right">
                     <button class="btn btn-link btn-previous" @click="back">Previous</button>
@@ -44,7 +48,14 @@ export default {
         });
         function select(id) {
             if (!complexities_id.value.includes(id)) {
-                complexities_id.value.push(id);
+                if(id === 0){
+                    complexities_id.value=[0];
+                }else{
+                    if(complexities_id.value.includes(0)){
+                        complexities_id.value=[];
+                    }
+                    complexities_id.value.push(id);
+                }
             } else {
                 complexities_id.value.splice(complexities_id.value.indexOf(id), 1);
             }
@@ -104,6 +115,12 @@ export default {
     text-align: center;
 
     color: #47454b;
+}
+.complexity-name{
+    font-family: 'Gotham Rounded Light';
+    font-style: normal;
+    font-weight: 400;
+    line-height: 140%;
 }
 .box:hover {
     background-color: #d3e7cc;
