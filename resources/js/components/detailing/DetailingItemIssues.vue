@@ -12,7 +12,7 @@
             :pictoname="typeitemPicto"
             face="all"
             :selectable="true"
-            :stainzone="[]"
+            :stainzone="stainZone"
             @add-stain-zone="addStainZone"
             issue_type="stain"
         ></item-picto-new>

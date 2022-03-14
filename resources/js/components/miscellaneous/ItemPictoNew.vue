@@ -75,9 +75,9 @@ export default {
                             if (v.svg_type == "path") {
                                 let fill = "";
                                 if (props.issue_type == "stain") {
-                                    fill = v.description && props.stainzone && props.stainzone.some(z => getPictoZoneDesc(z.id_zone) === v.description) ? '#F1D2A4B2' : 'none';
+                                    fill = v.description && props.stainzone && props.stainzone.some(z => z.id_zone === v.id) ? '#F1D2A4B2' : 'none';
                                 } else if (props.issue_type == "damage"){
-                                    fill = v.description && props.damagezone && props.damagezone.some(z => getPictoZoneDesc(z.id_zone) === v.description) ? '#F5ABABB2' : 'none';
+                                    fill = v.description && props.damagezone && props.damagezone.some(z => z.id_zone === v.id) ? '#F5ABABB2' : 'none';
                                 }else{
                                     fill='none';
                                 }
