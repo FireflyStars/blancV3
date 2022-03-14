@@ -48,7 +48,7 @@ class User extends Authenticatable
         $roles_ids[]=$this->role_id;
         $user_roles=DB::table('user_roles')->select('role_id')->where('user_id','=',$this->id)->get();
         foreach ($user_roles as $role){
-            $roles_ids[]=$this->role_id;
+            $roles_ids[]= $role->role_id;
         }
         $roles=DB::table('roles')->select('name')->whereIn('id',$roles_ids)->get();
         return $roles;
