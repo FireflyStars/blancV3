@@ -27,7 +27,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(det, index) in detailing_list" class="table-row">
+                                <tr v-for="(det, index) in detailing_list" class="table-row row-hover">
                                     <td
                                         class="body_bold td-text td-bag-no"
                                         :rowspan="getRowspanNumber(det.NoBag)"
@@ -354,5 +354,10 @@ export default {
     align-items: center;
     text-align: center;
     text-decoration-line: underline;
+}
+
+.row-hover td:hover{
+    cursor: pointer;
+    background: #eeeeee;
 }
 </style>

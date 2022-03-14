@@ -172,7 +172,7 @@ export default {
                     svg_row = _.cloneDeep(svg_row);
                     if (svg_row[0].description != "") {
                         let svg_desc = svg_data.value.filter(
-                            (s) => s.description == svg_row[0].description && s.svg_type == "path"
+                            (s) => s.id == svg_row[0].id
                         );
                         context.emit("add-stain-zone", svg_row[0].id);
                         svg_desc = _.cloneDeep(svg_desc);
@@ -196,14 +196,26 @@ export default {
         let selector = '.clickable-path';  // We bind the event handler directly to the document.
         document.addEventListener('mouseover', function(e) {
             let el = e.target;    // Check if it matches our previously defined selector
-             old_fill  =el.style.fill;
+             //old_fill  =el.style.fill;
             if (!el.matches(selector)) {
                 el.style.fill = 'transparent';
                 return;
             }    // The method logic
 
-            //console.log('cur-el', el);
-            el.style.fill='#dadada';
+
+            el.classList.add('path-mouse-over');
+
+            /*
+            //select other zones with same name
+            let zone_name = el.getAttribute('data-name');
+            let other_el = document.querySelectorAll('[data-name="'+zone_name+'"]');
+
+            other_el.forEach(function(v,i){
+                v.classList.add('path-mouse-over');
+            });
+            */
+
+
         });
 
         document.addEventListener('mouseout', function(e) {
@@ -213,9 +225,9 @@ export default {
             if (!el.matches(selector)) {
                 return;
             }    // The method logic
+            el.classList.remove('path-mouse-over');
 
-
-            el.style.fill = old_fill;
+            //el.style.fill = '';//old_fill;
         });
 
     }
@@ -237,6 +249,10 @@ export default {
 <style>
     .svg_hover{
         background: silver;
+    }
+
+    .path-mouse-over{
+        fill: #dadada !important;
     }
 
 </style>

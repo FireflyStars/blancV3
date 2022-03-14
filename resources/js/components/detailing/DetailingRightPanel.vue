@@ -263,7 +263,10 @@ export default {
             }
         }
         function getStainZone(id) {
-            return props.item_description.issues_zones.filter((zone) => zone.id === id)[0].description;
+            let zone = props.item_description.issues_zones.filter((zone) => zone.id === id)[0];
+            if(typeof(zone !='undefined')){
+                return zone.description+' - '+id;
+            }
         }
         function getStainName(id) {
             return props.item_description.issues_tags.filter((tag) => tag.id === id)[0].name;
