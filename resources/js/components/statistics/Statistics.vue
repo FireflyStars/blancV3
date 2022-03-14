@@ -579,9 +579,6 @@ export default {
                 .then((response) => {
                     console.log(response.data);
                     stats.value = response.data.stats;
-                    // stats_today.value = response.data.stats.stats_today;
-                    // top_3_today.value = response.data.stats.top_3_today;
-                    // width_scale.value = response.data.stats.scale;
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
@@ -592,10 +589,6 @@ export default {
             .then((response) => {
                 console.log(response.data);
                 stats.value = response.data.stats;
-                // stats_today.value = response.data.stats.stats_today;
-                // top_3_today.value = response.data.stats.top_3_today;
-                // width_scale.value = response.data.stats.scale;                
-                // console.log(response.data.stats)
             }).finally(()=>{
                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
             });
