@@ -165,7 +165,7 @@ export default {
         }
         function onPartClick(e) {
             if (props.selectable) {
-                if (e.target.tagName === "path") {
+                if (e.target.matches('.clickable-path')) {
                     let svg_row = svg_data.value.filter(
                         (s) => s.id == e.target.id.split("_")[1]
                     );
