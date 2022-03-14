@@ -10,31 +10,58 @@
         </div>
     </div>
     <transition name="trans-filter" >
-    <div class="filters position-absolute" v-if="showfilter">
-        <h2 class="subtitle">Date range</h2>
+    <div class="filters position-absolute px-3" v-if="showfilter">
         <div class="row">
-            <switch-btn v-model="customFilter" label-left="Custom Filter" label-right="" ></switch-btn>
-        </div>
-        <div class="row mt-10"  v-if="!customFilter">
-            <div class="col-10">
-                <select-options v-model="selectedValue" :options="dateRange" name="select-date-range"  classnames="black-border"></select-options>
-            </div>
-        </div>
-        <div v-if="customFilter">
-            <div class="row mt-10">
-                <div class="col-3">
-                    <date-picker v-model="startDate" @update:modelValue="newValue => startDate = newValue" name="start_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Starting" :disabled-from-date="startDisabledtodate"></date-picker>
+            <div class="col-6">
+                <h2 class="subtitle">Date range</h2>
+                <div class="row">
+                    <switch-btn v-model="customFilter" label-left="Custom Filter" label-right="" ></switch-btn>
+                </div>
+                <div class="row mt-10"  v-if="!customFilter">
+                    <div class="col-10">
+                        <select-options v-model="selectedValue" :options="dateRange" name="select-date-range"  classnames="black-border"></select-options>
+                    </div>
+                </div>
+                <div v-if="customFilter">
+                    <div class="row mt-10">
+                        <div class="col-3">
+                            <date-picker v-model="startDate" @update:modelValue="newValue => startDate = newValue" name="start_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Starting" :disabled-from-date="startDisabledtodate"></date-picker>
+                        </div>
+                    </div>
+                    <div class="row mt-10">
+                        <div class="col-3">
+                            <date-picker v-model="endDate" @update:modelValue="newValue => endDate = newValue" name="end_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Ending" :disabled-from-date="endDisabledtodate"></date-picker>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="row mt-10">
-                <div class="col-3">
-                    <date-picker v-model="endDate" @update:modelValue="newValue => endDate = newValue" name="end_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Ending" :disabled-from-date="endDisabledtodate"></date-picker>
+            <div class="col-6">
+                <h2 class="subtitle">Previous range</h2>
+                <div class="row">
+                    <switch-btn v-model="compareCustomFilter" label-left="Custom Filter" label-right="" ></switch-btn>
+                </div>
+                <div class="row mt-10"  v-if="!compareCustomFilter">
+                    <div class="col-10">
+                        <select-options v-model="selectedCompareMode" :options="compareMode" name="compare_mode"  classnames="black-border"></select-options>
+                    </div>
+                </div>
+                <div v-if="compareCustomFilter">
+                    <div class="row mt-10">
+                        <div class="col-3">
+                            <date-picker v-model="compareStartDate" @update:modelValue="newValue => compareStartDate = newValue" name="pre_start_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Starting" :disabled-from-date="startDisabledtodate"></date-picker>
+                        </div>
+                    </div>
+                    <div class="row mt-10">
+                        <div class="col-3">
+                            <date-picker v-model="compareEndDate" @update:modelValue="newValue => compareEndDate = newValue" name="pre_end_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Ending" :disabled-from-date="endDisabledtodate"></date-picker>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="row buttons">
             <div class="col text-center"><button class="btn btn-link  body_regular" @click="cancel">Cancel</button></div>
-            <div class="col text-right"><button class="btn btn-dark body_medium" @click="applyFilter">Apply</button></div>
+            <div class="col text-center"><button class="btn btn-dark body_medium" @click="applyFilter">Apply</button></div>
         </div>
     </div>
     </transition>
@@ -63,11 +90,19 @@
     
             const current = new Date();
             const currentDate = `${current.getFullYear()}-${current.getMonth()+1}-${current.getDate()}`;
+            const compareDate = `${current.getFullYear()-1}-${current.getMonth()+1}-${current.getDate()}`;
             const showfilter=ref(false);
             const customFilter=ref(false);
             const selectedValue =ref('Today');
             const startDate=ref(currentDate);
             const endDate=ref(currentDate);
+            
+            const compareCustomFilter=ref(false);
+            const selectedCompareMode =ref('year');
+            
+            const compareStartDate=ref(compareDate);
+            const compareEndDate=ref(compareDate);
+
             const startDisabledtodate = ref(currentDate);
             const endDisabledtodate = ref(currentDate);
             const customFilterText = ref('');
@@ -78,27 +113,38 @@
                 return false;
             });
             const dateRange = ref([]);
-            dateRange.value = [
-                { value: "Today", display: "Today" },
-                { value: "Yesterday", display: "Yesterday" },
-                { value: "Last 7 days", display: "Last 7 days" },
-                { value: "Last 90 days", display: "Last 90 days" },
-                { value: "Last Month", display: "Last Month" },
-                { value: "Year to date", display: "Year to date" },
-                { value: "4th Quarter", display: "4th Quarter ("+`${current.getFullYear()-1}`+")" },
-                { value: "3rd Quarter", display: "3rd Quarter ("+`${current.getFullYear()-1}`+")" },
-                { value: "2nd Quarter", display: "2nd Quarter ("+`${current.getFullYear()-1}`+")" },
-                { value: "1st Quarter", display: "1st Quarter ("+`${current.getFullYear()-1}`+")" }
+                dateRange.value = [
+                    { value: "Today", display: "Today" },
+                    { value: "Yesterday", display: "Yesterday" },
+                    { value: "Last 7 days", display: "Last 7 days" },
+                    { value: "Last 90 days", display: "Last 90 days" },
+                    { value: "Last Month", display: "Last Month" },
+                    { value: "Year to date", display: "Year to date" },
+                    { value: "4th Quarter", display: "4th Quarter ("+`${current.getFullYear()-1}`+")" },
+                    { value: "3rd Quarter", display: "3rd Quarter ("+`${current.getFullYear()-1}`+")" },
+                    { value: "2nd Quarter", display: "2nd Quarter ("+`${current.getFullYear()-1}`+")" },
+                    { value: "1st Quarter", display: "1st Quarter ("+`${current.getFullYear()-1}`+")" }
+                ];
+            const compareMode = ref([]);
+            compareMode.value = [
+                { value: 'year', display: 'Year' },
+                { value: 'month', display: 'Month' }
             ];
             function applyFilter() {
                 const data = {
-                    customFilter:customFilter.value,
-                    startDate:startDate.value,
-                    endDate:endDate.value,
-                    dateRangeType:selectedValue.value
+                    customFilter: customFilter.value,
+                    startDate: startDate.value,
+                    endDate: endDate.value,
+                    dateRangeType: selectedValue.value,
+                    compareMode: selectedCompareMode.value,
+                    compareCustomFilter: compareCustomFilter.value,
+                    compareStartDate: compareStartDate.value,
+                    compareEndDate: compareEndDate.value,
+
                 };
                 customFilterText.value=`Compared From ${new Date(startDate.value).getDate()} ${monthNames[new Date(startDate.value).getMonth()]}, ${new Date(startDate.value).getFullYear()} To ${new Date(endDate.value).getDate()} ${monthNames[new Date(endDate.value).getMonth()]}, ${new Date(endDate.value).getFullYear()}`;
                 context.emit("update:filterVal", data);
+                console.log(data);
                 // store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
                 // store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,_.cloneDeep(preselection.value));
                 // current_filter.value='';
@@ -121,11 +167,16 @@
                 customFilter,
                 hasActiveFilters,
                 selectedValue,
-                startDate,
                 startDisabledtodate,
+                startDate,
                 endDate,
                 endDisabledtodate,
-                customFilterText
+                customFilterText,
+                compareCustomFilter,
+                compareStartDate,
+                compareEndDate,
+                compareMode,
+                selectedCompareMode
             }
         },
         methods:{

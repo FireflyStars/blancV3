@@ -19,53 +19,103 @@ class StatisticsController extends Controller
         $startDate      =   $request->post('startDate');
         $endDate        =   $request->post('endDate');
         $dateRangeType  =   $request->post('dateRangeType');
+        $compareMode    =   $request->post('compareMode');
+        $compareCustomFilter    =   $request->post('compareCustomFilter');
+        $compareStartDate       =   $request->post('compareStartDate');
+        $compareEndDate         =   $request->post('compareEndDate');
+        $compareMode            =   $request->post('compareMode');
 
         $period         = [ Carbon::parse($startDate)->startOfDay()->toDateString(), Carbon::parse($endDate)->endOfDay()->toDateString() ];
-        $last_period         = [ Carbon::parse($startDate)->subYear(1)->startOfDay()->toDateString(), Carbon::parse($endDate)->subYear(1)->endOfDay()->toDateString() ];
-        
+        if(!$compareCustomFilter){
+            if($compareMode == 'year')
+                $last_period    = [ Carbon::parse($startDate)->subYear(1)->startOfDay()->toDateString(), Carbon::parse($endDate)->subYear(1)->endOfDay()->toDateString() ];
+            else        
+                $last_period    = [ Carbon::parse($startDate)->subMonth(1)->startOfDay()->toDateString(), Carbon::parse($endDate)->subMonth(1)->endOfDay()->toDateString() ];
+        }else{
+            $last_period = [ Carbon::parse($compareStartDate)->subMonth(1)->startOfDay()->toDateString(), Carbon::parse($compareEndDate)->subMonth(1)->endOfDay()->toDateString() ];
+        }
+
         // new code added by YH
         if( !$customFilter ){
-            $start_first_quarter_day = Carbon::now()->subYear()->startOfYear();
+            $start_first_quarter_day = Carbon::now()->startOfYear();
             $end_first_quarter_day = Carbon::parse($start_first_quarter_day)->lastOfQuarter();
             if( $dateRangeType == 'Today' ){
                 $period = [Carbon::now()->startOfDay()->toDateString(), Carbon::now()->endOfDay()->toDateString()];
-                $last_period = [Carbon::now()->subYear(1)->startOfDay()->toDateString(), Carbon::now()->subYear(1)->endOfDay()->toDateString()];
+                if(!$compareCustomFilter && $compareMode == 'year'){
+                    $last_period = [Carbon::now()->subYear(1)->startOfDay()->toDateString(), Carbon::now()->subYear(1)->endOfDay()->toDateString()];
+                }
+                if(!$compareCustomFilter && $compareMode == 'month'){
+                    $last_period = [Carbon::now()->subMonth(1)->startOfDay()->toDateString(), Carbon::now()->subMonth(1)->endOfDay()->toDateString()];
+                }
             }else if ( $dateRangeType == 'Yesterday' ){
                 $period = [Carbon::yesterday()->startOfDay()->toDateString(), Carbon::yesterday()->endOfDay()->toDateString()];
-                $last_period = [Carbon::yesterday()->subYear(1)->startOfDay()->toDateString(), Carbon::yesterday()->subYear(1)->endOfDay()->toDateString()];
+                if($compareMode == 'year'){
+                    $last_period = [Carbon::yesterday()->subYear()->startOfDay()->toDateString(), Carbon::yesterday()->subYear()->endOfDay()->toDateString()];
+                }else{
+                    $last_period = [Carbon::yesterday()->subMonth()->startOfDay()->toDateString(), Carbon::yesterday()->subMonth()->endOfDay()->toDateString()];
+                }
             }else if ( $dateRangeType == 'Last 7 days' ){
                 $period = [Carbon::now()->subDays(7)->startOfDay()->toDateString(), Carbon::now()->endOfDay()->toDateString()];
-                $last_period = [Carbon::now()->subYear()->subDays(7)->startOfDay()->toDateString(), Carbon::now()->subYear()->endOfDay()->toDateString()];
+                if(!$compareCustomFilter && $compareMode == 'year'){
+                    $last_period = [Carbon::now()->subYear()->subDays(7)->startOfDay()->toDateString(), Carbon::now()->subYear()->endOfDay()->toDateString()];
+                }else{
+                    $last_period = [Carbon::now()->subMonth()->subDays(7)->startOfDay()->toDateString(), Carbon::now()->subMonth()->endOfDay()->toDateString()];
+                }
             }else if ( $dateRangeType == 'Last 90 days' ){
                 $period = [Carbon::now()->subDays(90)->startOfDay()->toDateString(), Carbon::now()->endOfDay()->toDateString()];
-                $last_period = [Carbon::now()->subYear()->subDays(90)->startOfDay()->toDateString(), Carbon::now()->subYear()->endOfDay()->toDateString()];
+
+                if(!$compareCustomFilter && $compareMode == 'year'){
+                    $last_period = [Carbon::now()->subYear()->subDays(90)->startOfDay()->toDateString(), Carbon::now()->subYear()->endOfDay()->toDateString()];
+                }else{
+                    $last_period = [Carbon::now()->subMonth()->subDays(90)->startOfDay()->toDateString(), Carbon::now()->subMonth()->endOfDay()->toDateString()];
+                }
             }else if ( $dateRangeType == 'Last Month' ){
                 $period = [Carbon::now()->subMonth()->startOfDay()->toDateString(), Carbon::now()->endOfDay()->toDateString()];
-                $last_period = [Carbon::now()->subYear()->subMonth()->startOfDay()->toDateString(), Carbon::now()->subYear()->endOfDay()->toDateString()];
+                if(!$compareCustomFilter && $compareMode == 'year'){
+                    $last_period = [Carbon::now()->subYear()->subMonth()->startOfDay()->toDateString(), Carbon::now()->subYear()->endOfDay()->toDateString()];
+                }else{
+                    $last_period = [Carbon::now()->subMonth(2)->startOfDay()->toDateString(), Carbon::now()->subMonth(1)->endOfDay()->toDateString()];
+                }                
             }else if ( $dateRangeType == 'Year to date' ){
                 $period = [Carbon::now()->startOfYear()->toDateString(), Carbon::now()->endOfDay()->toDateString()];
-                $last_period = [Carbon::now()->subYear()->startOfYear()->toDateString(), Carbon::now()->subYear()->endOfDay()->toDateString()];
+                if(!$compareCustomFilter && $compareMode == 'year'){
+                    $last_period = [Carbon::now()->subYear()->startOfYear()->toDateString(), Carbon::now()->subYear()->endOfDay()->toDateString()];
+                }else{
+                    $last_period = [Carbon::now()->subMonth()->startOfMonth()->toDateString(), Carbon::now()->endOfDay()->toDateString()];
+                }                
             }else if ( $dateRangeType == '4th Quarter' ){
                 $period = [Carbon::parse($start_first_quarter_day)->addMonths(9)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->addMonths(9)->endOfDay()->toDateString()];
-                $last_period = [Carbon::parse($start_first_quarter_day)->subYear()->addMonths(9)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->subYear()->addMonths(9)->endOfDay()->toDateString()];
+                if(!$compareCustomFilter && $compareMode == 'year')
+                    $last_period = [Carbon::parse($start_first_quarter_day)->subYear()->addMonths(9)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->subYear()->addMonths(9)->endOfDay()->toDateString()];
+                else
+                    $last_period = [Carbon::parse($start_first_quarter_day)->subMonth()->addMonths(9)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->subMonth()->addMonths(9)->endOfDay()->toDateString()];
             }else if ( $dateRangeType == '3rd Quarter' ){
                 $period = [Carbon::parse($start_first_quarter_day)->addMonths(6)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->addMonths(6)->endOfDay()->toDateString()];
-                $last_period = [Carbon::parse($start_first_quarter_day)->subYear()->addMonths(6)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->subYear()->addMonths(6)->endOfDay()->toDateString()];
+                if(!$compareCustomFilter && $compareMode == 'year')
+                    $last_period = [Carbon::parse($start_first_quarter_day)->subYear()->addMonths(6)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->subYear()->addMonths(6)->endOfDay()->toDateString()];
+                else
+                    $last_period = [Carbon::parse($start_first_quarter_day)->subMonth()->addMonths(6)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->subMonth()->addMonths(6)->endOfDay()->toDateString()];
             }else if ( $dateRangeType == '2nd Quarter' ){
                 $period = [Carbon::parse($start_first_quarter_day)->addMonths(3)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->addMonths(3)->endOfDay()->toDateString()];
-                $last_period = [Carbon::parse($start_first_quarter_day)->subYear()->addMonths(3)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->subYear()->addMonths(3)->endOfDay()->toDateString()];
+                if(!$compareCustomFilter && $compareMode == 'year')
+                    $last_period = [Carbon::parse($start_first_quarter_day)->subYear()->addMonths(3)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->subYear()->addMonths(3)->endOfDay()->toDateString()];
+                else
+                    $last_period = [Carbon::parse($start_first_quarter_day)->subMonth()->addMonths(3)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->subMonth()->addMonths(3)->endOfDay()->toDateString()];
             }else{
                 $start = Carbon::now()->subYear()->startOfYear();
-                $period = [$start_first_quarter_day, $end_first_quarter_day];
-                $last_period = [$start_first_quarter_day, $end_first_quarter_day];
+                $period = [$start_first_quarter_day->toDateString(), $end_first_quarter_day->toDateString()];
+                if(!$compareCustomFilter && $compareMode == 'year')
+                    $last_period = [Carbon::now()->subYear()->startOfYear()->toDateString(), Carbon::now()->subYear()->lastOfQuarter()->toDateString()];
+                else
+                    $last_period = [Carbon::now()->subMonth()->startOfMonth()->toDateString(), Carbon::now()->endOfDay()->toDateString()];
             }
         }
         $total_sale_stores = InfoOrder::whereBetween('created_at', $period)
-                                    ->select(DB::raw('AVG(Total) as avg'), DB::raw('SUM(Total) as total'), 'TypeDelivery')
+                                    ->select(DB::raw('CEIL(AVG(Total)) as avg'), DB::raw('CEIL(SUM(Total)) as total'), 'TypeDelivery')
                                     ->groupBy('TypeDelivery')
                                     ->get();
         $last_total_sale_stores = InfoOrder::whereBetween('created_at', $last_period)
-                                    ->select(DB::raw('AVG(Total) as avg'), DB::raw('SUM(Total) as total'), 'TypeDelivery')
+                                    ->select(DB::raw('CEIL(AVG(Total)) as avg'), DB::raw('CEIL(SUM(Total)) as total'), 'TypeDelivery')
                                     ->groupBy('TypeDelivery')
                                     ->get();
         
@@ -96,19 +146,19 @@ class StatisticsController extends Controller
         foreach ($total_sale_stores as $key => $store) {
             if($store->TypeDelivery == 'MARYLEBONE') {
                 $total_sales_store    +=  $store->total;
-                $statistique['mb'] = number_format($store->total, 0) ;
+                $statistique['mb'] = $store->total ;
             }
             if($store->TypeDelivery == 'NOTTING HILL') {
                 $total_sales_store  += $store->total;
-                $statistique['nh'] = number_format($store->total, 0);
+                $statistique['nh'] = $store->total;
             }
             if($store->TypeDelivery == 'SOUTH KEN') {
                 $total_sales_store  += $store->total;
-                $statistique['sk'] = number_format($store->total, 0);
+                $statistique['sk'] = $store->total;
             }
             if($store->TypeDelivery == 'CHELSEA') {
                 $total_sales_store  += $store->total;
-                $statistique['ch'] = number_format($store->total, 0);
+                $statistique['ch'] = $store->total;
             }
             if($store->TypeDelivery == 'DELIVERY') {
                 $toal_delivery_sale += $store->total;
@@ -120,19 +170,19 @@ class StatisticsController extends Controller
         foreach ($last_total_sale_stores as $key => $store) {
             if($store->TypeDelivery == 'MARYLEBONE') {
                 $last_total_sales_store    +=  $store->total;
-                $statistique['last_mb'] = number_format($store->total, 0) ;
+                $statistique['last_mb'] = $store->total;
             }
             if($store->TypeDelivery == 'NOTTING HILL') {
                 $last_total_sales_store  += $store->total;
-                $statistique['last_nh'] = number_format($store->total, 0);
+                $statistique['last_nh'] = $store->total;
             }
             if($store->TypeDelivery == 'SOUTH KEN') {
                 $last_total_sales_store  += $store->total;
-                $statistique['last_sk'] = number_format($store->total, 0);
+                $statistique['last_sk'] = $store->total;
             }
             if($store->TypeDelivery == 'CHELSEA') {
                 $last_total_sales_store  += $store->total;
-                $statistique['last_ch'] = number_format($store->total, 0);
+                $statistique['last_ch'] = $store->total;
             }
             if($store->TypeDelivery == 'DELIVERY') {
                 $last_toal_delivery_sale += $store->total;
@@ -171,7 +221,7 @@ class StatisticsController extends Controller
                                                 ->orWhere('infoCustomer.IsMasterAccount', 1);
                                     } )                                    
                                     ->where('total', '!=', 0)
-                                    ->select(DB::raw('AVG(Total) as avg'), DB::raw('SUM(Total) as total'))
+                                    ->select(DB::raw('AVG(Total) as avg'), DB::raw('CEIL(SUM(Total)) as total'))
                                     ->first();
         $last_total_sales_b2b = InfoOrder::join('infoCustomer', 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                     ->whereBetween('infoOrder.created_at', $last_period)
@@ -182,10 +232,10 @@ class StatisticsController extends Controller
                                                 ->orWhere('infoCustomer.IsMasterAccount', 1);
                                     } )                                    
                                     ->where('total', '!=', 0)
-                                    ->select(DB::raw('AVG(Total) as avg'), DB::raw('SUM(Total) as total'))
+                                    ->select(DB::raw('AVG(Total) as avg'), DB::raw('CEIL(SUM(Total)) as total'))
                                     ->first();
-        $statistique['b2b'] = number_format( $total_sales_b2b->total, 0);
-        $statistique['last_b2b'] = number_format( $last_total_sales_b2b->total, 0);
+        $statistique['b2b'] = $total_sales_b2b->total;
+        $statistique['last_b2b'] = $last_total_sales_b2b->total;
 
         $statistique['avg_b2b_order'] = number_format( $total_sales_b2b->avg, 2);
         $statistique['last_avg_b2b_order'] = number_format( $last_total_sales_b2b->avg, 2);
@@ -197,7 +247,7 @@ class StatisticsController extends Controller
                                     ->where('infoCustomer.IsMaster', 0)
                                     ->where('infoCustomer.IsMasterAccount', 0)
                                     ->where('total', '!=', 0)
-                                    ->select(DB::raw('AVG(Total) as avg'), DB::raw('SUM(Total) as total'))
+                                    ->select(DB::raw('AVG(Total) as avg'), DB::raw('CEIL(SUM(Total)) as total'))
                                     ->first();
 
         $last_total_sales_b2c = InfoOrder::join('infoCustomer', 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
@@ -207,11 +257,11 @@ class StatisticsController extends Controller
                                     ->where('infoCustomer.IsMaster', 0)
                                     ->where('infoCustomer.IsMasterAccount', 0)
                                     ->where('total', '!=', 0)
-                                    ->select(DB::raw('AVG(Total) as avg'), DB::raw('SUM(Total) as total'))
+                                    ->select(DB::raw('AVG(Total) as avg'), DB::raw('CEIL(SUM(Total)) as total'))
                                     ->first();
 
-        $statistique['b2c'] = number_format( $total_sales_b2c->total, 0);
-        $statistique['last_b2c'] = number_format( $last_total_sales_b2c->total, 0);
+        $statistique['b2c'] = $total_sales_b2c->total;
+        $statistique['last_b2c'] = $last_total_sales_b2c->total;
 
         $statistique['avg_b2c_order'] = number_format( $total_sales_b2c->avg, 2);
         $statistique['last_avg_b2c_order'] = number_format( $last_total_sales_b2c->avg, 2);
@@ -350,13 +400,29 @@ class StatisticsController extends Controller
                                           ->where('status', 'not LIKE', '%DEL%')
                                           ->where('status', 'LIKE', '%API%')
                                           ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
+
+        $statistique['last_app_booking'] = DB::table('pickup')
+                                          ->whereBetween('date', $last_period)
+                                          ->where('status', 'not LIKE', '%DEL%')
+                                          ->where('status', 'LIKE', '%API%')
+                                          ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
         $statistique['pos_booking'] = DB::table('pickup')
                                           ->whereBetween('date', $period)
                                           ->where('status', 'not LIKE', '%DEL%')
                                           ->where('status', 'LIKE', '%PMS%')
                                           ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
+        $statistique['last_pos_booking'] = DB::table('pickup')
+                                          ->whereBetween('date', $last_period)
+                                          ->where('status', 'not LIKE', '%DEL%')
+                                          ->where('status', 'LIKE', '%PMS%')
+                                          ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
         $statistique['rec_booking'] = DB::table('pickup')
                                           ->whereBetween('date', $period)
+                                          ->where('status', 'not LIKE', '%DEL%')
+                                          ->where('status', 'LIKE', '%REC%')
+                                          ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
+        $statistique['last_rec_booking'] = DB::table('pickup')
+                                          ->whereBetween('date', $last_period)
                                           ->where('status', 'not LIKE', '%DEL%')
                                           ->where('status', 'LIKE', '%REC%')
                                           ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
