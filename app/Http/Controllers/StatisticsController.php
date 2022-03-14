@@ -444,7 +444,7 @@ class StatisticsController extends Controller
         $statistique['total_sale_delivery_by_dep'] = 0;
         $statistique['total_item_delivery_by_dep'] = 0;
         foreach ($dep_list as $dep) {
-            $store = Infoitem::where('PromisedDate', $period)
+            $store = Infoitem::whereBetween('PromisedDate', $period)
                     ->where('StoreName', '!=', 'ATELIER')
                     ->where('DepartmentName', $dep->DepartmentName)
                     ->select( 
@@ -456,7 +456,7 @@ class StatisticsController extends Controller
             $statistique['item_store_by_dep'][] = $store->count ? $store->count : 0;
             $statistique['total_item_store_by_dep'] += $store->count ? $store->count : 0;
 
-            $delivery = Infoitem::where('PromisedDate', $period)
+            $delivery = Infoitem::whereBetween('PromisedDate', $period)
                     ->where('StoreName', 'ATELIER')
                     ->where('DepartmentName', $dep->DepartmentName)
                     ->select( 

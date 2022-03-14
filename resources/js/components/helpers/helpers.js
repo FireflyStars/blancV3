@@ -2,9 +2,9 @@ import store from "../../store/store";
 import {TOASTER_MESSAGE, TOASTER_MODULE} from "../../store/types/types";
 
 
-export const hasRoles=roles=>{
+export const hasRoles = roles =>{
     const ses_roles=JSON.parse(window.atob(window.sessionStorage.getItem('roles')));
-
+    console.log(ses_roles);
     let foundroles=Array();
     roles.forEach(role=> {
             let foundrole = ses_roles.filter(ses_role => ses_role.name == role);

@@ -14,6 +14,7 @@
                         </div>
                         <template v-for="(tab,tab_index) in tabs" :key="tab_index">
                             <order-list-table :tabledef="allordertablefields" :tab="tab" :id="tab_index" v-if="tab.active"></order-list-table>
+                            <!-- <order-list-table :tabledef="customercaretablefields" :tab="tab" :id="tab_index" v-if="tab.active && tab.name == 'Customer Care'"></order-list-table> -->
                         </template>
                         <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
                             <div v-if="showlayer" class="back-layer"></div>
@@ -154,6 +155,95 @@
                     css:"font-weight:bold;text-align:right;"
                 }
             });
+            const customercaretablefields=ref({
+                line_select:{
+                    name:" ",
+                    width:"3%",
+                    sortable:false,
+                    identifier:"id",
+                    type:'checkbox',
+                },
+                id:{
+                   name:"Order N°",
+                    width:"10%",
+                   sortable:false
+               },
+                // express:{
+                //     name:" ",
+                //     width:"4%",
+                //     sortable:false,
+                //     type:'express'
+                // },
+                Name:{
+                    name:"Customer",
+                    width:"22%",
+                    sortable:true
+                },
+                TypeDelivery:{
+                    name:"Destination",
+                    width:"10%",
+                    css:"text-align:center",
+                    sortable:true,
+                    header_align:"center"
+                },
+                // PromisedDate:{
+                //     name:"Promised Date",
+                //     width:"13%",
+                //     sortable:true,
+                //     css:"font-weight:bold;text-align:center",
+                //     header_align:"center"
+                // },
+                // numitems:{
+                //     name:"Items",
+                //     width:"7%",
+                //     sortable:true,
+                //     css:"text-align:center",
+                //     header_align:"center"
+                // },
+                Status:{
+                   name:"Order Status",
+                   width:"13%",
+                   sortable:true,
+                    type:'tag',
+                    header_align:"center",
+                    css:"text-align:center",
+                },
+                // paid:{
+                //     name:"Payment",
+                //     width:"13%",
+                //     sortable:true,
+                //     type:'tag',
+                //     header_align:"center"
+                // },
+                Action:{
+                    name:"Action Needed",
+                    width:"13%",
+                    sortable:true,
+                    type:'tag',
+                    header_align:"center"
+                },
+                Total:{
+                    name:"Total",
+                    width:"5%",
+                    sortable:true,
+                    type:'price',
+                    css:"font-weight:bold;text-align:right;"
+                },
+                Prod:{
+                    name:"Prod",
+                    width:"10%",
+                    sortable:false,
+                    css:"font-weight:bold;text-align:right;",
+                    header_align:"center"
+                },
+                Deliv:{
+                    name:"Deliv",
+                    width:"10%",
+                    sortable:false,
+                    css:"font-weight:bold;text-align:center",
+                    header_align:"center"
+                }
+            });
             onMounted(()=>{
                 nextTick(()=>{
                     showcontainer.value=true;
@@ -185,6 +275,7 @@
                 tabs,
                 showcontainer,
                 allordertablefields,
+                customercaretablefields,
                 showlayer:computed(()=>{return (route.params.order_id>0&&store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_CURRENT_SELECTED}`]);})
             }
         }
