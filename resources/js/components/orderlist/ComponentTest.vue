@@ -143,11 +143,11 @@
                         <div class="col-4">
                               <select-options v-model="sel_picto" placeholder="Choose a picto" :options="picto_names" name="select3" hint=""></select-options>
                         </div>
-                        <div class="col">{{sel_picto}}</div>
+                        <div class="col-12">{{sel_picto}}</div>
                     </div>
-                    <div class="row mt-3">
-                        <div class="col-4">
-                            <item-picto :pictoname="picto"></item-picto>
+                    <div class="row mt-3 mb-5">
+                        <div class="col-12">
+                            <item-picto-new :pictoname="picto"></item-picto-new>
                         </div>
                     </div>
 
@@ -179,13 +179,13 @@
     import SwitchBtn from '../miscellaneous/SwitchBtn'
     import OrderBarcode from '../miscellaneous/OrderBarcode'
     import RecurringForm from '../miscellaneous/RecurringForm'
-    import ItemPicto from '../miscellaneous/ItemPicto.vue'
+    import ItemPictoNew from '../miscellaneous/ItemPictoNew.vue'
     import DetailingRightPanel from '../detailing/DetailingRightPanel.vue';
 
 
     export default {
         name: "ComponentTest",
-        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,SwitchBtn,OrderBarcode, RecurringForm,ItemPicto,DetailingRightPanel},
+        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,SwitchBtn,OrderBarcode, RecurringForm,ItemPictoNew,DetailingRightPanel},
         setup(props,context){
             const showcontainer=ref(false);
             const show_barcode= ref(false);

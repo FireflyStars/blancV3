@@ -436,6 +436,7 @@ import axios from 'axios';
 
             const showcontainer=ref(false);
             const deliverymethod =ref('');
+
             //isc : in store collection
             //const isc_dropoff =ref('');
             //const isc_dropoff_timeslot=ref(0);
@@ -676,7 +677,6 @@ import axios from 'axios';
                        let err_method = validateByDeliveryMethod(deliverymethod.value);
 
                         err_txt = err_txt.concat(err_method);
-
 
 
                    }
