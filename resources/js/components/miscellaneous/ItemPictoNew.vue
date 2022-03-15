@@ -135,11 +135,21 @@ export default {
                                     v.svg_path +
                                     '" data-name="' + v.description + '"/>';
                             }
+                            /*
                             if (fill_class == 'stain-not-editable') {
                                 svg_el += " <svg width='20' height='20'> <g><circle cx='10' cy='10' r='10' stroke-width='4' fill='#EF8F00'/><text x='50%'' y='50%'' text-anchor='middle' stroke='white' stroke-width='1px' dy='.3em'>"+index+"</text></g></svg>";
                             } else if (fill_class == 'damage-not-editable') {
                                 svg_el += " <svg width='20' height='20'> <g><circle cx='10' cy='10' r='10' stroke-width='4' fill='#EB5757'/><text x='50%'' y='50%'' text-anchor='middle' stroke='white' stroke-width='1px' dy='.3em'>"+index+"</text></g></svg>";
+
                             }
+                            */
+
+                            if (fill_class == 'stain-not-editable') {
+                                svg_el += "<circle cx='"+v.label_x+"' cy='"+v.label_y+"' r='10' stroke-width='4' fill='#EF8F00'  class='zone_labels'/><text x='"+v.label_x+"' y='"+v.label_y+"' text-anchor='middle' stroke='white' stroke-width='1px' dy='.3em'>"+index+"</text>";
+                            }else if (fill_class == 'damage-not-editable') {
+                                svg_el += "<circle cx='"+v.label_x+"' cy='"+v.label_y+"' r='10' stroke-width='4' fill='#EB5757'  class='zone_labels'/><text x='"+v.label_x+"' y='"+v.label_y+"' text-anchor='middle' stroke='white' stroke-width='1px' dy='.3em'>"+index+"</text>";
+                            }
+
                             details += svg_el;
                         });
 
@@ -200,28 +210,32 @@ export default {
 
         function getZone() {
             let old_fill = 'transparent';
-            let selector = '.clickable-path';  // We bind the event handler directly to the document.
+            let selector = '.clickable-path';
+            let labels = '.zone_labels';
+            // We bind the event handler directly to the document.
             document.addEventListener('mouseover', function (e) {
                 let el = e.target;    // Check if it matches our previously defined selector
                 //old_fill  =el.style.fill;
-                if (!el.matches(selector)) {
-                    el.style.fill = 'transparent';
-                    return;
-                }    // The method logic
+
+                if(!el.matches(labels)){
+                    if (!el.matches(selector)) {
+                        el.style.fill = 'transparent';
+                        return;
+                    }    // The method logic
 
 
-                el.classList.add('path-mouse-over');
+                    el.classList.add('path-mouse-over');
 
-                /*
-                //select other zones with same name
-                let zone_name = el.getAttribute('data-name');
-                let other_el = document.querySelectorAll('[data-name="'+zone_name+'"]');
+                    /*
+                    //select other zones with same name
+                    let zone_name = el.getAttribute('data-name');
+                    let other_el = document.querySelectorAll('[data-name="'+zone_name+'"]');
 
-                other_el.forEach(function(v,i){
-                    v.classList.add('path-mouse-over');
-                });
-                */
-
+                    other_el.forEach(function(v,i){
+                        v.classList.add('path-mouse-over');
+                    });
+                    */
+                }
 
             });
 
