@@ -71,7 +71,7 @@
                     </div>
                     <div class="row">
                         <div class="col-3">
-                            <date-picker v-model="date3" name="date3" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Date picker" hint="disabled till 2021-09-10" disabled-to-date="2021-09-10"></date-picker>
+                            <date-picker v-model="date3" name="date3" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Date picker" hint="disabled till 2021-09-10" disabled-to-date="2021-09-10" @loadtranche="loadtranche('hd_pickup')"></date-picker>
 
                         </div>
                         <div class="col p-2">
@@ -80,7 +80,7 @@
                     </div>
                     <div class="row">
                         <div class="col-3">
-                            <time-slot-picker placeholder="00-00 AM" v-model="slot"   name="timepick1" :available-slots="[1,5]" hint="How about a very long hint" label="Time"></time-slot-picker>
+                            <time-slot-picker placeholder="00-00 AM" v-model="slot"   name="timepick1" :available-slots="available_slots" hint="How about a very long hint" label="Time"></time-slot-picker>
                         </div>
                         <div class="col p-2">
                             {{slot}}
@@ -147,7 +147,9 @@
                     </div>
                     <div class="row mt-3 mb-5">
                         <div class="col-12">
-                            <item-picto-new :pictoname="picto"></item-picto-new>
+                            <item-picto-new :pictoname="picto"
+                            :selectable="true"
+                            issue_type="stain"></item-picto-new>
                         </div>
                     </div>
 
@@ -201,8 +203,8 @@
             const sel1=ref(2);
             const sel2=ref('');
             const date=ref('');
-            const date2=ref('2021-09-15');
-            const date3=ref('2021-09-15');
+            const date2=ref('2022-03-15');
+            const date3=ref('2022-03-15');
             const search= ref('');
             const data= ref([]);
             const picto = ref('');
@@ -214,7 +216,11 @@
             detailingitem.value={item_id:12345678,pricecleaning:20};
             item_description.value={typeitem_name:'shirt'};
 
-              watch(() => Scan.value, (current_val, previous_val) => {
+            const shp_postcode =ref('');
+            const hd_pickup =ref('');
+            const available_slots = ref([]);
+
+            watch(() => Scan.value, (current_val, previous_val) => {
               if(Scan.value == false) {
                   show_barcode.value= false;
               }else {
@@ -285,7 +291,59 @@
 
             });
 
+            function loadtranche(comp){
+                const var_tmp_date = eval(comp);
+                const today = new Date();
 
+                let all_tranches = [1,3,5,7,9,11];
+                let available_tranches = [];
+
+                var_tmp_date.value =date3.value;;
+                shp_postcode.value='W36JQ';
+                if(shp_postcode.value !=''){
+                    axios.post('/get-tranche-by-postcode',{
+                        postcode: shp_postcode.value
+                    }).then((response)=>{
+                        let tranches = response.data.available_slots;
+                        let self = this;
+                        all_tranches.forEach(function(v,i){
+                            if(tranches[v] && tranches[v].includes(var_tmp_date.value)){
+                                if(new Date(var_tmp_date.value).getTime()==today.getTime()){
+                                    if(!available_tranches.includes(v)&&self.getTimeFromSlot(v)>today.getHours()){
+                                        available_tranches.push(v);
+                                    }
+                                }else{
+                                    if(!available_tranches.includes(v)){
+                                        available_tranches.push(v);
+                                    }
+                                }
+                            }
+                        });
+                        // set available_slots for timeSlot
+                        available_slots.value=available_tranches;
+                    }).catch((error)=>{
+                       console.log(error);
+                    }).finally(()=>{
+                    });
+
+                }
+           }
+           function getTimeFromSlot(slot){
+                let slot_from_arr = [];
+                let hr = 0;
+
+                for (let i = 1; i <= 13; i+=2) {
+                    hr = i+7;
+                    if(i==13){
+                        hr = 8; //To confirm for 8-8 slot
+                    }
+
+                    slot_from_arr[i] = hr.toString().padStart(2,'0');
+
+                }
+
+                return slot_from_arr[slot];
+            }
             return {
 
                 showcontainer,
@@ -310,7 +368,12 @@
                 getAllPictoNames,
                 sel_picto,
                 item_description,
-                detailingitem
+                detailingitem,
+                loadtranche,
+                getTimeFromSlot,
+                shp_postcode,
+                hd_pickup,
+                available_slots,
             }
         },
 
