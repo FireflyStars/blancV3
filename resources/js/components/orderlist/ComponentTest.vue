@@ -146,10 +146,13 @@
                         <div class="col-12">{{sel_picto}}</div>
                     </div>
                     <div class="row mt-3 mb-5">
-                        <div class="col-12">
+                        <div class="col-8">
                             <item-picto-new :pictoname="picto"
                             :selectable="true"
-                            issue_type="stain"></item-picto-new>
+                            issue_type="stain"  @add-stain-zone="showZoneDetail"></item-picto-new>
+                        </div>
+                        <div class="col-4">
+
                         </div>
                     </div>
 
@@ -344,6 +347,12 @@
 
                 return slot_from_arr[slot];
             }
+
+
+            function showZoneDetail(id){
+                console.log(id);
+            }
+
             return {
 
                 showcontainer,
@@ -374,6 +383,7 @@
                 shp_postcode,
                 hd_pickup,
                 available_slots,
+                showZoneDetail,
             }
         },
 

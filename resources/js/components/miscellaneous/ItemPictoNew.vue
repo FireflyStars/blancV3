@@ -13,10 +13,12 @@
     >
         <g id="svg_path" v-html="picto_details" />
     </svg>
+
 </template>
 <script>
-import { ref, watch } from "vue";
+import { ref, watch} from "vue";
 import { useStore } from "vuex";
+ import {useRoute} from 'vue-router';
 import {
     LOADER_MODULE,
     SET_LOADER_MSG,
@@ -36,6 +38,8 @@ export default {
         const svg_viewbox = ref([]);
 
         const store = useStore();
+        const route = useRoute();
+
 
         const loadSvgZones = (type_picto) => {
             let zones = [
@@ -145,7 +149,7 @@ export default {
                             */
 
                             if (fill_class == 'stain-not-editable') {
-                                svg_el += "<circle cx='"+v.label_x+"' cy='"+v.label_y+"' r='10' stroke-width='4' fill='#EF8F00'  class='zone_labels'/><text x='"+v.label_x+"' y='"+v.label_y+"' text-anchor='middle' stroke='white' stroke-width='1px' dy='.3em'>"+index+"</text>";
+                                svg_el += "<circle cx='"+v.label_x+"' cy='"+v.label_y+"' r='10' stroke-width='4' fill='#EF8F00'  class='zone_labels'/><text x='"+v.label_x+"' y='"+v.label_y+"' text-anchor='middle' stroke='white' stroke-width='1px' dy='.3em' class='zone_labels'>"+index+"</text>";
                             }else if (fill_class == 'damage-not-editable') {
                                 svg_el += "<circle cx='"+v.label_x+"' cy='"+v.label_y+"' r='10' stroke-width='4' fill='#EB5757'  class='zone_labels'/><text x='"+v.label_x+"' y='"+v.label_y+"' text-anchor='middle' stroke='white' stroke-width='1px' dy='.3em'>"+index+"</text>";
                             }
@@ -182,9 +186,40 @@ export default {
                     );
                     svg_row = _.cloneDeep(svg_row);
                     if (svg_row[0].description != "") {
+
+
                         let svg_desc = svg_data.value.filter(
                             (s) => s.id == svg_row[0].id
                         );
+
+
+                        if(route.name=='ComponentTest'){
+                            console.log(svg_row[0]);
+
+                            var svgNS = "http://www.w3.org/2000/svg";
+
+                            let label_id = "mycircle"+svg_row[0].id;
+
+                            var myCircle = document.createElementNS(svgNS,"circle");
+                            myCircle.setAttributeNS(null,"id",label_id);
+                            myCircle.setAttributeNS(null,"class","zone_labels");
+                            myCircle.setAttributeNS(null,"cx",parseInt(svg_row[0].label_x));
+                            myCircle.setAttributeNS(null,"cy",parseInt(svg_row[0].label_y));
+                            myCircle.setAttributeNS(null,"r",10);
+                            myCircle.setAttributeNS(null,"fill","#EF8F00");
+                            myCircle.setAttributeNS(null,"stroke",4);
+
+                            if (!e.target.matches('.stain-editable')) {
+                                //add cirle
+                                 document.getElementById("Layer_1").appendChild(myCircle);
+
+                            }else{
+                                //remove circle
+                                document.getElementById(label_id).remove();
+                            }
+                        }
+
+
                         context.emit("add-stain-zone", svg_row[0].id);
                         svg_desc = _.cloneDeep(svg_desc);
                         svg_desc.forEach(element => {
