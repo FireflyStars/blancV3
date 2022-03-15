@@ -31,20 +31,28 @@ class OrderListController extends Controller
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Prod'),
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Deliv'),
                     DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
-                    DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as Deliv'),
+                    // DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as Deliv'),
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
-                ->join('pickup','infoOrder.PickupID','=','pickup.PickupID')
-                ->join('deliveryask','infoOrder.DeliveryaskID','=','deliveryask.DeliveryaskID')
+                // ->join('pickup', function($join){
+                //     $join->on('pickup.PickupID','=','infoOrder.PickupID')
+                //         ->where('infoOrder.PickupID','!=','')
+                //         ->whereIn('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP']);
+                // })
+                // ->join('deliveryask', function ($join){
+                //     $join->on('deliveryask.DeliveryaskID','=','infoOrder.DeliveryaskID')
+                //     ->where('infoOrder.DeliveryaskID','!=','')
+                //     ->whereIn('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP']);
+                // })
                 ->leftJoin('infoitems',function($join){
-                    $join->on('infoInvoice.SubOrderID','=','infoitems.SubOrderID')
-                        ->where('infoitems.SubOrderID','!=','')
+                    $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
+                        ->where('infoitems.InvoiceID','!=','')
                        ->whereNotIn('infoitems.Status',['DELETE','VOID']);
                 })
                 ->where('infoOrder.OrderID','!=','')
+                // ->where('infoitems.CCStatus','!=','')
                 ->where('infoInvoice.OrderID','!=','');
-                // return response()->json($orderlist->toSql());
         }else{
             $orderlist=DB::table('infoOrder')
                 ->select( [ 
@@ -59,13 +67,21 @@ class OrderListController extends Controller
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
-                ->join('pickup','infoOrder.PickupID','=','pickup.PickupID')
-                ->join('deliveryask','infoOrder.DeliveryaskID','=','deliveryask.DeliveryaskID')
+                ->join('pickup', function($join){
+                    $join->on('pickup.PickupID','=','infoOrder.PickupID')
+                        ->where('infoOrder.PickupID','!=','')
+                        ->whereIn('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP']);
+                })
+                ->join('deliveryask', function ($join){
+                    $join->on('deliveryask.DeliveryaskID','=','infoOrder.DeliveryaskID')
+                    ->where('infoOrder.DeliveryaskID','!=','')
+                    ->whereIn('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP']);
+                })
                 ->where('infoOrder.OrderID','!=','')
                 ->where('infoitems.CCStatus','!=','')
                 ->leftJoin('infoitems',function($join){
-                    $join->on('infoInvoice.SubOrderID','=','infoitems.SubOrderID')
-                        ->where('infoitems.SubOrderID','!=','')
+                    $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
+                        ->where('infoitems.InvoiceID','!=','')
                        ->whereNotIn('infoitems.Status',['DELETE','VOID']);
                 })
                 ->where(
