@@ -63,7 +63,7 @@ export default {
                         svg_viewpoint.value = res.data.svg_details.viewpoint;
                         svg_scale.value = res.data.svg_details.scale;
 
-                        document.getElementById('Layer_1').setAttribute('viewBox',String(res.data.svg_details.viewpoint));
+                        document.getElementById('Layer_1').setAttribute('viewBox', String(res.data.svg_details.viewpoint));
 
                     }
 
@@ -72,24 +72,25 @@ export default {
                         svg_data.value = res.data.svg;
                         svg.forEach((v) => {
                             let svg_el = "";
+                            let fill_class = "";
+                            let index=0;
+                            if (props.issue_type == "stain" && v.description && props.stainzone && props.stainzone.some(z => z.id_zone === v.id)) {
+                                fill_class = props.selectable ? 'stain-editable' : 'stain-not-editable';
+                                index = props.stainzone.findIndex(z => z.id_zone === v.id)+1;
+                            } else if (props.issue_type == "damage" && v.description && props.damagezone && props.damagezone.some(z => z.id_zone === v.id)) {
+                                fill_class = props.selectable ? 'damage-editable' : 'damage-not-editable';
+                                index = props.damagezone.findIndex(z => z.id_zone === v.id)+1;
+                           }
                             if (v.svg_type == "path") {
-                                let fill = "";
-                                if (props.issue_type == "stain") {
-                                    fill = v.description && props.stainzone && props.stainzone.some(z => z.id_zone === v.id) ? '#F1D2A4B2' : 'none';
-                                } else if (props.issue_type == "damage"){
-                                    fill = v.description && props.damagezone && props.damagezone.some(z => z.id_zone === v.id) ? '#F5ABABB2' : 'none';
-                                }else{
-                                    fill='none';
-                                }
                                 svg_el =
-                                    '<path fill="' + fill +
-                                    '"id="path_' +
+                                    '<path fill="none" id="path_' +
                                     v.id +
                                     '" class="each-svg-el each-path-' +
                                     v.face.toUpperCase() +
                                     " path_" +
                                     v.description +
-                                    ' '+(v.description !=''?'clickable-path':'')+'"' +
+                                    ' ' + (v.description != '' ? 'clickable-path' : '') +
+                                    ' ' + fill_class + '"' +
                                     (v.stroke == 1 ? 'stroke="#333333"' : "") +
                                     ' stroke-width="2" d="' +
                                     v.svg_path +
@@ -105,12 +106,7 @@ export default {
                                         " - " +
                                         v.side
                                         : "") +
-                                    '" data-name="'+v.description+'"/>';
-                                if (fill == '#F1D2A4B2') {
-                                   svg_el += " <svg width='20' height='20'> <g><circle cx='10' cy='10' r='10' stroke-width='4' fill='#EF8F00'/><text x='50%'' y='50%'' text-anchor='middle' stroke='white' stroke-width='1px' dy='.3em'>1</text></g></svg>";
-                                }else if(fill == '#F5ABABB2') {
-                                    svg_el += " <svg width='20' height='20'> <g><circle cx='10' cy='10' r='10' stroke-width='4' fill='#EB5757'/><text x='50%'' y='50%'' text-anchor='middle' stroke='white' stroke-width='1px' dy='.3em'>1</text></g></svg>";
-                                }
+                                    '" data-name="' + v.description + '"/>';
                             } else if (v.svg_type == "line") {
                                 svg_el =
                                     "<line " +
@@ -133,12 +129,17 @@ export default {
                                     '" class="each-svg-el each-path-' +
                                     v.face.toUpperCase() +
                                     " path_" +
-                                    v.description +
-                                    (v.description !=''?' clickable-path':'')+'" points="' +
+                                    v.description + ' '
+                                    + fill_class +
+                                    (v.description != '' ? ' clickable-path' : '') + '" points="' +
                                     v.svg_path +
-                                    '" data-name="'+v.description+'"/>';
+                                    '" data-name="' + v.description + '"/>';
                             }
-
+                            if (fill_class == 'stain-not-editable') {
+                                svg_el += " <svg width='20' height='20'> <g><circle cx='10' cy='10' r='10' stroke-width='4' fill='#EF8F00'/><text x='50%'' y='50%'' text-anchor='middle' stroke='white' stroke-width='1px' dy='.3em'>"+index+"</text></g></svg>";
+                            } else if (fill_class == 'damage-not-editable') {
+                                svg_el += " <svg width='20' height='20'> <g><circle cx='10' cy='10' r='10' stroke-width='4' fill='#EB5757'/><text x='50%'' y='50%'' text-anchor='middle' stroke='white' stroke-width='1px' dy='.3em'>"+index+"</text></g></svg>";
+                            }
                             details += svg_el;
                         });
 
@@ -160,8 +161,8 @@ export default {
         );
         loadSvgZones(props.pictoname);
 
-        function getPictoZoneDesc(id){
-            return svg_data.value.filter((zone)=> zone.id===id)[0].description;
+        function getPictoZoneDesc(id) {
+            return svg_data.value.filter((zone) => zone.id === id)[0].description;
         }
         function onPartClick(e) {
             if (props.selectable) {
@@ -179,10 +180,16 @@ export default {
                         svg_desc.forEach(element => {
                             let el = document.getElementById("path_" + element.id);
                             if (el) {
-                                if (el.style.fill == "" || el.style.fill == "transparent") {
-                                    el.style.fill = props.issue_type == "stain" ? "#EF8F00" : "#EB5757";
-                                } else {
-                                    el.style.fill = "transparent";
+                                if (props.issue_type == "stain") {
+                                    if (!e.target.matches('.stain-editable')) {
+                                        el.classList.add('stain-editable');
+                                    }
+                                    else { el.classList.remove('stain-editable'); }
+                                } else if (props.issue_type == "damage") {
+                                    if (!e.target.matches('.damage-editable')) {
+                                        el.classList.add('damage-editable');
+                                    }
+                                    else { el.classList.remove('damage-editable'); }
                                 }
                             }
                         });
@@ -191,68 +198,79 @@ export default {
             }
         }
 
-    function getZone(){
-        let old_fill='transparent';
-        let selector = '.clickable-path';  // We bind the event handler directly to the document.
-        document.addEventListener('mouseover', function(e) {
-            let el = e.target;    // Check if it matches our previously defined selector
-             //old_fill  =el.style.fill;
-            if (!el.matches(selector)) {
-                el.style.fill = 'transparent';
-                return;
-            }    // The method logic
+        function getZone() {
+            let old_fill = 'transparent';
+            let selector = '.clickable-path';  // We bind the event handler directly to the document.
+            document.addEventListener('mouseover', function (e) {
+                let el = e.target;    // Check if it matches our previously defined selector
+                //old_fill  =el.style.fill;
+                if (!el.matches(selector)) {
+                    el.style.fill = 'transparent';
+                    return;
+                }    // The method logic
 
 
-            el.classList.add('path-mouse-over');
+                el.classList.add('path-mouse-over');
 
-            /*
-            //select other zones with same name
-            let zone_name = el.getAttribute('data-name');
-            let other_el = document.querySelectorAll('[data-name="'+zone_name+'"]');
+                /*
+                //select other zones with same name
+                let zone_name = el.getAttribute('data-name');
+                let other_el = document.querySelectorAll('[data-name="'+zone_name+'"]');
 
-            other_el.forEach(function(v,i){
-                v.classList.add('path-mouse-over');
+                other_el.forEach(function(v,i){
+                    v.classList.add('path-mouse-over');
+                });
+                */
+
+
             });
-            */
 
+            document.addEventListener('mouseout', function (e) {
+                let el = e.target;    // Check if it matches our previously defined selector
+                //console.log('el-out',el);
 
-        });
+                if (!el.matches(selector)) {
+                    return;
+                }    // The method logic
+                el.classList.remove('path-mouse-over');
 
-        document.addEventListener('mouseout', function(e) {
-            let el = e.target;    // Check if it matches our previously defined selector
-            //console.log('el-out',el);
+                //el.style.fill = '';//old_fill;
+            });
 
-            if (!el.matches(selector)) {
-                return;
-            }    // The method logic
-            el.classList.remove('path-mouse-over');
+        }
 
-            //el.style.fill = '';//old_fill;
-        });
+        getZone();
 
-    }
-
-    getZone();
-
-    return {
-        loadSvgZones,
-        onPartClick,
-        svg_viewpoint,
-        svg_scale,
-        picto_details,
-        svg_viewbox,
-        getZone,
-    };
+        return {
+            loadSvgZones,
+            onPartClick,
+            svg_viewpoint,
+            svg_scale,
+            picto_details,
+            svg_viewbox,
+            getZone,
+        };
     },
 };
 </script>
 <style>
-    .svg_hover{
-        background: silver;
-    }
+.svg_hover {
+    background: silver;
+}
 
-    .path-mouse-over{
-        fill: #dadada !important;
-    }
-
+.path-mouse-over {
+    fill: #dadada !important;
+}
+.stain-editable {
+    fill: #ef8f00 !important;
+}
+.stain-not-editable {
+    fill: #f1d2a4b2 !important;
+}
+.damage-editable {
+    fill: #eb5757 !important;
+}
+.damage-not-editable {
+    fill: #f5ababb2 !important;
+}
 </style>

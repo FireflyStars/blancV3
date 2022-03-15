@@ -22,7 +22,7 @@
             :pictoname="typeitemPicto"
             face="all"
             :selectable="true"
-            :damagezone="[]"
+            :damagezone="damageZone"
             @add-stain-zone="addDamageZone"
             issue_type="damage"
         ></item-picto-new>
