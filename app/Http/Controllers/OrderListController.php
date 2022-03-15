@@ -24,12 +24,19 @@ class OrderListController extends Controller
                 ->select( [ 
                     'infoOrder.id','infoOrder.Status','infoOrder.Total',
                     'infoCustomer.Name','infoCustomer.TypeDelivery',
-                    DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%d/%m")) as PromisedDate'),
-                    DB::raw('count(infoitems.id) as numitems'),DB::raw('GROUP_CONCAT(infoitems.express) as express'),
-                    DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),'infoOrder.suggestedDeliveryDate'
+                    // DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%d/%m")) as PromisedDate'),
+                    DB::raw('count(infoitems.id) as itemsCount'),
+                    DB::raw('COUNT(case when infoitems.Status = "READY" then 1 end) as ready_items'),
+                    DB::raw('GROUP_CONCAT(infoitems.express) as express'),
+                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Prod'),
+                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Deliv'),
+                    DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
+                    DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as Deliv'),
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+                ->join('pickup','infoOrder.PickupID','=','pickup.PickupID')
+                ->join('deliveryask','infoOrder.DeliveryaskID','=','deliveryask.DeliveryaskID')
                 ->leftJoin('infoitems',function($join){
                     $join->on('infoInvoice.SubOrderID','=','infoitems.SubOrderID')
                         ->where('infoitems.SubOrderID','!=','')
@@ -37,6 +44,7 @@ class OrderListController extends Controller
                 })
                 ->where('infoOrder.OrderID','!=','')
                 ->where('infoInvoice.OrderID','!=','');
+                // return response()->json($orderlist->toSql());
         }else{
             $orderlist=DB::table('infoOrder')
                 ->select( [ 
@@ -44,8 +52,7 @@ class OrderListController extends Controller
                     'infoCustomer.Name as Customer','infoCustomer.TypeDelivery',
                     // DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%d/%m")) as PromisedDate'),
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
-                    // 'infoitems.express',
-                    DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),'infoOrder.suggestedDeliveryDate',
+                    DB::raw('IF(infoOrder.Paid = 0, "unpaid", "paid") as paid'),
                     'infoitems.CCStatus as Action', 
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Prod'),
                     DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as Deliv')
@@ -64,7 +71,7 @@ class OrderListController extends Controller
                 ->where(
                     function($query) {
                         $query->where(function($query) {
-                            // $query->whereDate('infoOrder.DateDeliveryAsk', '<=', date('Y-m-d'))
+                            $query->whereDate('infoOrder.DateDeliveryAsk', '<=', date('Y-m-d'));
                             $query->whereNotIn('infoOrder.Status', ['DELIVERED', 'DELIVERD TO STORE', 'SOLD', 'DONATED', 'DONATED TO CHARITY', 'COLLECTED', 'VOIDED', 'FULFILLED', 'VOID', 'DELETE', 'SOLD']);
                         })->orWhere(function($query){
                             $query->where('infoOrder.Paid', 0)->where('infoCustomer.TypeDelivery','=','DELIVERY');
@@ -127,15 +134,12 @@ class OrderListController extends Controller
                 foreach ($columns as $column => $direction)
                     $orderlist = $orderlist->orderBy($column, $direction);
         }else{
-            $orderlist = $orderlist->orderBy('infoOrder.id', 'DESC');
+            $orderlist = $orderlist->orderByDesc('infoOrder.id');
         }
 
 
         $orderlist=$orderlist->skip($skip)->take($take);
-       // $sql = Str::replaceArray('?', $orderlist->getBindings(), $orderlist->toSql());
         $orderlist=$orderlist->get();
-// print
-     //  dd($sql);
         return response()->json($orderlist);
     }
 
@@ -293,12 +297,13 @@ class OrderListController extends Controller
                               ->select(
                                     'TypePost.bg_color as location_color', 'postes.nom as location',
                                     'TypePost.process', 'TypePost.circle_color',
-                                    DB::raw('DATE_FORMAT(production.date_add,"%a") as day'),
-                                    DB::raw('DATE_FORMAT(production.date_add,"%m/%d/%Y") as date'),
-                                    DB::raw('DATE_FORMAT(production.date_add,"%H:%i") as time'),
+                                    // DB::raw('DATE_FORMAT(production.date_add,"%a") as day'),
+                                    DB::raw('DATE_FORMAT(production.date_add,"%a %m/%d/%Y %H:%i") as date'),
+                                    // DB::raw('DATE_FORMAT(production.date_add,"%H:%i") as time'),
                                     'users.name'
                                 )
                               ->where('production.item_id', $request->item_id)
+                              ->orderByDesc('production.date_add')
                               ->get();
         return response()->json([
             'item_detail'=>[

@@ -68,20 +68,22 @@
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading customer care. Please wait...');
             }else  if(hasRoles(['user'])){
                 tabs.value= {
-                    due_today: {active: true, name: 'Due today'},
+                    all_orders: {active: true, name: 'All orders'},
+                    due_today: {active: false, name: 'Due today'},
                     due_tomorrow: {active: false, name: 'Due tomorrow'},
-                    all_orders: {active: false, name: 'All orders'},
                     customer_care: {active: false, name: 'Customer Care'},
                     with_partner: {active: false, name: 'With partner'},
                 };
-                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SET_CURRENTTAB}`,'due_today');
-                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading due today. Please wait...');
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SET_CURRENTTAB}`,'all_orders');
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading order list. Please wait...');
             }else {
                 tabs.value= {
                     all_orders: {active: true, name: 'All orders'},
-                    unfulfilled: {active: false, name: 'Unfulfilled'},
+                    due_today: {active: false, name: 'Due today'},
+                    // unfulfilled: {active: false, name: 'Unfulfilled'},
                     due_tomorrow: {active: false, name: 'Due tomorrow'},
-                    without_delivery_date: {active: false, name: 'Without delivery date'},
+                    customer_care: {active: false, name: 'Customer Care'},
+                    // without_delivery_date: {active: false, name: 'Without delivery date'},
                     with_partner: {active: false, name: 'With partner'},
                 };
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SET_CURRENTTAB}`,'all_orders');
@@ -97,62 +99,84 @@
                 },
                 id:{
                    name:"Order N°",
-                    width:"10%",
+                    width:"8%",
                    sortable:false
                },
                 express:{
                     name:" ",
-                    width:"4%",
+                    width:"3%",
                     sortable:false,
                     type:'express'
                 },
                 Name:{
-                    name:"Name",
-                    width:"22%",
-                    sortable:true
+                    name:"Customer",
+                    width:"26%",
+                    sortable:false
                 },
                 TypeDelivery:{
                     name:"Destination",
-                    width:"10%",
-                    css:"text-align:center",
-                    sortable:true,
-                    header_align:"center"
+                    width:"12%",
+                    css:"text-align:left",
+                    sortable:false,
+                    header_align:"left"
                 },
-                PromisedDate:{
-                    name:"Promised Date",
-                    width:"13%",
-                    sortable:true,
-                    css:"font-weight:bold;text-align:center",
-                    header_align:""
-                },
-                numitems:{
-                    name:"Items",
-                    width:"7%",
-                    sortable:true,
-                    css:"text-align:center",
-                    header_align:""
-                },
+                // PromisedDate:{
+                //     name:"Promised Date",
+                //     width:"13%",
+                //     sortable:true,
+                //     css:"font-weight:bold;text-align:left",
+                //     header_align:""
+                // },
+                // numitems:{
+                //     name:"Items",
+                //     width:"7%",
+                //     sortable:true,
+                //     css:"text-align:left",
+                //     header_align:""
+                // },
                 Status:{
                     name:"Order Status",
-                    width:"13%",
+                    width:"14%",
                     sortable:false,
                     type:'tag',
-                    header_align:"center",
-                    css:"text-align:center",
+                    header_align:"left",
+                    css:"text-align:left",
                 },
-                paid:{
-                    name:"Payment",
-                    width:"13%",
-                    sortable:true,
-                    type:'tag',
-                    header_align:"center"
+                itemsCount:{
+                    name:"Sub Order Ready",
+                    width:"14%",
+                    sortable:false,
+                    type:'percent',
+                    header_align:"left",
+                    css:"text-align:left",
                 },
+                // paid:{
+                //     name:"Payment",
+                //     width:"13%",
+                //     sortable:true,
+                //     type:'tag',
+                //     header_align:"left"
+                // },
                 Total:{
                     name:"Total",
-                    width:"5%",
-                    sortable:true,
+                    width:"6.7%",
+                    sortable:false,
                     type:'price',
-                    css:"font-weight:bold;text-align:right;"
+                    css:"font-weight:bold;text-align:left;"
+                },
+                Prod:{
+                    name:"Prod",
+                    width:"6.7%",
+                    sortable:false,
+                    css:"font-weight:bold;text-align:left;",
+                    header_align:"left"
+                },
+                Deliv:{
+                    name:"Deliv",
+                    width:"6.7%",
+                    sortable:false,
+                    css:"font-weight:bold;text-align:left",
+                    header_align:"left"
                 }
             });
             const customercaretablefields=ref({
@@ -165,23 +189,23 @@
                 },
                 id:{
                     name:"Order N°",
-                    width:"10%",
+                    width:"8%",
                     sortable:false
                },
                 express:{
                     name:" ",
-                    width:"4%",
+                    width:"3%",
                     sortable:false,
                     type:'express'
                 },
                 Customer:{
                     name:"Customer",
-                    width:"23%",
+                    width:"26%",
                     sortable:false
                 },
                 TypeDelivery:{
                     name:"Destination",
-                    width:"10%",
+                    width:"12%",
                     css:"text-align:left",
                     sortable:false,
                     header_align:""
@@ -202,7 +226,7 @@
                 // },
                 Status:{
                     name:"Order Status",
-                    width:"15%",
+                    width:"14%",
                     sortable:false,
                     type:'tag',
                     header_align: "left",
@@ -217,7 +241,7 @@
                 // },
                 Action:{
                     name:"Action Needed",
-                    width:"15%",
+                    width:"14%",
                     sortable:false,
                     type:'tag',
                     header_align:"left"

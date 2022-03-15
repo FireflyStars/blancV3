@@ -5,13 +5,13 @@
         <h2 class="subtitle">Filter by</h2>
         <div class="row" v-for="(select,ind) in filterDef.def" :key="ind">
             <div class="col">
-        <div class="select" :class="{active: current_filter==ind}" @click="selectclick(ind)">{{select.name}}
-            <transition name="trans-filter" >
-                <div class="select-options" v-if="current_filter==ind" >
-        <check-box v-for="(option,index) in select.options" :key="index" @checkbox-clicked="checkboxclicked" :id="index" :name="ind" :checked_checkbox="ind in preselection && preselection[ind].includes(index)">{{option}}</check-box>
+                <div class="select" :class="{active: current_filter==ind}" @click="selectclick(ind)">{{select.name}}
+                    <transition name="trans-filter" >
+                        <div class="select-options" v-if="current_filter==ind" >
+                            <check-box v-for="(option,index) in select.options" :key="index" @checkbox-clicked="checkboxclicked" :id="index" :name="ind" :checked_checkbox="ind in preselection && preselection[ind].includes(index)">{{option}}</check-box>
+                        </div>
+                    </transition>
                 </div>
-            </transition>
-        </div>
             </div>
         </div>
         <div class="row buttons">

@@ -53,7 +53,7 @@
                     <td class="text-capitalize fw-16"><a href="javascript:;" class="text-decoration-none text-primary">{{ invoiceRow.barcode }}</a></td>
                     <!-- Location -->
                     <td class="text-center">
-                        <div class="invoice-location assembling rounded-pill m-auto" :style="{'background-color': invoiceRow.location_color }">
+                        <div class="invoice-location assembling rounded-pill" :style="{'background-color': invoiceRow.location_color }">
                             <svg v-if="invoiceRow.process != 0" width="12" height="12" viewBox="0 0 12 12" :fill="'#'+invoiceRow.circle_color" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" :fill="'#'+invoiceRow.circle_color"/>
                                 <circle cx="6" cy="6" r="5" :stroke="'#'+invoiceRow.circle_color" stroke-width="2"/>
@@ -155,7 +155,7 @@ export default {
                 {
                     label: 'Location',
                     key: 'location',
-                    thClass: 'text-uppercase invoice-table-th text-center',
+                    thClass: 'text-uppercase invoice-table-th',
                 },
                 {
                     label: 'Prod',
@@ -300,5 +300,11 @@ export default {
     .trow.multi span.chkbox {
         border-color: #868686;
         transition: border-color 300ms ease-out;
-    }   
+    }
+    .invoice-table-th span{
+        font-family: "Gotham Rounded";
+        font-weight: 400;
+        font-size: 14px;
+        color: #868686;
+    }
 </style>

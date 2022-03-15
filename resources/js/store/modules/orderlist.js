@@ -13,6 +13,7 @@ import {
     HIDE_LOADER,
     LOADER_MODULE,
     ORDERLIST_CURRENTTAB,
+    ORDERLIST_GET_CURRENTTAB,
     ORDERLIST_SET_CURRENTTAB,
     ORDERLIST_GET_LIST,
     ORDERLIST_LOAD_LIST,
@@ -332,6 +333,7 @@ export const orderlist= {
     },
     getters: {
 
+        [ORDERLIST_GET_CURRENTTAB]:state => state.current_tab,
         [ORDERLIST_GET_CURRENT_SELECTED]:state => state[state.current_tab].currently_selected,
         [ORDERLIST_GET_ALL_ORDER_MULITCHECKED]: state=>state[state.current_tab].multi_checked,
         [ORDERLIST_GET_LIST]:state =>state[state.current_tab].order_list,

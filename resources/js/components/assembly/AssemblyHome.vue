@@ -742,8 +742,10 @@
 .each-poste-label{
     font: normal 10px/1.3em 'Gotham Book' !important;
 }
-.invoice-table-th{
-    font-size: 14px;
+.invoice-table-th span{
+    font-family: "Gotham Rounded";
+    font-weight: 400;
+    font-size: 14px;    
     color: #868686;
 }
 .assembly-home-nav-item{
