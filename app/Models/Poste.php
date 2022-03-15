@@ -23,7 +23,6 @@ class Poste extends Model
             ['formatted_name'=>'On Storage <br> Conveyor','group_name'=>'Storage'],
             ['formatted_name'=>'In <br> shelving','group_name'=>'shelving'],
         );
-
         return $formatted_postes;
     }    
 }

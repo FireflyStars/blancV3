@@ -19,25 +19,61 @@ class OrderListController extends Controller
         $current_tab=$request->get('current_tab');
         $sort=$request->get('sort');
         $filters=$request->get('filters');
-        $orderlist=DB::table('infoOrder')
-            ->select( [ 
-                'infoOrder.id','infoOrder.Status','infoOrder.Total',
-                'infoCustomer.Name','infoCustomer.TypeDelivery',
-                DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%d/%m")) as PromisedDate'),
-                DB::raw('count(infoitems.id) as numitems'),DB::raw('GROUP_CONCAT(infoitems.express) as express'),
-                DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),'infoOrder.suggestedDeliveryDate'
-            ])
-            ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
-            ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
-            ->leftJoin('infoitems',function($join){
-                $join->on('infoInvoice.SubOrderID','=','infoitems.SubOrderID')
-                    ->where('infoitems.SubOrderID','!=','')
-                   ->whereNotIn('infoitems.Status',['DELETE','VOID']);
-            })
-            ->where('infoOrder.OrderID','!=','')
-            ->where('infoInvoice.OrderID','!=','')
-
-        ;
+        if($current_tab != 'customer_care'){
+            $orderlist=DB::table('infoOrder')
+                ->select( [ 
+                    'infoOrder.id','infoOrder.Status','infoOrder.Total',
+                    'infoCustomer.Name','infoCustomer.TypeDelivery',
+                    DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%d/%m")) as PromisedDate'),
+                    DB::raw('count(infoitems.id) as numitems'),DB::raw('GROUP_CONCAT(infoitems.express) as express'),
+                    DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),'infoOrder.suggestedDeliveryDate'
+                ])
+                ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
+                ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+                ->leftJoin('infoitems',function($join){
+                    $join->on('infoInvoice.SubOrderID','=','infoitems.SubOrderID')
+                        ->where('infoitems.SubOrderID','!=','')
+                       ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+                })
+                ->where('infoOrder.OrderID','!=','')
+                ->where('infoInvoice.OrderID','!=','');
+        }else{
+            $orderlist=DB::table('infoOrder')
+                ->select( [ 
+                    'infoOrder.id','infoOrder.Status','infoOrder.Total',
+                    'infoCustomer.Name as Customer','infoCustomer.TypeDelivery',
+                    // DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%d/%m")) as PromisedDate'),
+                    DB::raw('GROUP_CONCAT(infoitems.express) as express'),
+                    // 'infoitems.express',
+                    DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),'infoOrder.suggestedDeliveryDate',
+                    'infoitems.CCStatus as Action', 
+                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Prod'),
+                    DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as Deliv')
+                ])
+                ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
+                ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+                ->join('pickup','infoOrder.PickupID','=','pickup.PickupID')
+                ->join('deliveryask','infoOrder.DeliveryaskID','=','deliveryask.DeliveryaskID')
+                ->where('infoOrder.OrderID','!=','')
+                ->where('infoitems.CCStatus','!=','')
+                ->leftJoin('infoitems',function($join){
+                    $join->on('infoInvoice.SubOrderID','=','infoitems.SubOrderID')
+                        ->where('infoitems.SubOrderID','!=','')
+                       ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+                })
+                ->where(
+                    function($query) {
+                        $query->where(function($query) {
+                            // $query->whereDate('infoOrder.DateDeliveryAsk', '<=', date('Y-m-d'))
+                            $query->whereNotIn('infoOrder.Status', ['DELIVERED', 'DELIVERD TO STORE', 'SOLD', 'DONATED', 'DONATED TO CHARITY', 'COLLECTED', 'VOIDED', 'FULFILLED', 'VOID', 'DELETE', 'SOLD']);
+                        })->orWhere(function($query){
+                            $query->where('infoOrder.Paid', 0)->where('infoCustomer.TypeDelivery','=','DELIVERY');
+                        })->orWhere(function($query){
+                            $query->whereIn('infoOrder.Status',['LATE','LATE DELIVERY','OVERDUE FOR COLLECTION','MISSED PICKUP','OVERDUE STORE','FAILED DELIVERY','FAILED PAYMENT','PART ON HOLD','PART PENDING'])
+                                ->where('infoOrder.DateDeliveryAsk','!=','2020-01-01');
+                        });
+                    });
+        }
 
         if($current_tab=='with_partner')
         $orderlist=$orderlist->where('infoitems.idPartner','!=','0')
@@ -49,21 +85,6 @@ class OrderListController extends Controller
         if($current_tab=='due_tomorrow')
             $orderlist=$orderlist->whereDate('infoOrder.DateDeliveryAsk','=',date('Y-m-d',strtotime('tomorrow')));
 
-        if($current_tab=='customer_care'){
-            $orderlist=$orderlist->where(
-            function($query) {
-                $query->where(function($query) {
-                    $query->whereDate('infoOrder.DateDeliveryAsk', '<=', date('Y-m-d'))
-                        ->whereNotIn('infoOrder.Status', ['DELIVERED', 'DELIVERD TO STORE', 'SOLD', 'DONATED', 'DONATED TO CHARITY', 'COLLECTED', 'VOIDED', 'FULFILLED', 'VOID', 'DELETE', 'SOLD']);
-                })->orWhere(function($query){
-                    $query->where('infoOrder.Paid','=',0)->where('infoCustomer.TypeDelivery','=','DELIVERY');
-                })->orWhere(function($query){
-                    $query->whereIn('infoOrder.Status',['LATE','LATE DELIVERY','OVERDUE FOR COLLECTION','MISSED PICKUP','OVERDUE STORE','FAILED DELIVERY','FAILED PAYMENT','PART ON HOLD','PART PENDING'])
-                        ->where('infoOrder.DateDeliveryAsk','!=','2020-01-01');
-                });
-            });
-
-        }
         if($current_tab=='unfulfilled'){
             $orderlist=$orderlist->whereNotIn('infoOrder.Status',['FULFILLED','DELETE','DELIVERED','SOLD','VOID','CANCEL']);
         }
@@ -257,7 +278,7 @@ class OrderListController extends Controller
                       ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
                       ->where('infoitems.id', $request->item_id)
                       ->select(
-                          'infoitems.id', 'infoInvoice.NumInvoice as sub_order', 'infoitems.Colors as colors', 'infoInvoice.id as invoice_id',
+                          'infoitems.id', 'infoitems.ItemTrackingKey as item_key', 'infoInvoice.NumInvoice as sub_order', 'infoitems.Colors as colors', 'infoInvoice.id as invoice_id',
                           'infoitems.Fabrics as fabrics', 'infoitems.Patterns as patterns', 'infoitems.Size as size',
                           'infoitems.StoreName as store_name', 'infoitems.store', 'infoitems.damage', 'infoitems.id_items',
                           'infoitems.typeitem as item_name', 'TypePost.bg_color as location_color', 'postes.nom as location', 'TypePost.circle_color', 'TypePost.process',

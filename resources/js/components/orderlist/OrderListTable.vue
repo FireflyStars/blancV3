@@ -112,12 +112,14 @@
                     return '<button class="btn btn-dark body_medium">Add date</button>';
                 }
                 if(typeof def.type!="undefined"&&def.type=="price"){
-
                     return formatPrice(val);
                 }
-                if(def.name=="Name"|| def.name=="Destination" || def.name=="Customer"){
+                if(def.name=="Name" || def.name=="Destination"){
                     return val.toLowerCase();
                 }
+                // if(def.name=="Customer" || def.name=="Prod" || def.name=="Deliv" || def.name=="Action"){
+                //     return val
+                // }
                 return val;
             }
 
@@ -386,6 +388,6 @@
         transition: all ease 0.2s;
     }
     .tcol.Status,.tcol.paid{
-        text-align: center;
+        text-align: left;
     }
 </style>

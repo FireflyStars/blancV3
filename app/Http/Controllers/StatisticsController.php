@@ -2092,7 +2092,8 @@ class StatisticsController extends Controller
                 'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as prod'), 'infoitems.id AS item_id',
                 'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
                 'infoitems.idPartner', 'TypePost.bg_color as location_color', 'TypePost.process','TypePost.circle_color',
-                DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),                    
+                // DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),                    
+                DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as deliv')
                 )
             ->where('infoitems.PromisedDate', $operator, $date_stats);
     
@@ -2146,10 +2147,16 @@ class StatisticsController extends Controller
         $invoices   =   $invoices->where('infoitems.Actif',1)
                                 ->whereIn('infoitems.express', $arr)
                                 ->join('infoInvoice', 'infoitems.SubOrderID', '=', 'infoInvoice.SubOrderID')
+                                ->join('infoOrder', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID')
+                                ->join('pickup', 'infoOrder.PickupID', '=', 'pickup.PickupID')
+                                ->join('deliveryask', 'infoOrder.DeliveryaskID', '=', 'deliveryask.DeliveryaskID')                                
                                 ->join('infoCustomer', 'infoInvoice.CustomerID', '=', 'infoCustomer.CustomerID')
                                 ->join('postes', 'infoitems.nextpost', '=', 'postes.id')
                                 ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
                                 ->where('infoitems.SubOrderID','!=','')
+                                ->whereIN('deliveryask.status', ['NEW','API','PMS','DONE', 'PMS-DONE', 'API-DONE','REC','REC-DONE','REC-NOK','PMS-NOK','API-NOK'])
+                                ->whereIN('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP'])
+                                ->whereNotIn('infoOrder.Status',['VOID', 'DELETE'])                                
                                 ->orderBy('item_id');
 
         $total_count=  $invoices->count();
@@ -2178,7 +2185,8 @@ class StatisticsController extends Controller
                             'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as prod'), 'infoitems.id AS item_id',
                             'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
                             'infoitems.idPartner', 'TypePost.bg_color as location_color',  'TypePost.process', 'TypePost.circle_color',
-                            DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),
+                            // DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),
+                            DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as deliv')
                             /* DB::raw('DATE_FORMAT(pickup.date,"%m/%d") as pickup_date'), */
                             /* DB::raw('DATE_FORMAT(deliveryask.date, "%m/%d") as deliveryask_date') */
                         );
@@ -2186,16 +2194,16 @@ class StatisticsController extends Controller
         $invoices   =  $invoices->where('infoitems.Actif',1)
                                 ->whereIn('infoitems.express', $arr)
                                 ->join('infoInvoice', 'infoitems.SubOrderID', '=', 'infoInvoice.SubOrderID')
-                                // ->join('infoOrder', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID')
-                                // ->leftJoin('pickup', 'infoOrder.PickupID', '=', 'pickup.PickupID')
-                                // ->leftJoin('deliveryask', 'infoOrder.DeliveryaskID', '=', 'deliveryask.DeliveryaskID')
+                                ->join('infoOrder', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID')
+                                ->join('pickup', 'infoOrder.PickupID', '=', 'pickup.PickupID')
+                                ->join('deliveryask', 'infoOrder.DeliveryaskID', '=', 'deliveryask.DeliveryaskID')
                                 ->join('infoCustomer', 'infoInvoice.CustomerID', '=', 'infoCustomer.CustomerID')
                                 ->join('postes', 'infoitems.nextpost', '=', 'postes.id')
                                 ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
                                 ->where('infoitems.SubOrderID','!=','')
-                                // ->whereIN('deliveryask.status', ['NEW','API','PMS','DONE', 'PMS-DONE', 'API-DONE','REC','REC-DONE','REC-NOK','PMS-NOK','API-NOK'])
-                                // ->whereIN('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP'])
-                                // ->whereNotIn('infoOrder.Status',['VOID', 'DELETE'])
+                                ->whereIN('deliveryask.status', ['NEW','API','PMS','DONE', 'PMS-DONE', 'API-DONE','REC','REC-DONE','REC-NOK','PMS-NOK','API-NOK'])
+                                ->whereIN('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP'])
+                                ->whereNotIn('infoOrder.Status',['VOID', 'DELETE'])
                                 ->orderBy('item_id');
         if($request->status != ''){
             $invoices   = $invoices->where('infoitems.Status', $request->status);

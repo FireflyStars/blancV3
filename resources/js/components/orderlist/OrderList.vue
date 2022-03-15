@@ -13,8 +13,8 @@
                             </template>
                         </div>
                         <template v-for="(tab,tab_index) in tabs" :key="tab_index">
-                            <order-list-table :tabledef="allordertablefields" :tab="tab" :id="tab_index" v-if="tab.active"></order-list-table>
-                            <!-- <order-list-table :tabledef="customercaretablefields" :tab="tab" :id="tab_index" v-if="tab.active && tab.name == 'Customer Care'"></order-list-table> -->
+                            <order-list-table :tabledef="allordertablefields" :tab="tab" :id="tab_index" v-if="tab.active && tab.name != 'Customer Care'"></order-list-table>
+                            <order-list-table :tabledef="customercaretablefields" :tab="tab" :id="tab_index" v-if="tab.active && tab.name == 'Customer Care'"></order-list-table>
                         </template>
                         <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
                             <div v-if="showlayer" class="back-layer"></div>
@@ -123,19 +123,19 @@
                     width:"13%",
                     sortable:true,
                     css:"font-weight:bold;text-align:center",
-                    header_align:"center"
+                    header_align:""
                 },
                 numitems:{
                     name:"Items",
                     width:"7%",
                     sortable:true,
                     css:"text-align:center",
-                    header_align:"center"
+                    header_align:""
                 },
                 Status:{
-                   name:"Order Status",
-                   width:"13%",
-                   sortable:true,
+                    name:"Order Status",
+                    width:"13%",
+                    sortable:false,
                     type:'tag',
                     header_align:"center",
                     css:"text-align:center",
@@ -164,27 +164,27 @@
                     type:'checkbox',
                 },
                 id:{
-                   name:"Order N°",
+                    name:"Order N°",
                     width:"10%",
-                   sortable:false
+                    sortable:false
                },
-                // express:{
-                //     name:" ",
-                //     width:"4%",
-                //     sortable:false,
-                //     type:'express'
-                // },
-                Name:{
+                express:{
+                    name:" ",
+                    width:"4%",
+                    sortable:false,
+                    type:'express'
+                },
+                Customer:{
                     name:"Customer",
-                    width:"22%",
-                    sortable:true
+                    width:"23%",
+                    sortable:false
                 },
                 TypeDelivery:{
                     name:"Destination",
                     width:"10%",
-                    css:"text-align:center",
-                    sortable:true,
-                    header_align:"center"
+                    css:"text-align:left",
+                    sortable:false,
+                    header_align:""
                 },
                 // PromisedDate:{
                 //     name:"Promised Date",
@@ -201,12 +201,12 @@
                 //     header_align:"center"
                 // },
                 Status:{
-                   name:"Order Status",
-                   width:"13%",
-                   sortable:true,
+                    name:"Order Status",
+                    width:"15%",
+                    sortable:false,
                     type:'tag',
-                    header_align:"center",
-                    css:"text-align:center",
+                    header_align: "left",
+                    css:"text-align: left",
                 },
                 // paid:{
                 //     name:"Payment",
@@ -217,31 +217,31 @@
                 // },
                 Action:{
                     name:"Action Needed",
-                    width:"13%",
-                    sortable:true,
+                    width:"15%",
+                    sortable:false,
                     type:'tag',
-                    header_align:"center"
+                    header_align:"left"
                 },
                 Total:{
                     name:"Total",
-                    width:"5%",
-                    sortable:true,
+                    width:"6.7%",
+                    sortable:false,
                     type:'price',
-                    css:"font-weight:bold;text-align:right;"
+                    css:"font-weight:bold;text-align:left;"
                 },
                 Prod:{
                     name:"Prod",
-                    width:"10%",
+                    width:"6.7%",
                     sortable:false,
-                    css:"font-weight:bold;text-align:right;",
-                    header_align:"center"
+                    css:"font-weight:bold;text-align:left;",
+                    header_align:"left"
                 },
                 Deliv:{
                     name:"Deliv",
-                    width:"10%",
+                    width:"6.7%",
                     sortable:false,
-                    css:"font-weight:bold;text-align:center",
-                    header_align:"center"
+                    css:"font-weight:bold;text-align:left",
+                    header_align:"left"
                 }
             });
             onMounted(()=>{
