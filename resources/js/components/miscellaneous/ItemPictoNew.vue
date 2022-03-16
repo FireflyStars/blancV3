@@ -42,6 +42,10 @@ export default {
 
 
         const loadSvgZones = (type_picto) => {
+            //Enleve les zones des ancien pictos
+            document.querySelectorAll('.zone_labels').forEach(el=>el.remove());
+
+
             let zones = [
                 { position: "sleave", face: "front", side: "left" },
                 { position: "bottom", face: "back", side: "" },
