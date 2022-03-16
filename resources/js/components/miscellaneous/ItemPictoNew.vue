@@ -308,6 +308,15 @@ export default {
 
         getZone();
 
+        function updateLabelPos(zone_id,typepos,val){
+            let el_circle = document.getElementById("mycircle"+zone_id);
+            let el_txt = document.getElementById("mytext"+zone_id);
+
+            el_circle.setAttributeNS(null,"c"+typepos,val);
+            el_txt.setAttributeNS(null,typepos,val);
+
+        }
+
         return {
             loadSvgZones,
             onPartClick,
@@ -316,6 +325,7 @@ export default {
             picto_details,
             svg_viewbox,
             getZone,
+            updateLabelPos,
         };
     },
 };

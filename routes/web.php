@@ -5,6 +5,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\PermissionController;
 use App\Models\Authorization;
 use App\Models\User;
+use App\Models\Item;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OrderListController;
@@ -59,6 +60,11 @@ Route::get('/permissions-test',function(){
      dump($profile->authorizations[0]->group);
  }
 })->name('permissions');
+
+
+
+
+
 Route::get('{any}', function () {
     return view('welcome');
 })->where('any','.*');
@@ -94,3 +100,8 @@ Route::post('/create-new-order',[OrderController::class,'createNewOrder'])->name
  * */
 Route::post('get-site-keys', [ PosteController::class, 'getSiteKeys'])->name('get-site-keys')->middleware('auth');
 Route::post('get-suborder-and-print', [ PosteController::class, 'getSubOrderToPrint'])->name('get-suborder-and-print')->middleware('auth');
+
+
+/* Update svg zone label position
+*/
+Route::post('update-zone-label-pos',[ItemController::class,'updateZoneLabelPos'])->name('update-zone-label-pos')->middleware('auth');

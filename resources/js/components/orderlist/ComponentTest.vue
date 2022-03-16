@@ -192,7 +192,7 @@
                                 </div>
                                  <div class="row mx-0 justify-content-center mt-3">
                                      <div class="col-4">
-                                        <button class="btn btn-success w-100 text-white">Update</button>
+                                        <button class="btn btn-success w-100 text-white" @click="updateZoneLabelPos">Update</button>
                                      </div>
                                  </div>
 
@@ -216,7 +216,10 @@
 </template>
 
 <script>
+    import {TOASTER_MODULE,TOASTER_MESSAGE} from "../../store/types/types";
+
     import {ref,onMounted,nextTick,watch} from 'vue';
+    import {useStore} from 'vuex';
     import MainHeader from '../layout/MainHeader';
     import SideBar from '../layout/SideBar'
     import SelectOptions from '../miscellaneous/SelectOptions'
@@ -242,6 +245,7 @@
             const Customer= ref('');
             const Scan= ref('');
 
+            const store = useStore();
 
             const swtch=ref(true);
 
@@ -394,6 +398,7 @@
                 return slot_from_arr[slot];
             }
 
+            /*SVG zone labels*/
 
             const zone_detail = ref({});
             const zone_desc = ref("");
@@ -415,6 +420,39 @@
                 }else{
                     zone_detail.value = {};
                 }
+            }
+
+            watch(()=>zone_labelx.value,(val)=>{
+                svg_comp.value.updateLabelPos(zone_detail.value.id,'x',val);
+            });
+
+            watch(()=>zone_labely.value,(val)=>{
+                svg_comp.value.updateLabelPos(zone_detail.value.id,'y',val);
+            });
+
+            function updateZoneLabelPos(){
+                axios.post('update-zone-label-pos',{
+                    id:zone_detail.value.id,
+                    description:zone_desc.value,
+                    face:zone_face.value,
+                    side:zone_side.value,
+                    label_x:zone_labelx.value,
+                    label_y:zone_labely.value,
+
+                }).then((res)=>{
+                    if(res.data.updated){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                            {
+                                message: 'Label position updated',
+                                ttl: 3,
+                                type: 'success'
+                            });
+                    }
+                }).catch((err)=>{
+                    console.log(err);
+                }).finally(()=>{
+                    svg_comp.value.loadSvgZones(zone_detail.value.zone_type);
+                });
             }
 
             return {
@@ -455,6 +493,7 @@
                 zone_labelx,
                 zone_labely,
                 svg_comp,
+                updateZoneLabelPos,
             }
         },
 

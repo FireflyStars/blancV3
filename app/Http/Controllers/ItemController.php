@@ -104,6 +104,20 @@ class ItemController extends Controller{
         ]);
 
     }
+
+    public function updateZoneLabelPos(Request $request){
+        $post = $request->all();
+        $id = $post['id'];
+        unset($post['id']);
+
+        $updated = DB::table('itemzones')->where('id',$id)->update($post);
+
+        return response()->json([
+            'post'=>$post,
+            'id'=>$id,
+            'updated'=>$updated
+        ]);
+    }
 }
 
 ?>
