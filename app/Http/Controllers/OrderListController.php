@@ -24,61 +24,34 @@ class OrderListController extends Controller
                 ->select( [ 
                     'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id',
                     'infoCustomer.Name','infoCustomer.TypeDelivery', 'infoInvoice.datesold', 'infoitems.PromisedDate',
-                    // DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%d/%m")) as PromisedDate'),
                     DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
-                    // DB::raw('COUNT(case when infoInvoice.Status = "READY" then 1 end) as ready_sub_order'),
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Prod'),
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Deliv'),
                     DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
-                    // DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as Deliv'),
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
-                // ->join('pickup', function($join){
-                //     $join->on('pickup.PickupID','=','infoOrder.PickupID')
-                //         ->where('infoOrder.PickupID','!=','')
-                //         ->whereIn('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP']);
-                // })
-                // ->join('deliveryask', function ($join){
-                //     $join->on('deliveryask.DeliveryaskID','=','infoOrder.DeliveryaskID')
-                //     ->where('infoOrder.DeliveryaskID','!=','')
-                //     ->whereIn('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP']);
-                // })
                 ->join('infoitems',function($join){
                     $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
                         ->where('infoitems.InvoiceID','!=','')
-                        ->whereIn('infoitems.express', [4,6])
                         ->whereNotIn('infoitems.Status',['DELETE','VOID']);
                 })
                 ->where('infoOrder.OrderID','!=','')
-                // ->where('infoitems.CCStatus','!=','')
                 ->where('infoInvoice.OrderID','!=','');
         }else{
             $orderlist=DB::table('infoOrder')
                 ->select( [ 
                     'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id','infoitems.PromisedDate',
                     'infoCustomer.Name as Customer','infoCustomer.TypeDelivery', 'infoInvoice.datesold',
-                    // DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%d/%m")) as PromisedDate'),
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
                     DB::raw('IF(infoOrder.Paid = 0, "unpaid", "paid") as paid'),
                     'infoitems.CCStatus as Action', 
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Prod'),
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Deliv'),
-                    // DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as Deliv')
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
-                // ->join('pickup', function($join){
-                //     $join->on('pickup.PickupID','=','infoOrder.PickupID')
-                //         ->where('infoOrder.PickupID','!=','')
-                //         ->whereIn('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP']);
-                // })
-                // ->join('deliveryask', function ($join){
-                //     $join->on('deliveryask.DeliveryaskID','=','infoOrder.DeliveryaskID')
-                //     ->where('infoOrder.DeliveryaskID','!=','')
-                //     ->whereIn('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP']);
-                // })
                 ->where('infoOrder.OrderID','!=','')
                 ->where('infoitems.CCStatus','!=','')
                 ->join('infoitems',function($join){
@@ -175,6 +148,8 @@ class OrderListController extends Controller
                     ->leftJoin('pickup', 'pickup.CustomerID', '=', 'infoOrder.CustomerID')
                     ->leftJoin('deliveryask', 'deliveryask.CustomerID', '=', 'infoOrder.CustomerID')
                     ->where('infoOrder.id', $order->id)
+                    ->where('pickup.status', 'not like', '%DEL%')
+                    ->where('deliveryask.status', 'not like', '%DEL%')
                     ->select(DB::raw('DATE_FORMAT(IF( MIN(pickup.date) > MIN(deliveryask.date), IF (MIN(deliveryask.date) <> "2020-01-01", MIN(deliveryask.date), MIN(pickup.date)), IF (MIN(pickup.date) <> "2020-01-01", MIN(pickup.date), MIN(deliveryask.date))), "%d/%m") AS Deliv'))
                     ->value('Deliv');
             }
