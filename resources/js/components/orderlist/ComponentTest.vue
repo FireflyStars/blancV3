@@ -149,9 +149,54 @@
                         <div class="col-8">
                             <item-picto-new :pictoname="picto"
                             :selectable="true"
-                            issue_type="stain"  @add-stain-zone="showZoneDetail"></item-picto-new>
+                            issue_type="stain"  @get-zone-detail="showZoneDetail" ref="svg_comp"></item-picto-new>
                         </div>
                         <div class="col-4">
+                            <!--
+                            <pre>{{zone_detail}}</pre>
+                            -->
+                            <div v-if="zone_detail.id" class="row">
+                                <div class="row mx-0">
+                                    <div class="col-4">Id zone:</div>
+                                    <div class="col-8">{{zone_detail.id}}</div>
+                                </div>
+                                <div class="row mx-0 align-items-center mt-3">
+                                    <div class="col-4">Face:</div>
+                                    <div class="col-8 form-group">
+                                        <input type="text" class="form-control" v-model="zone_face"/>
+                                    </div>
+                                </div>
+                                <div class="row mx-0 align-items-center mt-3">
+                                    <div class="col-4">Side:</div>
+                                    <div class="col-8 form-group">
+                                        <input type="text" class="form-control" v-model="zone_side"/>
+                                    </div>
+                                </div>
+                                <div class="row mx-0 align-items-center mt-3">
+                                    <div class="col-4">Description:</div>
+                                    <div class="col-8 form-group">
+                                        <input type="text" class="form-control" v-model="zone_desc"/>
+                                    </div>
+                                </div>
+                                <div class="row mx-0 align-items-center mt-3">
+                                    <div class="col-4">Position X:</div>
+                                    <div class="col-8 form-group">
+                                        <input type="number" class="form-control zone-coord" id="zone_label_x" v-model="zone_labelx"/>
+                                    </div>
+                                </div>
+                                <div class="row mx-0 align-items-center mt-3">
+                                    <div class="col-4">Position Y:</div>
+                                    <div class="col-8 form-group">
+                                        <input type="number" class="form-control zone-coord" id="zone_label_y" v-model="zone_labely"/>
+                                    </div>
+                                </div>
+                                 <div class="row mx-0 justify-content-center mt-3">
+                                     <div class="col-4">
+                                        <button class="btn btn-success w-100 text-white">Update</button>
+                                     </div>
+                                 </div>
+
+                            </div>
 
                         </div>
                     </div>
@@ -213,6 +258,7 @@
             const picto = ref('');
             const picto_names = ref([]);
             const sel_picto = ref('shirt');
+            const svg_comp = ref();
 
             const item_description = ref({});
             const detailingitem= ref({});
@@ -349,8 +395,26 @@
             }
 
 
-            function showZoneDetail(id){
-                console.log(id);
+            const zone_detail = ref({});
+            const zone_desc = ref("");
+            const zone_labelx = ref(0);
+            const zone_labely = ref(0);
+            const zone_face = ref("");
+            const zone_side = ref("");
+
+            function showZoneDetail(zone,is_active){
+                if(is_active==1){
+                    zone_detail.value = zone;
+                    if(zone.id){
+                        zone_desc.value = zone.description;
+                        zone_labelx.value = zone.label_x;
+                        zone_labely.value = zone.label_y;
+                        zone_face.value = zone.face;
+                        zone_side.value = zone.side;
+                    }
+                }else{
+                    zone_detail.value = {};
+                }
             }
 
             return {
@@ -384,6 +448,13 @@
                 hd_pickup,
                 available_slots,
                 showZoneDetail,
+                zone_detail,
+                zone_face,
+                zone_side,
+                zone_desc,
+                zone_labelx,
+                zone_labely,
+                svg_comp,
             }
         },
 

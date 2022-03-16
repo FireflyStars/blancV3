@@ -29,7 +29,7 @@ import {
 export default {
     name: "ItemPictoNew",
     props: ["pictoname", "face", "selectable", "issue_type", "stainzone", "damagezone"],
-    emits: ['add-stain-zone'],
+    emits: ['add-stain-zone','get-zone-detail'],
     setup(props, context) {
         const svg_viewpoint = ref("");
         const svg_scale = ref("");
@@ -194,11 +194,12 @@ export default {
 
 
                         if(route.name=='ComponentTest'){
-                            console.log(svg_row[0]);
+                            //console.log(svg_row[0]);
 
                             var svgNS = "http://www.w3.org/2000/svg";
 
                             let label_id = "mycircle"+svg_row[0].id;
+                            let label_txt_id = "mytext"+svg_row[0].id;
 
                             var myCircle = document.createElementNS(svgNS,"circle");
                             myCircle.setAttributeNS(null,"id",label_id);
@@ -209,14 +210,31 @@ export default {
                             myCircle.setAttributeNS(null,"fill","#EF8F00");
                             myCircle.setAttributeNS(null,"stroke",4);
 
+
+                            var myText = document.createElementNS(svgNS,"text");
+                            myText.setAttributeNS(null,"id",label_txt_id);
+                            myText.setAttributeNS(null,"class","zone_labels");
+                            myText.setAttributeNS(null,"x",parseInt(svg_row[0].label_x));
+                            myText.setAttributeNS(null,"y",parseInt(svg_row[0].label_y));
+                            myText.setAttributeNS(null,"text-anchor","middle");
+                            myText.setAttributeNS(null,"stroke","white");
+                            myText.setAttributeNS(null,"stroke-width","1px");
+                            myText.setAttributeNS(null,"dy",".3em");
+                            myText.textContent = "1"; //OR index
+
+                            let is_active = 0;
                             if (!e.target.matches('.stain-editable')) {
                                 //add cirle
                                  document.getElementById("Layer_1").appendChild(myCircle);
-
+                                 document.getElementById("Layer_1").appendChild(myText);
+                                is_active = 1;
                             }else{
                                 //remove circle
                                 document.getElementById(label_id).remove();
+                                document.getElementById(label_txt_id).remove();
+                                is_active = 0
                             }
+                            context.emit('get-zone-detail',svg_row[0],is_active);
                         }
 
 
