@@ -95,16 +95,8 @@
                         <div class="col-3 previous-location-item-title d-flex align-items-center">
                             {{ history.name }}
                         </div>
-                        <div class="col-6 d-flex align-items-center justify-content-center previous-location-item-date">
+                        <div class="col-6 ps-3 d-flex align-items-center previous-location-item-date">
                                 {{ history.date }}
-                            <!-- <div class="col-3 previous-location-item-day d-flex align-items-center justify-content-end">
-                                {{ history.day }}
-                            </div>
-                            <div class="px-2 col-6 previous-location-item-date d-flex align-items-center justify-content-center">
-                            </div>
-                            <div class="col-3 previous-location-item-time d-flex align-items-center">
-                                {{ history.time }}
-                            </div> -->
                         </div>
                         <div class="col-3 previous-location-item">
                             <div class="invoice-location rounded-pill">
