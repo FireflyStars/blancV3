@@ -148,7 +148,7 @@
                     <div class="row mt-3 mb-5">
                         <div class="col-8">
                             <item-picto-new :pictoname="picto"
-                            :selectable="true"
+                            :selectable="true" :stainzone="stainzone" @add-stain-zone="addStainZone"
                             issue_type="stain"  @get-zone-detail="showZoneDetail" ref="svg_comp"></item-picto-new>
                         </div>
                         <div class="col-4">
@@ -268,6 +268,7 @@
             const detailingitem= ref({});
             detailingitem.value={item_id:12345678,pricecleaning:20};
             item_description.value={typeitem_name:'shirt'};
+            const stainzone=ref([]);
 
             const shp_postcode =ref('');
             const hd_pickup =ref('');
@@ -454,6 +455,13 @@
                     svg_comp.value.loadSvgZones(zone_detail.value.zone_type);
                 });
             }
+            function addStainZone(id) {
+                if (!stainzone.value.some(z => z.id_zone === id)) {
+                    stainzone.value.push({ index:stainzone.value.length>0?stainzone.value[stainzone.value.length-1].index+1:1, id_zone: id, id_issue: 0, description: '' });
+                } else {
+                    stainzone.value.splice(stainzone.value.findIndex((z) => { return z.id_zone === id }), 1);
+                }
+            }
 
             return {
 
@@ -494,6 +502,8 @@
                 zone_labely,
                 svg_comp,
                 updateZoneLabelPos,
+                stainzone,
+                addStainZone
             }
         },
 

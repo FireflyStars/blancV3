@@ -195,7 +195,7 @@ export default {
                         let svg_desc = svg_data.value.filter(
                             (s) => s.id == svg_row[0].id
                         );
-
+                        context.emit("add-stain-zone", svg_row[0].id);
 
                         if(route.name=='ComponentTest'){
                             //console.log(svg_row[0]);
@@ -224,7 +224,9 @@ export default {
                             myText.setAttributeNS(null,"stroke","white");
                             myText.setAttributeNS(null,"stroke-width","1px");
                             myText.setAttributeNS(null,"dy",".3em");
-                            myText.textContent = "1"; //OR index
+                            var index =  props.stainzone.filter(z => z.id_zone === svg_row[0].id).length>0?
+                             props.stainzone.filter(z => z.id_zone === svg_row[0].id)[0].index:0;
+                            myText.textContent = index; //OR index
 
                             let is_active = 0;
                             if (!e.target.matches('.stain-editable')) {
@@ -242,7 +244,7 @@ export default {
                         }
 
 
-                        context.emit("add-stain-zone", svg_row[0].id);
+
                         svg_desc = _.cloneDeep(svg_desc);
                         svg_desc.forEach(element => {
                             let el = document.getElementById("path_" + element.id);
