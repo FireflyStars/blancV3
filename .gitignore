@@ -2,7 +2,7 @@
 /public/hot
 /public/storage
 /public/css
-/public/js
+/public/js/**
 /public/js/resources_js_components_detailing_DetailingItem_vue.js
 /public/js/resources_js_components_neworder_NewOrder_vue.js
 /public/js/resources_js_components_orderlist_ComponentTest_vue.js
@@ -10,7 +10,7 @@
 /public/js/resources_js_components_orderlist_OrderList_vue.js
 /public/js/resources_js_components_permission_Permission_vue.js
 /public/js/resources_js_components_statistics_Statistics_vue.js
-public/mix-manifest.json
+/public/mix-manifest.json
 /storage/*.key
 /vendor
 .env

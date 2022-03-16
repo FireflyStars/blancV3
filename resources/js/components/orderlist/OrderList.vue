@@ -144,7 +144,7 @@
                 },
                 itemsCount:{
                     name:"Sub Order Ready",
-                    width:"14%",
+                    width:"12%",
                     sortable:false,
                     type:'percent',
                     header_align:"left",
@@ -159,21 +159,21 @@
                 // },
                 Total:{
                     name:"Total",
-                    width:"6.7%",
+                    width:"10%",
                     sortable:false,
                     type:'price',
                     css:"font-weight:bold;text-align:left;"
                 },
                 Prod:{
                     name:"Prod",
-                    width:"6.7%",
+                    width:"6%",
                     sortable:false,
                     css:"font-weight:bold;text-align:left;",
                     header_align:"left"
                 },
                 Deliv:{
                     name:"Deliv",
-                    width:"6.7%",
+                    width:"6%",
                     sortable:false,
                     css:"font-weight:bold;text-align:left",
                     header_align:"left"
@@ -241,28 +241,28 @@
                 // },
                 Action:{
                     name:"Action Needed",
-                    width:"14%",
+                    width:"12%",
                     sortable:false,
                     type:'tag',
                     header_align:"left"
                 },
                 Total:{
                     name:"Total",
-                    width:"6.7%",
+                    width:"8%",
                     sortable:false,
                     type:'price',
                     css:"font-weight:bold;text-align:left;"
                 },
                 Prod:{
                     name:"Prod",
-                    width:"6.7%",
+                    width:"6%",
                     sortable:false,
                     css:"font-weight:bold;text-align:left;",
                     header_align:"left"
                 },
                 Deliv:{
                     name:"Deliv",
-                    width:"6.7%",
+                    width:"6%",
                     sortable:false,
                     css:"font-weight:bold;text-align:left",
                     header_align:"left"

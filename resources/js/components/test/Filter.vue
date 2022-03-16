@@ -16,14 +16,13 @@
                     </div>
                     <div class="form-group " v-if="filterItem.type == 'datepicker'">
                         <KeepAlive>
-                        <date-range-picker 
-                            v-model="filterItem.value" 
-                            @update:filterVal="newValue => console.log(newValue)" 
-                            :name="filterItem.id"
-                            :placeholder="filterItem.label"
-                            :droppos="{ top:'auto', right: 0, bottom:'auto', left:'auto', transformOrigin:'top right'}" 
-                            :disabled-from-date="startDisabledtodate">
-                        </date-range-picker>
+                            <date-range-picker 
+                                v-model="filterItem.value" 
+                                :name="filterItem.id"
+                                :placeholder="filterItem.label"
+                                :droppos="{ top:'auto', right: 0, bottom:'auto', left:'auto', transformOrigin:'top right'}" 
+                                :disabled-from-date="startDisabledtodate">
+                            </date-range-picker>
                         </KeepAlive>
                     </div>
                 </div>

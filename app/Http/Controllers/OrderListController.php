@@ -122,8 +122,8 @@ class OrderListController extends Controller
 
 
         if(!empty($filters))
-            foreach($filters as $colname=>$values){
-                if($colname=='infoitems.express'){
+            foreach($filters as $colname => $values){
+                if($colname =='infoitems.express'){
                         $express=[];
                         if(in_array('standard',$values)){
                             $express=array_merge($express,[0,2,3]);
@@ -136,9 +136,15 @@ class OrderListController extends Controller
                     }
                     if(!empty($express))
                         $orderlist=$orderlist->whereIn($colname,$express);
-                }else{
+                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate'){
                     if(!empty($values))
-                    $orderlist=$orderlist->whereIn($colname,$values);
+                    $orderlist=$orderlist->whereIn($colname, $values);
+                }else if($colname == 'infoitems.ProdDate' && !empty($values)){
+                    $orderlist=$orderlist->whereBetween('infoitems.PromisedDate', [ $values[0], $values[1]]);
+                }else if($colname == 'infoitems.DelivDate' && !empty($values)){
+                    $orderlist=$orderlist->whereBetween('infoitems.PromisedDate', [ $values[0], $values[1]]);
+                }else{
+
                 }
             }
 

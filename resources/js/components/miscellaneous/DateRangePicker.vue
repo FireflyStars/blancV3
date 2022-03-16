@@ -1,7 +1,7 @@
 <template>
     <div class="dp noselect">
         <label class="select-label" :class="{disabled:disabled==true}" v-if="label">{{ label }}</label>
-        <input type="text" readonly :placeholder="placeholder" class="w-100 bg-white" v-model="formated_date" @click="toggleshowDp"/>
+        <input type="text" readonly :placeholder="placeholder" class="w-100 bg-white" :style="{'color': color, 'font-size': font}" v-model="formated_date" @click="toggleshowDp"/>
         <transition name="trans-dp-picker" >
             <div class="dp-picker" id="dateRangePicker" v-if="sel===name" :class="{row6:displayed_dates_rows[5].length>0&&currentView=='dates' }" :style="{top:droppos.top,right:droppos.right,bottom:droppos.bottom,left:droppos.left,transformOrigin:droppos.transformOrigin}">
                 <div class="row" id="dateRangePickerHeader">
@@ -74,6 +74,14 @@
             availableDates:Array,
             disabledToDate:String,
             disabledFromDate:String,
+            color: {
+                type: String,
+                default: '#47454B'
+            },
+            font: {
+                type: String,
+                default: '0.875rem'
+            },
             name:{
                 type: String,
                 required: true
@@ -523,7 +531,7 @@
         width: calc(100% - 48px);
     }
     input{
-        border: 0.5px solid #C3C3C3;
+        border: 0.5px solid #E0E0E0;
         box-sizing: border-box;
         border-radius: 4px;
         background: transparent url('../../../img/calendar.svg') no-repeat center right 10px;
@@ -535,6 +543,9 @@
         vertical-align: middle;
         font-size: 0.875rem;
         padding-right: 30px;
+    }
+    input::placeholder{
+        color: #000000;
     }
     .btn-dp{
         width: 44px;

@@ -3,14 +3,40 @@
     <transition name="trans-filter" >
     <div class="filters position-absolute" v-if="showfilter">
         <h2 class="subtitle">Filter by</h2>
-        <div class="row" v-for="(select,ind) in filterDef.def" :key="ind">
-            <div class="col">
+        <div class="row" v-for="(select, ind) in filterDef.def" :key="ind">
+            <div class="col" v-if="select.type == 'select'">
                 <div class="select" :class="{active: current_filter==ind}" @click="selectclick(ind)">{{select.name}}
                     <transition name="trans-filter" >
                         <div class="select-options" v-if="current_filter==ind" >
                             <check-box v-for="(option,index) in select.options" :key="index" @checkbox-clicked="checkboxclicked" :id="index" :name="ind" :checked_checkbox="ind in preselection && preselection[ind].includes(index)">{{option}}</check-box>
                         </div>
                     </transition>
+                </div>
+            </div>
+            <div class="col" v-if="select.type == 'datepicker' && select.id == 'prod_date'">
+                <div class="from-group mb-3">
+                    <date-range-picker 
+                        v-model="prodDate" 
+                        :name="select.id"
+                        :placeholder="select.name"
+                        :droppos="{ top:'auto', right: 0, bottom:'auto', left:'auto', transformOrigin:'top right'}" 
+                        :color="'#000000'"
+                        :font="'16px'"
+                        >
+                    </date-range-picker>
+                </div>
+            </div>
+            <div class="col" v-if="select.type == 'datepicker' && select.id == 'deliv_date'">
+                <div class="from-group">
+                    <date-range-picker 
+                        v-model="delivDate" 
+                        :name="select.id"
+                        :placeholder="select.name"
+                        :droppos="{ top:'auto', right: 0, bottom:'auto', left:'auto', transformOrigin:'top right'}"
+                        :color="'#000000'"
+                        :font="'16px'"
+                        >
+                    </date-range-picker>
                 </div>
             </div>
         </div>
@@ -23,17 +49,26 @@
 </template>
 
 <script>
-    import {ref,computed} from 'vue';
-    import CheckBox from '../miscellaneous/CheckBox';
+    import {ref,computed, watch} from 'vue';
+    import DateRangePicker from '../miscellaneous/DateRangePicker';
+    import CheckBox from '../test/Filter';
     import {useStore} from 'vuex';
     import {ORDERLIST_FILTER, ORDERLIST_GET_FILTER, ORDERLIST_MODULE,ORDERLIST_RESET_MULITCHECKED} from "../../store/types/types";
     export default {
         name: "Filters",
         props:['filterDef'],
-        components:{CheckBox},
+        components:{CheckBox, DateRangePicker},
         setup(){
             const showfilter=ref(false);
             const current_filter=ref('');
+            const prodDate=ref({
+                start: '',
+                end: '',
+            });
+            const delivDate=ref({
+                start: '',
+                end: '',
+            });
             const preselection=ref({});
 
             const store=useStore();
@@ -43,12 +78,10 @@
 
 
             function selectclick(sel) {
-                console.log(sel);
-
                 if(current_filter.value != sel) {
                     current_filter.value = sel;
-                }else  if(current_filter.value==sel){
-                        current_filter.value='';
+                }else if(current_filter.value==sel){
+                    current_filter.value='';
                 }
             }
             const hasActiveFilters=computed(()=>{
@@ -56,6 +89,13 @@
                 const allEmpty= Object.values(filters).every((element) => element.length===0);
                 return !allEmpty;
             });
+
+            // watch(() =>prodDate.value, (current_val, previous_val) => {
+            //     preselection.value['infoitems.ProdDate'] = [current_val.start, current_val.end];
+            // });
+            // watch(() => delivDate.value, (current_val, previous_val) => {
+            //     preselection.value['infoitems.DelivDate'] = [current_val.start, current_val.end];
+            // });
 
             function checkboxclicked(check,id,name) {
                 console.log(check,id,name);
@@ -71,12 +111,17 @@
                     if(name in preselection.value) {
                         preselection.value[name]= preselection.value[name].filter(item=>item!=id);
                     }
-
-
-
-                console.log(preselection.value);
             }
             function applyFilter() {
+                if(prodDate.value.start !='' && prodDate.value.end !='')
+                    preselection.value['infoitems.ProdDate'] = [prodDate.value.start, prodDate.value.end];
+                else
+                    delete preselection.value['infoitems.ProdDate']
+                if(delivDate.value.start !='' && delivDate.value.end !='')                    
+                    preselection.value['infoitems.DelivDate'] = [delivDate.value.start, delivDate.value.end];
+                else
+                    delete preselection.value['infoitems.DelivDate']
+                console.log(preselection);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,_.cloneDeep(preselection.value));
                 current_filter.value='';
@@ -99,6 +144,8 @@
                 applyFilter,
                 cancel,
                 hasActiveFilters,
+                prodDate,
+                delivDate,
             }
         }
     }

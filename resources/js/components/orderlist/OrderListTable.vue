@@ -169,6 +169,7 @@
                     def:{
                         'CustomerType':{
                             name:"Customer Type",
+                            type: 'select',
                             options:{
                                 0:"B2B",
                                 1:"B2C",
@@ -176,6 +177,7 @@
                         },
                         'infoOrder.Status':{
                             name:"Order status",
+                            type: 'select',
                             options:{
                                 'ASSEMBLING':'ASSEMBLING',
                                 'AWAITING REDELIVERY':'AWAITING REDELIVERY',
@@ -215,6 +217,7 @@
                         },
                         'infoCustomer.TypeDelivery':{
                             name:"Destination",
+                            type: 'select',
                             options:{
                                 'DELIVERY':'DELIVERY',
                                 'CHELSEA':'CHELSEA',
@@ -226,6 +229,7 @@
                         },
                         'infoOrder.paytype':{
                             name:"Payment type",
+                            type: 'select',
                             options:{
                                 0:"On Account",
                                 1:"By Card",
@@ -240,6 +244,7 @@
                         },
                         'infoitems.express':{
                             name: "Turnaround time",
+                            type: 'select',
                             options:{
                                 standard:"Standard",
                                 exp24:"Express 24h",
@@ -248,12 +253,13 @@
     
                         },
                         'infoitems.prod': {
-                            label: 'Production Date',
+                            name: 'Production Date',
                             id: 'prod_date',
                             type: 'datepicker',
                         },
                         'infoitems.deliv': {
-                            label: 'Delivery Date',
+                            name: 'Delivery Date',
+                            id: 'deliv_date',
                             type: 'datepicker',
                         },                        
                     }
@@ -263,6 +269,7 @@
                     def:{
                         'infoOrder.paid':{
                             name:"Payment status",
+                            type: 'select',
                             options:{
                                 0:"Unpaid",
                                 1:"Paid",
@@ -270,6 +277,7 @@
                         },
                         'infoOrder.Status':{
                             name:"Order status",
+                            type: 'select',
                             options:{
                                 'ASSEMBLING':'ASSEMBLING',
                                 'AWAITING REDELIVERY':'AWAITING REDELIVERY',
@@ -309,6 +317,7 @@
                         },
                         'infoCustomer.TypeDelivery':{
                             name:"Destination",
+                            type: 'select',
                             options:{
                                 'DELIVERY':'DELIVERY',
                                 'CHELSEA':'CHELSEA',
@@ -320,6 +329,7 @@
                         },
                         'infoitems.express':{
                             name: "Turnaround time",
+                            type: 'select',
                             options:{
                                 standard:"Standard",
                                 exp24:"Express 24h",
