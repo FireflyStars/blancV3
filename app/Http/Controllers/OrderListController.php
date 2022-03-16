@@ -22,11 +22,11 @@ class OrderListController extends Controller
         if($current_tab != 'customer_care'){
             $orderlist=DB::table('infoOrder')
                 ->select( [ 
-                    'infoOrder.id','infoOrder.Status','infoOrder.Total',
-                    'infoCustomer.Name','infoCustomer.TypeDelivery',
+                    'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id',
+                    'infoCustomer.Name','infoCustomer.TypeDelivery', 'infoInvoice.datesold', 'infoitems.PromisedDate',
                     // DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%d/%m")) as PromisedDate'),
-                    DB::raw('count(infoitems.id) as itemsCount'),
-                    DB::raw('COUNT(case when infoitems.Status = "READY" then 1 end) as ready_items'),
+                    DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
+                    // DB::raw('COUNT(case when infoInvoice.Status = "READY" then 1 end) as ready_sub_order'),
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Prod'),
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Deliv'),
@@ -45,10 +45,11 @@ class OrderListController extends Controller
                 //     ->where('infoOrder.DeliveryaskID','!=','')
                 //     ->whereIn('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP']);
                 // })
-                ->leftJoin('infoitems',function($join){
+                ->join('infoitems',function($join){
                     $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
                         ->where('infoitems.InvoiceID','!=','')
-                       ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+                        ->whereIn('infoitems.express', [4,6])
+                        ->whereNotIn('infoitems.Status',['DELETE','VOID']);
                 })
                 ->where('infoOrder.OrderID','!=','')
                 // ->where('infoitems.CCStatus','!=','')
@@ -56,33 +57,35 @@ class OrderListController extends Controller
         }else{
             $orderlist=DB::table('infoOrder')
                 ->select( [ 
-                    'infoOrder.id','infoOrder.Status','infoOrder.Total',
-                    'infoCustomer.Name as Customer','infoCustomer.TypeDelivery',
+                    'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id','infoitems.PromisedDate',
+                    'infoCustomer.Name as Customer','infoCustomer.TypeDelivery', 'infoInvoice.datesold',
                     // DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%d/%m")) as PromisedDate'),
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
                     DB::raw('IF(infoOrder.Paid = 0, "unpaid", "paid") as paid'),
                     'infoitems.CCStatus as Action', 
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Prod'),
-                    DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as Deliv')
+                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Deliv'),
+                    // DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as Deliv')
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
-                ->join('pickup', function($join){
-                    $join->on('pickup.PickupID','=','infoOrder.PickupID')
-                        ->where('infoOrder.PickupID','!=','')
-                        ->whereIn('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP']);
-                })
-                ->join('deliveryask', function ($join){
-                    $join->on('deliveryask.DeliveryaskID','=','infoOrder.DeliveryaskID')
-                    ->where('infoOrder.DeliveryaskID','!=','')
-                    ->whereIn('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP']);
-                })
+                // ->join('pickup', function($join){
+                //     $join->on('pickup.PickupID','=','infoOrder.PickupID')
+                //         ->where('infoOrder.PickupID','!=','')
+                //         ->whereIn('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP']);
+                // })
+                // ->join('deliveryask', function ($join){
+                //     $join->on('deliveryask.DeliveryaskID','=','infoOrder.DeliveryaskID')
+                //     ->where('infoOrder.DeliveryaskID','!=','')
+                //     ->whereIn('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP']);
+                // })
                 ->where('infoOrder.OrderID','!=','')
                 ->where('infoitems.CCStatus','!=','')
-                ->leftJoin('infoitems',function($join){
+                ->join('infoitems',function($join){
                     $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
                         ->where('infoitems.InvoiceID','!=','')
-                       ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+                        ->distinct('infoitems.InvoiceID')
+                        ->whereNotIn('infoitems.Status',['DELETE','VOID']);
                 })
                 ->where(
                     function($query) {
@@ -162,6 +165,30 @@ class OrderListController extends Controller
 
         $orderlist=$orderlist->skip($skip)->take($take);
         $orderlist=$orderlist->get();
+        // adding ready_sub_orders and deliv date
+        foreach ($orderlist as $order) {
+            if( 
+                (Carbon::parse($order->PromisedDate)->gt(Carbon::now()) || Carbon::parse($order->PromisedDate)->gt(Carbon::now()->subMonth())) &&
+                ($order->datesold == '' || $order->datesold == '2019-01-01 00:00:00')
+            ){
+                $order->Deliv = DB::table('infoOrder')
+                    ->leftJoin('pickup', 'pickup.CustomerID', '=', 'infoOrder.CustomerID')
+                    ->leftJoin('deliveryask', 'deliveryask.CustomerID', '=', 'infoOrder.CustomerID')
+                    ->where('infoOrder.id', $order->id)
+                    ->select(DB::raw('DATE_FORMAT(IF( MIN(pickup.date) > MIN(deliveryask.date), IF (MIN(deliveryask.date) <> "2020-01-01", MIN(deliveryask.date), MIN(pickup.date)), IF (MIN(pickup.date) <> "2020-01-01", MIN(pickup.date), MIN(deliveryask.date))), "%d/%m") AS Deliv'))
+                    ->value('Deliv');
+            }
+            if( $order->datesold !='' && $order->datesold !='2019-01-01 00:00:00' ){
+                $order->Deliv = Carbon::parse($order->datesold)->format('d/m');
+            }
+            if($current_tab != 'customer_care'){
+                $order->ready_sub_orders = DB::table('infoOrder')
+                    ->join('infoInvoice', 'infoOrder.OrderID','=', 'infoInvoice.OrderID')
+                    ->distinct('infoInvoice.InvoiceID')
+                    ->where('infoOrder.id', $order->id)
+                    ->where('infoInvoice.Status', 'READY')->count();
+            }
+        }
         return response()->json($orderlist);
     }
 

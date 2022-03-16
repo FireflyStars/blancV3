@@ -100,7 +100,7 @@
 
             }
             function formatSubOrderReady(def, val, order){
-                return (order.ready_items + '/' + val + '('+ parseInt(order.ready_items*100/val) +'%)');
+                return (order.ready_sub_orders + '/' + val + '('+ parseInt(order.ready_sub_orders*100/val) +'%)');
             }
             function preprocess(def,val,order) {
                 if(typeof def.type!="undefined"&&def.type=="tag"){
@@ -237,6 +237,7 @@
                         },
                         'infoOrder.paid':{
                             name:"Payment status",
+                            type: 'select',
                             options:{
                                 0:"Unpaid",
                                 1:"Paid",
@@ -336,7 +337,17 @@
                                 exp48:"Express 48h"
                             }
 
-                        }
+                        },
+                        'infoitems.prod': {
+                            name: 'Production Date',
+                            id: 'prod_date',
+                            type: 'datepicker',
+                        },
+                        'infoitems.deliv': {
+                            name: 'Delivery Date',
+                            id: 'deliv_date',
+                            type: 'datepicker',
+                        },                        
                     }
                 }
             }

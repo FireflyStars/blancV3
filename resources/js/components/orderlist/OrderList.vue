@@ -142,7 +142,7 @@
                     header_align:"left",
                     css:"text-align:left",
                 },
-                itemsCount:{
+                subOrderCount:{
                     name:"Sub Order Ready",
                     width:"12%",
                     sortable:false,

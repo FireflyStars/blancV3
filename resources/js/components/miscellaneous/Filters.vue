@@ -51,7 +51,7 @@
 <script>
     import {ref,computed, watch} from 'vue';
     import DateRangePicker from '../miscellaneous/DateRangePicker';
-    import CheckBox from '../test/Filter';
+    import CheckBox from '../miscellaneous/CheckBox';
     import {useStore} from 'vuex';
     import {ORDERLIST_FILTER, ORDERLIST_GET_FILTER, ORDERLIST_MODULE,ORDERLIST_RESET_MULITCHECKED} from "../../store/types/types";
     export default {
