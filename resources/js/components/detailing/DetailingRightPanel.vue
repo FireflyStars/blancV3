@@ -265,7 +265,7 @@ export default {
         function getStainZone(id) {
             let zone = props.item_description.issues_zones.filter((zone) => zone.id === id)[0];
             if(typeof(zone !='undefined')){
-                return zone.description+' - '+id;
+                return zone.description+" - "+ zone.face + (zone.position!=""&&zone.position!='na'?" - "+zone.position:"")+ (zone.side!=""&&zone.side!='na'?" - "+zone.side:"");
             }
         }
         function getStainName(id) {

@@ -389,12 +389,12 @@ class DetailingController extends Controller
         if ($detailingitem['stains'] != null) {
             $stains=json_decode($detailingitem['stains'],true);
             $stains_tags = DB::table('issues_tag')->select('id','name')->whereIn('id', array_column($stains, 'id_issue'))->get();
-            $stains_zones = DB::table('itemzones')->select('id','description')->whereIn('id', array_column($stains, 'id_zone'))->get();
+            $stains_zones = DB::table('itemzones')->whereIn('id', array_column($stains, 'id_zone'))->get();
         }
         if ($detailingitem['damages'] != null) {
             $damages=json_decode($detailingitem['damages'],true);
             $damages_tags = DB::table('issues_tag')->select('id','name')->whereIn('id', array_column($damages, 'id_issue'))->get();
-            $damages_zones = DB::table('itemzones')->select('id','description')->whereIn('id', array_column($damages, 'id_zone'))->get();
+            $damages_zones = DB::table('itemzones')->whereIn('id', array_column($damages, 'id_zone'))->get();
 
         }
         return  array(
