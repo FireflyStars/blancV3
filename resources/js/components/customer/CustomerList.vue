@@ -1,6 +1,6 @@
 <template>
     <transition enter-active-class="animate__animated animate__fadeIn">
-        <table class="table table-hover mb-0 bg-white">
+        <table class="table table-hover mb-5 bg-white">
             <thead>
                 <tr>
                     <th v-for="(item, index) in tableColumnsDef" :class="item.thClass" :key="index" style="border-bottom: 2px solid #dee2e6 !important">
@@ -131,7 +131,10 @@ export default {
                 var phone = phoneString.split('"')[1];
                 var area_code = phone.split("|")[0];
                 var number = phone.split("|")[1];
-                return '+' + area_code + ' ' + number.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3");
+                if(phone.split("|").length > 1)
+                    return '+' + area_code.replace(/\D/g, '') + ' ' + number.replace(/ /g, '').replace(/(\d{3})(\d{3})(\d{3,4})/, "$1 $2 $3");
+                else
+                    return phone.replace(/\D/g, '')
             }
             return phoneString;
         }
