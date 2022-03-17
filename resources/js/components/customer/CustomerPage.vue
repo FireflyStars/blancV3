@@ -15,7 +15,7 @@
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'RecurringBookings' ? 'active' : ''" @click="setNav('RecurringBookings')">RecurringBookings</li>
                         </ul>
                         <div class="filter-section position-relative">
-                            <filters :filterDef="filterDef"></filters>
+                            <CustomerFilter :filterDef="filterDef"></CustomerFilter>
                         </div>
                     </div>
                     <component :is="component"></component>
@@ -29,13 +29,13 @@ import { ref } from 'vue';
 import { useStore } from 'vuex';
 import SideBar from "../layout/SideBar";
 import MainHeader from "../layout/MainHeader";
-import Filters from '../test/Filter';
+import CustomerFilter from '../test/CustomerFilter';
 import CustomerList from './CustomerList';
 import { CUSTOMER_MODULE, SET_CUSTOMER_SELECTED_TAB, SET_CUSTOMER_LIST } from '../../store/types/types';
 export default {
     name: 'CustomerPage',
     components:{
-        Filters,
+        CustomerFilter,
         SideBar,
         MainHeader,
         CustomerList
@@ -58,39 +58,44 @@ export default {
             customer_type: {
                 label: 'Customer Type',
                 type: 'select',
+                value: '',
                 options: [
-                    'B2B', 'B2C'
+                    { display:'B2B', value: 'B2B' }, 
+                    { display:'B2C', value: 'B2C' }
                 ]
             },
             customer_location: {
                 label: 'Customer Location',
                 type: 'select',
+                value: '',
                 options:[
-                    { name: 'Delivery', value: 'DELIVERY'}, 
-                    { name: 'Marylebone', value: 'MARYLEBONE'},
-                    { name: 'Nothing Hill', value: 'NOTHING HILL'},
-                    { name: 'Chelsea', value: 'CHELSEA'},
-                    { name: 'South ken', value: 'SOUTH KEN'}
+                    { display: 'Delivery', value: 'DELIVERY'}, 
+                    { display: 'Marylebone', value: 'MARYLEBONE'},
+                    { display: 'Nothing Hill', value: 'NOTHING HILL'},
+                    { display: 'Chelsea', value: 'CHELSEA'},
+                    { display: 'South ken', value: 'SOUTH KEN'}
                 ]
             },
             invoice_preference: {
                 label: 'Invoice Preference',
                 type: 'select',
+                value: '',
                 options: [
-                    { name:'No Tax Invoice', value: 'no_tax' },
-                    { name:'Tax Invoice', value: 'tax' },
+                    { display:'No Tax Invoice', value: 0 },
+                    { display:'Tax Invoice', value: 1 },
                 ],
             },
             total_spent: {
                 label: 'Total Spent',
                 type: 'select',
+                value: '',
                 options:[
-                    { name: '£0 - 100', value: '0,100' },
-                    { name: '£100 - 500', value: '100,500' },
-                    { name: '£500 - 1,000', value: '500,1000' },
-                    { name: '£1,000 - 5,000', value: '1000,5000' },
-                    { name: '£5,000 - 10,000', value: '5000,10000' },
-                    { name: '> £10,000', value: '10001' },
+                    { display: '£0 - 100', value: '0,100' },
+                    { display: '£100 - 500', value: '100,500' },
+                    { display: '£500 - 1,000', value: '500,1000' },
+                    { display: '£1,000 - 5,000', value: '1000,5000' },
+                    { display: '£5,000 - 10,000', value: '5000,10000' },
+                    { display: '> £10,000', value: '10001' },
                 ]
             },
             last_order: {

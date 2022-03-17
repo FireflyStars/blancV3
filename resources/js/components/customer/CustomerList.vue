@@ -1,4 +1,5 @@
 <template>
+    <router-view />
     <transition enter-active-class="animate__animated animate__fadeIn">
         <table class="table table-hover mb-5 bg-white">
             <thead>
@@ -16,7 +17,7 @@
                 >
                     <!-- checkbox column -->
                     <td valign="middle">
-                        <check-box :checked_checkbox="(customer.id == CURRENT_SELECTED) || MULTI_SELECTED.includes(customer.id)" :id="customer.id" @checkbox-clicked="checkboxclicked"></check-box>
+                        <check-box :checked_checkbox="(customer.id == CURRENT_SELECTED && route.params.customer_id > 0)" :id="customer.id" @checkbox-clicked="checkboxclicked"></check-box>
                     </td>
                     <!-- Customer Type -->
                     <td valign="middle"><span class="rounded-pill" :class="customer.type.toLowerCase()">{{ customer.type }}</span></td>
@@ -47,7 +48,9 @@
             </tfoot>
         </table>
     </transition>
-    <!-- <router-view /> -->
+    <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
+        <div v-if="showlayer" class="back-layer"></div>
+    </transition>
 </template>
 <script>
 import { ref, onMounted, computed } from "vue";
@@ -148,7 +151,7 @@ export default {
             store.dispatch(`${CUSTOMER_MODULE}${LOAD_MORE_CUSTOMER}`);
         }
         onMounted(()=>{
-            store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_LIST}`);
+            // store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_LIST}`);
         })
         const formatPhone = (phoneString)=>{
             if(phoneString !="--"){
@@ -168,23 +171,17 @@ export default {
                 store.commit(`${CUSTOMER_MODULE}${SET_CUSTOMER_DETAIL}`, { 
 
                 });                
-                // router.back();
+                router.back();
             }
-            // if(check == true){
-            //     store.dispatch(`${CUSTOMER_MODULE}${INVOICELIST_SET_ALL_SELECTED}`, id);
-            // }
-            // if(check==false){
-            //     store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_MULTI_UNCHECKED}`, id);
-            // }
         }
         const selectrow = (customerID)=>{
             store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`, customerID);
-            // router.push({
-            //     name:'CustomerDetail',
-            //     params: {
-            //         customer_id:customerID,
-            //     },
-            // })
+            router.push({
+                name:'CustomerDetail',
+                params: {
+                    customer_id: customerID,
+                },
+            })
         }        
         return {
             route,
@@ -197,7 +194,11 @@ export default {
             formatPhone,
             loadMoreCustomer,
             checkboxclicked,
-            selectrow
+            selectrow,
+            showlayer: computed( ()=> {
+                // return (route.params.customer_id > 0 && CURRENT_SELECTED.value != '');
+                return false;
+            }),            
         }
     }
 }
@@ -284,6 +285,15 @@ export default {
     .list-move{
         transition:all 0.9s ease;
     } 
+    .back-layer{
+        background:rgba(224, 224, 224,0.6);
+        position: fixed;
+        top: 0;
+        left:0;
+        height: 100%;
+        width: 100%;
+        z-index: 9999;
+    }    
 </style>
 <style>
     .trow span.chkbox {

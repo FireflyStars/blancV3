@@ -13,7 +13,10 @@ import {
     TOASTER_MODULE,
     TOASTER_MESSAGE,
     SET_CURRENT_SELECTED_CUSTOMER,
-    SET_CUSTOMER_SELECTED_TAB
+    SET_CUSTOMER_SELECTED_TAB,
+    SET_CUSTOMER_FILTER,
+    FILTER_CUSTOMER_LIST,
+    SET_CUSTOMER_DETAIL
 }
 from '../types/types';
 export const Customer = {
@@ -23,10 +26,17 @@ export const Customer = {
         customer_list: [],
         total_customer_count: '',
         current_selected: '',
-        multi_selected: [],        
+        multi_selected: [],      
+        customer_detail: {},  
         filter: {
             skip: 0,
             selected_nav: 'CustomerList',
+            customer_type: '',
+            customer_location: '',
+            invoice_preference: '',
+            total_spent: '',
+            last_order_start: '',
+            last_order_end: '',
         }
     },
     mutations:{
@@ -47,6 +57,17 @@ export const Customer = {
         },
         [SET_CUSTOMER_SELECTED_TAB]: (state, payload)=>{
             state.filter.selected_nav = payload;
+        },
+        [SET_CUSTOMER_FILTER]: (state, payload)=>{
+            state.filter.customer_type = payload.customer_type.value;
+            state.filter.customer_location = payload.customer_location.value;
+            state.filter.invoice_preference = payload.invoice_preference.value;
+            state.filter.total_spent = payload.total_spent.value;
+            state.filter.last_order_start = payload.last_order.value.start;
+            state.filter.last_order_end = payload.last_order.value.end;
+        },
+        [SET_CUSTOMER_DETAIL]:(state, payload)=>{
+            state.customer_detail = payload;
         }
     },
     actions:{
@@ -79,6 +100,24 @@ export const Customer = {
         },
         [SET_CUSTOMER_SELECTED_TAB]: ( { commit }, payload)=>{
             commit(SET_CUSTOMER_SELECTED_TAB, payload)
+        },
+        [SET_CUSTOMER_FILTER]: ( { commit } , payload)=>{
+            commit(SET_CUSTOMER_FILTER, payload);
+        },
+        [FILTER_CUSTOMER_LIST]: async ( { commit, dispatch, state })=>{
+            dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Filtering customer data...'], {root: true});
+            await axios.post('/get-all-customers', state.filter).then(function (response) {
+                commit(SET_CUSTOMER_LIST, response.data);
+            })
+            .catch(function (error) {
+                if(typeof error.response !="undefined")
+                dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'},{ root: true });
+            }).finally(function(){
+                dispatch(`${LOADER_MODULE}${HIDE_LOADER}`,{},{ root: true });
+            });
+        },
+        [SET_CUSTOMER_DETAIL]: ( {commit} , payload)=>{
+            commit(SET_CUSTOMER_DETAIL, payload);
         }
     },
     getters:{

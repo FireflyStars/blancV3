@@ -1,6 +1,6 @@
 <template>
-    <label class="select-label body_medium" :class="{disabled:disabled==true}" v-if="label">{{label}}</label>
-    <div class="select noselect" :class="cname" @click.self="selectclick"><span class="disp" :class="{placeholder:current_display=='',disabled: disabled==true}" @click.self="selectclick"><template v-if="current_display==''">{{placeholder}}</template><template v-else>{{current_display}}</template></span>
+    <label class="select-label body_medium" v-if="label">{{label}}</label>
+    <div class="select noselect" :class="cname" @click.self="selectclick"><span class="disp" @click.self="selectclick"><template v-if="current_display==''">{{placeholder}}</template><template v-else>{{current_display}}</template></span>
         <transition name="trans-select">
             <div class="select-options"  v-if="sel===name"  >
                <slot>
@@ -219,38 +219,5 @@
     .select:active{
         background-color: #E0E0E0;
         border-color: #E0E0E0;
-    }
-    .disabled{
-        pointer-events: none;
-    }
-    .select-label.disabled{
-        color:#C3C3C3;
-    }
-    .select.valid{
-        background-color: #F7FBF6;
-    }
-    .select.valid .disp{
-        color: #42A71E;
-    }
-    .select.valid:before,.select.valid:after{
-        background-color: #42A71E;
-    }
-    .select.invalid{
-        background-color: #FFEFED;
-    }
-    .select.invalid .disp{
-        color: #EB5757;
-    }
-    .select.invalid:before,.select.invalid:after{
-        background-color: #EB5757;
-    }
-    .select.disabled{
-        background-color: #F8F8F8;
-    }
-    .select.disabled .disp{
-        color:#C3C3C3;
-    }
-    .select.disabled:before, .select.disabled:after{
-        background-color: #C3C3C3;
     }
 </style>

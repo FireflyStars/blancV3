@@ -32,8 +32,26 @@ const router = createRouter({
             component:()=> import('../components/customer/CustomerPage'),
             meta:{
                 authenticated:  true
-            }
+            },
+            children:[
+                {
+                    path:'/customer-detail/:customer_id',
+                    name:'CustomerDetail',
+                    component:() => import('../components/customer/CustomerDetail'),
+                    meta:{
+                        authenticated:  true
+                    }
+                }
+            ]            
         },
+        {
+            path:'/newcustomer',
+            name:'NewCustomer',
+            component:()=> import('../components/customer/NewCustomer'),
+            meta:{
+                authenticated:  true
+            },
+        },        
         {
             path: '/assembly-home',
             name: 'Assembly',

@@ -54,7 +54,7 @@ class CustomerController extends Controller
                         )
                         ->groupBy('infoCustomer.CustomerID')
                         ->orderBy('infoCustomer.id');
-        if($request->selected_nav == 'B2B'){
+        if($request->selected_nav == 'B2B' || $request->customer_type == 'B2B'){
             $customers = $customers->where( function( $query ) {
                 $query->where('infoCustomer.CustomerIDMaster', '!=', '')
                     ->orWhere('infoCustomer.CustomerIDMasterAccount', '!=', '')
@@ -62,16 +62,37 @@ class CustomerController extends Controller
                     ->orWhere('infoCustomer.IsMasterAccount', 1);
             });    
         }
-        if($request->selected_nav == 'B2C'){
+        if($request->selected_nav == 'B2C' || $request->customer_type = 'B2C'){
             $customers = $customers->where('infoCustomer.CustomerIDMaster', '')
                             ->where('infoCustomer.CustomerIDMasterAccount', '')
                             ->where('infoCustomer.IsMaster', 0)
                             ->where('infoCustomer.IsMasterAccount', 0);
         }
-        $total_count =  $customers->get()->count();
-        $customers   =  $customers->skip($request->skip ? $request->skip : 0)
+        if( $request->customer_location !='' ){
+            $customers = $customers->where('infoCustomer.TypeDelivery', $request->customer_location);
+        }
+        if( $request->invoice_preference !='' ){
+            $customers = $customers->where('infoCustomer.invoicepreference', $request->invoice_preference);
+        }
+        if( $request->last_order_start !='' && $request->last_order_end ){
+            $customers = $customers->whereBetween('infoOrder.created_at', [$request->last_order_start, $request->last_order_end]);
+        }
+
+        if( $request->total_spent !='' ){
+            $customers =  $customers->get()
+                                ->where('total_spent', '>=', explode(',', $request->total_spent)[0])
+                                ->where('total_spent', '<=', explode(',', $request->total_spent)[1])
+                                ->values();
+            $total_count   =  $customers->count();
+            $customers   =  $customers->skip($request->skip ? $request->skip : 0)
                                 ->take(10)
-                                ->get();
+                                ->values();
+        }else{
+            $total_count =  $customers->get()->count();
+            $customers   =  $customers->skip($request->skip ? $request->skip : 0)
+                                    ->take(10)
+                                    ->get();
+        }
         return response()->json([
             'customers'     => $customers,
             'total_count'   => $total_count,

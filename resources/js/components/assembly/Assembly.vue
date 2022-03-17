@@ -105,13 +105,12 @@
                 filterDef,
                 selected_nav: computed(()=>store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`]),
                 showlayer: computed( ()=> {
-                                if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
-                                    return (route.params.item_id>0 && store.getters[`${ASSEMBLY_HOME_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);
-                                else if (store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'InvoiceList')
-                                    return (route.params.item_id>0&&store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);
-                                else return false;
-                            }
-                        ),
+                        if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
+                            return (route.params.item_id>0 && store.getters[`${ASSEMBLY_HOME_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);
+                        else if (store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'InvoiceList')
+                            return (route.params.item_id>0&&store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);
+                        else return false;
+                }),
                 setNav:( nav_val )=>{
                     store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_SELECTED_NAV}`, nav_val)
                 },
