@@ -17,6 +17,9 @@
                 {{ day.dayName }}
             </div>
         </div>
+        <!--
+        <pre>{{displayed_dates_rows}}</pre>
+        -->
         <div class="row" v-for="row in displayed_dates_rows" :key="row">
             <template v-for="(day,index) in row" :key="index">
             <div class="col dp-dates" :class="{ disabled:!day.current_month, current:day.selected, notavailable:day.notavailable}" @click="setDate(day.year,day.month,day.date)" >
@@ -79,6 +82,7 @@
             availableDates:Array,
             disabledToDate:String,
             disabledFromDate:String,
+            disabledSunday:Boolean,
             name:{
                 type: String,
                 required: true
@@ -202,13 +206,17 @@
                 displayed_dates_rows.value = {0: [], 1: [], 2: [], 3: [], 4: [], 5: []};
                 displayed_dates.value = [];
                 let firstDayofMonth = new Date(MonthYear.value.year, MonthYear.value.month, 1).getDay();
+
                 let lastDateofMonth = new Date(MonthYear.value.year, MonthYear.value.month + 1, 0).getDate();
                 let lastMonth = (MonthYear.value.month == 0 ? 11 : MonthYear.value.month - 1);
                 let lastMonthYear = (MonthYear.value.month == 0 ? MonthYear.value.year - 1 : MonthYear.value.year);
 
                 let lastMonthEnd = new Date(lastMonthYear, lastMonth + 1, 0).getDate();
+
                 let calendarStarts = (lastMonthEnd - firstDayofMonth + 2);
+
                 let notavailable=typeof props.availableDates!="undefined"&&props.availableDates.length>0;
+
                 while (calendarStarts <= lastMonthEnd) {
                     displayed_dates.value.push({
                         date: calendarStarts,
@@ -220,6 +228,8 @@
                     })
                     calendarStarts++;
                 }
+
+               //console.log(displayed_dates);
 
                 let date = 1;
                 while (date <= lastDateofMonth) {
@@ -235,7 +245,7 @@
                 }
 
                 date = 1;
-                while (displayed_dates.value.length < 35) {
+                while (displayed_dates.value.length < 42) {
                     displayed_dates.value.push({
                         date: date,
                         month: (MonthYear.value.month == 11 ? 0 : MonthYear.value.month + 1),
@@ -247,7 +257,7 @@
                     date++;
                 }
                 date = 1;
-                if (displayed_dates.value.length == 36) {
+                if (displayed_dates.value.length == 43) {
                     while (displayed_dates.value.length < 42) {
                         displayed_dates.value.push({
                             date: date,
@@ -278,6 +288,7 @@
                             displayed_dates.value[i].notavailable=true;
                         }
                     }
+                    /*
                      //disabledFromDate
                     if(typeof props.disabledFromDate!="undefined"&&props.disabledFromDate!=""){
                         let disabledFrom=new Date(props.disabledFromDate);
@@ -286,6 +297,18 @@
                             displayed_dates.value[i].notavailable=true;
                         }
                     }
+                    */
+
+                    //disabledOnSunday
+/*
+                    if(props.disabledSunday){
+                        let curdate = new Date(datestr);
+                        if(curdate.getDay()==0){
+                            //console.log(displayed_dates.value[i]);
+                            displayed_dates.value[i].notavailable = true;
+                        }
+                    }
+*/
 
                     displayed_dates.value[i].selected = false;
 
@@ -299,8 +322,9 @@
                             displayed_dates.value[i].selected = true;
                         }
                     }
-                        displayed_dates_rows.value[index].push(displayed_dates.value[i]);
-                        count++;
+
+                    displayed_dates_rows.value[index].push(displayed_dates.value[i]);
+                    count++;
 
                 }
 

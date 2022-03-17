@@ -80,6 +80,7 @@ export default {
                             let fill_class = "";
                             let index=0;
                             if (props.issue_type == "stain" && v.description && props.stainzone && props.stainzone.some(z => z.id_zone === v.id)) {
+
                                 fill_class = props.selectable ? 'stain-editable' : 'stain-not-editable';
                                 index = props.stainzone.findIndex(z => z.id_zone === v.id)+1;
                             } else if (props.issue_type == "damage" && v.description && props.damagezone && props.damagezone.some(z => z.id_zone === v.id)) {
@@ -149,10 +150,10 @@ export default {
                             }
                             */
 
-                            if (fill_class == 'stain-not-editable') {
-                                svg_el += "<circle cx='"+v.label_x+"' cy='"+v.label_y+"' r='10' stroke-width='4' fill='#EF8F00'  class='zone_labels'/><text x='"+v.label_x+"' y='"+v.label_y+"' text-anchor='middle' stroke='white' stroke-width='1px' dy='.3em' class='zone_labels'>"+index+"</text>";
-                            }else if (fill_class == 'damage-not-editable') {
-                                svg_el += "<circle cx='"+v.label_x+"' cy='"+v.label_y+"' r='10' stroke-width='4' fill='#EB5757'  class='zone_labels'/><text x='"+v.label_x+"' y='"+v.label_y+"' text-anchor='middle' stroke='white' stroke-width='1px' dy='.3em'>"+index+"</text>";
+                            if (props.stainzone && props.stainzone.some(z => z.id_zone === v.id)) {
+                                svg_el += "<circle cx='"+v.label_x+"' cy='"+v.label_y+"' r='10' stroke-width='4' fill='#EF8F00'  class='zone_labels' id='mycircle"+v.id+"'/><text x='"+v.label_x+"' y='"+v.label_y+"' text-anchor='middle' stroke='white' stroke-width='1px' dy='.3em' class='zone_labels' id='mytext"+v.id+"'>"+index+"</text>";
+                            }else if (props.damagezone && props.damagezone.some(z => z.id_zone === v.id)) {
+                                svg_el += "<circle cx='"+v.label_x+"' cy='"+v.label_y+"' r='10' stroke-width='4' fill='#EB5757'  class='zone_labels' id='mycircle"+v.id+"'/><text x='"+v.label_x+"' y='"+v.label_y+"' text-anchor='middle' stroke='white' stroke-width='1px' dy='.3em' id='mytext"+v.id+"'>"+index+"</text>";
                             }
 
                             details += svg_el;
@@ -197,7 +198,7 @@ export default {
                         );
                         context.emit("add-stain-zone", svg_row[0].id);
 
-                        if(route.name=='ComponentTest'){
+                        //if(route.name=='ComponentTest'){
                             //console.log(svg_row[0]);
 
                             var svgNS = "http://www.w3.org/2000/svg";
@@ -205,13 +206,19 @@ export default {
                             let label_id = "mycircle"+svg_row[0].id;
                             let label_txt_id = "mytext"+svg_row[0].id;
 
+                            let color_fill = "#EF8F00";
+
+                            if(props.damagezone){
+                                color_fill = "#EB5757";
+                            }
+
                             var myCircle = document.createElementNS(svgNS,"circle");
                             myCircle.setAttributeNS(null,"id",label_id);
                             myCircle.setAttributeNS(null,"class","zone_labels");
                             myCircle.setAttributeNS(null,"cx",parseInt(svg_row[0].label_x));
                             myCircle.setAttributeNS(null,"cy",parseInt(svg_row[0].label_y));
                             myCircle.setAttributeNS(null,"r",10);
-                            myCircle.setAttributeNS(null,"fill","#EF8F00");
+                            myCircle.setAttributeNS(null,"fill",color_fill);
                             myCircle.setAttributeNS(null,"stroke",4);
 
 
@@ -224,24 +231,59 @@ export default {
                             myText.setAttributeNS(null,"stroke","white");
                             myText.setAttributeNS(null,"stroke-width","1px");
                             myText.setAttributeNS(null,"dy",".3em");
-                            var index =  props.stainzone.filter(z => z.id_zone === svg_row[0].id).length>0?
+
+                            var index = 0;
+
+                            if(route.name=='ComponentTest'){
+                                index =  props.stainzone.filter(z => z.id_zone === svg_row[0].id).length>0?
                              props.stainzone.filter(z => z.id_zone === svg_row[0].id)[0].index:0;
+                            }
+
+                            if(route.name=='DetailingItem'){
+                                if(props.stainzone){
+                                    props.stainzone.forEach(function(v,i){
+                                        if(v.id_zone==svg_row[0].id){
+                                            index = i+1;
+                                        }
+                                    });
+                                }
+
+                                if(props.damagezone){
+                                    props.damagezone.forEach(function(v,i){
+                                        if(v.id_zone==svg_row[0].id){
+                                            index = i+1;
+                                        }
+                                    });
+                                }
+                            }
+
+                            //console.log(index);
+
                             myText.textContent = index; //OR index
 
                             let is_active = 0;
-                            if (!e.target.matches('.stain-editable')) {
+                            if (!e.target.matches('.stain-editable') && !e.target.matches('.damage-editable')) {
                                 //add cirle
                                  document.getElementById("Layer_1").appendChild(myCircle);
                                  document.getElementById("Layer_1").appendChild(myText);
                                 is_active = 1;
                             }else{
                                 //remove circle
-                                document.getElementById(label_id).remove();
-                                document.getElementById(label_txt_id).remove();
+                                let el_circle = document.getElementById(label_id);
+
+                                if(el_circle){
+                                    el_circle.remove();
+                                }
+
+                                let el_text = document.getElementById(label_txt_id);
+                                if(el_text){
+                                    el_text.remove();
+                                }
+
                                 is_active = 0
                             }
                             context.emit('get-zone-detail',svg_row[0],is_active);
-                        }
+                        //}
 
 
 
