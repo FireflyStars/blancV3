@@ -481,4 +481,8 @@ input:focus-visible {
 .button-row{
     padding: 100px 10px 10px 10px;
 }
+
+.main{
+    margin-top: 55px;
+}
 </style>

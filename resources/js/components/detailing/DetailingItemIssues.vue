@@ -205,6 +205,7 @@ export default {
             } else {
                 damageZone.value.splice(damageZone.value.findIndex((z) => { return z.id_zone === id }), 1);
                 cur_zone_id.value = 0;
+                damageTag.value = 0;
             }
 
             issuesStep.value = issuesStep.value == 3 ? issuesStep.value + 1 : issuesStep.value;
