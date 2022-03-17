@@ -15,7 +15,7 @@
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M10 11H6H10Z" fill="white"/>
                 <path d="M10 11H6" stroke="white" stroke-linecap="round"/>
             </svg>
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="side-icons">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="side-icons" :class="{active:route_name == 'Customer'}" @click="router.push({name:'Customer'})">
                 <rect width="32" height="32" rx="8" fill="white"/>
                 <path d="M12 9V25" stroke="#868686" stroke-linecap="round"/>
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M24 7V25H10C8.89543 25 8 24.1046 8 23V9C8 7.89543 8.89543 7 10 7H24Z" stroke="#868686" stroke-linecap="round" stroke-linejoin="round"/>

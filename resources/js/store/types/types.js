@@ -110,6 +110,16 @@ export const CUSTOMER_SET_LOADER='CUSTOMER_SET_LOADER';//mutations
 export const CUSTOMER_SET_LIST='CUSTOMER_SET_LIST'//mutations
 export const CUSTOMER_GET_LOADER='CUSTOMER_GET_LOADER';//getters
 
+// all customer page
+export const CUSTOMER_MODULE='CUSTOMER_MODULE/';//namespace
+export const GET_CUSTOMER_LIST = 'GET_CUSTOMER_LIST'; // getter
+export const GET_LOADED_CUSTOMER_COUNT = 'GET_LOADED_CUSTOMER_COUNT'; // getter
+export const GET_TOTAL_CUSTOMER_COUNT = 'GET_TOTAL_CUSTOMER_COUNT'; // getter
+export const LOAD_MORE_CUSTOMER = 'LOAD_MORE_CUSTOMER'; // action and mutation
+export const SET_CUSTOMER_LIST = 'SET_CUSTOMER_LIST'; // action and mutation
+export const ADD_MORE_CUSTOMER_TO_LIST = 'ADD_MORE_CUSTOMER_TO_LIST'; //mutation
+// end all customer page
+
 export const CUSTOMEREMAILS_GET_LIST='CUSTOMEREMAILS_GET_LIST'//getters
 export const CUSTOMEREMAILS_SET_LIST='CUSTOMEREMAILS_SET_LIST';//mutations
 export const CUSTOMERORDERS_GET_LIST='CUSTOMERORDERS_GET_LIST'//getters

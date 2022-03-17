@@ -227,7 +227,7 @@ export const invoicelist= {
                 dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'},{ root: true });
             }).finally(function(){
                 dispatch(`${LOADER_MODULE}${HIDE_LOADER}`,{},{ root: true });
-            });            
+            });
         },
         [SET_INVOICE_FILTER_FLAG]: ({ commit }, payload)=>{
             commit(SET_INVOICE_FILTER_FLAG, payload);

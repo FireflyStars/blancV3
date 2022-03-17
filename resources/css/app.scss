@@ -950,3 +950,19 @@ padding:0 1.2rem;
     }
   }
 }
+.tab-nav-item{
+  border-radius: 10px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background: #EEEEEE;
+  cursor: pointer;
+  font-family: 'Gotham Rounded Book';
+  font-weight: 400;
+}
+.tab-nav-item.active,
+.tab-nav-item:hover{
+  color: #42A71E;
+  font-weight: bold;
+  background: white;
+  transition: all ease-in 0.3s;
+}

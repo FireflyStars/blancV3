@@ -15,6 +15,7 @@ import {shipping as SHIPPING_MODULE } from './modules/shipping';
 import {assemblyHome as ASSEMBLY_HOME_MODULE } from './modules/assembly';
 import {invoicelist as INVOICE_MODULE } from './modules/invoice';
 import {itemDetail as ITEM_DETAIL_MODULE } from './modules/itemdetail';
+import {Customer as CUSTOMER_MODULE } from './modules/customer';
 
 
 export default createStore({
@@ -34,6 +35,7 @@ export default createStore({
         SHIPPING_MODULE,
         ASSEMBLY_HOME_MODULE,
         INVOICE_MODULE,
-        ITEM_DETAIL_MODULE
+        ITEM_DETAIL_MODULE,
+        CUSTOMER_MODULE
     }
 })

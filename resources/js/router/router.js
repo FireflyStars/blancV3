@@ -4,7 +4,6 @@ import {
 } from  'vue-router';
 import NotFound from '../components/NotFound';
 import AuthenticationMiddleware from './middleware/authentication';
-import Assembly from '../components/assembly/Assembly';
 
 const router = createRouter({
     history:createWebHistory(),
@@ -28,19 +27,26 @@ const router = createRouter({
             ]
         },
         {
+            path:'/customer',
+            name:'Customer',
+            component:()=> import('../components/customer/CustomerPage'),
+            meta:{
+                authenticated:  true
+            }
+        },
+        {
             path: '/assembly-home',
             name: 'Assembly',
             meta:{
                 authenticated: true
             },
-            component: Assembly,
+            component: ()=> import('../components/assembly/Assembly'),
             children:[
                 {
                     path:'/item_detail/:item_id',
                     name:'ItemDetails',
                     components:{
                         default: () => import('../components/assembly/ItemDetail'),
-                        // station: () => import('../components/assembly/StationItemDetail'),
                     },                    
                     meta:{
                         authenticated:  true

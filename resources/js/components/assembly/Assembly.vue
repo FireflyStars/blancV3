@@ -8,11 +8,11 @@
                 <div class="col main-view mx-5 py-5" id="assembly-home">
                     <h2 class="mx-0 font-22">Production Track</h2>
                     <div class="nav-panel d-flex justify-content-between mb-1">
-                        <ul class="assembly-home-nav list-inline mb-0">
-                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'AssemblyHome' ? 'active' : ''" @click="setNav('AssemblyHome')">Stations</li>
-                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'Commitment' ? 'active' : ''" @click="setNav('Commitment')">Commitment</li>
-                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'InvoiceList' ? 'active' : ''" @click="setNav('InvoiceList')">All items</li>
-                            <li class="assembly-home-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'Overdue' ? 'active' : ''" @click="setNav('Overdue')">Overdue</li>
+                        <ul class="tab-nav list-inline mb-0">
+                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'AssemblyHome' ? 'active' : ''" @click="setNav('AssemblyHome')">Stations</li>
+                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'Commitment' ? 'active' : ''" @click="setNav('Commitment')">Commitment</li>
+                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'InvoiceList' ? 'active' : ''" @click="setNav('InvoiceList')">All items</li>
+                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'Overdue' ? 'active' : ''" @click="setNav('Overdue')">Overdue</li>
                         </ul>
                         <div class="filter-section position-relative" v-if="selected_nav == 'InvoiceList'">
                             <filters :filterDef="filterDef"></filters>
@@ -148,22 +148,6 @@
 .invoice-table-th{
     font-size: 14px;
     color: #868686;
-}
-.assembly-home-nav-item{
-    border-radius: 10px;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    background: #EEEEEE;
-    cursor: pointer;
-    font-family: 'Gotham Rounded Book';
-    font-weight: 400;
-}
-.assembly-home-nav-item.active,
-.assembly-home-nav-item:hover{
-    color: #42A71E;
-    font-weight: bold;
-    background: white;
-    transition: all ease-in 0.3s;
 }
 .invoice-location{
     display: flex;

@@ -48,7 +48,7 @@
     text-align: center;
     font-size: 12px;
     font-weight: 400;
-    width: 120px!important;
+    width: 140px !important;
     height: 24px;
     position: relative;
     display: inline-block;
