@@ -10,7 +10,14 @@
             </thead>
             <tbody>
             <transition-group name="list" appear>
-                <tr v-for="(customer, index) in customerList" :key="index" class="trow">
+                <tr v-for="(customer, index) in customerList" :key="index" class="trow"
+                    :class="{current_sel:customer.id == CURRENT_SELECTED}"
+                    @click="selectrow(customer.id)"
+                >
+                    <!-- checkbox column -->
+                    <td valign="middle">
+                        <check-box :checked_checkbox="(customer.id == CURRENT_SELECTED) || MULTI_SELECTED.includes(customer.id)" :id="customer.id" @checkbox-clicked="checkboxclicked"></check-box>
+                    </td>
                     <!-- Customer Type -->
                     <td valign="middle"><span class="rounded-pill" :class="customer.type.toLowerCase()">{{ customer.type }}</span></td>
                     <!-- active in -->
@@ -44,23 +51,35 @@
 </template>
 <script>
 import { ref, onMounted, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import {
     CUSTOMER_MODULE,
+    GET_ALL_SELECTED_CUSTOMER,
+    GET_CURRENT_SELECTED_CUSTOMER,
     GET_CUSTOMER_LIST,
     GET_LOADED_CUSTOMER_COUNT,
     GET_TOTAL_CUSTOMER_COUNT,
     LOAD_MORE_CUSTOMER,
+    SET_CURRENT_SELECTED_CUSTOMER,
+    SET_CUSTOMER_DETAIL,
     SET_CUSTOMER_LIST
 } from "../../store/types/types";
 import { useStore } from 'vuex';
-
+import CheckBox from '../miscellaneous/CheckBox';
 export default {
     name: 'CustomerList',
     components:{
+        CheckBox
     },
     setup(){
         const store = useStore();
+        const route = useRoute();
+        const router = useRouter();
         const tableColumnsDef = [
+                {
+                    label: '',
+                    key: 'checkbox',
+                },
                 {
                     label: 'Type',
                     key: 'type',
@@ -119,14 +138,19 @@ export default {
         const totalCustomerCount = computed(()=>{
             return store.getters[`${CUSTOMER_MODULE}${GET_TOTAL_CUSTOMER_COUNT}`];
         })
-
+        const CURRENT_SELECTED=computed(()=>{
+            return store.getters[`${CUSTOMER_MODULE}${GET_CURRENT_SELECTED_CUSTOMER}`];
+        });
+        const MULTI_SELECTED=computed(()=>{
+            return store.getters[`${CUSTOMER_MODULE}${GET_ALL_SELECTED_CUSTOMER}`];
+        });        
         const loadMoreCustomer = ()=>{
             store.dispatch(`${CUSTOMER_MODULE}${LOAD_MORE_CUSTOMER}`);
         }
         onMounted(()=>{
             store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_LIST}`);
         })
-        function formatPhone(phoneString){
+        const formatPhone = (phoneString)=>{
             if(phoneString !="--"){
                 var phone = phoneString.split('"')[1];
                 var area_code = phone.split("|")[0];
@@ -134,17 +158,46 @@ export default {
                 if(phone.split("|").length > 1)
                     return '+' + area_code.replace(/\D/g, '') + ' ' + number.replace(/ /g, '').replace(/(\d{3})(\d{3})(\d{3,4})/, "$1 $2 $3");
                 else
-                    return phone.replace(/\D/g, '')
+                    return phone.replace(/\D/g, '').replace(/(\d{2})(\d{3})(\d{3})(\d{3,4})/, "+$1 $2 $3 $3");
             }
             return phoneString;
         }
+        const checkboxclicked = ( check, id, name )=>{
+            if(CURRENT_SELECTED.value == id && check == false){
+                store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`,'');
+                store.commit(`${CUSTOMER_MODULE}${SET_CUSTOMER_DETAIL}`, { 
+
+                });                
+                // router.back();
+            }
+            // if(check == true){
+            //     store.dispatch(`${CUSTOMER_MODULE}${INVOICELIST_SET_ALL_SELECTED}`, id);
+            // }
+            // if(check==false){
+            //     store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_MULTI_UNCHECKED}`, id);
+            // }
+        }
+        const selectrow = (customerID)=>{
+            store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`, customerID);
+            // router.push({
+            //     name:'CustomerDetail',
+            //     params: {
+            //         customer_id:customerID,
+            //     },
+            // })
+        }        
         return {
+            route,
+            CURRENT_SELECTED,
+            MULTI_SELECTED,
             customerList,
             totalCustomerCount,
             currentLoadedCustomerCount,
             tableColumnsDef,
             formatPhone,
             loadMoreCustomer,
+            checkboxclicked,
+            selectrow
         }
     }
 }
@@ -160,21 +213,24 @@ export default {
         transition: background-color 300ms ease-out;
         cursor: pointer;
         display: table-row;
-        min-height: 65px;
     }
     .trow:hover,
     .trow.multi{
         transition: background-color 300ms ease-out;
         background: #F8F8F8;
     } 
-    tr th:first-child,
-    tr td:first-child{
-        padding: 0.5rem 0.5rem 0.5rem 1rem;
-    }   
-    tr th:last-child,
-    tr td:last-child{
-        padding: 0.5rem 1rem 0.5rem 0.5rem;
-    }   
+    .current_sel{
+        position: relative;
+        z-index: 10000;
+        background: rgb(247, 251, 246);
+        box-shadow: inset 0px -1px 0px rgba(168, 168, 168, 0.25);
+    }    
+    .invoice-table-th span{
+        font-family: "Gotham Rounded";
+        font-weight: 400;
+        font-size: 14px;
+        color: #868686;
+    }    
     th span{
         font-family: 'Gotham Rounded';
         font-style: normal;
@@ -196,7 +252,7 @@ export default {
         font-size: 12px;
         line-height: 14px;
         color: #47454B;
-        background: #F8F8F8;
+        background: rgba(238, 229, 22, 0.22);
         padding: 5px 25px;
     }
    /*list transitions*/
@@ -228,5 +284,15 @@ export default {
     .list-move{
         transition:all 0.9s ease;
     } 
- 
+</style>
+<style>
+    .trow span.chkbox {
+        border: 2px solid #FFF;
+        transition: border-color 300ms ease-out;
+    }    
+    .trow:hover span.chkbox, 
+    .trow.multi span.chkbox {
+        border-color: #868686;
+        transition: border-color 300ms ease-out;
+    }
 </style>

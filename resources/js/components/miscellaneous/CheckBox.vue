@@ -71,7 +71,7 @@
         border:none;
     }
     .chkbox_wrap{
-        cursor: pointer
+        cursor: pointer;
     }
     .filters span.chkbox{
         margin: 14px 22px 14px 22px;

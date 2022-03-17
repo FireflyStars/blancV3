@@ -18,9 +18,7 @@
                             <filters :filterDef="filterDef"></filters>
                         </div>
                     </div>
-                    <KeepAlive>
-                        <component :is="selected_nav"></component>
-                    </KeepAlive>
+                    <component :is="component"></component>
                 </div>
             </div>
         </div>
@@ -28,10 +26,12 @@
 </template>
 <script>
 import { ref } from 'vue';
+import { useStore } from 'vuex';
 import SideBar from "../layout/SideBar";
 import MainHeader from "../layout/MainHeader";
 import Filters from '../test/Filter';
 import CustomerList from './CustomerList';
+import { CUSTOMER_MODULE, SET_CUSTOMER_SELECTED_TAB, SET_CUSTOMER_LIST } from '../../store/types/types';
 export default {
     name: 'CustomerPage',
     components:{
@@ -41,45 +41,60 @@ export default {
         CustomerList
     },
     setup(){
+        const store = useStore();
+        const component = ref('CustomerList');
         const selected_nav = ref('CustomerList');
         const setNav = (nav)=>{
+            store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_SELECTED_TAB}`, nav);
+            if(nav == 'B2B' || nav == 'B2C' || nav == 'CustomerList'){
+                store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_LIST}`);
+                component.value = 'CustomerList';
+            }else{
+                component.value = nav;
+            }
             selected_nav.value = nav;
         }
         const filterDef = ref({
-            status: {
-                label: 'Sub Order Status',
-                id: 'sub_order_status',
-                mode: 'single',
-                value: ''
-            },
-            dest: {
-                label: 'Destination',
-                id: 'destination',
+            customer_type: {
+                label: 'Customer Type',
                 type: 'select',
-                value: [],
-                mode: 'tags',
-                options: [],
+                options: [
+                    'B2B', 'B2C'
+                ]
             },
-            location: {
-                label: 'Location',
-                id: 'location',
-                mode: 'tags',
+            customer_location: {
+                label: 'Customer Location',
                 type: 'select',
-                value: [],
-                options: [],
+                options:[
+                    { name: 'Delivery', value: 'DELIVERY'}, 
+                    { name: 'Marylebone', value: 'MARYLEBONE'},
+                    { name: 'Nothing Hill', value: 'NOTHING HILL'},
+                    { name: 'Chelsea', value: 'CHELSEA'},
+                    { name: 'South ken', value: 'SOUTH KEN'}
+                ]
             },
-            prod_date: {
-                label: 'Production Date',
-                id: 'prod_date',
-                type: 'datepicker',
-                value:{
-                    start: '',
-                    end: '',
-                }
+            invoice_preference: {
+                label: 'Invoice Preference',
+                type: 'select',
+                options: [
+                    { name:'No Tax Invoice', value: 'no_tax' },
+                    { name:'Tax Invoice', value: 'tax' },
+                ],
             },
-            deliv_date: {
-                label: 'Delivery Date',
-                id: 'deliv_date',
+            total_spent: {
+                label: 'Total Spent',
+                type: 'select',
+                options:[
+                    { name: '£0 - 100', value: '0,100' },
+                    { name: '£100 - 500', value: '100,500' },
+                    { name: '£500 - 1,000', value: '500,1000' },
+                    { name: '£1,000 - 5,000', value: '1000,5000' },
+                    { name: '£5,000 - 10,000', value: '5000,10000' },
+                    { name: '> £10,000', value: '10001' },
+                ]
+            },
+            last_order: {
+                label: 'Last Order Date',
                 type: 'datepicker',
                 value: {
                     start: '',
@@ -88,6 +103,7 @@ export default {
             },
         })
         return{
+            component,
             selected_nav,
             filterDef,
             setNav

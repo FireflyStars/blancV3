@@ -101,7 +101,6 @@
 
             return{
                 selectclick,
-
                 select,
                 current,
                 current_display,
