@@ -33,7 +33,7 @@
             face="all"
             :selectable="false"
             :stainzone="stainZone"
-            issue_type="stain"
+            issue_type="stain" @back-step="back"
         ></item-picto-new>
     </div>
     <div class="picto" v-if="issuesStep == 5">
@@ -42,7 +42,7 @@
             face="all"
             :selectable="false"
             :damagezone="damageZone"
-            issue_type="damage"
+            issue_type="damage" @back-step="back"
         ></item-picto-new>
     </div>
     <div class="row" v-if="issuesStep == 0">
@@ -130,6 +130,7 @@ export default {
         const issuesStep = ref([]);
         const stainTag = ref(0);
         const damageTag = ref(0);
+        const cur_zone_id = ref(0);
 
         const stain_free_text = ref('');
         const damageKind = ref([]);
@@ -140,24 +141,53 @@ export default {
         stainZone.value = props.detailingitem.stains ? JSON.parse(props.detailingitem.stains) : [];
         damageZone.value = props.detailingitem.damages ? JSON.parse(props.detailingitem.damages) : [];
         issuesStep.value = damageZone.value.length > 0 ? 5 : (stainZone.value.length > 0 ? 2 : 0);
-        stainTag.value = stainZone.value.length > 0 ? stainZone.value[0].id_issue : 0;
-        stain_free_text.value = stainZone.value.length > 0 ? stainZone.value[0].description : '';
-        damageTag.value = damageZone.value.length > 0 ? damageZone.value[0].id_issue : 0;
+
+        //stainTag.value = stainZone.value.length > 0 ? stainZone.value[0].id_issue : 0;
+
+        if(stainZone.value.length==1){
+            stainTag.value = stainZone.value[0].id_issue;
+            stain_free_text.value = stainZone.value[0].description;
+
+        }else if(stainZone.value.length > 1){
+            stainTag.value = stainZone.value[stainZone.value.length - 1].id_issue;
+            stain_free_text.value = stainZone.value[stainZone.value.length - 1].description;
+        }
+
+
+        if(damageZone.value.length==1){
+            damageTag.value = damageZone.value[0].id_issue;
+        }
+        else if(damageZone.value.length > 1){
+            damageTag.value = damageZone.value[damageZone.value.length - 1].id_issue;
+        }
+
         valid.value = true;
+
         watch(() => stainZone.value, (current_stainZone, previous_stainZone) => {
             valid.value = issuesStep.value == 2 && current_stainZone.length == 0 ? false : true;
         });
+
         watch(() => damageZone.value, (current_damageZone, previous_damageZone) => {
             valid.value = issuesStep.value == 4 && current_damageZone.length == 0 ? false : true;
         });
+
         function addStainZone(id) {
             if (!stainZone.value.some(z => z.id_zone === id)) {
                 stainZone.value.push({ id_zone: id, id_issue: 0, description: '' });
+                //Zone Exist
+                issuesStep.value = issuesStep.value == 1 ? 2 : issuesStep.value;
+                cur_zone_id.value = id;
+                stainTag.value = 0;
+
             } else {
                 stainZone.value.splice(stainZone.value.findIndex((z) => { return z.id_zone === id }), 1);
+                cur_zone_id.value = 0;
             }
+
             issuesStep.value = issuesStep.value == 0 ? issuesStep.value + 1 : issuesStep.value;
             valid.value = stainZone.value.length > 0;
+
+
             context.emit("save-item-issues", {
                 detailingitem_id: props.detailingitem.id,
                 stains: JSON.stringify(stainZone.value)
@@ -166,11 +196,20 @@ export default {
         function addDamageZone(id) {
             if (!damageZone.value.some(z => z.id_zone === id)) {
                 damageZone.value.push({ id_zone: id, id_issue: 0, description: '' });
+
+                //Zone exist
+                issuesStep.value = issuesStep.value == 4 ? 5 : issuesStep.value;
+                cur_zone_id.value = id;
+                damageTag.value = 0;
+
             } else {
                 damageZone.value.splice(damageZone.value.findIndex((z) => { return z.id_zone === id }), 1);
+                cur_zone_id.value = 0;
             }
+
             issuesStep.value = issuesStep.value == 3 ? issuesStep.value + 1 : issuesStep.value;
             valid.value = damageZone.value.length > 0;
+
             context.emit("save-item-issues", {
                 detailingitem_id: props.detailingitem.id,
                 damages: JSON.stringify(damageZone.value)
@@ -179,7 +218,15 @@ export default {
         function addTag(tag_id) {
             if (issuesStep.value == 2) {
                 stainTag.value = stainTag.value == tag_id ? 0 : tag_id;
-                stainZone.value[0].id_issue = stainTag.value;
+
+                if(stainZone.value.length==1){
+                    stainZone.value[0].id_issue = stainTag.value;
+                }else if(stainZone.value.length > 0){
+                    let index = stainZone.value.findIndex((z) => { return z.id_zone === cur_zone_id.value });
+
+                    stainZone.value[index].id_issue = stainTag.value;
+                }
+
                 context.emit("save-item-issues", {
                     detailingitem_id: props.detailingitem.id,
                     stains: JSON.stringify(stainZone.value)
@@ -187,7 +234,16 @@ export default {
             }
             if (issuesStep.value == 5) {
                 damageTag.value = damageTag.value == tag_id ? 0 : tag_id;
-                damageZone.value[0].id_issue = damageTag.value;
+
+                if(damageZone.value.length==1){
+                    damageZone.value[0].id_issue = damageTag.value;
+                }
+                else if(damageZone.value.length > 1){
+                    let index = damageZone.value.findIndex((z) => { return z.id_zone === cur_zone_id.value });
+
+                    damageZone.value[index].id_issue = damageTag.value;
+                }
+
                 context.emit("save-item-issues", {
                     detailingitem_id: props.detailingitem.id,
                     damages: JSON.stringify(damageZone.value)
@@ -225,6 +281,7 @@ export default {
             window.scrollTo(0, 0);
         }
 
+
         return {
             valid,
             stainZone,
@@ -242,7 +299,8 @@ export default {
             addTag,
             addFreeText,
             save,
-            back
+            back,
+            cur_zone_id,
         };
     },
 }

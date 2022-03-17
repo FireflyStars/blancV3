@@ -31,6 +31,9 @@
                                 class="subtitle"
                                 v-else-if="detailingitem.etape === 10"
                             >Describe item issuses</h2>
+                            <h2 class="subtitle" v-else-if="detailingitem.etape==11">
+                                Select the desired service(s)
+                            </h2>
                             <div
                                 class="row"
                                 v-if="detailingitem.etape === 1 || detailingitem.etape === 2"
@@ -92,6 +95,10 @@
                                     @save-item-issues="saveItemDetails"
                                     @go-to-step="backPreviousStep"
                                 ></detailing-item-issues>
+                                <detailing-services
+                                    v-if="detailingitem.etape == 11"
+                                    @go-to-step="backPreviousStep"
+                                ></detailing-services>
                             </div>
                         </div>
                         <detailing-right-panel
@@ -138,6 +145,7 @@ import DetailingItemDepartement from './DetailingItemDepartement.vue';
 import DetailingItemType from './DetailingItemType.vue';
 import DetailingItemDescription from './DetailingItemDescription.vue';
 import DetailingItemComplexities from './DetailingItemComplexities.vue';
+import DetailingServices from './DetailingServices.vue';
 import MainHeader from '../layout/MainHeader';
 import BreadCrumb from '../layout/BreadCrumb';
 import SideBar from '../layout/SideBar';
@@ -153,7 +161,7 @@ import DetailingItemIssues from './DetailingItemIssues.vue';
 
 export default {
     name: "DetailingItem",
-    components: { BreadCrumb, SideBar, MainHeader, DetailingRightPanel, DetailingItemDepartement, DetailingItemType, DetailingItemDescription, DetailingItemComplexities, DetailingItemIssues },
+    components: { BreadCrumb, SideBar, MainHeader, DetailingRightPanel, DetailingItemDepartement, DetailingItemType, DetailingItemDescription, DetailingItemComplexities, DetailingItemIssues,DetailingServices },
     setup() {
         const router = useRouter();
         const route = useRoute();

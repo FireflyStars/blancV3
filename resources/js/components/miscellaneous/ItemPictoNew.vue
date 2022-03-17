@@ -29,7 +29,7 @@ import {
 export default {
     name: "ItemPictoNew",
     props: ["pictoname", "face", "selectable", "issue_type", "stainzone", "damagezone"],
-    emits: ['add-stain-zone','get-zone-detail'],
+    emits: ['add-stain-zone','get-zone-detail','back-step'],
     setup(props, context) {
         const svg_viewpoint = ref("");
         const svg_scale = ref("");
@@ -84,6 +84,7 @@ export default {
                                 fill_class = props.selectable ? 'stain-editable' : 'stain-not-editable';
                                 index = props.stainzone.findIndex(z => z.id_zone === v.id)+1;
                             } else if (props.issue_type == "damage" && v.description && props.damagezone && props.damagezone.some(z => z.id_zone === v.id)) {
+
                                 fill_class = props.selectable ? 'damage-editable' : 'damage-not-editable';
                                 index = props.damagezone.findIndex(z => z.id_zone === v.id)+1;
                            }
@@ -306,6 +307,8 @@ export default {
                         });
                     }
                 }
+            }else{
+                context.emit('back-step');
             }
         }
 
