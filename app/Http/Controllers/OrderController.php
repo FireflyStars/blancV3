@@ -32,6 +32,8 @@ class OrderController extends Controller
 
         $new_order_id = 0;
         $created_stamp = date('Y-m-d H:i:s');
+        $id_booking = 0;
+
 
         $customer = DB::table('infoCustomer')->where('CustomerID',$new_order['CustomerID'])->first();
 
@@ -56,9 +58,11 @@ class OrderController extends Controller
             ->insertGetId($order_to_insert);
 
 
+
+
         //Add in_store_collection booking details
         if($new_order['deliverymethod']=='in_store_collection'){
-            DB::table('booking_store')->insert([
+            $id_booking = DB::table('booking_store')->insertGetId([
                 'order_id'=>$new_order_id,
                 'customer_id'=>$customer->id,
                 'CustomerID'=>$customerid,
@@ -72,6 +76,17 @@ class OrderController extends Controller
                 'created_at'=>$created_stamp,
             ]);
         }
+
+        //Logs booking history
+        DB::table('booking_histories')->insert([
+            'booking_id'=>$id_booking,
+            'order_id'=>$new_order_id,
+            'customer_id'=>$customer->id,
+            'user_id'=>$user->id,
+            'type'=>$new_order['deliverymethod'],
+            'status'=>'NEW',
+            'created_at'=>$created_stamp,
+        ]);
 
 
         return response()->json([
