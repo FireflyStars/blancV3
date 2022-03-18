@@ -16,7 +16,11 @@ import {
     SET_CUSTOMER_SELECTED_TAB,
     SET_CUSTOMER_FILTER,
     FILTER_CUSTOMER_LIST,
-    SET_CUSTOMER_DETAIL
+    SET_CUSTOMER_DETAIL,
+    LOAD_CUSTOMER_DETAIL,
+    GET_CUSTOMER_DETAIL,
+    GET_LOADER_CLASS,
+    SET_LOADER_CLASS
 }
 from '../types/types';
 export const Customer = {
@@ -27,7 +31,10 @@ export const Customer = {
         total_customer_count: '',
         current_selected: '',
         multi_selected: [],      
-        customer_detail: {},  
+        customer_detail: {
+            name: ''
+        },  
+        loader: 'animate40',
         filter: {
             skip: 0,
             selected_nav: 'CustomerList',
@@ -47,7 +54,6 @@ export const Customer = {
             }
         },
         [SET_CUSTOMER_LIST]: (state, payload)=>{
-            console.log(payload)
             state.total_customer_count = payload.total_count;
             state.customer_list = payload.customers;
             state.filter.skip = state.customer_list.length;
@@ -68,7 +74,8 @@ export const Customer = {
         },
         [SET_CUSTOMER_DETAIL]:(state, payload)=>{
             state.customer_detail = payload;
-        }
+        },
+        [SET_LOADER_CLASS]: (state, payload) => state.loader = payload,
     },
     actions:{
         [LOAD_MORE_CUSTOMER]: async ({ commit, dispatch, state })=>{
@@ -118,13 +125,27 @@ export const Customer = {
         },
         [SET_CUSTOMER_DETAIL]: ( {commit} , payload)=>{
             commit(SET_CUSTOMER_DETAIL, payload);
+        },
+        [LOAD_CUSTOMER_DETAIL]: async ( {commit, dispatch}, payload )=>{
+            commit(SET_LOADER_CLASS,'animate40');
+            await axios.post('/get-customer-detail', { customer_id: payload }).then(function (response) {
+                commit(SET_CUSTOMER_DETAIL, response.data);
+            })
+            .catch(function (error) {
+                if(typeof error.response !="undefined")
+                dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'},{ root: true });
+            }).finally(()=>{
+                commit(SET_LOADER_CLASS,'animate40 animate100');
+            });
         }
     },
     getters:{
-        [GET_CUSTOMER_LIST]: (state) => state.customer_list,
-        [GET_LOADED_CUSTOMER_COUNT]: (state) => state.customer_list.length,
-        [GET_TOTAL_CUSTOMER_COUNT]: (state) => state.total_customer_count,
-        [GET_CURRENT_SELECTED_CUSTOMER]: (state) => state.current_selected,
-        [GET_ALL_SELECTED_CUSTOMER]: (state) => state.multi_selected,
+        [GET_CUSTOMER_LIST]: state => state.customer_list,
+        [GET_LOADED_CUSTOMER_COUNT]: state => state.customer_list.length,
+        [GET_TOTAL_CUSTOMER_COUNT]: state => state.total_customer_count,
+        [GET_CURRENT_SELECTED_CUSTOMER]: state => state.current_selected,
+        [GET_ALL_SELECTED_CUSTOMER]: state => state.multi_selected,
+        [GET_CUSTOMER_DETAIL]: state => state.customer_detail,
+        [GET_LOADER_CLASS]: state => state.loader,
     }
 }

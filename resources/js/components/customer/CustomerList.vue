@@ -151,7 +151,7 @@ export default {
             store.dispatch(`${CUSTOMER_MODULE}${LOAD_MORE_CUSTOMER}`);
         }
         onMounted(()=>{
-            // store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_LIST}`);
+            store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_LIST}`);
         })
         const formatPhone = (phoneString)=>{
             if(phoneString !="--"){
@@ -169,19 +169,27 @@ export default {
             if(CURRENT_SELECTED.value == id && check == false){
                 store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`,'');
                 store.commit(`${CUSTOMER_MODULE}${SET_CUSTOMER_DETAIL}`, { 
-
-                });                
+                    name: ''
+                });
                 router.back();
             }
         }
         const selectrow = (customerID)=>{
-            store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`, customerID);
-            router.push({
-                name:'CustomerDetail',
-                params: {
-                    customer_id: customerID,
-                },
-            })
+            if(CURRENT_SELECTED.value == customerID){
+                store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`,'');
+                store.commit(`${CUSTOMER_MODULE}${SET_CUSTOMER_DETAIL}`, { 
+                    name: ''
+                });
+                router.back();
+            }else{
+                store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`, customerID);
+                router.push({
+                    name:'CustomerDetail',
+                    params: {
+                        customer_id: customerID,
+                    },
+                })
+            }
         }        
         return {
             route,
@@ -196,8 +204,8 @@ export default {
             checkboxclicked,
             selectrow,
             showlayer: computed( ()=> {
-                // return (route.params.customer_id > 0 && CURRENT_SELECTED.value != '');
-                return false;
+                return (route.params.customer_id > 0 && CURRENT_SELECTED.value != '');
+                // return false;
             }),            
         }
     }

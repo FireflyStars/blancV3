@@ -51,6 +51,7 @@ Route::get('/preload-order-form-info',[OrderController::class, 'preloadOrderForm
 
 Route::post('/customerdetails',[CustomerController::class, 'customerDetails'])->middleware('auth')->name('customerdetails');
 Route::post('/get-all-customers',[CustomerController::class, 'getAllCustomers'])->name('get-all-customers')->middleware('auth');
+Route::post('/get-customer-detail',[CustomerController::class, 'getCustomerDetail'])->middleware('auth')->name('get-customer-detail');
 
 Route::get('/permissions-test',function(){
     $user=User::find(56);

@@ -29,6 +29,14 @@ class CustomerController extends Controller
         return response()->json(['customer'=>$infoCustomer]);
     }
 
+    /**
+     * Get All customers 
+     * Filter customers
+     * 
+     * @param skip, invoice_preference, customer_location, customer_type, last_order_start, last_order_end, total_spent
+     * 
+     * @return all_customers
+     */
     public function getAllCustomers(Request $request){
         $customers = DB::table('infoCustomer')
                         ->join( 'address', function ($join){
@@ -62,7 +70,7 @@ class CustomerController extends Controller
                     ->orWhere('infoCustomer.IsMasterAccount', 1);
             });    
         }
-        if($request->selected_nav == 'B2C' || $request->customer_type = 'B2C'){
+        if($request->selected_nav == 'B2C' || $request->customer_type == 'B2C'){
             $customers = $customers->where('infoCustomer.CustomerIDMaster', '')
                             ->where('infoCustomer.CustomerIDMasterAccount', '')
                             ->where('infoCustomer.IsMaster', 0)
@@ -97,5 +105,37 @@ class CustomerController extends Controller
             'customers'     => $customers,
             'total_count'   => $total_count,
         ]);
+    }
+    /**
+     * Get Customer detailed infomation
+     * 
+     * @param customer_id
+     * 
+     * @return customer_infomation
+     */
+    public function getCustomerDetail(Request $request){
+        $customer = DB::table('infoCustomer')
+                    ->select('Name as name', 'EmailAddress as email', 'Phone as phone',
+                        DB::raw('IF(CustomerIDMaster = "" AND CustomerIDMasterAccount = "" AND IsMaster = 0 AND IsMasterAccount = 0, "B2C", "B2B") as cust_type'),
+                        'TypeDelivery as location', 'CustomerNotes as notes', 'id', 'CustomerID',
+                        DB::raw('IF(DeliverybyDay = 1, "Recuring", "Normal") as booking'),
+                        DB::raw( 
+                            'CASE WHEN IsMaster = 1 THEN "MAIN"
+                                  WHEN isMasterAccount = 1 THEN "MASTER"
+                                  WHEN isMaster = 0 AND CustomerIDMaster <> "" THEN "Sub Account"
+                                  WHEN isMaster = 0 AND CustomerIDMaster = "" THEN "Individual"
+                            END as account_type'
+                        )
+                    )
+                    ->where('id', $request->customer_id)
+                    ->first();
+        $total = DB::table('infoOrder')->where('CustomerID', $customer->CustomerID)
+                    ->select(
+                        DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
+                        DB::raw('COUNT(infoOrder.id) as total_count'),
+                    )->first();
+        $customer->total_spent = $total->total_spent;
+        $customer->total_count = $total->total_count;
+        return response()->json( $customer );
     }
 }

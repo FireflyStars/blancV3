@@ -232,8 +232,6 @@ export default {
         onMounted(()=>{
         })
         const showItemDetail = computed(()=>{
-            // return true;
-            console.log(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`]);
             if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
                 return (store.getters[`${ASSEMBLY_HOME_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`])&&route.params.item_id>0;
             else
@@ -292,13 +290,13 @@ export default {
                     store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`,'');
                 else 
                     store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`, '');
-                store.commit(`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_SET_DETAIL}`, { 
-                    breif_info: {
-                        id: ''
-                    },
-                    location_history: []
-                });
-                router.back();                
+                    store.commit(`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_SET_DETAIL}`, { 
+                        breif_info: {
+                            id: ''
+                        },
+                        location_history: []
+                    });
+                    router.back();                
             },
             // openModal
         }
