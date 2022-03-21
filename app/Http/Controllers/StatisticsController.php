@@ -25,14 +25,14 @@ class StatisticsController extends Controller
         $compareEndDate         =   $request->post('compareEndDate');
         $compareMode            =   $request->post('compareMode');
 
-        $period         = [ Carbon::parse($startDate)->startOfDay()->toDateString(), Carbon::parse($endDate)->endOfDay()->toDateString() ];
+        $period         = [ Carbon::parse($startDate)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->endOfDay()->toDateTimeString() ];
         if(!$compareCustomFilter){
             if($compareMode == 'year')
-                $last_period    = [ Carbon::parse($startDate)->subYear(1)->startOfDay()->toDateString(), Carbon::parse($endDate)->subYear(1)->endOfDay()->toDateString() ];
+                $last_period    = [ Carbon::parse($startDate)->subYear(1)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->subYear(1)->endOfDay()->toDateTimeString() ];
             else        
-                $last_period    = [ Carbon::parse($startDate)->subMonth(1)->startOfDay()->toDateString(), Carbon::parse($endDate)->subMonth(1)->endOfDay()->toDateString() ];
+                $last_period    = [ Carbon::parse($startDate)->subMonth(1)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->subMonth(1)->endOfDay()->toDateTimeString() ];
         }else{
-            $last_period = [ Carbon::parse($compareStartDate)->subMonth(1)->startOfDay()->toDateString(), Carbon::parse($compareEndDate)->subMonth(1)->endOfDay()->toDateString() ];
+            $last_period = [ Carbon::parse($compareStartDate)->subMonth(1)->startOfDay()->toDateTimeString(), Carbon::parse($compareEndDate)->subMonth(1)->endOfDay()->toDateTimeString() ];
         }
 
         // new code added by YH
@@ -40,80 +40,80 @@ class StatisticsController extends Controller
             $start_first_quarter_day = Carbon::now()->startOfYear();
             $end_first_quarter_day = Carbon::parse($start_first_quarter_day)->lastOfQuarter();
             if( $dateRangeType == 'Today' ){
-                $period = [Carbon::now()->startOfDay()->toDateString(), Carbon::now()->endOfDay()->toDateString()];
+                $period = [Carbon::now()->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
                 if(!$compareCustomFilter && $compareMode == 'year'){
-                    $last_period = [Carbon::now()->subYear(1)->startOfDay()->toDateString(), Carbon::now()->subYear(1)->endOfDay()->toDateString()];
+                    $last_period = [Carbon::now()->subYear(1)->startOfDay()->toDateTimeString(), Carbon::now()->subYear(1)->endOfDay()->toDateTimeString()];
                 }
                 if(!$compareCustomFilter && $compareMode == 'month'){
-                    $last_period = [Carbon::now()->subMonth(1)->startOfDay()->toDateString(), Carbon::now()->subMonth(1)->endOfDay()->toDateString()];
+                    $last_period = [Carbon::now()->subMonth(1)->startOfDay()->toDateTimeString(), Carbon::now()->subMonth(1)->endOfDay()->toDateTimeString()];
                 }
             }else if ( $dateRangeType == 'Yesterday' ){
-                $period = [Carbon::yesterday()->startOfDay()->toDateString(), Carbon::yesterday()->endOfDay()->toDateString()];
+                $period = [Carbon::yesterday()->startOfDay()->toDateTimeString(), Carbon::yesterday()->endOfDay()->toDateTimeString()];
                 if($compareMode == 'year'){
-                    $last_period = [Carbon::yesterday()->subYear()->startOfDay()->toDateString(), Carbon::yesterday()->subYear()->endOfDay()->toDateString()];
+                    $last_period = [Carbon::yesterday()->subYear()->startOfDay()->toDateTimeString(), Carbon::yesterday()->subYear()->endOfDay()->toDateTimeString()];
                 }else{
-                    $last_period = [Carbon::yesterday()->subMonth()->startOfDay()->toDateString(), Carbon::yesterday()->subMonth()->endOfDay()->toDateString()];
+                    $last_period = [Carbon::yesterday()->subMonth()->startOfDay()->toDateTimeString(), Carbon::yesterday()->subMonth()->endOfDay()->toDateTimeString()];
                 }
             }else if ( $dateRangeType == 'Last 7 days' ){
-                $period = [Carbon::now()->subDays(7)->startOfDay()->toDateString(), Carbon::now()->endOfDay()->toDateString()];
+                $period = [Carbon::now()->subDays(7)->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
                 if(!$compareCustomFilter && $compareMode == 'year'){
-                    $last_period = [Carbon::now()->subYear()->subDays(7)->startOfDay()->toDateString(), Carbon::now()->subYear()->endOfDay()->toDateString()];
+                    $last_period = [Carbon::now()->subYear()->subDays(7)->startOfDay()->toDateTimeString(), Carbon::now()->subYear()->endOfDay()->toDateTimeString()];
                 }else{
-                    $last_period = [Carbon::now()->subMonth()->subDays(7)->startOfDay()->toDateString(), Carbon::now()->subMonth()->endOfDay()->toDateString()];
+                    $last_period = [Carbon::now()->subMonth()->subDays(7)->startOfDay()->toDateTimeString(), Carbon::now()->subMonth()->endOfDay()->toDateTimeString()];
                 }
             }else if ( $dateRangeType == 'Last 90 days' ){
-                $period = [Carbon::now()->subDays(90)->startOfDay()->toDateString(), Carbon::now()->endOfDay()->toDateString()];
+                $period = [Carbon::now()->subDays(90)->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
 
                 if(!$compareCustomFilter && $compareMode == 'year'){
-                    $last_period = [Carbon::now()->subYear()->subDays(90)->startOfDay()->toDateString(), Carbon::now()->subYear()->endOfDay()->toDateString()];
+                    $last_period = [Carbon::now()->subYear()->subDays(90)->startOfDay()->toDateTimeString(), Carbon::now()->subYear()->endOfDay()->toDateTimeString()];
                 }else{
-                    $last_period = [Carbon::now()->subMonth()->subDays(90)->startOfDay()->toDateString(), Carbon::now()->subMonth()->endOfDay()->toDateString()];
+                    $last_period = [Carbon::now()->subMonth()->subDays(90)->startOfDay()->toDateTimeString(), Carbon::now()->subMonth()->endOfDay()->toDateTimeString()];
                 }
             }else if ( $dateRangeType == 'Last Month' ){
-                $period = [Carbon::now()->subMonth()->startOfDay()->toDateString(), Carbon::now()->endOfDay()->toDateString()];
+                $period = [Carbon::now()->subMonth()->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
                 if(!$compareCustomFilter && $compareMode == 'year'){
-                    $last_period = [Carbon::now()->subYear()->subMonth()->startOfDay()->toDateString(), Carbon::now()->subYear()->endOfDay()->toDateString()];
+                    $last_period = [Carbon::now()->subYear()->subMonth()->startOfDay()->toDateTimeString(), Carbon::now()->subYear()->endOfDay()->toDateTimeString()];
                 }else{
-                    $last_period = [Carbon::now()->subMonth(2)->startOfDay()->toDateString(), Carbon::now()->subMonth(1)->endOfDay()->toDateString()];
+                    $last_period = [Carbon::now()->subMonth(2)->startOfDay()->toDateTimeString(), Carbon::now()->subMonth(1)->endOfDay()->toDateTimeString()];
                 }                
             }else if ( $dateRangeType == 'Year to date' ){
-                $period = [Carbon::now()->startOfYear()->toDateString(), Carbon::now()->endOfDay()->toDateString()];
+                $period = [Carbon::now()->startOfYear()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
                 if(!$compareCustomFilter && $compareMode == 'year'){
-                    $last_period = [Carbon::now()->subYear()->startOfYear()->toDateString(), Carbon::now()->subYear()->endOfDay()->toDateString()];
+                    $last_period = [Carbon::now()->subYear()->startOfYear()->toDateTimeString(), Carbon::now()->subYear()->endOfDay()->toDateTimeString()];
                 }else{
-                    $last_period = [Carbon::now()->subMonth()->startOfMonth()->toDateString(), Carbon::now()->endOfDay()->toDateString()];
+                    $last_period = [Carbon::now()->subMonth()->startOfMonth()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
                 }                
             }else if ( $dateRangeType == '4th Quarter' ){
-                $period = [Carbon::parse($start_first_quarter_day)->addMonths(9)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->addMonths(9)->endOfDay()->toDateString()];
+                $period = [Carbon::parse($start_first_quarter_day)->addMonths(9)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->addMonths(9)->endOfDay()->toDateTimeString()];
                 if(!$compareCustomFilter && $compareMode == 'year')
-                    $last_period = [Carbon::parse($start_first_quarter_day)->subYear()->addMonths(9)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->subYear()->addMonths(9)->endOfDay()->toDateString()];
+                    $last_period = [Carbon::parse($start_first_quarter_day)->subYear()->addMonths(9)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->subYear()->addMonths(9)->endOfDay()->toDateTimeString()];
                 else
-                    $last_period = [Carbon::parse($start_first_quarter_day)->subMonth()->addMonths(9)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->subMonth()->addMonths(9)->endOfDay()->toDateString()];
+                    $last_period = [Carbon::parse($start_first_quarter_day)->subMonth()->addMonths(9)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->subMonth()->addMonths(9)->endOfDay()->toDateTimeString()];
             }else if ( $dateRangeType == '3rd Quarter' ){
-                $period = [Carbon::parse($start_first_quarter_day)->addMonths(6)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->addMonths(6)->endOfDay()->toDateString()];
+                $period = [Carbon::parse($start_first_quarter_day)->addMonths(6)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->addMonths(6)->endOfDay()->toDateTimeString()];
                 if(!$compareCustomFilter && $compareMode == 'year')
-                    $last_period = [Carbon::parse($start_first_quarter_day)->subYear()->addMonths(6)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->subYear()->addMonths(6)->endOfDay()->toDateString()];
+                    $last_period = [Carbon::parse($start_first_quarter_day)->subYear()->addMonths(6)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->subYear()->addMonths(6)->endOfDay()->toDateTimeString()];
                 else
-                    $last_period = [Carbon::parse($start_first_quarter_day)->subMonth()->addMonths(6)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->subMonth()->addMonths(6)->endOfDay()->toDateString()];
+                    $last_period = [Carbon::parse($start_first_quarter_day)->subMonth()->addMonths(6)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->subMonth()->addMonths(6)->endOfDay()->toDateTimeString()];
             }else if ( $dateRangeType == '2nd Quarter' ){
-                $period = [Carbon::parse($start_first_quarter_day)->addMonths(3)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->addMonths(3)->endOfDay()->toDateString()];
+                $period = [Carbon::parse($start_first_quarter_day)->addMonths(3)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->addMonths(3)->endOfDay()->toDateTimeString()];
                 if(!$compareCustomFilter && $compareMode == 'year')
-                    $last_period = [Carbon::parse($start_first_quarter_day)->subYear()->addMonths(3)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->subYear()->addMonths(3)->endOfDay()->toDateString()];
+                    $last_period = [Carbon::parse($start_first_quarter_day)->subYear()->addMonths(3)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->subYear()->addMonths(3)->endOfDay()->toDateTimeString()];
                 else
-                    $last_period = [Carbon::parse($start_first_quarter_day)->subMonth()->addMonths(3)->startOfDay()->toDateString(), Carbon::parse($end_first_quarter_day)->subMonth()->addMonths(3)->endOfDay()->toDateString()];
+                    $last_period = [Carbon::parse($start_first_quarter_day)->subMonth()->addMonths(3)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->subMonth()->addMonths(3)->endOfDay()->toDateTimeString()];
             }else{
                 $start = Carbon::now()->subYear()->startOfYear();
-                $period = [$start_first_quarter_day->toDateString(), $end_first_quarter_day->toDateString()];
+                $period = [$start_first_quarter_day->toDateTimeString(), $end_first_quarter_day->toDateTimeString()];
                 if(!$compareCustomFilter && $compareMode == 'year')
-                    $last_period = [Carbon::now()->subYear()->startOfYear()->toDateString(), Carbon::now()->subYear()->lastOfQuarter()->toDateString()];
+                    $last_period = [Carbon::now()->subYear()->startOfYear()->toDateTimeString(), Carbon::now()->subYear()->lastOfQuarter()->toDateTimeString()];
                 else
-                    $last_period = [Carbon::now()->subMonth()->startOfMonth()->toDateString(), Carbon::now()->endOfDay()->toDateString()];
+                    $last_period = [Carbon::now()->subMonth()->startOfMonth()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
             }
         }
         $total_sale_stores = InfoOrder::whereBetween('created_at', $period)
                                     ->select(DB::raw('CEIL(AVG(Total)) as avg'), DB::raw('CEIL(SUM(Total)) as total'), 'TypeDelivery')
                                     ->groupBy('TypeDelivery')
-                                    ->get();
+                                    ->get();    
         $last_total_sale_stores = InfoOrder::whereBetween('created_at', $last_period)
                                     ->select(DB::raw('CEIL(AVG(Total)) as avg'), DB::raw('CEIL(SUM(Total)) as total'), 'TypeDelivery')
                                     ->groupBy('TypeDelivery')
@@ -2217,27 +2217,27 @@ class StatisticsController extends Controller
         if($request->prod_date_from != '' && $request->prod_date_to != ''){
             $invoices   = $invoices->whereBetween('infoitems.PromisedDate', 
                                     [ 
-                                        Carbon::parse($request->prod_date_from)->toDateString(),
-                                        Carbon::parse($request->prod_date_to)->toDateString(),
+                                        Carbon::parse($request->prod_date_from)->toDateTimeString(),
+                                        Carbon::parse($request->prod_date_to)->toDateTimeString(),
                                     ]
                                 );
         }else if( $request->prod_date_from != '' && $request->prod_date_to == '' ){
-            $invoices   = $invoices->whereDate('infoitems.PromisedDate', '>=', Carbon::parse($request->prod_date_from)->toDateString());
+            $invoices   = $invoices->whereDate('infoitems.PromisedDate', '>=', Carbon::parse($request->prod_date_from)->toDateTimeString());
         } else if( $request->prod_date_from == '' && $request->prod_date_to != '' ){
-            $invoices   = $invoices->whereDate('infoitems.PromisedDate', '<=', Carbon::parse($request->prod_date_to)->toDateString());
+            $invoices   = $invoices->whereDate('infoitems.PromisedDate', '<=', Carbon::parse($request->prod_date_to)->toDateTimeString());
         }
 
         if($request->deliv_date_from != '' && $request->deliv_date_to != ''){
             $invoices   = $invoices->whereBetween('infoitems.PromisedDate', 
                                     [ 
-                                        Carbon::parse($request->deliv_date_from)->toDateString(),
-                                        Carbon::parse($request->deliv_date_to)->toDateString(),
+                                        Carbon::parse($request->deliv_date_from)->toDateTimeString(),
+                                        Carbon::parse($request->deliv_date_to)->toDateTimeString(),
                                     ]
                                 );
         }else if( $request->deliv_date_from != '' && $request->deliv_date_to == '' ){
-            $invoices   = $invoices->whereDate('infoitems.PromisedDate', '>=', Carbon::parse($request->prod_date_from)->toDateString());
+            $invoices   = $invoices->whereDate('infoitems.PromisedDate', '>=', Carbon::parse($request->prod_date_from)->toDateTimeString());
         } else if( $request->deliv_date_from == '' && $request->deliv_date_to != '' ){
-            $invoices   = $invoices->whereDate('infoitems.PromisedDate', '<=', Carbon::parse($request->prod_date_to)->toDateString());
+            $invoices   = $invoices->whereDate('infoitems.PromisedDate', '<=', Carbon::parse($request->prod_date_to)->toDateTimeString());
         }
         $total_invoice_count = $invoices->count();
         $invoices   =  $invoices->skip($request->skip ? $request->skip : 0)
