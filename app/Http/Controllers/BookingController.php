@@ -62,5 +62,45 @@ class BookingController extends Controller {
         ]);
     }
 
+    public static function getBookingDetailFromSlot($timeslot){
+        $trancheto='';
+        $tranchefrom='';
+
+        if($timeslot==1){
+            $tranchefrom='08:00:00';
+            $trancheto='10:00:00';
+        }
+        if($timeslot==3){
+            $tranchefrom='10:00:00';
+            $trancheto='12:00:00';
+        }
+        if($timeslot==5){
+            $tranchefrom='12:00:00';
+            $trancheto='14:00:00';
+        }
+        if($timeslot==7){
+            $tranchefrom='14:00:00';
+            $trancheto='16:00:00';
+        }
+        if($timeslot==9){
+            $tranchefrom='16:00:00';
+            $trancheto='18:00:00';
+        }
+        if($timeslot==11){
+            $tranchefrom='18:00:00';
+            $trancheto='20:00:00';
+        }
+        if($timeslot==13){
+            $tranchefrom='20:00:00';
+            $trancheto='20:00:00';
+        }
+
+        return array(
+            'tranchefrom'=>$tranchefrom,
+            'trancheto'=>$trancheto
+        );
+
+    }
+
 }
 

@@ -83,7 +83,7 @@
                                                     <date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pickup" :disabledToDate="yesterday" @loadtranche="checkStorePickup" :disabledSunday="true"></date-picker>
                                                 </div>
                                                 <div class="col-3">
-                                                    <time-slot-picker v-model="isc_pickup_timeslot"   name="isc_pickup_timeslot" :available-slots="[1,3,5,7,9,11]"  label="Pick up Time"></time-slot-picker>
+                                                    <time-slot-picker v-model="isc_pickup_timeslot"   name="isc_pickup_timeslot" :available-slots="isc_pickup_tranche"  label="Pick up Time"></time-slot-picker>
                                                 </div>
                                             </div>
                                             </transition>
@@ -146,7 +146,7 @@
                                                         <input type="text" class="form-control" :value="getCurDateTime('time')" readonly id="shp_received_time"/>
                                                     </div>
 
-                                                    <div class="col-3"><date-picker v-model="shp_delivery" name="shp_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="yesterday"></date-picker>
+                                                    <div class="col-3"><date-picker v-model="shp_delivery" name="shp_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="shp_min_date"></date-picker>
                                                     </div>
 
                                                 </div>
@@ -442,6 +442,7 @@ import axios from 'axios';
             //const isc_dropoff_timeslot=ref(0);
             const isc_pickup=ref('');
             const isc_pickup_timeslot=ref(0);
+            const isc_pickup_tranche=ref([]);
 
             //do : delivery only
             //const do_dropoff =ref('');
@@ -467,6 +468,7 @@ import axios from 'axios';
             //const shp_received_timeslot=ref(0);
             const shp_delivery=ref('');
             const shipping_partner_id = ref('');
+            const shp_min_date = ref('');
 
             //General address
             const shp_address1=ref('');
@@ -588,6 +590,10 @@ import axios from 'axios';
                 }else{
                     showRecurring.value=false;
                 }
+
+                if(val=='shipping'){
+                   shp_min_date.value = getCurDateTime('datedb');
+                }
             });
 
 
@@ -706,6 +712,7 @@ import axios from 'axios';
 
                     const new_order = {};
                     new_order.CustomerID = CustomerID.value;
+                    new_order.AddressID = cur_cust.value.AddressID;
                     new_order.deliverymethod = deliverymethod.value;
                     new_order.address1 = shp_address1.value;
                     new_order.postcode = shp_postcode.value;
@@ -745,7 +752,7 @@ import axios from 'axios';
 
                    evaluateOrderExpress(new_order);
 
-                    //console.log(new_order_obj);
+                    console.log(new_order_obj);
 
                     process_step.value=2;
 
@@ -1034,6 +1041,10 @@ import axios from 'axios';
                    return dd+'/'+mm+'/'+yyyy.substring(2);
                }
 
+               if(type=='datedb'){
+                   return yyyy+'-'+mm+'-'+dd;
+               }
+
                if(type=='time'){
                    let hh = cur_dt.getHours();
 
@@ -1118,12 +1129,35 @@ import axios from 'axios';
                         type: 'danger'
                     });
                 }
+
            }
 
            function checkStorePickup(){
-               let cur_date = getCurDateTime('date');
+               let cur_date_db = getCurDateTime('datedb');
 
-               console.log(isc_pickup.value);
+               isc_pickup_tranche.value = [1,3,5,7,9,11,13];
+
+               if(isc_pickup.value==cur_date_db){
+                    let slot_from_arr = [];
+                    let dt = new Date(cur_date.value);
+
+                    let cur_time = parseInt(dt.getHours());
+
+                    let hr = 0;
+
+                    for (let i = 1; i <= 13; i+=2) {
+                        hr = i+7;
+                        if(i==13){
+                            hr = 8; //To confirm for 8-8 slot
+                        }
+
+                        if(hr > cur_time){
+                            slot_from_arr.push(i);
+                        }
+                    }
+
+                    isc_pickup_tranche.value = slot_from_arr;
+               }
            }
 
 
@@ -1140,6 +1174,7 @@ import axios from 'axios';
                 //isc_dropoff_timeslot,
                 isc_pickup,
                 isc_pickup_timeslot,
+                isc_pickup_tranche,
                 //do_dropoff,
                 //do_dropoff_timeslot,
                 do_delivery,
@@ -1192,6 +1227,7 @@ import axios from 'axios';
                 firstLetterToUppercase,
                 new_order_obj,
                 checkStorePickup,
+                shp_min_date,
             }
         }
     }

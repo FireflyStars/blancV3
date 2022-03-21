@@ -187,6 +187,8 @@ export default {
         function onPartClick(e) {
             if (props.selectable) {
                 if (e.target.matches('.clickable-path')) {
+
+
                     let svg_row = svg_data.value.filter(
                         (s) => s.id == e.target.id.split("_")[1]
                     );
@@ -305,10 +307,12 @@ export default {
                                 }
                             }
                         });
+
+
+
+
                     }
                 }
-            }else{
-                context.emit('back-step');
             }
         }
 
