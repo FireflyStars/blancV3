@@ -273,7 +273,7 @@ export default {
         }
         size_id.value = props.detailingitem.size_id != null ? props.detailingitem.size_id : (props.detailingData.sizes.length > 0 ? 0 : -1);
         brand_id.value = props.detailingitem.brand_id != null ? props.detailingitem.brand_id : (props.detailingData.brands.length > 0 ? 0 : -1);
-        fabric_id.value = props.detailingitem.fabric_id != null ? JSON.parse(props.detailingitem.fabric_id) : [];
+        fabric_id.value = props.detailingitem.fabric_id != null && props.detailingitem.fabric_id != ""? JSON.parse(props.detailingitem.fabric_id) : [];
         color_id.value = props.detailingitem.color_id != null ? JSON.parse(props.detailingitem.color_id) : [];
         pattern_id.value = props.detailingitem.pattern_id != null ? props.detailingitem.pattern_id : (props.detailingData.patterns.length > 0 ? 0 : -1);
         condition_id.value = props.detailingitem.condition_id != null ? props.detailingitem.condition_id : (props.detailingData.conditions.length > 0 ? 0 : -1);
