@@ -300,7 +300,7 @@
                     */
 
                     //disabledOnSunday
-/*
+
                     if(props.disabledSunday){
                         let curdate = new Date(datestr);
                         if(curdate.getDay()==0){
@@ -308,7 +308,7 @@
                             displayed_dates.value[i].notavailable = true;
                         }
                     }
-*/
+
 
                     displayed_dates.value[i].selected = false;
 
