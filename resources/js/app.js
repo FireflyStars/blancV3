@@ -7,6 +7,7 @@ import { createApp } from 'vue';
 import App from './components/App';
 import router from './router/router';
 import store from './store/store';
+import VueCreditCardValidation from 'vue-credit-card-validation';
 
 axios.interceptors.response.use(
     (response) => response,
@@ -19,8 +20,10 @@ axios.interceptors.response.use(
         })
     }
 )
-createApp(App)
-    .use(router)
+const app = createApp(App);
+    app.use(router)
+    .use(VueCreditCardValidation)
+    .provide('cardFormat', app.config.globalProperties.$cardFormat)
     .use(store)
     .mount('#app');
 

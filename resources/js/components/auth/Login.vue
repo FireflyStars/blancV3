@@ -107,6 +107,7 @@ import {
                                        ...route.query,
                                    },
                                })*/
+                                // window.location = '/newcustomer'
                                 window.location = '/'
                             } else {
                                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {

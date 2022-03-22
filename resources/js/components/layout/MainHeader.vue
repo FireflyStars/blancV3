@@ -52,10 +52,10 @@
                 })
             }
             const newCustomer =()=>{
-                // router.push({
-                //     name:'NewCustomer',
-                // })
-                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:' New Customer is not implemented yet.',ttl:5,type:'success'});
+                // store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:' New Customer is not implemented yet.',ttl:5,type:'success'});
+                router.push({
+                    name:'NewCustomer',
+                })
             }
             return {
                 route,

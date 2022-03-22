@@ -3,8 +3,8 @@
         <div class="detail-progressbar" :class="loaderclass"></div>
         <div class="w-100" v-if="CUSTOMER.name != ''">
             <div class="detail-header d-flex align-items-center justify-content-between">
-                <div class="detail-title">
-                    {{ CUSTOMER.name }}
+                <div class="detail-title text-capitalize">
+                    {{ CUSTOMER.name.toLowerCase() }}
                 </div>
                 <div class="detail-close-section d-flex align-items-center">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">

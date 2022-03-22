@@ -1,15 +1,20 @@
 <template>
-    <label class="select-label body_medium" v-if="label">{{label}}</label>
-    <div class="select noselect" :class="cname" @click.self="selectclick"><span class="disp" @click.self="selectclick"><template v-if="current_display==''">{{placeholder}}</template><template v-else>{{current_display}}</template></span>
-        <transition name="trans-select">
-            <div class="select-options"  v-if="sel===name"  >
-               <slot>
-                   <div class="opts" v-for="(item,index) in options" :key="index" @click="select(index)">{{item.display}}</div>
-               </slot>
-            </div>
-        </transition>
+    <div class="form-group m-0" :style="{ 'width': width }">
+        <label class="select-label body_medium" v-if="label">{{label}}</label>
+        <div class="select noselect" :class="cname" @click.self="selectclick">
+            <span class="disp" @click.self="selectclick">
+                <template v-if="current_display==''">{{ placeholder }}</template>
+                <template v-else>{{ current_display }}</template>
+            </span>
+            <transition name="trans-select">
+                <div class="select-options" v-if="sel===name"  >
+                    <slot>
+                        <div class="opts" v-for="(item,index) in options" :key="index" @click="select(index)">{{item.display}}</div>
+                    </slot>
+                </div>
+            </transition>
+        </div>
     </div>
-    <div class="hint" v-if="hint">{{hint}}</div>
 </template>
 
 <script>
@@ -19,7 +24,6 @@
     export default {
         name: "SelectOptions",
         props:{
-            hint:String,
             placeholder:String,
             name:{
                 type: String,
@@ -31,6 +35,10 @@
             label:String,
             disabled:Boolean,
             valid:Boolean|null,
+            width: {
+                type: String,
+                default: '100%'
+            },
 
         },
         setup(props,context){
@@ -153,8 +161,7 @@
 
     }
     .select.active{
-
-        background: #EEEEEE;
+        /* background: #EEEEEE; */
         border: 1px solid #EEEEEE;
         outline: 2px #000000 solid;
     }
@@ -213,11 +220,11 @@
         color:#868686;
     }
     .select.selected{
-       background: #F8F8F8;
-        font-size: 16px;
+       /* background: #F8F8F8; */
+        font-size: 16px;    
     }
     .select:active{
-        background-color: #E0E0E0;
+        /* background-color: #E0E0E0; */
         border-color: #E0E0E0;
     }
 </style>

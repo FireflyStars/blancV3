@@ -1,12 +1,12 @@
 <template>
-    <div @click.stop="togglechkbox" class="chkbox_wrap"><span class="chkbox" :class="{checked:check}" ></span><label class="noselect body_regular"><slot></slot></label></div>
+    <div @click.stop="togglechkbox" class="chkbox_wrap d-flex align-items-center"><span class="chkbox" :class="{checked:check}" ></span><label class="noselect body_regular ms-2"><slot></slot></label></div>
 </template>
 
 <script>
     import {ref,watch} from 'vue';
     export default {
         name: "CheckBox",
-        props:['id','checked_checkbox','name'],
+        props:['modelValue','id','checked_checkbox','name'],
         setup(props,{ emit }){
             const check=ref(false);
 
@@ -15,6 +15,7 @@
             function togglechkbox(){
                 check.value=!check.value;
                 emit('checkbox-clicked', check.value,props.id,props.name)
+                emit('update:modelValue', check.value);
             }
             watch(() => props.checked_checkbox, (current_val, previous_val) => {
                 check.value=current_val;
