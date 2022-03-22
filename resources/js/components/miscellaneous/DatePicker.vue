@@ -216,7 +216,6 @@
                 let calendarStarts = (lastMonthEnd - firstDayofMonth + 2);
 
                 let notavailable=typeof props.availableDates!="undefined"&&props.availableDates.length>0;
-
                 while (calendarStarts <= lastMonthEnd) {
                     displayed_dates.value.push({
                         date: calendarStarts,
@@ -228,8 +227,20 @@
                     })
                     calendarStarts++;
                 }
-
-               //console.log(displayed_dates);
+                if(calendarStarts > lastMonthEnd &&  firstDayofMonth == 0){
+                    calendarStarts = lastMonthEnd - 5;
+                    while (calendarStarts <= lastMonthEnd) {
+                        displayed_dates.value.push({
+                            date: calendarStarts,
+                            month: lastMonth,
+                            year: lastMonthYear,
+                            current_month: false,
+                            selected: false,
+                            notavailable: notavailable,
+                        })
+                        calendarStarts++;
+                    }
+                }
 
                 let date = 1;
                 while (date <= lastDateofMonth) {
@@ -245,7 +256,7 @@
                 }
 
                 date = 1;
-                while (displayed_dates.value.length < 42) {
+                while (displayed_dates.value.length < 35) {
                     displayed_dates.value.push({
                         date: date,
                         month: (MonthYear.value.month == 11 ? 0 : MonthYear.value.month + 1),
@@ -257,7 +268,7 @@
                     date++;
                 }
                 date = 1;
-                if (displayed_dates.value.length == 43) {
+                if (displayed_dates.value.length > 35) {
                     while (displayed_dates.value.length < 42) {
                         displayed_dates.value.push({
                             date: date,

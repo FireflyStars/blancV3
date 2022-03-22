@@ -138,7 +138,7 @@
                                     <div class="d-flex mt-3">
                                         <div class="customer-contact w-55 d-flex justify-content-between">
                                             <div class="form-group m-0">
-                                                <label class="form-label d-block m-0" for="first_name">Contact</label>
+                                                <label class="form-label d-block m-0" for="first_name">{{ form.customerType == 'B2C' ? 'Contact' : 'Company representative' }}</label>
                                                 <input type="text" v-model="form.firstName" class="form-control custom-input" placeholder="First name">
                                             </div>
                                             <div class="form-group m-0">
@@ -617,10 +617,10 @@
                 shirtsWithCrease: false,
                 shirtsFolded: false,
                 debobbling: false,
-                minorRepairs: false,
+                minorRepairs: true,
                 marketingEmail: false,
                 VATEmail: false,
-                cleaningPartner: false,
+                cleaningPartner: true,
                 riskyClean: false,
                 tailoringApproval: false,
 
@@ -631,7 +631,7 @@
                 altDriverInstruction: '',
             })
             const router = useRouter();
-            const step = ref('payment');
+            const step = ref('account_details');
             const showcontainer=ref(false);
             const cardFormat = inject('cardFormat');
             onMounted(()=>{
@@ -729,11 +729,12 @@
         } 
     }
 </script>
-
+<style scoped>
+    .hmax{
+        padding-top: 0;
+    }
+</style>
 <style lang="scss">
-.hmax{
-    padding-top: 0;
-}
 .list-enter-from{
     opacity: 0;
     transform: scale(0.6);
