@@ -11,6 +11,7 @@
                     <div class="main-view-2 row">
                         <div class="col">
                         <h1 class="tile_h1">New order</h1>
+                        <!--
                          <div class="row">
                             <div class="col-2">
                                 <button class="btn btn-outline-dark body_small_bold" @click="proceedToDetailling">
@@ -18,6 +19,7 @@
                                 </button>
                             </div>
                         </div>
+                        -->
                         <div class="row">
                             <div class="col">
                         <div class="barcode-scan col p-0" @click="featureUnavailable('Scan barcode')"><svg width="41" height="40" viewBox="0 0 41 40" fill="none" xmlns="http://www.w3.org/2000/svg">

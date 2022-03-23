@@ -277,6 +277,8 @@ export default {
 
         }
         function back() {
+            console.log('back called');
+
             (issuesStep.value == 3 && stainZone.value.length == 0) ? issuesStep.value = 0 :
                 issuesStep.value == 0 ? context.emit("go-to-step", 9) : (issuesStep.value = issuesStep.value - 1);
             window.scrollTo(0, 0);

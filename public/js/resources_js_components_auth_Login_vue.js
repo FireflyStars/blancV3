@@ -80,6 +80,7 @@ __webpack_require__.r(__webpack_exports__);
                    ...route.query,
                },
             })*/
+            // window.location = '/newcustomer'
 
             window.location = '/';
           } else {

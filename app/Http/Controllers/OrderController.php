@@ -146,7 +146,8 @@ class OrderController extends Controller
         }
 
         //Add booking for home_Delivery
-        if($new_order['delivery_method']=='home_delivery'){
+        if($new_order['deliverymethod']=='home_delivery'){
+
 
         }
 

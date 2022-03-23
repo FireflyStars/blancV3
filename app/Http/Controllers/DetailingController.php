@@ -22,14 +22,27 @@ class DetailingController extends Controller
         $customer = (array) $customer->first();
 
         $detailingitemlist = DB::table('detailingitem')
-            ->select('infoitems.NoBag', 'infoInvoice.NumInvoice as sub_order', 'typeitem.name as typeitem_name', 'infoitems.ItemTrackingKey as item_number', 'detailingitem.etape', 'detailingitem.pricecleaning as price')
+            ->select('typeitem.name as typeitem_name', 'detailingitem.etape', 'detailingitem.pricecleaning as price','detailingitem.id as item_number')
             ->join('typeitem', 'typeitem.id', 'detailingitem.typeitem_id')
-            ->join('infoitems', 'infoitems.ItemTrackingKey', '=', 'detailingitem.item_id')
-            ->join('infoInvoice', 'infoInvoice.SubOrderID', '=', 'infoitems.SubOrderID')
+            //->join('infoitems', 'infoitems.ItemTrackingKey', '=', 'detailingitem.item_id')
+            //->join('infoInvoice', 'infoInvoice.SubOrderID', '=', 'infoitems.SubOrderID')
             ->where('detailingitem.order_id', '=', $order_id)
-            ->orderBy('infoitems.NoBag')
-            ->orderBy('infoInvoice.NumInvoice')
+            //->orderBy('infoitems.NoBag')
+            //->orderBy('infoInvoice.NumInvoice')
+            ->orderBy('detailingitem.id','ASC')
             ->get();
+
+
+        /*
+        'infoitems.NoBag', 'infoInvoice.NumInvoice as sub_order', 'infoitems.ItemTrackingKey as item_number'
+        */
+
+        if(count($detailingitemlist) > 0){
+            foreach($detailingitemlist as $k=>$v){
+                $detailingitemlist[$k]->sub_order = "";
+                $detailingitemlist[$k]->NoBag = 0;
+            }
+        }
 
         echo json_encode(
             [
@@ -50,8 +63,9 @@ class DetailingController extends Controller
 
         $detailingitem = DB::table('detailingitem')
             ->where('order_id', '=', $order_id)
-            ->where('item_id', '=', $item_id)
+            ->where('id', '=', $item_id)
             ->get();
+
         if (count($detailingitem) == 0) {
             $detailingitem = (array) $detailingitem->first();
             $customer = DB::table('infoOrder')
@@ -64,7 +78,7 @@ class DetailingController extends Controller
                 $detailingitem_id = DB::table('detailingitem')->insertGetId(
                     [
                         'order_id' => $order_id,
-                        'item_id' => $item_id,
+                       // 'item_id' => $item_id,
                         'customer_id' => $customer['id'],
                         'status' => 'In Process',
                         'etape' => 1,
@@ -84,6 +98,7 @@ class DetailingController extends Controller
         }
 
         $searched_item = null;
+
         if ($search) {
             $searched_item = DB::table('typeitem')
                 ->where('typeitem.name', 'LIKE', '%' . $search . '%')
@@ -97,14 +112,21 @@ class DetailingController extends Controller
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
         }
+
+
         $detailingitem = DB::table('detailingitem')
             ->where('order_id', '=', $order_id)
-            ->where('item_id', '=', $item_id)
+            ->where('id', '=', $item_id)
             ->get();
         $detailingitem = (array) $detailingitem->first();
 
         $item_description = $this->getItemDescription($detailingitem);
-        $detailing_data = $this->getDetailingData($detailingitem['department_id'], $detailingitem['typeitem_id']);
+
+        $detailing_data = [];
+
+        if(!empty($detailingitem)){
+            $detailing_data = $this->getDetailingData($detailingitem['department_id'], $detailingitem['typeitem_id']);
+        }
 
         echo json_encode(
             [
@@ -113,7 +135,9 @@ class DetailingController extends Controller
                 'search' => $search,
                 'searched_item' => $searched_item,
                 'item_description' => $item_description,
-                'detailing_data' => $detailing_data
+                'detailing_data' => $detailing_data,
+                'post'=>$request->all(),
+                'detailingitem_id'=>$detailingitem_id,
             ]
         );
     }
@@ -284,7 +308,8 @@ class DetailingController extends Controller
             [
                 'detailingitem' => $detailingitem,
                 'item_description' => $item_description,
-                'detailing_data' => $detailing_data
+                'detailing_data' => $detailing_data,
+                'post'=>$request->all(),
             ]
         );
     }
@@ -352,46 +377,55 @@ class DetailingController extends Controller
     }
     public function getItemDescription(array $detailingitem)
     {
-        if ($detailingitem['typeitem_id'] != null) {
+        if (isset($detailingitem['typeitem_id']) && $detailingitem['typeitem_id'] != null) {
             $typeitem = DB::table('typeitem')->where('id', '=', $detailingitem['typeitem_id'])->get();
             $typeitem = (array) $typeitem->first();
         }
-        if ($detailingitem['size_id'] != null) {
+        if (isset($detailingitem['size_id']) && $detailingitem['size_id'] != null) {
             $size = DB::table('sizes')->where('id', '=', $detailingitem['size_id'])->get();
             $size = (array) $size->first();
         }
-        if ($detailingitem['brand_id'] != null) {
+        if (isset($detailingitem['brand_id']) && $detailingitem['brand_id'] != null) {
             $brand = DB::table('brands')->where('id', '=', $detailingitem['brand_id'])->get();
             $brand = (array) $brand->first();
         }
-        if ($detailingitem['fabric_id'] != null) {
-            $fabrics = DB::table('fabrics')->select('Name as name', 'coefcleaning', 'coeftailoring')->whereIn('id', json_decode($detailingitem['fabric_id']))->get();
-            // $fabric = (array) $fabric->first();
+        if (isset($detailingitem['fabric_id']) && $detailingitem['fabric_id'] != null) {
+            $fabrics_arr = [];
+            $fabrics = [];
+
+            if(is_array(json_decode($detailingitem['fabric_id']))){
+                $fabrics_arr = json_decode($detailingitem['fabric_id']);
+            }
+
+            if(!empty($fabrics_arr)){
+                $fabrics = DB::table('fabrics')->select('Name as name', 'coefcleaning', 'coeftailoring')->whereIn('id',$fabrics_arr)->get();
+                // $fabric = (array) $fabric->first();
+            }
         }
-        if ($detailingitem['color_id'] != null) {
+        if (isset($detailingitem['color_id']) && $detailingitem['color_id'] != null) {
             $colors = DB::table('colours')->select('name', 'code')->whereIn('id', json_decode($detailingitem['color_id']))->get();
         }
-        if ($detailingitem['pattern_id'] != null) {
+        if (isset($detailingitem['pattern_id']) && $detailingitem['pattern_id'] != null) {
             $pattern = DB::table('patterns')->where('id', '=', $detailingitem['pattern_id'])->get();
             $pattern = (array) $pattern->first();
         }
-        if ($detailingitem['condition_id'] != null) {
+        if (isset($detailingitem['condition_id']) && $detailingitem['condition_id'] != null) {
             $condition = DB::table('conditions')->where('id', '=', $detailingitem['condition_id'])->get();
             $condition = (array) $condition->first();
         }
-        if ($detailingitem['complexities_id'] != null) {
+        if (isset($detailingitem['complexities_id']) && $detailingitem['complexities_id'] != null) {
             $complexities = DB::table('complexities')->select('name', 'coefcleaning', 'coeftailoring')->whereIn('id', json_decode($detailingitem['complexities_id']))->get();
         }
         $stains_tags=collect();
         $damages_tags=collect();
         $stains_zones=collect();
         $damages_zones=collect();
-        if ($detailingitem['stains'] != null) {
+        if (isset($detailingitem['stains']) && $detailingitem['stains'] != null) {
             $stains=json_decode($detailingitem['stains'],true);
             $stains_tags = DB::table('issues_tag')->select('id','name')->whereIn('id', array_column($stains, 'id_issue'))->get();
             $stains_zones = DB::table('itemzones')->whereIn('id', array_column($stains, 'id_zone'))->get();
         }
-        if ($detailingitem['damages'] != null) {
+        if (isset($detailingitem['damages']) && $detailingitem['damages'] != null) {
             $damages=json_decode($detailingitem['damages'],true);
             $damages_tags = DB::table('issues_tag')->select('id','name')->whereIn('id', array_column($damages, 'id_issue'))->get();
             $damages_zones = DB::table('itemzones')->whereIn('id', array_column($damages, 'id_zone'))->get();

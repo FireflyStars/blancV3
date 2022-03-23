@@ -15,6 +15,7 @@
                         <button class="btn-shopify">
                             <i class="bi bi-bag p-2"></i>Add from Shopify
                         </button>
+
                         <table class="detailing-table">
                             <thead class="detailing-header">
                                 <tr>
@@ -118,6 +119,7 @@ import {
     SET_LOADER_MSG,
     DISPLAY_LOADER,
     HIDE_LOADER,
+    INIT_DETAILING,
 } from "../../store/types/types";
 import Tag from "../miscellaneous/Tag.vue";
 
@@ -133,6 +135,7 @@ export default {
         const detailing_list = ref([]);
         const item_total = ref(0);
         const valid = ref(false);
+        const new_item_id = ref(0);
         store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
             true,
             "Please wait....",
@@ -181,7 +184,15 @@ export default {
             router.push('/detailing_item/' + order_id.value + '/' + item_id);
         }
         function addItem() {
-            router.push('/detailing_item/'+order_id.value+'/10021619');
+            store
+            .dispatch(`${DETAILING_MODULE}${INIT_DETAILING}`, { detailingitem_id: 0, order_id: order_id.value, item_id: 0, search: "" })
+            .then((response) => {
+                new_item_id.value = response.data.detailingitem_id;
+            }).catch((err)=>{
+
+            }).finally(()=>{
+                router.push('/detailing_item/'+order_id.value+'/'+new_item_id.value);
+            });
         }
         return {
             paths,

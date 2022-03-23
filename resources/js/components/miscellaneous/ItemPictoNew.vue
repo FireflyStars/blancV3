@@ -313,6 +313,8 @@ export default {
 
                     }
                 }
+            }else{
+                context.emit('back-step');
             }
         }
 
