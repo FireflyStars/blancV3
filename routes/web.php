@@ -70,6 +70,9 @@ Route::get('/permissions-test',function(){
 Route::get('{any}', function () {
     return view('welcome');
 })->where('any','.*');
+// added by yonghuan to search customers to be linked
+Route::post('/search-customer', [SearchController::class, 'SearchCustomersToLink'])->name('SearchCustomersToLink');
+
 Route::post('/SearchCustomer', [SearchController::class, 'SearchCustomer'])->name('SearchCustomer');
 Route::post('/SearchByCustomer', [SearchController::class, 'SearchByCustomer'])->name('SearchByCustomer');
 Route::post('/ScanItemAndBag', [ScanController::class, 'ScanItemAndBag'])->name('ScanItemAndBag');
