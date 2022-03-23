@@ -2134,11 +2134,6 @@ cli-table3@^0.6.0:
   optionalDependencies:
     colors "1.4.0"
 
-click-outside-vue3@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/click-outside-vue3/-/click-outside-vue3-4.0.1.tgz#81a6ac01696b301764b42db6fdbdf28e7cd8ef95"
-  integrity sha512-sbplNecrup5oGqA3o4bo8XmvHRT6q9fvw21Z67aDbTqB9M6LF7CuYLTlLvNtOgKU6W3zst5H5zJuEh4auqA34g==
-
 cliui@^6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/cliui/-/cliui-6.0.0.tgz#511d702c0c4e41ca156d7d0e96021f23e13225b1"
@@ -3773,6 +3768,11 @@ js-tokens@^4.0.0:
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
   integrity sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==
 
+jsbarcode@^3.11.5:
+  version "3.11.5"
+  resolved "https://registry.yarnpkg.com/jsbarcode/-/jsbarcode-3.11.5.tgz#390b3efd0271f35b9d68c7b8af6e972445969014"
+  integrity sha512-zv3KsH51zD00I/LrFzFSM6dst7rDn0vIMzaiZFL7qusTjPZiPtxg3zxetp0RR7obmjTw4f6NyGgbdkBCgZUIrA==
+
 jsesc@^2.5.1:
   version "2.5.2"
   resolved "https://registry.yarnpkg.com/jsesc/-/jsesc-2.5.2.tgz#80564d2e483dacf6e8ef209650a67df3f0c283a4"
@@ -3832,6 +3832,11 @@ jsonfile@^6.0.1:
     universalify "^2.0.0"
   optionalDependencies:
     graceful-fs "^4.1.6"
+
+jsrsasign@^10.5.8:
+  version "10.5.13"
+  resolved "https://registry.yarnpkg.com/jsrsasign/-/jsrsasign-10.5.13.tgz#328d1b8331ee57b983bbf650c7672fa3c3ba9c5e"
+  integrity sha512-f42mXo5ZuOFg+F2orgY+pAdtQIPAfZAscbdqcdQF+Kf4+yLU+IQIXF0kx5PsSN6GSAMq/BeGXpU5Uq4huA/+Wg==
 
 junk@^3.1.0:
   version "3.1.0"
@@ -5891,6 +5896,11 @@ vm-browserify@^1.0.1:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/vm-browserify/-/vm-browserify-1.1.2.tgz#78641c488b8e6ca91a75f511e7a3b32a86e5dda0"
   integrity sha512-2ham8XPWTONajOR0ohOKOHXkm3+gaBmGut3SRuu75xLd/RRaY6vqgh8NBYYk7+RW3u5AtzPQZG8F10LHkl0lAQ==
+
+vue-credit-card-validation@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/vue-credit-card-validation/-/vue-credit-card-validation-1.0.3.tgz#3302887b78977ff769105b7a00c21a053250f450"
+  integrity sha512-QjmpOJtRLmGJ0PlL1SFJOYxjk8pw24MkfJiBry9r9XWRe7uBj6qdhVB6bfQG9Rh4E8z/zAOREwpuXf5zXsYbzA==
 
 vue-eslint-parser@^7.10.0:
   version "7.11.0"

@@ -773,7 +773,7 @@
                 if(cardFormat.validateCardExpiry(current_value)){
                     delete cardErrors.value.cardCvc;
                 }else{
-                    cardErrors.value.cardCvc = "Invalid Expiration Date.";
+                    cardErrors.value.cardCvc = "Invalid CVV.";
                 }
             })
             const removeLinkedAccount = (customerID)=>{
