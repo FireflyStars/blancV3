@@ -2,9 +2,10 @@
     <div class="container detail-panel" v-if="showCustomerDetail">
         <div class="detail-progressbar" :class="loaderclass"></div>
         <div class="w-100" v-if="CUSTOMER.name != ''">
-            <div class="detail-header d-flex align-items-center justify-content-between">
+            <div class="detail-header position-fixed d-flex align-items-center justify-content-between">
                 <div class="detail-title text-capitalize">
                     {{ CUSTOMER.name.toLowerCase() }}
+                    <span class="ms-3 cursor-pointer" style="font-size: 12px; line-height: 14px; color: #42A71E; text-decoration: underline;">View</span>
                 </div>
                 <div class="detail-close-section d-flex align-items-center">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -17,7 +18,7 @@
                         <path d="M10.964 11.5038L9.77246 10.3123L9.29103 10.7937L10.4826 11.9852L10.964 11.5038Z" fill="white"/>
                         <path d="M9.94263 12.1846L7.72998 9.97192L7.24855 10.4534L9.4612 12.666L9.94263 12.1846Z" fill="white"/>
                     </svg>
-                    <span class="cust-location-name ms-1">{{ CUSTOMER.location }}</span>
+                    <span class="cust-location-name ms-1">{{ CUSTOMER.location == 0 ? '--' : CUSTOMER.location }}</span>
                     <svg class="detail-close ms-4" width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" @click="close">
                         <path fill-rule="evenodd" clip-rule="evenodd" d="M1.78812 0.297179C1.3976 -0.0953162 0.764438 -0.0953162 0.373917 0.297179C-0.0166053 0.689674 -0.0166053 1.32604 0.373916 1.71853L5.58834 6.9593L0.292891 12.2815C-0.0976305 12.674 -0.0976304 13.3104 0.292891 13.7029C0.683413 14.0954 1.31657 14.0954 1.7071 13.7029L7.00254 8.38065L12.293 13.6978C12.6835 14.0903 13.3166 14.0903 13.7072 13.6978C14.0977 13.3053 14.0977 12.6689 13.7072 12.2765L8.41675 6.9593L13.6261 1.72358C14.0167 1.33109 14.0167 0.694726 13.6261 0.302231C13.2356 -0.0902646 12.6025 -0.0902643 12.2119 0.302231L7.00254 5.53795L1.78812 0.297179Z" fill="white"/>
                     </svg>  
@@ -28,84 +29,58 @@
                     <div class="private-info-left">
                         <p class="email mb-0">{{ CUSTOMER.email }}</p>
                         <p class="phone mb-0">{{ formatPhone(CUSTOMER.phone) }}</p>
+                        <div class="d-flex mt-3">
+                            <div class="cust-type-icon rounded-pill">
+                                {{ CUSTOMER.cust_type }}
+                            </div>
+                            <div class="account-type-icon ms-3 rounded-pill">
+                                {{ CUSTOMER.account_type }}
+                            </div>
+                            <div class="booking-icon rounded-pill ms-3 d-flex align-items-center justify-content-center">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" v-if="CUSTOMER.booking == 'Recuring'">
+                                    <path d="M5.37598 11.5244C5.37598 15.1009 8.15655 18.0002 11.5866 18.0002C14.2001 18.0002 16.4366 16.3169 17.3532 13.9334" stroke="#42A71E" stroke-linecap="round"/>
+                                    <path d="M4 12.2178L5.37613 10.7829L6.75227 12.2178" stroke="#42A71E" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M17.624 11.4756C17.624 7.89908 14.8435 4.99976 11.4134 4.99976C8.79991 4.99976 6.56343 6.68306 5.64679 9.06664" stroke="#42A71E" stroke-linecap="round"/>
+                                    <path d="M19 10.7822L17.6239 12.2171L16.2477 10.7822" stroke="#42A71E" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                {{ CUSTOMER.booking }}
+                            </div>
+                        </div>
                     </div>
                     <div class="private-info-right">
-                        <div class="total d-flex">
-                            <div class="col-4 px-2 text-end">£{{ CUSTOMER.total_spent ? CUSTOMER.total_spent : 0 }}</div>
-                            <div class="col-8 px-2 d-flex align-items-center">Total Spent</div>
+                        <div class="">
+                            <div v-if="CUSTOMER.preference == 'VIP'" class="vip text-center">VIP</div>
+                            <!-- <div class="frequent">frequent flyer</div> -->
+                            <div v-if="CUSTOMER.preference == 'Complaint'"  class="complaint">Complaint</div>
                         </div>
-                        <div class="total d-flex">
-                            <div class="col-4 px-2 text-end">{{ CUSTOMER.total_count }}</div>
-                            <div class="col-8 px-2 d-flex align-items-center">Orders</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="account-info d-flex mt-3">
-                    <div class="col-6">
-                        <div class="d-flex mb-2">
-                            <div class="col-6">
-                                <p class="m-0">Cust Type</p>
+                        <div class="total-section mt-2">
+                            <div class="total d-flex">
+                                <div class="col-4 px-2 text-end">£{{ CUSTOMER.total_spent ? CUSTOMER.total_spent : 0 }}</div>
+                                <div class="col-8 px-2 d-flex align-items-center">Total Spent</div>
                             </div>
-                            <div class="col-6 px-2">
-                                <div class="cust-type-icon rounded-pill">
-                                    {{ CUSTOMER.cust_type }}
-                                </div>
+                            <div class="total d-flex">
+                                <div class="col-4 px-2 text-end">{{ CUSTOMER.total_count }}</div>
+                                <div class="col-8 px-2 d-flex align-items-center">Orders</div>
                             </div>
                         </div>
-                        <div class="d-flex mb-2">
-                            <div class="col-6">
-                                <p class="m-0">Account Type</p>
-                            </div>
-                            <div class="col-6 px-2">
-                                <div class="account-type-icon rounded-pill">
-                                    {{ CUSTOMER.account_type }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="d-flex mb-2">
-                            <div class="col-6">
-                                <p class="m-0">Bookings</p>
-                            </div>
-                            <div class="col-6 px-2">
-                                <div class="booking-icon rounded-pill ms-auto d-flex align-items-center justify-content-center">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" v-if="CUSTOMER.booking == 'Recuring'">
-                                        <path d="M5.37598 11.5244C5.37598 15.1009 8.15655 18.0002 11.5866 18.0002C14.2001 18.0002 16.4366 16.3169 17.3532 13.9334" stroke="#42A71E" stroke-linecap="round"/>
-                                        <path d="M4 12.2178L5.37613 10.7829L6.75227 12.2178" stroke="#42A71E" stroke-linecap="round" stroke-linejoin="round"/>
-                                        <path d="M17.624 11.4756C17.624 7.89908 14.8435 4.99976 11.4134 4.99976C8.79991 4.99976 6.56343 6.68306 5.64679 9.06664" stroke="#42A71E" stroke-linecap="round"/>
-                                        <path d="M19 10.7822L17.6239 12.2171L16.2477 10.7822" stroke="#42A71E" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                    {{ CUSTOMER.booking }}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="d-flex">
-                            <div class="col-6">
-                                <p class="m-0">Spend Category</p>
-                            </div>
-                            <div class="col-6 px-2">
-                                <div class="category-icon rounded-pill ms-auto">
-                                    Frequent
-                                </div>
-                            </div>
-                        </div>                    
                     </div>
                 </div>
                 <div class="toggle-panel" :class="{ active: selected_panel =='current_orders' }" >
                     <div class="toggle-panel-header" @click="selectPanel('current_orders')">
-                        <h4 class="m-0">Current Orders</h4>
+                        <h4 class="m-0">Current Orders ( {{ CUSTOMER.current_orders.length }} )</h4>
                     </div>
                     <div class="toggle-panel-content" :class="{ 'd-none': selected_panel != 'current_orders' }">
-
+                        <OrderItem :show="index == 0" :key="index" v-for="(subOrders, index) in CUSTOMER.current_orders" :subOrders="subOrders" />
                     </div>
                 </div>            
                 <div class="toggle-panel" :class="{ active: selected_panel =='past_orders' }" >
                     <div class="toggle-panel-header" @click="selectPanel('past_orders')">
-                        <h4 class="m-0">Past Orders</h4>
+                        <h4 class="m-0">Past Orders ( {{ CUSTOMER.past_orders.length }} )</h4>
                     </div>
                     <div class="toggle-panel-content" :class="{ 'd-none': selected_panel != 'past_orders' }">
-
+                        <div class="toggle-panel-content" :class="{ 'd-none': selected_panel != 'current_orders' }">
+                            <OrderItem :show="index == 0" :key="index" v-for="(subOrders, index) in CUSTOMER.past_orders" :subOrders="subOrders" />
+                        </div>
                     </div>
                 </div>            
                 <div class="toggle-panel" :class="{ active: selected_panel =='payment_method' }" >
@@ -133,19 +108,19 @@
                     </div>
                 </div>            
             </div>
-            <div class="detail-footer">
+            <div class="detail-footer bg-white">
                 <div class="d-flex col-12 p-0">
                     <div class="col-6 p-0 d-flex justify-content-between">
-                        <button class="detail-btn detail-btn-question text-center" @click="question">
-                            ?
+                        <button class="detail-btn detail-btn-new-order text-center" @click="newOrder">
+                            New Order
                         </button>
-                        <button class="detail-btn detail-btn-archive text-center" @click="archiveCustomer">
-                            Archive
+                        <button class="detail-btn detail-btn-app-sms text-center" @click="appSMS">
+                            App SMS
                         </button>
                     </div>
                     <div class="col-6 p-0 text-end">
-                        <button class="detail-btn detail-btn-edit text-center" @click="editCustomer">
-                            Edit
+                        <button class="detail-btn detail-btn-manage-order text-center" @click="manageOrders">
+                            Manage Orders
                         </button>
                     </div>
                 </div>
@@ -168,11 +143,12 @@ import {
 import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
+import OrderItem from './OrderItem';
 
 export default {
     name: "CustomerDetail",
     components:{
-
+        OrderItem,
     },
     setup(){
         const store = useStore();
@@ -208,14 +184,14 @@ export default {
         const CUSTOMER = computed( () =>{
             return store.getters[`${CUSTOMER_MODULE}${GET_CUSTOMER_DETAIL}`];
         })
-        const editCustomer =()=>{
-            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:' Edit is not implemented yet.',ttl:5,type:'success'});
+        const manageOrders =()=>{
+            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Manage Order is not implemented yet.',ttl:5,type:'success'});
         }
-        const archiveCustomer =()=>{
-            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:' Archive is not implemented yet.',ttl:5,type:'success'});
+        const appSMS =()=>{
+            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'App SMS is not implemented yet.',ttl:5,type:'success'});
         }
-        const question =()=>{
-            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:' Question is not implemented yet.',ttl:5,type:'success'});
+        const newOrder =()=>{
+            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'New Order is not implemented yet.',ttl:5,type:'success'});
         }
         if(showCustomerDetail) {
             nextTick(() => {
@@ -247,9 +223,9 @@ export default {
             formatPhone,
             selectPanel,
             close,
-            editCustomer,
-            archiveCustomer,
-            question,
+            manageOrders,
+            appSMS,
+            newOrder,
             loaderclass: computed(()=>{
                 return store.getters[`${CUSTOMER_MODULE}${GET_LOADER_CLASS}`];
             }),
@@ -257,6 +233,27 @@ export default {
     }   
 }
 </script>
+<style lang="scss" scoped>
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #E0E0E0; 
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #47454B; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #47454B; 
+}
+</style>
 <style lang="scss">
 .detail-panel *{
     font-family: 'Gotham Rounded';
@@ -278,8 +275,10 @@ export default {
         height: 65px;
         background: #47454B;
         padding: 20px 30px;
+        width: 684px;
+        z-index: 2;
         .detail-title{
-            font-size: 22px;
+            font-size: 20px;
             line-height: 110%;
             color: #FFFFFF;
         }
@@ -297,13 +296,12 @@ export default {
         }
     }
     .detail-body{
-        padding: 20px;
+        padding: 85px 20px 100px;
         .private-info{
-            height: 65px;
             .private-info-left{
                 width: 60%;
                 .email{
-                    font-size: 24px;
+                    font-size: 18px;
                     line-height: 140%;
                     color: #000000;
                 }
@@ -311,30 +309,6 @@ export default {
                     font-size: 14px;
                     line-height: 140%;
                 }
-            }
-            .private-info-right{
-                width: 40%;
-                padding: 5px 0;
-                border-left: solid 3px #42A71E;
-                background: #ECECEC;
-                .total div:first-child{
-                    font-size: 20px;
-                    line-height: 140%;
-                    color: #47454B;
-                }
-                .total div:last-child{
-                    font-size: 16px;
-                    line-height: 140%;
-                    color: #47454B;
-                }
-            }
-        }
-        .account-info{
-            p{
-                font-family: 'Gotham Rounded Book';
-                font-size: 16px;
-                line-height: 20px;
-                color: #868686;
             }
             .cust-type-icon,
             .account-type-icon{
@@ -351,22 +325,53 @@ export default {
                 background: #E0E0E0;
                 color: #868686;
             }
-            .booking-icon,
-            .category-icon{
+            .booking-icon{
                 width: 114px;
                 text-align: center;
                 font-size: 12px;
                 line-height: 14px;
-            }
-            .booking-icon{
                 padding: 2px 16px;
                 background: rgba(66, 167, 30, 0.2);
                 color: #42A71E;
             }
-            .category-icon{
-                padding: 5px 16px;
-                background: #4E58E7;
-                color: #FFFFFF;
+            .private-info-right{
+                width: 40%;
+                .vip,
+                .frequent,
+                .complaint{
+                    height: 24px;
+                    font-size: 12px;
+                    line-height: 14px;
+                    padding: 5px 8px;
+                    border-radius: 4px;
+                }
+                .vip{
+                    width: 64px;
+                    border: 1px solid #000000;
+                }
+                .frequent{
+                    color: #4E58E7;
+                    background: rgba(212, 221, 247, 0.7);
+                }
+                .complaint{
+                    color: #EB5757;
+                    background: rgba(245, 171, 171, 0.7);
+                }
+                .total-section{
+                    padding: 5px 0;
+                    border-left: solid 3px #42A71E;
+                    background: #ECECEC;
+                }
+                .total div:first-child{
+                    font-size: 20px;
+                    line-height: 140%;
+                    color: #47454B;
+                }
+                .total div:last-child{
+                    font-size: 16px;
+                    line-height: 140%;
+                    color: #47454B;
+                }
             }
         }
         .toggle-panel{
@@ -382,7 +387,7 @@ export default {
                     font-family: 'Gilroy';
                     font-style: normal;
                     font-weight: 800;
-                    font-size: 22px;
+                    font-size: 20px;
                     line-height: 110%;
                     color: #47454B;
                 }
@@ -392,7 +397,7 @@ export default {
                 border-radius: 6px;
             }
             .toggle-panel-content{
-                padding: 0 30px 40px 30px; 
+                padding: 0 20px 20px 20px;
             }
         }
         .toggle-panel.active{
@@ -400,30 +405,48 @@ export default {
         }
     }
     .detail-footer{
-        padding: 30px 20px;
+        position: fixed;
+        padding: 10px 20px;
+        width: 674px;
+        bottom: 0;        
         .detail-btn{
             cursor: pointer;
             font-size: 16px;
             line-height: 140%;        
-            padding: 15px 0;
+            padding: 9px 0;
             border-radius: 4px;
             background: transparent;
             border: none;
             outline: none;
         }
-        .detail-btn-question{
+        .detail-btn-new-order{
             border: 1px solid #47454B;
             width: 140px;
+            &:hover{
+                background: #47454B;
+                color: #FFFFFF;
+                transition: all .3s ease-in;
+            }
         }
-        .detail-btn-archive{
-            border: 1px solid #EB5757;
-            color: #EB5757;
+        .detail-btn-app-sms{
+            border: 1px solid #47454B;
             width: 130px;
+            &:hover{
+                background: #47454B;
+                color: #FFFFFF;
+                transition: all .3s ease-in;
+            }
         }
-        .detail-btn-edit{
+        .detail-btn-manage-order{
             background: #42A71E;
             color: #FFFFFF;
             width: 225px;
+            &:hover{
+                background: #FFFFFF;
+                color: #42A71E;
+                border: 1px solid #42A71E;
+                transition: all .3s ease-in;
+            }            
         }
     }
 }

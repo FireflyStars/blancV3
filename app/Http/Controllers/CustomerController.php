@@ -115,19 +115,26 @@ class CustomerController extends Controller
      */
     public function getCustomerDetail(Request $request){
         $customer = DB::table('infoCustomer')
+                    ->join('InfoCustomerPreference', 'InfoCustomerPreference.CustomerID', '=', 'infoCustomer.CustomerID')
                     ->select('Name as name', 'EmailAddress as email', 'Phone as phone',
-                        DB::raw('IF(CustomerIDMaster = "" AND CustomerIDMasterAccount = "" AND IsMaster = 0 AND IsMasterAccount = 0, "B2C", "B2B") as cust_type'),
-                        'TypeDelivery as location', 'CustomerNotes as notes', 'id', 'CustomerID',
-                        DB::raw('IF(DeliverybyDay = 1, "Recuring", "Normal") as booking'),
+                        DB::raw('IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as cust_type'),
+                        'infoCustomer.RevenueLocation as location', 'infoCustomer.CustomerNotes as notes', 'infoCustomer.id', 'infoCustomer.CustomerID',
+                        DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recuring", "Normal") as booking'),
                         DB::raw( 
-                            'CASE WHEN IsMaster = 1 THEN "MAIN"
-                                  WHEN isMasterAccount = 1 THEN "MASTER"
-                                  WHEN isMaster = 0 AND CustomerIDMaster <> "" THEN "Sub Account"
-                                  WHEN isMaster = 0 AND CustomerIDMaster = "" THEN "Individual"
+                            'CASE WHEN infoCustomer.IsMaster = 1 THEN "MAIN"
+                                  WHEN infoCustomer.isMasterAccount = 1 THEN "MASTER"
+                                  WHEN infoCustomer.isMaster = 0 AND infoCustomer.CustomerIDMaster <> "" THEN "Sub"
+                                  WHEN infoCustomer.isMaster = 0 AND infoCustomer.CustomerIDMaster = "" THEN "Individual"
                             END as account_type'
-                        )
+                        ),
+                        DB::raw( 
+                            'CASE WHEN InfoCustomerPreference.Titre = "Type Customer" AND InfoCustomerPreference.Value = "VIP GOLD" THEN "VIP"
+                                  WHEN InfoCustomerPreference.Titre = "Type Customer" AND InfoCustomerPreference.Value = "VIP RED" THEN "Complaint"
+                                  WHEN InfoCustomerPreference.Titre = "Type Customer" AND InfoCustomerPreference.Value = "Standard" THEN "nothing"
+                            END as preference'
+                        ),
                     )
-                    ->where('id', $request->customer_id)
+                    ->where('infoCustomer.id', $request->customer_id)
                     ->first();
         $total = DB::table('infoOrder')->where('CustomerID', $customer->CustomerID)
                     ->select(
@@ -136,6 +143,48 @@ class CustomerController extends Controller
                     )->first();
         $customer->total_spent = $total->total_spent;
         $customer->total_count = $total->total_count;
+        $customer->current_orders = DB::table('infoOrder')
+                                        ->select(
+                                            'infoOrder.id as order_id', 'infoInvoice.NumInvoice as sub_order', 'infoInvoice.id as sub_order_id',
+                                            DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
+                                            DB::raw('DATE_FORMAT(infoOrder.created_at, "%d %b %Y") as order_date'),
+                                            'infoitems.priceTotal as price', 'infoitems.id as item_id',
+                                            'infoitems.typeitem as item_name', 'infoitems.brand', 'infoitems.ItemTrackingKey as barcode',
+                                            'TypePost.bg_color as location_color', 'postes.nom as location',
+                                            'TypePost.circle_color', 'TypePost.process', 'infoOrder.underquote', 'infoitems.Colors as colors'
+                                        )
+                                        ->join('infoInvoice', 'infoInvoice.OrderID', '=', 'infoOrder.OrderID')
+                                        ->join('infoitems',function($join){
+                                            $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
+                                                ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+                                        })
+                                        ->join('postes', 'infoitems.nextpost', '=', 'postes.id')
+                                        ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')                                        
+                                        ->where('infoitems.priceTotal', '!=', 0)
+                                        ->where('infoOrder.CustomerID', $customer->CustomerID)
+                                        ->whereNotIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
+                                        ->get()->groupBy(['order_id','sub_order_id'])->reverse()->values();
+        $customer->past_orders = DB::table('infoOrder')
+                                        ->select(
+                                            'infoOrder.id as order_id', 'infoInvoice.NumInvoice as sub_order', 'infoInvoice.id as sub_order_id',
+                                            DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
+                                            'infoitems.typeitem as item_name', 'infoitems.brand', 'infoitems.ItemTrackingKey as barcode',
+                                            'infoitems.priceTotal as price', 'infoitems.id as item_id',
+                                            DB::raw('DATE_FORMAT(infoOrder.created_at, "%d %b %Y") as order_date'),
+                                            'TypePost.bg_color as location_color', 'postes.nom as location',
+                                            'TypePost.circle_color', 'TypePost.process', 'infoOrder.underquote', 'infoitems.Colors as colors'
+                                        )
+                                        ->join('infoInvoice', 'infoInvoice.OrderID', '=', 'infoOrder.OrderID')
+                                        ->join('infoitems',function($join){
+                                            $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
+                                                ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+                                        })
+                                        ->join('postes', 'infoitems.nextpost', '=', 'postes.id')
+                                        ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')                                        
+                                        ->where('infoitems.priceTotal', '!=', 0)
+                                        ->where('infoOrder.CustomerID', $customer->CustomerID)
+                                        ->whereIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
+                                        ->get()->groupBy(['order_id', 'sub_order_id'])->reverse()->values();
         return response()->json( $customer );
     }
 }
