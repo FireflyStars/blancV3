@@ -102,5 +102,18 @@ class BookingController extends Controller {
 
     }
 
+
+    public static function logBookingHistory($id_booking,$order_id,$customer_id,$user_id,$delivery_method,$status='NEW'){
+        DB::table('booking_histories')->insert([
+            'booking_id'=>$id_booking,
+            'order_id'=>$order_id,
+            'customer_id'=>$customer_id,
+            'user_id'=>$user_id,
+            'type'=>$delivery_method,
+            'status'=>$status,
+            'created_at'=>date('Y-m-d H:i:s'),
+        ]);
+    }
+
 }
 

@@ -104,6 +104,7 @@ class OrderController extends Controller
                 'status'=>'NEW',
                 'created_at'=>$created_stamp,
             ]);
+
         }
 
         //Add booking for delivery only
@@ -128,7 +129,8 @@ class OrderController extends Controller
                 'trancheto'=>$tranche['trancheto'],
                 'address_id'=>($address?$address->id:0),
                 'date'=>$new_order['do_delivery'],
-                'status'=>'',//'PMS'
+                'status'=>'NEW',//'PMS'
+                'order_id'=>$new_order_id,
 
             ];
 
@@ -145,8 +147,62 @@ class OrderController extends Controller
             }
         }
 
+        $id_booking_pickup = 0;
+
+
         //Add booking for home_Delivery
         if($new_order['deliverymethod']=='home_delivery'){
+
+            $pickup_slot = $new_order['hd_pickup_timeslot'];
+            $tranche_pickup = BookingController::getBookingDetailFromSlot($pickup_slot);
+
+
+            $pickup_arr = [
+                'PhoneNumber'=>(!empty($phones)?implode(",",$phones):""),
+                'CodeCountry'=>$code_country,
+                'TypeDelivery'=>'', //A confirmer
+                'AddressID'=>$address_uuid,
+                'CustomerID'=>$customerid,
+                'PickupID'=>'',
+                'id_customer'=>0,
+                'created_at'=>date('Y-m-d H:i:s'),
+                'comment'=>(!is_null($new_order['customer_instructions'])?$new_order['customer_instructions']:''),
+                'trancheFrom'=>$tranche_pickup['tranchefrom'],
+                'trancheto'=>$tranche_pickup['trancheto'],
+                'address_id'=>($address?$address->id:0),
+                'date'=>$new_order['hd_delivery'],
+                'status'=>'NEW',//'PMS'
+                'order_id'=>$new_order_id,
+            ];
+
+            $id_booking_pickup = DB::table('pickup')->insert($pickup_arr);
+
+
+            $delivery_slot = $new_order['hd_delivery_timeslot'];
+            $tranche_delivery = BookingController::getBookingDetailFromSlot($delivery_slot);
+
+            $delivery_arr = [
+                'PhoneNumber'=>(!empty($phones)?implode(",",$phones):""),
+                'CodeCountry'=>$code_country,
+                'TypeDelivery'=>'', //A confirmer
+                'AddressID'=>$address_uuid,
+                'CustomerID'=>$customerid,
+                'DeliveryAskID'=>'',
+                'id_customer'=>0,
+                'created_at'=>date('Y-m-d H:i:s'),
+                'comment'=>(!is_null($new_order['customer_instructions'])?$new_order['customer_instructions']:''),
+                'trancheFrom'=>$tranche_delivery['tranchefrom'],
+                'trancheto'=>$tranche_delivery['trancheto'],
+                'address_id'=>($address?$address->id:0),
+                'date'=>$new_order['hd_delivery'],
+                'status'=>'NEW',//'PMS'
+                'order_id'=>$new_order_id,
+
+            ];
+
+            $id_booking = DB::table('deliveryask')->insert($delivery_arr);
+
+            //Notification
 
 
         }
@@ -155,16 +211,15 @@ class OrderController extends Controller
 
         //Logs booking history
         if($id_booking > 0){
-            DB::table('booking_histories')->insert([
-                'booking_id'=>$id_booking,
-                'order_id'=>$new_order_id,
-                'customer_id'=>$customer->id,
-                'user_id'=>$user->id,
-                'type'=>$new_order['deliverymethod'],
-                'status'=>'NEW',//(in_array($new_order['deliverymethod'],['delivery_only','home_delivery','recurring'])?'PMS':'NEW'),
-                'created_at'=>$created_stamp,
-            ]);
+            BookingController::logBookingHistory($id_booking,$new_order_id,$customer->id,$user->id,($new_order['deliverymethod']=='home_delivery'?'delivery_ask':$new_order['deliverymethod']));
         }
+
+
+        if($id_booking_pickup > 0){
+            BookingController::logBookingHistory($id_booking_pickup,$new_order_id,$customer->id,$user->id,'pickup');
+        }
+
+
 
 
         return response()->json([

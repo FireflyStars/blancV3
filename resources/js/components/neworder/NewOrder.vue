@@ -82,10 +82,10 @@
                                                 </div>
 
                                                 <div class="col-3">
-                                                    <date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pickup" :disabledToDate="yesterday" @loadtranche="checkStorePickup" :disabledSunday="true"></date-picker>
+                                                    <date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Collection" :disabledToDate="getCurDateTime('datedb')" @loadtranche="checkStorePickup" :disabledSunday="true"></date-picker>
                                                 </div>
                                                 <div class="col-3">
-                                                    <time-slot-picker v-model="isc_pickup_timeslot"   name="isc_pickup_timeslot" :available-slots="isc_pickup_tranche"  label="Pick up Time"></time-slot-picker>
+                                                    <time-slot-picker v-model="isc_pickup_timeslot"   name="isc_pickup_timeslot" :available-slots="[11]"  label="Collection Time" :isStore="true"></time-slot-picker>
                                                 </div>
                                             </div>
                                             </transition>
@@ -109,7 +109,7 @@
                                                     </div>
 
                                                     <div class="col-3">
-                                                        <date-picker v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="yesterday" @loadtranche="loadtranche('do_delivery')" ref="do_delivery_datepicker"></date-picker>
+                                                        <date-picker v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="addRemoveDays('add',3,cur_date)" @loadtranche="loadtranche('do_delivery')" ref="do_delivery_datepicker" :disabled-sunday="true"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="do_delivery_timeslot"   name="do_delivery_timeslot" :available-slots="do_delivery_tranche"  label=" "></time-slot-picker>
@@ -127,7 +127,7 @@
                                                     </div>
 
                                                     <div class="col-3">
-                                                        <date-picker v-model="hd_delivery" name="hd_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="hd_pickup"   @loadtranche="loadtranche('hd_delivery')" ref="hd_delivery_datepicker" :disabledSunday="true"></date-picker>
+                                                        <date-picker v-model="hd_delivery" name="hd_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="addRemoveDays('add',3,hd_pickup)"   @loadtranche="loadtranche('hd_delivery')" ref="hd_delivery_datepicker" :disabledSunday="true"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="hd_delivery_timeslot"   name="hd_delivery_timeslot" :available-slots="hd_delivery_tranche"  label=" "></time-slot-picker>
@@ -229,7 +229,7 @@
                                             <div class="col">
                                                 <h2 class="subtitle d-table" id="step_2_title">Order Details <a class="ml-3" id="edit_order_link" @click="changeStep(1)">Edit</a></h2>
 
-                                                <div id="order_exp_type" class="float-left d-table" v-if="order_express!=0">
+                                                <div id="order_exp_type" class="float-left d-table" v-if="deliverymethod=='in_store_collection' && order_express!=0">
                                                     <span v-if="order_express==1">Express 24</span>
                                                     <span v-if="order_express==6">Express 48</span>
 
@@ -789,13 +789,22 @@ import axios from 'axios';
 
                 if(order.deliverymethod=='in_store_collection'){
                     let dt_from = new Date(cur_date.value);
+                    dt_from.setHours(18,0,0);
+
+                    let cur_day_num = dt_from.getDay();
+                    let minus_day = 0;
 
                     let isc_pickup_time = getTimeFromSlot(isc_pickup_timeslot.value);
                     new_order_obj.value['isc_pickup_time'] = isc_pickup_time;
 
                     let dt_to = new Date(isc_pickup.value+' '+isc_pickup_time);
 
-                    time_diff =  (dt_to.getTime() - dt_from.getTime()) / 3600000; //3600 * 1000 milliseconds
+                     //Dropoff is Friday and Collection is Monday or Dropoff is Saturday
+                    if((cur_day_num==5 && dt_to.getDay()==1) || cur_day_num==6){
+                        minus_day = 1;
+                    }
+
+                    time_diff =  (dt_to.getTime() - dt_from.getTime() - (minus_day*24*3600000)) / 3600000; //3600 * 1000 milliseconds
                 }
 
 
@@ -1000,7 +1009,18 @@ import axios from 'axios';
             function formatTime(date_txt){
                 let dt = new Date(date_txt);
 
-                return dt.toLocaleString('en-GB', { hour: 'numeric', minute: 'numeric', hour12: true });
+                let hh = parseInt(dt.getHours());
+                let hh_am_pm = hh;
+
+                if(hh > 12){
+                    hh_am_pm = hh - 12;
+                }
+
+
+                let mm = dt.getMinutes().toString().padStart(2,0);
+
+                return hh_am_pm+":"+mm+" "+(hh >= 12?"pm":"am");
+                //return dt.toLocaleString('en-GB', { hour: 'numeric', minute: 'numeric', hour12: true });
             }
 
             function getDisplayFromSelectArray(arr,value){
@@ -1134,7 +1154,9 @@ import axios from 'axios';
 
            }
 
+
            function checkStorePickup(){
+               /*
                let cur_date_db = getCurDateTime('datedb');
 
                isc_pickup_tranche.value = [1,3,5,7,9,11,13];
@@ -1160,8 +1182,29 @@ import axios from 'axios';
 
                     isc_pickup_tranche.value = slot_from_arr;
                }
+               */
+              isc_pickup_tranche.value[9];
            }
 
+
+            function addRemoveDays(action,num_days,date_txt){
+                const d = new Date(date_txt);
+
+                if(action=='add'){
+                    d.setDate(d.getDate() + num_days);
+                }
+
+                if(action=='remove'){
+                    d.setDate(d.getDate() - num_days);
+                }
+
+                let dd = String(d.getDate()). padStart(2, '0');
+                let mm = String(d.getMonth() + 1). padStart(2, '0');
+                let yyyy = String(d.getFullYear());
+
+                return yyyy+'-'+mm+'-'+dd;
+
+            }
 
 
             return {
@@ -1230,6 +1273,7 @@ import axios from 'axios';
                 new_order_obj,
                 checkStorePickup,
                 shp_min_date,
+                addRemoveDays,
             }
         }
     }

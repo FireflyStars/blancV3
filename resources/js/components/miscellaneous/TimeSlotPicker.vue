@@ -24,6 +24,7 @@
             disabled:Boolean,
             valid:Boolean|null,
             placeholder:String,
+            isStore:Boolean|null,
         },
         setup(props,context){
             const timeslot=ref(0);
@@ -66,7 +67,14 @@
                     available:true
                 }
             ]);
+
+            if(props.isStore){
+                timeslot_def.value.splice(timeslot_def.value.length-1,1);
+            }
+
+
             watch(()=>props.availableSlots,(current_val,previous_val)=>{
+
                 timeslot_def.value.forEach(slot=>{
                     slot.available=false;
                     if(current_val.includes(slot.value))
