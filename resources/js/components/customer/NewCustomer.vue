@@ -178,7 +178,21 @@
                                         <div class="w-55 d-flex justify-content-between">
                                             <div class="form-group m-0">
                                                 <label for="post_code">Search postcode</label>
-                                                <input type="text" v-model="form.postCode" class="form-control custom-input">
+                                                <div class="input-group">
+                                                    <span class="input-group-text">
+                                                        <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <g clip-path="url(#clip0_1034_1828)">
+                                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M17.1605 14.8985L22.5405 20.2785C22.7296 20.4677 22.8357 20.7243 22.8356 20.9919C22.8356 21.2594 22.7292 21.5159 22.54 21.705C22.3507 21.8941 22.0941 22.0003 21.8266 22.0002C21.5591 22.0001 21.3026 21.8937 21.1135 21.7045L15.7335 16.3245C14.1252 17.5702 12.1027 18.1564 10.0776 17.9639C8.05244 17.7713 6.17669 16.8145 4.83194 15.2881C3.48719 13.7617 2.77445 11.7803 2.83871 9.74705C2.90297 7.71378 3.73941 5.78136 5.17787 4.34291C6.61632 2.90445 8.54874 2.06801 10.582 2.00375C12.6153 1.93949 14.5967 2.65223 16.1231 3.99698C17.6495 5.34173 18.6063 7.21748 18.7988 9.24263C18.9913 11.2678 18.4051 13.2902 17.1595 14.8985H17.1605ZM10.8355 15.9995C12.4268 15.9995 13.9529 15.3674 15.0781 14.2421C16.2033 13.1169 16.8355 11.5908 16.8355 9.9995C16.8355 8.4082 16.2033 6.88208 15.0781 5.75686C13.9529 4.63164 12.4268 3.9995 10.8355 3.9995C9.24416 3.9995 7.71804 4.63164 6.59282 5.75686C5.4676 6.88208 4.83546 8.4082 4.83546 9.9995C4.83546 11.5908 5.4676 13.1169 6.59282 14.2421C7.71804 15.3674 9.24416 15.9995 10.8355 15.9995V15.9995Z" fill="#C3C3C3"/>
+                                                        </g>
+                                                        <defs>
+                                                        <clipPath id="clip0_1034_1828">
+                                                        <rect width="20.0009" height="20.0004" fill="white" transform="translate(2.83472 1.99976)"/>
+                                                        </clipPath>
+                                                        </defs>
+                                                        </svg>
+                                                    </span>
+                                                    <input type="text" ref="postcode" class="form-control custom-input" v-model="form.postCode" id="addressAutocompleteRef">
+                                                </div>
                                             </div>
                                             <div class="form-group m-0">
                                                 <label for="customer_city">City</label>
@@ -196,7 +210,7 @@
                                         <div class="form-group mb-0">
                                             <label for="customer_address1">Delivery address</label>
                                             <input type="text" v-model="form.deliveryAddress1" placeholder="Address line 1" class="form-control custom-input">
-                                            <input type="text" v-model="form.deliveryAddress1" placeholder="Address line 2" class="form-control custom-input mt-3">
+                                            <input type="text" v-model="form.deliveryAddress2" placeholder="Address line 2" class="form-control custom-input mt-3">
                                         </div>
                                     </div>
                                 </div>
@@ -318,7 +332,21 @@
                                                 <div class="w-55 d-flex justify-content-between">
                                                     <div class="form-group m-0">
                                                         <label for="post_code">Search postcode</label>
-                                                        <input type="text" v-model="form.companyPostCode" class="form-control custom-input">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">
+                                                                <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <g clip-path="url(#clip0_1034_1828)">
+                                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M17.1605 14.8985L22.5405 20.2785C22.7296 20.4677 22.8357 20.7243 22.8356 20.9919C22.8356 21.2594 22.7292 21.5159 22.54 21.705C22.3507 21.8941 22.0941 22.0003 21.8266 22.0002C21.5591 22.0001 21.3026 21.8937 21.1135 21.7045L15.7335 16.3245C14.1252 17.5702 12.1027 18.1564 10.0776 17.9639C8.05244 17.7713 6.17669 16.8145 4.83194 15.2881C3.48719 13.7617 2.77445 11.7803 2.83871 9.74705C2.90297 7.71378 3.73941 5.78136 5.17787 4.34291C6.61632 2.90445 8.54874 2.06801 10.582 2.00375C12.6153 1.93949 14.5967 2.65223 16.1231 3.99698C17.6495 5.34173 18.6063 7.21748 18.7988 9.24263C18.9913 11.2678 18.4051 13.2902 17.1595 14.8985H17.1605ZM10.8355 15.9995C12.4268 15.9995 13.9529 15.3674 15.0781 14.2421C16.2033 13.1169 16.8355 11.5908 16.8355 9.9995C16.8355 8.4082 16.2033 6.88208 15.0781 5.75686C13.9529 4.63164 12.4268 3.9995 10.8355 3.9995C9.24416 3.9995 7.71804 4.63164 6.59282 5.75686C5.4676 6.88208 4.83546 8.4082 4.83546 9.9995C4.83546 11.5908 5.4676 13.1169 6.59282 14.2421C7.71804 15.3674 9.24416 15.9995 10.8355 15.9995V15.9995Z" fill="#C3C3C3"/>
+                                                                </g>
+                                                                <defs>
+                                                                <clipPath id="clip0_1034_1828">
+                                                                <rect width="20.0009" height="20.0004" fill="white" transform="translate(2.83472 1.99976)"/>
+                                                                </clipPath>
+                                                                </defs>
+                                                                </svg>
+                                                            </span>
+                                                            <input type="text" ref="companyPostCode" class="form-control custom-input" v-model="form.companyPostCode">
+                                                        </div>                                                        
                                                     </div>
                                                     <div class="form-group m-0">
                                                         <label for="customer_city">City</label>
@@ -634,7 +662,6 @@
     import { phoneCountryCode as phoneCodes } from '../../static/PhoneCountryCodes';
     import SwitchBtn from '../miscellaneous/SwitchBtn.vue';
     import Search from './Search';
-
     import {
         TOASTER_MODULE,
         TOASTER_MESSAGE,
@@ -653,7 +680,7 @@
             CheckBox,
             SwitchBtn,
             MultipleEmail,
-            Search
+            Search,
         },
         setup(props,context){
             const form = ref({
@@ -718,21 +745,55 @@
                 ]
             })
             const router = useRouter();
-            const step = ref('linked_account');
+            const step = ref('account_details');
+            const postcode = ref(null);
+            const companyPostCode = ref(null);
             const showcontainer=ref(false);
             const searchCustomer=ref(false);
             const cardFormat = inject('cardFormat');
             onMounted(()=>{
                 nextTick(()=>{
                     showcontainer.value=true;
-                });
+                }); 
+                setTimeout(() => {
+                    const customerAddress = new google.maps.places.Autocomplete(postcode.value);
+                    customerAddress.addListener("place_changed", () => {
+                        const place = customerAddress.getPlace();
+                        setCustomerAddress(place.address_components);
+                    });  
+                }, 500);
             });
+            const setCustomerAddress = ( address_components )=>{
+                address_components.forEach(component => {
+                    if(component.types.includes("postal_code")){
+                        form.value.postCode = component.long_name
+                    }else if(component.types.includes("country")){
+                        form.value.country = component.long_name
+                    }else if(component.types.includes("locality")){ // || component.types.includes("sublocality") || component.types.includes("sublocality_level_1")
+                        form.value.city = component.long_name
+                    }else if(component.types.includes("street_number")){
+                        form.value.deliveryAddress1 = component.long_name
+                    }
+                });
+            }
+            const setCompanyAddress = ( address_components )=>{
+                address_components.forEach(component => {
+                    if(component.types.includes("postal_code")){
+                        form.value.companyPostCode = component.long_name
+                    }else if(component.types.includes("country")){
+                        form.value.companyCountry = component.long_name
+                    }else if(component.types.includes("locality")){ // || component.types.includes("sublocality") || component.types.includes("sublocality_level_1")
+                        form.value.companyCity = component.long_name
+                    }else if(component.types.includes("street_number")){
+                        form.value.companyAddress1 = component.long_name
+                    }
+                });
+            }
             const selectNav = (nav)=>{
                 step.value = nav;
             }
             const cancel = ()=>{
                 alert('it is not implemented yet. :)')
-                // router.back();
             }
             const next = ()=>{
                 if(step.value == 'account_details'){
@@ -776,6 +837,17 @@
                     cardErrors.value.cardCvc = "Invalid CVV.";
                 }
             })
+            watch(()=>form.value.paymentMethod,(current_value, previous_value)=>{
+                if(current_value == 'BACS'){
+                    nextTick(() => {
+                        const companyAddress = new google.maps.places.Autocomplete(companyPostCode.value);
+                        companyAddress.addListener("place_changed", () => {
+                            const place = companyAddress.getPlace();
+                            setCompanyAddress(place.address_components);
+                        });  
+                    });
+                }
+            })
             const removeLinkedAccount = (customerID)=>{
                 alert("it's not done yet")
             }
@@ -789,8 +861,10 @@
                 next,
                 cancel,
                 removeLinkedAccount,
+                postcode,
+                companyPostCode,
                 phoneCodesSorted,
-                cardErrors
+                cardErrors,
             }
         },
         data(){
@@ -824,7 +898,7 @@
                 };
                 return icon;
             }
-        } 
+        }
     }
 </script>
 <style scoped>

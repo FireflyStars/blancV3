@@ -8,7 +8,6 @@ import App from './components/App';
 import router from './router/router';
 import store from './store/store';
 import VueCreditCardValidation from 'vue-credit-card-validation';
-
 axios.interceptors.response.use(
     (response) => response,
     (error) => {

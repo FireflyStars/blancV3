@@ -99,7 +99,7 @@
         <div class="d-flex justify-content-between">
             <div class="col-6 d-flex">
                 <button class="border-btn">View Order</button>
-                <button class="border-btn ms-2">Print Ticket(s)</button>
+                <button class="border-btn ms-2" @click="openModal">Print Ticket(s)</button>
             </div>
             <div class="col-6 text-end">
                 <button class="fullfil-btn">
@@ -108,11 +108,16 @@
             </div>
         </div>
     </div>
+    <qz-print ref="qz_printer"></qz-print>
 </template>
 <script>
 import { ref } from 'vue';
+import QzPrint from "../QzPrint";
 export default {
     name: 'OrderItem',
+    components:{
+        QzPrint
+    },
     setup(props){
         const show = ref(false);
         const Order = ref({
@@ -120,7 +125,7 @@ export default {
             date: '',
             paid: '',
         });
-        var selectedSubOrders = ref([]);
+        const selectedSubOrders = ref([]);
         show.value = props.show;
         Order.value = Object.values(Object.values(props.subOrders)[0])[0];
         
@@ -140,8 +145,6 @@ export default {
                 selectedSubOrders.value.push(subOrderId)
             else
                 selectedSubOrders.value = selectedSubOrders.value.filter(item=> { return item != subOrderId } );
-
-            console.log(selectedSubOrders.value);
         }
         return {
             show,
@@ -150,6 +153,11 @@ export default {
             subOrderCheck
         }
     },
+    methods:{
+        openModal(){
+            this.$refs.qz_printer.loadPrinterModal(this.selectedSubOrders)
+        }
+    },       
     props:{
         show: {
             type: Boolean,
