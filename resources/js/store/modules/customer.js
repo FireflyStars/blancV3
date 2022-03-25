@@ -124,11 +124,13 @@ export const Customer = {
             });
         },
         [SET_CUSTOMER_DETAIL]: ( {commit} , payload)=>{
+            
             commit(SET_CUSTOMER_DETAIL, payload);
         },
         [LOAD_CUSTOMER_DETAIL]: async ( {commit, dispatch}, payload )=>{
             commit(SET_LOADER_CLASS,'animate40');
             await axios.post('/get-customer-detail', { customer_id: payload }).then(function (response) {
+                console.log(response.data);
                 commit(SET_CUSTOMER_DETAIL, response.data);
             })
             .catch(function (error) {

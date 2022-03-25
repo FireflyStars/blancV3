@@ -147,11 +147,81 @@ class CustomerController extends Controller
                                         ->select(
                                             'infoOrder.id as order_id', 'infoInvoice.NumInvoice as sub_order', 'infoInvoice.id as sub_order_id',
                                             DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
-                                            DB::raw('DATE_FORMAT(infoOrder.created_at, "%d %b %Y") as order_date'),
+                                            // DB::raw('DATE_FORMAT(infoOrder.created_at, "%d %b %Y") as order_date'),
                                             'infoitems.priceTotal as price', 'infoitems.id as item_id',
                                             'infoitems.typeitem as item_name', 'infoitems.brand', 'infoitems.ItemTrackingKey as barcode',
                                             'TypePost.bg_color as location_color', 'postes.nom as location',
-                                            'TypePost.circle_color', 'TypePost.process', 'infoOrder.underquote', 'infoitems.Colors as colors'
+                                            'TypePost.circle_color', 'TypePost.process', 'infoOrder.underquote', 'infoitems.Colors as colors',
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN "Store Drop Off"
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN "Pickup"
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN "Drop Off"
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN "Pickup"
+                                                END as order_left_text'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN "In-Store Collection"
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN "Delivery"
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN "Delivery"
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN "Delivery"
+                                                END as order_right_text'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN "In-Store Collection"
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN "Home Delivery"
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN "Delivery Only"
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN "Recuring Delivery"
+                                                END as order_text'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN DATE_FORMAT(booking_store.dropoff, "%W %d %M %Y")
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN DATE_FORMAT(pickup.date, "%W %d %M %Y")
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN DATE_FORMAT(infoOrder.created_at, "%W %d %M %Y")
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN "--"
+                                                END as order_left_date'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN DATE_FORMAT(booking_store.pickup_date, "%W %d %M %Y")
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN DATE_FORMAT(deliveryask.date, "%W %d %M %Y")
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN DATE_FORMAT(deliveryask.date, "%W %d %M %Y")
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN "--"
+                                                END as order_right_date'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN DATE_FORMAT(booking_store.pickup_date, "%d %b %Y")
+                                                WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN DATE_FORMAT(deliveryask.date, "%d %b %Y")
+                                                WHEN infoOrder.deliverymethod = "delivery_only" THEN DATE_FORMAT(deliveryask.date, "%d %b %Y")
+                                                WHEN infoOrder.deliverymethod = "recurring" THEN "--"
+                                                END as order_date'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN DATE_FORMAT(booking_store.dropoff, "%h:%i %p")
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN DATE_FORMAT(pickup.trancheFrom, "%h:%i %p")
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN DATE_FORMAT(infoOrder.created_at, "%h:%i %p")
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN "--"
+                                                END as order_left_time'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN DATE_FORMAT(booking_store.pickup_time, "%h:%i %p")
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN DATE_FORMAT(deliveryask.trancheFrom, "%h:%i %p")
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN DATE_FORMAT(deliveryask.trancheFrom, "%h:%i %p")
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN "--"
+                                                END as order_right_time'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN 0
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN IF(CURRENT_DATE() < pickup.date, 1, 0 )
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN 0
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN 0
+                                                END as left_edit'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN IF(CURRENT_DATE() < booking_store.pickup_date, 1, 0 )
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN IF(CURRENT_DATE() < deliveryask.date, 1, 0 )
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN IF(CURRENT_DATE() < deliveryask.date, 1, 0 )
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN "--"
+                                                END as right_edit'
+                                            ),                                            
                                         )
                                         ->join('infoInvoice', 'infoInvoice.OrderID', '=', 'infoOrder.OrderID')
                                         ->join('infoitems',function($join){
@@ -159,7 +229,10 @@ class CustomerController extends Controller
                                                 ->whereNotIn('infoitems.Status',['DELETE','VOID']);
                                         })
                                         ->join('postes', 'infoitems.nextpost', '=', 'postes.id')
-                                        ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')                                        
+                                        ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
+                                        ->leftJoin('booking_store', 'booking_store.order_id', '=', 'infoOrder.id')
+                                        ->leftJoin('pickup', 'pickup.PickupID', '=', 'infoOrder.PickupID')
+                                        ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
                                         ->where('infoitems.priceTotal', '!=', 0)
                                         ->where('infoOrder.CustomerID', $customer->CustomerID)
                                         ->whereNotIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])

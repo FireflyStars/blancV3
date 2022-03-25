@@ -5,7 +5,7 @@
             <span class="ms-3">Order {{ Order.order_id }}</span>
         </div>
         <div class="order-date-panel d-flex align-items-center">
-            <span class="order-status">In Store Collection:</span>
+            <span class="order-status">{{ Order.order_text }}:</span>
             <span class="order-date ms-1 me-2">
                 {{ Order.order_date }}
             </span>
@@ -22,17 +22,17 @@
             <div class="d-flex">
                 <div class="col-6">
                     <p class="order-sub-title m-0">
-                        Store Drop Off
+                        {{ Order.order_left_text }} <span v-if="Order.left_edit" class="ms-2 cursor-pointer text-underline">Edit</span>
                     </p>
-                    <p class="m-0">Monday 16 March 2022</p>
-                    <p class="m-0">3:52 pm</p>
+                    <p class="m-0">{{ Order.order_left_date }}</p>
+                    <p class="m-0">{{ Order.order_left_time }}</p>
                 </div>
                 <div class="col-6 ps-5 border-left">
                     <p class="order-sub-title m-0">
-                        In-Store Collection <span class="ms-2 cursor-pointer text-underline">Edit</span>
+                        {{ Order.order_right_text }} <span v-if="Order.right_edit" class="ms-2 cursor-pointer text-underline">Edit</span>
                     </p>
-                    <p class="mb-0">Thursday 24 March 2022</p>
-                    <p class="mb-0">From 6pm</p>
+                    <p class="mb-0">{{ Order.order_right_date }}</p>
+                    <p class="mb-0">From {{ Order.order_right_time }}</p>
                 </div>
             </div>
         </div>
@@ -108,7 +108,7 @@
             </div>
         </div>
     </div>
-    <qz-print ref="qz_printer"></qz-print>
+    <!-- <qz-print ref="qz_printer"></qz-print> -->
 </template>
 <script>
 import { ref } from 'vue';
@@ -120,11 +120,7 @@ export default {
     },
     setup(props){
         const show = ref(false);
-        const Order = ref({
-            id: '',
-            date: '',
-            paid: '',
-        });
+        const Order = ref({});
         const selectedSubOrders = ref([]);
         show.value = props.show;
         Order.value = Object.values(Object.values(props.subOrders)[0])[0];
