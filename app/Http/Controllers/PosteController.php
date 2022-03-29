@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 use App\Models\Poste;
 use Illuminate\Support\Facades\DB;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Conveyor;
 
 use Illuminate\Http\Request;
@@ -38,7 +38,7 @@ class PosteController extends Controller
 
         if($route_name=='item-qc'){
             $inv = DB::table('infoInvoice')
-                ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID','infoInvoice.StoreName','infoInvoice.InvoiceID')
+                ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID','infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
                 ->join('infoitems','infoitems.InvoiceID','infoInvoice.InvoiceID')
                 ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
                 ->where('infoInvoice.InvoiceID','!=','')
@@ -46,13 +46,13 @@ class PosteController extends Controller
                 ->first();
         }elseif($route_name=='invoice-item' || $route_name=='assembly-invoice'){
             $inv = DB::table('infoInvoice')
-                ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID')
+                ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
                 ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
                 ->where('infoInvoice.id',$invoice_id)
                 ->first();
         }else{
             $inv = DB::table('infoInvoice')
-            ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.InvoiceID', 'infoInvoice.StoreName', 'infoInvoice.OrderID')
+            ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.InvoiceID', 'infoInvoice.StoreName', 'infoInvoice.OrderID','infoInvoice.CustomerID')
             ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
             ->where('infoInvoice.NumInvoice',$invoice_id)
             ->orderBy('infoInvoice.id','DESC')
@@ -70,7 +70,7 @@ class PosteController extends Controller
             $cust_pref = DB::table('InfoCustomerPreference')
                 ->select('InfoCustomerPreference.*','customerpreferences.preference_type')
                 ->join('customerpreferences','InfoCustomerPreference.id_preference','customerpreferences.id')
-                ->where('InfoCustomerPreference.CustomerID','6dca981c-8a10-4200-ad68-bc6856158eb0')
+                ->where('InfoCustomerPreference.CustomerID',$inv->CustomerID)
                 ->where('InfoCustomerPreference.Delete',0)
                 ->get();
 
