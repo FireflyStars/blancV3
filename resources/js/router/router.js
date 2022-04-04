@@ -53,6 +53,22 @@ const router = createRouter({
             },
         },        
         {
+            path:'/sub-customer',
+            name:'SubCustomer',
+            component:()=> import('../components/customer/SubCustomer'),
+            meta:{
+                authenticated:  true
+            },
+        },        
+        {
+            path:'/view-customer/:customer_id/:step',
+            name:'ViewCustomer',
+            component:()=> import('../components/customer/ViewCustomer'),
+            meta:{
+                authenticated:  true
+            },
+        },        
+        {
             path: '/assembly-home',
             name: 'Assembly',
             meta:{

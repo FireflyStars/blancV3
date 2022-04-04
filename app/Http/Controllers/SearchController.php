@@ -81,8 +81,13 @@ public function SearchByCustomer(Request $request)
       $customers = DB::table('infoCustomer')
                     ->select(
                         'id', 'Name as name', 'EmailAddress as email', 'Phone as phone',
-                        DB::raw('IF(CustomerIDMaster = "" AND CustomerIDMasterAccount = "" AND IsMaster = 0 AND IsMasterAccount = 0, "B2C", "B2B") as type')
+                        DB::raw('IF(CustomerIDMaster = "" AND CustomerIDMasterAccount = "" AND IsMaster = 0 AND IsMasterAccount = 0, "B2C", "B2B") as type'),
+                        DB::raw('IF(SignupDate = "2000-01-01", SignupDateOnline, SignupDate) as date'),
+                        'TotalSpend as spent'
                     )
+                    ->where(function($query){
+                        $query->where('SignupDate', '!=', '2000-01-01')->orWhere('SignupDateOnline', '!=', '2000-01-01');
+                    })
                     ->where('Name', 'LIKE', '%' .$request['query']. '%')
                     ->orWhere('EmailAddress', 'LIKE', '%' . $request['query'] . '%')
                     ->orWhere('Phone', 'LIKE', '%' . $request['query'] . '%')

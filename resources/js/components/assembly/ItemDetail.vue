@@ -303,7 +303,7 @@ export default {
     },
     methods:{
         openModal(){
-            this.$refs.qz_printer.loadPrinterModal(this.ITEM.breif_info.sub_order)
+            this.$refs.qz_printer.loadPrinterModal(this.ITEM.breif_info.sub_order_id)
         }
     }    
 }

@@ -143,7 +143,7 @@
                     axios.post('/get-suborder-and-print', {
                         invoice_id: invoiceId.value,
                         route_name: route.name,
-                        poste_id: store.getters[`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_GET_DETAIL}`].breif_info.poste_id,
+                        poste_id: "",
                     })
                     .then((res) => {
                         shouldClose.value = true;

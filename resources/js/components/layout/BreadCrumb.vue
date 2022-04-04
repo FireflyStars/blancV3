@@ -8,7 +8,7 @@
 
         <template v-for="(path,index) in paths">
             <span class="sep" v-if="index!=0"></span>
-            <div class="path" @click="router.push({name:path.route,params:path.params,})" :class="{body_bold:paths.length==index+1}">{{path.name}}</div>
+            <div class="path" @click="router.push({name:path.route, params:path.params,})" :class="{body_bold:paths.length==index+1}">{{path.name}}</div>
         </template>
     </div>
 </template>

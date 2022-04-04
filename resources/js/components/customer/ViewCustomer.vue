@@ -6,90 +6,35 @@
                 <div class="w-100">
                     <bread-crumb :paths="paths"></bread-crumb>
                     <div class="page-fluid cust-page m-0">
-                        <div class="page-header">
-                            <h1 class="d-flex align-items-center m-0">
-                                New Customer 
-                                <span class="d-flex align-items-center justify-content-center rounded-pill ms-3 mt-2"
-                                    :class="{ 'b2c-icon': form.customerType == 'B2C', 'b2b-icon': form.customerType == 'B2B' }"
-                                >
-                                {{ form.customerType == 'B2B' ? 'B2B' : form.customerType == 'B2C' ? 'B2C' : '' }}
-                                </span>
-                            </h1>
-                        </div>
                         <ul class="full-nav d-flex p-0 m-0">
-                            <li class="full-nav-item title border-right col-3 d-flex align-items-center justify-content-center"
+                            <li class="full-nav-item title border-right d-flex align-items-center justify-content-center"
                                 :class="{ active: step =='account_details'}"
                                 @click="selectNav('account_details')"
                             >
-                                <svg class="icon" width="22" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg"
-                                    v-if="step == 'payment' || step == 'preferences' || step == 'linked_account'"
-                                >
-                                    <circle cx="10.9058" cy="10" r="9" stroke="#42A71E" stroke-width="2"/>
-                                    <g clip-path="url(#clip0_807_2682)">
-                                        <path d="M10.6555 15.0751L4.58057 9.07506L6.23053 7.42505L10.6555 11.925L19.5806 2.92505L21.2305 4.57506L10.6555 15.0751Z" fill="#05944F"/>
-                                    </g>
-                                    <defs>
-                                        <clipPath id="clip0_807_2682">
-                                            <rect width="18" height="18" fill="white" transform="translate(3.90576)"/>
-                                        </clipPath>
-                                    </defs>
-                                </svg>
-                                <svg v-if="step != 'payment' && step != 'preferences' && step != 'linked_account'" class="icon" width="21" height="20" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="10.9058" cy="10" r="9" stroke="#47454B" stroke-width="2"/>
-                                </svg>
                                 Account details
                             </li>
-                            <li class="full-nav-item title border-right col-3 d-flex align-items-center justify-content-center"
+                            <li class="full-nav-item title border-right d-flex align-items-center justify-content-center"
                                 :class="{ active: step =='payment'}"
                                 @click="selectNav('payment')"
                             >
-                                <svg class="icon" width="22" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg"
-                                    v-if="step == 'preferences' || step == 'linked_account'"
-                                >
-                                    <circle cx="10.9058" cy="10" r="9" stroke="#42A71E" stroke-width="2"/>
-                                    <g clip-path="url(#clip0_807_2682)">
-                                        <path d="M10.6555 15.0751L4.58057 9.07506L6.23053 7.42505L10.6555 11.925L19.5806 2.92505L21.2305 4.57506L10.6555 15.0751Z" fill="#05944F"/>
-                                    </g>
-                                    <defs>
-                                        <clipPath id="clip0_807_2682">
-                                            <rect width="18" height="18" fill="white" transform="translate(3.90576)"/>
-                                        </clipPath>
-                                    </defs>
-                                </svg>
-                                <svg v-if="step != 'preferences' && step != 'linked_account'" class="icon" width="21" height="20" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="10.9058" cy="10" r="9" stroke="#47454B" stroke-width="2"/>
-                                </svg>
                                 Payment
                             </li>
-                            <li class="full-nav-item title border-right col-3 d-flex align-items-center justify-content-center"
+                            <li class="full-nav-item title border-right d-flex align-items-center justify-content-center"
+                                :class="{ active: step =='order_management'}"
+                                @click="selectNav('order_management')"
+                            >
+                                Order Management
+                            </li>
+                            <li class="full-nav-item title border-right d-flex align-items-center justify-content-center"
                                 :class="{ active: step =='preferences'}"
                                 @click="selectNav('preferences')"
                             >
-                                <svg class="icon" width="22" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg"
-                                    v-if="step == 'linked_account'"
-                                >
-                                    <circle cx="10.9058" cy="10" r="9" stroke="#42A71E" stroke-width="2"/>
-                                    <g clip-path="url(#clip0_807_2682)">
-                                        <path d="M10.6555 15.0751L4.58057 9.07506L6.23053 7.42505L10.6555 11.925L19.5806 2.92505L21.2305 4.57506L10.6555 15.0751Z" fill="#05944F"/>
-                                    </g>
-                                    <defs>
-                                        <clipPath id="clip0_807_2682">
-                                            <rect width="18" height="18" fill="white" transform="translate(3.90576)"/>
-                                        </clipPath>
-                                    </defs>
-                                </svg>
-                                <svg v-if="step != 'linked_account'" class="icon" width="21" height="20" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="10.9058" cy="10" r="9" stroke="#47454B" stroke-width="2"/>
-                                </svg>
                                 Preferences
                             </li>
-                            <li class="full-nav-item title col-3 d-flex align-items-center justify-content-center"
+                            <li class="full-nav-item title d-flex align-items-center justify-content-center"
                                 :class="{ active: step =='linked_account'}"
                                 @click="selectNav('linked_account')"
                             >
-                                <svg class="icon" width="21" height="20" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="10.9058" cy="10" r="9" stroke="#47454B" stroke-width="2"/>
-                                </svg>
                                 Linked account(s)
                             </li>
                         </ul>
@@ -100,6 +45,7 @@
                                         v-model="form.accountType" 
                                         :options="[ 
                                             { display:'Main Account', value: 'Main' }, 
+                                            { display:'Master Account', value: 'Master' },
                                             { display:'Sub Account', value: 'Sub' }
                                         ]"
                                         :classnames ="'bg-transparent border-none font-gilroy font-22 ps-0'"
@@ -113,11 +59,10 @@
                                             <select-options 
                                                 v-model="form.typeDelivery" 
                                                 :options="[ 
-                                                    { display:'Marylebone', value: 'MARYLEBONE' }, 
-                                                    { display:'Chelsea', value: 'CHELSEA' },
-                                                    { display:'Notting Hill', value: 'NOTTING HILL' },
-                                                    { display:'South Ken', value: 'SOUTH KEN' },
-                                                    { display:'Delivery', value: 'DELIVERY' },
+                                                    { display:'Marylebone', value: 'Marylebone' }, 
+                                                    { display:'Chelsea', value: 'Chelsea' },
+                                                    { display:'Notting Hill', value: 'Notting Hill' },
+                                                    { display:'Delivery', value: 'Delivery' },
                                                 ]"
                                                 :placeholder="'Delivery Type'"
                                                 :name="'typeDelivery'">
@@ -174,32 +119,36 @@
                                 </div>
                                 <div class="page-section">
                                     <h3 class="title m-0">Address</h3>
-                                    <div class="d-flex mt-3 justify-content-between">
-                                        <div class="form-group m-0 col-5">
-                                            <label for="post_code">Search postcode</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text">
-                                                    <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <g clip-path="url(#clip0_1034_1828)">
-                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M17.1605 14.8985L22.5405 20.2785C22.7296 20.4677 22.8357 20.7243 22.8356 20.9919C22.8356 21.2594 22.7292 21.5159 22.54 21.705C22.3507 21.8941 22.0941 22.0003 21.8266 22.0002C21.5591 22.0001 21.3026 21.8937 21.1135 21.7045L15.7335 16.3245C14.1252 17.5702 12.1027 18.1564 10.0776 17.9639C8.05244 17.7713 6.17669 16.8145 4.83194 15.2881C3.48719 13.7617 2.77445 11.7803 2.83871 9.74705C2.90297 7.71378 3.73941 5.78136 5.17787 4.34291C6.61632 2.90445 8.54874 2.06801 10.582 2.00375C12.6153 1.93949 14.5967 2.65223 16.1231 3.99698C17.6495 5.34173 18.6063 7.21748 18.7988 9.24263C18.9913 11.2678 18.4051 13.2902 17.1595 14.8985H17.1605ZM10.8355 15.9995C12.4268 15.9995 13.9529 15.3674 15.0781 14.2421C16.2033 13.1169 16.8355 11.5908 16.8355 9.9995C16.8355 8.4082 16.2033 6.88208 15.0781 5.75686C13.9529 4.63164 12.4268 3.9995 10.8355 3.9995C9.24416 3.9995 7.71804 4.63164 6.59282 5.75686C5.4676 6.88208 4.83546 8.4082 4.83546 9.9995C4.83546 11.5908 5.4676 13.1169 6.59282 14.2421C7.71804 15.3674 9.24416 15.9995 10.8355 15.9995V15.9995Z" fill="#C3C3C3"/>
-                                                    </g>
-                                                    <defs>
-                                                    <clipPath id="clip0_1034_1828">
-                                                    <rect width="20.0009" height="20.0004" fill="white" transform="translate(2.83472 1.99976)"/>
-                                                    </clipPath>
-                                                    </defs>
-                                                    </svg>
-                                                </span>
-                                                <input type="text" ref="postcode" class="form-control custom-input" v-model="form.postCode" id="addressAutocompleteRef">
+                                    <div class="d-flex mt-3">
+                                        <div class="w-55 d-flex justify-content-between">
+                                            <div class="form-group m-0">
+                                                <label for="post_code">Search postcode</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">
+                                                        <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <g clip-path="url(#clip0_1034_1828)">
+                                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M17.1605 14.8985L22.5405 20.2785C22.7296 20.4677 22.8357 20.7243 22.8356 20.9919C22.8356 21.2594 22.7292 21.5159 22.54 21.705C22.3507 21.8941 22.0941 22.0003 21.8266 22.0002C21.5591 22.0001 21.3026 21.8937 21.1135 21.7045L15.7335 16.3245C14.1252 17.5702 12.1027 18.1564 10.0776 17.9639C8.05244 17.7713 6.17669 16.8145 4.83194 15.2881C3.48719 13.7617 2.77445 11.7803 2.83871 9.74705C2.90297 7.71378 3.73941 5.78136 5.17787 4.34291C6.61632 2.90445 8.54874 2.06801 10.582 2.00375C12.6153 1.93949 14.5967 2.65223 16.1231 3.99698C17.6495 5.34173 18.6063 7.21748 18.7988 9.24263C18.9913 11.2678 18.4051 13.2902 17.1595 14.8985H17.1605ZM10.8355 15.9995C12.4268 15.9995 13.9529 15.3674 15.0781 14.2421C16.2033 13.1169 16.8355 11.5908 16.8355 9.9995C16.8355 8.4082 16.2033 6.88208 15.0781 5.75686C13.9529 4.63164 12.4268 3.9995 10.8355 3.9995C9.24416 3.9995 7.71804 4.63164 6.59282 5.75686C5.4676 6.88208 4.83546 8.4082 4.83546 9.9995C4.83546 11.5908 5.4676 13.1169 6.59282 14.2421C7.71804 15.3674 9.24416 15.9995 10.8355 15.9995V15.9995Z" fill="#C3C3C3"/>
+                                                        </g>
+                                                        <defs>
+                                                        <clipPath id="clip0_1034_1828">
+                                                        <rect width="20.0009" height="20.0004" fill="white" transform="translate(2.83472 1.99976)"/>
+                                                        </clipPath>
+                                                        </defs>
+                                                        </svg>
+                                                    </span>
+                                                    <input type="text" ref="postcode" class="form-control custom-input" v-model="form.postCode" id="addressAutocompleteRef">
+                                                </div>
+                                            </div>
+                                            <div class="form-group m-0">
+                                                <label for="customer_city">City</label>
+                                                <input type="text" v-model="form.city" class="form-control custom-input">
                                             </div>
                                         </div>
-                                        <div class="form-group col-3 m-0">
-                                            <label for="customer_city">City</label>
-                                            <input type="text" v-model="form.city" class="form-control custom-input">
-                                        </div>
-                                        <div class="form-group col-3 m-0">
-                                            <label for="customer_country">Country</label>
-                                            <input type="text" v-model="form.country" class="form-control custom-input">
+                                        <div class="ps-5">
+                                            <div class="form-group m-0">
+                                                <label for="customer_country">Country</label>
+                                                <input type="text" v-model="form.country" class="form-control custom-input">
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="w-55 mt-3">
@@ -261,25 +210,23 @@
                                                     </div>
                                                 </div>
                                                 <div class="form-group col-2 cardexpdate mb-0">
-                                                    <label for="">CVC</label>
-                                                    <input type="text" ref="cardCvcInput" :class="{ 'error': cardErrors.cardCvc}" placeholder="CVC" v-model="form.cardCVV" class="form-control" v-cardformat:formatCardCVC>
+                                                    <label for="">CVV</label>
+                                                    <input type="text" ref="cardCvcInput" :class="{ 'error': cardErrors.cardCvc}" placeholder="CVV" v-model="form.cardCVV" class="form-control" v-cardformat:formatCardCVC>
                                                     <div v-if="cardErrors.cardCvc" class="error">
                                                         <small>{{ cardErrors.cardCvc }}</small>
                                                     </div>                                                
                                                 </div>
-                                                <!-- <div class="form-group">
-                                                    <button class="btn btn-success" @click="checkCard">Check Card</button>
-                                                </div> -->
                                             </div>
                                         </transition>
                                     </div>
                                 </div>
-                                <AccountImportModal ref="importModal"/>
                                 <transition name="list" appear v-if="form.paymentMethod == 'BACS' || (form.alreadyLinkedToAccount && form.customerType == 'B2B')">
                                     <div class="invoice-details-panel">
                                         <h3 class="title d-flex">
                                             VAT Invoice details
-                                            <CheckBox  v-if="form.accountType !='Master'" v-model="form.attachReceiptToVatInvoice" class="ms-5"><slot>Attach e-Receipts to VAT Invoice</slot></CheckBox>
+                                            <CheckBox v-model="form.sameAsMaster" class="ms-5" v-if="form.accountType !='Master'"><slot>Same as master</slot></CheckBox>
+                                            <CheckBox v-model="form.sameAsContactDetails" class="ms-5"><slot>Same as contact details</slot></CheckBox>
+                                            <CheckBox  v-if="form.accountType !='Master'" v-model="form.receiptToVatInvoice" class="ms-5"><slot>Attach e-Receipts to VAT Invoice</slot></CheckBox>
                                         </h3>
                                         <div class="page-section bacs">
                                             <div class="form-group mb-0 company-legal-name">
@@ -317,17 +264,9 @@
                                                 </div>
                                             </div>  
                                             <div class="w-55 mt-3">
-                                                <div class="form-group">
-                                                    <label>Email address 1</label>
-                                                    <input type="email" v-model="form.invoiceEmail1" placeholder="Email" class="form-control">
-                                                </div>
-                                                <div class="form-group">
-                                                    <label>Email address 2</label>
-                                                    <input type="email" v-model="form.invoiceEmail2" placeholder="Email" class="form-control">
-                                                </div>
-                                                <!-- <KeepAlive>
-                                                    <MultipleEmail v-model="form.invoiceEmails"></MultipleEmail>
-                                                </KeepAlive> -->
+                                                <KeepAlive>
+                                                    <MultipleEmail v-model="form.companyEmails"></MultipleEmail>
+                                                </KeepAlive>
                                             </div>
                                             <div class="w-55 mt-4">
                                                 <label for="">Billing address</label>
@@ -372,25 +311,77 @@
                                 <div class="discount-credit-panel" v-if="form.accountType !='Master'">
                                     <h3 class="title d-flex">Discounts <CheckBox v-model="form.applyDiscountToSub" class="ms-5"><slot>Apply to sub-accounts</slot></CheckBox></h3>
                                     <div class="page-section">
-                                        <div class="form-group mb-0 payment-method">
-                                            <label for="discount_credit">Discount Level</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text fw-bold">%</span>
-                                                <input type="text" v-model="form.discountLevel" class="form-control" placeholder="0.00">
+                                        <div class="d-flex">
+                                            <div class="col-6">
+                                                <div class="form-group mb-0 payment-method">
+                                                    <select-options 
+                                                        v-model="form.discountLevel" 
+                                                        :options="[ 
+                                                            { display:'Credit Card', value: 'Credit Card' }, 
+                                                            { display:'BACS', value: 'BACS' },
+                                                        ]"
+                                                        :placeholder="'Select'"
+                                                        :label="'Discount level'"
+                                                        :name="'discountLevel'">
+                                                    </select-options>                                    
+                                                </div>                                    
                                             </div>
-                                        </div>                                    
+                                            <div class="col-6">
+                                                <div class="form-group col-6">
+                                                    <label for="discount_credit">Add credit</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text fw-bold">£</span>
+                                                        <input type="text" v-model="form.discountCredit" class="form-control" placeholder="0.00">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <h3 class="title d-flex">Credits <CheckBox v-model="form.applyCreditToSub" class="ms-5"><slot>Apply to sub-accounts</slot></CheckBox></h3>
                                     <div class="page-section">
-                                        <div class="form-group payment-method">
+                                        <div class="form-group col-3">
                                             <label for="discount_credit">Add credit</label>
                                             <div class="input-group">
                                                 <span class="input-group-text fw-bold">£</span>
-                                                <input type="text" v-model="form.addCredit" class="form-control" placeholder="0.00">
+                                                <input type="text" v-model="form.CreditsCredit" class="form-control" placeholder="0.00">
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </transition>
+                        <transition name="list" appear v-if="step == 'order_management'">
+                            <div class="cust-page-content mt-5 m-auto order-panel">
+                                <h3 class="title mb-3">Current orders</h3>
+                                <table class="table table-hover current-orders">
+                                    <thead>
+                                        <tr>
+                                            <th>Order N°</th>
+                                            <th>Destination</th>
+                                            <th>Items accepted</th>
+                                            <th>Delivery date</th>
+                                            <th>Items</th>
+                                            <th>Order Status</th>
+                                            <th>Total</th>
+                                            <th>E-Reciept</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                                <h3 class="title mb-3 mt-5">Past orders</h3>
+                                <table class="table table-hover past-orders">
+                                    <thead>
+                                        <tr>
+                                            <th>Order N°</th>
+                                            <th>Destination</th>
+                                            <th>Items accepted</th>
+                                            <th>Delivery date</th>
+                                            <th>Items</th>
+                                            <th>Order Status</th>
+                                            <th>Total</th>
+                                            <th>VAT Invoice</th>
+                                        </tr>
+                                    </thead>
+                                </table>
                             </div>
                         </transition>
                         <transition name="list" appear v-if="step =='preferences'">
@@ -401,10 +392,10 @@
                                         <div class="page-section">
                                             <div class="item-block py-3 border-bottom">
                                                 <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Shirts premium finish</h4>
-                                                    <switch-btn v-model="form.premiumFinish"></switch-btn>
+                                                    <h4 class="sub-title">Shirts with crease</h4>
+                                                    <switch-btn v-model="form.shirtsWithCrease"></switch-btn>
                                                 </div>
-                                                <p class="m-0 col-8">Customer wants shirts with premium hand finish and always pressed with creases on the sleeves</p>
+                                                <p class="m-0 col-8">Customer wants shirts always pressed with creases on the sleeves</p>
                                             </div>
                                             <div class="item-block py-3 border-bottom">
                                                 <div class="d-flex justify-content-between">
@@ -426,7 +417,7 @@
                                             </div>
                                             <div class="item-block py-3">
                                                 <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Minor repairs (up to £8)</h4>
+                                                    <h4 class="sub-title">Minor repairs (up to £20)</h4>
                                                     <switch-btn v-model="form.minorRepairs"></switch-btn>
                                                 </div>
                                                 <p class="m-0 col-8">
@@ -449,11 +440,11 @@
                                             </div>
                                             <div class="item-block py-3 border-bottom">
                                                 <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">No care labels</h4>
-                                                    <switch-btn v-model="form.noCareLabel"></switch-btn>
+                                                    <h4 class="sub-title">Risky clean</h4>
+                                                    <switch-btn v-model="form.riskyClean"></switch-btn>
                                                 </div>
                                                 <p class="m-0 col-8">
-                                                    Customer authorises us to proceed always if a garment has no care label, and is fully aware and accepts the risks associated.
+                                                    Customer authorises us to proceed if a risk has been identified with one of his items - return unprocessed.
                                                 </p>
                                             </div>
                                             <div class="item-block py-3 border-bottom">
@@ -462,7 +453,7 @@
                                                     <switch-btn v-model="form.tailoringApproval"></switch-btn>
                                                 </div>
                                                 <p class="m-0 col-8">
-                                                    Customer wants to give approval for tailoring jobs quoted > £50
+                                                    Customer authorises us to proceed if a risk has been identified with one of his items - return unprocessed.
                                                 </p>
                                             </div>
                                         </div>
@@ -474,37 +465,10 @@
                                         <div class="page-section">
                                             <div class="item-block py-3 border-bottom">
                                                 <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Transactional SMS</h4>
-                                                    <switch-btn v-model="form.transactionalSMS"></switch-btn>
-                                                </div>
-                                                <p class="m-0 col-10">
-                                                    Customer agrees to receiving transactional SMS from us
-                                                </p>
-                                            </div>
-                                            <div class="item-block py-3 border-bottom">
-                                                <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Transactional Email</h4>
-                                                    <switch-btn v-model="form.transactionalEmail"></switch-btn>
-                                                </div>
-                                                <p class="m-0 col-10">
-                                                    Customer agrees to receiving transactional emails from us
-                                                </p>
-                                            </div>
-                                            <div class="item-block py-3 border-bottom">
-                                                <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Marketing SMS</h4>
-                                                    <switch-btn v-model="form.marketingSMS"></switch-btn>
-                                                </div>
-                                                <p class="m-0 col-10">
-                                                    Customer agrees to receiving SMS notifications from us
-                                                </p>
-                                            </div>
-                                            <div class="item-block py-3 border-bottom">
-                                                <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Marketing Email</h4>
+                                                    <h4 class="sub-title">Marketing</h4>
                                                     <switch-btn v-model="form.marketingEmail"></switch-btn>
                                                 </div>
-                                                <p class="m-0 col-10">
+                                                <p class="m-0 col-8">
                                                     Customer agrees to receiving Marketing emails from us
                                                 </p>
                                             </div>
@@ -513,7 +477,7 @@
                                                     <h4 class="sub-title">Bi-Monthly VAT Invoices</h4>
                                                     <switch-btn v-model="form.VATEmail"></switch-btn>
                                                 </div>
-                                                <p class="m-0 col-10">
+                                                <p class="m-0 col-8">
                                                     Customer wishes to receive monthly email VAT receipts
                                                 </p>
                                             </div>
@@ -527,10 +491,10 @@
                                                     <select-options 
                                                         v-model="form.altTypeDelivery" 
                                                         :options="[ 
-                                                            { display:'Concierge', value: 'Concierge' }, 
-                                                            { display:'Neighbour', value: 'Neighbour' },
-                                                            { display:'Housekeeper', value: 'Housekeeper' },
-                                                            { display:'N/A', value: 'N/A' },
+                                                            { display:'Marylebone', value: 'Marylebone' }, 
+                                                            { display:'Chelsea', value: 'Chelsea' },
+                                                            { display:'Notting Hill', value: 'Notting Hill' },
+                                                            { display:'Delivery', value: 'Delivery' },
                                                         ]"
                                                         :placeholder="'Select'"
                                                         :label="'Deliver to'"
@@ -575,31 +539,54 @@
                             <div class="cust-page-content m-auto pt-5">
                                 <h3 class="title mb-3">Linked account(s)</h3>
                                 <div class="account-list-section">
-                                    <table class="table linked-account-table bg-white">
+                                    <table class="table table-hover linked-account-table bg-white">
                                         <thead>
                                             <tr>
                                                 <th class="text-nowrap">Contact</th>
                                                 <th class="text-nowrap">Account type</th>
-                                                <th class="text-nowrap">Phone</th>
-                                                <th class="text-nowrap">Email</th>
-                                                <th class="text-nowrap">Date added</th>
-                                                <th class="text-nowrap">Spend to date</th>
+                                                <th class="text-nowrap">Discount level</th>
+                                                <th class="text-nowrap">Spend limit</th>
+                                                <th class="text-nowrap">Credit amount</th>
                                                 <th></th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr v-for="(item, index) in linkedAccounts" :key="index">
-                                                <td valign=middle class="text-nowrap">{{ item.name }}</td>
-                                                <td valign=middle class="text-nowrap fw-bold">{{ item.accountType }}</td>
-                                                <td valign=middle>{{ item.phone }}</td>
-                                                <td valign=middle>{{ item.email }}</td>
-                                                <td valign=middle>{{ item.date }}</td>
-                                                <td valign=middle class="fw-bold">£ {{ item.spent }}</td>
+                                            <tr>
+                                                <td valign=middle class="text-nowrap">Salvador, Henri</td>
+                                                <td valign=middle class="text-nowrap fw-bold">Master</td>
+                                                <td valign=middle></td>
+                                                <td valign=middle></td>
+                                                <td valign=middle></td>
                                                 <td valign=middle>
-                                                    <svg width="30" v-if="index !=0" height="30" fill="#47454B" @click="removeLinkedAccount(item.id)" class="unlink" version="1.1" viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                                                        <g>
-                                                        <path d="m452.2 362.38 56.953 56.953-19.824 19.824-74.871-74.871h-47.656v-32.312h15.68l-35.727-35.168h-63.676v-33.039h30.574l-35.449-35.449h-12.203c-13.785-0.042969-27.016 5.4102-36.77 15.148-9.75 9.7422-15.219 22.969-15.191 36.754 0.027344 13.781 5.5469 26.988 15.336 36.688 9.6133 9.8555 22.863 15.305 36.625 15.066h67.762v32.312h-67.762c-22.273 0.33203-43.676-8.6641-59.023-24.809-15.648-15.84-24.426-37.207-24.426-59.473s8.7773-43.633 24.426-59.473c11.098-11.586 25.414-19.586 41.102-22.961l-57.23-56.895 19.824-19.824 74.871 75.152h0.39062l32.312 32.312h-0.44922l35.449 35.449 33.32 33.039 35.449 35.449 30.465 30.07zm41.105-22.902c15.648-15.84 24.426-37.207 24.426-59.473s-8.7773-43.633-24.426-59.473c-15.398-16.043-36.793-24.934-59.023-24.527h-67.48v32.312h67.762-0.003906c13.785-0.042969 27.016 5.4102 36.77 15.148 9.75 9.7422 15.219 22.969 15.191 36.754-0.027343 13.781-5.5469 26.988-15.336 36.688-3.5586 3.5781-7.5898 6.6484-11.984 9.1289l23.297 23.238v0.003907c3.8672-2.9609 7.4844-6.2383 10.809-9.8008z"/>
-                                                        </g>
+                                                    <svg @click="removeLinkedAccount(1)" class="trash" width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M16.6354 2.6936C16.3165 2.34182 15.835 2.15596 15.1456 2.1256H11.7314C11.7401 1.58256 11.7002 0.814981 11.2594 0.358425C11.0345 0.12391 10.7293 0 10.3784 0H6.70345C6.32757 0 6.01904 0.119337 5.78993 0.355099C5.35375 0.800844 5.3367 1.51478 5.34876 2.1256H1.91544C1.13497 2.1256 0.676751 2.25575 0.380281 2.56095C-0.0330309 2.98632 -0.0151513 3.61669 0.012292 4.57013C0.0210239 4.84997 0.0301717 5.16474 0.0301717 5.51692C0.0301717 5.74645 0.215621 5.93273 0.445978 5.93273H1.55868L2.38447 19.5683C2.39819 19.7878 2.58031 19.9587 2.79944 19.9587H14.2782C14.4978 19.9587 14.6799 19.7878 14.6932 19.5687L15.5194 5.93315H16.615C16.8425 5.93315 17.0275 5.75061 17.0308 5.52316C17.0333 5.31359 17.0446 5.10486 17.0554 4.9007C17.0995 4.05245 17.1419 3.25244 16.6354 2.6936ZM6.38411 0.936397C6.42819 0.892321 6.50927 0.831613 6.70345 0.831613H10.3784C10.5414 0.831613 10.6145 0.887332 10.6619 0.935149C10.8836 1.16509 10.9064 1.73599 10.9002 2.12519H6.18037C6.17247 1.7019 6.17954 1.14596 6.38411 0.936397ZM13.8869 19.1271H3.19155L2.39195 5.93315H14.6865L13.8869 19.1271ZM16.2246 4.85704C16.2204 4.93729 16.2163 5.01962 16.2125 5.10153H1.95037H0.858043C0.854716 4.90236 0.849311 4.71816 0.844737 4.54601C0.823531 3.83 0.808978 3.31398 0.976964 3.14017C1.09672 3.01751 1.40358 2.95763 1.91669 2.95763C6.48765 2.95763 10.9405 2.95763 15.1273 2.95722C15.5655 2.97718 15.8579 3.07364 16.0196 3.25327C16.2932 3.55515 16.2599 4.18717 16.2246 4.85704ZM11.4416 17.4115C11.4416 17.4032 11.4416 17.3944 11.4424 17.3861L12.0287 7.71072C12.0428 7.48161 12.2441 7.30572 12.469 7.32069C12.6894 7.334 12.8595 7.51737 12.8595 7.73525C12.8595 7.74399 12.8591 7.7523 12.8586 7.76103L12.2724 17.4364C12.2586 17.6564 12.0757 17.8265 11.8574 17.8265C11.8491 17.8265 11.8403 17.826 11.832 17.8256C11.6112 17.8123 11.4416 17.629 11.4416 17.4115ZM4.13709 7.76852C4.13626 7.75979 4.13626 7.75147 4.13626 7.74274C4.13626 7.52485 4.30591 7.34107 4.52671 7.32776C4.75582 7.31071 4.95291 7.4891 4.96704 7.71779L5.55333 17.3919C5.55375 17.4007 5.55416 17.409 5.55416 17.4181C5.55416 17.6356 5.38452 17.8194 5.16372 17.8323C5.15499 17.8331 5.14667 17.8331 5.13753 17.8331C4.92006 17.8331 4.73627 17.6635 4.72338 17.4431L4.13709 7.76852ZM8.12302 17.419L8.11553 7.64253C8.11512 7.41217 8.30098 7.22672 8.53093 7.22589H8.53134C8.76128 7.22589 8.94673 7.41176 8.94715 7.64128L8.95463 17.4181C8.95546 17.6481 8.7696 17.834 8.53883 17.834C8.30972 17.834 8.12385 17.6473 8.12302 17.419Z" fill="#868686"/>
+                                                    </svg>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td valign=middle class="text-nowrap">Salvador, Henri</td>
+                                                <td valign=middle class="text-nowrap">Sub</td>
+                                                <td valign=middle>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control text-center" placeholder="Discount level">
+                                                        <span class="input-group-text">%</span>
+                                                    </div>
+                                                </td>
+                                                <td valign=middle>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">£</span>
+                                                        <input type="text" class="form-control text-center" placeholder="0.00">
+                                                    </div>
+                                                </td>
+                                                <td valign=middle>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">£</span>
+                                                        <input type="text" class="form-control text-center" placeholder="0.00">
+                                                    </div>
+                                                </td>
+                                                <td valign=middle>
+                                                    <svg @click="removeLinkedAccount(2)" class="trash" width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M16.6354 2.6936C16.3165 2.34182 15.835 2.15596 15.1456 2.1256H11.7314C11.7401 1.58256 11.7002 0.814981 11.2594 0.358425C11.0345 0.12391 10.7293 0 10.3784 0H6.70345C6.32757 0 6.01904 0.119337 5.78993 0.355099C5.35375 0.800844 5.3367 1.51478 5.34876 2.1256H1.91544C1.13497 2.1256 0.676751 2.25575 0.380281 2.56095C-0.0330309 2.98632 -0.0151513 3.61669 0.012292 4.57013C0.0210239 4.84997 0.0301717 5.16474 0.0301717 5.51692C0.0301717 5.74645 0.215621 5.93273 0.445978 5.93273H1.55868L2.38447 19.5683C2.39819 19.7878 2.58031 19.9587 2.79944 19.9587H14.2782C14.4978 19.9587 14.6799 19.7878 14.6932 19.5687L15.5194 5.93315H16.615C16.8425 5.93315 17.0275 5.75061 17.0308 5.52316C17.0333 5.31359 17.0446 5.10486 17.0554 4.9007C17.0995 4.05245 17.1419 3.25244 16.6354 2.6936ZM6.38411 0.936397C6.42819 0.892321 6.50927 0.831613 6.70345 0.831613H10.3784C10.5414 0.831613 10.6145 0.887332 10.6619 0.935149C10.8836 1.16509 10.9064 1.73599 10.9002 2.12519H6.18037C6.17247 1.7019 6.17954 1.14596 6.38411 0.936397ZM13.8869 19.1271H3.19155L2.39195 5.93315H14.6865L13.8869 19.1271ZM16.2246 4.85704C16.2204 4.93729 16.2163 5.01962 16.2125 5.10153H1.95037H0.858043C0.854716 4.90236 0.849311 4.71816 0.844737 4.54601C0.823531 3.83 0.808978 3.31398 0.976964 3.14017C1.09672 3.01751 1.40358 2.95763 1.91669 2.95763C6.48765 2.95763 10.9405 2.95763 15.1273 2.95722C15.5655 2.97718 15.8579 3.07364 16.0196 3.25327C16.2932 3.55515 16.2599 4.18717 16.2246 4.85704ZM11.4416 17.4115C11.4416 17.4032 11.4416 17.3944 11.4424 17.3861L12.0287 7.71072C12.0428 7.48161 12.2441 7.30572 12.469 7.32069C12.6894 7.334 12.8595 7.51737 12.8595 7.73525C12.8595 7.74399 12.8591 7.7523 12.8586 7.76103L12.2724 17.4364C12.2586 17.6564 12.0757 17.8265 11.8574 17.8265C11.8491 17.8265 11.8403 17.826 11.832 17.8256C11.6112 17.8123 11.4416 17.629 11.4416 17.4115ZM4.13709 7.76852C4.13626 7.75979 4.13626 7.75147 4.13626 7.74274C4.13626 7.52485 4.30591 7.34107 4.52671 7.32776C4.75582 7.31071 4.95291 7.4891 4.96704 7.71779L5.55333 17.3919C5.55375 17.4007 5.55416 17.409 5.55416 17.4181C5.55416 17.6356 5.38452 17.8194 5.16372 17.8323C5.15499 17.8331 5.14667 17.8331 5.13753 17.8331C4.92006 17.8331 4.73627 17.6635 4.72338 17.4431L4.13709 7.76852ZM8.12302 17.419L8.11553 7.64253C8.11512 7.41217 8.30098 7.22672 8.53093 7.22589H8.53134C8.76128 7.22589 8.94673 7.41176 8.94715 7.64128L8.95463 17.4181C8.95546 17.6481 8.7696 17.834 8.53883 17.834C8.30972 17.834 8.12385 17.6473 8.12302 17.419Z" fill="#868686"/>
                                                     </svg>
                                                 </td>
                                             </tr>
@@ -607,14 +594,14 @@
                                     </table>
 
                                     <div class="d-flex">
-                                        <button @click="createSubAccount" class="border-btn add-new-account d-flex justify-content-between align-items-center me-3">
+                                        <button class="border-btn add-new-account d-flex justify-content-between align-items-center me-3">
                                             <svg class="me-3" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <circle cx="12" cy="12" r="12" fill="black"/>
                                                 <path d="M11.0897 14.472C11.0897 14.984 11.4897 15.384 12.0017 15.384C12.4977 15.384 12.9137 14.984 12.9137 14.472V12.248H15.1857C15.6657 12.248 16.0657 11.864 16.0657 11.368C16.0657 10.888 15.6657 10.488 15.1857 10.488H12.9137V8.264C12.9137 7.752 12.4977 7.352 12.0017 7.352C11.4897 7.352 11.0897 7.752 11.0897 8.264V10.488H8.81769C8.33769 10.488 7.93769 10.888 7.93769 11.368C7.93769 11.864 8.33769 12.248 8.81769 12.248H11.0897V14.472Z" fill="white"/>
                                             </svg>
                                             Create new account
                                         </button>
-                                        <button @click="showSearchPanel" class="border-btn add-existing-account d-flex justify-content-between align-items-center">
+                                        <button @click="searchCustomer = !searchCustomer" class="border-btn add-existing-account d-flex justify-content-between align-items-center">
                                             <svg class="me-3" width="24" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <g clip-path="url(#clip0_550_21813)">
                                             <path fill-rule="evenodd" clip-rule="evenodd" d="M16.8257 14.8987L22.2057 20.2787C22.3948 20.468 22.501 20.7246 22.5009 20.9921C22.5008 21.2596 22.3945 21.5161 22.2052 21.7052C22.016 21.8943 21.7594 22.0005 21.4919 22.0004C21.2244 22.0003 20.9678 21.894 20.7787 21.7047L15.3987 16.3247C13.7905 17.5704 11.768 18.1566 9.74287 17.9641C7.71772 17.7716 5.84198 16.8148 4.49723 15.2884C3.15248 13.7619 2.43973 11.7806 2.504 9.74729C2.56826 7.71402 3.4047 5.7816 4.84315 4.34315C6.2816 2.9047 8.21402 2.06826 10.2473 2.004C12.2806 1.93973 14.2619 2.65248 15.7884 3.99723C17.3148 5.34198 18.2716 7.21772 18.4641 9.24287C18.6566 11.268 18.0704 13.2905 16.8247 14.8987H16.8257ZM10.5007 15.9997C12.092 15.9997 13.6182 15.3676 14.7434 14.2424C15.8686 13.1172 16.5007 11.591 16.5007 9.99974C16.5007 8.40845 15.8686 6.88232 14.7434 5.7571C13.6182 4.63189 12.092 3.99974 10.5007 3.99974C8.90944 3.99974 7.38332 4.63189 6.2581 5.7571C5.13289 6.88232 4.50074 8.40845 4.50074 9.99974C4.50074 11.591 5.13289 13.1172 6.2581 14.2424C7.38332 15.3676 8.90944 15.9997 10.5007 15.9997Z" fill="#47454B"/>
@@ -627,7 +614,7 @@
                                             </svg>
                                             Add existing account
                                         </button>
-                                        <Search ref="searchpanel" @selectedSubAccount="selectedSubAccount"/>
+                                        <Search v-model="searchCustomer"/>
                                     </div>
                                 </div>
                             </div>
@@ -646,15 +633,15 @@
 <script>
     import BreadCrumb from '../layout/BreadCrumb'
     import SideBar from '../layout/SideBar'
-    import { useRouter } from 'vue-router';
-    import {ref,onMounted, nextTick, watch, inject } from 'vue';
+    import { useRouter, useRoute } from 'vue-router';
+    import {ref,onMounted, nextTick, computed, watch, inject } from 'vue';
     import SelectOptions from '../test/SelectOptions';
     import MultipleEmail from '../test/MultipleEmail';
     import CheckBox from '../miscellaneous/CheckBox';
     import { phoneCountryCode as phoneCodes } from '../../static/PhoneCountryCodes';
     import SwitchBtn from '../miscellaneous/SwitchBtn.vue';
     import Search from './Search';
-    import AccountImportModal from './AccountImportModal';
+
     import {
         TOASTER_MODULE,
         TOASTER_MESSAGE,
@@ -664,9 +651,8 @@
         DISPLAY_LOADER,
         HIDE_LOADER,
     } from "../../store/types/types";
-import { useStore } from 'vuex';
     export default {
-        name: "NewCustomer",
+        name: "ViewCustomer",
         components:{
             BreadCrumb,
             SideBar,
@@ -675,12 +661,10 @@ import { useStore } from 'vuex';
             SwitchBtn,
             MultipleEmail,
             Search,
-            AccountImportModal
         },
-        setup(){
-            const store = useStore();
+        setup(props,context){
+            const route = useRoute();
             const form = ref({
-                customerID: '',
                 accountType: 'Main',
                 customerType: 'B2C',
                 typeDelivery: '',
@@ -691,11 +675,7 @@ import { useStore } from 'vuex';
                 email: '',
                 postCode: '',
                 city: '',
-                state: '',
-                county: '',
                 country: '',
-                customerLat: '',
-                customerLon: '',
                 deliveryAddress1: '',
                 deliveryAddress2: '',
                 customerNote: '',
@@ -706,40 +686,34 @@ import { useStore } from 'vuex';
                 cardDetails: '',
                 cardExpDate: '',
                 cardCVV: '',
-                attachReceiptToVatInvoice: false,
+                sameAsMaster: false,
+                sameAsContactDetails: false,
+                receiptToVatInvoice: false,
                 companyLegalName: '',
                 companyRepFirstName: '',
                 companyRepLastName: '',
                 companyPhoneCountryCode: '+44',
                 companyPhoneNumber: '',
-                invoiceEmail1: '',
-                invoiceEmail2: '',
-                // invoiceEmails: [],
+                companyEmails: [],
                 companyPostCode: '',
                 companyCity: '',
-                companyCounty: '',
-                companyState: '',
                 companyCountry: '',
-                companyLat: '',
-                companyLon: '',
                 companyAddress1: '',
                 companyAddress2: '',
                 discountLevel: '',
                 applyDiscountToSub: false,
-                creditAmount: 0,
-                addCredit: 0,
+                discountCredit: '',
+                applyCreditToSub: false,
+                CreditsCredit: '',
                 // preferences tab
-                premiumFinish: false,
+                shirtsWithCrease: false,
                 shirtsFolded: false,
                 debobbling: false,
                 minorRepairs: true,
-                transactionalSMS: true,
-                transactionalEmail: true,
-                marketingSMS: false,
                 marketingEmail: false,
                 VATEmail: false,
                 cleaningPartner: true,
-                noCareLabel: true,
+                riskyClean: false,
                 tailoringApproval: false,
 
                 altTypeDelivery: '',
@@ -747,123 +721,82 @@ import { useStore } from 'vuex';
                 altPhoneCountryCode: '+44',
                 altPhoneNumber: '',
                 altDriverInstruction: '',
-                linkedAccounts: []
+                linkedAccounts: [
+                    { name: '', accountType: '', discountLevel: '', spendLimit: '', creditAmount: '' }
+                ]
             })
             const router = useRouter();
-            const step = ref('account_details');
-            const searchpanel = ref(null);
+            const step = ref(route.params.step);
             const postcode = ref(null);
             const companyPostCode = ref(null);
             const showcontainer=ref(false);
             const searchCustomer=ref(false);
             const cardFormat = inject('cardFormat');
-            const importModal = ref(null);
-            const linkedAccounts = ref([]);
-            const paths=ref([
-                { name:'Customer', route:'Customer'},
-                { name:'New Customer', route:'NewCustomer'}
-            ]);
-            const phoneCodesSorted = [...new Map(phoneCodes.map(item =>
-                            [item.value, item])).values()].sort((a, b)=>{
-                    return parseInt(a.value.replace(/\D/g, '')) - parseInt(b.value.replace(/\D/g, ''));
-            });
-            const cardErrors = ref({});   
-
             onMounted(()=>{
                 nextTick(()=>{
-                    showcontainer.value = true;
-                });
-                if(localStorage.getItem('stepActived')){
-                    step.value = localStorage.getItem('stepActived')
-                    localStorage.removeItem('stepActived')
-                    form.value = JSON.parse(localStorage.getItem('formData'));
-                    localStorage.removeItem('formData');
-                    linkedAccounts.value = [...linkedAccounts.value, JSON.parse(localStorage.getItem('subCustomerInfo'))]
-                    localStorage.removeItem('subCustomerInfo');
-                }else{
-                    linkedAccounts.value = [
-                        { id: 0, name: '', accountType: 'Main', phone: '', email: '', date: '', spent: 0 }
-                    ];
-                    setTimeout(() => {
-                        const customerAddress = new google.maps.places.Autocomplete(postcode.value);
-                        customerAddress.addListener("place_changed", () => {
-                            const place = customerAddress.getPlace();
-                            form.value.customerLat = place.geometry.location.lat();
-                            form.value.customerLon = place.geometry.location.lng();
-                            setCustomerAddress(place.address_components);
-                        });  
-                    }, 1);
-                }
+                    showcontainer.value=true;
+                }); 
+                setTimeout(() => {
+                    const customerAddress = new google.maps.places.Autocomplete(postcode.value);
+                    customerAddress.addListener("place_changed", () => {
+                        const place = customerAddress.getPlace();
+                        setCustomerAddress(place.address_components);
+                    });  
+                }, 500);
             });
-            // google address autocomplete for delivery address
             const setCustomerAddress = ( address_components )=>{
                 address_components.forEach(component => {
-                    const type = component.types[0];
-                    if(type == "postal_code"){
+                    if(component.types.includes("postal_code")){
                         form.value.postCode = component.long_name
-                    }else if(type == "country"){
+                    }else if(component.types.includes("country")){
                         form.value.country = component.long_name
-                    }else if(type == "locality"){
+                    }else if(component.types.includes("locality")){ // || component.types.includes("sublocality") || component.types.includes("sublocality_level_1")
                         form.value.city = component.long_name
-                    }else if(type == "administrative_area_level_1"){
-                        form.value.state = component.long_name
-                    }else if(type == "street_number"){
-                        // form.value.deliveryAddress1 = component.long_name
+                    }else if(component.types.includes("street_number")){
+                        form.value.deliveryAddress1 = component.long_name
                     }
                 });
             }
-            // google address autocomplete for company address
             const setCompanyAddress = ( address_components )=>{
                 address_components.forEach(component => {
-                    const type = component.types[0];
-                    if( type == "postal_code" ){
+                    if(component.types.includes("postal_code")){
                         form.value.companyPostCode = component.long_name
-                    }else if(type == "country"){
+                    }else if(component.types.includes("country")){
                         form.value.companyCountry = component.long_name
-                    }else if(type == "locality"){ // || component.types.includes("sublocality") || component.types.includes("sublocality_level_1")
+                    }else if(component.types.includes("locality")){ // || component.types.includes("sublocality") || component.types.includes("sublocality_level_1")
                         form.value.companyCity = component.long_name
-                    }else if(type == "administrative_area_level_1"){
-                        form.value.companyState = component.long_name
-                    }else if(type == "street_number"){
-                        // form.value.companyAddress1 = component.long_name
+                    }else if(component.types.includes("street_number")){
+                        form.value.companyAddress1 = component.long_name
                     }
                 });
             }
-            // set nav when you click tabs
             const selectNav = (nav)=>{
                 step.value = nav;
             }
-            // cancel to create account
             const cancel = ()=>{
-                router.push({
-                    name: 'Customer'
-                });
+                alert('it is not implemented yet. :)')
             }
-            // move on to next step when you click next button
             const next = ()=>{
                 if(step.value == 'account_details'){
                     if(form.value.customerType == 'B2B' && form.value.accountType == 'Main' && form.value.alreadyLinkedToAccount){
                         form.value.paymentMethod = 'BACS';
                     }
                     step.value = 'payment';
-                    setTimeout(() => {
-                        const customerAddress = new google.maps.places.Autocomplete(postcode.value);
-                        customerAddress.addListener("place_changed", () => {
-                            const place = customerAddress.getPlace();
-                            form.value.customerLat = place.geometry.location.lat();
-                            form.value.customerLon = place.geometry.location.lng();
-                            setCustomerAddress(place.address_components);
-                        });  
-                    }, 1);
                 }else if( step.value == 'payment' ){
                     step.value = 'preferences';
                 }else if( step.value == 'preferences' ){
                     step.value = 'linked_account';
-                }else{
-                    createCustomer();
                 }
             }
-            // validation when the card detail changes
+            const paths=ref([
+                { name:'Customer', route:'Customer'},
+                { name:'Henri Salvador', route:'ViewCustomer', params:{ customer_id: 10, step: 'account_details' }}
+            ]);
+            const phoneCodesSorted = [...new Map(phoneCodes.map(item =>
+                            [item.value, item])).values()].sort((a, b)=>{
+                    return parseInt(a.value.replace(/\D/g, '')) - parseInt(b.value.replace(/\D/g, ''));
+            });
+            const cardErrors = ref({});
             watch(()=>form.value.cardDetails,(current_value, previous_value)=>{
                 if(cardFormat.validateCardNumber(current_value)){
                     delete cardErrors.value.cardNumber;
@@ -871,7 +804,6 @@ import { useStore } from 'vuex';
                     cardErrors.value.cardNumber = "Invalid Credit Card Number.";
                 }
             })
-            // validation when the card exp changes
             watch(()=>form.value.cardExpDate,(current_value, previous_value)=>{
                 if(cardFormat.validateCardExpiry(current_value)){
                     delete cardErrors.value.cardExpiry;
@@ -879,7 +811,6 @@ import { useStore } from 'vuex';
                     cardErrors.value.cardExpiry = "Invalid Expiration Date.";
                 }
             })
-            // validation when the card exp changes
             watch(()=>form.value.cardCVV,(current_value, previous_value)=>{
                 if(cardFormat.validateCardExpiry(current_value)){
                     delete cardErrors.value.cardCvc;
@@ -887,100 +818,20 @@ import { useStore } from 'vuex';
                     cardErrors.value.cardCvc = "Invalid CVV.";
                 }
             })
-            // showing extra panel when the payment method changes
             watch(()=>form.value.paymentMethod,(current_value, previous_value)=>{
                 if(current_value == 'BACS'){
                     nextTick(() => {
-                        importModal.value.openModal();
                         const companyAddress = new google.maps.places.Autocomplete(companyPostCode.value);
                         companyAddress.addListener("place_changed", () => {
                             const place = companyAddress.getPlace();
-                            form.value.companyLat = place.geometry.location.lat();
-                            form.value.companyLon = place.geometry.location.lng();                            
                             setCompanyAddress(place.address_components);
                         });  
                     });
                 }
             })
-            // updating for linked_account tab when firstName and lastName changes
-            watch(()=>form.value.firstName, (cur_val, pre_val)=>{
-                linkedAccounts.value[0].name = cur_val + ', '+ form.value.lastName;
-            });
-            watch(()=>form.value.lastName, (cur_val, pre_val)=>{
-                linkedAccounts.value[0].name = form.value.firstName + ', '+ cur_val;
-            });
-            // handler when you click a create sub account button
-            const createSubAccount = ()=>{
-                if(form.value.CustomerID == ''){
-                    axios.post('/generate-customer-id').then((res)=>{
-                        form.value.customerID = res.data
-                        localStorage.setItem('CustomerID', response.data);
-                        localStorage.setItem('stepActived', 'linked_account');
-                        localStorage.setItem('formData', JSON.stringify(form.value));
-                        localStorage.setItem('linkedAccounts', JSON.stringify(linkedAccounts.value));
-                        router.push({
-                            name: 'SubCustomer'
-                        });
-                    }).catch((error)=>{
-                        console.log(error);
-                    });
-                }else{
-                    localStorage.setItem('CustomerID', form.value.customerID);
-                    localStorage.setItem('stepActived', 'linked_account');
-                    localStorage.setItem('formData', JSON.stringify(form.value));
-                    console.log(localStorage.formData);
-                    localStorage.setItem('linkedAccounts', JSON.stringify(linkedAccounts.value));
-                    router.push({
-                        name: 'SubCustomer'
-                    });
-                }
+            const removeLinkedAccount = (customerID)=>{
+                alert("it's not done yet")
             }
-
-            // handler for when you click a create customer
-            const createCustomer =()=>{
-                axios.post('create-customer', form.value).then((response)=>{
-
-                }).catch((error)=>{
-                    console.log(error);
-                }).finally(()=>{
-                    
-                })
-            }
-            // handler when you click search customer button
-            const showSearchPanel = ()=>{
-                searchpanel.value.openSearchPanel();
-            }
-            // handler when the customer selected in search result
-            const selectedSubAccount = (data)=>{
-                linkedAccounts.value = [...linkedAccounts.value, 
-                    { 
-                        id: data.id, 
-                        name: data.name, 
-                        accountType: 'Sub',
-                        phone: data.phone, 
-                        email: data.email, 
-                        date: data.date, 
-                        spent: data.spent 
-                    }
-                ]
-            };
-            // handler when you unlink sub account from linked accounts
-            const removeLinkedAccount = (id)=>{
-                linkedAccounts.value = linkedAccounts.value.filter((item)=>{
-                    return item.id != id;
-                });
-
-            }    
-            const checkCard = ()=>{
-                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Check Customer...']);
-                axios.post('check-stripe', form.value).then((res)=>{
-                    console.log(res.data)
-                }).catch((error)=>{
-                    console.log(error);
-                }).finally(()=>{
-                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                })
-            }        
             return {
                 form,
                 step,
@@ -995,14 +846,6 @@ import { useStore } from 'vuex';
                 companyPostCode,
                 phoneCodesSorted,
                 cardErrors,
-                importModal,
-                createSubAccount,
-                createCustomer,
-                searchpanel,
-                showSearchPanel,
-                selectedSubAccount,
-                linkedAccounts,
-                checkCard
             }
         },
         data(){
@@ -1054,11 +897,8 @@ import { useStore } from 'vuex';
     .linked-account-table tbody > :first-child{
         border-top: 2px solid #E0E0E0;
     }
-    .unlink{
+    .trash{
         cursor: pointer;
-    }
-    .unlink:hover{
-        fill: #42A71E;
     }
     .border-btn{
         padding: 18px;
@@ -1113,9 +953,6 @@ import { useStore } from 'vuex';
     line-height: 110%;
   }
 }
-.form-control:focus{
-    box-shadow: none !important;
-}
 .page-header{
   height: 80px;
   padding: 20px 70px;
@@ -1147,6 +984,7 @@ import { useStore } from 'vuex';
   height: 70px;
   border-top: 1px solid #C3C3C3;
   .full-nav-item{
+        flex: 1 1 auto; 
       cursor: pointer;
       position: relative;
       .icon{
@@ -1306,15 +1144,6 @@ import { useStore } from 'vuex';
     color: #FFFFFF;
     text-decoration: none;
   }
-}
-.input-group-text{
-    background-color: white;
-    border-right: none;
-}
-.input-group{
-    input{
-        border-left: none;
-    }
 }
 .input-group.error{
     .input-group-text,

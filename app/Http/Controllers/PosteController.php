@@ -34,30 +34,37 @@ class PosteController extends Controller
 
         $date_less_six_month = date('Y-m-d',strtotime('-6month'));
 
-
-
-        if($route_name=='item-qc'){
+        // if($route_name=='item-qc'){
+        //     $inv = DB::table('infoInvoice')
+        //         ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID','infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
+        //         ->join('infoitems','infoitems.InvoiceID','infoInvoice.InvoiceID')
+        //         ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
+        //         ->where('infoInvoice.InvoiceID','!=','')
+        //         ->where('infoitems.id_items',$invoice_id)
+        //         ->first();
+        // }elseif($route_name=='invoice-item' || $route_name=='assembly-invoice'){
+        if($route_name == 'ItemDetails'){
             $inv = DB::table('infoInvoice')
-                ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID','infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
-                ->join('infoitems','infoitems.InvoiceID','infoInvoice.InvoiceID')
-                ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
-                ->where('infoInvoice.InvoiceID','!=','')
-                ->where('infoitems.id_items',$invoice_id)
-                ->first();
-        }elseif($route_name=='invoice-item' || $route_name=='assembly-invoice'){
-            $inv = DB::table('infoInvoice')
-                ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
-                ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
-                ->where('infoInvoice.id',$invoice_id)
-                ->first();
-        }else{
-            $inv = DB::table('infoInvoice')
-            ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.InvoiceID', 'infoInvoice.StoreName', 'infoInvoice.OrderID','infoInvoice.CustomerID')
-            ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
-            ->where('infoInvoice.NumInvoice',$invoice_id)
-            ->orderBy('infoInvoice.id','DESC')
-            ->first();
+                    ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
+                    ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
+                    ->where('infoInvoice.id', $invoice_id)
+                    ->first();
         }
+        if($route_name == 'CustomerDetail'){
+            $inv = DB::table('infoInvoice')
+                    ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
+                    ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
+                    ->whereIn('infoInvoice.id',$invoice_id)
+                    ->get();
+        }
+        // }else{
+        //     $inv = DB::table('infoInvoice')
+        //     ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.InvoiceID', 'infoInvoice.StoreName', 'infoInvoice.OrderID','infoInvoice.CustomerID')
+        //     ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
+        //     ->where('infoInvoice.NumInvoice',$invoice_id)
+        //     ->orderBy('infoInvoice.id','DESC')
+        //     ->first();
+        // }
 
         if($inv){
             $user = Auth::user();
@@ -92,10 +99,10 @@ class PosteController extends Controller
             $inv->customer_preferences = $preferences;
 
             $inv->poste_details = "";
-            if($route_name=='item-qc'){
-                $poste = Poste::find($poste_id);
-                $inv->poste_details = $poste->nominterface." ";
-            }
+            // if($route_name=='item-qc'){
+            //     $poste = Poste::find($poste_id);
+            //     $inv->poste_details = $poste->nominterface." ";
+            // }
 
             $inv->poste_details .= date('D d/m/y H:i');
 

@@ -4,9 +4,307 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Str;
+use Carbon\Carbon;
 
 class CustomerController extends Controller
 {
+
+    /**
+     * Create Customer
+     */
+
+    public function createCustomer(Request $request){
+        $info_customer = [
+            'CustomerID'    => $request->customerID,
+            'isMaster'      => $request->accountType == 'Main' ? 1 : 0,
+            'TypeDelivery'  => $request->typeDelivery,
+            'btob'          => $request->customerType == 'B2B' ? 1 : 0,
+            'FirstName'     => $request->firstName,
+            'LastName'      => $request->lastName,
+            'Name'          => $request->firstName + ", " + $request->lastName,
+            'EmailAddress'  => $request->email,
+            'Phone'         => '['+'"'.$request->phoneCountryCode.'|'.$request->phoneNumber.'"'+']',
+            'bycard'        => $request->paymentMethod == 'Credit' ? 1 : 0,
+            'discount'      => ($request->discountLevel / 100),
+            'credit'        => $request->creditAmount+$request->addCredit,
+            'SignupDate'    => Carbon::now()->format('Y-m-d'),
+        ];
+        DB::table('infoCustomer')->insert($info_customer);
+        $address = [
+            'CustomerID'    => $request->customerID,
+            'AddressID'     => Str::uuid(),
+            'longitude'     => $request->customerLon,
+            'Latitude'      => $request->customerLat,
+            'Town'          => $request->city,
+            'County'        => $request->county,
+            'Country'       => $request->country,
+            'postcode'      => $request->postCode,
+            'address1'      => $request->deliveryAddress1,
+            'address2'      => $request->deliveryAddress2,
+            'status'        => 'DELIVERY',
+        ];
+        DB::table('address')->insert($address);
+        $new_address = [
+            'CustomerID'    => $request->customerID,
+            'AddressID'     => Str::uuid(),
+            'City'          => $request->city,
+            'State'        => $request->state,
+            // 'Country'       => $request->country,
+            'postcode'      => $request->postCode,
+            'address1'      => $request->deliveryAddress1,
+            'address2'      => $request->deliveryAddress2,
+            'status'        => 'DONE',
+        ];
+        DB::table('NewAddress')->insert($new_address);
+        $new_customer = [
+            'CustomerID'    => $request->customerID,
+            'AddressID'     => $address['AddressID'],
+            'City'          => $request->city,
+            'postcode'      => $request->postCode,
+            'address1'      => $request->deliveryAddress1,
+            'address2'      => $request->deliveryAddress2,
+            'Name'          => $info_customer['Name'],
+            'Phone'         => $info_customer['Phone'],
+            'EmailAddress'  => $info_customer['EmailAddress'],
+            'LastName'      => $info_customer['LastName'],
+            'FirstName'     => $info_customer['FirstName'],
+        ];
+        DB::table('NewCustomer')->insert($new_customer);
+        if($request->paymentMethod == 'Credit Card'){
+            $stripe = new \Stripe\StripeClient(env('STRIPE_TEST_SECURITY_KEY'));
+            try {
+                //code...
+                $card = $stripe->paymentMethods->create([
+                    'type' => 'card',
+                    'card' => [
+                        'number'      => $request->cardDetails,
+                        'exp_month'   => explode('/', $request->cardExpDate)[0],
+                        'exp_year'    => explode('/', $request->cardExpDate)[1],
+                        'cvc'         => $request->cardCVC,
+                    ],
+                ]);
+                $stripe_customer = $stripe->customers->create([
+                    'name'              => $request->cardHolderName,
+                    'email'             => $request->email,
+                    'payment_method'    => $card->id,
+                    'invoice_settings'  => ['default_payment_method' => $card->id],
+                    'metadata'          => [
+                                                'CustomerID' => Str::uuid()
+                                        ],
+                    'address'           => [
+                                            'city'          => $request->city,
+                                            'state'         => $request->state,
+                                            'country'       => $request->country,
+                                            'postal_code'   => $request->postCode,
+                                            'line1'         => $request->deliveryAddress1,
+                                            'line2'         => $request->deliveryAddress2,
+                                        ]
+                ]);
+                $credit_card = [
+                    'CustomerID'        => $CustomerID,
+                    'type'              => $card->brand,
+                    'cardHolder'        => $request->cardHolderName,
+                    'cardNumber'        => Str::mask($request->cardDetails, '*', -3, 3),
+                    'dateexpiration'    => $request->cardExpDate,
+                    'stripe_customer_id'=> $stripe_customer->id,
+                    'stripe_card_id'    => $card->id
+                ];
+                DB::table('cards')->insert($credit_card);                
+                if($request->addCredit != 0){
+                    // payment intent
+                    $payment_intent = $stripe->paymentIntents->create([
+                        'amount'            => $request->addCredit*100,
+                        'currency'          => 'gbp',
+                        'confirm'           => true,
+                        "payment_method"    => $card->id,
+                        "customer"          => $stripe_customer->id,
+                        "capture_method"    => "automatic",
+                        'payment_method_types' => ['card'],
+                    ]);
+                }
+            } catch (\Throwable $th) {
+                throw $th;
+            }
+        }else{
+            $billing_address = [
+                'CustomerID'    => $request->customerID,
+                'AddressID'     => Str::uuid(),
+                'longitude'     => $request->customerLon,
+                'Latitude'      => $request->customerLat,
+                'Town'          => $request->city,
+                'County'        => $request->county,
+                'Country'       => $request->country,
+                'postcode'      => $request->postCode,
+                'address1'      => $request->deliveryAddress1,
+                'address2'      => $request->deliveryAddress2,
+                'status'        => 'BILLING',
+            ];    
+            DB::table('address')->insert($billing_address);            
+            $contact = [
+                'CustomerID'    => $CustomerID,
+                'address_id'    => $CustomerID,
+                'name'          => $info_customer['Name'],
+                'firstname'     => $request->companyRepFirstName,
+                'company'       => $request->companyLegalName,
+                'email'         => $request->invoiceEmail1,
+                'phone'         => '['+'"'.$request->companyPhoneCountryCode.'|'.$request->companyPhoneNumber.'"'+']',
+                'type'          => 'BILLING',
+                // 'telephone'     => '['+'"'.$request->companyPhoneCountryCode.'|'.$request->companyPhoneNumber.'"'+']',
+            ];   
+            DB::table('contacts')->insert($contact);
+        }
+        
+        $customer_preferences = [
+            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Shirts premium finish',   'Value'=> $request->premiumFinish ],
+            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Shirts folded',           'Value'=> $request->shirtsFolded ],
+            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Debobbling',              'Value'=> $request->debobbling ],
+            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Minor repairs (up to £8)','Value'=> $request->minorRepairs ],
+            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Transactional SMS',       'Value'=> $request->transactionalSMS ],
+            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Transactional Email',     'Value'=> $request->transactionalEmail ],
+            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Marketing SMS',           'Value'=> $request->marketingSMS ],
+            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Marketing Email',         'Value'=> $request->marketingEmail ],
+            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Bi-Monthly VAT Invoices', 'Value'=> $request->VATEmail ],
+            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Cleaning partner',        'Value'=> $request->cleaningPartner ],
+            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'No care labels',          'Value'=> $request->noCareLabel ],
+            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Tailoring Approval',      'Value'=> $request->tailoringApproval ],
+        ];
+        DB::table('infoCustomerPreference')->insert($customer_preferences);
+        $delivery_preference = [
+            'CustomerId'    => $request->customerID,
+            'TypeDelivery'  => $request->altTypeDelivery,
+            'CodeCountry'   => $request->altPhoneCountryCode,
+            'PhoneNumber'   => $request->altPhoneNumber,
+            'OtherInstruction' => $request->altDriverInstruction,
+        ];
+        DB::table('DeliveryPreference')->insert($delivery_preference);
+        return response()->json($CustomerID);
+    }
+    public function checkStripe(Request $request){
+        $stripe = new \Stripe\StripeClient(env('STRIPE_TEST_SECURITY_KEY'));
+        try {
+            //code...
+            $card = $stripe->paymentMethods->create([
+                'type' => 'card',
+                'card' => [
+                    'number'      => $request->cardDetails,
+                    'exp_month'   => explode('/', $request->cardExpDate)[0],
+                    'exp_year'    => explode('/', $request->cardExpDate)[1],
+                    'cvc'         => $request->cardCVC,
+                ],
+            ]);
+            $stripe_customer = $stripe->customers->create([
+                'name'              => $request->cardHolderName,
+                'email'             => 'gotodev7@gmail.com',
+                'payment_method'    => $card->id,
+                'invoice_settings'  => ['default_payment_method' => $card->id],
+                'metadata'          => [
+                                            'CustomerID' => Str::uuid()
+                                    ],
+                'address'           => [
+                                        'city'          => $request->city,
+                                        'state'         => $request->state,
+                                        'country'       => $request->country,
+                                        'postal_code'   => $request->postCode,
+                                        'line1'         => $request->deliveryAddress1,
+                                        'line2'         => $request->deliveryAddress2,
+                                    ]
+            ]);
+            if($request->addCredit != ''){
+                // payment intent
+                $payment_intent = $stripe->paymentIntents->create([
+                    'amount'            => 2000,
+                    'currency'          => 'gbp',
+                    'confirm'           => true,
+                    "payment_method"=> $card->id,
+                    "customer"=> $stripe_customer->id,
+                    "capture_method"=> "automatic",
+                    'payment_method_types' => ['card'],
+                ]);
+                return response()->json($payment_intent);
+            }
+        } catch (\Throwable $th) {
+            return response()->json($th);
+        }
+    }
+    /**
+     * create a customer as sub account
+     */
+    public function createSubAccount(Request $request){
+        $customerID = Str::uuid();
+        $info_customer = [
+            'CustomerID'    => $customerID,
+            'CustomerIDMaster'=> $request->mainId,
+            'isMaster'      => 0,
+            'TypeDelivery'  => $request->typeDelivery,
+            'btob'          => $request->customerType == 'B2B' ? 1 : 0,
+            'FirstName'     => $request->firstName,
+            'LastName'      => $request->lastName,
+            'Name'          => $request->firstName + ", " + $request->lastName,
+            'EmailAddress'  => $request->email,
+            'Phone'         => '['+'"'.$request->phoneCountryCode.'|'.$request->phoneNumber.'"'+']',
+            'SignupDate'    => Carbon::now()->format('Y-m-d'),
+        ];
+        $response = [
+            'id'    => DB::table('infoCustomer')->insertGetId($info_customer),
+            'name'  => $info_customer['Name'], 
+            'email'  => $info_customer['EmailAddress'], 
+            'phone'  => $info_customer['Phone'], 
+            'date'  => $info_customer['SignupDate'], 
+            'spent'  => 0, 
+        ];
+
+        $address = [
+            'CustomerID'    => $customerID,
+            'AddressID'     => Str::uuid(),
+            'longitude'     => $request->customerLon,
+            'Latitude'      => $request->customerLat,
+            'Town'          => $request->city,
+            'County'        => $request->county,
+            'Country'       => $request->country,
+            'postcode'      => $request->postCode,
+            'address1'      => $request->deliveryAddress1,
+            'address2'      => $request->deliveryAddress2,
+            'status'        => 'DELIVERY',
+        ];
+        DB::table('address')->insert($address);
+        $new_address = [
+            'CustomerID'    => $customerID,
+            'AddressID'     => Str::uuid(),
+            'City'          => $request->city,
+            'State'        => $request->state,
+            // 'Country'       => $request->country,
+            'postcode'      => $request->postCode,
+            'address1'      => $request->deliveryAddress1,
+            'address2'      => $request->deliveryAddress2,
+            'status'        => 'DONE',
+        ];
+        DB::table('NewAddress')->insert($new_address);
+        $new_customer = [
+            'CustomerID'    => $customerID,
+            'AddressID'     => $address['AddressID'],
+            'City'          => $request->city,
+            'postcode'      => $request->postCode,
+            'address1'      => $request->deliveryAddress1,
+            'address2'      => $request->deliveryAddress2,
+            'Name'          => $info_customer['Name'],
+            'Phone'         => $info_customer['Phone'],
+            'EmailAddress'  => $info_customer['EmailAddress'],
+            'LastName'      => $info_customer['LastName'],
+            'FirstName'     => $info_customer['FirstName'],
+        ];
+        DB::table('NewCustomer')->insert($new_customer);
+        return response()->json($response);
+    }
+    /**
+     * generate CustomerID
+     */
+    public function generateCustomerID(Request $request){
+        return response()->json(Str::uuid());
+    }
+    /**
+     * Get customer detail
+     */
     public function customerDetails(Request $request){
         $CustomerID=$request->post('CustomerID');
         $infoCustomer = null;
@@ -241,11 +539,81 @@ class CustomerController extends Controller
                                         ->select(
                                             'infoOrder.id as order_id', 'infoInvoice.NumInvoice as sub_order', 'infoInvoice.id as sub_order_id',
                                             DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
-                                            'infoitems.typeitem as item_name', 'infoitems.brand', 'infoitems.ItemTrackingKey as barcode',
+                                            // DB::raw('DATE_FORMAT(infoOrder.created_at, "%d %b %Y") as order_date'),
                                             'infoitems.priceTotal as price', 'infoitems.id as item_id',
-                                            DB::raw('DATE_FORMAT(infoOrder.created_at, "%d %b %Y") as order_date'),
+                                            'infoitems.typeitem as item_name', 'infoitems.brand', 'infoitems.ItemTrackingKey as barcode',
                                             'TypePost.bg_color as location_color', 'postes.nom as location',
-                                            'TypePost.circle_color', 'TypePost.process', 'infoOrder.underquote', 'infoitems.Colors as colors'
+                                            'TypePost.circle_color', 'TypePost.process', 'infoOrder.underquote', 'infoitems.Colors as colors',
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN "Store Drop Off"
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN "Pickup"
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN "Drop Off"
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN "Pickup"
+                                                END as order_left_text'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN "In-Store Collection"
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN "Delivery"
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN "Delivery"
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN "Delivery"
+                                                END as order_right_text'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN "In-Store Collection"
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN "Home Delivery"
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN "Delivery Only"
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN "Recuring Delivery"
+                                                END as order_text'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN DATE_FORMAT(booking_store.dropoff, "%W %d %M %Y")
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN DATE_FORMAT(pickup.date, "%W %d %M %Y")
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN DATE_FORMAT(infoOrder.created_at, "%W %d %M %Y")
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN "--"
+                                                END as order_left_date'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN DATE_FORMAT(booking_store.pickup_date, "%W %d %M %Y")
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN DATE_FORMAT(deliveryask.date, "%W %d %M %Y")
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN DATE_FORMAT(deliveryask.date, "%W %d %M %Y")
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN "--"
+                                                END as order_right_date'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN DATE_FORMAT(booking_store.pickup_date, "%d %b %Y")
+                                                WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN DATE_FORMAT(deliveryask.date, "%d %b %Y")
+                                                WHEN infoOrder.deliverymethod = "delivery_only" THEN DATE_FORMAT(deliveryask.date, "%d %b %Y")
+                                                WHEN infoOrder.deliverymethod = "recurring" THEN "--"
+                                                END as order_date'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN DATE_FORMAT(booking_store.dropoff, "%h:%i %p")
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN DATE_FORMAT(pickup.trancheFrom, "%h:%i %p")
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN DATE_FORMAT(infoOrder.created_at, "%h:%i %p")
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN "--"
+                                                END as order_left_time'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN DATE_FORMAT(booking_store.pickup_time, "%h:%i %p")
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN DATE_FORMAT(deliveryask.trancheFrom, "%h:%i %p")
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN DATE_FORMAT(deliveryask.trancheFrom, "%h:%i %p")
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN "--"
+                                                END as order_right_time'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN 0
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN IF(CURRENT_DATE() < pickup.date, 1, 0 )
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN 0
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN 0
+                                                END as left_edit'
+                                            ),
+                                            DB::raw( 
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN IF(CURRENT_DATE() < booking_store.pickup_date, 1, 0 )
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN IF(CURRENT_DATE() < deliveryask.date, 1, 0 )
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN IF(CURRENT_DATE() < deliveryask.date, 1, 0 )
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN "--"
+                                                END as right_edit'
+                                            ),                                            
                                         )
                                         ->join('infoInvoice', 'infoInvoice.OrderID', '=', 'infoOrder.OrderID')
                                         ->join('infoitems',function($join){
@@ -254,6 +622,9 @@ class CustomerController extends Controller
                                         })
                                         ->join('postes', 'infoitems.nextpost', '=', 'postes.id')
                                         ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')                                        
+                                        ->leftJoin('booking_store', 'booking_store.order_id', '=', 'infoOrder.id')
+                                        ->leftJoin('pickup', 'pickup.PickupID', '=', 'infoOrder.PickupID')
+                                        ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')                                        
                                         ->where('infoitems.priceTotal', '!=', 0)
                                         ->where('infoOrder.CustomerID', $customer->CustomerID)
                                         ->whereIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
