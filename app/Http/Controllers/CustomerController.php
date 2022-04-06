@@ -15,6 +15,7 @@ class CustomerController extends Controller
      */
 
     public function createCustomer(Request $request){
+        // add a new record to infoCustomer table
         $info_customer = [
             'CustomerID'    => $request->customerID,
             'isMaster'      => $request->accountType == 'Main' ? 1 : 0,
@@ -22,15 +23,22 @@ class CustomerController extends Controller
             'btob'          => $request->customerType == 'B2B' ? 1 : 0,
             'FirstName'     => $request->firstName,
             'LastName'      => $request->lastName,
-            'Name'          => $request->firstName + ", " + $request->lastName,
+            'Name'          => $request->firstName.", ".$request->lastName,
             'EmailAddress'  => $request->email,
-            'Phone'         => '['+'"'.$request->phoneCountryCode.'|'.$request->phoneNumber.'"'+']',
+            'Phone'         => $request->phoneCountryCode.' '.$request->phoneNumber,
             'bycard'        => $request->paymentMethod == 'Credit' ? 1 : 0,
-            'discount'      => ($request->discountLevel / 100),
-            'credit'        => $request->creditAmount+$request->addCredit,
+            'discount'      => (intval($request->discountLevel) / 100),
+            'credit'        => intval($request->addCredit),
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
         ];
         DB::table('infoCustomer')->insert($info_customer);
+        // set CustomerIdMaster of sub account as Main customer's CustomerID
+        if(count($request->linkedAccounts) > 1){
+            foreach ($request->linkedAccounts as $account) {
+                DB::table('infoCustomer')->where('id', $account->id)->update(['CustomerIDMaster' => $request->customerID]);
+            }
+        }
+        // add a new record to address table
         $address = [
             'CustomerID'    => $request->customerID,
             'AddressID'     => Str::uuid(),
@@ -45,6 +53,7 @@ class CustomerController extends Controller
             'status'        => 'DELIVERY',
         ];
         DB::table('address')->insert($address);
+        // add a new record to NewAddress table
         $new_address = [
             'CustomerID'    => $request->customerID,
             'AddressID'     => Str::uuid(),
@@ -57,6 +66,7 @@ class CustomerController extends Controller
             'status'        => 'DONE',
         ];
         DB::table('NewAddress')->insert($new_address);
+        // add a new record to NewCustomer table
         $new_customer = [
             'CustomerID'    => $request->customerID,
             'AddressID'     => $address['AddressID'],
@@ -71,10 +81,11 @@ class CustomerController extends Controller
             'FirstName'     => $info_customer['FirstName'],
         ];
         DB::table('NewCustomer')->insert($new_customer);
-        if($request->paymentMethod == 'Credit Card'){
+        // payment 
+        if($request->paymentMethod == 'Credit Card'){ // payment is credit card
             $stripe = new \Stripe\StripeClient(env('STRIPE_TEST_SECURITY_KEY'));
             try {
-                //code...
+                //create a card object to stripe
                 $card = $stripe->paymentMethods->create([
                     'type' => 'card',
                     'card' => [
@@ -84,6 +95,7 @@ class CustomerController extends Controller
                         'cvc'         => $request->cardCVC,
                     ],
                 ]);
+                //create a customer object to stripe
                 $stripe_customer = $stripe->customers->create([
                     'name'              => $request->cardHolderName,
                     'email'             => $request->email,
@@ -101,6 +113,7 @@ class CustomerController extends Controller
                                             'line2'         => $request->deliveryAddress2,
                                         ]
                 ]);
+                //add a new record to cards table
                 $credit_card = [
                     'CustomerID'        => $CustomerID,
                     'type'              => $card->brand,
@@ -111,8 +124,9 @@ class CustomerController extends Controller
                     'stripe_card_id'    => $card->id
                 ];
                 DB::table('cards')->insert($credit_card);                
+                //if addCredit is set, make payment with credit card
                 if($request->addCredit != 0){
-                    // payment intent
+                    // create a payment intent
                     $payment_intent = $stripe->paymentIntents->create([
                         'amount'            => $request->addCredit*100,
                         'currency'          => 'gbp',
@@ -126,7 +140,7 @@ class CustomerController extends Controller
             } catch (\Throwable $th) {
                 throw $th;
             }
-        }else{
+        }else{ // paymentMethod is BACS, we add extra records to several table.
             $billing_address = [
                 'CustomerID'    => $request->customerID,
                 'AddressID'     => Str::uuid(),
@@ -141,6 +155,7 @@ class CustomerController extends Controller
                 'status'        => 'BILLING',
             ];    
             DB::table('address')->insert($billing_address);            
+
             $contact = [
                 'CustomerID'    => $CustomerID,
                 'address_id'    => $CustomerID,
@@ -148,9 +163,8 @@ class CustomerController extends Controller
                 'firstname'     => $request->companyRepFirstName,
                 'company'       => $request->companyLegalName,
                 'email'         => $request->invoiceEmail1,
-                'phone'         => '['+'"'.$request->companyPhoneCountryCode.'|'.$request->companyPhoneNumber.'"'+']',
+                'phone'         => $request->companyPhoneCountryCode.' '.$request->companyPhoneNumber,
                 'type'          => 'BILLING',
-                // 'telephone'     => '['+'"'.$request->companyPhoneCountryCode.'|'.$request->companyPhoneNumber.'"'+']',
             ];   
             DB::table('contacts')->insert($contact);
         }
@@ -178,8 +192,12 @@ class CustomerController extends Controller
             'OtherInstruction' => $request->altDriverInstruction,
         ];
         DB::table('DeliveryPreference')->insert($delivery_preference);
+
         return response()->json($CustomerID);
     }
+    /**
+     * this made for temporary to test stripe payment
+     */
     public function checkStripe(Request $request){
         $stripe = new \Stripe\StripeClient(env('STRIPE_TEST_SECURITY_KEY'));
         try {
@@ -195,7 +213,7 @@ class CustomerController extends Controller
             ]);
             $stripe_customer = $stripe->customers->create([
                 'name'              => $request->cardHolderName,
-                'email'             => 'gotodev7@gmail.com',
+                'email'             => $request->email,
                 'payment_method'    => $card->id,
                 'invoice_settings'  => ['default_payment_method' => $card->id],
                 'metadata'          => [
@@ -213,12 +231,12 @@ class CustomerController extends Controller
             if($request->addCredit != ''){
                 // payment intent
                 $payment_intent = $stripe->paymentIntents->create([
-                    'amount'            => 2000,
+                    'amount'            => intval($request->addCredit)*100,
                     'currency'          => 'gbp',
                     'confirm'           => true,
-                    "payment_method"=> $card->id,
-                    "customer"=> $stripe_customer->id,
-                    "capture_method"=> "automatic",
+                    "payment_method"    => $card->id,
+                    "customer"          => $stripe_customer->id,
+                    "capture_method"    => "automatic",
                     'payment_method_types' => ['card'],
                 ]);
                 return response()->json($payment_intent);
@@ -234,24 +252,24 @@ class CustomerController extends Controller
         $customerID = Str::uuid();
         $info_customer = [
             'CustomerID'    => $customerID,
-            'CustomerIDMaster'=> $request->mainId,
+            'CustomerIDMaster'=> $request->mainCustomerID,
             'isMaster'      => 0,
             'TypeDelivery'  => $request->typeDelivery,
             'btob'          => $request->customerType == 'B2B' ? 1 : 0,
             'FirstName'     => $request->firstName,
             'LastName'      => $request->lastName,
-            'Name'          => $request->firstName + ", " + $request->lastName,
+            'Name'          => $request->firstName." ".$request->lastName,
             'EmailAddress'  => $request->email,
-            'Phone'         => '['+'"'.$request->phoneCountryCode.'|'.$request->phoneNumber.'"'+']',
+            'Phone'         => $request->phoneCountryCode.' '.$request->phoneNumber,
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
         ];
         $response = [
-            'id'    => DB::table('infoCustomer')->insertGetId($info_customer),
-            'name'  => $info_customer['Name'], 
-            'email'  => $info_customer['EmailAddress'], 
-            'phone'  => $info_customer['Phone'], 
-            'date'  => $info_customer['SignupDate'], 
-            'spent'  => 0, 
+            'id'        => DB::table('infoCustomer')->insertGetId($info_customer),
+            'name'      => $info_customer['Name'], 
+            'email'     => $info_customer['EmailAddress'], 
+            'phone'     => $info_customer['Phone'], 
+            'date'      => $info_customer['SignupDate'], 
+            'spent'     => 0, 
         ];
 
         $address = [

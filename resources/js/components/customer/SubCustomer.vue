@@ -166,7 +166,7 @@ export default {
         SelectOptions
     },
     setup(){
-        const store = useStore;
+        const store = useStore();
         const router = useRouter();
         const postcode = ref(null);
         const form = ref({
@@ -235,7 +235,7 @@ export default {
         }
         const createSubAccount = ()=>{
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Creating Sub Account...']);
-            axios.post('create-sub-account').then((res)=>{
+            axios.post('create-sub-account', form.value).then((res)=>{
                 localStorage.setItem('subCustomerInfo', JSON.stringify(res.data));    
                 router.push({
                     name:'NewCustomer'

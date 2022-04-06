@@ -588,10 +588,10 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr v-for="(item, index) in linkedAccounts" :key="index">
+                                            <tr v-for="(item, index) in form.linkedAccounts" :key="index">
                                                 <td valign=middle class="text-nowrap">{{ item.name }}</td>
                                                 <td valign=middle class="text-nowrap fw-bold">{{ item.accountType }}</td>
-                                                <td valign=middle>{{ item.phone }}</td>
+                                                <td valign=middle>{{ formatPhone(item.phone) }}</td>
                                                 <td valign=middle>{{ item.email }}</td>
                                                 <td valign=middle>{{ item.date }}</td>
                                                 <td valign=middle class="fw-bold">£ {{ item.spent }}</td>
@@ -664,7 +664,7 @@
         DISPLAY_LOADER,
         HIDE_LOADER,
     } from "../../store/types/types";
-import { useStore } from 'vuex';
+    import { useStore } from 'vuex';
     export default {
         name: "NewCustomer",
         components:{
@@ -778,10 +778,17 @@ import { useStore } from 'vuex';
                     localStorage.removeItem('stepActived')
                     form.value = JSON.parse(localStorage.getItem('formData'));
                     localStorage.removeItem('formData');
-                    linkedAccounts.value = [...linkedAccounts.value, JSON.parse(localStorage.getItem('subCustomerInfo'))]
-                    localStorage.removeItem('subCustomerInfo');
+                    if(localStorage.getItem('subCustomerInfo')){
+                        form.value.linkedAccounts = [...form.value.linkedAccounts, JSON.parse(localStorage.getItem('subCustomerInfo'))]
+                        if(form.value.linkedAccounts.length == 0){
+                            form.value.linkedAccounts = [
+                                { id: 0, name: form.value.firstName+', '+ form.value.lastName, accountType: 'Main', phone: '', email: '', date: '', spent: '' }
+                            ];
+                        }
+                        localStorage.removeItem('subCustomerInfo');
+                    }
                 }else{
-                    linkedAccounts.value = [
+                    form.value.linkedAccounts = [
                         { id: 0, name: '', accountType: 'Main', phone: '', email: '', date: '', spent: 0 }
                     ];
                     setTimeout(() => {
@@ -839,6 +846,19 @@ import { useStore } from 'vuex';
                     name: 'Customer'
                 });
             }
+            const formatPhone = (phoneString)=>{
+                if(phoneString != ""){
+                    var phone = phoneString.split('"')[1];
+                    if(phone.split("|").length > 1){
+                        var area_code = phone.split("|")[0];
+                        var number = phone.split("|")[1];
+                        return '+' + area_code.replace(/\D/g, '') + ' ' + number.replace(/ /g, '').replace(/(\d{3})(\d{3})(\d{3,4})/, "$1 $2 $3");
+                    }else
+                        return phone.replace(/\D/g, '').replace(/(\d{2})(\d{3})(\d{3})(\d{3,4})/, "+$1 $2 $3 $3");
+                }else{
+                    return '';
+                }
+            }  
             // move on to next step when you click next button
             const next = ()=>{
                 if(step.value == 'account_details'){
@@ -859,7 +879,7 @@ import { useStore } from 'vuex';
                     step.value = 'preferences';
                 }else if( step.value == 'preferences' ){
                     step.value = 'linked_account';
-                }else{
+                }else if(step.value == 'linked_account'){
                     createCustomer();
                 }
             }
@@ -881,7 +901,7 @@ import { useStore } from 'vuex';
             })
             // validation when the card exp changes
             watch(()=>form.value.cardCVV,(current_value, previous_value)=>{
-                if(cardFormat.validateCardExpiry(current_value)){
+                if(cardFormat.validateCardCVC(current_value)){
                     delete cardErrors.value.cardCvc;
                 }else{
                     cardErrors.value.cardCvc = "Invalid CVV.";
@@ -904,20 +924,20 @@ import { useStore } from 'vuex';
             })
             // updating for linked_account tab when firstName and lastName changes
             watch(()=>form.value.firstName, (cur_val, pre_val)=>{
-                linkedAccounts.value[0].name = cur_val + ', '+ form.value.lastName;
+                form.value.linkedAccounts[0].name = cur_val + ', '+ form.value.lastName;
             });
             watch(()=>form.value.lastName, (cur_val, pre_val)=>{
-                linkedAccounts.value[0].name = form.value.firstName + ', '+ cur_val;
+                form.value.linkedAccounts[0].name = form.value.firstName + ', '+ cur_val;
             });
             // handler when you click a create sub account button
             const createSubAccount = ()=>{
-                if(form.value.CustomerID == ''){
+                if(form.value.customerID == ''){
                     axios.post('/generate-customer-id').then((res)=>{
                         form.value.customerID = res.data
-                        localStorage.setItem('CustomerID', response.data);
+                        localStorage.setItem('CustomerID', res.data);
                         localStorage.setItem('stepActived', 'linked_account');
                         localStorage.setItem('formData', JSON.stringify(form.value));
-                        localStorage.setItem('linkedAccounts', JSON.stringify(linkedAccounts.value));
+                        localStorage.setItem('linkedAccounts', JSON.stringify(form.value.linkedAccounts));
                         router.push({
                             name: 'SubCustomer'
                         });
@@ -928,8 +948,7 @@ import { useStore } from 'vuex';
                     localStorage.setItem('CustomerID', form.value.customerID);
                     localStorage.setItem('stepActived', 'linked_account');
                     localStorage.setItem('formData', JSON.stringify(form.value));
-                    console.log(localStorage.formData);
-                    localStorage.setItem('linkedAccounts', JSON.stringify(linkedAccounts.value));
+                    localStorage.setItem('linkedAccounts', JSON.stringify(form.value.linkedAccounts));
                     router.push({
                         name: 'SubCustomer'
                     });
@@ -938,12 +957,18 @@ import { useStore } from 'vuex';
 
             // handler for when you click a create customer
             const createCustomer =()=>{
+                if(form.value.firstName == ''){
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message:'Please enter first name.', ttl:5, type:'danger' });
+                }else if(form.value.lastName == ''){
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message:'Please enter last name.', ttl:5, type:'danger' });
+                }
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Creating Customer...']);
                 axios.post('create-customer', form.value).then((response)=>{
-
+                    console.log(response.data);
                 }).catch((error)=>{
                     console.log(error);
                 }).finally(()=>{
-                    
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 })
             }
             // handler when you click search customer button
@@ -952,27 +977,26 @@ import { useStore } from 'vuex';
             }
             // handler when the customer selected in search result
             const selectedSubAccount = (data)=>{
-                linkedAccounts.value = [...linkedAccounts.value, 
+                form.value.linkedAccounts = [...form.value.linkedAccounts, 
                     { 
-                        id: data.id, 
-                        name: data.name, 
+                        id:     data.id, 
+                        name:   data.name, 
                         accountType: 'Sub',
-                        phone: data.phone, 
-                        email: data.email, 
-                        date: data.date, 
-                        spent: data.spent 
+                        phone:  data.phone, 
+                        email:  data.email, 
+                        date:   data.date, 
+                        spent:  data.spent 
                     }
                 ]
             };
             // handler when you unlink sub account from linked accounts
             const removeLinkedAccount = (id)=>{
-                linkedAccounts.value = linkedAccounts.value.filter((item)=>{
+                form.value.linkedAccounts = form.value.linkedAccounts.filter((item)=>{
                     return item.id != id;
                 });
-
             }    
             const checkCard = ()=>{
-                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Check Customer...']);
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Check credit card...']);
                 axios.post('check-stripe', form.value).then((res)=>{
                     console.log(res.data)
                 }).catch((error)=>{
@@ -1002,7 +1026,8 @@ import { useStore } from 'vuex';
                 showSearchPanel,
                 selectedSubAccount,
                 linkedAccounts,
-                checkCard
+                checkCard,
+                formatPhone
             }
         },
         data(){

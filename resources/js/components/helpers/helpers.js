@@ -56,7 +56,6 @@ export const formatDate=(date_str,format)=>{
 export const featureUnavailable=((feature)=>{
     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:feature+' feature not yet implemented.',ttl:5,type:'success'});
 });
-
 export const formatPhone=(json_string_phone,seperator='<br/>')=>{
     if(json_string_phone.trim()=='')
         return '';
