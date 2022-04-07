@@ -151,7 +151,7 @@ export default {
             store.dispatch(`${CUSTOMER_MODULE}${LOAD_MORE_CUSTOMER}`);
         }
         onMounted(()=>{
-            // store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_LIST}`);
+            store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_LIST}`);
         })
         const formatPhone = (phoneString)=>{
             if(phoneString !="--"){

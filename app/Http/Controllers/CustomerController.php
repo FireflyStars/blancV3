@@ -36,7 +36,7 @@ class CustomerController extends Controller
             'EmailAddress'  => $request->email,
             'Name'          => $request->firstName.", ".$request->lastName,
             'Phone'         => $request->phoneCountryCode.' '.$request->phoneNumber,
-            'bycard'        => $request->paymentMethod == 'Credit' ? 1 : 0,
+            'bycard'        => $request->paymentMethod == 'Credit Card' ? 1 : 0,
             'discount'      => (intval($request->discountLevel) / 100),
             'credit'        => 0,
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
@@ -76,6 +76,7 @@ class CustomerController extends Controller
         $new_address = [
             'CustomerID'    => $CustomerUUID,
             'AddressID'     => $addressUUID,
+            'NewEmail'      => $request->email,
             'City'          => $request->city,
             'State'         => $request->state,
             'postcode'      => $request->postCode,
@@ -138,12 +139,14 @@ class CustomerController extends Controller
                 //add a new record to cards table
                 $credit_card = [
                     'CustomerID'        => $CustomerUUID,
-                    'type'              => $card->brand,
-                    'cardHolder'        => $request->cardHolderName,
-                    'cardNumber'        => substr_replace($number, str_repeat('*', strlen($number) - 6), 3, -3),
+                    'type'              => $card->card->brand,
+                    // 'cardHolder'        => $request->cardHolderName,
+                    'cardNumber'        => substr_replace($request->cardDetails, str_repeat('*', strlen($request->cardDetails) - 6), 3, -3),
                     'dateexpiration'    => $request->cardExpDate,
                     'stripe_customer_id'=> $stripe_customer->id,
-                    'stripe_card_id'    => $card->id
+                    'stripe_card_id'    => $card->id,
+                    'created_at'        => now(),
+                    'updated_at'        => now(),
                 ];
                 DB::table('cards')->insert($credit_card);                
                 //if addCredit is set, make payment with credit card
@@ -158,7 +161,7 @@ class CustomerController extends Controller
                         "capture_method"    => "automatic",
                         'payment_method_types' => ['card'],
                     ]);
-                    if($payment_intent->status == 'SUCCESSED')
+                    if($payment_intent->status == 'succeeded')
                         DB::table('infoCustomer')->where('CustomerID', $CustomerUUID)->update(['credit'=> $request->addCredit]);
                 }
             } catch (\Throwable $th) {
@@ -211,10 +214,10 @@ class CustomerController extends Controller
             [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'No care labels',          'Value'=> $request->noCareLabel ],
             [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Tailoring Approval',      'Value'=> $request->tailoringApproval ],
         ];
-        DB::table('infoCustomerPreference')->insert($customer_preferences);
+        DB::table('InfoCustomerPreference')->insert($customer_preferences);
         $delivery_preference = [
             'CustomerId'    => $CustomerUUID,
-            'TypeDelivery'  => $request->altTypeDelivery,
+            'TypeDelivery'  => $request->altTypeDelivery ? $request->altTypeDelivery : 'N/A' ,
             'CodeCountry'   => $request->altPhoneCountryCode,
             'PhoneNumber'   => $request->altPhoneNumber,
             'OtherInstruction' => $request->altDriverInstruction,
