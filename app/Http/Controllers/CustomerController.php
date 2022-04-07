@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Str;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
 {
@@ -15,33 +16,48 @@ class CustomerController extends Controller
      */
 
     public function createCustomer(Request $request){
+        $validator = Validator::make($request->all(), [
+            'firstName' => 'required',
+            'lastName'  => 'required',
+            'email'     => 'required|email'
+        ]);        
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 500);
+        }
+
         // add a new record to infoCustomer table
         $info_customer = [
-            'CustomerID'    => $request->customerID,
+            'CustomerID'    => '',
             'isMaster'      => $request->accountType == 'Main' ? 1 : 0,
             'TypeDelivery'  => $request->typeDelivery,
             'btob'          => $request->customerType == 'B2B' ? 1 : 0,
             'FirstName'     => $request->firstName,
             'LastName'      => $request->lastName,
-            'Name'          => $request->firstName.", ".$request->lastName,
             'EmailAddress'  => $request->email,
+            'Name'          => $request->firstName.", ".$request->lastName,
             'Phone'         => $request->phoneCountryCode.' '.$request->phoneNumber,
             'bycard'        => $request->paymentMethod == 'Credit' ? 1 : 0,
             'discount'      => (intval($request->discountLevel) / 100),
-            'credit'        => intval($request->addCredit),
+            'credit'        => 0,
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
         ];
-        DB::table('infoCustomer')->insert($info_customer);
+        if($request->CustomerID !=''){
+            DB::table('infoCustomer')->where('CustomerID', $request->CustomerID)->update($info_customer);
+            $CustomerUUID = $request->CustomerID;
+        }else{
+            $custId = DB::table('infoCustomer')->insertGetId($info_customer);
+            $CustomerUUID = DB::table('infoCustomer')->where('id', $custId)->value('CustomerID');
+        }
         // set CustomerIdMaster of sub account as Main customer's CustomerID
         if(count($request->linkedAccounts) > 1){
             foreach ($request->linkedAccounts as $account) {
-                DB::table('infoCustomer')->where('id', $account->id)->update(['CustomerIDMaster' => $request->customerID]);
+                DB::table('infoCustomer')->where('id', $account['id'])->update(['CustomerIDMaster' => $CustomerUUID]);
             }
         }
         // add a new record to address table
         $address = [
-            'CustomerID'    => $request->customerID,
-            'AddressID'     => Str::uuid(),
+            'CustomerID'    => $CustomerUUID,
+            'AddressID'     => '',
             'longitude'     => $request->customerLon,
             'Latitude'      => $request->customerLat,
             'Town'          => $request->city,
@@ -51,25 +67,29 @@ class CustomerController extends Controller
             'address1'      => $request->deliveryAddress1,
             'address2'      => $request->deliveryAddress2,
             'status'        => 'DELIVERY',
+            'created_at'    => now(),
+            'updated_at'    => now(),
         ];
-        DB::table('address')->insert($address);
+        $addressId = DB::table('address')->insertGetId($address);
+        $addressUUID = DB::table('address')->where('id', $addressId)->value('AddressID');
         // add a new record to NewAddress table
         $new_address = [
-            'CustomerID'    => $request->customerID,
-            'AddressID'     => Str::uuid(),
+            'CustomerID'    => $CustomerUUID,
+            'AddressID'     => $addressUUID,
             'City'          => $request->city,
-            'State'        => $request->state,
-            // 'Country'       => $request->country,
+            'State'         => $request->state,
             'postcode'      => $request->postCode,
             'address1'      => $request->deliveryAddress1,
             'address2'      => $request->deliveryAddress2,
+            'created_at'    => now(),
+            'updated_at'    => now(),            
             'status'        => 'DONE',
         ];
         DB::table('NewAddress')->insert($new_address);
         // add a new record to NewCustomer table
         $new_customer = [
-            'CustomerID'    => $request->customerID,
-            'AddressID'     => $address['AddressID'],
+            'CustomerID'    => $CustomerUUID,
+            'AddressID'     => $addressUUID,
             'City'          => $request->city,
             'postcode'      => $request->postCode,
             'address1'      => $request->deliveryAddress1,
@@ -79,6 +99,8 @@ class CustomerController extends Controller
             'EmailAddress'  => $info_customer['EmailAddress'],
             'LastName'      => $info_customer['LastName'],
             'FirstName'     => $info_customer['FirstName'],
+            'created_at'    => now(),
+            'updated_at'    => now(),            
         ];
         DB::table('NewCustomer')->insert($new_customer);
         // payment 
@@ -90,8 +112,8 @@ class CustomerController extends Controller
                     'type' => 'card',
                     'card' => [
                         'number'      => $request->cardDetails,
-                        'exp_month'   => explode('/', $request->cardExpDate)[0],
-                        'exp_year'    => explode('/', $request->cardExpDate)[1],
+                        'exp_month'   => intval(explode('/', $request->cardExpDate)[0]),
+                        'exp_year'    => intval(explode('/', $request->cardExpDate)[1]),
                         'cvc'         => $request->cardCVC,
                     ],
                 ]);
@@ -102,7 +124,7 @@ class CustomerController extends Controller
                     'payment_method'    => $card->id,
                     'invoice_settings'  => ['default_payment_method' => $card->id],
                     'metadata'          => [
-                                                'CustomerID' => Str::uuid()
+                                                'CustomerID' => $CustomerUUID
                                         ],
                     'address'           => [
                                             'city'          => $request->city,
@@ -115,10 +137,10 @@ class CustomerController extends Controller
                 ]);
                 //add a new record to cards table
                 $credit_card = [
-                    'CustomerID'        => $CustomerID,
+                    'CustomerID'        => $CustomerUUID,
                     'type'              => $card->brand,
                     'cardHolder'        => $request->cardHolderName,
-                    'cardNumber'        => Str::mask($request->cardDetails, '*', -3, 3),
+                    'cardNumber'        => substr_replace($number, str_repeat('*', strlen($number) - 6), 3, -3),
                     'dateexpiration'    => $request->cardExpDate,
                     'stripe_customer_id'=> $stripe_customer->id,
                     'stripe_card_id'    => $card->id
@@ -136,14 +158,16 @@ class CustomerController extends Controller
                         "capture_method"    => "automatic",
                         'payment_method_types' => ['card'],
                     ]);
+                    if($payment_intent->status == 'SUCCESSED')
+                        DB::table('infoCustomer')->where('CustomerID', $CustomerUUID)->update(['credit'=> $request->addCredit]);
                 }
             } catch (\Throwable $th) {
                 throw $th;
             }
         }else{ // paymentMethod is BACS, we add extra records to several table.
             $billing_address = [
-                'CustomerID'    => $request->customerID,
-                'AddressID'     => Str::uuid(),
+                'CustomerID'    => $CustomerUUID,
+                'AddressID'     => '',
                 'longitude'     => $request->customerLon,
                 'Latitude'      => $request->customerLat,
                 'Town'          => $request->city,
@@ -153,47 +177,53 @@ class CustomerController extends Controller
                 'address1'      => $request->deliveryAddress1,
                 'address2'      => $request->deliveryAddress2,
                 'status'        => 'BILLING',
+                'created_at'    => now(),
+                'updated_at'    => now(),                
             ];    
-            DB::table('address')->insert($billing_address);            
+            $billing_address_id = DB::table('address')->insertGetId($billing_address);            
 
             $contact = [
-                'CustomerID'    => $CustomerID,
-                'address_id'    => $CustomerID,
+                'CustomerID'    => $CustomerUUID,
+                'address_id'    => $billing_address_id,
                 'name'          => $info_customer['Name'],
                 'firstname'     => $request->companyRepFirstName,
                 'company'       => $request->companyLegalName,
                 'email'         => $request->invoiceEmail1,
                 'phone'         => $request->companyPhoneCountryCode.' '.$request->companyPhoneNumber,
+                'created_at'    => now(),
+                'updated_at'    => now(),                
                 'type'          => 'BILLING',
             ];   
             DB::table('contacts')->insert($contact);
         }
         
         $customer_preferences = [
-            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Shirts premium finish',   'Value'=> $request->premiumFinish ],
-            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Shirts folded',           'Value'=> $request->shirtsFolded ],
-            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Debobbling',              'Value'=> $request->debobbling ],
-            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Minor repairs (up to £8)','Value'=> $request->minorRepairs ],
-            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Transactional SMS',       'Value'=> $request->transactionalSMS ],
-            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Transactional Email',     'Value'=> $request->transactionalEmail ],
-            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Marketing SMS',           'Value'=> $request->marketingSMS ],
-            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Marketing Email',         'Value'=> $request->marketingEmail ],
-            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Bi-Monthly VAT Invoices', 'Value'=> $request->VATEmail ],
-            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Cleaning partner',        'Value'=> $request->cleaningPartner ],
-            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'No care labels',          'Value'=> $request->noCareLabel ],
-            [ 'CustomerID'=> $request->customerID, 'Titre'=> 'Tailoring Approval',      'Value'=> $request->tailoringApproval ],
+            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Shirts premium finish',   'Value'=> $request->premiumFinish ],
+            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Shirts folded',           'Value'=> $request->shirtsFolded ],
+            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Debobbling',              'Value'=> $request->debobbling ],
+            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Minor repairs (up to £8)','Value'=> $request->minorRepairs ],
+            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Transactional SMS',       'Value'=> $request->transactionalSMS ],
+            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Transactional Email',     'Value'=> $request->transactionalEmail ],
+            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Marketing SMS',           'Value'=> $request->marketingSMS ],
+            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Marketing Email',         'Value'=> $request->marketingEmail ],
+            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Bi-Monthly VAT Invoices', 'Value'=> $request->VATEmail ],
+            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Cleaning partner',        'Value'=> $request->cleaningPartner ],
+            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'No care labels',          'Value'=> $request->noCareLabel ],
+            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Tailoring Approval',      'Value'=> $request->tailoringApproval ],
         ];
         DB::table('infoCustomerPreference')->insert($customer_preferences);
         $delivery_preference = [
-            'CustomerId'    => $request->customerID,
+            'CustomerId'    => $CustomerUUID,
             'TypeDelivery'  => $request->altTypeDelivery,
             'CodeCountry'   => $request->altPhoneCountryCode,
             'PhoneNumber'   => $request->altPhoneNumber,
             'OtherInstruction' => $request->altDriverInstruction,
+            'created_at'    => now(),
+            'updated_at'    => now(),            
         ];
         DB::table('DeliveryPreference')->insert($delivery_preference);
 
-        return response()->json($CustomerID);
+        return response()->json($CustomerUUID);
     }
     /**
      * this made for temporary to test stripe payment
@@ -249,22 +279,32 @@ class CustomerController extends Controller
      * create a customer as sub account
      */
     public function createSubAccount(Request $request){
-        $customerID = Str::uuid();
+        $validator = Validator::make($request->all(), [
+            'firstName' => 'required',
+            'lastName'  => 'required',
+            'email'     => 'required|email|unique:infoCustomer,EmailAddress'
+        ]);        
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 500);
+        }     
+           
         $info_customer = [
-            'CustomerID'    => $customerID,
-            'CustomerIDMaster'=> $request->mainCustomerID,
+            'CustomerID'    => '',
+            'CustomerIDMaster'=> $request->mainId,
             'isMaster'      => 0,
             'TypeDelivery'  => $request->typeDelivery,
             'btob'          => $request->customerType == 'B2B' ? 1 : 0,
             'FirstName'     => $request->firstName,
             'LastName'      => $request->lastName,
-            'Name'          => $request->firstName." ".$request->lastName,
+            'Name'          => $request->firstName.", ".$request->lastName,
             'EmailAddress'  => $request->email,
             'Phone'         => $request->phoneCountryCode.' '.$request->phoneNumber,
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
         ];
+        $custId = DB::table('infoCustomer')->insertGetId($info_customer);
+        $customerUUID = DB::table('infoCustomer')->where('id', $custId)->value('CustomerID');
         $response = [
-            'id'        => DB::table('infoCustomer')->insertGetId($info_customer),
+            'id'        => $custId,
             'name'      => $info_customer['Name'], 
             'email'     => $info_customer['EmailAddress'], 
             'phone'     => $info_customer['Phone'], 
@@ -273,8 +313,8 @@ class CustomerController extends Controller
         ];
 
         $address = [
-            'CustomerID'    => $customerID,
-            'AddressID'     => Str::uuid(),
+            'CustomerID'    => $customerUUID,
+            'AddressID'     => '',
             'longitude'     => $request->customerLon,
             'Latitude'      => $request->customerLat,
             'Town'          => $request->city,
@@ -283,24 +323,29 @@ class CustomerController extends Controller
             'postcode'      => $request->postCode,
             'address1'      => $request->deliveryAddress1,
             'address2'      => $request->deliveryAddress2,
+            'created_at'    => now(),
+            'updated_at'    => now(),
             'status'        => 'DELIVERY',
         ];
-        DB::table('address')->insert($address);
+        $addressId = DB::table('address')->insertGetId($address);
+        $addressUUID = DB::table('address')->where('id', $addressId)->value('AddressID');
         $new_address = [
-            'CustomerID'    => $customerID,
-            'AddressID'     => Str::uuid(),
+            'CustomerID'    => $customerUUID,
+            'AddressID'     => $addressUUID,
             'City'          => $request->city,
             'State'        => $request->state,
             // 'Country'       => $request->country,
             'postcode'      => $request->postCode,
             'address1'      => $request->deliveryAddress1,
             'address2'      => $request->deliveryAddress2,
+            'created_at'    => now(),
+            'updated_at'    => now(),
             'status'        => 'DONE',
         ];
         DB::table('NewAddress')->insert($new_address);
         $new_customer = [
-            'CustomerID'    => $customerID,
-            'AddressID'     => $address['AddressID'],
+            'CustomerID'    => $customerUUID,
+            'AddressID'     => $addressUUID,
             'City'          => $request->city,
             'postcode'      => $request->postCode,
             'address1'      => $request->deliveryAddress1,
@@ -310,6 +355,8 @@ class CustomerController extends Controller
             'EmailAddress'  => $info_customer['EmailAddress'],
             'LastName'      => $info_customer['LastName'],
             'FirstName'     => $info_customer['FirstName'],
+            'created_at'    => now(),
+            'updated_at'    => now(),
         ];
         DB::table('NewCustomer')->insert($new_customer);
         return response()->json($response);
@@ -318,7 +365,24 @@ class CustomerController extends Controller
      * generate CustomerID
      */
     public function generateCustomerID(Request $request){
-        return response()->json(Str::uuid());
+        $validator = Validator::make($request->all(), [
+            'firstName' => 'required',
+            'lastName'  => 'required',
+            'email'     => 'required|email|unique:infoCustomer,EmailAddress'
+        ]);        
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 500);
+        }          
+        $custId = DB::table('infoCustomer')->insertGetId(
+            [
+                'FirstName'     => $request->firstName,
+                'LastName'      => $request->lastName,
+                'Name'          => $request->firstName." ".$request->lastName,
+                'EmailAddress'  => $request->email
+            ]
+        );
+
+        return response()->json(DB::table('infoCustomer')->where('id', $custId)->value('CustomerID'));
     }
     /**
      * Get customer detail

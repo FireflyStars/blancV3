@@ -156,7 +156,7 @@ import SelectOptions from '../test/SelectOptions';
 import { phoneCountryCode as phoneCodes } from '../../static/PhoneCountryCodes';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
-import { DISPLAY_LOADER, HIDE_LOADER, LOADER_MODULE } from '../../store/types/types';
+import { DISPLAY_LOADER, HIDE_LOADER, LOADER_MODULE, TOASTER_MESSAGE, TOASTER_MODULE } from '../../store/types/types';
 
 export default {
     name: 'SubCustomer',
@@ -240,8 +240,11 @@ export default {
                 router.push({
                     name:'NewCustomer'
                 });
-            }).catch((error)=>{
-                console.log(error);
+            }).catch((errors)=>{
+                Object.values(errors.response.data).forEach((item)=>{
+                    console.log(item);
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item[0], ttl:5, type:'danger' });
+                });
             }).finally(()=>{
                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
             })

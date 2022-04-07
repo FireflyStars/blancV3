@@ -683,7 +683,7 @@
                 customerID: '',
                 accountType: 'Main',
                 customerType: 'B2C',
-                typeDelivery: '',
+                typeDelivery: 'DELIVERY',
                 firstName: '',
                 lastName: '',
                 phoneCountryCode: '+44',
@@ -848,13 +848,17 @@
             }
             const formatPhone = (phoneString)=>{
                 if(phoneString != ""){
-                    var phone = phoneString.split('"')[1];
-                    if(phone.split("|").length > 1){
-                        var area_code = phone.split("|")[0];
-                        var number = phone.split("|")[1];
-                        return '+' + area_code.replace(/\D/g, '') + ' ' + number.replace(/ /g, '').replace(/(\d{3})(\d{3})(\d{3,4})/, "$1 $2 $3");
-                    }else
-                        return phone.replace(/\D/g, '').replace(/(\d{2})(\d{3})(\d{3})(\d{3,4})/, "+$1 $2 $3 $3");
+                    if(phoneString.split('"').length == 1){
+                        return phoneString;
+                    }else{
+                        var phone = phoneString.split('"')[1];
+                        if(phone.split("|").length > 1){
+                            var area_code = phone.split("|")[0];
+                            var number = phone.split("|")[1];
+                            return '+' + area_code.replace(/\D/g, '') + ' ' + number.replace(/ /g, '').replace(/(\d{3})(\d{3})(\d{3,4})/, "$1 $2 $3");
+                        }else
+                            return phone.replace(/\D/g, '').replace(/(\d{2})(\d{3})(\d{3})(\d{3,4})/, "+$1 $2 $3 $3");
+                    }
                 }else{
                     return '';
                 }
@@ -932,7 +936,11 @@
             // handler when you click a create sub account button
             const createSubAccount = ()=>{
                 if(form.value.customerID == ''){
-                    axios.post('/generate-customer-id').then((res)=>{
+                    axios.post('/generate-customer-id', {
+                        firstName: form.value.firstName,
+                        lastName: form.value.lastName,
+                        email: form.value.email,
+                    }).then((res)=>{
                         form.value.customerID = res.data
                         localStorage.setItem('CustomerID', res.data);
                         localStorage.setItem('stepActived', 'linked_account');
@@ -941,8 +949,10 @@
                         router.push({
                             name: 'SubCustomer'
                         });
-                    }).catch((error)=>{
-                        console.log(error);
+                    }).catch((errors)=>{
+                        Object.values(errors.response.data).forEach((item)=>{
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item[0], ttl:5, type:'danger' });
+                        });     
                     });
                 }else{
                     localStorage.setItem('CustomerID', form.value.customerID);
@@ -964,9 +974,13 @@
                 }
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Creating Customer...']);
                 axios.post('create-customer', form.value).then((response)=>{
-                    console.log(response.data);
-                }).catch((error)=>{
-                    console.log(error);
+                    router.push({
+                        name: 'Customer'
+                    });
+                }).catch((errors)=>{
+                    Object.values(errors.response.data).forEach((item)=>{
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item[0], ttl:5, type:'danger' });
+                    });                    
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 })
