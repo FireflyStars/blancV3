@@ -154,10 +154,10 @@
                                                 </div>
                                             </transition>
                                         </div>
-                                        <div :class="{'col-8':isRecurring,'d-none':!isRecurring}">
+                                        <div :class="{'col-8':isRecurring}" v-if="isRecurring">
                                             <transition name="popinout">
                                                 <div>
-                                                    <recurring-form v-model="recurring_data" :postcode="(cur_cust?cur_cust.postcode:'')"></recurring-form>
+                                                    <recurring-form v-model="recurring_data" :postcode="(cur_cust?cur_cust.postcode:'')" ref="recur_form" :cust="cur_cust?cur_cust:null"></recurring-form>
                                                 </div>
                                             </transition>
                                         </div>
@@ -513,6 +513,8 @@ import axios from 'axios';
 
             all_timeslots.value = all_timeslots_arr;
 
+            const recur_form = ref();
+
 
 
             const d = new Date();
@@ -635,6 +637,9 @@ import axios from 'axios';
                     cust_type_delivery.value = (current_customer.TypeDelivery=='DELIVERY'?'Atelier':current_customer.TypeDelivery);
 
                     //store.dispatch(`${NEWORDER_MODULE}${NEW_ORDER_SET_TRANCHE_POSTCODE}`,current_customer.postcode);
+                    if(isRecurring.value && recur_form.value){
+                        recur_form.value.returnedData([]);
+                    }
 
                 }
 
@@ -765,7 +770,7 @@ import axios from 'axios';
                    }).then((res)=>{
                        if(res.data.new_order_id > 0){
                            let new_order_id = res.data.new_order_id;
-                           //router.push('/order-content/'+new_order_id);
+                           router.push('/order-content/'+new_order_id);
                        }
                    }).catch((err)=>{
 
@@ -1273,6 +1278,7 @@ import axios from 'axios';
                 checkStorePickup,
                 shp_min_date,
                 addRemoveDays,
+                recur_form,
             }
         }
     }

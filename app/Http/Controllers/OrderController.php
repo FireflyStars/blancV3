@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\InfoCustomer;
 use App\Http\Controllers\BookingController;
+use App\Models\OrderRecurringCreator;
 
 use function PHPUnit\Framework\isNull;
 
@@ -64,29 +65,30 @@ class OrderController extends Controller
 
         $previous_orders = InfoCustomer::getPreviousOrders($customerid);
 
-        $order_to_insert = [
-            'deliverymethod'=>$new_order['deliverymethod'],
-            'CustomerID'=>$customerid,
-            'OrderID'=>'',
-            'firstorder'=>(count($previous_orders)>0?0:1),
-            'express'=>$new_order['express'],
-            'Status'=>'PENDING',
-            'created_at'=>$created_stamp,
-        ];
+        if($new_order['deliverymethod'] !='recurring'){
+            $order_to_insert = [
+                'deliverymethod'=>$new_order['deliverymethod'],
+                'CustomerID'=>$customerid,
+                'OrderID'=>'',
+                'firstorder'=>(count($previous_orders)>0?0:1),
+                'express'=>$new_order['express'],
+                'Status'=>($new_order['deliverymethod']=='recurring'?'RECURRING':'PENDING'),
+                'created_at'=>$created_stamp,
+            ];
 
-        //Fields for in_store_collection
-        if($new_order['deliverymethod']=='in_store_collection'){
-            $order_to_insert['TypeDelivery'] = $new_order['store_name'];
+            //Fields for in_store_collection
+            if($new_order['deliverymethod']=='in_store_collection'){
+                $order_to_insert['TypeDelivery'] = $new_order['store_name'];
+            }
+
+            //Fields for delivery
+            if(in_array($new_order['deliverymethod'],['delivery_only','home_delivery','recurring'])){
+                $order_to_insert['TypeDelivery'] = 'DELIVERY';
+            }
+
+            $new_order_id = DB::table('infoOrder')
+                ->insertGetId($order_to_insert);
         }
-
-        //Fields for delivery
-        if(in_array($new_order['deliverymethod'],['delivery_only','home_delivery','recurring'])){
-            $order_to_insert['TypeDelivery'] = 'DELIVERY';
-        }
-
-        $new_order_id = DB::table('infoOrder')
-            ->insertGetId($order_to_insert);
-
 
 
         //Add in_store_collection booking details
@@ -133,8 +135,16 @@ class OrderController extends Controller
                 'order_id'=>$new_order_id,
 
             ];
-
             $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
+
+            $booking_do = DB::table('deliveryask')->where('id',$id_booking)->first();
+
+            DB::table('infoOrder')->where('id',$new_order_id)->update([
+                'DeliveryaskID'=>$booking_do->DeliveryaskID,
+                'DateDeliveryAsk'=>$new_order['do_delivery']
+            ]);
+
+
 
             //NOTIFICATION
 
@@ -170,12 +180,20 @@ class OrderController extends Controller
                 'trancheFrom'=>$tranche_pickup['tranchefrom'],
                 'trancheto'=>$tranche_pickup['trancheto'],
                 'address_id'=>($address?$address->id:0),
-                'date'=>$new_order['hd_delivery'],
+                'date'=>$new_order['hd_pickup'],
                 'status'=>'NEW',//'PMS'
                 'order_id'=>$new_order_id,
             ];
 
-            $id_booking_pickup = DB::table('pickup')->insert($pickup_arr);
+            $id_booking_pickup = DB::table('pickup')->insertGetId($pickup_arr);
+            $booking_hd_pickup = DB::table('pickup')->where('id',$id_booking_pickup)->first();
+
+            DB::table('infoOrder')->where('id',$new_order_id)->update([
+                'PickupID'=>$booking_hd_pickup->PickupID,
+                'DatePickup'=>$new_order['hd_pickup']
+            ]);
+
+
 
 
             $delivery_slot = $new_order['hd_delivery_timeslot'];
@@ -200,13 +218,63 @@ class OrderController extends Controller
 
             ];
 
-            $id_booking = DB::table('deliveryask')->insert($delivery_arr);
+            $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
+            $booking_hd_delivery = DB::table('deliveryask')->where('id',$id_booking)->first();
+
+            DB::table('infoOrder')->where('id',$new_order_id)->update([
+                'DeliveryaskID'=>$booking_hd_delivery->DeliveryaskID,
+                'DateDeliveryAsk'=>$new_order['hd_delivery']
+            ]);
+
+
 
             //Notification
 
-
         }
 
+        $recurring_data = [];
+        if($new_order['deliverymethod']=='recurring'){
+            $recurring_data = @json_decode($new_order['recurring_data']);
+
+            $recurring = [
+                'DeliveryMon'=>[],
+                'DeliveryTu'=>[],
+                'DeliveryWed'=>[],
+                'DeliveryTh'=>[],
+                'DeliveryFri'=>[],
+                'DeliverySat'=>[],
+            ];
+
+
+            foreach($recurring_data as $k=>$v){
+                if(isset($recurring[$v->value])){
+                    $recurring[$v->value] = array($v->slot);
+                }
+            }
+
+            $to_update = [];
+            foreach($recurring as $k=>$v){
+                $to_update[$k] = json_encode($v);
+            }
+            $to_update['DeliverybyDay'] = 1;
+
+            DB::table('infoCustomer')->where('CustomerID',$customerid)->update($to_update);
+
+            //Call to recurringCreator
+            $recur_obj = OrderRecurringCreator::processRecurringOrders('SAVE RECCURING BOOKING',$customerid);
+
+
+            if($recur_obj){
+                $new_order_id = $recur_obj->cur_orders[0];
+
+                foreach($recur_obj->cur_orders as $k=>$v){
+                    BookingController::logBookingHistory(0,$v,$customer->id,$user->id,'recurring');
+                }
+            }
+
+            //Notification
+
+        }
 
 
         //Logs booking history
@@ -224,6 +292,7 @@ class OrderController extends Controller
 
         return response()->json([
             'new_order_id'=>$new_order_id,
+            'recurring'=>$recurring_data,
             //'delivery_arr'=>$delivery_arr,
         ]);
     }

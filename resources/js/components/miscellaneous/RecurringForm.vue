@@ -9,6 +9,8 @@
             </li>
         </ul>
 
+
+
         <ul  v-if="reccuring.length > 0" class="time-slot">
              <li v-if="reccuring.length < 2">
                      <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[0].slot  v-bind:name= reccuring[0].value :available-slots="reccuring[0].available"  label="Select a slot" :isRecurring="true"></time-slot-picker>
@@ -85,6 +87,7 @@ export default ({
      props: {
             modelValue: Array,
             postcode:String || null,
+            cust:Object||null,
         },
 
     setup(props,context) {
@@ -93,6 +96,7 @@ export default ({
         const store = useStore();
          const reccuring= ref([]);
          const available_by_postcode = ref([]);
+         const cust_slots = ref([]);
 
 
 
@@ -135,48 +139,51 @@ export default ({
                 }
             ]);
 
-
-
-
-
-        function setSlots(day,event){
-            let parent_class = event.target.parentElement.className.toString();
-            console.log(parent_class);
-
-            if(props.postcode!=''){
-                if(!parent_class.includes('selected')){
-
-                    store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Fetching slots'], {root: true});
-                    axios.post('/get-slots-by-day',{postcode:props.postcode,day:day})
-                        .then((res)=>{
-                            let index = slotsByDay.value.findIndex((z) => { return z.value === day });
-                            let tranches = res.data.tranches;
-
-                            if(tranches.length > 0){
-                            slotsByDay.value[index].available = tranches;
-                            }
-
-                        }).catch((err)=>{
-
-                        }).finally(()=>{
-                            store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                            setSlotsByDay(day);
-                        });
-                }else{
-                    setSlotsByDay(day);
-                }
-
-
-            }else{
-                setSlotsByDay(day);
-            }
-
-
-
-
+        if(props.postcode !=''){
+            loadCustTranches();
         }
 
-        function setSlotsByDay(day){
+
+        function loadCustTranches(){
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Fetching slots'], {root: true});
+            axios.post('/get-slots-by-day',{postcode:props.postcode})
+                .then((res)=>{
+                    let tranches = res.data.tranches;
+                    let keys = Object.keys(tranches);
+                    keys.forEach(function(v,i){
+                        let index = slotsByDay.value.findIndex((z) => { return z.value === v });
+                        slotsByDay.value[index].available = tranches[v];
+
+                        if(props.cust){
+                            let cust_slot = JSON.parse(props.cust[v]);
+                            if(cust_slot.length > 0){
+                                slotsByDay.value[index].slot = cust_slot[0];
+                                slotsByDay.value[index].selected = true;
+                            }
+                        }
+                    });
+
+                    if(props.cust){
+                        let selected_arr = [];
+                        slotsByDay.value.forEach(function(v,i){
+                            if(v.selected){
+                                selected_arr.push(slotsByDay.value[i]);
+                            }
+                        });
+                        reccuring.value=selected_arr;
+                    }
+
+                }).catch((err)=>{
+
+                }).finally(()=>{
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+
+                });
+        }
+
+
+
+        function setSlots(day){
             slotsByDay.value.forEach((slotDay,index)=>{
 
                 if(slotDay.value == day){
@@ -202,7 +209,7 @@ export default ({
         });
 
         function returnedData(arr){
-            console.log("call from parent",arr);
+            loadCustTranches();
         }
 
 
@@ -211,7 +218,7 @@ export default ({
             slotsByDay,
             reccuring,
             returnedData,
-
+            cust_slots,
         }
     }
 })
