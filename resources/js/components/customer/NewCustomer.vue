@@ -215,6 +215,12 @@
                                     <div class="w-75 mt-3">
                                         <textarea v-model="form.customerNote" name="customer_note" rows="4" class="form-control"></textarea>
                                     </div>
+                                    <div class="w-75 mt-3">
+                                        <div class="form-group">
+                                            <label for="cardVIP">VIP card</label>
+                                            <input type="text" v-model="form.cardVIP" placeholder="" class="form-control custom-input">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </transition>
@@ -395,127 +401,16 @@
                         </transition>
                         <transition name="list" appear v-if="step =='preferences'">
                             <div class="cust-page-content preferences m-auto pt-5">
-                                <div class="d-flex justify-content-between mt-3">
-                                    <div class="blocks">
-                                        <h3 class="title mb-3">Finish instructions</h3>
+                                <div class="d-flex justify-content-between mt-3 flex-wrap">
+                                    <div class="blocks" v-for="(group, index) in form.preferences" :key="index">
+                                        <h3 class="title mb-3">{{ group.key }}</h3>
                                         <div class="page-section">
-                                            <div class="item-block py-3 border-bottom">
+                                            <div class="item-block py-3 border-bottom" v-for="(item, key) in group.data" :key="key">
                                                 <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Shirts premium finish</h4>
-                                                    <switch-btn v-model="form.premiumFinish"></switch-btn>
+                                                    <h4 class="sub-title">{{ item.title }}</h4>
+                                                    <switch-btn v-model="item.value"></switch-btn>
                                                 </div>
-                                                <p class="m-0 col-8">Customer wants shirts with premium hand finish and always pressed with creases on the sleeves</p>
-                                            </div>
-                                            <div class="item-block py-3 border-bottom">
-                                                <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Shirts folded</h4>
-                                                    <switch-btn v-model="form.shirtsFolded"></switch-btn>
-                                                </div>
-                                                <p class="m-0 col-8">
-                                                    Customer wants shirts always folded
-                                                </p>
-                                            </div>
-                                            <div class="item-block py-3 border-bottom">
-                                                <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Debobbling</h4>
-                                                    <switch-btn v-model="form.debobbling"></switch-btn>
-                                                </div>
-                                                <p class="m-0 col-8">
-                                                    Customer wants jumpers and coats fully debobbled
-                                                </p>
-                                            </div>
-                                            <div class="item-block py-3">
-                                                <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Minor repairs (up to £8)</h4>
-                                                    <switch-btn v-model="form.minorRepairs"></switch-btn>
-                                                </div>
-                                                <p class="m-0 col-8">
-                                                    Customer authorises us to proceed with making minor repairs such as small tears, missing buttons or moth holes
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="blocks">
-                                        <h3 class="title mb-3">Authorisations</h3>
-                                        <div class="page-section">
-                                            <div class="item-block py-3 border-bottom">
-                                                <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Cleaning partner</h4>
-                                                    <switch-btn v-model="form.cleaningPartner"></switch-btn>
-                                                </div>
-                                                <p class="m-0 col-8">
-                                                    Customer authorises us to send items out to a partner.
-                                                </p>
-                                            </div>
-                                            <div class="item-block py-3 border-bottom">
-                                                <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">No care labels</h4>
-                                                    <switch-btn v-model="form.noCareLabel"></switch-btn>
-                                                </div>
-                                                <p class="m-0 col-8">
-                                                    Customer authorises us to proceed always if a garment has no care label, and is fully aware and accepts the risks associated.
-                                                </p>
-                                            </div>
-                                            <div class="item-block py-3 border-bottom">
-                                                <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Tailoring Approval</h4>
-                                                    <switch-btn v-model="form.tailoringApproval"></switch-btn>
-                                                </div>
-                                                <p class="m-0 col-8">
-                                                    Customer wants to give approval for tailoring jobs quoted > £50
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-between mt-3">
-                                    <div class="blocks">
-                                        <h3 class="title mb-3">Communication</h3>
-                                        <div class="page-section">
-                                            <div class="item-block py-3 border-bottom">
-                                                <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Transactional SMS</h4>
-                                                    <switch-btn v-model="form.transactionalSMS"></switch-btn>
-                                                </div>
-                                                <p class="m-0 col-10">
-                                                    Customer agrees to receiving transactional SMS from us
-                                                </p>
-                                            </div>
-                                            <div class="item-block py-3 border-bottom">
-                                                <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Transactional Email</h4>
-                                                    <switch-btn v-model="form.transactionalEmail"></switch-btn>
-                                                </div>
-                                                <p class="m-0 col-10">
-                                                    Customer agrees to receiving transactional emails from us
-                                                </p>
-                                            </div>
-                                            <div class="item-block py-3 border-bottom">
-                                                <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Marketing SMS</h4>
-                                                    <switch-btn v-model="form.marketingSMS"></switch-btn>
-                                                </div>
-                                                <p class="m-0 col-10">
-                                                    Customer agrees to receiving SMS notifications from us
-                                                </p>
-                                            </div>
-                                            <div class="item-block py-3 border-bottom">
-                                                <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Marketing Email</h4>
-                                                    <switch-btn v-model="form.marketingEmail"></switch-btn>
-                                                </div>
-                                                <p class="m-0 col-10">
-                                                    Customer agrees to receiving Marketing emails from us
-                                                </p>
-                                            </div>
-                                            <div class="item-block py-3 border-bottom">
-                                                <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Bi-Monthly VAT Invoices</h4>
-                                                    <switch-btn v-model="form.VATEmail"></switch-btn>
-                                                </div>
-                                                <p class="m-0 col-10">
-                                                    Customer wishes to receive monthly email VAT receipts
-                                                </p>
+                                                <p class="m-0 col-8">{{ item.description }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -652,7 +547,7 @@
     import MultipleEmail from '../test/MultipleEmail';
     import CheckBox from '../miscellaneous/CheckBox';
     import { phoneCountryCode as phoneCodes } from '../../static/PhoneCountryCodes';
-    import SwitchBtn from '../miscellaneous/SwitchBtn.vue';
+    import SwitchBtn from '../miscellaneous/SwitchNumberBtn.vue';
     import Search from './Search';
     import AccountImportModal from './AccountImportModal';
     import {
@@ -665,6 +560,7 @@
         HIDE_LOADER,
     } from "../../store/types/types";
     import { useStore } from 'vuex';
+import axios from 'axios';
     export default {
         name: "NewCustomer",
         components:{
@@ -699,6 +595,7 @@
                 deliveryAddress1: '',
                 deliveryAddress2: '',
                 customerNote: '',
+                cardVIP: '',
                 // payment tab
                 alreadyLinkedToAccount: true,
                 paymentMethod: '',
@@ -729,18 +626,19 @@
                 creditAmount: 0,
                 addCredit: 0,
                 // preferences tab
-                premiumFinish: false,
-                shirtsFolded: false,
-                debobbling: false,
-                minorRepairs: true,
-                transactionalSMS: true,
-                transactionalEmail: true,
-                marketingSMS: false,
-                marketingEmail: false,
-                VATEmail: false,
-                cleaningPartner: true,
-                noCareLabel: true,
-                tailoringApproval: false,
+                preferences: [],
+                // premiumFinish: false,
+                // shirtsFolded: false,
+                // debobbling: false,
+                // minorRepairs: true,
+                // transactionalSMS: true,
+                // transactionalEmail: true,
+                // marketingSMS: false,
+                // marketingEmail: false,
+                // VATEmail: false,
+                // cleaningPartner: true,
+                // noCareLabel: true,
+                // tailoringApproval: false,
 
                 altTypeDelivery: '',
                 altName: '',
@@ -770,6 +668,17 @@
             const cardErrors = ref({});   
 
             onMounted(()=>{
+                axios.post('get-customer-preferences').then((res)=>{
+                    var preferences = [];
+                    Object.keys(res.data).forEach((item)=>{
+                        form.value.preferences.push({
+                            data: res.data[item],
+                            key: item,
+                        })
+                    })
+                }).catch((error)=>{
+                    console.log(error);
+                })                
                 nextTick(()=>{
                     showcontainer.value = true;
                 });
@@ -941,18 +850,22 @@
                         lastName: form.value.lastName,
                         email: form.value.email,
                     }).then((res)=>{
-                        form.value.customerID = res.data
-                        localStorage.setItem('CustomerID', res.data);
-                        localStorage.setItem('stepActived', 'linked_account');
-                        localStorage.setItem('formData', JSON.stringify(form.value));
-                        localStorage.setItem('linkedAccounts', JSON.stringify(form.value.linkedAccounts));
-                        router.push({
-                            name: 'SubCustomer'
-                        });
+                        if(res.data.error){
+                            response.data.error.forEach((item)=>{
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item[0], ttl:5, type:'danger' });
+                            })
+                        }else{
+                            form.value.customerID = res.data
+                            localStorage.setItem('CustomerID', res.data);
+                            localStorage.setItem('stepActived', 'linked_account');
+                            localStorage.setItem('formData', JSON.stringify(form.value));
+                            localStorage.setItem('linkedAccounts', JSON.stringify(form.value.linkedAccounts));
+                            router.push({
+                                name: 'SubCustomer'
+                            });
+                        }
                     }).catch((errors)=>{
-                        Object.values(errors.response.data).forEach((item)=>{
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item[0], ttl:5, type:'danger' });
-                        });     
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: errors.response.data.message, ttl:5, type:'danger' });
                     });
                 }else{
                     localStorage.setItem('CustomerID', form.value.customerID);
@@ -967,20 +880,19 @@
 
             // handler for when you click a create customer
             const createCustomer =()=>{
-                if(form.value.firstName == ''){
-                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message:'Please enter first name.', ttl:5, type:'danger' });
-                }else if(form.value.lastName == ''){
-                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message:'Please enter last name.', ttl:5, type:'danger' });
-                }
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Creating Customer...']);
                 axios.post('create-customer', form.value).then((response)=>{
-                    router.push({
-                        name: 'Customer'
-                    });
+                    if(response.data.error){
+                        Object.values(response.data.error).forEach((item)=>{
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item[0], ttl:5, type:'danger' });
+                        })                        
+                    }else{
+                        router.push({
+                            name: 'Customer'
+                        });
+                    }
                 }).catch((errors)=>{
-                    Object.values(errors.response.data).forEach((item)=>{
-                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item[0], ttl:5, type:'danger' });
-                    });                    
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: errors.response.data.message, ttl:5, type:'danger' });
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 })

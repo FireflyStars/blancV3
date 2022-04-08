@@ -19,10 +19,10 @@ class CustomerController extends Controller
         $validator = Validator::make($request->all(), [
             'firstName' => 'required',
             'lastName'  => 'required',
-            'email'     => 'required|email'
+            'email'     => $request->email != '' ? 'required|email|unique:infoCustomer, EmailAddress' : ''
         ]);        
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 500);
+            return response()->json(['error'=> $validator->errors()]);
         }
 
         // add a new record to infoCustomer table
@@ -33,25 +33,38 @@ class CustomerController extends Controller
             'btob'          => $request->customerType == 'B2B' ? 1 : 0,
             'FirstName'     => $request->firstName,
             'LastName'      => $request->lastName,
-            'EmailAddress'  => $request->email,
+            'EmailAddress'  => $request->email !='' ? $request->email : (Str::random(10).'@noemail.com'),
             'Name'          => $request->firstName.", ".$request->lastName,
             'Phone'         => $request->phoneCountryCode.' '.$request->phoneNumber,
             'bycard'        => $request->paymentMethod == 'Credit Card' ? 1 : 0,
+            'cardvip'       => $request->cardVIP,
             'discount'      => (intval($request->discountLevel) / 100),
             'credit'        => 0,
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
         ];
         if($request->CustomerID !=''){
-            DB::table('infoCustomer')->where('CustomerID', $request->CustomerID)->update($info_customer);
-            $CustomerUUID = $request->CustomerID;
+            try {
+                DB::table('infoCustomer')->where('CustomerID', $request->CustomerID)->update($info_customer);
+                $CustomerUUID = $request->CustomerID;
+            }catch (\Exception $e) {
+                return response()->json($e->getMessage(), 500);
+            }
         }else{
-            $custId = DB::table('infoCustomer')->insertGetId($info_customer);
-            $CustomerUUID = DB::table('infoCustomer')->where('id', $custId)->value('CustomerID');
+            try {
+                $custId = DB::table('infoCustomer')->insertGetId($info_customer);
+                $CustomerUUID = DB::table('infoCustomer')->where('id', $custId)->value('CustomerID');
+            } catch (\Exception $e) {
+                return response()->json($e->getMessage(), 500);
+            }
         }
         // set CustomerIdMaster of sub account as Main customer's CustomerID
         if(count($request->linkedAccounts) > 1){
             foreach ($request->linkedAccounts as $account) {
-                DB::table('infoCustomer')->where('id', $account['id'])->update(['CustomerIDMaster' => $CustomerUUID]);
+                try {
+                    DB::table('infoCustomer')->where('id', $account['id'])->update(['CustomerIDMaster' => $CustomerUUID]);
+                } catch (\Exception $e) {
+                    return response()->json($e->getMessage(), 500);
+                }
             }
         }
         // add a new record to address table
@@ -70,8 +83,12 @@ class CustomerController extends Controller
             'created_at'    => now(),
             'updated_at'    => now(),
         ];
-        $addressId = DB::table('address')->insertGetId($address);
-        $addressUUID = DB::table('address')->where('id', $addressId)->value('AddressID');
+        try {
+            $addressId = DB::table('address')->insertGetId($address);
+            $addressUUID = DB::table('address')->where('id', $addressId)->value('AddressID');
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage(), 500);
+        }
         // add a new record to NewAddress table
         $new_address = [
             'CustomerID'    => $CustomerUUID,
@@ -86,7 +103,11 @@ class CustomerController extends Controller
             'updated_at'    => now(),            
             'status'        => 'DONE',
         ];
-        DB::table('NewAddress')->insert($new_address);
+        try {
+            DB::table('NewAddress')->insert($new_address);
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage(), 500);
+        }
         // add a new record to NewCustomer table
         $new_customer = [
             'CustomerID'    => $CustomerUUID,
@@ -103,7 +124,11 @@ class CustomerController extends Controller
             'created_at'    => now(),
             'updated_at'    => now(),            
         ];
-        DB::table('NewCustomer')->insert($new_customer);
+        try {
+            DB::table('NewCustomer')->insert($new_customer);
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage(), 500);
+        }        
         // payment 
         if($request->paymentMethod == 'Credit Card'){ // payment is credit card
             $stripe = new \Stripe\StripeClient(env('STRIPE_TEST_SECURITY_KEY'));
@@ -140,7 +165,6 @@ class CustomerController extends Controller
                 $credit_card = [
                     'CustomerID'        => $CustomerUUID,
                     'type'              => $card->card->brand,
-                    // 'cardHolder'        => $request->cardHolderName,
                     'cardNumber'        => substr_replace($request->cardDetails, str_repeat('*', strlen($request->cardDetails) - 6), 3, -3),
                     'dateexpiration'    => $request->cardExpDate,
                     'stripe_customer_id'=> $stripe_customer->id,
@@ -164,8 +188,8 @@ class CustomerController extends Controller
                     if($payment_intent->status == 'succeeded')
                         DB::table('infoCustomer')->where('CustomerID', $CustomerUUID)->update(['credit'=> $request->addCredit]);
                 }
-            } catch (\Throwable $th) {
-                throw $th;
+            } catch (\Exception $e) {
+                return response()->json($e->getMessage(), 500);
             }
         }else{ // paymentMethod is BACS, we add extra records to several table.
             $billing_address = [
@@ -182,8 +206,12 @@ class CustomerController extends Controller
                 'status'        => 'BILLING',
                 'created_at'    => now(),
                 'updated_at'    => now(),                
-            ];    
-            $billing_address_id = DB::table('address')->insertGetId($billing_address);            
+            ];   
+            try {
+                $billing_address_id = DB::table('address')->insertGetId($billing_address);
+            } catch (\Exception $e) {
+                return response()->json($e->getMessage(), 500);
+            } 
 
             $contact = [
                 'CustomerID'    => $CustomerUUID,
@@ -197,24 +225,29 @@ class CustomerController extends Controller
                 'updated_at'    => now(),                
                 'type'          => 'BILLING',
             ];   
-            DB::table('contacts')->insert($contact);
+            try {
+                DB::table('contacts')->insert($contact);
+            } catch (\Exception $e) {
+                return response()->json($e->getMessage(), 500);
+            }             
+            
         }
         
-        $customer_preferences = [
-            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Shirts premium finish',   'Value'=> $request->premiumFinish ],
-            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Shirts folded',           'Value'=> $request->shirtsFolded ],
-            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Debobbling',              'Value'=> $request->debobbling ],
-            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Minor repairs (up to £8)','Value'=> $request->minorRepairs ],
-            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Transactional SMS',       'Value'=> $request->transactionalSMS ],
-            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Transactional Email',     'Value'=> $request->transactionalEmail ],
-            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Marketing SMS',           'Value'=> $request->marketingSMS ],
-            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Marketing Email',         'Value'=> $request->marketingEmail ],
-            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Bi-Monthly VAT Invoices', 'Value'=> $request->VATEmail ],
-            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Cleaning partner',        'Value'=> $request->cleaningPartner ],
-            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'No care labels',          'Value'=> $request->noCareLabel ],
-            [ 'CustomerID'=> $CustomerUUID, 'Titre'=> 'Tailoring Approval',      'Value'=> $request->tailoringApproval ],
-        ];
-        DB::table('InfoCustomerPreference')->insert($customer_preferences);
+        $preferences = $request->preferences;
+            foreach ($preferences as $group) {
+                foreach ($group['data'] as $item) {
+                    $customer_preferences[] = [
+                        'CustomerID' => $CustomerUUID,
+                        'Titre' => $item['title'],
+                        'Value' => $item['value'],
+                    ];
+                }
+            }
+        try {
+            DB::table('InfoCustomerPreference')->insert($preferences);
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage(), 500);
+        }                     
         $delivery_preference = [
             'CustomerId'    => $CustomerUUID,
             'TypeDelivery'  => $request->altTypeDelivery ? $request->altTypeDelivery : 'N/A' ,
@@ -224,9 +257,23 @@ class CustomerController extends Controller
             'created_at'    => now(),
             'updated_at'    => now(),            
         ];
-        DB::table('DeliveryPreference')->insert($delivery_preference);
-
+        try {
+            DB::table('DeliveryPreference')->insert($delivery_preference);
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage(), 500);
+        }         
         return response()->json($CustomerUUID);
+    }
+    /**
+     * Get customer preferences
+     * 
+     */
+    public function getCustomerPreferences(Request $request){
+        $preferences = DB::table('customerpreferences')->where('deleted', 0)
+                        ->where('category', '!=', 'Other')
+                        ->select('title', 'category', 'description', 'value')
+                        ->get()->groupBy('category');
+        return response()->json($preferences);
     }
     /**
      * this made for temporary to test stripe payment
@@ -288,7 +335,7 @@ class CustomerController extends Controller
             'email'     => 'required|email|unique:infoCustomer,EmailAddress'
         ]);        
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 500);
+            return response()->json(['error'=> $validator->errors()]);
         }     
            
         $info_customer = [
@@ -304,8 +351,12 @@ class CustomerController extends Controller
             'Phone'         => $request->phoneCountryCode.' '.$request->phoneNumber,
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
         ];
-        $custId = DB::table('infoCustomer')->insertGetId($info_customer);
-        $customerUUID = DB::table('infoCustomer')->where('id', $custId)->value('CustomerID');
+        try {
+            $custId = DB::table('infoCustomer')->insertGetId($info_customer);
+            $customerUUID = DB::table('infoCustomer')->where('id', $custId)->value('CustomerID');
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage(), 500);
+        }
         $response = [
             'id'        => $custId,
             'name'      => $info_customer['Name'], 
@@ -330,8 +381,12 @@ class CustomerController extends Controller
             'updated_at'    => now(),
             'status'        => 'DELIVERY',
         ];
-        $addressId = DB::table('address')->insertGetId($address);
-        $addressUUID = DB::table('address')->where('id', $addressId)->value('AddressID');
+        try {
+            $addressId = DB::table('address')->insertGetId($address);
+            $addressUUID = DB::table('address')->where('id', $addressId)->value('AddressID');
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage(), 500);
+        }        
         $new_address = [
             'CustomerID'    => $customerUUID,
             'AddressID'     => $addressUUID,
@@ -345,7 +400,11 @@ class CustomerController extends Controller
             'updated_at'    => now(),
             'status'        => 'DONE',
         ];
-        DB::table('NewAddress')->insert($new_address);
+        try {
+            DB::table('NewAddress')->insert($new_address);
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage(), 500);
+        }        
         $new_customer = [
             'CustomerID'    => $customerUUID,
             'AddressID'     => $addressUUID,
@@ -361,7 +420,11 @@ class CustomerController extends Controller
             'created_at'    => now(),
             'updated_at'    => now(),
         ];
-        DB::table('NewCustomer')->insert($new_customer);
+        try {
+            DB::table('NewCustomer')->insert($new_customer);
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage(), 500);
+        }        
         return response()->json($response);
     }
     /**
@@ -374,7 +437,7 @@ class CustomerController extends Controller
             'email'     => 'required|email|unique:infoCustomer,EmailAddress'
         ]);        
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 500);
+            return response()->json(['error'=> $validator->errors()]);
         }          
         $custId = DB::table('infoCustomer')->insertGetId(
             [

@@ -15,10 +15,10 @@
     export default {
         name: "Switch",
         props:{
-            modelValue: Boolean,
-            labelLeft:String,
-            disabled:Boolean,
-            labelRight:String
+            modelValue: Number,
+            labelLeft: String,
+            disabled: Boolean,
+            labelRight: String
         },
         setup(props,context){
             const switchval=ref(false);
