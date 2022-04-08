@@ -1244,6 +1244,11 @@
   resolved "https://registry.yarnpkg.com/@vue/devtools-api/-/devtools-api-6.0.12.tgz#7b57cce215ae9f37a86984633b3aa3d595aa5b46"
   integrity sha512-iO/4FIezHKXhiDBdKySCvJVh8/mZPxHpiQrTy+PXVqJZgpTPTdHy4q8GXulaY+UKEagdkBb0onxNQZ0LNiqVhw==
 
+"@vue/devtools-api@^6.0.0-beta.15":
+  version "6.1.4"
+  resolved "https://registry.yarnpkg.com/@vue/devtools-api/-/devtools-api-6.1.4.tgz#b4aec2f4b4599e11ba774a50c67fa378c9824e53"
+  integrity sha512-IiA0SvDrJEgXvVxjNkHPFfDx6SXw0b/TUkqMcDZWNg9fnCAHbTpoo59YfJ9QLFkwa3raau5vSlRVzMSLDnfdtQ==
+
 "@vue/reactivity-transform@3.2.31":
   version "3.2.31"
   resolved "https://registry.yarnpkg.com/@vue/reactivity-transform/-/reactivity-transform-3.2.31.tgz#0f5b25c24e70edab2b613d5305c465b50fc00911"
@@ -5891,6 +5896,13 @@ vary@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
   integrity sha1-IpnwLG3tMNSllhsLn3RSShj2NPw=
+
+vee-validate@^4.5.10:
+  version "4.5.10"
+  resolved "https://registry.yarnpkg.com/vee-validate/-/vee-validate-4.5.10.tgz#425d4ca1e317361b86f7deb6600daec8942e9b90"
+  integrity sha512-7dZE0PZTNY3Ztp6Gz8iw+QS7Fz59vU1qkD0rBJkldkf9Faw2lFjWgE0tiCist5RQkLgt7/HaVbojzb/SCdutfA==
+  dependencies:
+    "@vue/devtools-api" "^6.0.0-beta.15"
 
 vm-browserify@^1.0.1:
   version "1.1.2"

@@ -21,4 +21,4 @@ mix.webpackConfig ({
 })
 mix.js('resources/js/app.js', 'public/js')
     // .sass('resources/css/app.scss', 'public/css').vue();
-    .sass('resources/css/app.scss', 'public/css').vue().browserSync('http://localhost:8000').version();
+    .sass('resources/css/app.scss', 'public/css').vue();
