@@ -17,7 +17,7 @@ use App\Http\Controllers\DetailingController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ShippingController;
 use App\Http\Controllers\PosteController;
-
+use Illuminate\Support\Facades\DB;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -68,13 +68,12 @@ Route::get('/permissions-test',function(){
  }
 })->name('permissions');
 
-
-
-
+//ADD test routes here
 
 Route::get('{any}', function () {
     return view('welcome');
 })->where('any','.*');
+
 // added by yonghuan to search customers to be linked
 Route::post('/search-customer', [SearchController::class, 'SearchCustomersToLink'])->name('SearchCustomersToLink');
 
@@ -103,7 +102,7 @@ Route::post('/get-picto-names',[ItemController::class,'getPictoNames'])->name('g
 Route::post('/get-shipping-partners',[ShippingController::class,'getPartnerList'])->name('get-shipping-partners')->middleware('auth');
 Route::post('/get-tranche-by-postcode',[BookingController::class,'getTrancheByPostcode'])->name('get-tranche-by-postcode')->middleware('auth');
 Route::post('/create-new-order',[OrderController::class,'createNewOrder'])->name('create-new-order')->middleware('auth');
-
+Route::post('/get-slots-by-day',[BookingController::class,'getSlotsByDay'])->name('get-slots-by-day')->middleware('auth');
 
 /*
  * QZ Print

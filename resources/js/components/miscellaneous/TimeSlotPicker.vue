@@ -11,6 +11,7 @@
     import {SELECT_MODULE, SET_CURRENT_SELECT} from "../../store/types/types";
     export default {
         name: "TimeSlotPicker",
+        inheritAttrs: false, //To verify
         components:{SelectOptions},
         props: {
             modelValue: Number,
@@ -25,6 +26,7 @@
             valid:Boolean|null,
             placeholder:String,
             isStore:Boolean|null,
+            isRecurring:Boolean|null,
         },
         setup(props,context){
             const timeslot=ref(0);
@@ -72,6 +74,10 @@
                 timeslot_def.value.splice(timeslot_def.value.length-1,1);
             }
 
+            if(props.isRecurring){
+                timeslot_def.value[timeslot_def.value.length-1].available = false;
+            }
+
 
             watch(()=>props.availableSlots,(current_val,previous_val)=>{
 
@@ -81,6 +87,8 @@
                         slot.available=true;
                 });
             });
+
+
             timeslot_def.value.forEach(slot=>{
                 if(props.availableSlots.includes(slot.value))
                     slot.available=true;
