@@ -124,16 +124,38 @@
                                             </select-options>
                                         </div>
                                     </div>
-                                    <div class="customer-type mt-3">
-                                        <select-options 
-                                            v-model="form.customerType" 
-                                            :options="[ 
-                                                { display:'B2B', value: 'B2B' }, 
-                                                { display:'B2C', value: 'B2C' }
-                                            ]"
-                                            :label="'Customer Type'"
-                                            :name="'customerType'">
-                                        </select-options>                
+                                    <div class="d-flex mt-3">
+                                        <div class="w-55 d-flex justify-content-between">
+                                            <div class="customer-type">
+                                                <select-options 
+                                                    v-model="form.customerType" 
+                                                    :options="[ 
+                                                        { display:'B2B', value: 'B2B' }, 
+                                                        { display:'B2C', value: 'B2C' }
+                                                    ]"
+                                                    :label="'Customer Type'"
+                                                    :name="'customerType'">
+                                                </select-options>
+                                            </div>
+                                            <div class="customer-type">
+                                                <select-options 
+                                                    v-model="form.programmeType" 
+                                                    :options="[ 
+                                                        { display:'Standard', value: 'Standard' }, 
+                                                        { display:'Gold', value: 'VIP GOLD' },
+                                                        { display:'Special Care', value: 'VIP RED' }
+                                                    ]"
+                                                    :label="'Programme type'"
+                                                    :name="'ProgrammeType'">
+                                                </select-options>
+                                            </div>
+                                        </div>
+                                        <div class="w-45">
+                                            <div class="form-group m-0 customer-type">
+                                                <label class="form-label d-block m-0">Kiosk number</label>
+                                                <input type="text" v-model="form.kioskNumber" class="form-control custom-input" placeholder="Enter kiosk card number">
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="d-flex mt-3">
                                         <div class="customer-contact w-55 d-flex justify-content-between">
@@ -214,12 +236,6 @@
                                     <h3 class="title m-0">{{ form.customerType == 'B2B' ? 'Notes' : 'Customer Notes' }}</h3>
                                     <div class="w-75 mt-3">
                                         <textarea v-model="form.customerNote" name="customer_note" rows="4" class="form-control"></textarea>
-                                    </div>
-                                    <div class="w-75 mt-3">
-                                        <div class="form-group">
-                                            <label for="cardVIP">VIP card</label>
-                                            <input type="text" v-model="form.cardVIP" placeholder="" class="form-control custom-input">
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -580,6 +596,8 @@ import axios from 'axios';
                 accountType: 'Main',
                 customerType: 'B2C',
                 typeDelivery: 'DELIVERY',
+                programmeType: 'Standard',
+                kioskNumber: '',
                 firstName: '',
                 lastName: '',
                 phoneCountryCode: '+44',
@@ -595,7 +613,6 @@ import axios from 'axios';
                 deliveryAddress1: '',
                 deliveryAddress2: '',
                 customerNote: '',
-                cardVIP: '',
                 // payment tab
                 alreadyLinkedToAccount: true,
                 paymentMethod: '',
@@ -656,7 +673,6 @@ import axios from 'axios';
             const searchCustomer=ref(false);
             const cardFormat = inject('cardFormat');
             const importModal = ref(null);
-            const linkedAccounts = ref([]);
             const paths=ref([
                 { name:'Customer', route:'Customer'},
                 { name:'New Customer', route:'NewCustomer'}
@@ -892,6 +908,7 @@ import axios from 'axios';
                         });
                     }
                 }).catch((errors)=>{
+                    console.log(errors);
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: errors.response.data.message, ttl:5, type:'danger' });
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
@@ -951,7 +968,6 @@ import axios from 'axios';
                 searchpanel,
                 showSearchPanel,
                 selectedSubAccount,
-                linkedAccounts,
                 checkCard,
                 formatPhone
             }

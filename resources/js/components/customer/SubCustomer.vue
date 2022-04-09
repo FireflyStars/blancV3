@@ -172,7 +172,7 @@ export default {
         const form = ref({
             mainId: '',
             customerType: 'B2C',
-            typeDelivery: '',
+            typeDelivery: 'DELIVERY',
             firstName: '',
             lastName: '',
             phoneCountryCode: '+44',

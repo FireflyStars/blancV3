@@ -19,7 +19,7 @@ class CustomerController extends Controller
         $validator = Validator::make($request->all(), [
             'firstName' => 'required',
             'lastName'  => 'required',
-            'email'     => $request->email != '' ? 'required|email|unique:infoCustomer, EmailAddress' : ''
+            'email'     => $request->email != '' ? 'required|email|unique:infoCustomer,EmailAddress' : ''
         ]);        
         if ($validator->fails()) {
             return response()->json(['error'=> $validator->errors()]);
@@ -37,7 +37,7 @@ class CustomerController extends Controller
             'Name'          => $request->firstName.", ".$request->lastName,
             'Phone'         => $request->phoneCountryCode.' '.$request->phoneNumber,
             'bycard'        => $request->paymentMethod == 'Credit Card' ? 1 : 0,
-            'cardvip'       => $request->cardVIP,
+            'cardvip'       => $request->kioskNumber,
             'discount'      => (intval($request->discountLevel) / 100),
             'credit'        => 0,
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
@@ -243,6 +243,11 @@ class CustomerController extends Controller
                     ];
                 }
             }
+        $customer_preferences[] = [
+            'CustomerID' => $CustomerUUID,
+            'Titre' => 'Type Customer',
+            'Value' => $request->programmeType
+        ];
         try {
             DB::table('InfoCustomerPreference')->insert($preferences);
         } catch (\Exception $e) {
@@ -576,7 +581,7 @@ class CustomerController extends Controller
                         DB::raw( 
                             'CASE WHEN InfoCustomerPreference.Titre = "Type Customer" AND InfoCustomerPreference.Value = "VIP GOLD" THEN "VIP"
                                   WHEN InfoCustomerPreference.Titre = "Type Customer" AND InfoCustomerPreference.Value = "VIP RED" THEN "Complaint"
-                                  WHEN InfoCustomerPreference.Titre = "Type Customer" AND InfoCustomerPreference.Value = "Standard" THEN "nothing"
+                                  WHEN InfoCustomerPreference.Titre = "Type Customer" AND InfoCustomerPreference.Value = "Standard" THEN "Normal"
                             END as preference'
                         ),
                     )
