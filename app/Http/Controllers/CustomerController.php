@@ -191,7 +191,8 @@ class CustomerController extends Controller
             } catch (\Exception $e) {
                 return response()->json($e->getMessage(), 500);
             }
-        }else{ // paymentMethod is BACS, we add extra records to several table.
+        }
+        if($request->paymentMethod == 'BACS'){ // paymentMethod is BACS, we add extra records to several table.
             $billing_address = [
                 'CustomerID'    => $CustomerUUID,
                 'AddressID'     => '',
@@ -220,7 +221,7 @@ class CustomerController extends Controller
                 'firstname'     => $request->companyRepFirstName,
                 'company'       => $request->companyLegalName,
                 'email'         => $request->invoiceEmail1,
-                'phone'         => $request->companyPhoneCountryCode.' '.$request->companyPhoneNumber,
+                'mobile'        => $request->companyPhoneCountryCode.' '.$request->companyPhoneNumber,
                 'created_at'    => now(),
                 'updated_at'    => now(),                
                 'type'          => 'BILLING',
@@ -240,18 +241,22 @@ class CustomerController extends Controller
                         'CustomerID' => $CustomerUUID,
                         'Titre' => $item['title'],
                         'Value' => $item['value'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
                     ];
                 }
             }
         $customer_preferences[] = [
             'CustomerID' => $CustomerUUID,
             'Titre' => 'Type Customer',
-            'Value' => $request->programmeType
+            'Value' => $request->programmeType,
+            'created_at' => now(),
+            'updated_at' => now(),            
         ];
         try {
-            DB::table('InfoCustomerPreference')->insert($preferences);
-        } catch (\Exception $e) {
-            return response()->json($e->getMessage(), 500);
+            DB::table('InfoCustomerPreference')->insert($customer_preferences);
+        } catch (\Throwable $e) {
+            throw $e;
         }                     
         $delivery_preference = [
             'CustomerId'    => $CustomerUUID,

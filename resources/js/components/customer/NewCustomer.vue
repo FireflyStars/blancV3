@@ -502,10 +502,10 @@
                                             <tr v-for="(item, index) in form.linkedAccounts" :key="index">
                                                 <td valign=middle class="text-nowrap">{{ item.name }}</td>
                                                 <td valign=middle class="text-nowrap fw-bold">{{ item.accountType }}</td>
-                                                <td valign=middle>{{ formatPhone(item.phone) }}</td>
-                                                <td valign=middle>{{ item.email }}</td>
-                                                <td valign=middle>{{ item.date }}</td>
-                                                <td valign=middle class="fw-bold">£ {{ item.spent }}</td>
+                                                <td valign=middle class="text-nowrap">{{ formatPhone(item.phone) }}</td>
+                                                <td valign=middle class="text-nowrap">{{ item.email }}</td>
+                                                <td valign=middle class="text-nowrap">{{ item.date }}</td>
+                                                <td valign=middle class="fw-bold text-nowrap">£ {{ item.spent }}</td>
                                                 <td valign=middle>
                                                     <svg width="30" v-if="index !=0" height="30" fill="#47454B" @click="removeLinkedAccount(item.id)" class="unlink" version="1.1" viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                                                         <g>
