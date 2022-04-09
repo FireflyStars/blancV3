@@ -3,35 +3,34 @@
 
         <ul class="days-of-week">
             <li v-for="(day, index) in slotsByDay " :key="index">
-                <a  @click="setSlots(day.value)"  class="day" :class="{disabled:!day.selected, selected:day.selected}">
+                <a @click="setSlots(day.value,$event)"  class="day" :class="{disabled:!day.selected, selected:day.selected}">
                     <span>{{day.value.slice(8,9)}}</span>
                 </a>
             </li>
         </ul>
 
         <ul  v-if="reccuring.length > 0" class="time-slot">
-
              <li v-if="reccuring.length < 2">
-                     <time-slot-picker placeholder="Time" class="data-picker"   v-model= reccuring[0].slot  v-bind:name= reccuring[0].value :available-slots="[1,6]"  label="Select a slot"></time-slot-picker>
+                     <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[0].slot  v-bind:name= reccuring[0].value :available-slots="reccuring[0].available"  label="Select a slot" :isRecurring="true"></time-slot-picker>
              </li>
 
 
              <div v-if="reccuring.length < 5" class="time-slot">
 
                     <li v-if="reccuring[0] && reccuring.length > 1">
-                    <time-slot-picker placeholder="Time" class="data-picker"    v-model= reccuring[0].slot  v-bind:name= reccuring[0].value :available-slots="[1,6]"  label="Select first slot"></time-slot-picker>
+                    <time-slot-picker placeholder="Time" class="data-picker"    v-model= reccuring[0].slot  v-bind:name= reccuring[0].value :available-slots="reccuring[0].available"  label="Select first slot" :isRecurring="true"></time-slot-picker>
                     </li>
 
                     <li v-if="reccuring[1]">
-                        <time-slot-picker placeholder="Time" class="data-picker" v-model= reccuring[1].slot  v-bind:name= reccuring[1].value :available-slots="[1,6]"  label="Select second slot"></time-slot-picker>
+                        <time-slot-picker placeholder="Time" class="data-picker" v-model= reccuring[1].slot  v-bind:name= reccuring[1].value :available-slots="reccuring[1].available"  label="Select second slot" :isRecurring="true"></time-slot-picker>
                     </li>
 
                     <li v-if="reccuring[2]">
-                            <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[2].slot    v-bind:name= reccuring[2].value :available-slots="[1,6]"  label="Select third slot"></time-slot-picker>
+                            <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[2].slot  v-bind:name= reccuring[2].value :available-slots="reccuring[2].available"  label="Select third slot" :isRecurring="true"></time-slot-picker>
                     </li>
 
                     <li v-if="reccuring[3]">
-                        <time-slot-picker placeholder="Time" class="data-picker"   v-model= reccuring[3].slot  v-bind:name= reccuring[3].value :available-slots="[1,6]"  label="Select 4th slot"></time-slot-picker>
+                        <time-slot-picker placeholder="Time" class="data-picker"   v-model= reccuring[3].slot  v-bind:name= reccuring[3].value :available-slots="reccuring[3].available"  label="Select 4th slot" :isRecurring="true"></time-slot-picker>
                     </li>
 
              </div>
@@ -40,27 +39,27 @@
              <div v-if="reccuring.length > 4" class="time-slot">
 
                     <li>
-                        <time-slot-picker placeholder="Time" class="data-picker"   v-model= reccuring[0].slot   v-bind:name= reccuring[0].value :available-slots="[1,6]"  label="Select first slot"></time-slot-picker>
+                        <time-slot-picker placeholder="Time" class="data-picker"   v-model= reccuring[0].slot   v-bind:name= reccuring[0].value :available-slots="reccuring[0].available"  label="Select first slot" :isRecurring="true"></time-slot-picker>
                     </li>
 
                     <li v-if="reccuring[3]">
-                        <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[3].slot  v-bind:name= reccuring[3].value :available-slots="[1,6]"  label="Select 4th slot"></time-slot-picker>
+                        <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[3].slot  v-bind:name= reccuring[3].value :available-slots="reccuring[3].available"  label="Select 4th slot" :isRecurring="true"></time-slot-picker>
                     </li>
 
                     <li v-if="reccuring[1]">
-                        <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[1].slot  v-bind:name= reccuring[1].value :available-slots="[1,6]"  label="Select second slot"></time-slot-picker>
+                        <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[1].slot  v-bind:name= reccuring[1].value :available-slots="reccuring[1].available"  label="Select second slot" :isRecurring="true"></time-slot-picker>
                     </li>
 
                     <li v-if="reccuring[4]">
-                        <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[4].slot    v-bind:name= reccuring[4].value :available-slots="[1,6]"  label="Select 5th slot"></time-slot-picker>
+                        <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[4].slot    v-bind:name= reccuring[4].value :available-slots="reccuring[4].available"  label="Select 5th slot" :isRecurring="true"></time-slot-picker>
                     </li>
 
                     <li v-if="reccuring[2]">
-                        <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[2].slot   v-bind:name= reccuring[2].value :available-slots="[1,6]"  label="Select third slot"></time-slot-picker>
+                        <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[2].slot   v-bind:name= reccuring[2].value :available-slots="reccuring[2].available"  label="Select third slot" :isRecurring="true"></time-slot-picker>
                     </li>
 
                     <li v-if="reccuring[5]">
-                        <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[5].slot v-bind:name= reccuring[5].value :available-slots="[1,6]"  label="Select 6th slot"></time-slot-picker>
+                        <time-slot-picker placeholder="Time" class="data-picker"  v-model= reccuring[5].slot v-bind:name= reccuring[5].value :available-slots="reccuring[5].available"  label="Select 6th slot" :isRecurring="true"></time-slot-picker>
                     </li>
              </div>
 
@@ -70,62 +69,116 @@
 </template>
 <script>
 
-import {ref, watch,defineExpose} from 'vue';
+import {ref, watch} from 'vue';
 import TimeSlotPicker from '../miscellaneous/TimeSlotPicker';
+import {useStore} from 'vuex';
+import axios from 'axios';
+import {
+    LOADER_MODULE,
+    DISPLAY_LOADER,
+    HIDE_LOADER,
+} from "../../store/types/types";
 
 export default ({
     name: "RecurringForm",
     components: {TimeSlotPicker},
      props: {
             modelValue: Array,
+            postcode:String || null,
         },
+
     setup(props,context) {
 
 
-        defineExpose({
-            returnedData
-        });
-
-
+        const store = useStore();
          const reccuring= ref([]);
+         const available_by_postcode = ref([]);
+
+
 
          const slotsByDay=ref([
                 {
                     value:'DeliveryMon',
                     selected:false,
                     slot: 0,
+                    available:[],
                 },
                 {
                     value:'DeliveryTu',
                     selected:false,
                     slot:0,
+                     available:[],
                 },
                 {
                     value:'DeliveryWed',
                     selected:false,
                     slot:0,
+                    available:[],
                 },
                 {
                     value:'DeliveryTh',
                     selected:false,
                     slot:0,
+                    available:[],
                 },
                 {
                     value:'DeliveryFri',
                     selected:false,
                     slot:0,
+                    available:[],
                 },
                 {
                     value:'DeliverySat',
                     selected:false,
                     slot:0,
+                    available:[],
                 }
             ]);
 
 
-        function setSlots(day){
 
-            slotsByDay.value.forEach((slotDay)=>{
+
+
+        function setSlots(day,event){
+            let parent_class = event.target.parentElement.className.toString();
+            console.log(parent_class);
+
+            if(props.postcode!=''){
+                if(!parent_class.includes('selected')){
+
+                    store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Fetching slots'], {root: true});
+                    axios.post('/get-slots-by-day',{postcode:props.postcode,day:day})
+                        .then((res)=>{
+                            let index = slotsByDay.value.findIndex((z) => { return z.value === day });
+                            let tranches = res.data.tranches;
+
+                            if(tranches.length > 0){
+                            slotsByDay.value[index].available = tranches;
+                            }
+
+                        }).catch((err)=>{
+
+                        }).finally(()=>{
+                            store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                            setSlotsByDay(day);
+                        });
+                }else{
+                    setSlotsByDay(day);
+                }
+
+
+            }else{
+                setSlotsByDay(day);
+            }
+
+
+
+
+        }
+
+        function setSlotsByDay(day){
+            slotsByDay.value.forEach((slotDay,index)=>{
+
                 if(slotDay.value == day){
                     if(slotDay.selected == true){
                         slotDay.selected = false;
@@ -138,12 +191,11 @@ export default ({
 
             });
 
-                reccuring.value =  slotsByDay.value.filter(function (el) {
-                 return el.selected == true;
-
-                });
-
+            reccuring.value =  slotsByDay.value.filter(function (el) {
+                return el.selected == true;
+            });
         }
+
 
         watch(()=>_.cloneDeep(reccuring.value),(current_val,previous_val)=>{
             context.emit("update:modelValue",current_val);
@@ -155,14 +207,15 @@ export default ({
 
 
     return {
-        setSlots,
-        slotsByDay,
-        reccuring,
-        returnedData,
-        }
+            setSlots,
+            slotsByDay,
+            reccuring,
+            returnedData,
 
-    },
+        }
+    }
 })
+
 </script>
 
 <style scoped>
@@ -191,6 +244,11 @@ export default ({
         transition: .3s all;
         text-decoration: none;
     }
+
+    .day:hover{
+        cursor:pointer;
+    }
+
     .selected {
         font-family: GothamRoundedBook;
         font-size: 14px;

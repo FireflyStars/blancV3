@@ -157,7 +157,7 @@
                                         <div :class="{'col-8':isRecurring,'d-none':!isRecurring}">
                                             <transition name="popinout">
                                                 <div>
-                                                    <recurring-form v-model="recurring_data"></recurring-form>
+                                                    <recurring-form v-model="recurring_data" :postcode="(cur_cust?cur_cust.postcode:'')"></recurring-form>
                                                 </div>
                                             </transition>
                                         </div>
@@ -232,7 +232,6 @@
                                                 <div id="order_exp_type" class="float-left d-table" v-if="deliverymethod=='in_store_collection' && order_express!=0">
                                                     <span v-if="order_express==1">Express 24</span>
                                                     <span v-if="order_express==6">Express 48</span>
-
                                                 </div>
 
                                             </div>
@@ -766,7 +765,7 @@ import axios from 'axios';
                    }).then((res)=>{
                        if(res.data.new_order_id > 0){
                            let new_order_id = res.data.new_order_id;
-                           router.push('/order-content/'+new_order_id);
+                           //router.push('/order-content/'+new_order_id);
                        }
                    }).catch((err)=>{
 
