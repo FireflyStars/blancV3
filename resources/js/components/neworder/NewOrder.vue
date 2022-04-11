@@ -637,9 +637,7 @@ import axios from 'axios';
                     cust_type_delivery.value = (current_customer.TypeDelivery=='DELIVERY'?'Atelier':current_customer.TypeDelivery);
 
                     //store.dispatch(`${NEWORDER_MODULE}${NEW_ORDER_SET_TRANCHE_POSTCODE}`,current_customer.postcode);
-                    if(isRecurring.value && recur_form.value){
-                        recur_form.value.returnedData([]);
-                    }
+
 
                 }
 
@@ -981,7 +979,13 @@ import axios from 'axios';
 
 
             function setCustomerID(val){
-                //console.log('emit called');
+                if(CustomerID !=''){
+                     if(isRecurring.value && recur_form.value){
+
+                        recur_form.value.returnedData([]);
+                    }
+                }
+
                 CustomerID.value=val;
                 if(val==''){
                     process_step.value=1;
