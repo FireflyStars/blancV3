@@ -61,7 +61,7 @@ const router = createRouter({
             },
         },        
         {
-            path:'/view-customer/:customer_id/:step',
+            path:'/view-customer/:customer_id',
             name:'ViewCustomer',
             component:()=> import('../components/customer/ViewCustomer'),
             meta:{

@@ -7,6 +7,7 @@
 .btn{
   padding: 10px 22px;
 }
+
 $blanc-green:#42A71E !default;
 
 :root{
@@ -55,10 +56,33 @@ label{
   height: var(--mainlogoheight);
 }
 .bg-color{
-  background-color: #F8F8F8;
+  background-color: #F8F8F8 !important;
+}
+.primary-color{
+  color: #42A71E !important;
+}
+.border-black{
+  border: solid 1px #000;
+}
+.border-none{
+  border: none !important;
 }
 .cursor-pointer{
   cursor: pointer;
+}
+.vat-invoice-icon{
+  display: block;
+  width: 24px;
+  height: 32px;
+  background: url(../img/vat-invoice-icon.svg) no-repeat center;
+  background-size: contain;
+}
+.e-receipt-icon{
+  display: block;
+  width: 30px;
+  height: 30px;
+  background: url(../img/e-receipt-icon.svg) no-repeat center;
+  background-size: contain;
 }
 .side-icons{
   &.active{

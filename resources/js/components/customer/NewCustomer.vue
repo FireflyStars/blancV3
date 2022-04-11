@@ -423,10 +423,20 @@
                                         <div class="page-section">
                                             <div class="item-block py-3 border-bottom" v-for="(item, key) in group.data" :key="key">
                                                 <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">{{ item.title }}</h4>
-                                                    <switch-btn v-model="item.value"></switch-btn>
+                                                    <div class="col-8">
+                                                        <h4 class="sub-title col-12">{{ item.title }}</h4>
+                                                        <p class="m-0 col-12">{{ item.description }}</p>
+                                                    </div>
+                                                    <div class="col-3" :class="item.type == 'switch' ? 'd-flex justify-content-end align-items-start': ''">
+                                                        <switch-btn class="ms-auto" v-if="item.type == 'switch'" v-model="item.value"></switch-btn>
+                                                        <div class="preference-radio" v-else>
+                                                            <label class="custom-radio" v-for="(value, key) in item.dropdown_values.split('\r\n')" :key="key">{{ value }}
+                                                                <input type="radio" :checked="item.value == value ? true : false" :value="value" v-model="item.value" :name="'pref_'+item.id">
+                                                                <span class="checkmark"></span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <p class="m-0 col-8">{{ item.description }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -607,7 +617,7 @@ import axios from 'axios';
                 city: '',
                 state: '',
                 county: '',
-                country: '',
+                country: 'GB',
                 customerLat: '',
                 customerLon: '',
                 deliveryAddress1: '',
@@ -633,7 +643,7 @@ import axios from 'axios';
                 companyCity: '',
                 companyCounty: '',
                 companyState: '',
-                companyCountry: '',
+                companyCountry: 'GB',
                 companyLat: '',
                 companyLon: '',
                 companyAddress1: '',
@@ -685,7 +695,6 @@ import axios from 'axios';
 
             onMounted(()=>{
                 axios.post('get-customer-preferences').then((res)=>{
-                    var preferences = [];
                     Object.keys(res.data).forEach((item)=>{
                         form.value.preferences.push({
                             data: res.data[item],
@@ -794,6 +803,32 @@ import axios from 'axios';
                     if(form.value.customerType == 'B2B' && form.value.accountType == 'Main' && form.value.alreadyLinkedToAccount){
                         form.value.paymentMethod = 'BACS';
                     }
+                    if(form.value.firstName == ''){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter email address', ttl:5, type:'danger' });
+                        return;
+                    }
+                    if(form.value.lastName == ''){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter email address', ttl:5, type:'danger' });
+                        return;
+                    }
+                    if(form.value.email == ''){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter email address', ttl:5, type:'danger' });
+                        return;
+                    }                    
+                    if(form.value.typeDelivery == 'DELIVERY'){
+                        if(form.value.postCode == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Post Code', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.deliveryAddress1 == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter delivery Address', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.phoneNumber == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter phone number', ttl:5, type:'danger' });
+                            return;
+                        }
+                    }
                     step.value = 'payment';
                     setTimeout(() => {
                         const customerAddress = new google.maps.places.Autocomplete(postcode.value);
@@ -805,6 +840,9 @@ import axios from 'axios';
                         });  
                     }, 1);
                 }else if( step.value == 'payment' ){
+                    // if(form.value.paymentMethod == 'BACS'){
+
+                    // }
                     step.value = 'preferences';
                 }else if( step.value == 'preferences' ){
                     step.value = 'linked_account';
@@ -1080,8 +1118,70 @@ import axios from 'axios';
     line-height: 110%;
   }
 }
+
 .form-control:focus{
     box-shadow: none !important;
+}
+// custome radio button
+.preference-radio{
+/* Customize the label (the container) */
+    .custom-radio {
+        display: block;
+        position: relative;
+        padding-left: 24px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        font-size: 14px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        /* Hide the browser's default radio button */
+        input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+            /* When the radio button is checked, add a blue background */
+            &:checked ~ .checkmark {
+                border: solid 1px #42A71E;
+                /* Show the indicator (dot/circle) when checked */
+                &:after {
+                    display: block;
+                }
+            }
+        }
+        /* On mouse-over, add a grey background color */
+        // &:hover input ~ .checkmark {
+        //     background-color: #ccc;
+        // }
+        .checkmark:after {
+            top: 3px;
+            left: 3px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background:#42A71E;
+        }        
+    }
+    /* Create a custom radio button */
+    .checkmark {
+        position: absolute;
+        top: 1px;
+        left: 0;
+        height: 18px;
+        width: 18px;
+        border-radius: 50%;
+        border: solid 1px #000;
+        background-color: white;
+        /* Create the indicator (the dot/circle - hidden when not checked) */
+        &:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+    }
 }
 .page-header{
   height: 80px;

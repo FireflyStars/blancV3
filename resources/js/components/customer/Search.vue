@@ -21,7 +21,7 @@
                                 </clipPath>
                                 </defs>
                             </svg>
-                            <input type="text" v-model="query" placeholder="Enter to search"  @keyup.enter="searchCustomer" class="w-100 search-control">
+                            <input type="text" v-model="query" ref="queryElement" placeholder="Enter to search"  @keyup.enter="searchCustomer" class="w-100 search-control">
                         </div>
                         <div class="w-100 m-0 p-0 search-result mt-3">
                             <div class="customer-item" v-for="(customer, index) in customers" :key="index" @click="selectCustomer(index)">
@@ -42,7 +42,7 @@
 </template>
 <script>
 
-import {ref} from 'vue';
+import {nextTick, ref} from 'vue';
 import axios from 'axios';
 import {
     LOADER_MODULE,
@@ -64,6 +64,7 @@ export default {
         const customers = ref([
         ]);
         const query = ref('');
+        const queryElement = ref(null);
         const closeSearchPanel = ()=>{
             showSearchPanel.value = !showSearchPanel.value;
         }
@@ -95,6 +96,9 @@ export default {
         const showSearchPanel = ref(false);
         const openSearchPanel = ()=>{
             showSearchPanel.value = !showSearchPanel.value;
+            nextTick(()=>{
+                queryElement.value.focus();
+            })
         }  
         const selectCustomer = (index)=>{
             showSearchPanel.value = false;
@@ -104,6 +108,7 @@ export default {
             query,
             customers,
             showSearchPanel,
+            queryElement,
             searchCustomer,
             closeSearchPanel,
             openSearchPanel,

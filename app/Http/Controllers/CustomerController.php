@@ -35,7 +35,7 @@ class CustomerController extends Controller
             'LastName'      => $request->lastName,
             'EmailAddress'  => $request->email !='' ? $request->email : (Str::random(10).'@noemail.com'),
             'Name'          => $request->firstName.", ".$request->lastName,
-            'Phone'         => $request->phoneCountryCode.' '.$request->phoneNumber,
+            'Phone'         => $request->phoneNumber != '' ? $request->phoneCountryCode.' '.$request->phoneNumber : '',
             'bycard'        => $request->paymentMethod == 'Credit Card' ? 1 : 0,
             'cardvip'       => $request->kioskNumber,
             'discount'      => (intval($request->discountLevel) / 100),
@@ -198,12 +198,12 @@ class CustomerController extends Controller
                 'AddressID'     => '',
                 'longitude'     => $request->customerLon,
                 'Latitude'      => $request->customerLat,
-                'Town'          => $request->city,
-                'County'        => $request->county,
-                'Country'       => $request->country,
-                'postcode'      => $request->postCode,
-                'address1'      => $request->deliveryAddress1,
-                'address2'      => $request->deliveryAddress2,
+                'Town'          => $request->companyCity,
+                'County'        => $request->companyCounty,
+                'Country'       => $request->companyCountry,
+                'postcode'      => $request->companyPostCode,
+                'address1'      => $request->companyAddress1,
+                'address2'      => $request->companyAddress2,
                 'status'        => 'BILLING',
                 'created_at'    => now(),
                 'updated_at'    => now(),                
@@ -241,6 +241,7 @@ class CustomerController extends Controller
                         'CustomerID' => $CustomerUUID,
                         'Titre' => $item['title'],
                         'Value' => $item['value'],
+                        'id_preference' => $item['id'],
                         'created_at' => now(),
                         'updated_at' => now(),
                     ];
@@ -281,7 +282,7 @@ class CustomerController extends Controller
     public function getCustomerPreferences(Request $request){
         $preferences = DB::table('customerpreferences')->where('deleted', 0)
                         ->where('category', '!=', 'Other')
-                        ->select('title', 'category', 'description', 'value')
+                        ->select('title', 'category', 'description', 'id', 'value', 'preference_type as type', 'dropdown_values')
                         ->get()->groupBy('category');
         return response()->json($preferences);
     }
@@ -358,7 +359,7 @@ class CustomerController extends Controller
             'LastName'      => $request->lastName,
             'Name'          => $request->firstName.", ".$request->lastName,
             'EmailAddress'  => $request->email,
-            'Phone'         => $request->phoneCountryCode.' '.$request->phoneNumber,
+            'Phone'         => $request->phoneNumber != '' ? $request->phoneCountryCode.' '.$request->phoneNumber : '',
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
         ];
         try {
