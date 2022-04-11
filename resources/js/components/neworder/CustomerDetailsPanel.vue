@@ -53,11 +53,14 @@
             const edit_customer=ref(false);
             const store=useStore();
             watch(()=>CustomerID.value,(current_val,previous_val)=>{
-                context.emit('setcustomerid',current_val);
+
 
                 store.dispatch(`${NEWORDER_MODULE}${NEWORDER_GET_CUSTOMER}`,{CustomerID:current_val}).then((res)=>{
                     console.log('res',res);
                     edit_customer.value=false;
+
+                }).finally(()=>{
+                   context.emit('setcustomerid',current_val);
                 });
 
             })

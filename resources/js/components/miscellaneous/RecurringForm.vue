@@ -69,7 +69,7 @@
 </template>
 <script>
 
-import {ref, watch} from 'vue';
+import {ref, watch,onMounted} from 'vue';
 import TimeSlotPicker from '../miscellaneous/TimeSlotPicker';
 import {useStore} from 'vuex';
 import axios from 'axios';
@@ -85,18 +85,18 @@ export default ({
      props: {
             modelValue: Array,
             postcode:String || null,
+            cust:Object||null,
         },
 
     setup(props,context) {
 
 
         const store = useStore();
-         const reccuring= ref([]);
-         const available_by_postcode = ref([]);
+        const reccuring= ref([]);
+        const available_by_postcode = ref([]);
+        const cust_slots = ref([]);
 
-
-
-         const slotsByDay=ref([
+        const slotsByDay=ref([
                 {
                     value:'DeliveryMon',
                     selected:false,
@@ -135,48 +135,83 @@ export default ({
                 }
             ]);
 
+        function resetRecurringData(){
+             reccuring.value = [];
 
-
-
-
-        function setSlots(day,event){
-            let parent_class = event.target.parentElement.className.toString();
-            console.log(parent_class);
-
-            if(props.postcode!=''){
-                if(!parent_class.includes('selected')){
-
-                    store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Fetching slots'], {root: true});
-                    axios.post('/get-slots-by-day',{postcode:props.postcode,day:day})
-                        .then((res)=>{
-                            let index = slotsByDay.value.findIndex((z) => { return z.value === day });
-                            let tranches = res.data.tranches;
-
-                            if(tranches.length > 0){
-                            slotsByDay.value[index].available = tranches;
-                            }
-
-                        }).catch((err)=>{
-
-                        }).finally(()=>{
-                            store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                            setSlotsByDay(day);
-                        });
-                }else{
-                    setSlotsByDay(day);
-                }
-
-
-            }else{
-                setSlotsByDay(day);
+            for(let i in slotsByDay.value){
+                slotsByDay.value[i].slot = 0;
+                slotsByDay.value[i].selected = false;
+                slotsByDay.value[i].available = [];
             }
-
-
-
-
         }
 
-        function setSlotsByDay(day){
+        const getCustTranches = ()=>{
+           resetRecurringData();
+
+
+
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Fetching slots'], {root: true});
+            axios.post('/get-slots-by-day',{postcode:props.postcode})
+                .then((res)=>{
+                    let tranches = res.data.tranches;
+
+                    for(let i in tranches){
+                        let index = slotsByDay.value.findIndex((z) => { return z.value === i });
+                        slotsByDay.value[index].available = tranches[i];
+                    }
+
+                    console.log(props.cust);
+
+
+                }).catch((err)=>{
+
+                }).finally(()=>{
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+
+                    if(props.cust){
+                        console.log('cur_cust',props.cust);
+
+                        for(let i in slotsByDay.value){
+                            let slotday = slotsByDay.value[i].value;
+
+
+                            if(typeof(props.cust[slotday]) !='undefined' && props.cust[slotday] !=''){
+
+                                let custslot = JSON.parse(props.cust[slotday]);
+
+                                if(custslot.length > 0){
+                                    slotsByDay.value[i].slot = custslot[0];
+                                    slotsByDay.value[i].selected = true;
+                                }
+                            }
+
+                        }
+
+
+                        let selected_arr = [];
+                        slotsByDay.value.forEach(function(v,i){
+                            if(v.selected){
+                                selected_arr.push(slotsByDay.value[i]);
+                            }
+                        });
+                        reccuring.value=selected_arr;
+                    }
+
+
+                });
+        }
+
+
+
+
+    onMounted(() => {
+        if(props.postcode !=''){
+            getCustTranches();
+        }
+    });
+
+
+        function setSlots(day){
             slotsByDay.value.forEach((slotDay,index)=>{
 
                 if(slotDay.value == day){
@@ -202,7 +237,11 @@ export default ({
         });
 
         function returnedData(arr){
-            console.log("call from parent",arr);
+            if(props.cust && props.postcode!=''){
+                getCustTranches();
+            }else{
+                resetRecurringData();
+            }
         }
 
 
@@ -211,9 +250,10 @@ export default ({
             slotsByDay,
             reccuring,
             returnedData,
-
+            cust_slots,
         }
-    }
+    },
+
 })
 
 </script>

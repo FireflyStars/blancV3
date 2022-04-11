@@ -117,7 +117,6 @@ class BookingController extends Controller {
 
     public function getSlotsByDay(Request $request){
         $postcode = $request->postcode;
-        $day = $request->day;
 
         $allpostcodes = DB::table('tranchepostcode')
         ->select(DB::raw('DISTINCT(Postcode) AS post_code'))
@@ -189,8 +188,7 @@ class BookingController extends Controller {
 
 
         return response()->json([
-            'day'=>$day,
-            'tranches'=>$formatted_tranche[$day],
+            'tranches'=>$formatted_tranche,
         ]);
     }
 
