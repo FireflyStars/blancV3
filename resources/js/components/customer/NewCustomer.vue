@@ -743,7 +743,7 @@ import axios from 'axios';
                     if(type == "postal_code"){
                         form.value.postCode = component.long_name
                     }else if(type == "country"){
-                        form.value.country = component.long_name
+                        form.value.country = component.short_name
                     }else if(type == "locality"){
                         form.value.city = component.long_name
                     }else if(type == "administrative_area_level_1"){
@@ -760,7 +760,7 @@ import axios from 'axios';
                     if( type == "postal_code" ){
                         form.value.companyPostCode = component.long_name
                     }else if(type == "country"){
-                        form.value.companyCountry = component.long_name
+                        form.value.companyCountry = component.short_name
                     }else if(type == "locality"){ // || component.types.includes("sublocality") || component.types.includes("sublocality_level_1")
                         form.value.companyCity = component.long_name
                     }else if(type == "administrative_area_level_1"){
