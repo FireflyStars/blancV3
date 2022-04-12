@@ -27,7 +27,6 @@ class CustomerController extends Controller
 
         // add a new record to infoCustomer table
         $info_customer = [
-            'CustomerID'    => '',
             'isMaster'      => $request->accountType == 'Main' ? 1 : 0,
             'TypeDelivery'  => $request->typeDelivery,
             'btob'          => $request->customerType == 'B2B' ? 1 : 0,
@@ -35,7 +34,7 @@ class CustomerController extends Controller
             'LastName'      => $request->lastName,
             'EmailAddress'  => $request->email !='' ? $request->email : (Str::random(10).'@noemail.com'),
             'Name'          => $request->firstName.", ".$request->lastName,
-            'Phone'         => $request->phoneNumber != '' ? $request->phoneCountryCode.' '.$request->phoneNumber : '',
+            'Phone'         => $request->phoneNumber != '' ? '["'.$request->phoneCountryCode.'|'.$request->phoneNumber.']"' : '',
             'bycard'        => $request->paymentMethod == 'Credit Card' ? 1 : 0,
             'cardvip'       => $request->kioskNumber,
             'discount'      => (intval($request->discountLevel) / 100),
@@ -51,6 +50,7 @@ class CustomerController extends Controller
             }
         }else{
             try {
+                $info_customer['CustomerID'] = '';
                 $custId = DB::table('infoCustomer')->insertGetId($info_customer);
                 $CustomerUUID = DB::table('infoCustomer')->where('id', $custId)->value('CustomerID');
             } catch (\Exception $e) {
@@ -164,6 +164,7 @@ class CustomerController extends Controller
                 //add a new record to cards table
                 $credit_card = [
                     'CustomerID'        => $CustomerUUID,
+                    'cardHolderName'    => $request->cardHolderName,
                     'type'              => $card->card->brand,
                     'cardNumber'        => substr_replace($request->cardDetails, str_repeat('*', strlen($request->cardDetails) - 6), 3, -3),
                     'dateexpiration'    => $request->cardExpDate,
@@ -221,7 +222,7 @@ class CustomerController extends Controller
                 'firstname'     => $request->companyRepFirstName,
                 'company'       => $request->companyLegalName,
                 'email'         => $request->invoiceEmail1,
-                'mobile'        => $request->companyPhoneCountryCode.' '.$request->companyPhoneNumber,
+                'Phone'         => $request->companyPhoneNumber != '' ? '["'.$request->companyPhoneCountryCode.'|'.$request->companyPhoneNumber.']"' : '',
                 'created_at'    => now(),
                 'updated_at'    => now(),                
                 'type'          => 'BILLING',
@@ -234,8 +235,7 @@ class CustomerController extends Controller
             
         }
         
-        $preferences = $request->preferences;
-            foreach ($preferences as $group) {
+            foreach ($request->preferences as $group) {
                 foreach ($group['data'] as $item) {
                     $customer_preferences[] = [
                         'CustomerID' => $CustomerUUID,
@@ -262,6 +262,7 @@ class CustomerController extends Controller
         $delivery_preference = [
             'CustomerId'    => $CustomerUUID,
             'TypeDelivery'  => $request->altTypeDelivery ? $request->altTypeDelivery : 'N/A' ,
+            'Name'          => $request->altName,
             'CodeCountry'   => $request->altPhoneCountryCode,
             'PhoneNumber'   => $request->altPhoneNumber,
             'OtherInstruction' => $request->altDriverInstruction,
@@ -359,7 +360,7 @@ class CustomerController extends Controller
             'LastName'      => $request->lastName,
             'Name'          => $request->firstName.", ".$request->lastName,
             'EmailAddress'  => $request->email,
-            'Phone'         => $request->phoneNumber != '' ? $request->phoneCountryCode.' '.$request->phoneNumber : '',
+            'Phone'         => $request->phoneNumber != '' ? '["'.$request->phoneCountryCode.'|'.$request->phoneNumber.']"' : '',
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
         ];
         try {
@@ -789,5 +790,116 @@ class CustomerController extends Controller
                                         ->whereIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
                                         ->get()->groupBy(['order_id', 'sub_order_id'])->reverse()->values();
         return response()->json( $customer );
+    }
+
+    /**
+     * get customer full details for customer view page
+     */
+    public function getCustomerFullDetail(Request $request){
+        $customer = DB::table('infoCustomer')
+                    ->select('infoCustomer.FirstName as firstName', 'infoCustomer.LastName as lastName', 'infoCustomer.EmailAddress as email', 'infoCustomer.Phone as phone',
+                        'infoCustomer.TotalSpend as totalSpent', 'infoCustomer.cardvip as kioskNumber', 'bycard as paymentMethod',
+                        DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'), 'infoCustomer.TypeDelivery as typeDelivery',
+                        'infoCustomer.CustomerNotes as cusomerNote', 'infoCustomer.id', 'infoCustomer.CustomerID',
+                        DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recuring", "Normal") as booking'), 'discount', 'credit', 
+                    )
+                    ->where('infoCustomer.id', $request->customer_id)
+                    ->first();
+        $customer->programmeType = DB::table('InfoCustomerPreference')->where('Titre', 'Type Customer')->where('CustomerId', $customer->CustomerID)->value('Value');
+        $customer->address = DB::table('address')
+                                ->select('Country as country', 'Town as city', 'postcode as postCode', 'address1', 'address2')
+                                ->where('CustomerID', $customer->CustomerID)
+                                ->whereNotIn('status', ['DEL', 'BILLING'])->first();
+        if($customer->paymentMethod == 1){
+            $customer->card = DB::table('cards')->select('cardNumber', 'type', 'dateexpiration as expDate', 'cardHolderName', 'id')
+                                ->where('CustomerID', $customer->CustomerID)->first();
+        }else{
+            // $customer->billing = DB::table('address')->where('CusotmerID', $customer->CustomerID)
+            //                     ->select('')
+        }
+        $customer->currentOrders = DB::table('infoOrder')
+                    ->select(
+                        'infoOrder.id as order_id',
+                        DB::raw('if(infoOrder.Paid=0,"unpaid","paid") as paid'), 'infoOrder.Total as total',
+                        DB::raw('DATE_FORMAT(infoOrder.created_at, "%d/%m/%Y") as items_received'),
+                        'infoOrder.underquote', 'infoOrder.TypeDelivery as destination', 'infoOrder.Status as status',
+                        DB::raw('IF( 
+                            infoitems.PromisedDate > CURRENT_DATE(), 
+                            IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), 
+                            DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y")) as deliv'),
+                            DB::raw('count(distinct(infoitems.id)) as items'),
+                            'TypePost.bg_color as location_color', 'postes.nom as location',
+                            'TypePost.process', 'TypePost.circle_color',                            
+                    )
+                    ->leftJoin('pickup', 'pickup.PickupID', '=', 'infoOrder.PickupID')
+                    ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
+                    ->join('postes', 'infoOrder.Status', '=', 'postes.nominterface')
+                    ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')                    
+                    ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+                    ->join('infoitems',function($join){
+                        $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
+                            ->where('infoitems.InvoiceID','!=','')
+                            ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+                    })
+                    ->where('infoOrder.OrderID','!=','')                    
+                    ->where('infoOrder.CustomerID', $customer->CustomerID)
+                    ->whereNotIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
+                    ->groupBy('infoOrder.id')
+                    ->get();
+        $customer->pastOrders = DB::table('infoOrder')
+                    ->select(
+                        'infoOrder.id as order_id',
+                        DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'), 'infoOrder.Total as total',
+                        DB::raw('DATE_FORMAT(infoOrder.created_at, "%d/%m/%Y") as items_received'),
+                        'infoOrder.underquote', 'infoOrder.TypeDelivery as destination', 'infoOrder.Status as status',
+                        DB::raw('IF( 
+                            infoitems.PromisedDate > CURRENT_DATE(), 
+                            IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), 
+                            DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y")) as deliv'),
+                            DB::raw('count(distinct(infoitems.id)) as items'),
+                            'TypePost.bg_color as location_color', 'postes.nom as location',
+                            'TypePost.process', 'TypePost.circle_color',
+                    )
+                    ->leftJoin('pickup', 'pickup.PickupID', '=', 'infoOrder.PickupID')
+                    ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
+                    ->join('postes', 'infoOrder.Status', '=', 'postes.nominterface')
+                    ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
+                    ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+                    ->join('infoitems',function($join){
+                        $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
+                            ->where('infoitems.InvoiceID','!=','')
+                            ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+                    })
+                    ->where('infoOrder.OrderID','!=','')                    
+                    ->where('infoOrder.CustomerID', $customer->CustomerID)
+                    ->whereIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
+                    ->groupBy('infoOrder.id')
+                    ->get();
+        $preferences = DB::table('customerpreferences')->where('deleted', 0)
+                    ->where('category', '!=', 'Other')
+                    ->select('title', 'category', 'description', 'id', 'value', 'preference_type as type', 'dropdown_values')
+                    ->get();
+        foreach ($preferences as $item) {
+            $value_selected = DB::table('InfoCustomerPreference')->where('CustomerID', $customer->CustomerID)
+                            ->where('Titre', $item->title)->value('Value');
+            if($value_selected)
+                $item->value = $value_selected; 
+        }
+        $customer->preferences = $preferences->groupBy('category');
+        $customer->deliveryPreferences = DB::table('DeliveryPreference')
+                                        ->where('CustomerID', $customer->CustomerID)
+                                        ->select('TypeDelivery as altTypeDelivery', 'CodeCountry as altPhoneCountryCode',
+                                        'OtherInstruction as altDriverInstruction', 'PhoneNumber as altPhoneNumber', 
+                                        'Name as altName')->first();
+        $customer->linkedAccounts = DB::table('infoCustomer')
+                                    ->where('CustomerID', $customer->CustomerID)
+                                    ->orWhere('CustomerIDMaster', $customer->CustomerID)
+                                    ->select( 
+                                        DB::raw('IF(isMaster = 1, "Main", "Sub") as accountType'),
+                                        'Name as name', 'Phone as phone', 'EmailAddress as email',
+                                        DB::raw('IF(SignupDateOnline = "2000-01-01", DATE_FORMAT(SignupDate, "%d/%m/%Y"), DATE_FORMAT(SignupDateOnline, "%d/%m/%Y")) as date'),
+                                        'TotalSpend as spent', 'id'
+                                    )->get();
+        return response()->json($customer);
     }
 }

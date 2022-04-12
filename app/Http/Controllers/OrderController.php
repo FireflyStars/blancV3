@@ -286,10 +286,6 @@ class OrderController extends Controller
         if($id_booking_pickup > 0){
             BookingController::logBookingHistory($id_booking_pickup,$new_order_id,$customer->id,$user->id,'pickup');
         }
-
-
-
-
         return response()->json([
             'new_order_id'=>$new_order_id,
             'recurring'=>$recurring_data,

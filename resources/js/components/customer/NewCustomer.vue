@@ -694,7 +694,7 @@ import axios from 'axios';
             const cardErrors = ref({});   
 
             onMounted(()=>{
-                axios.post('get-customer-preferences').then((res)=>{
+                axios.post('/get-customer-preferences').then((res)=>{
                     Object.keys(res.data).forEach((item)=>{
                         form.value.preferences.push({
                             data: res.data[item],
@@ -935,7 +935,7 @@ import axios from 'axios';
             // handler for when you click a create customer
             const createCustomer =()=>{
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Creating Customer...']);
-                axios.post('create-customer', form.value).then((response)=>{
+                axios.post('/create-customer', form.value).then((response)=>{
                     if(response.data.error){
                         Object.values(response.data.error).forEach((item)=>{
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item[0], ttl:5, type:'danger' });

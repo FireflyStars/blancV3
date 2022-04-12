@@ -50,11 +50,11 @@
                                                 <path d="M17.624 11.4756C17.624 7.89908 14.8435 4.99976 11.4134 4.99976C8.79991 4.99976 6.56343 6.68306 5.64679 9.06664" stroke="#42A71E" stroke-linecap="round"/>
                                                 <path d="M19 10.7822L17.6239 12.2171L16.2477 10.7822" stroke="#42A71E" stroke-linecap="round" stroke-linejoin="round"/>
                                             </svg>
-                                            Recurring
+                                            {{ form.booking }}
                                         </div>
                                     </div>
                                     <div class="spent-section ms-5">
-                                        £1000 <span>Total spent</span>
+                                        £{{ form.totalSpent }} <span>Total spent</span>
                                     </div>
                                 </div>
                                 <div class="page-section">
@@ -73,7 +73,7 @@
                                                 :name="'typeDelivery'">
                                             </select-options>
                                         </div>
-                                        <div class="type-delivery gotham-rounded-medium rounded-pill py-2 border-black  text-center" v-else>
+                                        <div class="type-delivery gotham-rounded-medium rounded-pill py-2 border-black text-center" v-else>
                                             {{ form.typeDelivery }}
                                         </div>
                                     </div>
@@ -124,7 +124,8 @@
                                             <div class="form-group m-0 customer-type" >
                                                 <label class="form-label d-block m-0">Kiosk number</label>
                                                 <input v-if="contact_details_edit" type="text" v-model="form.kioskNumber" class="form-control custom-input" placeholder="Enter kiosk card number">
-                                                <div v-else class="w-100 py-2 rounded-3 bg-color px-3" v-html="form.kioskNumber == '' ? '&nbsp;' : form.kioskNumber">
+                                                <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
+                                                    {{ form.kioskNumber }} &nbsp;
                                                 </div>
                                             </div>
                                         </div>
@@ -157,12 +158,14 @@
                                                         :name="'phoneCountryCode'">
                                                     </select-options>
                                                 </div>
-                                                <div v-else style="width: 80px;" class="phone-country-code py-2 rounded-3 bg-color" v-html="form.lastName == '' ? '&nbsp;' : form.lastName">
+                                                <div v-else style="width: 80px;" class="phone-country-code py-2 rounded-3 bg-color text-center">
+                                                    {{ form.phoneCountryCode }}&nbsp;
                                                 </div>
                                                 <div class="form-group ms-2" v-if="contact_details_edit">
                                                     <input type="text" v-model="form.phoneNumber" class="form-control custom-input">
                                                 </div>
-                                                <div v-else class="w-100 ms-2 py-2 rounded-3 bg-color px-3" v-html="form.phoneNumber == '' ? '&nbsp;' : form.phoneNumber">
+                                                <div v-else class="w-100 ms-2 py-2 rounded-3 bg-color px-3">
+                                                    {{ form.phoneNumber }}&nbsp;
                                                 </div>
                                             </div>
                                         </div>
@@ -255,7 +258,7 @@
                                                 <label for="">Card details</label>
                                                 <div class="input-group bg-color d-flex mb-0">
                                                     <span class="input-group-text border-none">
-                                                        <i class="credit-card-icon cc-mastercard"></i>
+                                                        <i class="credit-card-icon" :class="cardBrand"></i>
                                                     </span>
                                                     <div class="py-2 rounded-2 bg-color px-3">
                                                         {{ form.cardDetails }} &nbsp;
@@ -415,13 +418,13 @@
                                     </thead>
                                     <tbody>
                                         <tr v-for="(item, index) in currentOrders" :key="index">
-                                            <td valign="middle">66422</td>
-                                            <td valign="middle">Delivery</td>
-                                            <td valign="middle">16/03/2022</td>
-                                            <td valign="middle">24/03/2022</td>
-                                            <td valign="middle">3</td>
+                                            <td valign="middle">{{ item.order_id }}</td>
+                                            <td valign="middle">{{ item.destination }}</td>
+                                            <td valign="middle">{{ item.items_received }}</td>
+                                            <td valign="middle" class="fw-bold">{{ item.deliv }}</td>
+                                            <td valign="middle">{{ item.items }}</td>
                                             <td valign="middle">
-                                                <div class="location-icon rounded-pill d-flex align-items-center" :style="{'background-color': item.location_color}">
+                                                <div class="location-icon rounded-pill d-flex align-items-center px-2" :style="{'background-color': item.location_color}">
                                                     <svg v-if="item.process == 1" class="me-2" width="12" height="12" viewBox="0 0 12 12" :fill="'#'+item.circle_color" xmlns="http://www.w3.org/2000/svg">
                                                         <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" :fill="'#'+item.circle_color"/>
                                                         <circle cx="6" cy="6" r="5" :stroke="'#'+item.circle_color" stroke-width="2"/>
@@ -430,12 +433,14 @@
                                                         <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" :fill="'#'+item.circle_color"/>
                                                         <circle cx="6" cy="6" r="5" :stroke="'#'+item.circle_color" stroke-width="2"/>
                                                     </svg>                                
-                                                    <span>{{ item.location }}</span>
+                                                    <span class="text-capitalize">{{ item.location }}</span>
                                                 </div>
                                             </td>
                                             <td valign="middle">
-                                                <span class="me-3 order-pay" :class="item.paid"></span>
-                                                £20.70                                                
+                                                <div class="d-flex align-items-center fw-bold">
+                                                    <span class="d-block me-3 order-pay" :class="item.paid"></span>
+                                                    £{{ item.total }}
+                                                </div>                                                
                                             </td>
                                             <td valign="middle"><span class="m-auto e-receipt-icon cursor-pointer"></span></td>
                                         </tr>
@@ -456,14 +461,14 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="(item, index) in oldOrders" :key="index">
-                                            <td valign="middle">66422</td>
-                                            <td valign="middle">Delivery</td>
-                                            <td valign="middle">16/03/2022</td>
-                                            <td valign="middle">24/03/2022</td>
-                                            <td valign="middle">3</td>
+                                        <tr v-for="(item, index) in pastOrders" :key="index">
+                                            <td valign="middle">{{ item.order_id }}</td>
+                                            <td valign="middle">{{ item.destination }}</td>
+                                            <td valign="middle">{{ item.items_received }}</td>
+                                            <td valign="middle">{{ item.deliv }}</td>
+                                            <td valign="middle">{{ item.items }}</td>
                                             <td valign="middle">
-                                                <div class="location-icon rounded-pill d-flex align-items-center" :style="{'background-color': item.location_color}">
+                                                <div class="location-icon rounded-pill d-flex align-items-center px-2" :style="{'background-color': item.location_color}">
                                                     <svg v-if="item.process == 1" class="me-2" width="12" height="12" viewBox="0 0 12 12" :fill="'#'+item.circle_color" xmlns="http://www.w3.org/2000/svg">
                                                         <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" :fill="'#'+item.circle_color"/>
                                                         <circle cx="6" cy="6" r="5" :stroke="'#'+item.circle_color" stroke-width="2"/>
@@ -472,12 +477,14 @@
                                                         <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" :fill="'#'+item.circle_color"/>
                                                         <circle cx="6" cy="6" r="5" :stroke="'#'+item.circle_color" stroke-width="2"/>
                                                     </svg>                                
-                                                    <span>{{ item.location }}</span>
+                                                    <span class="text-capitalize">{{ item.location }}</span>
                                                 </div>
                                             </td>
                                             <td valign="middle">
-                                                <span class="me-3 order-pay" :class="item.paid"></span>
-                                                £20.70
+                                                <div class="d-flex align-items-center fw-bold">
+                                                    <span class="d-block me-3 order-pay" :class="item.paid"></span>
+                                                    £{{ item.total }}
+                                                </div>
                                             </td>
                                             <td valign="middle"><span class="m-auto vat-invoice-icon cursor-pointer"></span></td>
                                         </tr>
@@ -487,16 +494,26 @@
                         </transition>
                         <transition name="list" appear v-if="step =='preferences'">
                             <div class="cust-page-content preferences m-auto pt-5">
-                                <div class="d-flex justify-content-between mt-3">
-                                    <div class="blocks">
-                                        <h3 class="title mb-3">Finish instructions</h3>
+                                <div class="d-flex justify-content-between mt-3 flex-wrap">
+                                    <div class="blocks" v-for="(group, index) in form.preferences" :key="index">
+                                        <h3 class="title mb-3">{{ group.key }}</h3>
                                         <div class="page-section">
-                                            <div class="item-block py-3 border-bottom">
+                                            <div class="item-block py-3 border-bottom" v-for="(item, key) in group.data" :key="key">
                                                 <div class="d-flex justify-content-between">
-                                                    <h4 class="sub-title">Shirts with crease</h4>
-                                                    <switch-btn></switch-btn>
+                                                    <div class="col-8">
+                                                        <h4 class="sub-title col-12">{{ item.title }}</h4>
+                                                        <p class="m-0 col-12">{{ item.description }}</p>
+                                                    </div>
+                                                    <div class="col-3" :class="item.type == 'switch' ? 'd-flex justify-content-end align-items-start': ''">
+                                                        <switch-btn class="ms-auto" v-if="item.type == 'switch'" v-model="item.value"></switch-btn>
+                                                        <div class="preference-radio" v-else>
+                                                            <label class="custom-radio" v-for="(value, key) in item.dropdown_values.split('\r\n')" :key="key">{{ value }}
+                                                                <input type="radio" :checked="item.value == value ? true : false" :value="value" v-model="item.value" :name="'pref_'+item.id">
+                                                                <span class="checkmark"></span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <p class="m-0 col-8">Customer wants shirts always pressed with creases on the sleeves</p>
                                             </div>
                                         </div>
                                     </div>
@@ -619,7 +636,7 @@
     import BreadCrumb from '../layout/BreadCrumb'
     import SideBar from '../layout/SideBar'
     import { useRouter, useRoute } from 'vue-router';
-    import {ref,onMounted, nextTick, computed, watch, inject } from 'vue';
+    import {ref,onMounted, nextTick, computed, watch } from 'vue';
     import SelectOptions from '../test/SelectOptions';
     import MultipleEmail from '../test/MultipleEmail';
     import CheckBox from '../miscellaneous/CheckBox';
@@ -636,6 +653,8 @@
         DISPLAY_LOADER,
         HIDE_LOADER,
     } from "../../store/types/types";
+    import axios from 'axios';
+    import { useStore } from 'vuex';
     export default {
         name: "ViewCustomer",
         components:{
@@ -649,16 +668,17 @@
         },
         setup(props,context){
             const route = useRoute();
+            const store = useStore();
             const form = ref({
                 customerID: '',
                 accountType: 'Main',
-                customerType: 'B2C',
-                typeDelivery: 'DELIVERY',
-                programmeType: 'Standard',
+                customerType: '',
+                typeDelivery: '',
+                programmeType: '',
                 kioskNumber: '',
                 firstName: '',
                 lastName: '',
-                phoneCountryCode: '+44',
+                phoneCountryCode: '',
                 phoneNumber: '',
                 email: '',
                 postCode: '',
@@ -682,7 +702,7 @@
                 companyLegalName: '',
                 companyRepFirstName: '',
                 companyRepLastName: '',
-                companyPhoneCountryCode: '+44',
+                companyPhoneCountryCode: '',
                 companyPhoneNumber: '',
                 invoiceEmail1: '',
                 invoiceEmail2: '',
@@ -705,7 +725,7 @@
 
                 altTypeDelivery: '',
                 altName: '',
-                altPhoneCountryCode: '+44',
+                altPhoneCountryCode: '',
                 altPhoneNumber: '',
                 altDriverInstruction: '',
                 linkedAccounts: []
@@ -718,6 +738,7 @@
                 step.value = 'account_details';
             }
             const postcode = ref(null);
+            const cardBrand = ref('');
             const contact_details_edit = ref(false);
             const address_edit = ref(false);
             const companyPostCode = ref(null);
@@ -725,12 +746,15 @@
             const showcontainer=ref(false);
             const searchCustomer=ref(false);
             const currentOrders=ref([]);
-            const oldOrders=ref([]);
-            const cardFormat = inject('cardFormat');
+            const pastOrders=ref([]);
+            const paths=ref([
+                { name:'Customer', route:'Customer'},
+            ]);            
             onMounted(()=>{
                 nextTick(()=>{
                     showcontainer.value=true;
                 }); 
+                getCustomerFullDetail();
                 setTimeout(() => {
                     const customerAddress = new google.maps.places.Autocomplete(postcode.value);
                     customerAddress.addListener("place_changed", () => {
@@ -739,6 +763,99 @@
                     });  
                 }, 500);
             });
+            const getCustomerFullDetail = ()=>{
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading customer data...']);
+                axios.post('/get-customer-full-detail', {
+                    customer_id: route.params.customer_id
+                }).then((res)=>{
+                    paths.value.push(
+                        { name: res.data.firstName +' ' + res.data.lastName , route:'ViewCustomer', params:{ customer_id: res.data.id }}
+                    );
+                    form.value.customerID = res.data.customerID;
+                    form.value.booking = res.data.booking;
+                    form.value.totalSpent = res.data.totalSpent;
+                    form.value.accountType = '',
+                    form.value.customerType = res.data.customerType;
+                    form.value.typeDelivery = res.data.typeDelivery;
+                    form.value.programmeType = res.data.programmeType;
+                    form.value.kioskNumber = res.data.kioskNumber;
+                    form.value.firstName = res.data.firstName;
+                    form.value.lastName = res.data.lastName;
+                    var phone = getPhone(res.data.phone);
+                    form.value.phoneCountryCode = phone.code;
+                    form.value.phoneNumber = phone.number;
+                    form.value.email = res.data.email;
+                    // address part in account details tab
+                    form.value.postCode = res.data.address.postCode;
+                    form.value.city = res.data.address.city;
+                    form.value.state = res.data.address.state;
+                    form.value.county = res.data.address.county;
+                    form.value.country = res.data.address.country;
+                    form.value.deliveryAddress1 = res.data.address.address1;
+                    form.value.deliveryAddress2 = res.data.address.address2;
+                    form.value.customerNote = res.data.customerNote;
+                    // payment tab
+                    form.value.paymentMethod  = res.data.paymentMethod == 1 ? 'Credit Card' : 'BACS';
+                    if(res.data.paymentMethod == 1 && res.data.card){
+                        form.value.cardHolderName = res.data.card ?? res.data.card.cardHolderName;
+                        form.value.cardDetails = res.data.card ?? res.data.card.cardNumber;
+                        form.value.cardExpDate = res.data.card ?? res.data.card.expDate;
+                        form.value.cardCVV = '***';
+                        if(res.data.card.type == 'Visa'){
+                            cardBrand.value = 'cc-visa';
+                        }else if(res.data.card.type == 'Mastercard'){
+                            cardBrand.value = 'cc-mastercard';
+                        }else if(res.data.card.type == 'Amex'){
+                            cardBrand.value = 'cc-amex';
+                        }else if(res.data.card.type == 'discover'){
+                            cardBrand.value = 'cc-discover';
+                        }
+                    }
+                    currentOrders.value = res.data.currentOrders;
+                    pastOrders.value = res.data.pastOrders;
+                    // companyLegalName: '',
+                    // companyRepFirstName: '',
+                    // companyRepLastName: '',
+                    // companyPhoneCountryCode: '',
+                    // companyPhoneNumber: '',
+                    // invoiceEmail1: '',
+                    // invoiceEmail2: '',
+                    // // invoiceEmails: [],
+                    // companyPostCode: '',
+                    // companyCity: '',
+                    // companyCounty: '',
+                    // companyState: '',
+                    // companyCountry: '',
+                    // companyLat: '',
+                    // companyLon: '',
+                    // companyAddress1: '',
+                    // companyAddress2: '',
+                    form.value.discountLevel = res.data.discount;
+                    // applyDiscountToSub: false,
+                    form.value.creditAmount = res.data.credit;
+
+                    // // preferences tab
+                    Object.keys(res.data.preferences).forEach((item)=>{
+                        form.value.preferences.push({
+                            data: res.data.preferences[item],
+                            key: item,
+                        })
+                    })
+                    if(res.data.deliveryPreference){
+                        form.value.altTypeDelivery = res.data.deliveryPreference.altTypeDelivery;
+                        form.value.altName = res.data.deliveryPreference.altName;
+                        form.value.altPhoneCountryCode = res.data.deliveryPreference.altPhoneCountryCode;
+                        form.value.altPhoneNumber = res.data.deliveryPreference.altPhoneNumber;
+                        form.value.altDriverInstruction = res.data.deliveryPreference.altDriverInstruction;
+                    }
+                    // linked accounts
+                    form.value.linkedAccounts = res.data.linkedAccounts;
+                }).catch((error)=>{
+                    console.log(error);
+                }).finally(()=>{
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                })
+            }
             const setCustomerAddress = ( address_components )=>{
                 address_components.forEach(component => {
                     if(component.types.includes("postal_code")){
@@ -765,54 +882,31 @@
                     }
                 });
             }
+            const getPhone = (phoneString)=>{
+                if(phoneString != ""){
+                    if(phoneString.split('"').length == 1){
+                        return phoneString;
+                    }else{
+                        var phone = phoneString.split('"')[1];
+                        if(phone.split("|").length > 1){
+                            var area_code = phone.split("|")[0];
+                            var number = phone.split("|")[1];
+                            return { code: area_code, number: number};
+                        }else
+                            return { code: '', number: phone};
+                    }
+                }else{
+                    
+                    return { code: '', number: ''};
+                }  
+            }
             const selectNav = (nav)=>{
                 step.value = nav;
             }
-            const cancel = ()=>{
-                alert('it is not implemented yet. :)')
-            }
-            const next = ()=>{
-                if(step.value == 'account_details'){
-                    if(form.value.customerType == 'B2B' && form.value.accountType == 'Main' && form.value.alreadyLinkedToAccount){
-                        form.value.paymentMethod = 'BACS';
-                    }
-                    step.value = 'payment';
-                }else if( step.value == 'payment' ){
-                    step.value = 'preferences';
-                }else if( step.value == 'preferences' ){
-                    step.value = 'linked_account';
-                }
-            }
-            const paths=ref([
-                { name:'Customer', route:'Customer'},
-                { name:'Henri Salvador', route:'ViewCustomer', params:{ customer_id: 10, step: 'account_details' }}
-            ]);
             const phoneCodesSorted = [...new Map(phoneCodes.map(item =>
                             [item.value, item])).values()].sort((a, b)=>{
                     return parseInt(a.value.replace(/\D/g, '')) - parseInt(b.value.replace(/\D/g, ''));
             });
-            const cardErrors = ref({});
-            watch(()=>form.value.cardDetails,(current_value, previous_value)=>{
-                if(cardFormat.validateCardNumber(current_value)){
-                    delete cardErrors.value.cardNumber;
-                }else{
-                    cardErrors.value.cardNumber = "Invalid Credit Card Number.";
-                }
-            })
-            watch(()=>form.value.cardExpDate,(current_value, previous_value)=>{
-                if(cardFormat.validateCardExpiry(current_value)){
-                    delete cardErrors.value.cardExpiry;
-                }else{
-                    cardErrors.value.cardExpiry = "Invalid Expiration Date.";
-                }
-            })
-            watch(()=>form.value.cardCVV,(current_value, previous_value)=>{
-                if(cardFormat.validateCardExpiry(current_value)){
-                    delete cardErrors.value.cardCvc;
-                }else{
-                    cardErrors.value.cardCvc = "Invalid CVV.";
-                }
-            })
             watch(()=>form.value.paymentMethod,(current_value, previous_value)=>{
                 if(current_value == 'BACS'){
                     nextTick(() => {
@@ -874,53 +968,19 @@
                 searchCustomer,
                 paths,
                 selectNav,
-                next,
-                cancel,
                 postcode,
                 companyPostCode,
                 phoneCodesSorted,
-                cardErrors,
                 currentOrders,
-                oldOrders,
+                pastOrders,
                 searchpanel,
                 showSearchPanel,
                 selectedSubAccount,
                 removeLinkedAccount,
-                formatPhone
+                formatPhone,
+                cardBrand
             }
         },
-        data(){
-            return {
-                cardBrand: null,
-            }
-        },
-        computed: {
-            cardBrandClass(){
-                return this.getBrandClass(this.cardBrand);
-            }
-        },
-        methods:{
-            getBrandClass: (brand)=>{
-                let icon = '';
-                brand = brand || 'unknown';
-                let cardBrandToClass = {
-                    'visa': 'cc-visa',
-                    'maestro': 'cc-maestro',
-                    'mastercard': 'cc-mastercard',
-                    'dankort': 'cc-dankort',
-                    'amex': 'cc-amex',
-                    'discover': 'cc-discover',
-                    'dinersclub': 'cc-dinersclub',
-                    'unionpay': 'cc-unionpay',
-                    'jcb': 'cc-jcb',
-                    'unknown': 'cc-unknown',
-                };
-                if (cardBrandToClass[brand]) {
-                    icon = cardBrandToClass[brand];
-                };
-                return icon;
-            }
-        }
     }
 </script>
 <style scoped lang="scss">
@@ -1070,6 +1130,67 @@ background: #4E58E7;
 }
 .unlink:hover{
     fill: #42A71E;
+}
+// custome radio button
+.preference-radio{
+/* Customize the label (the container) */
+    .custom-radio {
+        display: block;
+        position: relative;
+        padding-left: 24px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        font-size: 14px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        /* Hide the browser's default radio button */
+        input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+            /* When the radio button is checked, add a blue background */
+            &:checked ~ .checkmark {
+                border: solid 1px #42A71E;
+                /* Show the indicator (dot/circle) when checked */
+                &:after {
+                    display: block;
+                }
+            }
+        }
+        /* On mouse-over, add a grey background color */
+        // &:hover input ~ .checkmark {
+        //     background-color: #ccc;
+        // }
+        .checkmark:after {
+            top: 3px;
+            left: 3px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background:#42A71E;
+        }        
+    }
+    /* Create a custom radio button */
+    .checkmark {
+        position: absolute;
+        top: 1px;
+        left: 0;
+        height: 18px;
+        width: 18px;
+        border-radius: 50%;
+        border: solid 1px #000;
+        background-color: white;
+        /* Create the indicator (the dot/circle - hidden when not checked) */
+        &:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+    }
 }
 .full-nav{
   height: 70px;
