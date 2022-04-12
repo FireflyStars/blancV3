@@ -169,19 +169,25 @@ export default ({
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
 
                     if(props.cust){
-                        console.log('cur_cust',props.cust);
+                        //console.log('cur_cust',props.cust);
 
                         for(let i in slotsByDay.value){
                             let slotday = slotsByDay.value[i].value;
+                            let available_slots = slotsByDay.value[i].available;
 
 
                             if(typeof(props.cust[slotday]) !='undefined' && props.cust[slotday] !=''){
 
                                 let custslot = JSON.parse(props.cust[slotday]);
 
+
                                 if(custslot.length > 0){
-                                    slotsByDay.value[i].slot = custslot[0];
-                                    slotsByDay.value[i].selected = true;
+                                    let cust_slot = custslot[0];
+
+                                    if(available_slots.includes(cust_slot)){
+                                        slotsByDay.value[i].slot = custslot[0];
+                                        slotsByDay.value[i].selected = true;
+                                    }
                                 }
                             }
 
