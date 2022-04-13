@@ -251,8 +251,9 @@ class CustomerController extends Controller
             'CustomerID' => $CustomerUUID,
             'Titre' => 'Type Customer',
             'Value' => $request->programmeType,
+            'id_preference' => DB::table('customerpreferences')->where('title', 'Type Customer')->value('id'),
             'created_at' => now(),
-            'updated_at' => now(),            
+            'updated_at' => now(),
         ];
         try {
             DB::table('InfoCustomerPreference')->insert($customer_preferences);
