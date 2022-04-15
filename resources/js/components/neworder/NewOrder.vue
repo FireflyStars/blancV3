@@ -768,7 +768,9 @@ import axios from 'axios';
                    }).then((res)=>{
                        if(res.data.new_order_id > 0){
                            let new_order_id = res.data.new_order_id;
-                           router.push('/order-content/'+new_order_id);
+
+
+                           //router.push('/order-content/'+new_order_id);
                        }
                    }).catch((err)=>{
 

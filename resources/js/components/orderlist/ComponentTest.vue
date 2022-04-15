@@ -209,6 +209,12 @@
                             step="1"
                         ></detailing-right-panel>
                     </div>
+
+                    <div class="row my-5">
+                        <div class="col-2">
+                            <modal :show-btn="true"></modal>
+                        </div>
+                    </div>
             </div>
         </div>
         </div>
@@ -234,11 +240,12 @@
     import RecurringForm from '../miscellaneous/RecurringForm'
     import ItemPictoNew from '../miscellaneous/ItemPictoNew.vue'
     import DetailingRightPanel from '../detailing/DetailingRightPanel.vue';
+    import Modal from '../miscellaneous/Modal.vue';
 
 
     export default {
         name: "ComponentTest",
-        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,SwitchBtn,OrderBarcode, RecurringForm,ItemPictoNew,DetailingRightPanel},
+        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,SwitchBtn,OrderBarcode, RecurringForm,ItemPictoNew,DetailingRightPanel,Modal},
         setup(props,context){
             const showcontainer=ref(false);
             const show_barcode= ref(false);
