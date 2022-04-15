@@ -11,15 +11,15 @@
                     <div class="main-view-2 row">
                         <div class="col">
                         <h1 class="tile_h1">New order</h1>
-                        <!--
+<!--
                          <div class="row">
                             <div class="col-2">
-                                <button class="btn btn-outline-dark body_small_bold" @click="proceedToDetailling">
-                                Proceed to detailing
+                                <button class="btn btn-outline-dark body_small_bold" @click="showConfirmModal">
+                                    Show modal
                                 </button>
                             </div>
                         </div>
-                        -->
+-->
                         <div class="row">
                             <div class="col">
                         <div class="barcode-scan col p-0" @click="featureUnavailable('Scan barcode')"><svg width="41" height="40" viewBox="0 0 41 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -382,6 +382,31 @@
                                     <button class="btn btn-grey w-100" @click="validateDetails">Proceed to detailing</button>
                                 </div>
                             </div>
+
+                            <modal ref="orderConfirmModal">
+                                <template #bheader>
+                                    <div class="bmodal-header py-5 d-flex w-100 justify-content-center align-items-center">
+                                        <div id="order_created_txt">Order n<sup>o</sup> {{neworder_id}} created</div>
+                                        <img src="/images/check.svg"/>
+                                    </div>
+                                </template>
+                                <template #bcontent>
+                                    <div class="row mx-0 bmodal-content">
+                                        <div class="col-12 py-5 text-center">Do you want to proceed<br/>to detailing?</div>
+                                    </div>
+                                </template>
+                                <template #mbuttons>
+                                    <div class="row mx-0 justify-content-center mt-3 pb-4">
+                                        <div class="col-5">
+                                            <button class="btn btn-outline-danger w-100" @click="$router.push({name:'LandingPage'})">NO, Booking only</button>
+                                        </div>
+                                        <div class="col-5">
+                                            <button class="btn btn-outline-success w-100" @click="$router.push('/order-content/'+neworder_id)">YES, Detail order</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </modal>
+
                         </div>
                     </div>
 
@@ -403,6 +428,7 @@
     import DatePicker from '../miscellaneous/DatePicker';
     import TimeSlotPicker from '../miscellaneous/TimeSlotPicker';
     import CustomerDetailsPanel from './CustomerDetailsPanel';
+    import Modal from '../miscellaneous/Modal.vue';
 
     import { useRouter, useRoute } from 'vue-router';
 
@@ -431,7 +457,7 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 import axios from 'axios';
     export default {
         name: "NewOrder",
-        components:{BreadCrumb,SideBar,SelectOptions,SwitchBtn,DatePicker,TimeSlotPicker,CustomerDetailsPanel,RecurringForm},
+        components:{BreadCrumb,SideBar,SelectOptions,SwitchBtn,DatePicker,TimeSlotPicker,CustomerDetailsPanel,RecurringForm,Modal},
         setup(props,context){
             const router = useRouter();
 
@@ -515,6 +541,7 @@ import axios from 'axios';
 
             const recur_form = ref();
 
+            const neworder_id = ref('');
 
 
             const d = new Date();
@@ -768,7 +795,8 @@ import axios from 'axios';
                    }).then((res)=>{
                        if(res.data.new_order_id > 0){
                            let new_order_id = res.data.new_order_id;
-
+                           neworder_id.value = new_order_id;
+                            showConfirmModal();
 
                            //router.push('/order-content/'+new_order_id);
                        }
@@ -1216,6 +1244,12 @@ import axios from 'axios';
 
             }
 
+            const orderConfirmModal = ref();
+
+            function showConfirmModal(){
+                orderConfirmModal.value.showModal();
+            }
+
 
             return {
                 showcontainer,
@@ -1285,6 +1319,9 @@ import axios from 'axios';
                 shp_min_date,
                 addRemoveDays,
                 recur_form,
+                orderConfirmModal,
+                showConfirmModal,
+                neworder_id,
             }
         }
     }
@@ -1376,5 +1413,18 @@ import axios from 'axios';
         padding:5px 16px;
         background: rgba(245, 171, 171, 0.7);
         margin-top:3px;
+    }
+
+    .bmodal-header{
+        background: rgba(66, 167, 30, 0.2);
+        font: normal 22px "Gilroy Extra bold";
+    }
+
+    #order_created_txt{
+        margin-right: 10px;
+    }
+
+    .bmodal-content{
+        font-size:18px;
     }
 </style>

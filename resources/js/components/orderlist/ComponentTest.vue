@@ -212,7 +212,25 @@
 
                     <div class="row my-5">
                         <div class="col-2">
-                            <modal :show-btn="true"></modal>
+                            <button class="btn btn-outline-success" @click="showModal">Show modal</button>
+                            <modal ref="bmodal">
+                                <template #bheader>
+                                    <div class="bmodal-header py-3 text-center">HEADER</div>
+                                </template>
+                                <template #bcontenr>
+                                    <div class="row mx-0">
+                                        <div class="col-12">Your content goes here</div>
+                                    </div>
+                                </template>
+                                <template #mbuttons>
+                                    <div class="row mx-0 justify-content-center mt-3">
+                                        <div class="col-2">
+                                            <button class="btn btn-outline-success" @click="checkMethod">Test</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </modal>
+
                         </div>
                     </div>
             </div>
@@ -470,6 +488,16 @@
                 }
             }
 
+            const checkMethod = ()=>{
+                console.log('method called from parent component');
+            }
+
+            const bmodal = ref();
+
+            const showModal = ()=>{
+                bmodal.value.showModal();
+            }
+
             return {
 
                 showcontainer,
@@ -510,7 +538,10 @@
                 svg_comp,
                 updateZoneLabelPos,
                 stainzone,
-                addStainZone
+                addStainZone,
+                checkMethod,
+                bmodal,
+                showModal,
             }
         },
 

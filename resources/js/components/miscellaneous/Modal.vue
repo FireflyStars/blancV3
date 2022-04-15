@@ -1,10 +1,12 @@
 <template>
-<button class="btn btn-outline-success" @click="showModal" v-if="showBtn">Show Modal</button>
 <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
 
     <div v-if="show_modal" class="bmodal-overlay">
         <div class="bmodal-container" id="myModal" v-if="show_modal">
             <span class="close" @click="closeModal"></span>
+            <slot name="bheader"></slot>
+            <slot name="bcontent"></slot>
+            <slot name="mbuttons"></slot>
         </div>
      </div>
 
@@ -35,6 +37,7 @@ export default {
             //document.getElementById('myModal').classList.add('show');
 
         }
+
         return {
             show_modal,
             closeModal,
