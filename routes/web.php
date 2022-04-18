@@ -69,11 +69,71 @@ Route::get('/permissions-test',function(){
  }
 })->name('permissions');
 
-//ADD test routes here
+Route::get('clear-logs',function(){
+    $logfile = storage_path('logs/laravel.log');
+    $fp = fopen($logfile, "r+");
+    if(ftruncate($fp, 0)){
+        echo "logs clear";
+    }
+})->middleware('auth');
 
-Route::get('{any}', function () {
-    return view('welcome');
-})->where('any','.*');
+//ADD test routes here
+Route::get('cleaning-test',function(){
+    $customerid = '3b57b8eb-f6ad-4a94-9ae8-d7e44c6b0a45';
+    $cust = DB::table('infoCustomer')->where('CustomerID',$customerid)->first();
+
+
+    //$cust_pref = [];
+    $cust_pref_value = [];
+    $grouped_services = [];
+
+    $group_names = [
+        1=>'Dry cleaning',
+        2=>'Cleaning Add-on'
+    ];
+
+
+    $preferences = DB::table('InfoCustomerPreference')
+        ->where('CustomerID',$customerid)
+        ->where('Delete',0)
+        ->get();
+
+
+
+    foreach($preferences as $k=>$v){
+       // $cust_pref[] = $v->Titre;
+        $cust_pref_value[$v->Titre] = $v->Value;
+    }
+
+    $services = DB::table('cleaningservices')->get();
+
+    foreach($services as $k=>$v){
+        $services[$k]->isPrefActive = 0;
+        if($v->cleaning_group==2){
+            foreach($cust_pref_value as $pref=>$value){
+                /*
+                if(stripos($pref,$v->name) > -1 || stripos($v->name,$pref) > -1){
+                    $services[$k]->isPrefActive = $value;
+                }
+                */
+            }
+        }
+    }
+
+    echo "<pre>";
+    print_r($services);
+
+    /*
+    foreach($services as $k=>$v){
+        if(isset($group_names[$v->cleaning_group])){
+            $groupname = $group_names[$v->cleaning_group];
+            $grouped_services[$groupname][] = $v;
+        }
+    }
+    */
+
+});
+
 
 // added by yonghuan to search customers to be linked
 Route::post('/search-customer', [SearchController::class, 'SearchCustomersToLink'])->name('SearchCustomersToLink');
@@ -115,3 +175,14 @@ Route::post('get-suborder-and-print', [ PosteController::class, 'getSubOrderToPr
 /* Update svg zone label position
 */
 Route::post('update-zone-label-pos',[ItemController::class,'updateZoneLabelPos'])->name('update-zone-label-pos')->middleware('auth');
+
+
+Route::group(['prefix' => 'admin'], function () {
+    Voyager::routes();
+});
+
+
+/*ALWAYS AT THE BOTTOM*/
+Route::get('{any}', function () {
+    return view('welcome');
+})->where('any','.*');

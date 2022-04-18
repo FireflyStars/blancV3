@@ -45,7 +45,7 @@ class CleaningServicesSeeder extends Seeder
             [
                 'name'=>'Ozonation',
                 'cleaning_group'=>1,
-                'perc'=>15,
+                'perc'=>30,
                 'fixed_price'=>0,
                 'selected_default'=>0,
                 'created_at'=>date('Y-m-d H:i:s')
