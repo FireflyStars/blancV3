@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -233,6 +232,8 @@ class OrderController extends Controller
         }
 
         $recurring_data = [];
+        $recur_obj = false;
+
         if($new_order['deliverymethod']=='recurring'){
             $recurring_data = @json_decode($new_order['recurring_data']);
 
@@ -264,7 +265,7 @@ class OrderController extends Controller
             $recur_obj = OrderRecurringCreator::processRecurringOrders('SAVE RECCURING BOOKING',$customerid);
 
 
-            if($recur_obj){
+            if($recur_obj && isset($recur_obj->cur_orders[0])){
                 $new_order_id = $recur_obj->cur_orders[0];
 
                 foreach($recur_obj->cur_orders as $k=>$v){
@@ -289,6 +290,8 @@ class OrderController extends Controller
         return response()->json([
             'new_order_id'=>$new_order_id,
             'recurring'=>$recurring_data,
+            'recur_obj'=>$recur_obj,
+
             //'delivery_arr'=>$delivery_arr,
         ]);
     }

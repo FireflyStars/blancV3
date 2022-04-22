@@ -383,7 +383,7 @@
                                 </div>
                             </div>
 
-                            <modal ref="orderConfirmModal">
+                            <modal ref="orderConfirmModal" @closeModal='reloadPage'>
                                 <template #bheader>
                                     <div class="bmodal-header py-5 d-flex w-100 justify-content-center align-items-center">
                                         <div id="order_created_txt">Order n<sup>o</sup> {{neworder_id}} created</div>
@@ -1250,6 +1250,10 @@ import axios from 'axios';
                 orderConfirmModal.value.showModal();
             }
 
+            const reloadPage = ()=>{
+                window.location.reload();
+            }
+
 
             return {
                 showcontainer,
@@ -1322,6 +1326,7 @@ import axios from 'axios';
                 orderConfirmModal,
                 showConfirmModal,
                 neworder_id,
+                reloadPage,
             }
         }
     }

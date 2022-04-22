@@ -1,5 +1,16 @@
 <?php
-/*
+namespace App\Models;
+
+use Carbon\Carbon;
+use function GuzzleHttp\Psr7\str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Holiday;
+
+class OrderRecurringCreator
+{
+
+    /*
  *
  * // retrieve begin of week
 
@@ -39,17 +50,8 @@ cancel_bookings[]=array(
  *
  *
  * **/
-namespace App\Models;
 
 
-use Carbon\Carbon;
-use function GuzzleHttp\Psr7\str;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use App\Models\Holiday;
-
-class OrderRecurringCreator
-{
 
     public $holidays;
 
