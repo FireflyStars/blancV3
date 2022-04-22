@@ -1,6 +1,6 @@
 <template>
     <Teleport to="body">
-        <div class="search-layer d-flex align-items-center justify-content-center position-absolute" v-if="showSearchPanel">
+        <div class="search-layer d-flex align-items-center justify-content-center position-fixed" v-if="showSearchPanel">
             <transition name="list" appear>
                 <div class="search-panel m-auto bg-white">
                     <div class="search-header text-center position-relative">

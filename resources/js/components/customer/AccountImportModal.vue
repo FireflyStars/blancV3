@@ -1,6 +1,6 @@
 <template>
     <Teleport to="body">
-        <div class="import-layer d-flex justify-content-center position-absolute" v-if="showModal">
+        <div class="import-layer d-flex justify-content-center position-fixed" v-if="showModal">
             <transition name="list" appear>
                 <div class="import-modal bg-white">
                     <div class="import-modal-header text-center position-relative">
