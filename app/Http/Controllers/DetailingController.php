@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Models\DetailingServices;
 
 class DetailingController extends Controller
 {
@@ -123,9 +124,12 @@ class DetailingController extends Controller
         $item_description = $this->getItemDescription($detailingitem);
 
         $detailing_data = [];
+        $cust_cleaning_services = [];
 
         if(!empty($detailingitem)){
             $detailing_data = $this->getDetailingData($detailingitem['department_id'], $detailingitem['typeitem_id']);
+            $cust_cleaning_services = DetailingController::getCustCleaningServices($detailingitem);
+
         }
 
         echo json_encode(
@@ -138,9 +142,35 @@ class DetailingController extends Controller
                 'detailing_data' => $detailing_data,
                 'post'=>$request->all(),
                 'detailingitem_id'=>$detailingitem_id,
+                'cust_cleaning_services'=>$cust_cleaning_services,
+                'main_services'=>DetailingServices::getMainServices(),
             ]
         );
     }
+
+    public static function getCustCleaningServices($detailingitem){
+
+
+        $cust_cleaning_services = DetailingController::getCustomerServices($detailingitem['customer_id']);
+
+            if(!is_null($detailingitem['cleaning_services'])){
+                $sel_cleaning_services = @json_decode($detailingitem['cleaning_services']);
+
+                if(!empty($sel_cleaning_services)){
+                    foreach($cust_cleaning_services as $k=>$v){
+                        foreach($v as $i=>$x){
+                            $v[$i]->selected_default = 0;
+                            $v[$i]->cust_selected = (in_array($x->id,$sel_cleaning_services)?1:0);
+                        }
+                    }
+                    $cust_cleaning_services[$k] = $v;
+                }
+
+            }
+
+        return $cust_cleaning_services;
+    }
+
     public function updateItemDetailing(Request $request)
     {
         $detailingitem_id = $request->post('detailingitem_id');
@@ -159,6 +189,9 @@ class DetailingController extends Controller
         $stains = $request->post('stains');
         $damages = $request->post('damages');
         $brand_name = $request->post('brand_name');
+        $cleaning_services = $request->post('cleaning_services');
+        $cleaning_price_type = $request->post('cleaning_price_type');
+        $cleaning_prices = $request->post('cleaning_prices');
 
         if (isset($dept_id)) {
             $detailingitem = DB::table('detailingitem')->where('id', '=', $detailingitem_id)->get();
@@ -262,6 +295,9 @@ class DetailingController extends Controller
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
         }
+
+
+
         $detailingitem = DB::table('detailingitem')->where('id', '=', $detailingitem_id)->get();
         $detailingitem = (array) $detailingitem->first();
 
@@ -297,6 +333,28 @@ class DetailingController extends Controller
                 $step= count($sizes) == 0 ? $step+1 : $step;
             }
             DB::table('detailingitem')->where('id', $detailingitem_id)->update(['etape' => $step, 'updated_at' => date('Y-m-d H:i:s')]);
+
+            if($step==11){
+                $cprices = [];
+                if(isset($cleaning_prices)){
+                    $cprices = $cleaning_prices;
+                }
+
+                DB::table('detailingitem')->where('id',$detailingitem_id)->update([
+                    'cleaning_services'=>$cleaning_services,
+                    'cleaning_price_type'=>$cleaning_price_type,
+                    'dry_cleaning_price'=>(isset($cprices['Dry cleaning'])?$cprices['Dry cleaning']:0),
+                    'cleaning_addon_price'=>(isset($cprices['Cleaning Add-on'])?$cprices['Cleaning Add-on']:0),
+                ]);
+
+
+                if($cleaning_price_type=='Quote'){
+                    DB::table('detailingitem')->where('id',$detailingitem_id)->update([
+                        'dry_cleaning_price'=>0,
+                        'cleaning_addon_price'=>0,
+                    ]);
+                }
+            }
         }
         $detailingitem = DB::table('detailingitem')->where('id', '=', $detailingitem_id)->get();
         $detailingitem = (array) $detailingitem->first();
@@ -304,12 +362,20 @@ class DetailingController extends Controller
         $detailing_data = $this->getDetailingData($detailingitem['department_id'], $detailingitem['typeitem_id']);
         $item_description = $this->getItemDescription($detailingitem);
 
-        echo json_encode(
+
+
+        /* CLEANING SERVICES */
+
+        $cust_cleaning_services = DetailingController::getCustCleaningServices($detailingitem);
+
+        return response()->json(
             [
                 'detailingitem' => $detailingitem,
                 'item_description' => $item_description,
                 'detailing_data' => $detailing_data,
+                'cust_cleaning_services'=>$cust_cleaning_services,
                 'post'=>$request->all(),
+                'cleaning_prices'=>$cleaning_prices,
             ]
         );
     }
@@ -449,5 +515,66 @@ class DetailingController extends Controller
             'issues_zones' => $stains_zones->merge($damages_zones) ,
             'issues_tags' => $stains_tags->merge($damages_tags) ,
         );
+    }
+
+    public static function getCustomerServices($customerid){
+
+        $cust = DB::table('infoCustomer')->where('id',$customerid)->first();
+
+
+        $cust_pref_value = [];
+        $grouped_services = [];
+
+        $group_names = [
+            1=>'Dry cleaning',
+            2=>'Cleaning Add-on'
+        ];
+
+        if($cust){
+
+            $preferences = DB::table('InfoCustomerPreference')
+                ->where('CustomerID',$customerid)
+                ->where('Delete',0)
+                ->get();
+
+
+
+            foreach($preferences as $k=>$v){
+                $cust_pref_value[$v->id_preference] = $v->Value;
+            }
+
+            $services = DB::table('cleaningservices')->get();
+
+            foreach($services as $k=>$v){
+                $services[$k]->group_name = $group_names[$v->cleaning_group];
+                $services[$k]->isPrefActive = 0;
+                if($v->cleaning_group==2 && isset($cust_pref_value[$v->id_preference])){
+                    $services[$k]->isPrefActive = $cust_pref_value[$v->id_preference];
+                }
+            }
+
+
+            foreach($services as $k=>$v){
+                if(isset($group_names[$v->cleaning_group])){
+                    $groupname = $group_names[$v->cleaning_group];
+                    $grouped_services[$groupname][] = $v;
+                }
+            }
+        }
+
+        return $grouped_services;
+
+    }
+
+    public function getServices(Request $request){
+
+        $customerid = $request->customer_id;
+        $grouped_services = DetailingController::getCustomerServices($customerid);
+
+        return response()->json([
+            'main_services'=> DetailingServices::getMainServices(),
+            'grouped_services'=>$grouped_services,
+
+        ]);
     }
 }

@@ -4,7 +4,7 @@
             <div class="panel-header row" @click="show = !show">
                 <div class="col-5">Item n°{{ detailingitem.item_id }}</div>
                 <div class="col-4">Detailed by @{{ customerName }}</div>
-                <div class="col-3 price">£{{ detailingitem.pricecleaning }}</div>
+                <div class="col-3 price">£{{final_price}}</div>
             </div>
             <div class="progress-bar" :style="{ width: progress_percent + '%' }"></div>
             <div class="accordion-container">
@@ -193,7 +193,20 @@
                             class="accordion-collapse collapse"
                             :class="{ show: servicesAcc === true }"
                         >
-                            <div class="accordion-body"></div>
+                            <div class="accordion-body">
+                                <div class="row mb-3" v-for="(services,gpService) in grouped_cleaning_services">
+                                    <div class="col-10 pr-0">
+                                        <span>{{gpService}}</span>
+                                        (<span v-for="(service,index) in services">{{service.name}}<span v-if="index+1 < services.length">, </span></span>)
+                                    </div>
+                                    <div class="col-2 pl-0 text-right">
+                                        <span v-if="grouped_cleaning_price[gpService]" class="float-right">
+                                            <span v-if="typeof(cleaning_price_type)!='undefined' && cleaning_price_type=='Quote'">&#163;0.00</span>
+                                            <span v-else>&#163;{{grouped_cleaning_price[gpService]}}</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -205,7 +218,7 @@
     </transition>
 </template>
 <script>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, onUpdated } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
 export default {
@@ -216,7 +229,9 @@ export default {
         item_description: {},
         detailingitem: {},
         step: Number,
+        cleaning_services:{},
     },
+    emits:['update-cleaning-price'],
     setup(props, context) {
         const router = useRouter();
         const route = useRoute();
@@ -226,6 +241,14 @@ export default {
         const issusesAcc = ref(false);
         const servicesAcc = ref(false);
         const show = ref(true);
+        const grouped_cleaning_services = ref({});
+        const grouped_cleaning_price = ref({});
+        const base_cleaning_price = ref(0);
+        const final_price = ref(0);
+        const cleaning_price_type = ref('');
+
+        //
+
         instAcc.value = props.step == 1 ? true : false;
         descAcc.value = props.step > 1 && props.step <= 9 ? true : false;
         issusesAcc.value = props.step == 10 ? true : false;
@@ -235,6 +258,7 @@ export default {
             descAcc.value = current_val > 1 && current_val <= 9 ? true : false;
             issusesAcc.value = props.step == 10 ? true : false;
             progress_percent.value = current_val / 12 * 100;
+            servicesAcc.value = props.step == 11 ? true:false;
         });
         function openAccordionclick(id) {
             if (id === 1) {
@@ -271,6 +295,123 @@ export default {
         function getStainName(id) {
             return props.item_description.issues_tags.filter((tag) => tag.id === id)[0].name;
         }
+
+        function initCleaningServices(data,price_type){
+            let sel_services = [];
+
+            let services = data;
+
+            let keys = Object.keys(services);
+
+            keys.forEach(function(v,i){
+                let gp = services[v];
+
+                gp.forEach(function(sv,index){
+                    if(sv.cust_selected==1){
+                        sel_services.push(sv);
+                    }
+                });
+            });
+
+            groupCleaningServices(sel_services,price_type);
+
+        }
+
+        function refreshCleaningServices(data,price_type){
+            if(props.step==11){
+                let cleaning_services = JSON.parse(data);
+                let sel_services = [];
+                //console.log(cleaning_services);
+
+                if(cleaning_services.length > 0){
+                    let services = props.cleaning_services;
+
+                    let keys = Object.keys(services);
+
+                    keys.forEach(function(v,i){
+                        let gp = services[v];
+
+                        gp.forEach(function(sv,index){
+                            if(cleaning_services.includes(sv.id.toString())){
+                                sel_services.push(sv);
+                            }
+                        });
+                    });
+                }
+
+                groupCleaningServices(sel_services,price_type);
+
+                return grouped_cleaning_price.value;
+            }
+        }
+
+        function groupCleaningServices(services,price_type){
+            cleaning_price_type.value = price_type;
+
+            let base_price = base_cleaning_price.value;
+
+            const groupBy = (x, f) => x.reduce((a, b) => ((a[f(b)] ||= []).push(b), a), {});
+
+            let gp = groupBy(services, v => v.group_name);
+
+            let keys = Object.keys(gp);
+
+            grouped_cleaning_services.value = {};
+            grouped_cleaning_price.value = {};
+
+
+            if(keys.length > 0){
+                keys.forEach(function(v,i){
+                    let sv = gp[v];
+                    let price = 0;
+
+                    sv.forEach(function(service,index){
+                        if(service.perc > 0){
+                            price += (service.perc/100)*base_price;
+                        }else if(service.fixed_price > 0){
+                            price += service.fixed_price;
+                        }
+                    });
+
+                    if(sv.length > 0){
+                        grouped_cleaning_price.value[v] = (typeof(price_type!='undefined') && price_type=='Quote'?parseFloat(0).toFixed(2):price.toFixed(2));
+                        grouped_cleaning_services.value[v] = sv;
+                    }else{
+                        grouped_cleaning_price.value[v] = {};
+                        grouped_cleaning_services.value[v] = {};
+
+                    }
+                });
+            }else{
+                grouped_cleaning_services.value = {};
+                grouped_cleaning_price.value = {};
+            }
+
+            /*
+            context.emit('update-cleaning-price',{
+                step:11,
+                detailingitem_id:props.detailingitem.id,
+                cleaning_prices:JSON.stringify(grouped_cleaning_price.value),
+            });
+            */
+        }
+
+        function setBaseCleaningPrice(val){
+            base_cleaning_price.value = val;
+        }
+
+        onMounted(()=>{
+
+        });
+
+        onUpdated(()=>{
+            let price = 0;
+            if(props.detailingitem){
+                price = parseFloat(props.detailingitem.pricecleaning)+parseFloat(props.detailingitem.dry_cleaning_price)+parseFloat(props.detailingitem.cleaning_addon_price);
+                final_price.value = price.toFixed(2);
+            }
+        });
+
         return {
             progress_percent,
             instAcc,
@@ -280,7 +421,15 @@ export default {
             show,
             openAccordionclick,
             getStainName,
-            getStainZone
+            getStainZone,
+            initCleaningServices,
+            refreshCleaningServices,
+            grouped_cleaning_services,
+            grouped_cleaning_price,
+            setBaseCleaningPrice,
+            base_cleaning_price,
+            final_price,
+            cleaning_price_type,
         };
     },
 }

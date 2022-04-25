@@ -21,6 +21,7 @@ class CleaningServicesSeeder extends Seeder
             [
                 'name'=>'Cleaning',
                 'cleaning_group'=>1,
+                'id_preference'=>0,
                 'perc'=>30,
                 'fixed_price'=>0,
                 'selected_default'=>1,
@@ -29,6 +30,7 @@ class CleaningServicesSeeder extends Seeder
             [
                 'name'=>'Spotting',
                 'cleaning_group'=>1,
+                'id_preference'=>0,
                 'perc'=>15,
                 'fixed_price'=>0,
                 'selected_default'=>1,
@@ -37,6 +39,7 @@ class CleaningServicesSeeder extends Seeder
             [
                 'name'=>'Pressing',
                 'cleaning_group'=>1,
+                'id_preference'=>0,
                 'perc'=>15,
                 'fixed_price'=>0,
                 'selected_default'=>1,
@@ -45,6 +48,7 @@ class CleaningServicesSeeder extends Seeder
             [
                 'name'=>'Ozonation',
                 'cleaning_group'=>1,
+                'id_preference'=>0,
                 'perc'=>30,
                 'fixed_price'=>0,
                 'selected_default'=>0,
@@ -53,6 +57,7 @@ class CleaningServicesSeeder extends Seeder
             [
                 'name'=>'Debobble',
                 'cleaning_group'=>2,
+                'id_preference'=>5,
                 'perc'=>0,
                 'fixed_price'=>2,
                 'selected_default'=>0,
@@ -61,6 +66,7 @@ class CleaningServicesSeeder extends Seeder
             [
                 'name'=>'Starch',
                 'cleaning_group'=>2,
+                'id_preference'=>0,
                 'perc'=>0,
                 'fixed_price'=>3,
                 'selected_default'=>0,
@@ -69,6 +75,7 @@ class CleaningServicesSeeder extends Seeder
             [
                 'name'=>'Folding',
                 'cleaning_group'=>2,
+                'id_preference'=>4,
                 'perc'=>0,
                 'fixed_price'=>2,
                 'selected_default'=>0,
@@ -77,6 +84,7 @@ class CleaningServicesSeeder extends Seeder
             [
                 'name'=>'With Crease',
                 'cleaning_group'=>2,
+                'id_preference'=>10,
                 'perc'=>0,
                 'fixed_price'=>2,
                 'selected_default'=>0,

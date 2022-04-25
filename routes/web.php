@@ -18,6 +18,9 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ShippingController;
 use App\Http\Controllers\PosteController;
 use Illuminate\Support\Facades\DB;
+use TCG\Voyager\Facades\Voyager;
+
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -79,59 +82,30 @@ Route::get('clear-logs',function(){
 
 //ADD test routes here
 Route::get('cleaning-test',function(){
-    $customerid = '3b57b8eb-f6ad-4a94-9ae8-d7e44c6b0a45';
-    $cust = DB::table('infoCustomer')->where('CustomerID',$customerid)->first();
+    $customerid = 1;
+    $detailingitem_id = 9;
+
+    $cust_cleaning_services = DetailingController::getCustomerServices($customerid);
+    $detailingitem = (array) DB::table('detailingitem')->where('id', $detailingitem_id)->first();
 
 
-    //$cust_pref = [];
-    $cust_pref_value = [];
-    $grouped_services = [];
+echo "<pre>";
 
-    $group_names = [
-        1=>'Dry cleaning',
-        2=>'Cleaning Add-on'
-    ];
+    if(!is_null($detailingitem['cleaning_services'])){
+        $sel_cleaning_services = @json_decode($detailingitem['cleaning_services']);
 
-
-    $preferences = DB::table('InfoCustomerPreference')
-        ->where('CustomerID',$customerid)
-        ->where('Delete',0)
-        ->get();
-
-
-
-    foreach($preferences as $k=>$v){
-       // $cust_pref[] = $v->Titre;
-        $cust_pref_value[$v->Titre] = $v->Value;
-    }
-
-    $services = DB::table('cleaningservices')->get();
-
-    foreach($services as $k=>$v){
-        $services[$k]->isPrefActive = 0;
-        if($v->cleaning_group==2){
-            foreach($cust_pref_value as $pref=>$value){
-                /*
-                if(stripos($pref,$v->name) > -1 || stripos($v->name,$pref) > -1){
-                    $services[$k]->isPrefActive = $value;
+        if(!empty($sel_cleaning_services)){
+            foreach($cust_cleaning_services as $k=>$v){
+                foreach($v as $i=>$x){
+                    $v[$i]->selected_default = 0;
+                    $v[$i]->cust_selected = (in_array($x->id,$sel_cleaning_services)?1:0);
                 }
-                */
             }
+            $cust_cleaning_services[$k] = $v;
         }
+
+        print_r($cust_cleaning_services);
     }
-
-    echo "<pre>";
-    print_r($services);
-
-    /*
-    foreach($services as $k=>$v){
-        if(isset($group_names[$v->cleaning_group])){
-            $groupname = $group_names[$v->cleaning_group];
-            $grouped_services[$groupname][] = $v;
-        }
-    }
-    */
-
 });
 
 
@@ -175,6 +149,12 @@ Route::post('get-suborder-and-print', [ PosteController::class, 'getSubOrderToPr
 /* Update svg zone label position
 */
 Route::post('update-zone-label-pos',[ItemController::class,'updateZoneLabelPos'])->name('update-zone-label-pos')->middleware('auth');
+
+/*
+* Detailing Services
+*/
+
+Route::post('/get-services',[DetailingController::class,'getServices'])->name('get-services')->middleware('auth');
 
 
 Route::group(['prefix' => 'admin'], function () {

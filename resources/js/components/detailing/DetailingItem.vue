@@ -31,7 +31,7 @@
                                 class="subtitle"
                                 v-else-if="detailingitem.etape === 10"
                             >Describe item issuses</h2>
-                            <h2 class="subtitle" v-else-if="detailingitem.etape==11">
+                            <h2 class="subtitle mb-5" v-else-if="detailingitem.etape==11">
                                 Select the desired service(s)
                             </h2>
                             <div
@@ -97,6 +97,10 @@
                                 ></detailing-item-issues>
                                 <detailing-services
                                     v-if="detailingitem.etape == 11"
+                                    :detailingitem="detailingitem"
+                                    :main_services="main_services"
+                                    :cleaning_services="cust_cleaning_services"
+                                    @save-item-services="saveItemDetails"
                                     @go-to-step="backPreviousStep"
                                 ></detailing-services>
                             </div>
@@ -105,7 +109,10 @@
                             :customerName="customerName"
                             :item_description="item_description"
                             :detailingitem="detailingitem"
+                            :cleaning_services="cust_cleaning_services"
                             :step="step"
+                            @update-cleaning-price="saveItemDetails"
+                            ref="right_panel_cmp"
                         ></detailing-right-panel>
                     </div>
                 </div>
@@ -181,6 +188,10 @@ export default {
         const customerName = ref('');
         const step = ref(1);
         const show_pause_popup = ref(false);
+        const cust_cleaning_services = ref({});
+        const main_services = ref({});
+        const right_panel_cmp = ref();
+
         store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Please wait....']);
 
         order_id.value = route.params.order_id;
@@ -193,6 +204,7 @@ export default {
         watch(() => itemDept.value, (current_val, previous_val) => {
             itemDept.value = current_val;
         });
+
         store
             .dispatch(`${DETAILING_MODULE}${INIT_DETAILING}`, { detailingitem_id: detailingitem_id.value, order_id: order_id.value, item_id: item_id.value, search: "" })
             .then((response) => {
@@ -206,6 +218,11 @@ export default {
                     step.value = response.data.detailingitem.etape;
                     detailingData.value = response.data.detailing_data;
                     item_description.value = response.data.item_description;
+                    main_services.value = response.data.main_services;
+                    cust_cleaning_services.value = response.data.cust_cleaning_services;
+
+                    right_panel_cmp.value.setBaseCleaningPrice(response.data.detailingitem.pricecleaning);
+                    right_panel_cmp.value.initCleaningServices(response.data.cust_cleaning_services,response.data.detailingitem.cleaning_price_type);
                 } else {
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
                         message: response.data.message ? response.data.message : 'An error has occured',
@@ -254,16 +271,24 @@ export default {
                     step.value = response.data.detailingitem.etape;
                     item_description.value = response.data.item_description;
                     detailingData.value = response.data.detailing_data;
-
                 });
         }
         function saveItemDetails(data) {
+
+            let details = right_panel_cmp.value.refreshCleaningServices(data.cleaning_services,data.cleaning_price_type);
+
+            data.cleaning_prices = details;
+
+
             store.dispatch(`${DETAILING_MODULE}${UPDATE_DETAILING}`, data)
                 .then((response) => {
                     detailingitem.value = response.data.detailingitem;
                     step.value = response.data.detailingitem.etape;
                     item_description.value = response.data.item_description;
                     detailingData.value = response.data.detailing_data;
+
+                    //cust_cleaning_services.value = response.data.cust_cleaning_services;
+                    //right_panel_cmp.value.refreshCleaningServices(response.data.cust_cleaning_services);
 
                 });
         }
@@ -322,7 +347,10 @@ export default {
             chooseDepartement,
             saveItemDetails,
             backPreviousStep,
-            pauseDetailling
+            pauseDetailling,
+            main_services,
+            cust_cleaning_services,
+            right_panel_cmp,
         };
     },
 }
