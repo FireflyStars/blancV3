@@ -195,13 +195,16 @@
                         >
                             <div class="accordion-body">
                                 <div class="row mb-3" v-for="(services,gpService) in grouped_cleaning_services">
-                                    <div class="col-10 pr-0">
+                                    <div class="col-9 pr-0">
                                         <span>{{gpService}}</span>
                                         (<span v-for="(service,index) in services">{{service.name}}<span v-if="index+1 < services.length">, </span></span>)
                                     </div>
-                                    <div class="col-2 pl-0 text-right">
+                                    <div class="col-3 pl-0 text-right">
                                         <span v-if="grouped_cleaning_price[gpService]" class="float-right">
-                                            <span v-if="typeof(cleaning_price_type)!='undefined' && cleaning_price_type=='Quote'">&#163;0.00</span>
+                                            <span v-if="typeof(cleaning_price_type)!='undefined' && cleaning_price_type=='Quote'">
+                                                <span class="question_mark">?</span>
+                                                &#163;0.00
+                                            </span>
                                             <span v-else>&#163;{{grouped_cleaning_price[gpService]}}</span>
                                         </span>
                                     </div>
@@ -613,5 +616,25 @@ export default {
 .stain-row {
     word-break: break-all;
     display: flex;
+}
+
+.question_mark{
+    width: 20px;
+    height: 20px;
+    border: 1px solid red;
+    display: flex;
+    float: left;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border-radius: 50%;
+    color: red;
+    margin-right:10px;
+}
+
+.question_mark:hover{
+    cursor: pointer;
+    color:#000;
+    border-color: #000;
 }
 </style>
