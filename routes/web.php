@@ -19,7 +19,7 @@ use App\Http\Controllers\ShippingController;
 use App\Http\Controllers\PosteController;
 use Illuminate\Support\Facades\DB;
 use TCG\Voyager\Facades\Voyager;
-
+use App\Http\Controllers\CategoryTailoringController;
 
 /*
 |--------------------------------------------------------------------------
@@ -80,33 +80,74 @@ Route::get('clear-logs',function(){
     }
 })->middleware('auth');
 
-//ADD test routes here
-Route::get('cleaning-test',function(){
-    $customerid = 1;
-    $detailingitem_id = 9;
 
-    $cust_cleaning_services = DetailingController::getCustomerServices($customerid);
-    $detailingitem = (array) DB::table('detailingitem')->where('id', $detailingitem_id)->first();
+Route::get('tailoring-import',function(){
+    $file = storage_path('files/01.csv');
 
+    $handle = fopen($file,'r+');
 
-echo "<pre>";
+    $data = [];
+    $services = [];
+    $categories = [];
+    $limit = [];
+    $categories_to_insert = [];
 
-    if(!is_null($detailingitem['cleaning_services'])){
-        $sel_cleaning_services = @json_decode($detailingitem['cleaning_services']);
+    while ( ($row = fgetcsv($handle) ) !== FALSE ) {
+        $data[] = $row;
+    }
 
-        if(!empty($sel_cleaning_services)){
-            foreach($cust_cleaning_services as $k=>$v){
-                foreach($v as $i=>$x){
-                    $v[$i]->selected_default = 0;
-                    $v[$i]->cust_selected = (in_array($x->id,$sel_cleaning_services)?1:0);
+    foreach($data as $k=>$v){
+        if($k > 2){
+            if($v[0]!=''){
+                if(!in_array($v[0],$categories)){
+                    array_push($categories,$v[0]);
                 }
             }
-            $cust_cleaning_services[$k] = $v;
+            if($v[0]!='' && $v[1]!='' && $v[2]!=''){
+                $services[] = [
+                    'category'=>trim($v[0]),
+                    'category_id'=>0,
+                    'name'=>trim($v[1]),
+                    'price'=>(trim($v[2])=='Quote'?0:$v[2]),
+                    'is_quote'=>(trim($v[2])=='Quote'?1:0),
+                    'created_at'=>date('Y-m-d H:i:s')
+                ];
+            }
+        }
+    }
+
+    if(!empty($categories)){
+        foreach($categories as $k=>$v){
+            $categories_to_insert[] = [
+                'name'=>trim($v),
+                'created_at'=>date('Y-m-d H:i:s')
+            ];
         }
 
-        print_r($cust_cleaning_services);
+        DB::table('category_tailorings')->truncate();
+        DB::table('category_tailorings')->insert($categories_to_insert);
     }
-});
+
+    $sc = DB::table('category_tailorings')->get();
+    $categories_id = [];
+
+    if(count($sc) > 0){
+        foreach($sc as $k=>$v){
+            $categories_id[$v->name] = $v->id;
+        }
+
+        foreach($services as $k=>$v){
+            $services[$k]['category_id'] = (isset($categories_id[$v['category']])?$categories_id[$v['category']]:0);
+        }
+    }
+
+    DB::table('tailoring_services')->truncate();
+    DB::table('tailoring_services')->insert($services);
+
+    echo count($categories)." categories added<br/>".count($services)." services added";
+
+
+})->middleware('auth');
 
 
 // added by yonghuan to search customers to be linked
@@ -159,6 +200,7 @@ Route::post('/get-services',[DetailingController::class,'getServices'])->name('g
 
 Route::group(['prefix' => 'admin'], function () {
     Voyager::routes();
+    Route::get('category-tailoring',[CategoryTailoringController::class,'index'])->name('category-tailoring')->middleware('auth');
 });
 
 
