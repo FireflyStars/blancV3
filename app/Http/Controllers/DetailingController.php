@@ -144,7 +144,7 @@ class DetailingController extends Controller
 
             foreach($tailoring_services as $k=>$v){
                 foreach($v as $i=>$x){
-                   $tailoring_services[$k][$i]->cust_selected = (in_array($x->id,$cust_tailoring_services)?1:0);
+                   $tailoring_services[$k][$i]->cust_selected = (!is_null($cust_tailoring_services) && in_array($x->id,$cust_tailoring_services)?1:0);
                 }
             }
 

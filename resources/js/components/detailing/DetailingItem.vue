@@ -229,7 +229,7 @@ export default {
                     right_panel_cmp.value.initCleaningServices(response.data.cust_cleaning_services,response.data.detailingitem.cleaning_price_type);
                     right_panel_cmp.value.initTailoringServices(response.data.tailoring_services);
 
-                    if(response.data.detailingitem.tailoring_services != null){
+                    if(response.data.detailingitem.tailoring_services != null && response.data.detailingitem.tailoring_services != ''){
                         right_panel_cmp.value.refreshTailoringServices(JSON.parse(response.data.detailingitem.tailoring_services),response.data.detailingitem.tailoring_price_type);
                     }
                 } else {
