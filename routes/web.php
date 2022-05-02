@@ -20,6 +20,7 @@ use App\Http\Controllers\PosteController;
 use Illuminate\Support\Facades\DB;
 use TCG\Voyager\Facades\Voyager;
 use App\Http\Controllers\CategoryTailoringController;
+use App\Models\DetailingServices;
 
 /*
 |--------------------------------------------------------------------------
@@ -80,6 +81,7 @@ Route::get('clear-logs',function(){
     }
 })->middleware('auth');
 
+/* TEST ROUTES*/
 
 Route::get('tailoring-import',function(){
     $file = storage_path('files/01.csv');
@@ -149,6 +151,26 @@ Route::get('tailoring-import',function(){
 
 })->middleware('auth');
 
+/*
+Route::get('tailoring-services-test',function(){
+   $group_services = DetailingServices::getTailoringServicesByTypeitem(2);
+   $detailingitem = (array) DB::table('detailingitem')->where('id',9)->first();
+
+   $cust_tailoring_services = [];
+   if(!is_null($detailingitem['tailoring_services'])){
+    $cust_tailoring_services = @json_decode($detailingitem['tailoring_services']);
+   }
+
+   foreach($group_services as $k=>$v){
+       foreach($v as $i=>$x){
+          $group_services[$k][$i]->cust_selected = (in_array($x->id,$cust_tailoring_services)?1:0);
+       }
+   }
+
+});
+*/
+
+/* END TEST ROUTES */
 
 // added by yonghuan to search customers to be linked
 Route::post('/search-customer', [SearchController::class, 'SearchCustomersToLink'])->name('SearchCustomersToLink');

@@ -194,6 +194,9 @@
                             :class="{ show: servicesAcc === true }"
                         >
                             <div class="accordion-body">
+                                <div class="row mb-2" v-if="Object.values(grouped_cleaning_services).length > 0">
+                                    <div class="col-9"><h5 class="gp_service mb-0">Cleaning</h5></div>
+                                </div>
                                 <div class="row mb-3" v-for="(services,gpService) in grouped_cleaning_services">
                                     <div class="col-9 pr-0">
                                         <span>{{gpService}}</span>
@@ -207,6 +210,15 @@
                                             </span>
                                             <span v-else>&#163;{{grouped_cleaning_price[gpService]}}</span>
                                         </span>
+                                    </div>
+                                </div>
+                                <div class="row  mb-2" :class="{'mt-4':Object.values(grouped_cleaning_services).length > 0}" v-if="sel_tailoring_services.length > 0">
+                                    <div class="col-9"><h5 class="gp_service mb-0">Tailoring</h5></div>
+                                    <div class="col-3 d-flex justify-content-end">&#163;{{tailoring_price}}</div>
+                                </div>
+                                <div class="row" v-if="sel_tailoring_services.length > 0">
+                                    <div class="col-9 pr-0">
+                                        <p v-for="service in sel_tailoring_services" class="mb-2">{{service}}</p>
                                     </div>
                                 </div>
                             </div>
@@ -249,6 +261,9 @@ export default {
         const base_cleaning_price = ref(0);
         const final_price = ref(0);
         const cleaning_price_type = ref('');
+        const all_tailoring_services = ref({});
+        const sel_tailoring_services = ref({});
+        const tailoring_price = ref(0);
 
         //
 
@@ -403,6 +418,39 @@ export default {
             base_cleaning_price.value = val;
         }
 
+        function initTailoringServices(services){
+            all_tailoring_services.value = services;
+        }
+
+        function refreshTailoringServices(services_id){
+            let services_int_id = [];
+            let all_services = all_tailoring_services.value;
+            let sel_services = [];
+            let price = 0;
+
+            services_id.forEach(function(v,i){
+                services_int_id.push(parseInt(v));
+            });
+
+            let keys = Object.keys(all_services);
+
+            keys.forEach(function(v,i){
+                let gp = all_services[v];
+
+                gp.forEach(function(service,index){
+                    if(services_int_id.includes(service.id)){
+                        sel_services.push(service.name);
+                        price += parseFloat(service.price);
+                    }
+                });
+            });
+
+            sel_tailoring_services.value = sel_services;
+            tailoring_price.value = price.toFixed(2);
+
+            return price;
+        }
+
         onMounted(()=>{
 
         });
@@ -410,7 +458,7 @@ export default {
         onUpdated(()=>{
             let price = 0;
             if(props.detailingitem){
-                price = parseFloat(props.detailingitem.pricecleaning)+parseFloat(props.detailingitem.dry_cleaning_price)+parseFloat(props.detailingitem.cleaning_addon_price);
+                price = parseFloat(props.detailingitem.pricecleaning)+parseFloat(props.detailingitem.dry_cleaning_price)+parseFloat(props.detailingitem.cleaning_addon_price)+parseFloat(props.detailingitem.tailoring_price);
                 final_price.value = price.toFixed(2);
             }
         });
@@ -433,6 +481,10 @@ export default {
             base_cleaning_price,
             final_price,
             cleaning_price_type,
+            initTailoringServices,
+            refreshTailoringServices,
+            sel_tailoring_services,
+            tailoring_price,
         };
     },
 }
@@ -636,5 +688,11 @@ export default {
     cursor: pointer;
     color:#000;
     border-color: #000;
+}
+
+.gp_service{
+    font-size:14px;
+    font-family: 'Gilroy';
+    font-weight: bold;
 }
 </style>

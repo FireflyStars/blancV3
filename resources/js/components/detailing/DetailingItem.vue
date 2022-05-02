@@ -100,7 +100,9 @@
                                     :detailingitem="detailingitem"
                                     :main_services="main_services"
                                     :cleaning_services="cust_cleaning_services"
+                                    :tailoring_services="tailoring_services"
                                     @save-item-services="saveItemDetails"
+
                                     @go-to-step="backPreviousStep"
                                 ></detailing-services>
                             </div>
@@ -191,6 +193,7 @@ export default {
         const cust_cleaning_services = ref({});
         const main_services = ref({});
         const right_panel_cmp = ref();
+        const tailoring_services = ref({});
 
         store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Please wait....']);
 
@@ -220,9 +223,15 @@ export default {
                     item_description.value = response.data.item_description;
                     main_services.value = response.data.main_services;
                     cust_cleaning_services.value = response.data.cust_cleaning_services;
+                    tailoring_services.value = response.data.tailoring_services;
 
                     right_panel_cmp.value.setBaseCleaningPrice(response.data.detailingitem.pricecleaning);
                     right_panel_cmp.value.initCleaningServices(response.data.cust_cleaning_services,response.data.detailingitem.cleaning_price_type);
+                    right_panel_cmp.value.initTailoringServices(response.data.tailoring_services);
+
+                    if(response.data.detailingitem.tailoring_services != null){
+                        right_panel_cmp.value.refreshTailoringServices(JSON.parse(response.data.detailingitem.tailoring_services));
+                    }
                 } else {
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
                         message: response.data.message ? response.data.message : 'An error has occured',
@@ -275,10 +284,15 @@ export default {
         }
         function saveItemDetails(data) {
 
-            let details = right_panel_cmp.value.refreshCleaningServices(data.cleaning_services,data.cleaning_price_type);
+            if(data.cleaning_services){
+                let details = right_panel_cmp.value.refreshCleaningServices(data.cleaning_services,data.cleaning_price_type);
+                data.cleaning_prices = details;
+            }
 
-            data.cleaning_prices = details;
-
+            if(data.tailoring_services){
+                let tailoring_price = right_panel_cmp.value.refreshTailoringServices(JSON.parse(data.tailoring_services));
+                data.tailoring_price = tailoring_price;
+            }
 
             store.dispatch(`${DETAILING_MODULE}${UPDATE_DETAILING}`, data)
                 .then((response) => {
@@ -351,6 +365,7 @@ export default {
             main_services,
             cust_cleaning_services,
             right_panel_cmp,
+            tailoring_services,
         };
     },
 }

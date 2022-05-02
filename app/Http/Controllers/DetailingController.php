@@ -132,6 +132,24 @@ class DetailingController extends Controller
 
         }
 
+        $tailoring_services = [];
+
+        if(isset($detailingitem['typeitem_id'])){
+            $tailoring_services = DetailingServices::getTailoringServicesByTypeitem($detailingitem['typeitem_id']);
+
+            $cust_tailoring_services = [];
+            if(!is_null($detailingitem['tailoring_services'])){
+             $cust_tailoring_services = @json_decode($detailingitem['tailoring_services']);
+            }
+
+            foreach($tailoring_services as $k=>$v){
+                foreach($v as $i=>$x){
+                   $tailoring_services[$k][$i]->cust_selected = (in_array($x->id,$cust_tailoring_services)?1:0);
+                }
+            }
+
+        }
+
         echo json_encode(
             [
                 'user' => $user,
@@ -144,6 +162,7 @@ class DetailingController extends Controller
                 'detailingitem_id'=>$detailingitem_id,
                 'cust_cleaning_services'=>$cust_cleaning_services,
                 'main_services'=>DetailingServices::getMainServices(),
+                'tailoring_services'=>$tailoring_services,
             ]
         );
     }
@@ -192,6 +211,8 @@ class DetailingController extends Controller
         $cleaning_services = $request->post('cleaning_services');
         $cleaning_price_type = $request->post('cleaning_price_type');
         $cleaning_prices = $request->post('cleaning_prices');
+        $tailoring_services = $request->post('tailoring_services');
+        $tailoring_price = $request->post('tailoring_price');
 
         if (isset($dept_id)) {
             $detailingitem = DB::table('detailingitem')->where('id', '=', $detailingitem_id)->get();
@@ -352,6 +373,14 @@ class DetailingController extends Controller
                     DB::table('detailingitem')->where('id',$detailingitem_id)->update([
                         'dry_cleaning_price'=>0,
                         'cleaning_addon_price'=>0,
+                    ]);
+                }
+
+
+                if(isset($tailoring_services) && isset($tailoring_price)){
+                    DB::table('detailingitem')->where('id',$detailingitem_id)->update([
+                        'tailoring_services'=>$tailoring_services,
+                        'tailoring_price'=>$tailoring_price,
                     ]);
                 }
             }

@@ -24,11 +24,11 @@
             </h2>
             <div
                 class="accordion-collapse collapse"
-                :class="{ show: main_service==1 && group=='Dry cleaning'}"
+                :class="{ show: (main_service==1 && group=='Dry cleaning') || sel_cleaning_group.includes(group)}"
                 :id="'acdpanel_'+group.replace(' ','')"
             >
                 <div class="accordion-body row mt-3">
-                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center" v-for="(service,id) in services" :class="{'sel_service':service.selected_default==1 || service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0}" :id="'sub_service_'+service.id" @click="toggleSubService(service.id)" :data-cleaning-service-id="service.id">
+                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center" v-for="(service,id) in services" :class="{'sel_service':(detailingitem.cleaning_services==null && service.selected_default==1) || service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0}" :id="'sub_service_'+service.id" @click="toggleSubService(service.id)" :data-cleaning-service-id="service.id">
                         <div class="d-block w-100 text-center">{{service.name}}<span v-if="service.cleaning_group==2" class="text-center d-block w-100">(&#163;{{service.fixed_price}})</span></div>
                     </div>
                 </div>
@@ -45,7 +45,7 @@
             </h2>
             <div
                 class="accordion-collapse collapse"
-                id="acdpanel_otherpricings"
+                id="acdpanel_otherpricings" :class="{'show':detailingitem.cleaning_price_type!=null}"
             >
                 <div class="accordion-body row mt-3">
 
@@ -58,6 +58,36 @@
         </div>
     </div>
     <!--END CLEANING SERVICES-->
+
+    <!-- TAILORING SERVICES -->
+    <div class="row" :class="{'d-none':main_service!=2}">
+        <div class="accordion-item col-12 px-0 mt-4" v-for="(services,group) in tailoring_services">
+            <h2 class="accordion-header">
+                <button
+                    class="accordion-button collapsed"
+                    :id="'acdbtn_'+group.replace(' ','')"
+                    type="button"
+                    @click="openAccordionclick(group.replace(' ',''))"
+                >{{group}}</button>
+            </h2>
+            <div
+                class="accordion-collapse collapse" :class="{'show':sel_tailoring_group.includes(group)}"
+                :id="'acdpanel_'+group.replace(' ','')"
+            >
+                <div class="accordion-body row mt-3">
+                    <div class="col-3 mb-3 d-flex text-center each-sub-service justify-content-center tailoring-subservice align-items-center" v-for="(service,id) in services" :id="'sub_service_'+service.id" @click="toggleSubService(service.id)" :data-tailoring-service-id="service.id" :class="{'sel_service':service.cust_selected==1}">
+                        <div class="d-block w-100 text-center">
+                            {{service.name}}
+                            <span class="text-center d-block w-100">(&#163;{{service.price.toFixed(2)}})</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+    <!-- END TAILORING SERVICES -->
 
     <div class="row buttons">
         <div class="col-10 text-align-right">
@@ -81,12 +111,18 @@ export default {
         detailingitem: {},
         main_services:{},
         cleaning_services:{},
+        tailoring_services:{},
     },
     setup(props,context) {
         //const main_services = ref({});
         //const cleaning_services = ref({});
         const main_service = ref(1);
         const cleaning_prices = ref(['Price now','Quote']);
+        const sel_cleaning_group = ref([]);
+        const sel_tailoring_group = ref([]);
+        const sel_tailoring_service_id = ref([]);
+        const sel_cleaning_service_id = ref([]);
+        const sel_cleaning_price_type = ref("");
 
         function toggleMainService(id){
             let el = document.getElementById('main_service_'+id);
@@ -95,7 +131,7 @@ export default {
             let selected_main = [];
 
 
-
+/*
             if(classes.includes('sel_service')){
 
                 if(id==1){ //CLEANING
@@ -106,10 +142,12 @@ export default {
                         cs.classList.add('sel_service');
                     });
 
-                    updateCleaningPrice();
+                    checkSelectedCleaning(true);
                 }
 
+
             }else{
+
                 //Clears all subselected;
                 if(id==1){ //CLEANING
 
@@ -121,18 +159,39 @@ export default {
                         let el = sub_services[i];
                         el.classList.remove('sel_service');
                     }
-                    updateCleaningPrice();
+                     checkSelectedCleaning(true);
+                }
+            }
+*/
+            if(classes.includes('sel_service')){
+                let other_mains = document.querySelectorAll('.each-main-service:not(#main_service_'+id+')');
+
+                let els = Object.values(other_mains);
+
+                els.forEach(function(v,i){
+                    v.classList.remove('sel_service');
+                });
+
+                if(id==1){ //Cleaning
+
+                }
+
+                if(id==2){ //Tailoring
+                    checkSelTailoringGroups();
                 }
             }
 
             main_service.value = id;
 
-             let mains = document.querySelectorAll('.each-main-service.sel_service');
+            let mains = document.querySelectorAll('.each-main-service.sel_service');
 
-                if(mains.length==1){
-                    let id = mains[0].getAttribute('id').replace('main_service_','');
-                    main_service.value = id;
-                }
+            if(mains.length==1){
+                let id = mains[0].getAttribute('id').replace('main_service_','');
+                main_service.value = id;
+            }
+
+
+
 
         }
 
@@ -156,7 +215,11 @@ export default {
             }
 
             if(main_service.value==1){
-                updateCleaningPrice();
+                checkSelectedCleaning(true);
+            }
+
+            if(main_service.value==2){
+                checkSelectedTailoring(true);
             }
         }
 
@@ -170,7 +233,61 @@ export default {
         }
 
 
-        function updateCleaningPrice(){
+        function checkSelectedTailoring(on_click){
+            let selected_services = document.querySelectorAll('.tailoring-subservice.sel_service');
+            let els = Object.values(selected_services);
+            let tailoring_services_id = [];
+
+            els.forEach(function(v,i){
+                let id = v.getAttribute('data-tailoring-service-id');
+                tailoring_services_id.push(id);
+            });
+
+            sel_tailoring_service_id.value = tailoring_services_id;
+
+            if(tailoring_services_id.length > 0){
+                document.getElementById('main_service_2').classList.add('main_selected');
+            }else{
+                document.getElementById('main_service_2').classList.remove('main_selected');
+            }
+
+            if(on_click){
+                //Update Detailing
+                context.emit("save-item-services", {
+                    step:11,
+                    detailingitem_id: props.detailingitem.id,
+                    tailoring_services: JSON.stringify(tailoring_services_id),
+                });
+            }
+        }
+
+        function checkSelTailoringGroups(){
+
+            //Open accordion if has selected services
+           let ts = props.tailoring_services;
+            let gp = Object.keys(ts);
+            let sel_tailoring_gp = [];
+
+            gp.forEach(function(v,i){
+                let services = ts[v];
+
+                services.forEach(function(service,index){
+                    if(sel_tailoring_service_id.value.includes(service.id.toString())){
+                        if(!sel_tailoring_gp.includes(v)){
+                            sel_tailoring_gp.push(v);
+                        }
+                    }
+                });
+            })
+
+            sel_tailoring_group.value = sel_tailoring_gp;
+            //End open accordion
+
+
+        }
+
+
+        function checkSelectedCleaning(on_click){
             let selected_services = document.querySelectorAll('.cleaning-subservice.sel_service:not(.cleaning-prices)');
             let keys = Object.values(selected_services);
             let cleaning_services_id = [];
@@ -178,7 +295,7 @@ export default {
 
 
             if(keys.length > 0){
-                 document.getElementById('main_service_1').classList.add('sel_service');
+                 document.getElementById('main_service_1').classList.add('main_selected');
 
                 let i;
                 for(i in keys){
@@ -186,26 +303,51 @@ export default {
                     cleaning_services_id.push(id);
                 }
 
+                sel_cleaning_service_id.value = cleaning_services_id;
+
                 let selected_pricing = document.querySelectorAll('.cleaning-prices.sel_service');
                 let pricing_el = Object.values(selected_pricing);
 
                 if(pricing_el.length == 1){
                     cleaning_pricing_type = pricing_el[0].getAttribute('data-cleaning-price-type');
+                    sel_cleaning_price_type.value = cleaning_pricing_type;
                 }
 
             }else{
-                document.getElementById('main_service_1').classList.remove('sel_service');
+                document.getElementById('main_service_1').classList.remove('main_selected');
             }
 
-
-             //Update Detailing
+            if(on_click){
+                 //Update Detailing
                 context.emit("save-item-services", {
                     step:11,
                     detailingitem_id: props.detailingitem.id,
                     cleaning_services: JSON.stringify(cleaning_services_id),
                     cleaning_price_type: cleaning_pricing_type,
                 });
+            }
+        }
 
+
+        function checkCleaningGroup(){
+            let cs = props.cleaning_services;
+            let gp = Object.keys(cs);
+            let sel_cleaning_gp = [];
+
+
+            gp.forEach(function(v,i){
+                let services = cs[v];
+
+                services.forEach(function(service,index){
+                    if(sel_cleaning_service_id.value.includes(service.id.toString())){
+                        if(!sel_cleaning_gp.includes(v)){
+                            sel_cleaning_gp.push(v);
+                        }
+                    }
+                });
+            })
+
+            sel_cleaning_group.value = sel_cleaning_gp;
 
         }
 
@@ -218,7 +360,11 @@ export default {
         }
 
         onMounted(()=>{
-            //updateCleaningPrice();
+            checkSelectedCleaning(false);
+            checkSelectedTailoring(false);
+            checkSelTailoringGroups();
+            checkCleaningGroup();
+
             let price_type = props.detailingitem.cleaning_price_type;
             if(price_type && price_type!=''){
                 let cp = document.querySelectorAll('.cleaning-prices');
@@ -232,9 +378,9 @@ export default {
                 });
             }
 
+
             if(props.detailingitem.cleaning_services==null){
-                console.log('update price on first load');
-                updateCleaningPrice();
+               checkSelectedCleaning(true);
             }
         });
 
@@ -248,6 +394,9 @@ export default {
             main_service,
             openAccordionclick,
             cleaning_prices,
+            sel_cleaning_group,
+            sel_tailoring_group,
+            sel_cleaning_price_type,
         };
     },
 }
@@ -330,6 +479,10 @@ export default {
     .accordion-button:active {
         outline: none !important;
         box-shadow: none !important;
+    }
+
+    .main_selected{
+        background:rgba(66,167,30,.3);
     }
 
 
