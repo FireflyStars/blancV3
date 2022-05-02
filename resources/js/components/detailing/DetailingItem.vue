@@ -230,7 +230,7 @@ export default {
                     right_panel_cmp.value.initTailoringServices(response.data.tailoring_services);
 
                     if(response.data.detailingitem.tailoring_services != null){
-                        right_panel_cmp.value.refreshTailoringServices(JSON.parse(response.data.detailingitem.tailoring_services));
+                        right_panel_cmp.value.refreshTailoringServices(JSON.parse(response.data.detailingitem.tailoring_services),response.data.detailingitem.tailoring_price_type);
                     }
                 } else {
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
@@ -290,7 +290,7 @@ export default {
             }
 
             if(data.tailoring_services){
-                let tailoring_price = right_panel_cmp.value.refreshTailoringServices(JSON.parse(data.tailoring_services));
+                let tailoring_price = right_panel_cmp.value.refreshTailoringServices(JSON.parse(data.tailoring_services),data.tailoring_price_type);
                 data.tailoring_price = tailoring_price;
             }
 

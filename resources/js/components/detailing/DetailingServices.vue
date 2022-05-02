@@ -49,7 +49,7 @@
             >
                 <div class="accordion-body row mt-3">
 
-                    <div class="col-2 d-flex text-center each-sub-service py-4 justify-content-center cleaning-subservice cleaning-prices" v-for="name in cleaning_prices" :id="'sub_service_'+name.replace(' ','')" @click="toggleSubService(name.replace(' ',''))" :data-cleaning-price-type="name.replace(' ','')">
+                    <div class="col-2 d-flex text-center each-sub-service py-4 justify-content-center cleaning-subservice cleaning-prices" v-for="name in type_prices" :id="'sub_service_'+name.replace(' ','')" @click="toggleSubService(name.replace(' ',''))" :data-cleaning-price-type="name.replace(' ','')">
                         {{name}}
                     </div>
 
@@ -83,9 +83,32 @@
                     </div>
                 </div>
             </div>
-
-
         </div>
+
+         <div class="accordion-item col-12 px-0 mt-4">
+            <h2 class="accordion-header">
+                <button
+                    class="accordion-button collapsed"
+                    id="acdbtn_tailoringpricetype"
+                    type="button"
+                    @click="openAccordionclick('tailoringpricetype')"
+                >Other pricings</button>
+            </h2>
+            <div
+                class="accordion-collapse collapse"
+                id="acdpanel_tailoringpricetype" :class="{'show':detailingitem.tailoring_price_type!=null && detailingitem.tailoring_price_type!=''}"
+            >
+                <div class="accordion-body row mt-3">
+
+                    <div class="col-2 d-flex text-center each-sub-service py-4 justify-content-center tailoring-subservice tailoring-price-type" :id="'sub_service_tailoring_'+type.replace(' ','')" :class="{'sel_service':detailingitem.tailoring_price_type==type}" v-for="type in type_prices" :data-tailoring-price-type="type" @click="toggleSubService('tailoring_'+type.replace(' ',''))">
+                        {{type}}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
     </div>
     <!-- END TAILORING SERVICES -->
 
@@ -117,7 +140,7 @@ export default {
         //const main_services = ref({});
         //const cleaning_services = ref({});
         const main_service = ref(1);
-        const cleaning_prices = ref(['Price now','Quote']);
+        const type_prices = ref(['Price now','Quote']);
         const sel_cleaning_group = ref([]);
         const sel_tailoring_group = ref([]);
         const sel_tailoring_service_id = ref([]);
@@ -173,7 +196,7 @@ export default {
                 });
 
                 if(id==1){ //Cleaning
-
+                    checkCleaningGroup();
                 }
 
                 if(id==2){ //Tailoring
@@ -197,10 +220,10 @@ export default {
 
         function toggleSubService(id){
             let el = document.getElementById('sub_service_'+id);
-             el.classList.toggle('sel_service');
-             let classes = Object.values(el.classList);
+            el.classList.toggle('sel_service');
+            let classes = Object.values(el.classList);
 
-
+            //TO optimize
             if(classes.includes('cleaning-prices')){
                 let cleaning_prices = document.querySelectorAll('.cleaning-prices:not(#sub_service_'+id+')');
                 //console.log(cleaning_prices)
@@ -213,6 +236,21 @@ export default {
                     elp.classList.remove('sel_service');
                 }
             }
+
+            if(classes.includes('tailoring-price-type')){
+                let cleaning_prices = document.querySelectorAll('.tailoring-price-type:not(#sub_service_'+id+')');
+                //console.log(cleaning_prices)
+
+                let keys = Object.keys(cleaning_prices);
+
+                let i;
+                for(i in keys){
+                    let elp = cleaning_prices[i];
+                    elp.classList.remove('sel_service');
+                }
+            }
+
+            //END to optimize
 
             if(main_service.value==1){
                 checkSelectedCleaning(true);
@@ -234,9 +272,10 @@ export default {
 
 
         function checkSelectedTailoring(on_click){
-            let selected_services = document.querySelectorAll('.tailoring-subservice.sel_service');
+            let selected_services = document.querySelectorAll('.tailoring-subservice.sel_service:not(.tailoring-price-type)');
             let els = Object.values(selected_services);
             let tailoring_services_id = [];
+            let price_type = "";
 
             els.forEach(function(v,i){
                 let id = v.getAttribute('data-tailoring-service-id');
@@ -244,6 +283,13 @@ export default {
             });
 
             sel_tailoring_service_id.value = tailoring_services_id;
+
+            let price_type_els = document.querySelectorAll('.tailoring-price-type.sel_service');
+
+            if(price_type_els.length > 0){
+                let price_type_el = price_type_els[0];
+                price_type = price_type_el.getAttribute('data-tailoring-price-type');
+            }
 
             if(tailoring_services_id.length > 0){
                 document.getElementById('main_service_2').classList.add('main_selected');
@@ -257,6 +303,7 @@ export default {
                     step:11,
                     detailingitem_id: props.detailingitem.id,
                     tailoring_services: JSON.stringify(tailoring_services_id),
+                    tailoring_price_type: price_type,
                 });
             }
         }
@@ -351,6 +398,10 @@ export default {
 
         }
 
+        function setTailoringPrice(type){
+            console.log(type);
+        }
+
         watch(() =>main_service.value, (current_val, previous_val) => {
             //console.log('cur_main_service',current_val);
         });
@@ -393,10 +444,11 @@ export default {
             toggleSubService,
             main_service,
             openAccordionclick,
-            cleaning_prices,
+            type_prices,
             sel_cleaning_group,
             sel_tailoring_group,
             sel_cleaning_price_type,
+            setTailoringPrice,
         };
     },
 }

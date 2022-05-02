@@ -214,7 +214,13 @@
                                 </div>
                                 <div class="row  mb-2" :class="{'mt-4':Object.values(grouped_cleaning_services).length > 0}" v-if="sel_tailoring_services.length > 0">
                                     <div class="col-9"><h5 class="gp_service mb-0">Tailoring</h5></div>
-                                    <div class="col-3 d-flex justify-content-end">&#163;{{tailoring_price}}</div>
+                                    <div class="col-3 d-flex justify-content-end">
+                                        <span v-if="detailingitem.tailoring_price_type=='Quote'">
+                                            <span class="question_mark">?</span>
+                                            &#163;0.00
+                                        </span>
+                                        <span v-else>&#163;{{tailoring_price}}</span>
+                                    </div>
                                 </div>
                                 <div class="row" v-if="sel_tailoring_services.length > 0">
                                     <div class="col-9 pr-0">
@@ -422,7 +428,7 @@ export default {
             all_tailoring_services.value = services;
         }
 
-        function refreshTailoringServices(services_id){
+        function refreshTailoringServices(services_id,tailoring_price_type){
             let services_int_id = [];
             let all_services = all_tailoring_services.value;
             let sel_services = [];
@@ -444,6 +450,10 @@ export default {
                     }
                 });
             });
+
+            if(tailoring_price_type=='Quote'){
+                price = 0;
+            }
 
             sel_tailoring_services.value = sel_services;
             tailoring_price.value = price.toFixed(2);
