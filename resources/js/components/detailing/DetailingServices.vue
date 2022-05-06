@@ -5,7 +5,7 @@
             However, you have the possibility to unlock a disabled service with the consent of the customer.
         </div>
     </div>
-    <div class="row block-service-main justify-content-between">
+    <div class="row block-service-main">
         <div class="col-2 each-main-service d-flex text-center align-items-center justify-content-center" v-for="(service,index) in main_services" :id="'main_service_'+index" :class="{'sel_service':index==1}" @click="toggleMainService(index)">
             {{service}}
         </div>

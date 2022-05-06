@@ -11,9 +11,11 @@ class DetailingServices extends Model
         return [
            1=>'Cleaning',
            2=>'Tailoring & Alterations',
+           /*
            3=>'Restoration',
            4=>'Storage',
            5=>'Sale'
+           */
         ];
     }
 
