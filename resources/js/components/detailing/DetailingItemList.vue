@@ -47,7 +47,7 @@
                                         @click="openDetailing(det.item_number)"
                                     >
                                         <tag v-if="det.etape === 1||det.etape === 2" name="To be detailed"></tag>
-                                        <tag v-else-if="det.etape === 12" name="Detailed"></tag>
+                                        <tag v-else-if="det.etape === 11 && det.status=='Completed'" name="Detailed"></tag>
                                         <tag v-else name="Partially detailed"></tag>
                                     </td>
                                     <td
@@ -62,8 +62,8 @@
                             </tbody>
                         </table>
                         <div class="row add-item">
-                            <button class="btn btn-add-item col-4" @click="addItem">
-                                <i class="bi bi-hash"></i> Add item without barcode
+                            <button class="btn btn-add-item col-4" @click="showTrackingModal"> <!-- addItem() -->
+                                <i class="bi bi-hash"></i> Add item<!-- without barcode-->
                             </button>
                             <span class="col-1 text-center">OR</span>
                             <div class="col-5 btn-barcode">
@@ -79,21 +79,21 @@
                                         fill="black"
                                     />
                                 </svg>
-                                <span class="scan-text">Scan item / new bag barcode</span>
+                                <span class="scan-text" @click="showTrackingModal">Scan item / new bag barcode</span>
                             </div>
                         </div>
                         <div class="row total">
                             <span>Total £ {{ item_total }}</span>
                         </div>
-                        <div class="row buttons">
+                        <div class="row buttons pt-4">
                             <div class="col-10 text-align-right">
                                 <button class="btn btn-link btn-previous" @click="back">Previous</button>
                             </div>
-                            <div class="col-2 text-align-right">
+                            <div class="col-2" id="create_item_btn_container">
                                 <button
-                                    class="btn btn-next text-white"
+                                    class="btn btn-next text-white float-right"
                                     :disabled="!valid"
-                                    @click="next"
+                                    @click="createOrderItems"
                                 >Next</button>
                             </div>
                         </div>
@@ -101,7 +101,30 @@
                 </div>
             </div>
         </div>
+
+
     </transition>
+
+     <modal ref="bmodal">
+            <template #bheader>
+                <div class="bmodal-header py-3 text-center">Scan HSL</div>
+                <div class="row mx-0 justify-content-center"><div class="col-2 text-center"><img src="/images/barcode.svg"/></div></div>
+            </template>
+            <template #bcontent>
+                <div class="row mt-5 justify-content-center" :class="{'mb-5':!show_modal_loader,'mb-3':show_modal_loader}">
+                    <div class="col-5 form-group">
+                        <input type="text" class="form-control text-center" id="hsl_text" ref="hsl_text" v-model="current_hsl" @keyup="checkHslAndDetail($event,'new')"/>
+                    </div>
+                </div>
+                <div v-if="show_modal_loader">
+                    <bar-loader></bar-loader>
+                </div>
+            </template>
+            <template #mbuttons>
+
+            </template>
+        </modal>
+
 </template>
 <script>
 import MainHeader from "../layout/MainHeader";
@@ -122,10 +145,12 @@ import {
     INIT_DETAILING,
 } from "../../store/types/types";
 import Tag from "../miscellaneous/Tag.vue";
+import Modal from '../miscellaneous/Modal.vue';
+import BarLoader from '../BarLoader.vue';
 
 export default {
     name: "DetailingItemList",
-    components: { BreadCrumb, SideBar, MainHeader, Tag },
+    components: { BreadCrumb, SideBar, MainHeader, Tag, Modal, BarLoader},
     setup() {
         const router = useRouter();
         const route = useRoute();
@@ -136,6 +161,11 @@ export default {
         const item_total = ref(0);
         const valid = ref(false);
         const new_item_id = ref(0);
+        const bmodal = ref();
+        const current_hsl = ref('');
+        const show_modal_loader = ref(false);
+        const cur_customer = ref({});
+
         store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
             true,
             "Please wait....",
@@ -155,6 +185,7 @@ export default {
             .then((response) => {
                 if (response.data.user) {
                     customer_name.value = response.data.customer.Name;
+                    cur_customer.value = response.data.customer;
                     detailing_list.value = response.data.detailing_list;
                     item_total.value = detailing_list.value.reduce((acc, ele) => {
                         return acc + ele.price;
@@ -171,6 +202,19 @@ export default {
             })
             .finally(() => {
                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                let count_items = detailing_list.value.length;
+                let completed_items = [];
+
+                detailing_list.value.forEach(function(v,i){
+                   if(v.status=='Completed'){
+                       completed_items.push(v.item_number);
+                   }
+
+                });
+
+                if(detailing_list.value.length==completed_items.length){
+                    valid.value = true;
+                }
             });
         function getRowspanNumber(bagno) {
             return detailing_list.value.filter(x => x.NoBag == bagno).length;
@@ -183,9 +227,78 @@ export default {
         function openDetailing(item_id) {
             router.push('/detailing_item/' + order_id.value + '/' + item_id);
         }
-        function addItem() {
+
+        const showTrackingModal = ()=>{
+
+            const loadModal = async()=>{
+               await showModal();
+           }
+
+            loadModal().then(()=>{
+                let el = document.querySelector('#hsl_text');
+                el.focus();
+            });
+
+        }
+
+        function showModal(){
+            bmodal.value.showModal();
+        }
+
+
+        function checkHslAndDetail(event,type){
+            let err = false;
+            if(event.keyCode==13){
+                let value = current_hsl.value.toString().replace(' ','');
+
+                if(value=='' || ! value.match(/\d{8}/)){
+                    err = true;
+
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                        message: "Invalid HSL",
+                        ttl: 5,
+                        type: "danger",
+                    });
+                }
+
+                if(!err){
+                    show_modal_loader.value = true;
+                    axios.post('/check-detailing-tracking',{
+                        tracking:value,
+                        customer_id:cur_customer.value.CustomerID,
+                    }).then((res)=>{
+                        if(res.data.err!=''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                                message: res.data.err,
+                                ttl: 5,
+                                type: "danger",
+                            });
+                            current_hsl.value = '';
+                        }else{
+                            if(res.data.item){
+                                addItem(res.data.item.ItemTrackingKey,res.data.item.id);
+                            }else{
+                                addItem(value,0);
+                            }
+                        }
+
+                    }).catch((err)=>{
+
+                    }).finally(()=>{
+                        show_modal_loader.value = false;
+                    });
+                }
+
+            }
+        }
+
+
+
+        function addItem(hsl,item_id){
+            console.log('add item called');
+
             store
-            .dispatch(`${DETAILING_MODULE}${INIT_DETAILING}`, { detailingitem_id: 0, order_id: order_id.value, item_id: 0, search: "" })
+            .dispatch(`${DETAILING_MODULE}${INIT_DETAILING}`, { detailingitem_id: 0, order_id: order_id.value, item_id: 0, search: "",item_id:item_id,tracking:hsl })
             .then((response) => {
                 new_item_id.value = response.data.detailingitem_id;
             }).catch((err)=>{
@@ -194,6 +307,26 @@ export default {
                 router.push('/detailing_item/'+order_id.value+'/'+new_item_id.value);
             });
         }
+
+        function createOrderItems(){
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
+                true,
+                "Creating items....",
+            ]);
+
+            axios.post('/create-order-items',{
+                order_id:order_id.value
+            }).then((res)=>{
+                console.log(res);
+            }).catch((err)=>{
+                console.log(err);
+            }).finally(()=>{
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            });
+
+            //
+
+        }
         return {
             paths,
             order_id,
@@ -201,10 +334,16 @@ export default {
             detailing_list,
             valid,
             item_total,
+            bmodal,
             addItem,
             getIndexOfRow,
             getRowspanNumber,
-            openDetailing
+            openDetailing,
+            createOrderItems,
+            showTrackingModal,
+            current_hsl,
+            checkHslAndDetail,
+            show_modal_loader,
         };
     },
 };
@@ -370,5 +509,9 @@ export default {
 .row-hover td:hover{
     cursor: pointer;
     background: #eeeeee;
+}
+
+#create_item_btn_container{
+    padding-right: 0;
 }
 </style>

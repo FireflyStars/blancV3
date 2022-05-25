@@ -21,6 +21,9 @@ use Illuminate\Support\Facades\DB;
 use TCG\Voyager\Facades\Voyager;
 use App\Http\Controllers\CategoryTailoringController;
 use App\Models\DetailingServices;
+use App\Models\Infoitem;
+use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 /*
 |--------------------------------------------------------------------------
@@ -170,6 +173,151 @@ Route::get('tailoring-services-test',function(){
 });
 */
 
+//http://blanc-detailing.local/create-item-test?item=9
+Route::get('create-item-test',function(Request $request){
+
+    $id_item = $request->item;
+
+    $detailing_item = DB::table('detailingitem')->where('id',$id_item)->first();
+
+    if($detailing_item){
+        $item = new stdClass();
+        $item->spot = 0;
+
+        $item->priceClean = $detailing_item->pricecleaning;
+        $item->Patterns = $detailing_item->pattern_id;
+        $item->ItemTrackingKey = $detailing_item->tracking;
+        $item->Fabrics = @json_decode($detailing_item->fabric_id);
+        $item->Colors = @json_decode($detailing_item->color_id);
+
+        //Save item without process
+        echo "<pre>";
+        print_r($detailing_item);
+
+        //ADD ItemID in infoitempost
+    }
+});
+
+
+Route::get('stripe-test',function(){
+    $id_customer = 	19688;
+
+    $cust = DB::table('infoCustomer')->where('id',$id_customer)->first();
+
+    $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->first();
+
+    $stripe = new \Stripe\StripeClient(env('STRIPE_TEST_SECURITY_KEY'));
+
+    $card_exp = '12/34';
+    $card_num =  '4242 4242 4242 4242';
+    $cardholder_name = $cust->FirstName.$cust->LastName;
+
+    $stripe_customer = null;
+
+    try {
+
+        $card = DB::table('cards')->where('CustomerID',$cust->CustomerID)->first();
+
+        //If Customer has card
+        if($card){
+            $stripe_customer = $stripe->customers->retrieve(
+                $card->stripe_customer_id,
+                []
+              );
+
+        }else{
+
+            //create a card object to stripe
+            $card = $stripe->paymentMethods->create([
+                'type' => 'card',
+                'card' => [
+                    'number'      => $card_num ,
+                    'exp_month'   => 12,
+                    'exp_year'    => 34,
+                    'cvc'         => 999,
+                ],
+            ]);
+
+
+            //create a customer object to stripe
+            $stripe_customer = $stripe->customers->create([
+                'name'              => $cardholder_name,
+                'email'             => $cust->EmailAddress,
+                'payment_method'    => $card->id,
+                'invoice_settings'  => ['default_payment_method' => $card->id],
+                'metadata'          => [
+                                            'CustomerID' => $cust->CustomerID
+                                    ],
+                'address'           => [
+                                        'city'          => $addr->Town,
+                                        'state'         => $addr->County,
+                                        'country'       => $addr->Country,
+                                        'postal_code'   => $addr->postcode,
+                                        'line1'         => $addr->address1,
+                                        'line2'         => $addr->address2,
+                                    ]
+            ]);
+
+
+
+            $credit_card = [
+                'CustomerID'        => $cust->CustomerID,
+                'cardHolderName'    => $cardholder_name,
+                'type'              => $card->card->brand,
+                'cardNumber'        => substr_replace($card_num, str_repeat('*', strlen($card_num) - 6), 3, -3),
+                'dateexpiration'    => $card_exp,
+                'stripe_customer_id'=> $stripe_customer->id,
+                'stripe_card_id'    => $card->id,
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ];
+
+            DB::table('cards')->insert($credit_card);
+        }
+
+        $payment_intent = $stripe->paymentIntents->create([
+            'amount'            => 100*100, //100*0.01
+            'currency'          => 'gbp',
+            'confirm'           => true,
+            "payment_method"    => $card->stripe_card_id,
+            "customer"          => $stripe_customer->id,
+            "capture_method"    => "automatic",
+            'payment_method_types' => ['card'],
+            "description"=>"Order: 12345",
+            "receipt_email"=>"rushdi@vpc-direct-service.com",
+        ]);
+
+        if($payment_intent->status == 'succeeded'){
+            //Update order
+            echo "payment succeeded";
+        }
+
+    }catch(Exception $e){
+
+    }
+
+    /*
+    $stripe_customer = $stripe->customers->create([
+        'name'              => $cust->FirstName.$cust->LastName,
+        'email'             => $cust->EmailAddress,
+        'payment_method'    => $card->id,
+        'invoice_settings'  => ['default_payment_method' => $card->id],
+        'metadata'          => [
+                                    'CustomerID' => $CustomerUUID
+                            ],
+        'address'           => [
+                                'city'          => $request->city,
+                                'state'         => $request->state,
+                                'country'       => $request->country,
+                                'postal_code'   => $request->postCode,
+                                'line1'         => $request->deliveryAddress1,
+                                'line2'         => $request->deliveryAddress2,
+                            ]
+    ]);
+    */
+
+});
+
 /* END TEST ROUTES */
 
 // added by yonghuan to search customers to be linked
@@ -218,6 +366,14 @@ Route::post('update-zone-label-pos',[ItemController::class,'updateZoneLabelPos']
 */
 
 Route::post('/get-services',[DetailingController::class,'getServices'])->name('get-services')->middleware('auth');
+Route::post('/complete-detailing-item',[DetailingController::class,'completeDetailing'])->name('complete-detailing-item')->middleware('auth');
+Route::post('/update-cust-preference-from-service',[DetailingController::class,'updateCustomerServicePref'])->name('update-cust-preference-from-service')->middleware('auth');
+/*
+* Create items from detailing
+*/
+
+Route::post('check-detailing-tracking',[DetailingController::class,'checkDetailingTracking'])->name('check-detailing-item')->middleware('auth');
+Route::post('create-order-items',[DetailingController::class,'createOrderItems'])->name('create-order-items')->middleware('auth');
 
 
 Route::group(['prefix' => 'admin'], function () {

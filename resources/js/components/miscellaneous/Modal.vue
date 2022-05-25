@@ -3,7 +3,9 @@
 
     <div v-if="show_modal" class="bmodal-overlay">
         <div class="bmodal-container" id="myModal" v-if="show_modal">
-            <span class="close" @click="closeModal"></span>
+            <slot name="closebtn">
+                 <span class="close" @click="closeModal"></span>
+            </slot>
             <slot name="bheader"></slot>
             <slot name="bcontent"></slot>
             <slot name="mbuttons"></slot>

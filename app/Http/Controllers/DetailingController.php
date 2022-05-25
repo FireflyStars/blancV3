@@ -23,7 +23,7 @@ class DetailingController extends Controller
         $customer = (array) $customer->first();
 
         $detailingitemlist = DB::table('detailingitem')
-            ->select('typeitem.name as typeitem_name', 'detailingitem.etape', 'detailingitem.pricecleaning as price','detailingitem.id as item_number')
+            ->select('typeitem.name as typeitem_name', 'detailingitem.etape', 'detailingitem.pricecleaning as price','detailingitem.id as item_number','detailingitem.status')
             ->join('typeitem', 'typeitem.id', 'detailingitem.typeitem_id')
             //->join('infoitems', 'infoitems.ItemTrackingKey', '=', 'detailingitem.item_id')
             //->join('infoInvoice', 'infoInvoice.SubOrderID', '=', 'infoitems.SubOrderID')
@@ -59,6 +59,7 @@ class DetailingController extends Controller
         $search = $request->post('search');
         $order_id = $request->post('order_id');
         $item_id = $request->post('item_id');
+        $tracking = $request->post('tracking');
         $detailingitem_id = $request->post('detailingitem_id');
         $user = Auth::user();
 
@@ -76,22 +77,29 @@ class DetailingController extends Controller
                 ->get();
             if (count($customer) > 0) {
                 $customer = (array) $customer->first();
+
+                $detailing_arr = [
+                    'order_id' => $order_id,
+                    'item_id' => $item_id,
+                    'customer_id' => $customer['id'],
+                    'status' => 'In Process',
+                    'etape' => 1,
+                    'coeftailoringbrand' => 0,
+                    'coefcleaningbrand' => 0,
+                    'coeftailoringfabric' => 0,
+                    'coefcleaningfabric' => 0,
+                    'coefcleaningcomplexities' => 0,
+                    'coeftailoringcomplexities' => 0,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
+                ];
+
+                if(isset($tracking)){
+                    $detailing_arr['tracking'] = $tracking;
+                }
+
                 $detailingitem_id = DB::table('detailingitem')->insertGetId(
-                    [
-                        'order_id' => $order_id,
-                       // 'item_id' => $item_id,
-                        'customer_id' => $customer['id'],
-                        'status' => 'In Process',
-                        'etape' => 1,
-                        'coeftailoringbrand' => 0,
-                        'coefcleaningbrand' => 0,
-                        'coeftailoringfabric' => 0,
-                        'coefcleaningfabric' => 0,
-                        'coefcleaningcomplexities' => 0,
-                        'coeftailoringcomplexities' => 0,
-                        'created_at' => date('Y-m-d H:i:s'),
-                        'updated_at' => date('Y-m-d H:i:s')
-                    ]
+                    $detailing_arr
                 );
             } else {
                 return response()->json(['message' => 'Order not found.']);
@@ -606,6 +614,84 @@ class DetailingController extends Controller
             'main_services'=> DetailingServices::getMainServices(),
             'grouped_services'=>$grouped_services,
 
+        ]);
+    }
+
+    public function completeDetailing(Request $request){
+        $id = $request->detailingitem_id;
+        $updated = false;
+
+        $updated = DB::table('detailingitem')->where('id',$id)->update([
+            'status'=>'Completed',
+        ]);
+
+        return response()->json([
+            'updated'=>$updated,
+        ]);
+    }
+
+    public function createOrderItems(Request $request){
+
+        return response()->json([
+            'post'=>$request->all(),
+        ]);
+    }
+
+    public function checkDetailingTracking(Request $request){
+        $tracking = $request->tracking;
+        $customer_id = $request->customer_id;
+
+        $item = DB::table('infoitems')->where('ItemTrackingKey',$tracking)->first();
+
+        $err = '';
+
+        if($item){
+            $inv = DB::table('infoInvoice')
+                ->where('InvoiceID',$item->InvoiceID)
+                ->where('CustomerID',$customer_id)
+                ->get();
+
+            if(count($inv)==0){
+                $err = "HSL $tracking not linked with current customer";
+            }
+        }
+
+
+        return response()->json([
+            'item'=>$item,
+            'err'=>$err,
+            //'post'=>$request->all(),
+        ]);
+    }
+
+    public function updateCustomerServicePref(Request $request){
+        $service_id = $request->service_id;
+        $customer_id = $request->customer_id;
+
+        $cust = DB::table('infoCustomer')->where('id',$customer_id)->first();
+
+        $service_line = DB::table('cleaningservices')->where('id',$service_id)->first();
+
+        $updated = false;
+
+        if($service_line){
+            $id_pref = $service_line->id_preference;
+
+            if($id_pref !=0){
+                $updated = DB::table('InfoCustomerPreference')
+                    ->where('CustomerID',$cust->CustomerID)
+                    ->where('id_preference',$id_pref)
+                    ->where('Delete',0)
+                    ->update([
+                        'Value'=>1
+                    ]);
+            }
+        }
+
+        return response()->json([
+            'post'=>$request->all(),
+            'id_pref'=>$id_pref,
+            'updated'=>$updated,
         ]);
     }
 }

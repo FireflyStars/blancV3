@@ -28,9 +28,14 @@
                 :id="'acdpanel_'+group.replace(' ','')"
             >
                 <div class="accordion-body row mt-3">
-                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center" v-for="(service,id) in services" :class="{'sel_service':(detailingitem.cleaning_services==null && service.selected_default==1) || service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0}" :id="'sub_service_'+service.id" @click="toggleSubService(service.id)" :data-cleaning-service-id="service.id">
-                        <div class="d-block w-100 text-center">{{service.name}}<span v-if="service.cleaning_group==2" class="text-center d-block w-100">(&#163;{{service.fixed_price}})</span></div>
+                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center position-relative" v-for="(service,id) in services" :class="{'sel_service':(!detailingitem.cleaning_services && service.selected_default==1) || service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0}" :id="'sub_service_'+service.id" @click="checkSubService(service.id)" :data-cleaning-service-id="service.id">
+                        <div class="d-block w-100 text-center">
+                            {{service.name}}<span v-if="service.cleaning_group==2" class="text-center d-block w-100">(&#163;{{service.fixed_price}})</span>
+
+                        </div>
+                        <img src="/images/padlock.svg" class="position-absolute pref-disable-icon" v-if="service.cleaning_group==2 && service.isPrefActive==0"/>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -48,9 +53,8 @@
                 id="acdpanel_otherpricings" :class="{'show':detailingitem.cleaning_price_type!=null}"
             >
                 <div class="accordion-body row mt-3">
-
                     <div class="col-2 d-flex text-center each-sub-service py-4 justify-content-center cleaning-subservice cleaning-prices" v-for="name in type_prices" :id="'sub_service_'+name.replace(' ','')" @click="toggleSubService(name.replace(' ',''))" :data-cleaning-price-type="name.replace(' ','')">
-                        {{name}}
+                       {{name}}
                     </div>
 
                 </div>
@@ -99,7 +103,6 @@
                 id="acdpanel_tailoringpricetype" :class="{'show':detailingitem.tailoring_price_type!=null && detailingitem.tailoring_price_type!=''}"
             >
                 <div class="accordion-body row mt-3">
-
                     <div class="col-2 d-flex text-center each-sub-service py-4 justify-content-center tailoring-subservice tailoring-price-type" :id="'sub_service_tailoring_'+type.replace(' ','')" :class="{'sel_service':detailingitem.tailoring_price_type==type}" v-for="type in type_prices" :data-tailoring-price-type="type" @click="toggleSubService('tailoring_'+type.replace(' ',''))">
                         {{type}}
                     </div>
@@ -112,24 +115,61 @@
     </div>
     <!-- END TAILORING SERVICES -->
 
-    <div class="row buttons">
-        <div class="col-10 text-align-right">
+    <div class="row buttons mt-4">
+        <div class="col-9 text-align-right pr-0">
             <button class="btn btn-link btn-previous" @click="back">Previous</button>
         </div>
-        <div class="col-2 text-align-right">
-            <button class="btn btn-next">Next</button>
+        <div class="col-3 text-align-right px-0">
+            <button class="btn btn-success text-white" id="completeDetailingBtn" @click="validateServices">Finish detailing</button>
         </div>
     </div>
 
+
+    <modal ref="addon_modal">
+        <template #closebtn>
+            <span class="close" id="addon_modal_close" @click="closeAddOnModal"></span>
+        </template>
+        <template #bheader>
+            <div class="bmodal-header py-4 text-center">Add-ons</div>
+        </template>
+        <template #bcontent>
+            <div class="row py-5">
+                <div class="col-12 text-center add_on_desc">Select service add-ons</div>
+            </div>
+        </template>
+        <template #mbuttons>
+            <div class="row mx-0 justify-content-center mt-3 mb-5">
+                <div class="col-5">
+                    <button class="btn btn-outline-dark w-100" @click="changeCustomerPreference(sel_addon_id)">Change preferences</button>
+                </div>
+                <div class="col-1"></div>
+                <div class="col-5">
+                    <button class="btn btn-outline-dark w-100" @click="setServiceToggle(sel_addon_id)">Only for this order</button>
+                </div>
+            </div>
+        </template>
+    </modal>
+
+
+
+
 </template>
 <script>
- import {onMounted,onUpdated, ref,watch} from 'vue';
+ import {computed, onMounted,onUpdated, ref,watch} from 'vue';
+ import { useStore } from "vuex";
+ import {useRouter} from 'vue-router';
+ import Modal from '../miscellaneous/Modal.vue';
+
+import {
+    TOASTER_MESSAGE, TOASTER_MODULE,
+    LOADER_MODULE, SET_LOADER_MSG, DISPLAY_LOADER, HIDE_LOADER
+} from "../../store/types/types";
+
 
 export default {
-
     name: "DetailingServices",
     emits:['save-item-services','go-to-step'],
-    components: {},
+    components: {Modal},
     props: {
         detailingitem: {},
         main_services:{},
@@ -137,6 +177,8 @@ export default {
         tailoring_services:{},
     },
     setup(props,context) {
+         const store = useStore();
+         const router = useRouter();
         //const main_services = ref({});
         //const cleaning_services = ref({});
         const main_service = ref(1);
@@ -146,13 +188,15 @@ export default {
         const sel_tailoring_service_id = ref([]);
         const sel_cleaning_service_id = ref([]);
         const sel_cleaning_price_type = ref("");
+        const sel_tailoring_price_type = ref("");
+        const addon_modal = ref();
+        const sel_addon_id = ref(0);
 
         function toggleMainService(id){
             let el = document.getElementById('main_service_'+id);
             el.classList.toggle('sel_service');
             let classes = Object.values(el.classList);
             let selected_main = [];
-
 
 /*
             if(classes.includes('sel_service')){
@@ -212,55 +256,85 @@ export default {
                 let id = mains[0].getAttribute('id').replace('main_service_','');
                 main_service.value = id;
             }
+        }
 
+        function checkSubService(id){
+            let el = document.getElementById('sub_service_'+id);
 
+            let classes = Object.values(el.classList);
 
+            if(classes.includes('is_pref_disabled') && !classes.includes('sel_service')){
+                sel_addon_id.value = id;
+                addon_modal.value.showModal();
+            }else{
+                toggleSubService(id);
+            }
+        }
 
+        function changeCustomerPreference(id){
+            axios.post('/update-cust-preference-from-service',{
+                service_id:id,
+                customer_id:props.detailingitem.customer_id,
+            }).then((res)=>{
+                if(res.data.updated){
+
+                }
+            }).catch((err)=>{
+
+            }).finally(()=>{
+
+            });
+
+        }
+
+        function setServiceToggle(id){
+            toggleSubService(id);
+            closeAddOnModal();
         }
 
         function toggleSubService(id){
             let el = document.getElementById('sub_service_'+id);
             el.classList.toggle('sel_service');
-            let classes = Object.values(el.classList);
 
-            //TO optimize
-            if(classes.includes('cleaning-prices')){
-                let cleaning_prices = document.querySelectorAll('.cleaning-prices:not(#sub_service_'+id+')');
-                //console.log(cleaning_prices)
+             let classes = Object.values(el.classList);
 
-                let keys = Object.keys(cleaning_prices);
+                //TO optimize
+                if(classes.includes('cleaning-prices')){
+                    let cleaning_prices = document.querySelectorAll('.cleaning-prices:not(#sub_service_'+id+')');
+                    //console.log(cleaning_prices)
 
-                let i;
-                for(i in keys){
-                    let elp = cleaning_prices[i];
-                    elp.classList.remove('sel_service');
+                    let keys = Object.keys(cleaning_prices);
+
+                    let i;
+                    for(i in keys){
+                        let elp = cleaning_prices[i];
+                        elp.classList.remove('sel_service');
+                    }
                 }
-            }
 
-            if(classes.includes('tailoring-price-type')){
-                let cleaning_prices = document.querySelectorAll('.tailoring-price-type:not(#sub_service_'+id+')');
-                //console.log(cleaning_prices)
+                if(classes.includes('tailoring-price-type')){
+                    let cleaning_prices = document.querySelectorAll('.tailoring-price-type:not(#sub_service_'+id+')');
+                    //console.log(cleaning_prices)
 
-                let keys = Object.keys(cleaning_prices);
+                    let keys = Object.keys(cleaning_prices);
 
-                let i;
-                for(i in keys){
-                    let elp = cleaning_prices[i];
-                    elp.classList.remove('sel_service');
+                    let i;
+                    for(i in keys){
+                        let elp = cleaning_prices[i];
+                        elp.classList.remove('sel_service');
+                    }
                 }
-            }
 
-            //END to optimize
+                //END to optimize
 
-            if(main_service.value==1){
-                checkSelectedCleaning(true);
-            }
+                if(main_service.value==1){
+                    checkSelectedCleaning(true);
+                }
 
-            if(main_service.value==2){
-                checkSelectedTailoring(true);
-            }
+                if(main_service.value==2){
+                    checkSelectedTailoring(true);
+                }
         }
-
 
         function openAccordionclick(id) {
             let acdbtn = document.getElementById('acdbtn_'+id);
@@ -297,6 +371,10 @@ export default {
                 document.getElementById('main_service_2').classList.remove('main_selected');
             }
 
+            sel_tailoring_price_type.value = price_type;
+
+            checkSelectedCleaning(false);
+
             if(on_click){
                 //Update Detailing
                 context.emit("save-item-services", {
@@ -304,6 +382,8 @@ export default {
                     detailingitem_id: props.detailingitem.id,
                     tailoring_services: JSON.stringify(tailoring_services_id),
                     tailoring_price_type: price_type,
+                    cleaning_services:JSON.stringify(sel_cleaning_service_id.value),
+                    cleaning_pricing_type:sel_cleaning_price_type.value,
                 });
             }
         }
@@ -340,7 +420,6 @@ export default {
             let cleaning_services_id = [];
             let cleaning_pricing_type = "";
 
-
             if(keys.length > 0){
                  document.getElementById('main_service_1').classList.add('main_selected');
 
@@ -371,6 +450,8 @@ export default {
                     detailingitem_id: props.detailingitem.id,
                     cleaning_services: JSON.stringify(cleaning_services_id),
                     cleaning_price_type: cleaning_pricing_type,
+                    tailoring_services: JSON.stringify(sel_tailoring_service_id.value),
+                    tailoring_price_type:sel_tailoring_price_type,
                 });
             }
         }
@@ -399,7 +480,7 @@ export default {
         }
 
         function setTailoringPrice(type){
-            console.log(type);
+            console.log('cleaning',sel_tailoring_service_id.value.length);
         }
 
         watch(() =>main_service.value, (current_val, previous_val) => {
@@ -436,6 +517,61 @@ export default {
         });
 
 
+        function validateServices(){
+            let is_err = false;
+
+
+
+            console.log('cleaning',sel_cleaning_service_id);
+
+            if(sel_cleaning_service_id.value.length==0 && sel_tailoring_service_id.value.length==0){
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                        message: 'No services selected',
+                        ttl: 5,
+                        type: 'danger'
+                    });
+                is_err = true;
+            }
+
+            if(sel_cleaning_service_id.value.length > 0 && sel_cleaning_price_type.value==''){
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                        message: 'Cleaning price type not set',
+                        ttl: 5,
+                        type: 'danger'
+                    });
+                is_err = true;
+            }
+
+            if(sel_tailoring_service_id.value.length > 0 && sel_tailoring_price_type.value==''){
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                        message: 'Tailoring price type not set',
+                        ttl: 5,
+                        type: 'danger'
+                    });
+
+                is_err = true;
+            }
+
+            if(!is_err){
+
+               axios.post('/complete-detailing-item',{
+                    detailingitem_id: props.detailingitem.id,
+               }).then((res)=>{
+                   console.log(res);
+               }).catch((err)=>{
+
+               }).finally(()=>{
+                    router.push('/order-content/'+props.detailingitem.order_id);
+               });
+            }
+
+        }
+
+        function closeAddOnModal(){
+            addon_modal.value.closeModal();
+        }
+
+
         return {
             back,
             //main_services,
@@ -449,6 +585,13 @@ export default {
             sel_tailoring_group,
             sel_cleaning_price_type,
             setTailoringPrice,
+            validateServices,
+            addon_modal,
+            checkSubService,
+            changeCustomerPreference,
+            setServiceToggle,
+            closeAddOnModal,
+            sel_addon_id,
         };
     },
 }
@@ -473,6 +616,7 @@ export default {
     .each-main-service{
         height:150px;
         width:150px;
+        margin-right:1.5rem;
     }
 
 
@@ -535,6 +679,32 @@ export default {
 
     .main_selected{
         background:rgba(66,167,30,.3);
+    }
+
+    #completeDetailingBtn:hover{
+        background:#333;
+    }
+
+    .pref-disable-icon{
+        left:10px;
+        bottom:10px;
+    }
+
+    .bmodal-header,.add_on_desc{
+        font-family:'Gilroy Extra Bold';
+    }
+
+    .add_on_desc{
+        font-size:18px;
+    }
+
+    .bmodal-header{
+        font-size:22px;
+        background:#f8f8f8;
+    }
+
+    #addon_modal_close{
+        top:20px;
     }
 
 

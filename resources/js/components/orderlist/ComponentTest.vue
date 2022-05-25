@@ -217,7 +217,7 @@
                                 <template #bheader>
                                     <div class="bmodal-header py-3 text-center">HEADER</div>
                                 </template>
-                                <template #bcontenr>
+                                <template #bcontent>
                                     <div class="row mx-0">
                                         <div class="col-12">Your content goes here</div>
                                     </div>
