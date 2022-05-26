@@ -368,6 +368,8 @@ Route::post('update-zone-label-pos',[ItemController::class,'updateZoneLabelPos']
 Route::post('/get-services',[DetailingController::class,'getServices'])->name('get-services')->middleware('auth');
 Route::post('/complete-detailing-item',[DetailingController::class,'completeDetailing'])->name('complete-detailing-item')->middleware('auth');
 Route::post('/update-cust-preference-from-service',[DetailingController::class,'updateCustomerServicePref'])->name('update-cust-preference-from-service')->middleware('auth');
+Route::post('/remove-detailing-item',[DetailingController::class,'removeDetailingItem'])->name('remove-detailing-item')->middleware('auth');
+
 /*
 * Create items from detailing
 */

@@ -25,6 +25,7 @@
                                     <th>Status</th>
                                     <th>Sub-order</th>
                                     <th>Price</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -41,7 +42,7 @@
                                     <td
                                         class="body_regular td-text"
                                         @click="openDetailing(det.item_number)"
-                                    >{{ det.item_number }}</td>
+                                    >{{ det.tracking }}</td>
                                     <td
                                         class="td-status"
                                         @click="openDetailing(det.item_number)"
@@ -58,6 +59,7 @@
                                         class="body_regular td-text"
                                         @click="openDetailing(det.item_number)"
                                     >£{{ det.price }}</td>
+                                    <td @click="loadRemoveItemModal(det.tracking,det.item_number)"><img src="/images/garbage.svg"/></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -125,6 +127,33 @@
             </template>
         </modal>
 
+
+    <modal ref="remove_item_modal">
+        <template #closebtn>
+            <span class="close" id="addon_modal_close" @click="closeRemoveItemModal"></span>
+        </template>
+        <template #bheader>
+            <div class="bmodal-header py-4 text-center">Remove Item</div>
+        </template>
+        <template #bcontent>
+            <div class="row py-5">
+                <div class="col-12 text-center add_on_desc">Do you want to remove item {{cur_tracking_to_remove}}?</div>
+            </div>
+        </template>
+        <template #mbuttons>
+            <div class="row mx-0 justify-content-center mt-3 mb-5">
+                <div class="col-3">
+                    <button class="btn btn-outline-dark w-100" @click="removeDetailingItem(cur_item_to_remove)">YES</button>
+                </div>
+                <div class="col-2"></div>
+                <div class="col-3">
+                    <button class="btn btn-outline-dark w-100" @click="closeRemoveItemModal">NO</button>
+                </div>
+            </div>
+        </template>
+    </modal>
+
+
 </template>
 <script>
 import MainHeader from "../layout/MainHeader";
@@ -165,6 +194,9 @@ export default {
         const current_hsl = ref('');
         const show_modal_loader = ref(false);
         const cur_customer = ref({});
+        const remove_item_modal = ref();
+        const cur_tracking_to_remove = ref("");
+        const cur_item_to_remove = ref(0);
 
         store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
             true,
@@ -178,6 +210,7 @@ export default {
             { name: "Item List", route: "DetailingItemList" },
         ]);
 
+    function getDetailingList(){
         store
             .dispatch(`${DETAILING_MODULE}${GET_DETAILING_LIST}`, {
                 order_id: order_id.value,
@@ -216,6 +249,10 @@ export default {
                     valid.value = true;
                 }
             });
+        }
+
+        getDetailingList();
+
         function getRowspanNumber(bagno) {
             return detailing_list.value.filter(x => x.NoBag == bagno).length;
         }
@@ -327,6 +364,38 @@ export default {
             //
 
         }
+
+        function loadRemoveItemModal(tracking,id){
+            cur_tracking_to_remove.value = tracking;
+            cur_item_to_remove.value = id;
+            remove_item_modal.value.showModal();
+        }
+
+        function closeRemoveItemModal(){
+            cur_tracking_to_remove.value = "";
+            cur_item_to_remove.value = 0;
+            remove_item_modal.value.closeModal();
+        }
+
+
+        function removeDetailingItem(id){
+            axios.post('/remove-detailing-item',{
+                id:id
+            }).then((res)=>{
+                if(res.data.deleted){
+                    cur_tracking_to_remove.value = "";
+                    cur_item_to_remove.value = 0;
+                    remove_item_modal.value.closeModal();
+                }
+            }).catch((err)=>{
+
+            }).finally(()=>{
+                getDetailingList();
+            });
+
+        }
+
+
         return {
             paths,
             order_id,
@@ -344,6 +413,12 @@ export default {
             current_hsl,
             checkHslAndDetail,
             show_modal_loader,
+            remove_item_modal,
+            loadRemoveItemModal,
+            closeRemoveItemModal,
+            removeDetailingItem,
+            cur_tracking_to_remove,
+            cur_item_to_remove
         };
     },
 };
@@ -514,4 +589,24 @@ export default {
 #create_item_btn_container{
     padding-right: 0;
 }
+
+.bmodal-header,.add_on_desc{
+        font-family:'Gilroy Extra Bold';
+    }
+
+    .add_on_desc{
+        font-size:18px;
+    }
+
+    .bmodal-header{
+        font-size:22px;
+        background:#f8f8f8;
+    }
+
+    #addon_modal_close{
+        top:20px;
+    }
+
+
+
 </style>

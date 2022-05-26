@@ -27,6 +27,7 @@
                 :class="{ show: (main_service==1 && group=='Dry cleaning') || sel_cleaning_group.includes(group)}"
                 :id="'acdpanel_'+group.replace(' ','')"
             >
+
                 <div class="accordion-body row mt-3">
                     <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center position-relative" v-for="(service,id) in services" :class="{'sel_service':(!detailingitem.cleaning_services && service.selected_default==1) || service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0}" :id="'sub_service_'+service.id" @click="checkSubService(service.id)" :data-cleaning-service-id="service.id">
                         <div class="d-block w-100 text-center">
@@ -283,6 +284,8 @@ export default {
             }).catch((err)=>{
 
             }).finally(()=>{
+               let el = document.getElementById('sub_service_'+id);
+               el.classList.remove('is_pref_disabled');
 
             });
 
@@ -708,6 +711,11 @@ export default {
 
     #addon_modal_close{
         top:20px;
+    }
+
+
+    .each-sub-service:not(.is_pref_disabled) .pref-disable-icon{
+        display:none;
     }
 
 

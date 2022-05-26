@@ -23,7 +23,7 @@ class DetailingController extends Controller
         $customer = (array) $customer->first();
 
         $detailingitemlist = DB::table('detailingitem')
-            ->select('typeitem.name as typeitem_name', 'detailingitem.etape', 'detailingitem.pricecleaning as price','detailingitem.id as item_number','detailingitem.status')
+            ->select('typeitem.name as typeitem_name', 'detailingitem.etape', 'detailingitem.pricecleaning as price','detailingitem.id as item_number','detailingitem.status','detailingitem.tracking')
             ->join('typeitem', 'typeitem.id', 'detailingitem.typeitem_id')
             //->join('infoitems', 'infoitems.ItemTrackingKey', '=', 'detailingitem.item_id')
             //->join('infoInvoice', 'infoInvoice.SubOrderID', '=', 'infoitems.SubOrderID')
@@ -642,6 +642,7 @@ class DetailingController extends Controller
         $tracking = $request->tracking;
         $customer_id = $request->customer_id;
 
+
         $item = DB::table('infoitems')->where('ItemTrackingKey',$tracking)->first();
 
         $err = '';
@@ -693,6 +694,17 @@ class DetailingController extends Controller
             'post'=>$request->all(),
             'id_pref'=>$id_pref,
             'updated'=>$updated,
+        ]);
+    }
+
+    public function removeDetailingItem(Request $request){
+        $id = $request->id;
+
+        $deleted = DB::table('detailingitem')->where('id',$id)->delete();
+
+        return response()->json([
+            'post'=>$request->all(),
+            'deleted'=>$deleted,
         ]);
     }
 }
