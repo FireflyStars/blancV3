@@ -277,7 +277,8 @@ export default {
                 customer_id:props.detailingitem.customer_id,
             }).then((res)=>{
                 if(res.data.updated){
-
+                    toggleSubService(id);
+                    closeAddOnModal();
                 }
             }).catch((err)=>{
 
@@ -334,6 +335,8 @@ export default {
                 if(main_service.value==2){
                     checkSelectedTailoring(true);
                 }
+
+                sel_addon_id.value = 0;
         }
 
         function openAccordionclick(id) {

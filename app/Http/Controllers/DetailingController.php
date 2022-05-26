@@ -127,6 +127,7 @@ class DetailingController extends Controller
             ->where('order_id', '=', $order_id)
             ->where('id', '=', $item_id)
             ->get();
+
         $detailingitem = (array) $detailingitem->first();
 
         $item_description = $this->getItemDescription($detailingitem);
@@ -572,7 +573,7 @@ class DetailingController extends Controller
         if($cust){
 
             $preferences = DB::table('InfoCustomerPreference')
-                ->where('CustomerID',$customerid)
+                ->where('CustomerID',$cust->CustomerID)
                 ->where('Delete',0)
                 ->get();
 
