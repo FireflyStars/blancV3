@@ -25,6 +25,8 @@ use App\Models\Infoitem;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
+use function PHPUnit\Framework\isNull;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -174,27 +176,117 @@ Route::get('tailoring-services-test',function(){
 */
 
 //http://blanc-detailing.local/create-item-test?item=9
-Route::get('create-item-test',function(Request $request){
+Route::get('/create-item-test',function(Request $request){
 
-    $id_item = $request->item;
+    $order_id = $request->order;
 
-    $detailing_item = DB::table('detailingitem')->where('id',$id_item)->first();
+    $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
-    if($detailing_item){
-        $item = new stdClass();
-        $item->spot = 0;
 
-        $item->priceClean = $detailing_item->pricecleaning;
-        $item->Patterns = $detailing_item->pattern_id;
-        $item->ItemTrackingKey = $detailing_item->tracking;
-        $item->Fabrics = @json_decode($detailing_item->fabric_id);
-        $item->Colors = @json_decode($detailing_item->color_id);
 
-        //Save item without process
-        echo "<pre>";
-        print_r($detailing_item);
+    echo "<pre>";
+    if($order){
 
-        //ADD ItemID in infoitempost
+
+        //Retrieve booking for order
+        $promised_date = "";
+
+        //In store collection
+        if($order->deliverymethod=='in_store_collection'){
+            $booking = DB::table('booking_store')->where('order_id',$order->id)->first();
+            $promised_date = $booking->pickup_date;
+        }
+        //Delivery
+        elseif(in_array($order->deliverymethod,['delivery_only','home_delivery'])){
+            $booking = DB::table('deliveryask')->where('order_id',$order->id)->where('status','NEW')->first();
+            if($booking){
+                $promised_date = $booking->date;
+            }
+        }
+        //Recurring
+        elseif($order->deliverymethod=='recurring'){
+            $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
+            if($cust){
+                $booking = DB::table('deliveryask')->where('order_id',$order->id)->where('status','REC')->first();
+                //To confirm for pickup
+
+                if($booking){
+                    $promised_date = $booking->date;
+                }
+            }
+        }
+
+
+        $detailing_items = DB::table('detailingitem')
+            ->select('detailingitem.*','typeitem.name as typeitem','typeitem.PERC','typeitem.process','departments.name as department')
+            ->join('typeitem','detailingitem.typeitem_id','typeitem.id')
+            ->join('departments','typeitem.department_id','departments.id')
+            ->where('detailingitem.order_id',$order_id)
+            ->get();
+
+        $customer_pref = DB::table('infoCustomer')
+            ->select('InfoCustomerPreference.*')
+            ->join('InfoCustomerPreference','infoCustomer.CustomerID','InfoCustomerPreference.CustomerID')
+            ->where('infoCustomer.CustomerID',$order->CustomerID)
+            ->where('InfoCustomerPreference.Delete',0)
+            ->get();
+
+        dd($customer_pref);
+
+
+
+        if(count($detailing_items)> 0){
+            foreach($detailing_items as $k=>$v){
+
+                $tailoring_services = $v->tailoring_services;
+
+                $tailoring_arr = [];
+                if(!isNull($tailoring_services ) && $tailoring_services !=''){
+                    $tailoring_arr = @json_encode($tailoring_services);
+                }
+
+                //Calculate New Post et processus
+
+                $process_arr = DetailingController::calculateNextPost($v->id);
+
+
+                $item = new stdClass();
+                $item->spot = 0;
+                $item->typeitem = $v->typeitem;
+                $item->Status = 'In process';
+                $item->PERC = $v->PERC;
+                $item->Actif = 1;
+                $item->tailoring = (!empty($tailoring_arr)?1:0);
+                $item->DepartmentName = $v->department;
+                $item->PromisedDate = $promised_date;
+
+                $item->nextpost = $process_arr['nextpost'];
+                $item->process = $process_arr['process'];
+
+                $item->priceClean = $v->pricecleaning;
+                $item->Patterns = $v->pattern_id;
+                $item->ItemTrackingKey = $v->tracking;
+                $item->Fabrics = @json_decode($v->fabric_id);
+                $item->Colors = @json_decode($v->color_id);
+                $item->express = $order->express;
+                $item->priceClean = $v->dry_cleaning_price+$v->cleaning_addon_price;
+                $item->priceTail = $v->tailoring_price;
+                $item->priceTotal = $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+                $item->PromisedDate = $promised_date;
+
+                //To confirm
+                //$item->Vip = 0;
+                //$item->star = 0;
+
+                //Save item without process
+
+                //print_r($v);
+
+                //ADD ItemID in infoitempost
+            }
+
+        }
     }
 });
 

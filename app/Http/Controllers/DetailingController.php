@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\DetailingServices;
+use stdClass;
 
 class DetailingController extends Controller
 {
@@ -706,5 +707,114 @@ class DetailingController extends Controller
             'post'=>$request->all(),
             'deleted'=>$deleted,
         ]);
+    }
+
+    public static function calculateNextPost($detailing_item_id){
+        $nextpost = 0;
+
+        $detailing_item = DB::table('detailingitem')
+            ->select('detailingitem.*','typeitem.process','typeitem.firstpost')
+            ->join('typeitem','detailingitem.typeitem_id','typeitem.id')
+            ->where('detailingitem.id',$detailing_item_id)
+            ->first();
+
+        $process = @json_decode($detailing_item->process);
+
+        //Tailoring
+        if($detailing_item->tailoring_services !='' && !is_null($detailing_item->tailoring_services)){
+            $tailoring_arr = @json_decode($detailing_item->tailoring_services);
+
+            if(!empty($tailoring_arr)){
+                $nextpost = 1;
+
+                $process_to_add = new stdClass;
+                $process_to_add->idpost = 1;
+                $process_to_add->need = 1;
+
+                $to_add_arr = [$process_to_add];
+
+                $process = array_merge($to_add_arr,$process);
+            }else{
+                foreach($process as $k=>$v){
+                    if($v->idpost==1){
+                        unset($process[$k]);
+                    }
+                }
+            }
+        }
+
+
+        if($detailing_item->cleaning_services !='' && !is_null($detailing_item->cleaning_services)){
+            $cleaning_arr = @json_decode($detailing_item->cleaning_services);
+
+            if(!empty($cleaning_arr)){
+                $postes_cleaning = [4,5];
+                $postes_pressing = [8,9,10,11];
+
+                //table cleaningservices: 1=>cleaning, 3=>pressing, 4=>Ozonation / CO2
+                //Cleaning
+                if(in_array(1,$cleaning_arr)){
+                    if($nextpost==0){
+                        foreach($process as $k=>$v){
+                            if(in_array($v->idpost,$postes_cleaning)){
+                                $nextpost = $v->idpost;
+                            }
+                        }
+                    }
+                }else{
+                    foreach($process as $k=>$v){
+                        if(in_array($v->idpost,$postes_cleaning)){
+                            unset($process[$k]);
+                        }
+                    }
+
+                }
+
+                //Pressing
+                if(in_array(3,$cleaning_arr)){
+                    if($nextpost==0){
+                        foreach($process as $k=>$v){
+                            if(in_array($v->idpost,$postes_pressing)){
+                                $nextpost = $v->idpost;
+                            }
+                        }
+                    }
+                }else{
+                    foreach($process as $k=>$v){
+                        if(in_array($v->idpost,$postes_pressing)){
+                            unset($process[$k]);
+                        }
+                    }
+
+                }
+
+
+                //Ozonation
+                if(in_array(4,$cleaning_arr)){
+                    /*
+                    if($nextpost==0){
+                        foreach($process as $k=>$v){
+                            if(in_array($v->idpost,$postes_pressing)){
+                                $nextpost = $v->idpost;
+                            }
+                        }
+                    }
+                    */
+                }else{
+                    foreach($process as $k=>$v){
+                        if($v->idpost==24){
+                            unset($process[$k]);
+                        }
+                    }
+
+                }
+
+            }
+        }
+
+        return [
+            'nextpost'=>$nextpost,
+            'process'=>$process,
+        ];
     }
 }
