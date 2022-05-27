@@ -583,7 +583,7 @@ class DetailingController extends Controller
                 $cust_pref_value[$v->id_preference] = $v->Value;
             }
 
-            $services = DB::table('cleaningservices')->get();
+            $services = DB::table('cleaningservices')->where('id','!=',2)->get();
 
             foreach($services as $k=>$v){
                 $services[$k]->group_name = $group_names[$v->cleaning_group];
