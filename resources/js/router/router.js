@@ -42,7 +42,7 @@ const router = createRouter({
                         authenticated:  true
                     }
                 }
-            ]            
+            ]
         },
         {
             path:'/newcustomer',
@@ -51,7 +51,7 @@ const router = createRouter({
             meta:{
                 authenticated:  true
             },
-        },        
+        },
         {
             path:'/sub-customer',
             name:'SubCustomer',
@@ -59,7 +59,7 @@ const router = createRouter({
             meta:{
                 authenticated:  true
             },
-        },        
+        },
         {
             path:'/view-customer/:customer_id',
             name:'ViewCustomer',
@@ -67,7 +67,7 @@ const router = createRouter({
             meta:{
                 authenticated:  true
             },
-        },        
+        },
         {
             path: '/assembly-home',
             name: 'Assembly',
@@ -81,13 +81,13 @@ const router = createRouter({
                     name:'ItemDetails',
                     components:{
                         default: () => import('../components/assembly/ItemDetail'),
-                    },                    
+                    },
                     meta:{
                         authenticated:  true
                     }
                 }
-            ]            
-        },        
+            ]
+        },
         {
             path:'/order-content/:order_id',
             name:'DetailingItemList',
@@ -184,6 +184,14 @@ const router = createRouter({
             name: 'not-found',
             component:NotFound
         },
+        {
+            path: '/checkout/:order_id',
+            name:'checkout',
+            component:()=> import('../components/neworder/Checkout'),
+            meta:{
+                authenticated:true
+            },
+        }
 
     ]
 });

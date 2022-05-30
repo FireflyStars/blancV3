@@ -354,7 +354,15 @@ export default {
             axios.post('/create-order-items',{
                 order_id:order_id.value
             }).then((res)=>{
-                console.log(res);
+                if(res.data.items_created.length > 0){
+                    router.push('/checkout/'+order_id.value);
+                }else{
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                        message: "No items created",
+                        ttl: 5,
+                        type: "danger",
+                    });
+                }
             }).catch((err)=>{
                 console.log(err);
             }).finally(()=>{

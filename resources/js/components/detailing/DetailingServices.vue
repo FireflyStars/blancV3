@@ -457,7 +457,7 @@ export default {
                     cleaning_services: JSON.stringify(cleaning_services_id),
                     cleaning_price_type: cleaning_pricing_type,
                     tailoring_services: JSON.stringify(sel_tailoring_service_id.value),
-                    tailoring_price_type:sel_tailoring_price_type,
+                    tailoring_price_type:sel_tailoring_price_type.value,
                 });
             }
         }

@@ -190,11 +190,15 @@ Route::get('/create-item-test',function(Request $request){
 
         //Retrieve booking for order
         $promised_date = "";
+        $storename = 'ATELIER';
+        $stores = 'DELIVERY';
 
         //In store collection
         if($order->deliverymethod=='in_store_collection'){
             $booking = DB::table('booking_store')->where('order_id',$order->id)->first();
             $promised_date = $booking->pickup_date;
+            $storename = $booking->store_name;
+            $stores = 'STORES';
         }
         //Delivery
         elseif(in_array($order->deliverymethod,['delivery_only','home_delivery'])){
@@ -217,6 +221,11 @@ Route::get('/create-item-test',function(Request $request){
             }
         }
 
+        $daynames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+        $day_promised_date = date('w',strtotime($promised_date));
+        $date_jour = $daynames[$day_promised_date];
+
 
         $detailing_items = DB::table('detailingitem')
             ->select('detailingitem.*','typeitem.name as typeitem','typeitem.PERC','typeitem.process','departments.name as department')
@@ -225,15 +234,28 @@ Route::get('/create-item-test',function(Request $request){
             ->where('detailingitem.order_id',$order_id)
             ->get();
 
-        $customer_pref = DB::table('infoCustomer')
+
+        $customer_type = DB::table('infoCustomer')
             ->select('InfoCustomerPreference.*')
             ->join('InfoCustomerPreference','infoCustomer.CustomerID','InfoCustomerPreference.CustomerID')
             ->where('infoCustomer.CustomerID',$order->CustomerID)
             ->where('InfoCustomerPreference.Delete',0)
-            ->get();
+            ->where('Titre','Type Customer')
+            ->first();
 
-        dd($customer_pref);
 
+        $vip = 0;
+        $star = 0;
+
+        if($customer_type=='VIP GOLD'){
+            $vip = 1;
+            $star = 1;
+        }elseif($customer_type=='VIP RED'){
+            $vip = 2;
+            $star = 2;
+        }
+
+        $items_to_insert = [];
 
 
         if(count($detailing_items)> 0){
@@ -261,34 +283,143 @@ Route::get('/create-item-test',function(Request $request){
                 $item->DepartmentName = $v->department;
                 $item->PromisedDate = $promised_date;
 
-                $item->nextpost = $process_arr['nextpost'];
-                $item->process = $process_arr['process'];
 
+                $item->nextpost = $process_arr['nextpost'];
+                $item->process = json_encode($process_arr['process']);
+
+                $item->StoreName = $storename;
+                $item->store = $stores;
+                $item->express = $order->express;
                 $item->priceClean = $v->pricecleaning;
-                $item->Patterns = $v->pattern_id;
                 $item->ItemTrackingKey = $v->tracking;
-                $item->Fabrics = @json_decode($v->fabric_id);
-                $item->Colors = @json_decode($v->color_id);
+
+                //Patterns
+                $pattern_text = "";
+                if($v->pattern_id !='' && !is_null($v->pattern_id)){
+                    $pattern = DB::table('patterns')->where('id',$v->pattern_id)->first();
+                    if($pattern){
+                        $pattern_text = $pattern->name;
+                    }
+                }
+                $item->Patterns = $pattern_text;
+
+
+                //Fabrics
+                $fabric_text = "";
+                if($v->fabric_id!='' && !is_null($v->fabric_id)){
+                    $fabric_id_arr = @json_decode($v->fabric_id);
+                    $fabric_names = [];
+                    if(is_array($fabric_id_arr) && !empty($fabric_id_arr)){
+                        $fabrics = DB::table('fabrics')->whereIn('id',$fabric_id_arr)->get();
+
+                        if(count($fabrics) > 0){
+                            foreach($fabrics as $key=>$val){
+                                $fabric_names[] = $val->Name;
+                            }
+
+                            $fabric_text = implode(",",$fabric_names);
+                        }
+                    }
+                }
+                $item->Fabrics = $fabric_text;
+
+                //Colors
+
+                if($v->color_id!='' && !is_null($v->color_id)){
+                    $color_id_arr = @json_decode($v->color_id);
+                    $color_names = [];
+
+                    if(is_array($color_id_arr) && !empty($color_id_arr)){
+                        $colors = DB::table('colours')->whereIn('id',$color_id_arr)->get();
+
+                        if(count($colors) > 0){
+                            foreach($colors as $key=>$val){
+                                $color_names[] = $val->name;
+                            }
+                            $color_text = implode(",",$color_names);
+                        }
+                    }
+                }
+
+                $item->Colors = $color_text;
+
+
+                //Complexities
+                $complexities_text = "";
+                if($v->complexities_id !='' && !is_null($v->complexities_id)){
+                    $complexities_id_arr = @json_decode($v->complexities_id);
+                    $complexities_names = [];
+
+
+
+                    if(is_array($complexities_id_arr) && !empty($complexities_id_arr)){
+                        $complexities = DB::table('complexities')->whereIn('id',$complexities_id_arr)->get();
+
+
+                        if(count($complexities) > 0){
+                            foreach($complexities as $key=>$val){
+                                $complexities_names[] = $val->name;
+                            }
+
+                            $complexities_text = implode("/",$complexities_names);
+                        }
+                    }
+                }
+
+
+
+                $item->Complexities = $complexities_text;
+
+
+                //Condition
+                $condition = DB::table('conditions')->where('id',$v->condition_id)->first();
+                $item->generalState = $condition->name;
+
+
+                //Brand
+                $brand = DB::table('brands')->where('id',$v->brand_id)->first();
+                $item->brand = $brand->name;
+
+
+
                 $item->express = $order->express;
                 $item->priceClean = $v->dry_cleaning_price+$v->cleaning_addon_price;
                 $item->priceTail = $v->tailoring_price;
                 $item->priceTotal = $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
                 $item->PromisedDate = $promised_date;
+                $item->dateJour = $date_jour;
+
+                //Damages
+
+
 
                 //To confirm
-                //$item->Vip = 0;
-                //$item->star = 0;
+                $item->Vip = $vip;
+                $item->star = $star;
 
-                //Save item without process
+                $cur_item = DB::table('infoitems')->where('ItemTrackingKey',$v->tracking)->first();
 
-                //print_r($v);
+                $cur_item_id = 0;
+                if($cur_item){
+                    DB::table("infoitems")->where('id',$cur_item->id)->update((array) $item);
+                    $cur_item_id = $cur_item->id;
+                }else{
+                    $item->ItemID = '';
+                    $cur_item_id = DB::table("infoitems")->insertGetId((array) $item);
+                }
+
+                DB::table('detailingitem')->where('id',$v->id)->update([
+                    'item_id'=>$cur_item_id,
+                ]);
+
 
                 //ADD ItemID in infoitempost
             }
 
+
         }
     }
-});
+})->middleware('auth');
 
 
 Route::get('stripe-test',function(){
@@ -466,9 +597,19 @@ Route::post('/remove-detailing-item',[DetailingController::class,'removeDetailin
 * Create items from detailing
 */
 
-Route::post('check-detailing-tracking',[DetailingController::class,'checkDetailingTracking'])->name('check-detailing-item')->middleware('auth');
-Route::post('create-order-items',[DetailingController::class,'createOrderItems'])->name('create-order-items')->middleware('auth');
+Route::post('/check-detailing-tracking',[DetailingController::class,'checkDetailingTracking'])->name('check-detailing-item')->middleware('auth');
+Route::post('/create-order-items',[DetailingController::class,'createOrderItems'])->name('create-order-items')->middleware('auth');
 
+
+/**
+ * Checkout items
+ */
+Route::post('/get-checkout-items',[DetailingController::class,'getCheckoutItems'])->name('get-checkout-items')->middleware('auth');
+
+
+/**
+ * Voyager custom routes
+ *  */
 
 Route::group(['prefix' => 'admin'], function () {
     Voyager::routes();
