@@ -54,7 +54,7 @@
                 id="acdpanel_otherpricings" :class="{'show':detailingitem.cleaning_price_type!=null}"
             >
                 <div class="accordion-body row mt-3">
-                    <div class="col-2 d-flex text-center each-sub-service py-4 justify-content-center cleaning-subservice cleaning-prices" v-for="name in type_prices" :id="'sub_service_'+name.replace(' ','')" @click="toggleSubService(name.replace(' ',''))" :data-cleaning-price-type="name.replace(' ','')">
+                    <div class="col-2 d-flex text-center each-sub-service py-4 justify-content-center cleaning-subservice cleaning-prices" v-for="name in type_prices" :id="'sub_service_'+name.replace(' ','')" @click="toggleSubService(name.replace(' ',''))" :data-cleaning-price-type="name" :class="{'sel_service':detailingitem.cleaning_price_type==name}">
                        {{name}}
                     </div>
 
