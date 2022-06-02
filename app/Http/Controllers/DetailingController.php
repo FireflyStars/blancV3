@@ -695,6 +695,13 @@ class DetailingController extends Controller
                 ->where('Titre','Type Customer')
                 ->first();
 
+            $size_map = [];
+            $sizes = DB::table('sizes')->get();
+            if(count($sizes) > 0){
+                foreach($sizes as $k=>$v){
+                    $size_map[$v->id] = $v->name;
+                }
+            }
 
             $vip = 0;
             $star = 0;
@@ -744,6 +751,11 @@ class DetailingController extends Controller
                     $item->express = $order->express;
                     $item->priceClean = $v->pricecleaning;
                     $item->ItemTrackingKey = $v->tracking;
+
+                    //Size
+                    if(!is_null($v->size_id) && isset($size_map[$v->size_id])){
+                        $item->Size = $size_map[$v->size_id];
+                    }
 
                     //Patterns
                     $pattern_text = "";
@@ -897,7 +909,7 @@ class DetailingController extends Controller
                 ->get();
 
             if(count($inv)==0){
-                $err = "HSL $tracking not linked with current customer";
+                $err = "HSL $tracking already linked with another customer";
             }
         }
 
@@ -1061,9 +1073,97 @@ class DetailingController extends Controller
     }
 
     public function getCheckoutItems(Request $request){
+        $order_id = $request->order_id;
+
+        $items = DB::table('infoitems')
+            ->select('infoitems.*','detailingitem.*')
+            ->join('detailingitem','infoitems.id','detailingitem.item_id')
+            ->join('infoOrder','detailingitem.order_id','infoOrder.id')
+            ->where('infoOrder.id',$order_id)
+            ->get();
+
+        $cs = [];
+
+        $cleaning_services = DB::table('cleaningservices')->get();
+        if(count($cleaning_services) > 0){
+            foreach($cleaning_services as $k=>$v){
+                $cs[$v->id] = $v->name;
+            }
+        }
+
+        $color_map = [];
+        $colors = DB::table('colours')->get();
+        if(count($colors) > 0){
+            foreach($colors as $k=>$v){
+                $color_map[$v->id] = $v->code;
+            }
+        }
+
+        $brand_coef_map = [];
+        $brands = DB::table('brands')->get();
+        if(count($brands) > 0){
+            foreach($brands as $k=>$v){
+                $brand_coef_map[$v->id] = $v->coefcleaning;
+            }
+        }
+
+        if(count($items) > 0){
+            foreach($items as $k=>$v){
+
+                $services = [];
+                //Tailoring
+                if($v->tailoring_services !='' && !is_null($v->tailoring_services) && is_array(@json_decode($v->tailoring_services)) && !empty(@json_decode($v->tailoring_services))){
+                    $services[] = 'Tailoring';
+                }
+
+                //Cleaning services
+                if($v->cleaning_services!='' && !is_null($v->cleaning_services) && is_array(@json_decode($v->cleaning_services)) && !empty(@json_decode($v->cleaning_services))){
+                    $cs_arr = @json_decode($v->cleaning_services);
+
+                    foreach($cs_arr as $id=>$val){
+                        if(isset($cs[$val])){
+                            $services[] = $cs[$val];
+                        }
+                    }
+                }
+
+
+                $items[$k]->services = $services;
+
+                //Afficher la premiere couleur
+                $items[$k]->first_color = "";
+                $items[$k]->all_colours = [];
+
+                $all_colors = [];
+
+                if($v->color_id !='' && !is_null($v->color_id) && is_array(@json_decode($v->color_id)) && !empty(@json_decode($v->color_id))){
+                    $colors = @json_decode($v->color_id);
+
+                    if(isset($color_map[$colors[0]])){
+                        $items[$k]->first_color = $color_map[$colors[0]];
+                    }
+
+                    foreach($colors as $id=>$val){
+                        $all_colors[] = $color_map[$val];
+                    }
+                }
+
+                $items[$k]->all_colors = $all_colors;
+
+
+                if(!is_null($v->brand_id) && isset($brand_coef_map[$v->brand_id])){
+
+                }
+
+                $items[$k]->priceTotal = number_format($v->priceTotal,2);
+
+
+            }
+        }
 
         return response()->json([
             'post'=>$request->all(),
+            'items'=>$items,
         ]);
     }
 }

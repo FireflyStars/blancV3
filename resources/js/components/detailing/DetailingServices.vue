@@ -152,8 +152,6 @@
     </modal>
 
 
-
-
 </template>
 <script>
  import {computed, onMounted,onUpdated, ref,watch} from 'vue';

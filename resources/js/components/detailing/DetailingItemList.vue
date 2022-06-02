@@ -239,7 +239,7 @@ export default {
                 let completed_items = [];
 
                 detailing_list.value.forEach(function(v,i){
-                   if(v.status=='Completed'){
+                   if(v.status=='Completed' && v.etape==11){
                        completed_items.push(v.item_number);
                    }
 
