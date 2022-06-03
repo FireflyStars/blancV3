@@ -40,14 +40,14 @@
                                             <div class="col services-col">
                                                 <span v-for="service in item.services" class="each-item-service d-table px-2">{{service}}</span>
                                             </div>
-                                            <div class="col price-col">{{item.priceTotal}}</div>
+                                            <div class="col price-col"><span>&#163;{{item.priceTotal}}</span></div>
                                             <div class="col expand-col">
                                                 <img src="/images/picto_arrow.svg" class="each-item-chevron"/>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-12 py-3 each-row-detail d-none" :id="'row_detail_'+id">
-                                        <div class="row justify-content-center">
+                                        <div class="row justify-content-center pb-4 mb-4 each-desc-block mx-4">
                                             <div class="col-10">
                                                 <div class="item-desc-heading mb-3">
                                                     <span>Description</span>
@@ -80,9 +80,89 @@
                                                                 <div class="col-10 item-desc-text">
                                                                     {{item.brand}}
                                                                 </div>
+                                                                <div class="col-2 brand-coef-perc" v-if="item.brand_coef_perc > 0">+{{item.brand_coef_perc}}%</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="mb-4">
+                                                            <div class="item-sub-heading">Item fabric</div>
+                                                            <div class="row mx-0 each-desc-row py-1 mt-1">
+                                                                <div class="col-10 item-desc-text">
+                                                                    {{item.Fabrics}}
+                                                                </div>
+                                                                <div class="col-2">
+                                                                    <!-- Fabric COEF to confirm -->
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="mb-4">
+                                                            <div class="item-sub-heading">Condition</div>
+                                                            <span class="item-desc-text">{{firstCap(item.generalState)}}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-12 mt-4" v-if="Object.keys(item.complexities_arr).length > 0">
+                                                        <div class="item-sub-heading">Complexities</div>
+                                                        <div class="row each-desc-row py-1 my-1" v-for="(price,comp) in item.complexities_arr">
+                                                            <div class="col-10 item-desc-text">{{comp}}</div>
+                                                            <div class="col-2 text-align-right item-desc-text">&#163;{{price}}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="row justify-content-center pb-4 mb-4 each-desc-block mx-4">
+                                            <div class="col-10">
+                                                <div class="item-desc-heading mb-3">
+                                                    <span>Issues</span>
+                                                    <a href="javascript:void(0)">Edit</a>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-6" v-if="item.stains && item.stains.length > 0">
+                                                        <div class="mb-4">
+                                                            <div class="item-sub-heading">Stains</div>
+                                                        </div>
+                                                        <div class="row" v-for="(stain,index) in item.stains">
+                                                            <div class="col-1">{{index+1}}</div>
+                                                            <div class="col-11">
+                                                                <span v-if="stain.id_issue > 0 && issues[stain.id_issue]">
+                                                                    {{issues[stain.id_issue].stain}}
+                                                                </span>
+                                                                <span v-else>Stain </span>
+                                                                <span v-if="zones[stain.id_zone]">{{zones[stain.id_zone]}}</span>
                                                             </div>
                                                         </div>
                                                     </div>
+
+                                                    <div class="col-6" v-if="item.damages && item.damages.length > 0">
+                                                        <div class="mb-4">
+                                                            <div class="item-sub-heading">Damages</div>
+                                                        </div>
+                                                        <div class="row" v-for="(damage,index) in item.damages">
+                                                            <div class="col-1">{{index+1}}</div>
+                                                            <div class="col-11">
+                                                                <span v-if="damage.id_issue > 0 && issues[damage.id_issue]">
+                                                                    {{issues[damage.id_issue].damage}}&nbsp;
+                                                                </span>
+                                                                <span v-if="zones[damage.id_zone]">{{zones[damage.id_zone]}}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+
+                                        <div class="row justify-content-center pb-4 mb-4 each-desc-block mx-4" id="services_block">
+                                            <div class="col-10">
+                                                <div class="item-desc-heading mb-3">
+                                                    <span>Services</span>
+                                                    <a href="javascript:void(0)">Edit</a>
+                                                </div>
+                                                <div class="row">
+                                                    <pre>{{item.detailed_services}}</pre>
                                                 </div>
                                             </div>
                                         </div>
@@ -188,6 +268,8 @@ export default {
 
         const order_id = ref(0);
         const order_items = ref([]);
+        const zones = ref([]);
+        const issues = ref([]);
 
         order_id.value = route.params.order_id;
 
@@ -208,6 +290,8 @@ export default {
                 order_id:order_id.value,
             }).then((res)=>{
                 order_items.value = res.data.items;
+                zones.value = res.data.zones;
+                issues.value = res.data.issues;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -243,6 +327,8 @@ export default {
             openAccordionclick,
             toggleRowDetail,
             firstCap,
+            zones,
+            issues,
         }
 
     },
@@ -416,6 +502,15 @@ export default {
 .each-desc-row{
     background:#f8f8f8;
     border-radius:10px;
+}
+
+.brand-coef-perc{
+    font:normal 16px "Gotham Rounded";
+    color:#B69968;
+}
+
+.each-desc-block:not(#services_block){
+    border-bottom:thin solid #e0e0e0;
 }
 
 </style>

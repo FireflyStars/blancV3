@@ -1107,6 +1107,36 @@ class DetailingController extends Controller
             }
         }
 
+        $complexities_coef = [];
+        $complexities = DB::table('complexities')->get();
+        if(count($complexities) > 0){
+            foreach($complexities as $k=>$v){
+                $complexities_coef[$v->id] = [
+                    'name'=>$v->name,
+                    'cleaning'=>$v->coefcleaning,
+                    'tailoring'=>$v->coeftailoring,
+                ];
+            }
+        }
+
+
+        $zone_names = [];
+        $zones = DB::table('itemzones')->get();
+        if(count($zones) > 0){
+            foreach($zones as $k=>$v){
+                $zone_names[$v->id] = str_replace('_',' ',$v->description);
+            }
+        }
+
+        $issue_names = [];
+        $issues = DB::table('issues_tag')->get();
+        if(count($issues) > 0){
+            foreach($issues as $k=>$v){
+                $issue_names[$v->id][$v->type] = $v->name;
+            }
+        }
+
+
         if(count($items) > 0){
             foreach($items as $k=>$v){
 
@@ -1149,13 +1179,69 @@ class DetailingController extends Controller
                 }
 
                 $items[$k]->all_colors = $all_colors;
-
+                $items[$k]->brand_coef_perc = 0;
 
                 if(!is_null($v->brand_id) && isset($brand_coef_map[$v->brand_id])){
+                    $coef_brand = $brand_coef_map[$v->brand_id];
+
+                    if($coef_brand > 1){
+                        $diff = $coef_brand - 1;
+                        $perc = $diff*100;
+                        $items[$k]->brand_coef_perc = ceil($perc);
+                    }
+                }
+
+                $items[$k]->complexities_arr = [];
+
+                if(!is_null($v->complexities_id) && is_array(@json_decode($v->complexities_id)) && !empty(@json_decode($v->complexities_id))){
+                    $item_comp = @json_decode($v->complexities_id);
+
+                    $complexities_arr = [];
+
+                    foreach($item_comp as $id=>$val){
+                        if(isset($complexities_coef[$val])){
+                            $cur_comp = $complexities_coef[$val];
+
+                            $comp_price = 0;
+                            if($cur_comp['cleaning'] > 1){
+                                $diff = $cur_comp['cleaning'] - 1;
+                                $comp_price = ($diff/100) * $v->priceCleaning;
+                            }
+
+                            $complexities_arr[$complexities_coef[$val]['name']] = $comp_price;
+                        }
+                    }
+
+                    $items[$k]->complexities_arr  = $complexities_arr;
 
                 }
 
+
+                $items[$k]->stains = @json_decode($v->stains);
+                $items[$k]->damages = @json_decode($v->damages);
+
+
                 $items[$k]->priceTotal = number_format($v->priceTotal,2);
+                $items[$k]->generalState = ucfirst($v->generalState);
+
+                $items[$k]->detailed_services = [];
+
+                if($v->cleaning_services!='' && !is_null($v->cleaning_services) && is_array(@json_decode($v->cleaning_services)) && !empty($v->cleaning_services)){
+                     $dc = [];
+                    $dc_arr = @json_decode($v->cleaning_services);
+
+                    foreach($dc_arr as $id=>$val){
+                        $dc[] = $cs[$val];
+                    }
+
+                    $items[$k]->detailed_services[] = [
+                        'name'=>"Dry cleaning (".implode(",",$dc).")",
+                        'price'=>$v->dry_cleaning_price + $v->cleaning_addon_price,
+                    ];
+                }
+
+                //To add grouped tailoring prices
+
 
 
             }
@@ -1164,6 +1250,8 @@ class DetailingController extends Controller
         return response()->json([
             'post'=>$request->all(),
             'items'=>$items,
+            'zones'=>$zone_names,
+            'issues'=>$issue_names,
         ]);
     }
 }
