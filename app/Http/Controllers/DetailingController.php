@@ -1076,11 +1076,13 @@ class DetailingController extends Controller
         $order_id = $request->order_id;
 
         $items = DB::table('infoitems')
-            ->select('infoitems.*','detailingitem.*')
+            ->select('infoitems.*','detailingitem.*','detailingitem.id AS detailingitem_id')
             ->join('detailingitem','infoitems.id','detailingitem.item_id')
             ->join('infoOrder','detailingitem.order_id','infoOrder.id')
             ->where('infoOrder.id',$order_id)
             ->get();
+
+
 
         $cs = [];
 
@@ -1137,8 +1139,24 @@ class DetailingController extends Controller
         }
 
 
+        $grouped_tailoring_services = [];
+        $tailoringservices = DB::table('tailoring_services')
+            ->select('tailoring_services.*','tailoring_type_services.name AS group_service')
+            ->join('tailoring_type_services','tailoring_services.type_service_id','tailoring_type_services.id')
+            ->get();
+
+        foreach($tailoringservices as $k=>$v){
+            $grouped_tailoring_services[$v->id] = [
+                'group'=>$v->group_service,
+                'price'=>$v->price,
+            ];
+        }
+
+        $customer_id = 0;
+
         if(count($items) > 0){
             foreach($items as $k=>$v){
+                $customer_id = $v->customer_id;
 
                 $services = [];
                 //Tailoring
@@ -1236,15 +1254,54 @@ class DetailingController extends Controller
 
                     $items[$k]->detailed_services[] = [
                         'name'=>"Dry cleaning (".implode(",",$dc).")",
-                        'price'=>$v->dry_cleaning_price + $v->cleaning_addon_price,
+                        'price'=>number_format($v->dry_cleaning_price + $v->cleaning_addon_price,2),
                     ];
                 }
 
                 //To add grouped tailoring prices
 
+                if($v->tailoring_services !='' && !is_null($v->tailoring_services) && is_array(@json_decode($v->tailoring_services)) && !empty(@json_decode($v->tailoring_services))){
+                    $group_by_tailoring_service = [];
+                    $tailoing_services_price_by_group = [];
 
+                    $ts = @json_decode($v->tailoring_services);
+
+                    foreach($ts as $id=>$val){
+                        if(isset($grouped_tailoring_services[$val])){
+                            $gp = $grouped_tailoring_services[$val];
+                            $group_by_tailoring_service[$gp['group']][] = $gp['price'];
+                        }
+                    }
+
+                    if(!empty($group_by_tailoring_service)){
+                        foreach($group_by_tailoring_service as $group=>$prices){
+                            $t_arr = [
+                                'name'=>$group,
+                                'price'=>number_format(array_sum($prices),2),
+                            ];
+
+                            $items[$k]->detailed_services[] = $t_arr;
+                        }
+                    }
+                }
 
             }
+
+            $cust = null;
+            if($customer_id > 0){
+                $cust = DB::table('infoCustomer')->where('id',$customer_id)->first();
+
+                $cust->phone_num = [];
+                if($cust->Phone !='' && !is_null($cust->Phone) && is_array(@json_decode($cust->Phone))){
+                    $phone_num = @json_decode($cust->Phone);
+
+                    foreach($phone_num as $key=>$phone){
+                        $cust->phone_num[] = str_replace("|"," ",$phone);
+                    }
+                }
+            }
+
+
         }
 
         return response()->json([
@@ -1252,6 +1309,25 @@ class DetailingController extends Controller
             'items'=>$items,
             'zones'=>$zone_names,
             'issues'=>$issue_names,
+            'cust'=>$cust,
+        ]);
+    }
+
+    public function changeDetailingEtape(Request $request){
+        $etape = $request->etape;
+        $id = $request->detailingitem_id;
+
+        $detailingitem = DB::table('detailingitem')->where('id',$id)->first();
+
+        if($detailingitem){
+            DB::table('detailingitem')->where('id',$id)->update([
+                'etape'=>$etape,
+            ]);
+        }
+
+        return response()->json([
+            'detalingitem'=>$detailingitem,
+            'updated'=>true,
         ]);
     }
 }

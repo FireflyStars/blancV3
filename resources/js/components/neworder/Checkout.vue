@@ -34,24 +34,24 @@
                                     <div class="col-12 each-item-row py-3" :id="'item_row'+id" @click="toggleRowDetail(id)">
                                         <div class="row">
                                             <div class="col color-col"><span v-if="item.first_color!=''" :style="'background:'+item.first_color" class="color-span"></span></div>
-                                            <div class="col item-col">{{firstCap(item.typeitem)}}</div>
-                                            <div class="col brand-col">{{item.brand}}</div>
+                                            <div class="col item-col text-gr">{{firstCap(item.typeitem)}}</div>
+                                            <div class="col brand-col text-gr">{{item.brand}}</div>
                                             <div class="col barcode-col">{{item.ItemTrackingKey}}</div>
                                             <div class="col services-col">
                                                 <span v-for="service in item.services" class="each-item-service d-table px-2">{{service}}</span>
                                             </div>
-                                            <div class="col price-col"><span>&#163;{{item.priceTotal}}</span></div>
+                                            <div class="col price-col text-gr"><span>&#163;{{item.priceTotal}}</span></div>
                                             <div class="col expand-col">
                                                 <img src="/images/picto_arrow.svg" class="each-item-chevron"/>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-12 py-3 each-row-detail d-none" :id="'row_detail_'+id">
+                                    <div class="col-12 py-3 each-row-detail d-none mb-3" :id="'row_detail_'+id">
                                         <div class="row justify-content-center pb-4 mb-4 each-desc-block mx-4">
                                             <div class="col-10">
                                                 <div class="item-desc-heading mb-3">
                                                     <span>Description</span>
-                                                    <a href="javascript:void(0)">Edit</a>
+                                                    <a href="javascript:void(0)" @click="goToDetailing(item.order_id,item.detailingitem_id,2)">Edit</a>
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-6">
@@ -117,18 +117,19 @@
                                             <div class="col-10">
                                                 <div class="item-desc-heading mb-3">
                                                     <span>Issues</span>
-                                                    <a href="javascript:void(0)">Edit</a>
+                                                    <a href="javascript:void(0)" @click="goToDetailing(item.order_id,item.detailingitem_id,10)">Edit</a>
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-6" v-if="item.stains && item.stains.length > 0">
                                                         <div class="mb-4">
                                                             <div class="item-sub-heading">Stains</div>
                                                         </div>
-                                                        <div class="row" v-for="(stain,index) in item.stains">
-                                                            <div class="col-1">{{index+1}}</div>
+                                                        <div class="row justify-content-center mb-1" v-for="(stain,index) in item.stains">
+                                                            <div class="col-1">
+                                                                <span class="each-issue-index stain-issue-index">{{index+1}}</span></div>
                                                             <div class="col-11">
                                                                 <span v-if="stain.id_issue > 0 && issues[stain.id_issue]">
-                                                                    {{issues[stain.id_issue].stain}}
+                                                                    {{issues[stain.id_issue].stain}}&nbsp;
                                                                 </span>
                                                                 <span v-else>Stain </span>
                                                                 <span v-if="zones[stain.id_zone]">{{zones[stain.id_zone]}}</span>
@@ -140,8 +141,10 @@
                                                         <div class="mb-4">
                                                             <div class="item-sub-heading">Damages</div>
                                                         </div>
-                                                        <div class="row" v-for="(damage,index) in item.damages">
-                                                            <div class="col-1">{{index+1}}</div>
+                                                        <div class="row justify-content-center mb-1" v-for="(damage,index) in item.damages">
+                                                            <div class="col-1">
+                                                                <span class="each-issue-index damage-issue-index">{{index+1}}</span>
+                                                            </div>
                                                             <div class="col-11">
                                                                 <span v-if="damage.id_issue > 0 && issues[damage.id_issue]">
                                                                     {{issues[damage.id_issue].damage}}&nbsp;
@@ -159,10 +162,15 @@
                                             <div class="col-10">
                                                 <div class="item-desc-heading mb-3">
                                                     <span>Services</span>
-                                                    <a href="javascript:void(0)">Edit</a>
+                                                    <a href="javascript:void(0)" @click="goToDetailing(item.order_id,item.detailingitem_id,11)">Edit</a>
                                                 </div>
-                                                <div class="row">
-                                                    <pre>{{item.detailed_services}}</pre>
+                                                <div class="row each-desc-row mb-2 each-detailed-service-row py-1" v-for="ds in item.detailed_services">
+                                                    <div class="col-10">
+                                                        {{ds.name}}
+                                                    </div>
+                                                    <div class="col-2 text-align-right">
+                                                        &#163;{{ds.price}}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -177,7 +185,7 @@
                                     <div class="accordion-container">
                                         <div class="accordion accordion-flush" id="accordionFlushExample">
                                             <!-- Accordion for Customer details -->
-                                            <div class="accordion-item mx-4 mb-4">
+                                            <div class="accordion-item mx-2 mb-4">
                                                 <h2 class="accordion-header" id="flush-headingOne">
                                                     <button
                                                         class="accordion-button collapsed gilroy-extra-bold"
@@ -188,14 +196,28 @@
                                                 <div class="accordion-collapse collapse" id="acdpanel_custdetails">
                                                     <div class="accordion-body d-table w-100 px-0 py-0">
                                                         <div class="accordion-content p-4 mt-3">
-                                                            Customer details goes here
+                                                            <div class="text-white">
+                                                                <div class="row">
+                                                                    <div class="col-7">
+                                                                        <span id="cust_name">{{cust.Name}}</span>
+                                                                        <a href="javascript:void(0)" id="customer_link">Edit</a>
+                                                                    </div>
+                                                                    <div class="col-5">
+                                                                        <span class="cust-tag py-1 px-2 mr-2">VIP</span>
+                                                                        <span class="cust-tag py-1 px-2 mr-2">Frequent Flyer</span>
+                                                                    </div>
+                                                                </div>
+
+
+                                                                <pre>{{cust}}</pre>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             <!-- Accordion for Order details -->
-                                            <div class="accordion-item mx-4 mb-4">
+                                            <div class="accordion-item mx-2 mb-4">
                                                 <h2 class="accordion-header" id="flush-headingOne">
                                                     <button
                                                         class="accordion-button collapsed gilroy-extra-bold"
@@ -213,7 +235,7 @@
                                             </div>
 
                                             <!-- Accordion for Vouchers -->
-                                            <div class="accordion-item mx-4 mb-4">
+                                            <div class="accordion-item mx-2 mb-4">
                                                 <h2 class="accordion-header" id="flush-headingOne">
                                                     <button
                                                         class="accordion-button collapsed gilroy-extra-bold"
@@ -270,6 +292,7 @@ export default {
         const order_items = ref([]);
         const zones = ref([]);
         const issues = ref([]);
+        const cust = ref({});
 
         order_id.value = route.params.order_id;
 
@@ -283,7 +306,7 @@ export default {
         function getCheckoutItems(){
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
                 true,
-                "Loadind details....",
+                "Loading details....",
             ]);
 
             axios.post('/get-checkout-items',{
@@ -292,6 +315,7 @@ export default {
                 order_items.value = res.data.items;
                 zones.value = res.data.zones;
                 issues.value = res.data.issues;
+                cust.value = res.data.cust;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -309,6 +333,8 @@ export default {
         }
 
         function toggleRowDetail(id){
+
+
             let el = document.getElementById('item_row'+id);
             el.classList.toggle('opened');
 
@@ -320,6 +346,27 @@ export default {
             return string[0].toUpperCase() + string.substring(1);
         }
 
+
+        function goToDetailing(order_id,detailingitem_id,etape){
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
+                true,
+                "Loading details....",
+            ]);
+
+            axios.post('/change-detailing-etape',{
+                detailingitem_id:detailingitem_id,
+                etape:etape,
+            }).then((res)=>{
+                //if(res.data.detailingitem && res.data.updated){
+                    router.push('/detailing_item/' + order_id + '/' + detailingitem_id);
+                //}
+            }).catch((err)=>{
+
+            }).finally(()=>{
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            });
+        }
+
         return {
             order_id,
             paths,
@@ -329,6 +376,8 @@ export default {
             firstCap,
             zones,
             issues,
+            goToDetailing,
+            cust,
         }
 
     },
@@ -416,7 +465,7 @@ export default {
 }
 
 .barcode-col{
-    max-width: 15%;
+    max-width: 13%;
 }
 
 .price-col{
@@ -465,7 +514,7 @@ export default {
     margin-right:10px;
 }
 
-.item-desc-heading a{
+.item-desc-heading a,#customer_link{
     font:normal 16px "Gotham Rounded";
     color:#42A71E;
     text-decoration: underline;
@@ -473,8 +522,8 @@ export default {
 
 .color-span{
     display: inline-block;
-    width: 15px !important;
-    height: 15px;
+    width: 20px !important;
+    height: 20px;
     border-radius: 50%;
     margin: 0 2px;
     border: 1px solid #f8f8f8;
@@ -511,6 +560,47 @@ export default {
 
 .each-desc-block:not(#services_block){
     border-bottom:thin solid #e0e0e0;
+}
+
+.each-detailed-service-row{
+ font:normal 16px "Gotham Rounded";
+}
+
+.each-issue-index{
+    display: flex;
+    width: 20px;
+    height: 20px;
+    line-height: 1em;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    font:normal 14px "Gotham Rounded";
+    color:#fff;
+}
+
+.stain-issue-index{
+    background: #EF8F00;
+}
+
+.damage-issue-index{
+    background: #EB5757;
+}
+
+.text-gr{
+    font-family: "Gotham Rounded";
+}
+
+#cust_name{
+    font:bold 22px "Gilroy";
+    margin-right:10px;
+}
+
+.cust-tag{
+    border:thin solid #fff;
+    font:normal 12px "Gotham Rounded";
+    border-radius:3px;
+    display:table;
+    float:left;
 }
 
 </style>

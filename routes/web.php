@@ -358,7 +358,7 @@ Route::post('/create-order-items',[DetailingController::class,'createOrderItems'
  * Checkout items
  */
 Route::post('/get-checkout-items',[DetailingController::class,'getCheckoutItems'])->name('get-checkout-items')->middleware('auth');
-
+Route::post('/change-detailing-etape',[DetailingController::class,'changeDetailingEtape'])->name('change-detailing-etape')->middleware('auth');
 
 /**
  * Voyager custom routes
