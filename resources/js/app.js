@@ -26,7 +26,6 @@ const app = createApp(App);
     .use(store)
     .mount('#app');
 
-
 //custom tooltip
 const body=document.querySelector('body');
 let overTimeout;

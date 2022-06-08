@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Conveyor;
-use App\Tranche;
+use App\Models\Tranche;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +21,7 @@ class OrderListController extends Controller
         $filters=$request->get('filters');
         if($current_tab != 'customer_care'){
             $orderlist=DB::table('infoOrder')
-                ->select( [ 
+                ->select( [
                     'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id',
                     'infoCustomer.Name','infoCustomer.TypeDelivery', 'infoInvoice.datesold', 'infoitems.PromisedDate',
                     DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
@@ -41,12 +41,12 @@ class OrderListController extends Controller
                 ->where('infoInvoice.OrderID','!=','');
         }else{
             $orderlist=DB::table('infoOrder')
-                ->select( [ 
+                ->select( [
                     'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id','infoitems.PromisedDate',
                     'infoCustomer.Name as Customer','infoCustomer.TypeDelivery', 'infoInvoice.datesold',
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
                     DB::raw('IF(infoOrder.Paid = 0, "unpaid", "paid") as paid'),
-                    'infoitems.CCStatus as Action', 
+                    'infoitems.CCStatus as Action',
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Prod'),
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Deliv'),
                 ])
@@ -140,7 +140,7 @@ class OrderListController extends Controller
         $orderlist=$orderlist->get();
         // adding ready_sub_orders and deliv date
         foreach ($orderlist as $order) {
-            if( 
+            if(
                 (Carbon::parse($order->PromisedDate)->gt(Carbon::now()) || Carbon::parse($order->PromisedDate)->gt(Carbon::now()->subMonth())) &&
                 ($order->datesold == '' || $order->datesold == '2019-01-01 00:00:00')
             ){
@@ -313,7 +313,7 @@ class OrderListController extends Controller
                           'infoCustomer.Name as customer_name', 'infoCustomer.CustomerIDMaster', 'infoCustomer.CustomerIDMasterAccount',
                           'infoCustomer.IsMaster', 'infoCustomer.IsMasterAccount', 'postes.id as poste_id', 'infoOrder.id as order_id'
                           )->first();
-        
+
         $location_history = DB::table('production')
                               ->join('postes', 'production.poste_id', '=', 'postes.id')
                               ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')

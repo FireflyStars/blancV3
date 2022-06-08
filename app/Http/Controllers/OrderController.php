@@ -295,4 +295,91 @@ class OrderController extends Controller
             //'delivery_arr'=>$delivery_arr,
         ]);
     }
+
+    public function saveCardDetails(Request $request){
+        $stripe = new \Stripe\StripeClient(env('STRIPE_TEST_SECURITY_KEY'));
+
+        $customer_id = $request->CustomerID;
+
+        $card_exp = $request->cardExpDate;
+        $card_num =  $request->cardDetails;
+        $cardholder_name = $request->cardHolderName;
+        $card_cvv = $request->cardCVV;
+
+        $card_exp_arr = explode("/",$card_exp);
+
+        $stripe_customer = null;
+
+        $cust = DB::table('infoCustomer')->where('CustomerID',$customer_id)->first();
+        $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->first();
+
+        $card_id = 0;
+
+        $card = DB::table('cards')->where('CustomerID',$customer_id)->where('Actif',1)->first();
+
+        $has_card = false;
+        if($card){
+            $has_card = true;
+            $stripe_customer = $stripe->customers->retrieve(
+                $card->stripe_customer_id,
+                []
+              );
+            $card_id = $card->id;
+
+        }else{
+             //create a card object to stripe
+             $card = $stripe->paymentMethods->create([
+                'type' => 'card',
+                'card' => [
+                    'number'      => $card_num ,
+                    'exp_month'   => (int) $card_exp_arr[0],
+                    'exp_year'    => (int) $card_exp_arr[1],
+                    'cvc'         => $card_cvv,
+                ],
+            ]);
+
+
+            //create a customer object to stripe
+            $stripe_customer = $stripe->customers->create([
+                'name'              => $cardholder_name,
+                'email'             => $cust->EmailAddress,
+                'payment_method'    => $card->id,
+                'invoice_settings'  => ['default_payment_method' => $card->id],
+                'metadata'          => [
+                                            'CustomerID' => $cust->CustomerID
+                                    ],
+                'address'           => [
+                                        'city'          => $addr->Town,
+                                        'state'         => $addr->County,
+                                        'country'       => $addr->Country,
+                                        'postal_code'   => $addr->postcode,
+                                        'line1'         => $addr->address1,
+                                        'line2'         => $addr->address2,
+                                    ]
+            ]);
+
+
+
+            $credit_card = [
+                'CustomerID'        => $cust->CustomerID,
+                'cardHolderName'    => $cardholder_name,
+                'type'              => $card->card->brand,
+                'cardNumber'        => substr_replace($card_num, str_repeat('*', strlen($card_num) - 6), 3, -3),
+                'dateexpiration'    => $card_exp,
+                'stripe_customer_id'=> $stripe_customer->id,
+                'stripe_card_id'    => $card->id,
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ];
+
+            $card_id = DB::table('cards')->insertGetId($credit_card);
+            $card = DB::table('cards')->where('id',$card_id)->first();
+
+        }
+
+        return response()->json([
+            'has_card'=>$has_card,
+            'card'=>$card,
+        ]);
+    }
 }

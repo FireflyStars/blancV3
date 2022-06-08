@@ -197,19 +197,33 @@
                                                     <div class="accordion-body d-table w-100 px-0 py-0">
                                                         <div class="accordion-content p-4 mt-3">
                                                             <div class="text-white">
-                                                                <div class="row">
+                                                                <div class="row mb-3" v-if="cust && cust.id">
                                                                     <div class="col-7">
                                                                         <span id="cust_name">{{cust.Name}}</span>
-                                                                        <a href="javascript:void(0)" id="customer_link">Edit</a>
+                                                                        <a href="javascript:void(0)" id="customer_link" @click="redirectToCustDetail(cust.id)">Edit</a>
                                                                     </div>
                                                                     <div class="col-5">
-                                                                        <span class="cust-tag py-1 px-2 mr-2">VIP</span>
-                                                                        <span class="cust-tag py-1 px-2 mr-2">Frequent Flyer</span>
+                                                                        <span class="cust-tag py-1 px-1 mb-1">{{cust.cust_type}}</span>
+                                                                        <!--
+                                                                        <span class="cust-tag py-1 px-2 mb-1">Frequent Flyer</span>
+                                                                        -->
                                                                     </div>
                                                                 </div>
+                                                                <div class="row">
+                                                                    <div class="col-7">
+                                                                        <div class="item-sub-heading">Email</div>
+                                                                            <a :href="'mailto:'+cust.EmailAddress" id="cust_email" v-if="cust.EmailAddress">{{cust.EmailAddress.toLowerCase()}}</a>
+                                                                    </div>
+                                                                     <div class="col-5">
+                                                                        <div class="item-sub-heading">Phone number</div>
+                                                                        <div class="row" v-if="cust.phone_num && cust.phone_num.length > 0">
+                                                                            <div class="col-12" v-for="phone in cust.phone_num">
+                                                                                {{phone}}
+                                                                            </div>
+                                                                        </div>
+                                                                     </div>
+                                                                </div>
 
-
-                                                                <pre>{{cust}}</pre>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -228,7 +242,52 @@
                                                 <div class="accordion-collapse collapse" id="acdpanel_orderdetails">
                                                     <div class="accordion-body d-table w-100 px-0 py-0">
                                                         <div class="accordion-content p-4 mt-3">
-                                                            Order details goes here
+                                                            <div class="row align-items-center mb-3" v-if="order">
+                                                                <div class="col-6">
+                                                                    <span class="sidebar_title text-white">Order details</span>
+                                                                    <a href="javascript:void(0)" id="order_link">Edit</a>
+                                                                </div>
+                                                                <div class="col-6 text-align-right" v-if="order.deliverymethod=='in_store_collection'">
+                                                                        <img src="/images/picto_store.svg" class="delivery-method-icon">
+                                                                        <span class="text-white delivery-method-text">In Store Collection</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <!--IN STORE COLLECTIOM-->
+                                                            <div class="col-12" v-if="order.deliverymethod=='in_store_collection'">
+                                                                <div class="row mb-3 mx-0 align-items-center each-booking-log-row py-1">
+                                                                    <div class="col-2 pl-0">
+                                                                        <span class="sidebar_title text-white">Slot</span>
+                                                                    </div>
+                                                                    <div class="col-10 text-white text-align-right pr-0" id="booking_log">
+                                                                        Booked by @{{booking.user}} on {{booking.dropoff_date}} @{{booking.dropoff_time}}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row text-white">
+                                                                    <div class="col-6  pr-0">
+                                                                        <div class="item-sub-heading">Dropoff time</div>
+                                                                        <div class="row mx-0 align-items-center">
+                                                                            <div class="col-2 pl-0">
+                                                                                <img src="/images/calendar_white.svg" class="each-booking-calendar-icon"/>
+                                                                            </div>
+                                                                            <div class="col-10 pl-0">{{booking.dropoff_day}} {{booking.dropoff_date}}<br/>{{booking.dropoff_time}}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-6 pr-0">
+                                                                        <div class="item-sub-heading">Pickup time</div>
+                                                                         <div class="row mx-0 align-items-center">
+                                                                            <div class="col-2 pl-0">
+                                                                                <img src="/images/calendar_white.svg" class="each-booking-calendar-icon"/>
+                                                                            </div>
+                                                                            <div class="col-10 pl-0">{{booking.pickup_day}} {{booking.pickup_date}}<br/>{{booking.pickup_time}}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+
+
+
                                                         </div>
                                                     </div>
                                                 </div>
@@ -293,6 +352,8 @@ export default {
         const zones = ref([]);
         const issues = ref([]);
         const cust = ref({});
+        const order = ref({});
+        const booking = ref([]);
 
         order_id.value = route.params.order_id;
 
@@ -316,6 +377,8 @@ export default {
                 zones.value = res.data.zones;
                 issues.value = res.data.issues;
                 cust.value = res.data.cust;
+                order.value = res.data.order;
+                booking.value = res.data.booking_details;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -346,7 +409,6 @@ export default {
             return string[0].toUpperCase() + string.substring(1);
         }
 
-
         function goToDetailing(order_id,detailingitem_id,etape){
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
                 true,
@@ -367,6 +429,10 @@ export default {
             });
         }
 
+        function redirectToCustDetail(id){
+            router.push('/customer-detail/'+id);
+        }
+
         return {
             order_id,
             paths,
@@ -378,6 +444,10 @@ export default {
             issues,
             goToDetailing,
             cust,
+            redirectToCustDetail,
+            order,
+            booking,
+
         }
 
     },
@@ -408,7 +478,8 @@ export default {
 
 .checkout-sidebar,
 .accordion-collapse,
-.accordion-body{
+.accordion-body,
+.accordion-header{
     background:#47454B;
 }
 
@@ -514,7 +585,9 @@ export default {
     margin-right:10px;
 }
 
-.item-desc-heading a,#customer_link{
+.item-desc-heading a,
+#customer_link,
+#order_link{
     font:normal 16px "Gotham Rounded";
     color:#42A71E;
     text-decoration: underline;
@@ -562,8 +635,15 @@ export default {
     border-bottom:thin solid #e0e0e0;
 }
 
-.each-detailed-service-row{
+.each-detailed-service-row
+{
  font:normal 16px "Gotham Rounded";
+}
+
+
+.delivery-method-text,
+#booking_log{
+    font:normal 16px "Gotham Rounded";
 }
 
 .each-issue-index{
@@ -590,7 +670,8 @@ export default {
     font-family: "Gotham Rounded";
 }
 
-#cust_name{
+#cust_name,
+.sidebar_title{
     font:bold 22px "Gilroy";
     margin-right:10px;
 }
@@ -601,6 +682,25 @@ export default {
     border-radius:3px;
     display:table;
     float:left;
+    margin-right:0.5rem;
+}
+
+#cust_email{
+    font:normal 16px "Gotham Rounded";
+    color:#fff;
+}
+
+.delivery-method-icon{
+    height:20px;
+    margin-right:10px;
+}
+
+.each-booking-log-row{
+    border-bottom:thin solid #fff;
+}
+
+.each-booking-calendar-icon{
+    margin-left:-5px;
 }
 
 </style>

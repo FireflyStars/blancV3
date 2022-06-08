@@ -175,6 +175,7 @@ Route::get('tailoring-services-test',function(){
 });
 */
 
+
 Route::get('stripe-test',function(){
     $id_customer = 	19688;
 
@@ -192,7 +193,10 @@ Route::get('stripe-test',function(){
 
     try {
 
-        $card = DB::table('cards')->where('CustomerID',$cust->CustomerID)->first();
+        $card = DB::table('cards')
+            ->where('CustomerID',$cust->CustomerID)
+            ->where('Actif',1)
+            ->first();
 
         //If Customer has card
         if($card){
@@ -325,6 +329,7 @@ Route::post('/get-shipping-partners',[ShippingController::class,'getPartnerList'
 Route::post('/get-tranche-by-postcode',[BookingController::class,'getTrancheByPostcode'])->name('get-tranche-by-postcode')->middleware('auth');
 Route::post('/create-new-order',[OrderController::class,'createNewOrder'])->name('create-new-order')->middleware('auth');
 Route::post('/get-slots-by-day',[BookingController::class,'getSlotsByDay'])->name('get-slots-by-day')->middleware('auth');
+Route::post('/save-order-card-details',[OrderController::class,'saveCardDetails'])->name('save-order-card-details')->middleware('auth');
 
 /*
  * QZ Print

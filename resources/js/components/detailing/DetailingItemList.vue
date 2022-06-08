@@ -58,7 +58,7 @@
                                     <td
                                         class="body_regular td-text"
                                         @click="openDetailing(det.item_number)"
-                                    >£{{ det.price }}</td>
+                                    >£{{ det.price.toFixed(2) }}</td>
                                     <td @click="loadRemoveItemModal(det.tracking,det.item_number)"><img src="/images/garbage.svg"/></td>
                                 </tr>
                             </tbody>
@@ -85,7 +85,7 @@
                             </div>
                         </div>
                         <div class="row total">
-                            <span>Total £ {{ item_total }}</span>
+                            <span>Total £ {{ item_total.toFixed(2) }}</span>
                         </div>
                         <div class="row buttons pt-4">
                             <div class="col-10 text-align-right">

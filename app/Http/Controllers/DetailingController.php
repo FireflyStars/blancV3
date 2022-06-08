@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\DetailingServices;
+use DateTime;
 use stdClass;
 
 class DetailingController extends Controller
@@ -1075,14 +1076,58 @@ class DetailingController extends Controller
     public function getCheckoutItems(Request $request){
         $order_id = $request->order_id;
 
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+        $days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+        $booking_details = [];
+        if($order){
+            if($order->deliverymethod=='in_store_collection'){
+                $booking = DB::table('booking_store')
+                ->select('booking_store.*','users.name AS user')
+                ->join('users','booking_store.user_id','users.id')
+                ->where('booking_store.order_id',$order_id)->where('booking_store.status','NEW')
+                ->latest('booking_store.id')
+                ->first();
+
+                if($booking){
+                    $dropoff_stamp = strtotime($booking->dropoff);
+                    $pickup_stamp = strtotime($booking->pickup_date);
+
+
+                    $dropoff_day_index = date('w',$dropoff_stamp);
+                    $pickup_day_index  = date('w',$pickup_stamp);
+
+                    $dropoff_am_pm = 'am';
+                    $dropoff_h = (int) date('h',$dropoff_stamp);
+                    if($dropoff_h >=12){
+                        $dropoff_am_pm = 'pm';
+
+                        if($dropoff_h > 12){
+                            $dropoff_h = $dropoff_h-12;
+                        }
+                    }
+
+
+                    $booking_details = [
+                        'user'=>$booking->user,
+                        'dropoff_date'=>date("d/m",$dropoff_stamp),
+                        'dropoff_time'=>date("i",$dropoff_stamp).$dropoff_am_pm,
+                        'dropoff_day' => $days[$dropoff_day_index],
+                        'pickup_date'=>date("d/m",$pickup_stamp),
+                        'pickup_day'=>$days[$pickup_day_index],
+                        'pickup_time'=>'6:00 pm',
+                    ];
+                }
+            }
+        }
+
+
         $items = DB::table('infoitems')
             ->select('infoitems.*','detailingitem.*','detailingitem.id AS detailingitem_id')
             ->join('detailingitem','infoitems.id','detailingitem.item_id')
             ->join('infoOrder','detailingitem.order_id','infoOrder.id')
             ->where('infoOrder.id',$order_id)
             ->get();
-
-
 
         $cs = [];
 
@@ -1292,14 +1337,33 @@ class DetailingController extends Controller
                 $cust = DB::table('infoCustomer')->where('id',$customer_id)->first();
 
                 $cust->phone_num = [];
-                if($cust->Phone !='' && !is_null($cust->Phone) && is_array(@json_decode($cust->Phone))){
-                    $phone_num = @json_decode($cust->Phone);
+                if($cust){
+                    $cust->cust_type = "";
 
-                    foreach($phone_num as $key=>$phone){
-                        $cust->phone_num[] = str_replace("|"," ",$phone);
+                    if($cust->Phone !='' && !is_null($cust->Phone) && is_array(@json_decode($cust->Phone))){
+                        $phone_num = @json_decode($cust->Phone);
+
+                        foreach($phone_num as $key=>$phone){
+                            $cust->phone_num[] = str_replace("|"," ",$phone);
+                        }
+                    }
+
+                    $cp = DB::table('InfoCustomerPreference')
+                        ->where('CustomerID',$cust->CustomerID)
+                        ->where('Titre','Type Customer')
+                        ->where('Delete',0)
+                        ->first();
+
+                    if($cp){
+                        $cust->cust_type = $cp->Value;
                     }
                 }
+
+
             }
+
+
+
 
 
         }
@@ -1310,6 +1374,8 @@ class DetailingController extends Controller
             'zones'=>$zone_names,
             'issues'=>$issue_names,
             'cust'=>$cust,
+            'order'=>$order,
+            'booking_details'=>$booking_details,
         ]);
     }
 

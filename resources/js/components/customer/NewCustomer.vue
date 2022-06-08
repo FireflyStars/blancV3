@@ -8,7 +8,7 @@
                     <div class="page-fluid cust-page m-0">
                         <div class="page-header">
                             <h1 class="d-flex align-items-center m-0">
-                                New Customer 
+                                New Customer
                                 <span class="d-flex align-items-center justify-content-center rounded-pill ms-3 mt-2"
                                     :class="{ 'b2c-icon': form.customerType == 'B2C', 'b2b-icon': form.customerType == 'B2B' }"
                                 >
@@ -96,24 +96,24 @@
                         <transition name="list" appear v-if="step =='account_details'">
                             <div class="cust-page-content m-auto pt-5">
                                 <div class="account-type mb-3">
-                                    <select-options 
-                                        v-model="form.accountType" 
-                                        :options="[ 
-                                            { display:'Main Account', value: 'Main' }, 
+                                    <select-options
+                                        v-model="form.accountType"
+                                        :options="[
+                                            { display:'Main Account', value: 'Main' },
                                             { display:'Sub Account', value: 'Sub' }
                                         ]"
                                         :classnames ="'bg-transparent border-none font-gilroy font-22 ps-0'"
                                         :name="'accountType'">
                                     </select-options>
-                                </div>                                
+                                </div>
                                 <div class="page-section">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <h3 class="title m-0">Contact details</h3>
                                         <div class="type-delivery">
-                                            <select-options 
-                                                v-model="form.typeDelivery" 
-                                                :options="[ 
-                                                    { display:'Marylebone', value: 'MARYLEBONE' }, 
+                                            <select-options
+                                                v-model="form.typeDelivery"
+                                                :options="[
+                                                    { display:'Marylebone', value: 'MARYLEBONE' },
                                                     { display:'Chelsea', value: 'CHELSEA' },
                                                     { display:'Notting Hill', value: 'NOTTING HILL' },
                                                     { display:'South Ken', value: 'SOUTH KEN' },
@@ -127,10 +127,10 @@
                                     <div class="d-flex mt-3">
                                         <div class="w-55 d-flex justify-content-between">
                                             <div class="customer-type">
-                                                <select-options 
-                                                    v-model="form.customerType" 
-                                                    :options="[ 
-                                                        { display:'B2B', value: 'B2B' }, 
+                                                <select-options
+                                                    v-model="form.customerType"
+                                                    :options="[
+                                                        { display:'B2B', value: 'B2B' },
                                                         { display:'B2C', value: 'B2C' }
                                                     ]"
                                                     :label="'Customer Type'"
@@ -138,10 +138,10 @@
                                                 </select-options>
                                             </div>
                                             <div class="customer-type">
-                                                <select-options 
-                                                    v-model="form.programmeType" 
-                                                    :options="[ 
-                                                        { display:'Standard', value: 'Standard' }, 
+                                                <select-options
+                                                    v-model="form.programmeType"
+                                                    :options="[
+                                                        { display:'Standard', value: 'Standard' },
                                                         { display:'Gold', value: 'VIP GOLD' },
                                                         { display:'Special Care', value: 'VIP RED' }
                                                     ]"
@@ -174,8 +174,8 @@
                                             </div>
                                             <div class="d-flex">
                                                 <div class="phone-country-code">
-                                                    <select-options 
-                                                        v-model="form.phoneCountryCode" 
+                                                    <select-options
+                                                        v-model="form.phoneCountryCode"
                                                         :options="phoneCodesSorted"
                                                         :width = "'100px'"
                                                         :name="'phoneCountryCode'">
@@ -246,16 +246,16 @@
                                     <h3 class="title">Payment method</h3>
                                     <div class="page-section">
                                         <div class="form-group mb-0 payment-method">
-                                            <select-options 
-                                                v-model="form.paymentMethod" 
-                                                :options="[ 
-                                                    { display:'Credit Card', value: 'Credit Card' }, 
+                                            <select-options
+                                                v-model="form.paymentMethod"
+                                                :options="[
+                                                    { display:'Credit Card', value: 'Credit Card' },
                                                     { display:'BACS', value: 'BACS' },
                                                 ]"
                                                 :placeholder="'Select'"
                                                 :label="'Payment Method'"
                                                 :name="'paymentMethod'">
-                                            </select-options>                                    
+                                            </select-options>
                                         </div>
                                         <transition name="list" appear >
                                             <div class="credit-card mt-5 d-flex justify-content-between" v-if="form.paymentMethod == 'Credit Card'">
@@ -273,7 +273,7 @@
                                                     </div>
                                                     <div v-if="cardErrors.cardNumber" class="error">
                                                         <small>{{ cardErrors.cardNumber }}</small>
-                                                    </div>                                                
+                                                    </div>
                                                 </div>
                                                 <div class="form-group col-2 cardexpdate mb-0">
                                                     <label for="">Expiration date</label>
@@ -287,7 +287,7 @@
                                                     <input type="text" ref="cardCvcInput" :class="{ 'error': cardErrors.cardCvc}" placeholder="CVC" v-model="form.cardCVV" class="form-control" v-cardformat:formatCardCVC>
                                                     <div v-if="cardErrors.cardCvc" class="error">
                                                         <small>{{ cardErrors.cardCvc }}</small>
-                                                    </div>                                                
+                                                    </div>
                                                 </div>
                                                 <!-- <div class="form-group">
                                                     <button class="btn btn-success" @click="checkCard">Check Card</button>
@@ -325,8 +325,8 @@
                                                     </div>
                                                     <div class="d-flex">
                                                         <div class="phone-country-code">
-                                                            <select-options 
-                                                                v-model="form.companyPhoneCountryCode" 
+                                                            <select-options
+                                                                v-model="form.companyPhoneCountryCode"
                                                                 :options="phoneCodesSorted"
                                                                 :width = "'100px'"
                                                                 :name="'phoneCountryCode'">
@@ -337,7 +337,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>  
+                                            </div>
                                             <div class="w-55 mt-3">
                                                 <div class="form-group">
                                                     <label>Email address 1</label>
@@ -354,7 +354,7 @@
                                             <div class="w-55 mt-4">
                                                 <label for="">Billing address</label>
                                                 <input type="text" v-model="form.companyAddress1" placeholder="Address line 1" class="form-control custom-input">
-                                                <input type="text" v-model="form.companyAddress2" placeholder="Address line 2" class="form-control custom-input mt-3">                                                
+                                                <input type="text" v-model="form.companyAddress2" placeholder="Address line 2" class="form-control custom-input mt-3">
                                             </div>
                                             <div class="d-flex mt-3">
                                                 <div class="w-55 d-flex justify-content-between">
@@ -374,7 +374,7 @@
                                                                 </svg>
                                                             </span>
                                                             <input type="text" ref="companyPostCode" class="form-control custom-input" v-model="form.companyPostCode">
-                                                        </div>                                                        
+                                                        </div>
                                                     </div>
                                                     <div class="form-group m-0">
                                                         <label for="customer_city">City</label>
@@ -387,7 +387,7 @@
                                                         <input type="text" v-model="form.companyCountry" class="form-control custom-input">
                                                     </div>
                                                 </div>
-                                            </div>                                          
+                                            </div>
                                         </div>
                                     </div>
                                 </transition>
@@ -400,7 +400,7 @@
                                                 <span class="input-group-text fw-bold">%</span>
                                                 <input type="text" v-model="form.discountLevel" class="form-control" placeholder="0.00">
                                             </div>
-                                        </div>                                    
+                                        </div>
                                     </div>
                                     <h3 class="title d-flex">Credits <CheckBox v-model="form.applyCreditToSub" class="ms-5"><slot>Apply to sub-accounts</slot></CheckBox></h3>
                                     <div class="page-section">
@@ -445,10 +445,10 @@
                                         <div class="page-section p-4">
                                             <div class="d-flex justify-content-between">
                                                 <div class="payment-method">
-                                                    <select-options 
-                                                        v-model="form.altTypeDelivery" 
-                                                        :options="[ 
-                                                            { display:'Concierge', value: 'Concierge' }, 
+                                                    <select-options
+                                                        v-model="form.altTypeDelivery"
+                                                        :options="[
+                                                            { display:'Concierge', value: 'Concierge' },
                                                             { display:'Neighbour', value: 'Neighbour' },
                                                             { display:'Housekeeper', value: 'Housekeeper' },
                                                             { display:'N/A', value: 'N/A' },
@@ -469,8 +469,8 @@
                                                 </div>
                                                 <div class="d-flex">
                                                     <div class="phone-country-code">
-                                                        <select-options 
-                                                            v-model="form.altPhoneCountryCode" 
+                                                        <select-options
+                                                            v-model="form.altPhoneCountryCode"
                                                             :options="phoneCodesSorted"
                                                             :width = "'100px'"
                                                             :name="'phoneCountryCode'">
@@ -479,7 +479,7 @@
                                                     <div class="form-group ms-2">
                                                         <input type="text" v-model="form.altPhoneNumber" class="form-control custom-input">
                                                     </div>
-                                                </div>                                            
+                                                </div>
                                             </div>
                                             <div class="w-100 mt-3">
                                                 <div class="form-group m-0">
@@ -691,7 +691,7 @@ import axios from 'axios';
                             [item.value, item])).values()].sort((a, b)=>{
                     return parseInt(a.value.replace(/\D/g, '')) - parseInt(b.value.replace(/\D/g, ''));
             });
-            const cardErrors = ref({});   
+            const cardErrors = ref({});
 
             onMounted(()=>{
                 axios.post('/get-customer-preferences').then((res)=>{
@@ -703,7 +703,7 @@ import axios from 'axios';
                     })
                 }).catch((error)=>{
                     console.log(error);
-                })                
+                })
                 nextTick(()=>{
                     showcontainer.value = true;
                 });
@@ -732,7 +732,7 @@ import axios from 'axios';
                             form.value.customerLat = place.geometry.location.lat();
                             form.value.customerLon = place.geometry.location.lng();
                             setCustomerAddress(place.address_components);
-                        });  
+                        });
                     }, 1);
                 }
             });
@@ -796,7 +796,7 @@ import axios from 'axios';
                 }else{
                     return '';
                 }
-            }  
+            }
             // move on to next step when you click next button
             const next = ()=>{
                 if(step.value == 'account_details'){
@@ -814,7 +814,7 @@ import axios from 'axios';
                     if(form.value.email == ''){
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter email address', ttl:5, type:'danger' });
                         return;
-                    }                    
+                    }
                     if(form.value.typeDelivery == 'DELIVERY'){
                         if(form.value.postCode == ''){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Post Code', ttl:5, type:'danger' });
@@ -837,7 +837,7 @@ import axios from 'axios';
                             form.value.customerLat = place.geometry.location.lat();
                             form.value.customerLon = place.geometry.location.lng();
                             setCustomerAddress(place.address_components);
-                        });  
+                        });
                     }, 1);
                 }else if( step.value == 'payment' ){
                     // if(form.value.paymentMethod == 'BACS'){
@@ -883,9 +883,9 @@ import axios from 'axios';
                         companyAddress.addListener("place_changed", () => {
                             const place = companyAddress.getPlace();
                             form.value.companyLat = place.geometry.location.lat();
-                            form.value.companyLon = place.geometry.location.lng();                            
+                            form.value.companyLon = place.geometry.location.lng();
                             setCompanyAddress(place.address_components);
-                        });  
+                        });
                     });
                 }
             })
@@ -939,7 +939,7 @@ import axios from 'axios';
                     if(response.data.error){
                         Object.values(response.data.error).forEach((item)=>{
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item[0], ttl:5, type:'danger' });
-                        })                        
+                        })
                     }else{
                         router.push({
                             name: 'Customer'
@@ -958,15 +958,15 @@ import axios from 'axios';
             }
             // handler when the customer selected in search result
             const selectedSubAccount = (data)=>{
-                form.value.linkedAccounts = [...form.value.linkedAccounts, 
-                    { 
-                        id:     data.id, 
-                        name:   data.name, 
+                form.value.linkedAccounts = [...form.value.linkedAccounts,
+                    {
+                        id:     data.id,
+                        name:   data.name,
                         accountType: 'Sub',
-                        phone:  data.phone, 
-                        email:  data.email, 
-                        date:   data.date, 
-                        spent:  data.spent 
+                        phone:  data.phone,
+                        email:  data.email,
+                        date:   data.date,
+                        spent:  data.spent
                     }
                 ]
             };
@@ -975,7 +975,7 @@ import axios from 'axios';
                 form.value.linkedAccounts = form.value.linkedAccounts.filter((item)=>{
                     return item.id != id;
                 });
-            }    
+            }
             const checkCard = ()=>{
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Check credit card...']);
                 axios.post('check-stripe', form.value).then((res)=>{
@@ -985,7 +985,7 @@ import axios from 'axios';
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 })
-            }        
+            }
             return {
                 form,
                 step,
@@ -1108,7 +1108,7 @@ import axios from 'axios';
 }
 .list-move{
     transition:all 0.9s ease;
-} 
+}
 .cust-page{
   .title{
     font-family: 'Gilroy';
@@ -1163,7 +1163,7 @@ import axios from 'axios';
             height: 10px;
             border-radius: 50%;
             background:#42A71E;
-        }        
+        }
     }
     /* Create a custom radio button */
     .checkmark {
@@ -1201,7 +1201,7 @@ import axios from 'axios';
         font-style: normal;
         font-weight: 400;
         font-size: 12px;
-        line-height: 140%;        
+        line-height: 140%;
         background: #47454B;
         color: #FFF;
       }
@@ -1252,11 +1252,11 @@ import axios from 'axios';
       .border-none{
           border: none;
           outline: none;
-      } 
+      }
       .font-gilroy{
         font-family: 'Gilroy';
         font-weight: 800;
-      } 
+      }
       .font-22{
         font-size: 22px;
         line-height: 110%;
@@ -1278,7 +1278,7 @@ import axios from 'axios';
   }
     span.chkbox {
         border: solid #868686;
-    }  
+    }
     .company-legal-name{
         width: 325px;
     }
@@ -1290,7 +1290,7 @@ import axios from 'axios';
     border-radius: 4px;
     margin-bottom: 30px;
     // input[type="text"]{
-        
+
     // }
     input[type="text"]:focus,
     input[type="tel"]:focus,
