@@ -24,7 +24,7 @@
                   <div class="container">
                     <div class="row" @click="featureunavailable('Details Customer')">
                        <div class="col">
-                          <span class="body_medium">{{customer.Name.replace(',','').toLowerCase()}}</span>
+                          <span class="body_medium"><a href="javascript:void(0)" @click="goToOrderList(customer.CustomerID)">{{customer.Name.replace(',','').toLowerCase()}}</a></span>
                             <div  v-if="customer.Phone!=''&&customer.Phone!=null" >
                               <div v-for="phone in customer.Phone.slice(0,1)" :key="phone">
                                <b class ="body_regular">+{{phone.replace('|',' ')}}</b>
@@ -59,7 +59,7 @@
                   <div class="container">
                     <div class="row" @click="featureunavailable('Details Customer')">
                         <div class="col">
-                          <b class = "body_regular" >{{customer.Name.replace(',','').toLowerCase()}}</b>
+                          <b class = "body_regular" ><a href="javascript:void(0)" @click="goToOrderList(customer.CustomerID)">{{customer.Name.replace(',','').toLowerCase()}}</a></b>
                             <div v-if="customer.Phone!=''&&customer.Phone!=null" >
                               <div v-for="phone in customer.Phone.slice(0,1)" :key="phone">
                             <b class ="body_regular">+{{phone.replace('|',' ')}}</b>
@@ -243,7 +243,18 @@ export default({
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
             }
-
+          function goToOrderList(customerId){
+            
+            this.clearSearch()
+          
+            router.push({
+                    name:'LandingPage',
+                    params: {
+                       customerId,
+                    },
+                })
+                
+          }
             return {
                 submit,
                 clearSearch,
@@ -257,7 +268,8 @@ export default({
                 showbutton,
                 selectrow,
                 show_loader,
-                loadMore
+                loadMore,
+                goToOrderList
 
             }
         }
@@ -468,4 +480,5 @@ input[type="search"]::-webkit-search-cancel-button {
             font-size: 12px;
     }
     }
+
 </style>

@@ -51,6 +51,7 @@ export const search= {
     },
     actions: {
         [CUSTOMER_LOAD_LIST]:async ({commit,state},payload )=>{
+
             commit(CUSTOMER_SET_LOADER,'animate40');
            
             if(payload.showmore == 'search_name'){
@@ -75,8 +76,9 @@ export const search= {
                 PerPageUser:state.PerPageUser, 
                 PerPageEmails:state.PerPageEmails})
             .then( (response)=>{
+
                 if(response.data.customers.data!=null){
-                        commit(CUSTOMER_SEARCH_SET_LIST ,response.data.customers.data);
+                        commit(CUSTOMER_SET_LIST ,response.data.customers.data);
                         commit(CUSTOMEREMAILS_SET_LIST ,response.data.customers_emails.data);
                         commit(CUSTOMERORDERS_SET_LIST ,response.data.customers_orders.data);
                 }

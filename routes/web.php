@@ -46,6 +46,7 @@ Route::post('/auth/login',function () {
     return view('welcome');
 })->name('login');
 Route::post('/getorderlist',[OrderListController::class, 'getorderlist'])->middleware('auth')->name('orderlist');
+Route::post('/getOrdersByCustomerId',[OrderListController::class, 'getOrdersByCustomerId'])->middleware('auth')->name('ordersByCustomerId');
 Route::post('/cancelorders',[OrderListController::class, 'cancelorders'])->middleware('auth')->name('cancelorders');
 Route::post('/markaslate',[OrderListController::class, 'markaslate'])->middleware('auth')->name('markaslate');
 Route::post('/getorderdetail',[OrderListController::class,'getorderdetail'])->middleware('auth')->name('getorderdetail');
@@ -364,10 +365,10 @@ Route::post('/change-detailing-etape',[DetailingController::class,'changeDetaili
  * Voyager custom routes
  *  */
 
-Route::group(['prefix' => 'admin'], function () {
-    Voyager::routes();
-    Route::get('category-tailoring',[CategoryTailoringController::class,'index'])->name('category-tailoring')->middleware('auth');
-});
+// Route::group(['prefix' => 'admin'], function () {
+//     Voyager::routes();
+//     Route::get('category-tailoring',[CategoryTailoringController::class,'index'])->name('category-tailoring')->middleware('auth');
+// });
 
 
 /*ALWAYS AT THE BOTTOM*/

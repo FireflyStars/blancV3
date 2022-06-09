@@ -44,7 +44,7 @@ public function SearchCustomer(Request $request)
     }
 
     $emails = DB::table('infoCustomer')
-    ->where('EmailAddress', 'LIKE', $query . '%')
+    ->where('Name', 'LIKE', $query . '%')
     ->paginate($PerPageEmails);
 
     foreach ($emails as $item) {

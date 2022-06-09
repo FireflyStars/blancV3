@@ -30,7 +30,7 @@
 </template>
 
 <script>
-    import {ref,onMounted,computed,nextTick} from 'vue';
+    import {ref,onMounted,computed,nextTick,watch} from 'vue';
     import MainHeader from '../layout/MainHeader';
     import {hasRoles} from '../helpers/helpers'
     import SideBar from '../layout/SideBar'
@@ -43,7 +43,8 @@
         ORDERLIST_SET_CURRENTTAB,
         ORDERLIST_GET_LIST,
         ORDERLIST_LOADERMSG,
-        ORDERLIST_RESET_ORDERLIST, ORDERLIST_SET_LIMIT, ORDERLIST_LOAD_TAB
+        ORDERLIST_RESET_ORDERLIST, ORDERLIST_SET_LIMIT, ORDERLIST_LOAD_TAB,
+        ORDERLIST_CUSTOMER_ORDERS
     } from '../../store/types/types';
     import {useRoute} from 'vue-router';
 
@@ -51,10 +52,12 @@
         name: "OrderList",
         components: { SideBar, MainHeader,OrderListTable},
         setup(props,context){
+          
             const showcontainer=ref(false);
             const store=useStore();
             const route=useRoute();
 
+         
             const tabs=ref({});
             if(hasRoles(['cc'])){
                 tabs.value= {
@@ -271,10 +274,33 @@
             onMounted(()=>{
                 nextTick(()=>{
                     showcontainer.value=true;
+
+                     let data = route.params.customerId;
+
+                    if( data != null){
+
+                    store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`, {customer:data} );
+
+                    } else if( data == null) {
+
+                       store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`);
+                    } 
                 });
             });
 
-            store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`);
+
+            watch(route, (to) => {
+             
+                if( route.params.customerId != null){
+
+                    store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`, {customer:route.params.customerId} );
+
+                } else {
+
+                       store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`);
+                }
+                
+             })
 
             function showtab(tab) {
                 for (const prop in tabs.value)

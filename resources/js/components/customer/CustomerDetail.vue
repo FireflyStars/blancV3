@@ -185,14 +185,22 @@ export default {
             return store.getters[`${CUSTOMER_MODULE}${GET_CUSTOMER_DETAIL}`];
         })
         const manageOrders =()=>{
+
+            let customerId = CUSTOMER.value.CustomerID
             router.push({
-                name: 'ViewCustomer',
-                params:{
-                    customer_id: route.params.customer_id,
-                    step: 'order_management'
-                }
-            });            
-            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Manage Order is not implemented yet.',ttl:5,type:'success'});
+                    name:'LandingPage',
+                    params: {
+                       customerId,
+                    },
+                })
+            // router.push({
+            //     name: 'ViewCustomer',
+            //     params:{
+            //         customer_id: route.params.customer_id,
+            //         step: 'order_management'
+            //     }
+            // });            
+            // store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Manage Order is not implemented yet.',ttl:5,type:'success'});
         }
         const appSMS =()=>{
             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'App SMS is not implemented yet.',ttl:5,type:'success'});
