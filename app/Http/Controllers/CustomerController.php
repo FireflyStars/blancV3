@@ -483,6 +483,16 @@ class CustomerController extends Controller
                 $spend+=$order->Total;
             }
             $infoCustomer->ltm_spend=$spend;
+
+            $infoCustomer->card_details = null;
+
+            $card = DB::table('cards')->where('CustomerID',$CustomerID)->where('Actif',1)->first();
+
+            if($card){
+                $infoCustomer->card_details = $card;
+            }
+
+
         }
 
         return response()->json(['customer'=>$infoCustomer]);

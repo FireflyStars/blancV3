@@ -3,7 +3,7 @@
     <transition-group tag="div" name="popinout">
 
      <div class="panel" v-if="order.infoCustomer==null||edit_customer">
-        <h2 class="subtitle">Customer Details <button class="btn-link-green body_regular" @click="featureUnavailable('New Customer')">New</button></h2>
+        <h2 class="subtitle">Customer Details <button class="btn-link-green body_regular" @click="redirectToNewCustomer">New</button></h2>
         <div class="row">
             <div class="col">
                 <search v-model="CustomerID" name="search" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Search a customer" hint="disabled till 2021-09-10" ></search>
@@ -45,6 +45,7 @@
     import {featureUnavailable} from "../helpers/helpers";
     import {formatPrice,formatPhone} from '../helpers/helpers';
     import {NEWORDER_GET_CUSTOMER, NEWORDER_MODULE, NEWORDER_PRELOAD_ORDER_GET} from "../../store/types/types";
+import { useRouter } from 'vue-router';
     export default {
         name: "CustomerDetailsPanel",
         components:{Search},
@@ -52,6 +53,8 @@
             const CustomerID=ref('');
             const edit_customer=ref(false);
             const store=useStore();
+            const router = useRouter();
+
             watch(()=>CustomerID.value,(current_val,previous_val)=>{
 
 
@@ -70,6 +73,11 @@
                 edit_customer.value=true;
                 CustomerID.value = '';
             }
+
+            function redirectToNewCustomer(){
+                router.push('/newcustomer');
+            }
+
             return{
                 featureUnavailable,
                 CustomerID,
@@ -77,7 +85,8 @@
                 formatPrice,
                 formatPhone,
                 editCustomer,
-                edit_customer
+                edit_customer,
+                redirectToNewCustomer,
             }
 
         }

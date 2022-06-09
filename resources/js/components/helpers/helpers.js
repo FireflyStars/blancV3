@@ -38,7 +38,7 @@ export const formatPrice=price=>`£${price !== 0 ? price.toFixed(2) : 0}`;
     @param String format default DD/MM (ex 27/09), DAY DD/MM (ex MON 27/09)
 **/
 export const formatDate=(date_str,format)=>{
-  
+
     if(typeof format==="undefined")
         format='DD/MM';
     const date=new Date(date_str);
@@ -46,7 +46,7 @@ export const formatDate=(date_str,format)=>{
     if(format==='DAY DD/MM')
         options = { weekday: 'short',  month: 'numeric', day: 'numeric' };
     if(format==='DAYL DD/MM')
-    options = { weekday: 'long',  month: 'numeric', day: 'numeric' };    
+    options = { weekday: 'long',  month: 'numeric', day: 'numeric' };
 
     const dateTimeFormat = new Intl.DateTimeFormat('en-GB', options);
     return dateTimeFormat.format(date).replace(',','').toUpperCase();
@@ -57,7 +57,7 @@ export const featureUnavailable=((feature)=>{
     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:feature+' feature not yet implemented.',ttl:5,type:'success'});
 });
 export const formatPhone=(json_string_phone,seperator='<br/>')=>{
-    if(json_string_phone.trim()=='')
+    if(json_string_phone || json_string_phone.trim()=='')
         return '';
         let phones=JSON.parse(json_string_phone);
         let phonesStr='';

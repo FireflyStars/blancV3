@@ -35,7 +35,103 @@
                             <div class="panel-col-1 col  ">
                                 <customer-details-panel @setcustomerid="setCustomerID"></customer-details-panel>
                                 <div class="panel">
-                                    <h2 class="subtitle">Payment method</h2>
+                                    <h2 class="subtitle">Payment</h2>
+                                        <div class="col-12" v-if="cur_cust && card_details && card_details.id">
+                                            <div class="row">
+                                                <div class="payment_subheading col-4">Type</div>
+                                                <div class="payment_subheading col-6">Details</div>
+                                                <div class="payment_subheading col-2">Exp</div>
+                                            </div>
+                                            <div class="row align-items-center">
+                                                <div class="col-4">
+                                                    <div class="payment_text">Pay as you go</div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="payment_text d-flex align-items-center">
+                                                        <img src="/images/mastercard.svg"/>
+                                                        {{card_details.cardNumber}}
+                                                    </div>
+                                                </div>
+                                                <div class="col-2">
+                                                    <div class="payment_text">{{card_details.dateexpiration}}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div v-else class="col-12">
+                                            <div class="row mb-2">
+                                                <div class="form-group mb-0 col-6 payment-method">
+                                                    <select-options
+                                                        v-model="paymentMethod"
+                                                        :options="[
+                                                            { display:'Credit Card', value: 'Credit Card' },
+                                                            { display:'BACS', value: 'BACS' },
+                                                        ]"
+                                                        :placeholder="'Select'"
+                                                        :label="'Payment Method'"
+                                                        :name="'paymentMethod'">
+                                                    </select-options>
+                                                </div>
+                                            </div>
+                                            <transition>
+                                                <div class="row" appear v-if="paymentMethod=='Credit Card'" id="credit_card_div">
+                                                <div class="credit-card col-12">
+
+                                                    <div class="row mb-2">
+                                                        <div class="form-group col-12 cardholder">
+                                                            <label for="">Cardholder name</label>
+                                                            <input type="text" placeholder="Name" v-model="form.cardHolderName" required class="form-control">
+                                                            <div v-if="cardErrors.cardHolderName" class="error">
+                                                                <small>{{ cardErrors.cardHolderName }}</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="row mb-2">
+                                                        <div class="form-group col-12 carddetails">
+                                                            <label for="">Card details</label>
+                                                            <div class="input-group mb-0" :class="{ 'error': cardErrors.cardNumber}">
+                                                                <span class="input-group-text">
+                                                                    <i class="credit-card-icon" :class="cardBrandClass"></i>
+                                                                </span>
+                                                                <input ref="cardNumInput" :class="{ 'error': cardErrors.cardNumber}" :data-error="(cardErrors.cardNumber)?true:false" v-model="form.cardDetails" type="tel" v-cardformat:formatCardNumber class="form-control" placeholder="Enter card details">
+                                                            </div>
+                                                            <div v-if="cardErrors.cardNumber" class="error">
+                                                                <small>{{ cardErrors.cardNumber }}</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-2">
+                                                        <div class="form-group col-6 cardexpdate mb-0">
+                                                            <label for="">Expiration date</label>
+                                                            <input type="text" ref="cardExpInput" placeholder="mm/yy" :class="{ 'error': cardErrors.cardExpiry}" v-model="form.cardExpDate" maxlength="10" class="form-control" v-cardformat:formatCardExpiry>
+                                                            <div v-if="cardErrors.cardExpiry" class="error">
+                                                                <small>{{ cardErrors.cardExpiry }}</small>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group col-3 cardexpdate mb-0">
+                                                            <label for="">CVC</label>
+                                                            <input type="text" ref="cardCvcInput" :class="{ 'error': cardErrors.cardCvc}" placeholder="CVC" v-model="form.cardCVV" class="form-control" v-cardformat:formatCardCVC>
+                                                            <div v-if="cardErrors.cardCvc" class="error">
+                                                                <small>{{ cardErrors.cardCvc }}</small>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-3">
+                                                            <label>&nbsp;</label>
+                                                            <button class="btn btn-default w-100 py-0" id="save_card_details" @click="saveCardDetails">Save</button>
+                                                        </div>
+
+                                                    </div>
+
+
+                                                <!-- <div class="form-group">
+                                                    <button class="btn btn-success" @click="checkCard">Check Card</button>
+                                                </div> -->
+                                                </div>
+                                                </div>
+                                            </transition>
+
+                                        </div>
+
                                 </div>
                             </div>
 
@@ -432,10 +528,11 @@
 
     import { useRouter, useRoute } from 'vue-router';
 
-    import {ref,onMounted,nextTick,computed,watch, reactive} from 'vue';
+    import {ref,onMounted,nextTick,computed,watch,inject} from 'vue';
 
     import {
-      NEWORDER_CUR_CUSTOMER,
+        NEWORDER_GET_CUSTOMER,
+        NEWORDER_CUR_CUSTOMER,
         NEWORDER_MODULE,
         NEWORDER_PRELOAD_FORM,
         NEWORDER_PRELOAD_FORM_GET,
@@ -543,6 +640,7 @@ import axios from 'axios';
 
             const neworder_id = ref('');
 
+            const card_details = ref({});
 
             const d = new Date();
             //console.log(d.getHours());
@@ -593,7 +691,6 @@ import axios from 'axios';
 
             stores.forEach(function(v,i){
                 let key = {};
-
 
                 key['value'] = v;
                 key['display'] =  firstLetterToUppercase(v);
@@ -648,7 +745,7 @@ import axios from 'axios';
 
            //To remove
             function proceedToDetailling() {
-                router.push('/order-content/57907');
+                //router.push('/order-content/57907');
             }
 
 
@@ -663,8 +760,9 @@ import axios from 'axios';
                     customer_instructions.value = current_customer.commentDelivery;
                     cust_type_delivery.value = (current_customer.TypeDelivery=='DELIVERY'?'Atelier':current_customer.TypeDelivery);
 
-                    //store.dispatch(`${NEWORDER_MODULE}${NEW_ORDER_SET_TRANCHE_POSTCODE}`,current_customer.postcode);
+                    card_details.value = current_customer.card_details;
 
+                    //store.dispatch(`${NEWORDER_MODULE}${NEW_ORDER_SET_TRANCHE_POSTCODE}`,current_customer.postcode);
 
                 }
 
@@ -1255,6 +1353,107 @@ import axios from 'axios';
             }
 
 
+            //Payment details
+            const cardFormat = inject('cardFormat');
+            const paymentMethod = ref("");
+
+            const form = ref({
+                cardHolderName: '',
+                cardDetails: '',
+                cardExpDate: '',
+                cardCVV: '',
+            });
+
+            const cardErrors = ref({});
+            //Validation when cardholder name changes
+
+            let name_regex = /^[a-zA-Z ]*$/;
+            watch(()=>form.value.cardHolderName,(current_value,previous_value)=>{
+                if(current_value.replace(/\s/g,'')=='' || !name_regex.test(current_value)){
+                    cardErrors.value.cardHolderName = "Invalid cardholder name.";
+                }else{
+                    delete cardErrors.value.cardHolderName;
+                }
+            })
+
+
+              // validation when the card detail changes
+            watch(()=>form.value.cardDetails,(current_value, previous_value)=>{
+                if(cardFormat.validateCardNumber(current_value)){
+                    delete cardErrors.value.cardNumber;
+                }else{
+                    cardErrors.value.cardNumber = "Invalid Credit Card Number.";
+                }
+            })
+            // validation when the card exp changes
+            watch(()=>form.value.cardExpDate,(current_value, previous_value)=>{
+                if(cardFormat.validateCardExpiry(current_value)){
+                    delete cardErrors.value.cardExpiry;
+                }else{
+                    cardErrors.value.cardExpiry = "Invalid Expiration Date.";
+                }
+            })
+            // validation when the card exp changes
+            watch(()=>form.value.cardCVV,(current_value, previous_value)=>{
+                if(cardFormat.validateCardCVC(current_value)){
+                    delete cardErrors.value.cardCvc;
+                }else{
+                    cardErrors.value.cardCvc = "Invalid CVV.";
+                }
+            })
+
+            /*
+            watch(()=>CustomerID.value,(current_value,previous_value)=>{
+                console.log('watching customerID',current_value);
+                if(current_value=='' || typeof(current_value)=='undefined'){
+                    card_details.value = {};
+                }
+            });
+            */
+
+            function saveCardDetails(){
+                let err = false;
+                let err_txt = [];
+
+                let card_err_el = document.querySelectorAll('#credit_card_div .error');
+
+                if(CustomerID.value==''){
+                    err = true;
+                    err_txt.push("Customer not set");
+                }else if(form.value.cardHolderName.replace(/\s/g,'')=='' || form.value.cardDetails.replace(/\s/g,'')=='' || form.value.cardExpDate.replace(/\s/g,'')=='' || form.value.cardCVV.replace(/\s/g,'')==''){
+                    err = true;
+                    err_txt.push("Card details missing");
+                }else if(card_err_el.length > 0){
+                    err = true;
+                    err_txt.push("Invalid card details");
+                }
+
+                if(err && err_txt.length > 0){
+                    err_txt.forEach(function(v,i){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                        {
+                            message: v,
+                            ttl: 3,
+                            type: 'danger'
+                        });
+                    });
+                }else{
+                     store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Saving card details'], {root: true});
+
+                    form.value.CustomerID = CustomerID.value;
+
+                    axios.post('/save-order-card-details',form.value)
+                        .then((res)=>{
+                            store.dispatch(`${NEWORDER_MODULE}${NEWORDER_GET_CUSTOMER}`,{CustomerID:CustomerID.value});
+                            card_details.value = res.data.card;
+                        }).catch((err)=>{
+                            console.log(err);
+                        }).finally(()=>{
+                            store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`, {}, {root: true});
+                        });
+                }
+            }
+
             return {
                 showcontainer,
                 paths,
@@ -1327,6 +1526,43 @@ import axios from 'axios';
                 showConfirmModal,
                 neworder_id,
                 reloadPage,
+                paymentMethod,
+                form,
+                cardErrors,
+                saveCardDetails,
+                card_details,
+            }
+        },
+        data(){
+            return {
+                cardBrand: null,
+            }
+        },
+        computed: {
+            cardBrandClass(){
+                return this.getBrandClass(this.cardBrand);
+            }
+        },
+        methods:{
+            getBrandClass: (brand)=>{
+                let icon = '';
+                brand = brand || 'unknown';
+                let cardBrandToClass = {
+                    'visa': 'cc-visa',
+                    'maestro': 'cc-maestro',
+                    'mastercard': 'cc-mastercard',
+                    'dankort': 'cc-dankort',
+                    'amex': 'cc-amex',
+                    'discover': 'cc-discover',
+                    'dinersclub': 'cc-dinersclub',
+                    'unionpay': 'cc-unionpay',
+                    'jcb': 'cc-jcb',
+                    'unknown': 'cc-unknown',
+                };
+                if (cardBrandToClass[brand]) {
+                    icon = cardBrandToClass[brand];
+                };
+                return icon;
             }
         }
     }
@@ -1432,4 +1668,35 @@ import axios from 'axios';
     .bmodal-content{
         font-size:18px;
     }
+    .payment_subheading,
+    .payment_text{
+        font:normal 16px "Gotham Rounded";
+    }
+
+    .payment_subheading{
+        color:#868686;
+    }
+
+    #save_card_details{
+        height:37.6px;
+        background: #E0E0E0;
+    }
+
+    #save_card_details:hover{
+        background: #42A71E;
+    }
+
+</style>
+<style lang="scss">
+.form-group{
+    .error{
+        small{
+            color: #EB5757;
+        }
+    }
+}
+input.error:focus{
+    outline: none;
+    border-color: #EB5757;
+}
 </style>
