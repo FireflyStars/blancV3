@@ -370,10 +370,10 @@ Route::post('/change-detailing-etape',[DetailingController::class,'changeDetaili
  * Voyager custom routes
  *  */
 
-// Route::group(['prefix' => 'admin'], function () {
-//     Voyager::routes();
-//     Route::get('category-tailoring',[CategoryTailoringController::class,'index'])->name('category-tailoring')->middleware('auth');
-// });
+Route::group(['prefix' => 'admin'], function () {
+    Voyager::routes();
+    Route::get('category-tailoring',[CategoryTailoringController::class,'index'])->name('category-tailoring')->middleware('auth');
+});
 
 
 /*ALWAYS AT THE BOTTOM*/
