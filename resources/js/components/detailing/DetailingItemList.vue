@@ -95,7 +95,7 @@
                                 <button
                                     class="btn btn-next text-white float-right"
                                     :disabled="!valid"
-                                    @click="createOrderItems"
+                                    @click="redirectToCheckOut"
                                 >Next</button>
                             </div>
                         </div>
@@ -344,7 +344,7 @@ export default {
                 router.push('/detailing_item/'+order_id.value+'/'+new_item_id.value);
             });
         }
-
+    /*
         function createOrderItems(){
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
                 true,
@@ -372,6 +372,10 @@ export default {
             //
 
         }
+    */
+    function redirectToCheckOut(){
+         router.push('/checkout/'+order_id.value);
+    }
 
         function loadRemoveItemModal(tracking,id){
             cur_tracking_to_remove.value = tracking;
@@ -416,7 +420,7 @@ export default {
             getIndexOfRow,
             getRowspanNumber,
             openDetailing,
-            createOrderItems,
+            redirectToCheckOut,
             showTrackingModal,
             current_hsl,
             checkHslAndDetail,

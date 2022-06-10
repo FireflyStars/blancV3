@@ -32,11 +32,11 @@
 
                                 <div class="row mx-0 each-row-item" v-for="(item,id) in order_items">
                                     <div class="col-12 each-item-row py-3" :id="'item_row'+id" @click="toggleRowDetail(id)">
-                                        <div class="row">
+                                        <div class="row align-items-center">
                                             <div class="col color-col"><span v-if="item.first_color!=''" :style="'background:'+item.first_color" class="color-span"></span></div>
                                             <div class="col item-col text-gr">{{firstCap(item.typeitem)}}</div>
                                             <div class="col brand-col text-gr">{{item.brand}}</div>
-                                            <div class="col barcode-col">{{item.ItemTrackingKey}}</div>
+                                            <div class="col barcode-col">{{item.tracking}}</div>
                                             <div class="col services-col">
                                                 <span v-for="service in item.services" class="each-item-service d-table px-2">{{service}}</span>
                                             </div>
@@ -61,7 +61,7 @@
                                                         </div>
                                                         <div class="mb-4">
                                                             <div class="item-sub-heading">Size</div>
-                                                            <span class="item-desc-text">{{item.Size}}</span>
+                                                            <span class="item-desc-text">{{item.size}}</span>
                                                         </div>
                                                         <div class="mb-4">
                                                             <div class="item-sub-heading">Colour & pattern</div>
@@ -85,12 +85,12 @@
                                                         </div>
                                                         <div class="mb-4">
                                                             <div class="item-sub-heading">Item fabric</div>
-                                                            <div class="row mx-0 each-desc-row py-1 mt-1">
+                                                            <div class="row mx-0 each-desc-row py-1 mt-1" v-for="(coef,fabric) in item.fabrics_arr">
                                                                 <div class="col-10 item-desc-text">
-                                                                    {{item.Fabrics}}
+                                                                    {{fabric}}
                                                                 </div>
-                                                                <div class="col-2">
-                                                                    <!-- Fabric COEF to confirm -->
+                                                                <div class="col-2 fabric-coef" v-if="coef > 0">
+                                                                    {{coef}}%
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -119,7 +119,7 @@
                                                     <span>Issues</span>
                                                     <a href="javascript:void(0)" @click="goToDetailing(item.order_id,item.detailingitem_id,10)">Edit</a>
                                                 </div>
-                                                <div class="row">
+                                                <div class="row" v-if="(item.stains && item.stains.length > 0) || (item.damages && item.damages.length > 0)">
                                                     <div class="col-6" v-if="item.stains && item.stains.length > 0">
                                                         <div class="mb-4">
                                                             <div class="item-sub-heading">Stains</div>
@@ -153,6 +153,9 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-12 item-desc-text">No issues</div>
                                                 </div>
 
                                             </div>
@@ -697,7 +700,8 @@ export default {
 }
 
 .item-sub-heading,
-.item-desc-text{
+.item-desc-text,
+.fabric-coef{
     font:normal 16px "Gotham Rounded";
 }
 
