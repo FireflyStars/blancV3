@@ -203,7 +203,7 @@
                                                                         <a href="javascript:void(0)" id="customer_link" @click="redirectToCustDetail(cust.id)">Edit</a>
                                                                     </div>
                                                                     <div class="col-5">
-                                                                        <span class="cust-tag py-1 px-1 mb-1">{{cust.cust_type}}</span>
+                                                                        <span class="cust-tag py-1 px-1 mb-1" v-if="cust.cust_type!=''">{{cust.cust_type}}</span>
                                                                         <!--
                                                                         <span class="cust-tag py-1 px-2 mb-1">Frequent Flyer</span>
                                                                         -->
@@ -247,40 +247,130 @@
                                                                     <span class="sidebar_title text-white">Order details</span>
                                                                     <a href="javascript:void(0)" id="order_link">Edit</a>
                                                                 </div>
-                                                                <div class="col-6 text-align-right" v-if="order.deliverymethod=='in_store_collection'">
-                                                                        <img src="/images/picto_store.svg" class="delivery-method-icon">
-                                                                        <span class="text-white delivery-method-text">In Store Collection</span>
+                                                                <div class="col-6 text-align-right">
+                                                                        <img src="/images/picto_store.svg" class="delivery-method-icon store_collecion_icon"  v-if="order.deliverymethod=='in_store_collection'">
+
+                                                                        <img src="/images/truck_white.svg" class="delivery-method-icon"  v-if="['home_delivery','delivery_only','recurring'].includes(order.deliverymethod)">
+
+                                                                        <span class="text-white delivery-method-text">
+                                                                            <span v-if="order.deliverymethod=='in_store_collection'">
+                                                                               In Store Collection
+                                                                            </span>
+                                                                            <span v-if="order.deliverymethod=='home_delivery'">
+                                                                                Home Delivery
+                                                                            </span>
+                                                                            <span v-if="order.deliverymethod=='delivery_only'">
+                                                                                Delivery only
+                                                                            </span>
+                                                                            <span v-if="order.deliverymethod=='recurring'">
+                                                                                Recurring
+                                                                            </span>
+                                                                        </span>
                                                                 </div>
                                                             </div>
 
-                                                            <!--IN STORE COLLECTIOM-->
-                                                            <div class="col-12" v-if="order.deliverymethod=='in_store_collection'">
+                                                            <div class="col-12" >
                                                                 <div class="row mb-3 mx-0 align-items-center each-booking-log-row py-1">
                                                                     <div class="col-2 pl-0">
                                                                         <span class="sidebar_title text-white">Slot</span>
                                                                     </div>
                                                                     <div class="col-10 text-white text-align-right pr-0" id="booking_log">
-                                                                        Booked by @{{booking.user}} on {{booking.dropoff_date}} @{{booking.dropoff_time}}
+                                                                        <!--
+                                                                        <pre>{{booking}}</pre>
+                                                                        -->
+                                                                        Booked by @{{booking.user}} on
+                                                                        <span v-if="order.deliverymethod=='in_store_collection'">
+                                                                             {{booking.dropoff_date}} @{{booking.dropoff_time}}
+                                                                        </span>
+                                                                        <span v-if="['home_delivery','delivery_only','recurring'].includes(order.deliverymethod)">
+                                                                            {{booking.creation_date}} @ {{booking.creation_time}}
+                                                                        </span>
                                                                     </div>
                                                                 </div>
-                                                                <div class="row text-white">
-                                                                    <div class="col-6  pr-0">
-                                                                        <div class="item-sub-heading">Dropoff time</div>
+                                                                <div class="row text-white" v-if="order.deliverymethod=='recurring'">
+                                                                    <div class="col-6 pr-0 mb-3" v-for="slot in booking.recurring">
                                                                         <div class="row mx-0 align-items-center">
                                                                             <div class="col-2 pl-0">
                                                                                 <img src="/images/calendar_white.svg" class="each-booking-calendar-icon"/>
                                                                             </div>
-                                                                            <div class="col-10 pl-0">{{booking.dropoff_day}} {{booking.dropoff_date}}<br/>{{booking.dropoff_time}}</div>
+                                                                            <div class="col-10 pl-0">
+                                                                                {{slot.day}}<br/>{{slot.tranche}}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row text-white" v-else>
+                                                                    <div class="col-6 pr-0" v-if="order.deliverymethod!='delivery_only'">
+                                                                        <div class="item-sub-heading">
+                                                                            <span v-if="order.deliverymethod=='in_store_collection'">
+                                                                                Dropoff time
+                                                                            </span>
+                                                                            <span v-else-if="order.deliverymethod=='home_delivery'">
+                                                                                Pickup time
+                                                                            </span>
+                                                                        </div>
+                                                                        <div class="row mx-0 align-items-center">
+                                                                            <div class="col-2 pl-0">
+                                                                                <img src="/images/calendar_white.svg" class="each-booking-calendar-icon"/>
+                                                                            </div>
+                                                                            <div class="col-10 pl-0">
+                                                                                <span v-if="order.deliverymethod=='in_store_collection'">
+                                                                                    {{booking.dropoff_day}} {{booking.dropoff_date}}<br/>{{booking.dropoff_time}}
+                                                                                </span>
+                                                                                <span v-else-if="order.deliverymethod=='home_delivery'">
+                                                                                    {{booking.pickup_day}} {{booking.pickup_date}}<br/>{{booking.pickup_time}}
+                                                                                </span>
+                                                                                </div>
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-6 pr-0">
-                                                                        <div class="item-sub-heading">Pickup time</div>
+                                                                        <div class="item-sub-heading">
+                                                                            <span v-if="order.deliverymethod=='in_store_collection'">
+                                                                            Pickup time
+                                                                            </span>
+                                                                            <span v-else-if="['home_delivery','delivery_only'].includes(order.deliverymethod)">
+                                                                            Delivery time
+                                                                            </span>
+                                                                        </div>
                                                                          <div class="row mx-0 align-items-center">
                                                                             <div class="col-2 pl-0">
                                                                                 <img src="/images/calendar_white.svg" class="each-booking-calendar-icon"/>
                                                                             </div>
-                                                                            <div class="col-10 pl-0">{{booking.pickup_day}} {{booking.pickup_date}}<br/>{{booking.pickup_time}}</div>
+                                                                            <div class="col-10 pl-0">
+                                                                                <span v-if="order.deliverymethod=='in_store_collection'">
+                                                                                {{booking.pickup_day}} {{booking.pickup_date}}<br/>{{booking.pickup_time}}
+                                                                                </span>
+                                                                                <span v-else-if="['home_delivery','delivery_only'].includes(order.deliverymethod)">
+                                                                                    {{booking.delivery_day}} {{booking.delivery_date}}<br/>{{booking.delivery_time}}
+                                                                                </span>
+                                                                            </div>
                                                                         </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-12 mt-4" v-if="order.deliverymethod !='in_store_collection'">
+                                                                <div class="row mb-3 mx-0 align-items-center each-booking-log-row py-1">
+                                                                    <div class="col-12 sidebar_title text-white px-0">Details</div>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-5">
+                                                                        <div class="item-sub-heading">Delivery address</div>
+                                                                        <div class="row text-white addr-bloc">
+                                                                            <div class="col-12" v-if="address">
+                                                                                <span v-if="address.address1">{{address.address1}}</span>
+                                                                                <span v-if="address.address2"><br/>{{address.address2}}</span><br/>{{address.postcode}}, {{address.Town}}
+                                                                            </div>
+                                                                        </div>
+
+                                                                    </div>
+                                                                    <div class="col-7">
+                                                                        <div class="item-sub-heading">Delivery instructions</div>
+                                                                        <div class="row mx-0 text-white mb-3">
+                                                                            <div class="col-12 py-2 mt-1" id="delivery_instruction">{{cust.commentDelivery}}</div>
+                                                                        </div>
+                                                                        <!--
+                                                                        <div class="item-sub-heading">Alternate Delivery Contact</div>
+                                                                        -->
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -354,12 +444,13 @@ export default {
         const cust = ref({});
         const order = ref({});
         const booking = ref([]);
+        const address = ref({});
 
         order_id.value = route.params.order_id;
 
         const paths = ref([
             { name: "Order", route: "LandingPage" },
-            { name: "New order", route: "" },
+            { name: "New order", route: "NewOrder" },
             { name: "Checkout", route: "" },
         ]);
 
@@ -379,6 +470,7 @@ export default {
                 cust.value = res.data.cust;
                 order.value = res.data.order;
                 booking.value = res.data.booking_details;
+                address.value = res.data.address;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -447,7 +539,7 @@ export default {
             redirectToCustDetail,
             order,
             booking,
-
+            address,
         }
 
     },
@@ -692,6 +784,9 @@ export default {
 
 .delivery-method-icon{
     height:20px;
+}
+
+.store_collection_icon{
     margin-right:10px;
 }
 
@@ -701,6 +796,12 @@ export default {
 
 .each-booking-calendar-icon{
     margin-left:-5px;
+}
+
+#delivery_instruction{
+    border:thin solid #fff;
+    border-radius:3px;
+    min-height: 4em;
 }
 
 </style>

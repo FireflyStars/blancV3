@@ -284,8 +284,10 @@ export default {
         }
         function saveItemDetails(data) {
 
+            right_panel_cmp.value.setBaseCleaningPrice(detailingitem.value.pricecleaning);
+
             if(data.cleaning_services){
-                let details = right_panel_cmp.value.refreshCleaningServices(data.cleaning_services,data.cleaning_price_type);
+                let details = right_panel_cmp.value.refreshCleaningServices(JSON.parse(data.cleaning_services),data.cleaning_price_type);
                 data.cleaning_prices = details;
             }
 
@@ -302,7 +304,9 @@ export default {
                     detailingData.value = response.data.detailing_data;
 
                     //cust_cleaning_services.value = response.data.cust_cleaning_services;
-                    //right_panel_cmp.value.refreshCleaningServices(response.data.cust_cleaning_services);
+                    //right_panel_cmp.value.refreshCleaningServices(response.data.cust_cleaning_services,data.cleaning_price_type);
+
+
 
                 });
         }

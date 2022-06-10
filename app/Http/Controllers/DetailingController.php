@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Delivery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\DetailingServices;
+use App\Models\Tranche;
 use DateTime;
 use stdClass;
 
@@ -25,7 +27,7 @@ class DetailingController extends Controller
         $customer = (array) $customer->first();
 
         $detailingitemlist = DB::table('detailingitem')
-            ->select('typeitem.name as typeitem_name', 'detailingitem.etape', 'detailingitem.pricecleaning as price','detailingitem.id as item_number','detailingitem.status','detailingitem.tracking','detailingitem.item_id')
+            ->select('typeitem.name as typeitem_name', 'detailingitem.pricecleaning as price','detailingitem.id as item_number','detailingitem.*',)
             ->join('typeitem', 'typeitem.id', 'detailingitem.typeitem_id')
             //->join('infoitems', 'infoitems.ItemTrackingKey', '=', 'detailingitem.item_id')
             //->join('infoInvoice', 'infoInvoice.SubOrderID', '=', 'infoitems.SubOrderID')
@@ -44,6 +46,19 @@ class DetailingController extends Controller
             foreach($detailingitemlist as $k=>$v){
                 $detailingitemlist[$k]->sub_order = "";
                 $detailingitemlist[$k]->NoBag = 0;
+
+                if($v->etape==11){
+                    $cleaning_price = $v->dry_cleaning_price + $v->cleaning_addon_price;
+                    if($v->cleaning_price_type=='Quote'){
+                        $cleaning_price = 0;
+                    }
+
+                    $tailoring_price = ($v->tailoring_price_type=='Quote'?0:$v->tailoring_price);
+
+                    $price = $cleaning_price + $tailoring_price;
+
+                    $detailingitemlist[$k]->price = $price;
+                }
             }
         }
 
@@ -183,20 +198,22 @@ class DetailingController extends Controller
 
         $cust_cleaning_services = DetailingController::getCustomerServices($detailingitem['customer_id']);
 
-            if(!is_null($detailingitem['cleaning_services'])){
-                $sel_cleaning_services = @json_decode($detailingitem['cleaning_services']);
+        if(!is_null($detailingitem['cleaning_services'])){
+            $sel_cleaning_services = @json_decode($detailingitem['cleaning_services']);
+        }else{
+            $sel_cleaning_services = [1,3]; //Cleaning & pressing
+        }
 
-                if(!empty($sel_cleaning_services)){
-                    foreach($cust_cleaning_services as $k=>$v){
-                        foreach($v as $i=>$x){
-                            $v[$i]->selected_default = 0;
-                            $v[$i]->cust_selected = (in_array($x->id,$sel_cleaning_services)?1:0);
-                        }
-                    }
-                    $cust_cleaning_services[$k] = $v;
+        if(!empty($sel_cleaning_services)){
+            foreach($cust_cleaning_services as $k=>$v){
+                foreach($v as $i=>$x){
+                    $v[$i]->selected_default = 0;
+                    $v[$i]->cust_selected = (in_array($x->id,$sel_cleaning_services)?1:0);
                 }
-
             }
+            $cust_cleaning_services[$k] = $v;
+        }
+
 
         return $cust_cleaning_services;
     }
@@ -1078,9 +1095,44 @@ class DetailingController extends Controller
 
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
         $days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        $tranches = Tranche::getDeliveryPlanningTranchesForApi();
+
+        $addr = null;
 
         $booking_details = [];
         if($order){
+
+            $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
+
+            $cust->phone_num = [];
+            if($cust){
+                $cust->cust_type = "";
+
+                $addr = Delivery::getAddressByCustomerUUID($order->CustomerID);
+
+                if($cust->Phone !='' && !is_null($cust->Phone) && is_array(@json_decode($cust->Phone))){
+                    $phone_num = @json_decode($cust->Phone);
+
+                    foreach($phone_num as $key=>$phone){
+                        $cust->phone_num[] = str_replace("|"," ",$phone);
+                    }
+                }
+
+                $cp = DB::table('InfoCustomerPreference')
+                    ->where('CustomerID',$cust->CustomerID)
+                    ->where('Titre','Type Customer')
+                    ->where('Delete',0)
+                    ->first();
+
+                if($cp){
+                    $cust->cust_type = $cp->Value;
+                }
+            }
+
+
+
+
             if($order->deliverymethod=='in_store_collection'){
                 $booking = DB::table('booking_store')
                 ->select('booking_store.*','users.name AS user')
@@ -1097,28 +1149,124 @@ class DetailingController extends Controller
                     $dropoff_day_index = date('w',$dropoff_stamp);
                     $pickup_day_index  = date('w',$pickup_stamp);
 
-                    $dropoff_am_pm = 'am';
-                    $dropoff_h = (int) date('h',$dropoff_stamp);
-                    if($dropoff_h >=12){
-                        $dropoff_am_pm = 'pm';
-
-                        if($dropoff_h > 12){
-                            $dropoff_h = $dropoff_h-12;
-                        }
-                    }
-
-
                     $booking_details = [
                         'user'=>$booking->user,
                         'dropoff_date'=>date("d/m",$dropoff_stamp),
-                        'dropoff_time'=>date("i",$dropoff_stamp).$dropoff_am_pm,
+                        'dropoff_time'=>date('h:i',$dropoff_stamp)." ".strtolower(date("A",$dropoff_stamp)),
                         'dropoff_day' => $days[$dropoff_day_index],
                         'pickup_date'=>date("d/m",$pickup_stamp),
                         'pickup_day'=>$days[$pickup_day_index],
                         'pickup_time'=>'6:00 pm',
                     ];
                 }
+            }elseif($order->deliverymethod=='home_delivery' || $order->deliverymethod=='delivery_only'){
+
+                $delivery_ask = DB::table('deliveryask')->where('order_id',$order->id)->where('status','NEW')->first();
+                $booking_hist = DB::table('booking_histories')
+                    ->select('users.name as user','booking_histories.created_at')
+                    ->join('users','booking_histories.user_id','users.id')
+                    ->where('booking_histories.order_id',$order->id)->where('booking_histories.status','NEW')
+                    ->latest('booking_histories.id')
+                    ->first();
+
+                if($delivery_ask && $booking_hist){
+
+                    $delivery_stamp = strtotime($delivery_ask->date);
+
+                    $delivery_day_index = date('w',$delivery_stamp);
+
+                    $creation_stamp = strtotime($booking_hist->created_at);
+
+
+                    $delivery_slot = Tranche::getSlotFromTranche($delivery_ask->trancheFrom,$delivery_ask->trancheto);
+
+                    $booking_details = [
+                        'user'=>$booking_hist->user,
+                        'creation_date'=>date('d/m',$creation_stamp),
+                        'creation_time'=>date('h:i',$creation_stamp)." ".strtolower(date("A",$creation_stamp)),
+                        'delivery_date'=>date('d/m',$delivery_stamp),
+                        'delivery_day'=>$days[$delivery_day_index],
+                        'delivery_time'=>$tranches[$delivery_slot],
+                    ];
+                }
+
+
+                if($order->deliverymethod=='home_delivery'){
+                    $pickup = DB::table('pickup')->where('order_id',$order->id)->where('status','NEW')->first();
+
+                    if($pickup){
+                        $pickup_stamp = strtotime($pickup->date);
+                        $pickup_day_index = date('w',$pickup_stamp);
+                        $pickup_slot = Tranche::getSlotFromTranche($pickup->trancheFrom,$pickup->trancheto);
+                    }
+
+
+                    $booking_details['pickup_date'] = date('d/m',$pickup_stamp);
+                    $booking_details['pickup_day'] = $days[$pickup_day_index];
+                    $booking_details['pickup_time'] = $tranches[$pickup_slot];
+
+                }
             }
+
+            if($order->deliverymethod=='recurring'){
+                $booking_hist = DB::table('booking_histories')
+                ->select('users.name as user','booking_histories.created_at')
+                ->join('users','booking_histories.user_id','users.id')
+                ->where('booking_histories.order_id',$order->id)->where('booking_histories.status','NEW')
+                ->latest('booking_histories.id')
+                ->first();
+
+                $booking_details = [
+                    'user'=>'',
+                    'creation_date'=>'',
+                    'creation_time'=>'',
+                ];
+
+                if($booking_hist){
+                    $creation_stamp = strtotime($booking_hist->created_at);
+
+                    $booking_details['user'] = $booking_hist->user;
+                    $booking_details['creation_date'] = date('d/m',$creation_stamp);
+                    $booking_details['creation_time'] = date('h:i',$creation_stamp)." ".strtolower(date("A",$creation_stamp));
+                }
+
+                $recurring = [];
+
+                $slot_day = ['Mon'=>'Monday','Tu'=>'Tuesday','Wed'=>'Wednesday','Th'=>'Thursday','Fri'=>'Friday','Sat'=>'Saturday'];
+
+
+                $cust_arr = (array) $cust;
+
+                foreach($slot_day as $k=>$v){
+                    $slot = $cust_arr["Delivery$k"];
+
+                    if(!is_null($slot) && is_array(@json_decode($slot)) && !empty(@json_decode($slot))){
+                        $slot_arr = @json_decode($slot);
+
+
+                        if(!empty($slot_arr)){
+                            $day_index = 0;
+                            foreach($slot_arr as $id=>$val){
+                                $day_index = $val;
+                            }
+
+                            if(isset($tranches[$day_index])){
+                                $recurring[] = [
+                                    'day'=>$v,
+                                    'tranche'=>$tranches[$day_index],
+                                ];
+                            }
+                        }
+
+                    }
+                }
+
+                $booking_details['recurring'] = $recurring;
+
+
+
+            }
+
         }
 
 
@@ -1197,11 +1345,9 @@ class DetailingController extends Controller
             ];
         }
 
-        $customer_id = 0;
 
         if(count($items) > 0){
             foreach($items as $k=>$v){
-                $customer_id = $v->customer_id;
 
                 $services = [];
                 //Tailoring
@@ -1268,7 +1414,7 @@ class DetailingController extends Controller
                             $comp_price = 0;
                             if($cur_comp['cleaning'] > 1){
                                 $diff = $cur_comp['cleaning'] - 1;
-                                $comp_price = ($diff/100) * $v->priceCleaning;
+                                $comp_price = ($diff/100) * $v->priceClean;
                             }
 
                             $complexities_arr[$complexities_coef[$val]['name']] = $comp_price;
@@ -1332,39 +1478,6 @@ class DetailingController extends Controller
 
             }
 
-            $cust = null;
-            if($customer_id > 0){
-                $cust = DB::table('infoCustomer')->where('id',$customer_id)->first();
-
-                $cust->phone_num = [];
-                if($cust){
-                    $cust->cust_type = "";
-
-                    if($cust->Phone !='' && !is_null($cust->Phone) && is_array(@json_decode($cust->Phone))){
-                        $phone_num = @json_decode($cust->Phone);
-
-                        foreach($phone_num as $key=>$phone){
-                            $cust->phone_num[] = str_replace("|"," ",$phone);
-                        }
-                    }
-
-                    $cp = DB::table('InfoCustomerPreference')
-                        ->where('CustomerID',$cust->CustomerID)
-                        ->where('Titre','Type Customer')
-                        ->where('Delete',0)
-                        ->first();
-
-                    if($cp){
-                        $cust->cust_type = $cp->Value;
-                    }
-                }
-
-
-            }
-
-
-
-
 
         }
 
@@ -1376,6 +1489,7 @@ class DetailingController extends Controller
             'cust'=>$cust,
             'order'=>$order,
             'booking_details'=>$booking_details,
+            'address'=>$addr
         ]);
     }
 
@@ -1396,4 +1510,5 @@ class DetailingController extends Controller
             'updated'=>true,
         ]);
     }
+
 }

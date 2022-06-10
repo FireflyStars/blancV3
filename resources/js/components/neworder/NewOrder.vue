@@ -48,7 +48,7 @@
                                                 </div>
                                                 <div class="col-6">
                                                     <div class="payment_text d-flex align-items-center">
-                                                        <img src="/images/mastercard.svg"/>
+                                                        <img src="/images/mastercard.svg" class="payment-icon"/>
                                                         {{card_details.cardNumber}}
                                                     </div>
                                                 </div>
@@ -816,6 +816,16 @@ import axios from 'axios';
 
                    }
 
+                if(!card_details.value || card_details.value.id=='' || typeof(card_details.value.id)=='undefined'){
+                   if(paymentMethod.value==''){
+                       err_txt.push("Payment method not set");
+                       err = true;
+                   }else if(paymentMethod.value=='Credit Card'){
+                       let err_cc = validateCardDetails();
+                       err_txt = err_txt.concat(err_cc);
+                   }
+                }
+
                    //console.log(err_txt);
 
                    if(err_txt.length > 0){
@@ -1411,13 +1421,10 @@ import axios from 'axios';
             });
             */
 
-            function saveCardDetails(){
+            function validateCardDetails(save){
                 let err = false;
                 let err_txt = [];
-
-                let card_err_el = document.querySelectorAll('#credit_card_div .error');
-
-                if(CustomerID.value==''){
+                if(save && CustomerID.value==''){
                     err = true;
                     err_txt.push("Customer not set");
                 }else if(form.value.cardHolderName.replace(/\s/g,'')=='' || form.value.cardDetails.replace(/\s/g,'')=='' || form.value.cardExpDate.replace(/\s/g,'')=='' || form.value.cardCVV.replace(/\s/g,'')==''){
@@ -1428,7 +1435,17 @@ import axios from 'axios';
                     err_txt.push("Invalid card details");
                 }
 
-                if(err && err_txt.length > 0){
+                return err_txt;
+            }
+
+            function saveCardDetails(){
+
+
+                let card_err_el = document.querySelectorAll('#credit_card_div .error');
+
+                let err_txt = validateCardDetails(true);
+
+                if(err_txt.length > 0){
                     err_txt.forEach(function(v,i){
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
                         {
@@ -1684,6 +1701,10 @@ import axios from 'axios';
 
     #save_card_details:hover{
         background: #42A71E;
+    }
+
+    .payment-icon{
+        margin-right:10px;
     }
 
 </style>

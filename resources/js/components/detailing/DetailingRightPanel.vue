@@ -343,9 +343,9 @@ export default {
 
         function refreshCleaningServices(data,price_type){
             if(props.step==11){
-                let cleaning_services = JSON.parse(data);
+
+                let cleaning_services = data;
                 let sel_services = [];
-                //console.log(cleaning_services);
 
                 if(cleaning_services.length > 0){
                     let services = props.cleaning_services;
@@ -372,11 +372,15 @@ export default {
         function groupCleaningServices(services,price_type){
             cleaning_price_type.value = price_type;
 
+
             let base_price = base_cleaning_price.value;
 
             const groupBy = (x, f) => x.reduce((a, b) => ((a[f(b)] ||= []).push(b), a), {});
 
             let gp = groupBy(services, v => v.group_name);
+
+            console.log('gp',gp);
+            console.log('base_price',base_price);
 
             let keys = Object.keys(gp);
 
@@ -468,7 +472,11 @@ export default {
         onUpdated(()=>{
             let price = 0;
             if(props.detailingitem){
-                price = parseFloat(props.detailingitem.pricecleaning)+parseFloat(props.detailingitem.dry_cleaning_price)+parseFloat(props.detailingitem.cleaning_addon_price)+parseFloat(props.detailingitem.tailoring_price);
+                price = props.detailingitem.pricecleaning;
+                if(props.detailingitem.etape==11){
+                    // parseFloat(props.detailingitem.pricecleaning)+
+                    price = parseFloat(props.detailingitem.dry_cleaning_price)+parseFloat(props.detailingitem.cleaning_addon_price)+parseFloat(props.detailingitem.tailoring_price);
+                }
                 final_price.value = price.toFixed(2);
             }
         });
