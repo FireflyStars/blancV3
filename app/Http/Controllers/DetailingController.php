@@ -1270,9 +1270,8 @@ class DetailingController extends Controller
         }
 
 
-        $items = DB::table('infoitems')
-            ->select('infoitems.*','detailingitem.*','detailingitem.id AS detailingitem_id')
-            ->join('detailingitem','infoitems.id','detailingitem.item_id')
+        $items = DB::table('detailingitem')
+            ->select('detailingitem.*','detailingitem.id AS detailingitem_id')
             ->join('infoOrder','detailingitem.order_id','infoOrder.id')
             ->where('infoOrder.id',$order_id)
             ->get();
@@ -1294,11 +1293,52 @@ class DetailingController extends Controller
             }
         }
 
+        $typeitem_map = [];
+        $typeitems = DB::table('typeitem')->get();
+        if(count($typeitems) > 0){
+            foreach($typeitems as $k=>$v){
+                $typeitem_map[$v->id] = $v->name;
+            }
+        }
+
+
         $brand_coef_map = [];
+        $brands_map = [];
         $brands = DB::table('brands')->get();
         if(count($brands) > 0){
             foreach($brands as $k=>$v){
                 $brand_coef_map[$v->id] = $v->coefcleaning;
+                $brands_map[$v->id] = $v->name;
+            }
+        }
+
+        $sizes_map = [];
+        $sizes = DB::table('sizes')->get();
+        if(count($sizes) > 0){
+            foreach($sizes as $k=>$v){
+                $sizes_map[$v->id] = $v->name;
+            }
+        }
+
+
+        $conditions_map = [];
+        $conditions = DB::table('conditions')->get();
+        if(count($conditions) > 0){
+            foreach($conditions as $k=>$v){
+                $conditions_map[$v->id] = $v->name;
+            }
+        }
+
+        $fabrics_coef = [];
+        $fabrics = DB::table('fabrics')->get();
+
+        if(count($fabrics) > 0){
+            foreach($fabrics as $k=>$v){
+                $fabrics_coef[$v->id] = [
+                    'name'=>$v->Name,
+                    'cleaning'=>$v->coefcleaning,
+                    'tailoring'=>$v->coeftailoring,
+                ];
             }
         }
 
@@ -1369,6 +1409,15 @@ class DetailingController extends Controller
 
                 $items[$k]->services = $services;
 
+                $items[$k]->brand = $brands_map[$v->brand_id];
+                $items[$k]->typeitem = $typeitem_map[$v->typeitem_id];
+                $items[$k]->size = $sizes_map[$v->size_id];
+
+                $total_price = $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+                $items[$k]->priceTotal = number_format($total_price,2);
+                $items[$k]->generalState = ucfirst($conditions_map[$v->condition_id]);
+
+
                 //Afficher la premiere couleur
                 $items[$k]->first_color = "";
                 $items[$k]->all_colours = [];
@@ -1425,13 +1474,27 @@ class DetailingController extends Controller
 
                 }
 
+                $items[$k]->fabrics_arr = [];
+                if(!is_null($v->fabric_id) && is_array(@json_decode($v->fabric_id)) && !empty(@json_decode($v->fabric_id))){
+                    $item_fabric = @json_decode($v->fabric_id);
+                    $fabric_arr = [];
+
+                    foreach($item_fabric as $id=>$val){
+                        $cur_fabric = $fabrics_coef[$val];
+                        $fabric_coef_perc = $cur_fabric['cleaning']*100;
+
+                        $fabric_arr[$cur_fabric['name']] = $fabric_coef_perc;
+                    }
+
+                    $items[$k]->fabrics_arr = $fabric_arr;
+
+                }
+
+
 
                 $items[$k]->stains = @json_decode($v->stains);
                 $items[$k]->damages = @json_decode($v->damages);
 
-
-                $items[$k]->priceTotal = number_format($v->priceTotal,2);
-                $items[$k]->generalState = ucfirst($v->generalState);
 
                 $items[$k]->detailed_services = [];
 
