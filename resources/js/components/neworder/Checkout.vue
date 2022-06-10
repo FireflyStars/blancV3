@@ -179,7 +179,34 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Summary -->
+                                <div class="row justify-content-end mt-3 mx-0">
+                                    <div class="col-8 py-3" id="summary_div">
+                                        <span class="summary-title">Order Summary</span><span id="summary_item_count">{{order_items.length}} item<span v-if="order_items.length > 1">s</span></span>
+                                        <div class="row px-0 mt-4 sub-total-text">
+                                            <div class="col-9">Subtotal (incl. VAT)</div>
+                                            <div class="col-3 text-align-right">&#163;{{sub_total}}</div>
+                                        </div>
+                                        <div class="row px-0 mt-2 sub-total-text">
+                                            <div class="col-9">Discount applied</div>
+                                            <div class="col-3 text-align-right">&#163;{{discount}}</div>
+                                        </div>
+                                        <div class="row px-0 mt-3 pb-4 total-text">
+                                            <div class="col-9">Total (incl. VAT)</div>
+                                            <div class="col-3 text-align-right">&#163;{{total_with_discount}}</div>
+                                        </div>
+                                        <div class="row px-0 mt-2 sub-total-text">
+                                            <div class="col-9">Total (excl. VAT)</div>
+                                            <div class="col-3 text-align-right">&#163;{{total_exc_vat}}</div>
+                                        </div>
+                                        <div class="row px-0 mt-2 sub-total-text">
+                                            <div class="col-9">VAT</div>
+                                            <div class="col-3 text-align-right">&#163;{{vat}}</div>
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
 
 
                             </div>
@@ -398,7 +425,43 @@
                                                 <div class="accordion-collapse collapse" id="acdpanel_vouchers">
                                                     <div class="accordion-body d-table w-100 px-0 py-0">
                                                         <div class="accordion-content p-4 mt-3">
-                                                            Voucher details goes here
+                                                            <div class="row">
+                                                                <span class="sidebar_title text-white">Vouchers & Discount</span>
+
+                                                                <div class="col-12">
+                                                                    <div class="row mt-3 align-items-end">
+                                                                        <div class="col-7">
+                                                                            <span class="order-discount-text">Apply order discount</span>
+                                                                            <input type="text" id="discount_perc" class="w-100 discount-input text-white" v-model="order_discount" placeholder="Discount amount (%)"/>
+                                                                        </div>
+                                                                        <div class="col-3 pl-0">
+                                                                            <button class="discount-input discount-btn px-3" @click="setOrderDiscount">Apply</button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Accordion for payment -->
+                                            <div class="accordion-item mx-2 mb-4">
+                                                <h2 class="accordion-header" id="flush-headingOne">
+                                                    <button
+                                                        class="accordion-button collapsed gilroy-extra-bold"
+                                                        type="button"
+                                                        @click="openAccordionclick('payment')" id="acdbtn_payment"
+                                                    >Payment details</button>
+                                                </h2>
+                                                <div class="accordion-collapse collapse" id="acdpanel_payment">
+                                                    <div class="accordion-body d-table w-100 px-0 py-0">
+                                                        <div class="accordion-content p-4 mt-3">
+                                                            <div class="row">
+                                                                <span class="sidebar_title text-white">Payment</span>
+
+
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -429,7 +492,9 @@ import { useStore } from "vuex";
 import {
     LOADER_MODULE,
     DISPLAY_LOADER,
-    HIDE_LOADER
+    HIDE_LOADER,
+    TOASTER_MODULE,
+    TOASTER_MESSAGE,
 } from '../../store/types/types';
 
 export default {
@@ -448,6 +513,12 @@ export default {
         const order = ref({});
         const booking = ref([]);
         const address = ref({});
+        const order_discount = ref("");
+        const sub_total = ref(0);
+        const discount = ref(0);
+        const total_with_discount = ref(0);
+        const vat = ref(0);
+        const total_exc_vat = ref(0);
 
         order_id.value = route.params.order_id;
 
@@ -474,6 +545,11 @@ export default {
                 order.value = res.data.order;
                 booking.value = res.data.booking_details;
                 address.value = res.data.address;
+                sub_total.value = res.data.sub_total;
+                discount.value = res.data.discount;
+                total_with_discount.value = res.data.total_with_discount;
+                total_exc_vat.value = res.data.total_exc_vat;
+                vat.value = res.data.vat;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -528,6 +604,36 @@ export default {
             router.push('/customer-detail/'+id);
         }
 
+        function setOrderDiscount(){
+            let err = "";
+
+            var reg = /^\d+$/;
+
+            if(order_discount.value=='' || !reg.test(order_discount.value) || parseInt(order_discount.value) > 100){
+                err = "Please enter a discount percent";
+            }
+            if(err!=''){
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                {
+                    message: err,
+                    ttl: 3,
+                    type: 'danger'
+                });
+            }else{
+                axios.post('/set-checkout-discount',{
+                    order_id:order_id.value,
+                    discount:order_discount.value,
+                    sub_total:sub_total.value,
+                }).then((res)=>{
+
+                }).catch((err)=>{
+                    console.log(err);
+                }).finally(()=>{
+                    getCheckoutItems();
+                });
+            }
+        }
+
         return {
             order_id,
             paths,
@@ -543,6 +649,13 @@ export default {
             order,
             booking,
             address,
+            order_discount,
+            setOrderDiscount,
+            sub_total,
+            discount,
+            total_with_discount,
+            total_exc_vat,
+            vat,
         }
 
     },
@@ -561,15 +674,25 @@ export default {
     color: #868686;
     padding: 10px;
 }
-.title {
+.title,
+.summary-title{
     font-family: Gilroy;
     font-style: normal;
     font-weight: 800;
+    color: #000000;
+}
+
+.title{
     font-size: 36px;
     line-height: 106%;
-    color: #000000;
     padding: 10px;
 }
+
+.summary-title{
+    font-size:32px;
+    margin-right:20px;
+}
+
 
 .checkout-sidebar,
 .accordion-collapse,
@@ -738,7 +861,8 @@ export default {
 
 
 .delivery-method-text,
-#booking_log{
+#booking_log,
+.sub-total-text{
     font:normal 16px "Gotham Rounded";
 }
 
@@ -781,7 +905,8 @@ export default {
     margin-right:0.5rem;
 }
 
-#cust_email{
+#cust_email,
+.order-discount-text{
     font:normal 16px "Gotham Rounded";
     color:#fff;
 }
@@ -806,6 +931,58 @@ export default {
     border:thin solid #fff;
     border-radius:3px;
     min-height: 4em;
+}
+
+.discount-input{
+    height:40px;
+    margin-top:0.25rem;
+}
+
+#discount_perc{
+    background:none;
+    border:thin solid #fff;
+    border-radius: 4px;
+    text-indent:10px;
+}
+
+#discount_perc:focus{
+    box-shadow: none !important;
+}
+
+#discount_perc:-moz-placeholder{
+    color:#fff;
+}
+
+.discount-btn{
+    background:#fff;
+    border-radius: 4px;
+    border:none;
+}
+
+.discount-btn:hover{
+    background: #42A71E;
+    color:#fff;
+}
+
+#summary_div{
+    background:#fff;
+    padding-left:3rem;
+    padding-right:3rem;
+}
+
+#summary_item_count{
+    font: normal 20px "Gotham Rounded";
+    color:#868686;
+}
+
+.total-text,
+.sub-total-text{
+    color:#47454B;
+}
+
+.total-text{
+    font:bold 22px "Gilroy";
+    border-bottom: thin solid #c3c3c3;
 }
 
 </style>

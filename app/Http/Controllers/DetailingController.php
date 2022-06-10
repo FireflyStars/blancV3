@@ -1385,6 +1385,7 @@ class DetailingController extends Controller
             ];
         }
 
+        $total_price = 0;
 
         if(count($items) > 0){
             foreach($items as $k=>$v){
@@ -1413,8 +1414,10 @@ class DetailingController extends Controller
                 $items[$k]->typeitem = $typeitem_map[$v->typeitem_id];
                 $items[$k]->size = $sizes_map[$v->size_id];
 
-                $total_price = $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
-                $items[$k]->priceTotal = number_format($total_price,2);
+                $item_total_price = $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+                $total_price += $item_total_price;
+
+                $items[$k]->priceTotal = number_format($item_total_price,2);
                 $items[$k]->generalState = ucfirst($conditions_map[$v->condition_id]);
 
 
@@ -1541,8 +1544,16 @@ class DetailingController extends Controller
 
             }
 
-
         }
+
+        $total_with_discount = $total_price;
+
+        if($order->OrderDiscount > 0){
+            $total_with_discount = $total_price - $order->OrderDiscount;
+        }
+
+        $vat = number_format(0.15*$total_with_discount,2);
+        $total_exc_vat = number_format($total_with_discount-$vat,2);
 
         return response()->json([
             'post'=>$request->all(),
@@ -1552,7 +1563,12 @@ class DetailingController extends Controller
             'cust'=>$cust,
             'order'=>$order,
             'booking_details'=>$booking_details,
-            'address'=>$addr
+            'address'=>$addr,
+            'sub_total'=>number_format($total_price,2),
+            'total_with_discount'=>number_format($total_with_discount,2),
+            'discount'=>number_format($order->OrderDiscount,2),
+            'vat'=>$vat,
+            'total_exc_vat'=>$total_exc_vat,
         ]);
     }
 
@@ -1571,6 +1587,24 @@ class DetailingController extends Controller
         return response()->json([
             'detalingitem'=>$detailingitem,
             'updated'=>true,
+        ]);
+    }
+
+    public function setCheckoutDiscount(Request $request){
+        $discount = $request->discount;
+        $order_id = $request->order_id;
+        $sub_total = $request->sub_total;
+
+        $discount_price = $sub_total;
+
+        if($discount > 0){
+            $discount_price = ($discount/100) * $sub_total;
+        }
+
+        DB::table('infoOrder')->where('id',$order_id)->update(['OrderDiscount'=>$discount_price]);
+
+        return response()->json([
+            'post'=>$request->all(),
         ]);
     }
 
