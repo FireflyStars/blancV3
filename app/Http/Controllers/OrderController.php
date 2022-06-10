@@ -71,7 +71,7 @@ class OrderController extends Controller
                 'OrderID'=>'',
                 'firstorder'=>(count($previous_orders)>0?0:1),
                 'express'=>$new_order['express'],
-                'Status'=>($new_order['deliverymethod']=='recurring'?'RECURRING':'PENDING'),
+                'Status'=>'PENDING',//($new_order['deliverymethod']=='recurring'?'RECURRING':'PENDING'),
                 'created_at'=>$created_stamp,
             ];
 
