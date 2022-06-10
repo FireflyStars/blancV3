@@ -17,8 +17,6 @@ class CustomerController extends Controller
 
     public function createCustomer(Request $request){
 
-   //dd("requuuuest " , $request);
-
        if($request->typeDelivery == "DELIVERY"){
 
             $validator = Validator::make($request->all(), [

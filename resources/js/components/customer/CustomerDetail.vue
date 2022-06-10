@@ -5,7 +5,7 @@
             <div class="detail-header position-fixed d-flex align-items-center justify-content-between">
                 <div class="detail-title text-capitalize">
                     {{ CUSTOMER.name.toLowerCase() }}
-                    <span class="ms-3 cursor-pointer" style="font-size: 12px; line-height: 14px; color: #42A71E; text-decoration: underline;">View</span>
+                    <span class="ms-3 cursor-pointer" style="font-size: 12px; line-height: 14px; color: #42A71E; text-decoration: underline;" @click="EditCustomer(CUSTOMER.id)" >View</span>
                 </div>
                 <div class="detail-close-section d-flex align-items-center">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -229,7 +229,19 @@ export default {
                     return phone.replace(/\D/g, '').replace(/(\d{2})(\d{3})(\d{3})(\d{3,4})/, "+$1 $2 $3 $3");
             }
             return phoneString;
-        }        
+        }   
+        
+
+            function EditCustomer(customerId){
+
+                  router.push({
+                        name:'ViewCustomer',
+                        params: {
+                            customer_id:customerId,
+                        },
+                    });
+            }
+
         return{
             route,
             selected_panel,
@@ -244,6 +256,7 @@ export default {
             loaderclass: computed(()=>{
                 return store.getters[`${CUSTOMER_MODULE}${GET_LOADER_CLASS}`];
             }),
+            EditCustomer
         }
     }   
 }

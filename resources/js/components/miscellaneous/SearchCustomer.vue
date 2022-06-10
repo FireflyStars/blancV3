@@ -22,7 +22,7 @@
              <ul  class="list-group list-group-flush" >
                 <li v-for ="customer in Customer" :key="customer">
                   <div class="container">
-                    <div class="row" @click="featureunavailable('Details Customer')">
+                    <div class="row">
                        <div class="col">
                           <span class="body_medium"><a href="javascript:void(0)" @click="goToOrderList(customer.CustomerID)">{{customer.Name.replace(',','').toLowerCase()}}</a></span>
                             <div  v-if="customer.Phone!=''&&customer.Phone!=null" >
@@ -57,7 +57,7 @@
              <ul  class="list-group list-group-flush">
                 <li v-for ="customer in CustomerEmails" :key="customer">
                   <div class="container">
-                    <div class="row" @click="featureunavailable('Details Customer')">
+                    <div class="row">
                         <div class="col">
                           <b class = "body_regular" ><a href="javascript:void(0)" @click="goToOrderList(customer.CustomerID)">{{customer.Name.replace(',','').toLowerCase()}}</a></b>
                             <div v-if="customer.Phone!=''&&customer.Phone!=null" >
@@ -244,7 +244,7 @@ export default({
                 });
             }
           function goToOrderList(customerId){
-            
+
             this.clearSearch()
           
             router.push({
