@@ -414,9 +414,20 @@ cancel_bookings[]=array(
 
         $this->l('Check 00: Checking existing orders for the dates `'.implode('`, `',$PossibleScheduleBookingDates).'`');
         foreach ($PossibleScheduleBookingDates as $k=>$PossibleScheduleBookingDate){
-            $infoOrder=DB::table('infoOrder')->where('CustomerID','=',$customer->CustomerID)->where('DatePickup','=',$PossibleScheduleBookingDate)->where('Status','=','RECURRING')->orWhere('deliverymethod','recurring')->first();
+
+
+            $infoOrder=DB::table('infoOrder')->where('CustomerID','=',$customer->CustomerID)
+            ->where(function($query) use($PossibleScheduleBookingDate){
+                $query->where(function($query2) use($PossibleScheduleBookingDate){
+                    $query2->where('DatePickup','=',$PossibleScheduleBookingDate)
+                    ->where('Status','=','RECURRING');
+
+                }) ->orWhere('deliverymethod','recurring');
+           
+            })->first();
 
             if($infoOrder!=null){
+         
                 $this->l("A recurring order exist for `$PossibleScheduleBookingDate`. No order will be created for this date.");
                 $this->l("Checking if the order delivery date `$infoOrder->DateDeliveryAsk` need to be rescheduled");
                 $this->reScheduleDelivery($infoOrder,$customer);
@@ -678,8 +689,8 @@ cancel_bookings[]=array(
     public function l($string){
 
         if($this->ENABLE_ORDER_RECURRING_LOG)
-      //  Storage::disk('local')->append('order_recurring'.DIRECTORY_SEPARATOR.'OR_'.$this->file_time.'.md', $string."\r\n");
-            file_put_contents(Storage::path('order_recurring'.DIRECTORY_SEPARATOR.'R_'.$this->file_time.'.md'), $string."\r\n\r\n", FILE_USE_INCLUDE_PATH | FILE_APPEND );
+        Storage::disk('local')->append('order_recurring'.DIRECTORY_SEPARATOR.'OR_'.$this->file_time.'.md', $string."\r\n");
+        //    file_put_contents(Storage::path('order_recurring'.DIRECTORY_SEPARATOR.'R_'.$this->file_time.'.md'), $string."\r\n\r\n", FILE_USE_INCLUDE_PATH | FILE_APPEND );
 
     }
 
