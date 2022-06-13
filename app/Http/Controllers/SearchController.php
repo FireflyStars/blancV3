@@ -28,7 +28,8 @@ public function SearchCustomer(Request $request)
     //->where('infoitems.InvoiceID','!=','')
     ->whereNotIn('infoitems.Status',['DELETE','VOID']);
      })
-    ->where('Name', 'LIKE', $query . '%')
+    ->where('FirstName', 'LIKE', $query . '%')
+    ->orWhere('LastName','LIKE', $query . '%')
     ->orWhere('infoOrder.id',$query)
     ->orWhere('infoitems.ItemTrackingKey',$query)
     ->groupBy('infoOrder.CustomerID')
@@ -37,14 +38,16 @@ public function SearchCustomer(Request $request)
 
 
     $users = DB::table('infoCustomer')
-    ->where('Name', 'LIKE', $query . '%')
+    ->where('FirstName', 'LIKE', $query . '%')
+    ->orWhere('LastName','LIKE', $query . '%')
     ->paginate($PerPageUser);
     foreach ($users as $item) {
         $item->Phone=json_decode($item->Phone);
     }
 
     $emails = DB::table('infoCustomer')
-    ->where('Name', 'LIKE', $query . '%')
+    ->where('FirstName', 'LIKE', $query . '%')
+    ->orWhere('LastName','LIKE', $query . '%')
     ->paginate($PerPageEmails);
 
     foreach ($emails as $item) {
