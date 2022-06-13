@@ -313,6 +313,8 @@ class OrderController extends Controller
         $cust = DB::table('infoCustomer')->where('CustomerID',$customer_id)->first();
         $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->first();
 
+        $err_txt = "";
+
         $card_id = 0;
 
         $card = DB::table('cards')->where('CustomerID',$customer_id)->where('Actif',1)->first();
@@ -327,6 +329,7 @@ class OrderController extends Controller
             $card_id = $card->id;
 
         }else{
+            if($cust &&  $addr){
              //create a card object to stripe
              $card = $stripe->paymentMethods->create([
                 'type' => 'card',
@@ -374,12 +377,19 @@ class OrderController extends Controller
 
             $card_id = DB::table('cards')->insertGetId($credit_card);
             $card = DB::table('cards')->where('id',$card_id)->first();
+            }else{
 
+                if(is_null($addr)){
+                    $err_txt = "No address for customer";
+                }
+
+            }
         }
 
         return response()->json([
             'has_card'=>$has_card,
             'card'=>$card,
+            'err'=>$err_txt,
         ]);
     }
 }

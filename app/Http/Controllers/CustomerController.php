@@ -17,14 +17,33 @@ class CustomerController extends Controller
      */
 
     public function createCustomer(Request $request){
-        $validator = Validator::make($request->all(), [
-            'firstName' => 'required',
-            'lastName'  => 'required',
-            'email'     => $request->email != '' ? 'required|email|unique:infoCustomer,EmailAddress' : ''
-        ]);
+
+       if($request->typeDelivery == "DELIVERY"){
+
+            $validator = Validator::make($request->all(), [
+
+                'firstName' => 'required',
+                'lastName' => 'required',
+                'phoneNumber' => 'required',
+                'postCode' => 'required',
+                'deliveryAddress1' => 'required',
+                'city' => 'required',
+                  
+            ]);
+        } else {
+
+            $validator = Validator::make($request->all(), [
+                'firstName' => 'required',
+                'lastName' => 'required',
+            ]);
+
+           
+        }
+
         if ($validator->fails()) {
             return response()->json(['error'=> $validator->errors()]);
         }
+       
 
         // add a new record to infoCustomer table
         $info_customer = [
@@ -42,6 +61,7 @@ class CustomerController extends Controller
             'credit'        => 0,
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
         ];
+
         if($request->CustomerID !=''){
             try {
                 DB::table('infoCustomer')->where('CustomerID', $request->CustomerID)->update($info_customer);
@@ -94,7 +114,7 @@ class CustomerController extends Controller
         $new_address = [
             'CustomerID'    => $CustomerUUID,
             'AddressID'     => $addressUUID,
-            'NewEmail'      => $request->email,
+            'NewEmail'      => $request->email !='' ? $request->email : (Str::random(10).'@noemail.com'),
             'City'          => $request->city,
             'State'         => $request->state,
             'postcode'      => $request->postCode,
@@ -125,6 +145,7 @@ class CustomerController extends Controller
             'created_at'    => now(),
             'updated_at'    => now(),
         ];
+       
         try {
             DB::table('NewCustomer')->insert($new_customer);
         } catch (\Exception $e) {

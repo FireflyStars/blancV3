@@ -22,9 +22,9 @@
              <ul  class="list-group list-group-flush" >
                 <li v-for ="customer in Customer" :key="customer">
                   <div class="container">
-                    <div class="row" @click="featureunavailable('Details Customer')">
-                       <div class="col">
-                          <span class="body_medium"><a href="javascript:void(0)" @click="goToOrderList(customer.CustomerID)">{{customer.Name.replace(',','').toLowerCase()}}</a></span>
+                    <div class="row">
+                       <div class="col-3">
+                          <span class="body_medium"><a href="javascript:void(0)" @click="goCustomerView(customer.id)" >{{customer.Name.replace(',','').toLowerCase()}}</a></span>
                             <div  v-if="customer.Phone!=''&&customer.Phone!=null" >
                               <div v-for="phone in customer.Phone.slice(0,1)" :key="phone">
                                <b class ="body_regular">+{{phone.replace('|',' ')}}</b>
@@ -35,9 +35,12 @@
                               <div class="phone body_small">--</div>
                             </div>
                        </div>
-                      <div class="col-6">
+                      <div class="col-5">
                              <b class ="body_regular">{{customer.EmailAddress}}</b>
                        </div>
+                       <div class="col-2" style="text-align: end;">
+                            <tag  @click="goToOrderList(customer.CustomerID)" :name="'Orders'" ></tag>
+                        </div>
                        <div class="col-2" style="text-align: end;">
                             <tag   v-if="customer.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
                             <tag   v-else :name="'B2B'" ></tag>
@@ -49,7 +52,7 @@
 
              </ul>
         </li>
-        <li class="list-group-item" v-if="CustomerEmails.length > 0">
+        <!-- <li class="list-group-item" v-if="CustomerEmails.length > 0">
              <div class="content-wraper ">
                 <span class="subtitle col-6">Email</span>
                 <a class="d-flex justify-content-end col-6 show-more"  @click="loadMore('search_email')" >Show more</a>
@@ -57,7 +60,7 @@
              <ul  class="list-group list-group-flush">
                 <li v-for ="customer in CustomerEmails" :key="customer">
                   <div class="container">
-                    <div class="row" @click="featureunavailable('Details Customer')">
+                    <div class="row">
                         <div class="col">
                           <b class = "body_regular" ><a href="javascript:void(0)" @click="goToOrderList(customer.CustomerID)">{{customer.Name.replace(',','').toLowerCase()}}</a></b>
                             <div v-if="customer.Phone!=''&&customer.Phone!=null" >
@@ -80,7 +83,7 @@
                     </div>
                </li>
              </ul>
-        </li>
+        </li> -->
           <li class="list-group-item" v-if="CustomerOrders.length>0">
 
              <div class="content-wraper">
@@ -243,16 +246,26 @@ export default({
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
             }
-          function goToOrderList(customerId){
             
+          function goToOrderList(customerId){
+
             this.clearSearch()
-          
+           
             router.push({
                     name:'LandingPage',
                     params: {
                        customerId,
                     },
                 })
+                
+          }
+
+          function goCustomerView(customerId){
+
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
+            this.clearSearch()
+          
+             router.push('/customer-detail/'+ customerId);
                 
           }
             return {
@@ -269,7 +282,8 @@ export default({
                 selectrow,
                 show_loader,
                 loadMore,
-                goToOrderList
+                goToOrderList,
+                goCustomerView
 
             }
         }

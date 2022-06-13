@@ -1494,6 +1494,7 @@ import axios from 'axios';
             */
 
             function validateCardDetails(save){
+                let card_err_el = document.querySelectorAll('#credit_card_div .error');
                 let err = false;
                 let err_txt = [];
                 if(save && CustomerID.value==''){
@@ -1533,8 +1534,17 @@ import axios from 'axios';
 
                     axios.post('/save-order-card-details',form.value)
                         .then((res)=>{
-                            store.dispatch(`${NEWORDER_MODULE}${NEWORDER_GET_CUSTOMER}`,{CustomerID:CustomerID.value});
-                            card_details.value = res.data.card;
+                            if(res.data.err!=''){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                                {
+                                    message: res.data.err,
+                                    ttl: 3,
+                                    type: 'danger'
+                                });
+                            }else{
+                                store.dispatch(`${NEWORDER_MODULE}${NEWORDER_GET_CUSTOMER}`,{CustomerID:CustomerID.value});
+                                card_details.value = res.data.card;
+                            }
                         }).catch((err)=>{
                             console.log(err);
                         }).finally(()=>{

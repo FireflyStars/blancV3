@@ -499,6 +499,8 @@ export default {
         }
 
         onMounted(()=>{
+
+
             checkSelectedCleaning(false);
             checkSelectedTailoring(false);
             checkSelTailoringGroups();

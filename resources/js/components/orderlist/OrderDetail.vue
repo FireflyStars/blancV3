@@ -72,7 +72,7 @@
             <div class="col">
                 <span class="customername  body_bold  text-capitalize d-inline-block">
                     {{ORDER.detail.Name.replace(',','').toLowerCase()}} 
-                    <button type="button" class="btn-link-green body_regular" @click="featureunavailable('Edit customer')">Edit</button>
+                    <button type="button" class="btn-link-green body_regular" @click="EditCustomer(ORDER.detail.id)">Edit</button>
                 </span>
             </div>
             <div class="col">
@@ -386,6 +386,16 @@
                 showslots.value=true;
             }
 
+            function EditCustomer(customerId){
+
+                  router.push({
+                        name:'ViewCustomer',
+                        params: {
+                            customer_id:customerId,
+                        },
+                    });
+            }
+
             return {
                 showorderdetail,
                 loaderclass:computed(()=>{
@@ -415,7 +425,8 @@
                 setNewDeliveryDate,
                 showNewDeliveryDateMsg,
                 disabledtodate,
-                show_split_conf
+                show_split_conf,
+                EditCustomer
             }
         }
     }

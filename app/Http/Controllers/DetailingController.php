@@ -927,14 +927,23 @@ class DetailingController extends Controller
                 ->get();
 
             if(count($inv)==0){
-                $err = "HSL $tracking already linked with another customer";
+                $err = "HSL $tracking already linked with another customer.";
             }
         }
 
+        $has_detailing_order = DB::table('detailingitem')->where('tracking',$tracking)
+            ->where('status','In Process')
+            ->latest('id')
+            ->first();
+
+        if($has_detailing_order){
+            $err = "HSL $tracking is already being detailed.";
+        }
 
         return response()->json([
             'item'=>$item,
             'err'=>$err,
+            'has_detailing_order'=>$has_detailing_order,
             //'post'=>$request->all(),
         ]);
     }
@@ -1098,6 +1107,7 @@ class DetailingController extends Controller
         $tranches = Tranche::getDeliveryPlanningTranchesForApi();
 
         $addr = null;
+        $cust_card = null;
 
         $booking_details = [];
         if($order){
@@ -1110,6 +1120,7 @@ class DetailingController extends Controller
                 $cust->cust_type = "";
 
                 $addr = Delivery::getAddressByCustomerUUID($order->CustomerID);
+                $cust_card = DB::table('cards')->where('CustomerID',$cust->CustomerID)->where('Actif',1)->first();
 
                 if($cust->Phone !='' && !is_null($cust->Phone) && is_array(@json_decode($cust->Phone))){
                     $phone_num = @json_decode($cust->Phone);
@@ -1385,6 +1396,7 @@ class DetailingController extends Controller
             ];
         }
 
+        $total_price = 0;
 
         if(count($items) > 0){
             foreach($items as $k=>$v){
@@ -1413,8 +1425,10 @@ class DetailingController extends Controller
                 $items[$k]->typeitem = $typeitem_map[$v->typeitem_id];
                 $items[$k]->size = $sizes_map[$v->size_id];
 
-                $total_price = $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
-                $items[$k]->priceTotal = number_format($total_price,2);
+                $item_total_price = $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+                $total_price += $item_total_price;
+
+                $items[$k]->priceTotal = number_format($item_total_price,2);
                 $items[$k]->generalState = ucfirst($conditions_map[$v->condition_id]);
 
 
@@ -1541,8 +1555,16 @@ class DetailingController extends Controller
 
             }
 
-
         }
+
+        $total_with_discount = $total_price;
+
+        if($order->OrderDiscount > 0){
+            $total_with_discount = $total_price - $order->OrderDiscount;
+        }
+
+        $vat = number_format(0.15*$total_with_discount,2);
+        $total_exc_vat = number_format($total_with_discount-$vat,2);
 
         return response()->json([
             'post'=>$request->all(),
@@ -1552,7 +1574,13 @@ class DetailingController extends Controller
             'cust'=>$cust,
             'order'=>$order,
             'booking_details'=>$booking_details,
-            'address'=>$addr
+            'address'=>$addr,
+            'sub_total'=>number_format($total_price,2),
+            'total_with_discount'=>number_format($total_with_discount,2),
+            'discount'=>number_format($order->OrderDiscount,2),
+            'vat'=>$vat,
+            'total_exc_vat'=>$total_exc_vat,
+            'custcard'=>$cust_card,
         ]);
     }
 
@@ -1571,6 +1599,26 @@ class DetailingController extends Controller
         return response()->json([
             'detalingitem'=>$detailingitem,
             'updated'=>true,
+        ]);
+    }
+
+    public function setCheckoutDiscount(Request $request){
+        $discount = $request->discount;
+        $order_id = $request->order_id;
+        $sub_total = $request->sub_total;
+
+        $discount_price = $sub_total;
+
+        if($discount > 0){
+            $discount_price = ($discount/100) * $sub_total;
+        }else{
+            $discount_price = 0;
+        }
+
+        DB::table('infoOrder')->where('id',$order_id)->update(['OrderDiscount'=>$discount_price]);
+
+        return response()->json([
+            'post'=>$request->all(),
         ]);
     }
 
