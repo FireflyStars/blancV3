@@ -29,7 +29,11 @@
             modelValue: String|Number,
             classnames: String,
             label:String,
-            disabled:Boolean,
+            disabled:{
+                type:Boolean,
+                required:false,
+                default:false
+                },
             valid:Boolean|null,
 
         },
