@@ -102,7 +102,7 @@
                                     :cleaning_services="cust_cleaning_services"
                                     :tailoring_services="tailoring_services"
                                     @save-item-services="saveItemDetails"
-
+                                    @init-detailing="initDetailing"
                                     @go-to-step="backPreviousStep"
                                 ></detailing-services>
                             </div>
@@ -208,6 +208,7 @@ export default {
             itemDept.value = current_val;
         });
 
+        function initDetailing(){
         store
             .dispatch(`${DETAILING_MODULE}${INIT_DETAILING}`, { detailingitem_id: detailingitem_id.value, order_id: order_id.value, item_id: item_id.value, search: "" })
             .then((response) => {
@@ -245,6 +246,17 @@ export default {
             .finally(() => {
                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
             });
+        }
+
+        initDetailing();
+
+        watch(()=>step.value,(current_value,previous_value)=>{
+            if(current_value==11){
+                initDetailing();
+            }
+        });
+
+
         function submitSearch(e) {
             store
                 .dispatch(`${DETAILING_MODULE}${INIT_DETAILING}`, { detailingitem_id: detailingitem_id.value, order_id: order_id.value, item_id: item_id.value, search: search.value })
@@ -370,6 +382,7 @@ export default {
             cust_cleaning_services,
             right_panel_cmp,
             tailoring_services,
+            initDetailing,
         };
     },
 }

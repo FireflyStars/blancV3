@@ -288,7 +288,7 @@ export default {
             if(event.keyCode==13){
                 let value = current_hsl.value.toString().replace(' ','');
 
-                if(value=='' || ! value.match(/\d{8}/)){
+                if(value=='' || ! value.match(/\d{8}/) || value.length !=8){
                     err = true;
 
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
@@ -305,11 +305,18 @@ export default {
                         customer_id:cur_customer.value.CustomerID,
                     }).then((res)=>{
                         if(res.data.err!=''){
+                            let err_msg = res.data.err;
+
+                            if(res.data.has_detailing_order){
+                                err_msg = res.data.err+" Order: "+res.data.has_detailing_order.order_id;
+                            }
+
+
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
-                                message: res.data.err,
-                                ttl: 5,
-                                type: "danger",
-                            });
+                                    message: err_msg,
+                                    ttl:(res.data.has_detailing_order?10:5),
+                                    type: "danger",
+                                });
                             current_hsl.value = '';
                         }else{
                             if(res.data.item){
@@ -325,7 +332,6 @@ export default {
                         show_modal_loader.value = false;
                     });
                 }
-
             }
         }
 
