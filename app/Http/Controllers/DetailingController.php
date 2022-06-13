@@ -927,14 +927,23 @@ class DetailingController extends Controller
                 ->get();
 
             if(count($inv)==0){
-                $err = "HSL $tracking already linked with another customer";
+                $err = "HSL $tracking already linked with another customer.";
             }
         }
 
+        $has_detailing_order = DB::table('detailingitem')->where('tracking',$tracking)
+            ->where('status','In Process')
+            ->latest('id')
+            ->first();
+
+        if($has_detailing_order){
+            $err = "HSL $tracking is already being detailed.";
+        }
 
         return response()->json([
             'item'=>$item,
             'err'=>$err,
+            'has_detailing_order'=>$has_detailing_order,
             //'post'=>$request->all(),
         ]);
     }
@@ -1599,6 +1608,8 @@ class DetailingController extends Controller
 
         if($discount > 0){
             $discount_price = ($discount/100) * $sub_total;
+        }else{
+            $discount_price = 0;
         }
 
         DB::table('infoOrder')->where('id',$order_id)->update(['OrderDiscount'=>$discount_price]);
