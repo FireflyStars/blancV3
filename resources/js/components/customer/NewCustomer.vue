@@ -803,32 +803,32 @@ import axios from 'axios';
                     if(form.value.customerType == 'B2B' && form.value.accountType == 'Main' && form.value.alreadyLinkedToAccount){
                         form.value.paymentMethod = 'BACS';
                     }
-                    if(form.value.firstName == ''){
-                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter email address', ttl:5, type:'danger' });
-                        return;
-                    }
-                    if(form.value.lastName == ''){
-                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter email address', ttl:5, type:'danger' });
-                        return;
-                    }
-                    if(form.value.email == ''){
-                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter email address', ttl:5, type:'danger' });
-                        return;
-                    }
-                    if(form.value.typeDelivery == 'DELIVERY'){
-                        if(form.value.postCode == ''){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Post Code', ttl:5, type:'danger' });
-                            return;
-                        }
-                        if(form.value.deliveryAddress1 == ''){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter delivery Address', ttl:5, type:'danger' });
-                            return;
-                        }
-                        if(form.value.phoneNumber == ''){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter phone number', ttl:5, type:'danger' });
-                            return;
-                        }
-                    }
+                    // if(form.value.firstName == ''){
+                    //     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter email address', ttl:5, type:'danger' });
+                    //     return;
+                    // }
+                    // if(form.value.lastName == ''){
+                    //     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter email address', ttl:5, type:'danger' });
+                    //     return;
+                    // }
+                    // if(form.value.email == ''){
+                    //     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter email address', ttl:5, type:'danger' });
+                    //     return;
+                    // }
+                    // if(form.value.typeDelivery == 'DELIVERY'){
+                    //     if(form.value.postCode == ''){
+                    //         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Post Code', ttl:5, type:'danger' });
+                    //         return;
+                    //     }
+                    //     if(form.value.deliveryAddress1 == ''){
+                    //         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter delivery Address', ttl:5, type:'danger' });
+                    //         return;
+                    //     }
+                    //     if(form.value.phoneNumber == ''){
+                    //         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter phone number', ttl:5, type:'danger' });
+                    //         return;
+                    //     }
+                    // }
                     step.value = 'payment';
                     setTimeout(() => {
                         const customerAddress = new google.maps.places.Autocomplete(postcode.value);
