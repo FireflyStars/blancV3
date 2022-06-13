@@ -1599,6 +1599,8 @@ class DetailingController extends Controller
 
         if($discount > 0){
             $discount_price = ($discount/100) * $sub_total;
+        }else{
+            $discount_price = 0;
         }
 
         DB::table('infoOrder')->where('id',$order_id)->update(['OrderDiscount'=>$discount_price]);
