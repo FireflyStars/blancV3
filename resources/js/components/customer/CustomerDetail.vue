@@ -219,7 +219,8 @@ export default {
         onMounted(()=>{
         })
         const formatPhone = (phoneString)=>{
-            if(phoneString !="--"){
+      
+            if(phoneString !== "" &&  phoneString !="--" ){
                 var phone = phoneString.split('"')[1];
                 var area_code = phone.split("|")[0];
                 var number = phone.split("|")[1];

@@ -42,7 +42,7 @@
                             <div class="cust-page-content m-auto pt-5">
                                 <div class="account-details-header d-flex mb-5">
                                     <div class="name-section">
-                                        <h1 class="gilory-extra-bold font-36">Eva Spaeter</h1>
+                                        <h1 class="gilory-extra-bold font-36">{{form.Name}}</h1>
                                         <div class="booking-icon rounded-pill d-flex align-items-center justify-content-center">
                                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" >
                                                 <path d="M5.37598 11.5244C5.37598 15.1009 8.15655 18.0002 11.5866 18.0002C14.2001 18.0002 16.4366 16.3169 17.3532 13.9334" stroke="#42A71E" stroke-linecap="round"/>
@@ -671,6 +671,7 @@
             const store = useStore();
             const form = ref({
                 customerID: '',
+                Name: '',
                 accountType: 'Main',
                 customerType: '',
                 typeDelivery: '',
@@ -772,6 +773,7 @@
                         { name: res.data.firstName +' ' + res.data.lastName , route:'ViewCustomer', params:{ customer_id: res.data.id }}
                     );
                     form.value.customerID = res.data.customerID;
+                    form.value.Name = res.data.Name;
                     form.value.booking = res.data.booking;
                     form.value.totalSpent = res.data.totalSpent;
                     form.value.accountType = '',

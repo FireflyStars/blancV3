@@ -605,7 +605,7 @@ class CustomerController extends Controller
      */
     public function getCustomerDetail(Request $request){
         $customer = DB::table('infoCustomer')
-                    ->join('InfoCustomerPreference', 'InfoCustomerPreference.CustomerID', '=', 'infoCustomer.CustomerID')
+                    ->leftJoin('InfoCustomerPreference', 'InfoCustomerPreference.CustomerID', '=', 'infoCustomer.CustomerID')
                     ->select('Name as name', 'EmailAddress as email', 'Phone as phone',
                         DB::raw('IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as cust_type'),
                         'infoCustomer.RevenueLocation as location', 'infoCustomer.CustomerNotes as notes', 'infoCustomer.id', 'infoCustomer.CustomerID',
@@ -631,6 +631,7 @@ class CustomerController extends Controller
                         DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
                         DB::raw('COUNT(infoOrder.id) as total_count'),
                     )->first();
+                    
         $customer->total_spent = $total->total_spent;
         $customer->total_count = $total->total_count;
         $customer->current_orders = DB::table('infoOrder')
@@ -829,7 +830,7 @@ class CustomerController extends Controller
      */
     public function getCustomerFullDetail(Request $request){
         $customer = DB::table('infoCustomer')
-                    ->select('infoCustomer.FirstName as firstName', 'infoCustomer.LastName as lastName', 'infoCustomer.EmailAddress as email', 'infoCustomer.Phone as phone',
+                    ->select('infoCustomer.FirstName as firstName', 'infoCustomer.LastName as lastName', 'infoCustomer.Name as Name' ,  'infoCustomer.EmailAddress as email', 'infoCustomer.Phone as phone',
                         'infoCustomer.TotalSpend as totalSpent', 'infoCustomer.cardvip as kioskNumber', 'bycard as paymentMethod',
                         DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'), 'infoCustomer.TypeDelivery as typeDelivery',
                         'infoCustomer.CustomerNotes as cusomerNote', 'infoCustomer.id', 'infoCustomer.CustomerID',
