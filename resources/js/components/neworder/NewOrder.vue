@@ -150,7 +150,7 @@
                                         <div class="" :class="{'col-4':isRecurring,'col-12':!isRecurring}">
                                             <div class="row">
                                                 <div class="col">
-                                            <select-options classnames="deliverymethod" v-model="deliverymethod" placeholder="Choose a method" :options="deliverymethods" name="delivery_method" hint=""  label="Delivery method" :disabled="deliverymethod_disabled"></select-options>
+                                            <select-options classnames="deliverymethod" v-model="deliverymethod"  placeholder="Choose a method" :options="deliverymethods" name="delivery_method" hint=""  label="Delivery method" :disabled="deliverymethod_disabled"></select-options>
                                                 </div>
                                             </div>
                                             <transition name="popinout">
@@ -158,7 +158,7 @@
                                                 <div class="col-12 mb-4">
                                                     <div class="row">
                                                         <div class="col">
-                                                            <select-options v-model="store_name" id="isc_store_name" :options="storenames" label="Store" placeholder="Choose store" classnames="storenames"></select-options>
+                                                            <select-options v-model="store_name" id="isc_store_name" :disabled="store_name_disabled" :options="storenames" label="Store" placeholder="Choose store" classnames="storenames"></select-options>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -178,10 +178,10 @@
                                                 </div>
 
                                                 <div class="col-3">
-                                                    <date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Collection" :disabledToDate="getCurDateTime('datedb')" @loadtranche="checkStorePickup" :disabledSunday="true"></date-picker>
+                                                    <date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Collection" :disabledToDate="getCurDateTime('datedb')" @loadtranche="checkStorePickup" :disabledSunday="true" :disabled="isc_pickup_disabled"></date-picker>
                                                 </div>
                                                 <div class="col-3">
-                                                    <time-slot-picker v-model="isc_pickup_timeslot"   name="isc_pickup_timeslot" :available-slots="[11]"  label="Collection Time" :isStore="true"></time-slot-picker>
+                                                    <time-slot-picker v-model="isc_pickup_timeslot" :disabled="isc_pickup_timeslot_disabled"   name="isc_pickup_timeslot" :available-slots="[11]"  label="Collection Time" :isStore="true"></time-slot-picker>
                                                 </div>
                                             </div>
                                             </transition>
@@ -205,7 +205,7 @@
                                                     </div>
 
                                                     <div class="col-3">
-                                                        <date-picker v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="addRemoveDays('add',3,cur_date)" @loadtranche="loadtranche('do_delivery')" ref="do_delivery_datepicker" :disabled-sunday="true"></date-picker>
+                                                        <date-picker :disabled="do_delivery_disabled" v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="addRemoveDays('add',3,cur_date)" @loadtranche="loadtranche('do_delivery')" ref="do_delivery_datepicker" :disabled-sunday="true"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="do_delivery_timeslot"   name="do_delivery_timeslot" :available-slots="do_delivery_tranche"  label=" "></time-slot-picker>
@@ -475,7 +475,7 @@
                                     <a href="javascript:void(0)" id="cancel_new_order">Cancel</a>
                                 </div>
                                 <div class="col-2 px-0">
-                                    <button class="btn btn-grey w-100" @click="validateDetails">Proceed to detailing</button>
+                                    <button class="btn btn-grey w-100" @click="validateDetails" :disabled="proceedtodetailing_disabled">Proceed to detailing</button>
                                 </div>
                             </div>
 
@@ -565,13 +565,19 @@ import axios from 'axios';
             //const isc_dropoff =ref('');
             //const isc_dropoff_timeslot=ref(0);
             const isc_pickup=ref('');
+            const isc_pickup_disabled=ref(false);
             const isc_pickup_timeslot=ref(0);
+            const isc_pickup_timeslot_disabled=ref(false);
+            const store_name_disabled=ref(false);
             const isc_pickup_tranche=ref([]);
+            const proceedtodetailing_disabled=ref(false);
+            const no_main_booking=ref(false);
 
             //do : delivery only
             //const do_dropoff =ref('');
             //const do_dropoff_timeslot=ref(0);
             const do_delivery=ref('');
+            const do_delivery_disabled=ref(false);
             const do_delivery_timeslot=ref(0);
             const do_delivery_tranche = ref([]);
             const do_delivery_datepicker = ref();
@@ -753,6 +759,19 @@ import axios from 'axios';
                 const current_customer = store.getters[`${NEWORDER_MODULE}${NEWORDER_CUR_CUSTOMER}`];
 
                 if(current_customer){
+                    deliverymethod.value='';
+                    store_name.value='';
+                    isc_pickup_timeslot.value=0;
+                    isc_pickup_timeslot_disabled.value=false;
+                    store_name_disabled.value=false;
+                    deliverymethod_disabled.value=false;
+                    isc_pickup.value='';
+                    isc_pickup_disabled.value=false;
+                    do_delivery.value='';
+                    do_delivery_disabled.value=false;
+                    no_main_booking.value=false;
+                    proceedtodetailing_disabled.value=false;
+
                     shp_address1.value = current_customer.address1;
                     shp_postcode.value = current_customer.postcode;
                     shp_town.value = current_customer.Town;
@@ -762,6 +781,48 @@ import axios from 'axios';
 
                     card_details.value = current_customer.card_details;
 
+
+                    if(typeof current_customer.main_account!="undefined"){
+                        if(current_customer.main_account.TypeDelivery!="DELIVERY"){
+                            deliverymethod.value='in_store_collection';
+                            store_name.value=current_customer.main_account.TypeDelivery;
+                            isc_pickup_timeslot.value=11;
+                            isc_pickup_timeslot_disabled.value=true;
+                            store_name_disabled.value=true;
+                            deliverymethod_disabled.value=true;
+                            let Today = new Date();
+                            let days=3;
+                            let collectionDate = Today.setDate(Today.getDate() + days);
+                            collectionDate=new Date(collectionDate).toISOString().slice(0, 10);
+                            let checkholiday=true;
+                            while(checkholiday){
+                               let holiday= current_customer.holidays.filter(obj=>obj.date==collectionDate);
+                               if(holiday.length>0){
+                                     Today = new Date();
+                                     days=days+1;
+                                     collectionDate = Today.setDate(Today.getDate() + days);
+                                     collectionDate=new Date(collectionDate).toISOString().slice(0, 10);
+                               }else{
+                                   checkholiday=false;
+                               }
+                            }
+                            isc_pickup.value=collectionDate;
+                            isc_pickup_disabled.value=true;
+                           
+                        }else{
+                             deliverymethod.value='delivery_only';
+                              deliverymethod_disabled.value=true;
+                              do_delivery_disabled.value=true;
+                              if(current_customer.main_account.recent_deliveryask!=null){
+                              do_delivery.value=current_customer.main_account.recent_deliveryask.date;
+                              }else{
+                                  no_main_booking.value=true;
+                                   
+                              }
+
+                        }
+
+                    }
                     //store.dispatch(`${NEWORDER_MODULE}${NEW_ORDER_SET_TRANCHE_POSTCODE}`,current_customer.postcode);
 
                 }
@@ -769,6 +830,17 @@ import axios from 'axios';
                 return current_customer;
             });
 
+            watch(()=>no_main_booking.value,(current_val,previous_val)=>{
+                if(current_val==true){
+                    proceedtodetailing_disabled.value=true;
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                                            {
+                                                message: 'No booking on main account.',
+                                                ttl: 6,
+                                                type: 'danger'
+                                            });
+                }
+            });
             watch(() =>cust_type_delivery.value, (current_val, previous_val) => {
                 store_name.value = current_val.toString().toUpperCase();
             });
@@ -1492,7 +1564,13 @@ import axios from 'axios';
                 //isc_dropoff,
                 //isc_dropoff_timeslot,
                 isc_pickup,
+                isc_pickup_disabled,
+                do_delivery_disabled,
+                store_name_disabled,
+                proceedtodetailing_disabled,
+                deliverymethod_disabled,
                 isc_pickup_timeslot,
+                isc_pickup_timeslot_disabled,
                 isc_pickup_tranche,
                 //do_dropoff,
                 //do_dropoff_timeslot,

@@ -1,7 +1,7 @@
 <template>
     <div class="dp noselect">
         <label class="select-label" :class="{disabled:disabled==true}" v-if="label">{{label}}</label>
-        <input type="text" readonly placeholder="Day" v-model="formated_date" @click="toggleshowDp"/>
+        <input type="text" readonly placeholder="Day" v-model="formated_date" @click="toggleshowDp" :disabled="disabled"/>
         <transition name="trans-dp-picker" >
         <div class="dp-picker" v-if="sel===name" :class="{row6:displayed_dates_rows[5].length>0&&currentView=='dates' }" :style="{top:droppos.top,right:droppos.right,bottom:droppos.bottom,left:droppos.left,transformOrigin:droppos.transformOrigin}">
 
@@ -77,7 +77,11 @@
             modelValue: String,
             droppos: Object,
             label:String,
-            disabled:Boolean,
+            disabled:{
+                type:Boolean,
+                required:false,
+                default:false
+                },
             hint:String,
             availableDates:Array,
             disabledToDate:String,

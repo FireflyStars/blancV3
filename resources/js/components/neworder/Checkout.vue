@@ -404,10 +404,6 @@
                                                                     </div>
                                                                 </div>
                                                             </div>
-
-
-
-
                                                         </div>
                                                     </div>
                                                 </div>
@@ -459,8 +455,7 @@
                                                         <div class="accordion-content p-4 mt-3">
                                                             <div class="row">
                                                                 <span class="sidebar_title text-white">Payment</span>
-
-
+                                                                <payment :custcard="custcard"></payment>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -496,10 +491,11 @@ import {
     TOASTER_MODULE,
     TOASTER_MESSAGE,
 } from '../../store/types/types';
+import Payment from '../miscellaneous/Payment.vue';
 
 export default {
     name: "Checkout",
-    components: { BreadCrumb, SideBar, MainHeader},
+    components: { BreadCrumb, SideBar, MainHeader,Payment},
     setup() {
         const router = useRouter();
         const route = useRoute();
@@ -519,6 +515,7 @@ export default {
         const total_with_discount = ref(0);
         const vat = ref(0);
         const total_exc_vat = ref(0);
+        const custcard = ref({});
 
         order_id.value = route.params.order_id;
 
@@ -550,6 +547,7 @@ export default {
                 total_with_discount.value = res.data.total_with_discount;
                 total_exc_vat.value = res.data.total_exc_vat;
                 vat.value = res.data.vat;
+                custcard.value = res.data.custcard;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -656,6 +654,7 @@ export default {
             total_with_discount,
             total_exc_vat,
             vat,
+            custcard,
         }
 
     },

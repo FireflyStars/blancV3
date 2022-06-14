@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Holiday;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -498,6 +499,20 @@ class CustomerController extends Controller
                         ->where('address.status','DELIVERY');
                 })
                 ->first();
+
+                //if sub account
+                if($infoCustomer->CustomerIDMaster!=''){
+                    $infoCustomer=DB::table('infoCustomer')->where('infoCustomer.CustomerID','=',$CustomerID)
+                    ->leftJoin('address',function($join) {
+                        $join->on( 'infoCustomer.CustomerIDMaster', '=', 'address.CustomerID')
+                            ->where('address.status','DELIVERY');
+                    })
+                    ->first();
+                    $infoCustomer->main_account=DB::table('infoCustomer')->where('infoCustomer.CustomerID','=',$infoCustomer->CustomerIDMaster)->first();
+                    $infoCustomer->holidays=Holiday::all();
+                    $deliveryask=DB::table('deliveryask')->where('CustomerID','=',$infoCustomer->CustomerIDMaster)->whereDate('date','>=',date('Y-m-d'))->first();
+                    $infoCustomer->main_account->recent_deliveryask=$deliveryask;
+                }
             $ltm_spend=DB::table('infoOrder')->select(['Total'])->where('CustomerID','=',$CustomerID)->where('Status','=','FULFILLED')->where('created_at','>=',date('Y-m-d',strtotime('-12 months')))->get();
             $spend=0;
             foreach ($ltm_spend as $order){

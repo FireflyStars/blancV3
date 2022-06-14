@@ -1107,6 +1107,7 @@ class DetailingController extends Controller
         $tranches = Tranche::getDeliveryPlanningTranchesForApi();
 
         $addr = null;
+        $cust_card = null;
 
         $booking_details = [];
         if($order){
@@ -1119,6 +1120,7 @@ class DetailingController extends Controller
                 $cust->cust_type = "";
 
                 $addr = Delivery::getAddressByCustomerUUID($order->CustomerID);
+                $cust_card = DB::table('cards')->where('CustomerID',$cust->CustomerID)->where('Actif',1)->first();
 
                 if($cust->Phone !='' && !is_null($cust->Phone) && is_array(@json_decode($cust->Phone))){
                     $phone_num = @json_decode($cust->Phone);
@@ -1578,6 +1580,7 @@ class DetailingController extends Controller
             'discount'=>number_format($order->OrderDiscount,2),
             'vat'=>$vat,
             'total_exc_vat'=>$total_exc_vat,
+            'custcard'=>$cust_card,
         ]);
     }
 
