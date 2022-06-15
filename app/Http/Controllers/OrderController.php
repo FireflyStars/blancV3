@@ -863,27 +863,37 @@ class OrderController extends Controller
 
                     $items_created[] = $cur_item_id;
 
-                    //ADD ItemID in infoitempost
-
-
-
-                }
+               }
 
 
             }
         }
 
-        return $items_created;
+
+        $endpoint = "https://blancspot.vpc-direct-service.com/validorder.php";
+
+        $client = new \GuzzleHttp\Client();
+
+        $response = $client->request('GET', $endpoint, ['query' => [
+            'order_id'=>$order_id,
+        ]]);
+
+        $statusCode = $response->getStatusCode();
+        @$content = $response->getBody();
+        $content = str_replace('\\"','',$content);
+
+        return json_decode($content);
+
 
     }
 
     public function completeCheckout(Request $request){
         $order_id = $request->order_id;
 
-        $order_items = OrderController::createOrderItems($order_id);
+        $order_res = OrderController::createOrderItems($order_id);
 
         return response()->json([
-            'order_items'=>$order_items,
+            'order_res'=>$order_res,
         ]);
     }
 

@@ -1012,9 +1012,6 @@ class DetailingController extends Controller
                 }
 
                 $booking_details['recurring'] = $recurring;
-
-
-
             }
 
         }
