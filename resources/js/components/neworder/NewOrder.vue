@@ -693,7 +693,7 @@ import axios from 'axios';
 
             const storenames = ref([]);
             const store_name = ref('');
-            let stores = ['ATELIER','CHELSEA','MARYLEBONE','NOTTING HILL','SOUTH KEN'];
+            let stores = ['CHELSEA','MARYLEBONE','NOTTING HILL','SOUTH KEN'];
 
             stores.forEach(function(v,i){
                 let key = {};
