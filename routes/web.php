@@ -419,7 +419,7 @@ Route::get('test-validate-order',function(Request $request){
     $order_id = $request->order_id;
 
     if(!isset($order_id)){
-        die('?orderid not set');
+        die('?order_id not set');
     }
 
     $endpoint = "http://blancspot.vpc-direct-service.com/validorder.php";
