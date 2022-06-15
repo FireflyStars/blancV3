@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\InfoCustomer;
 use App\Http\Controllers\BookingController;
 use App\Models\OrderRecurringCreator;
+use App\Models\Delivery;
 use stdClass;
 
 class OrderController extends Controller
@@ -592,12 +593,17 @@ class OrderController extends Controller
     }
 
     public static function createOrderItems($order_id){
+        $delivery_ask_status_to_include = Delivery::getDeliveryAskStatusToInclude();
+        $pickup_status_to_include = Delivery::getPickupStatutToInclude();
+
 
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
         $items_created = [];
 
         if($order){
+            $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
             //Retrieve booking for order
             $promised_date = "";
             $storename = 'ATELIER';
@@ -619,7 +625,7 @@ class OrderController extends Controller
             }
             //Recurring
             elseif($order->deliverymethod=='recurring'){
-                $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
 
                 if($cust){
                     $booking = DB::table('deliveryask')->where('order_id',$order->id)->where('status','REC')->first();
@@ -630,6 +636,27 @@ class OrderController extends Controller
                     }
                 }
             }
+            //SubAccount
+            if($cust->CustomerIDMaster!=''){
+                $deliveryask=DB::table('deliveryask')->where('CustomerID','=',$cust->CustomerIDMaster)->whereDate('date','>=',date('Y-m-d'))->whereIn('status',$delivery_ask_status_to_include)->first();
+
+                $pickup = DB::table('pickup')->where('CustomerID','=',$cust->CustomerIDMaster)->whereDate('date','>=',date('Y-m-d'))->whereIn('status',$pickup_status_to_include)->first();
+
+                $booking = null;
+
+                if($pickup && !$deliveryask){
+                    $booking = $pickup;
+                }elseif(!$pickup && $deliveryask){
+                    $booking = $deliveryask;
+                }elseif($pickup && $deliveryask){
+                    $booking = $pickup;
+                    if($pickup->date > $deliveryask->date){
+                        $booking = $deliveryask;
+                    }
+                }
+                $promised_date = $booking->date;
+            }
+
 
             $daynames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 

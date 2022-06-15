@@ -1021,8 +1021,9 @@ class DetailingController extends Controller
 
 
         $items = DB::table('detailingitem')
-            ->select('detailingitem.*','detailingitem.id AS detailingitem_id')
+            ->select('detailingitem.*','detailingitem.id AS detailingitem_id','typeitem.pricecleaning as baseprice')
             ->join('infoOrder','detailingitem.order_id','infoOrder.id')
+            ->join('typeitem','detailingitem.typeitem_id','typeitem.id')
             ->where('infoOrder.id',$order_id)
             ->get();
 
@@ -1200,7 +1201,7 @@ class DetailingController extends Controller
                     $coef_brand = $brand_coef_map[$v->brand_id];
 
                     if($coef_brand > 1){
-                        $diff = $coef_brand - 1;
+                        $diff = $coef_brand;
                         $perc = $diff*100;
                         $items[$k]->brand_coef_perc = ceil($perc);
                     }
@@ -1218,10 +1219,8 @@ class DetailingController extends Controller
                             $cur_comp = $complexities_coef[$val];
 
                             $comp_price = 0;
-                            if($cur_comp['cleaning'] > 1){
-                                $diff = $cur_comp['cleaning'] - 1;
-                                $comp_price = ($diff/100) * $v->priceClean;
-                            }
+
+                            $comp_price = $cur_comp['cleaning'] * $v->baseprice;
 
                             $complexities_arr[$complexities_coef[$val]['name']] = $comp_price;
                         }
