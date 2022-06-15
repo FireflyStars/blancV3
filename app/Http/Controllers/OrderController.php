@@ -637,7 +637,7 @@ class OrderController extends Controller
                 }
             }
             //SubAccount
-            if($cust->CustomerIDMaster!=''){
+            elseif($order->deliverymethod='delivery_only' && $cust->CustomerIDMaster!=''){
                 $deliveryask=DB::table('deliveryask')->where('CustomerID','=',$cust->CustomerIDMaster)->whereDate('date','>=',date('Y-m-d'))->whereIn('status',$delivery_ask_status_to_include)->first();
 
                 $pickup = DB::table('pickup')->where('CustomerID','=',$cust->CustomerIDMaster)->whereDate('date','>=',date('Y-m-d'))->whereIn('status',$pickup_status_to_include)->first();
@@ -870,7 +870,7 @@ class OrderController extends Controller
         }
 
 
-        $endpoint = "https://blancspot.vpc-direct-service.com/validorder.php";
+        $endpoint = "http://blancspot.vpc-direct-service.com/validorder.php";
 
         $client = new \GuzzleHttp\Client();
 
@@ -881,6 +881,8 @@ class OrderController extends Controller
         $statusCode = $response->getStatusCode();
         @$content = $response->getBody();
         $content = str_replace('\\"','',$content);
+
+        //Si ok, passe infoOrder.Status = 'In process'
 
         return json_decode($content);
 
