@@ -385,7 +385,7 @@ export default({
     width: calc(100% - 87px);
     background: #F8F8F8;
     border-radius: 5px;
-    max-width: 785px;
+    /* max-width: 785px; */
     margin: 0  0 0 39px !important;
    }
    .row{

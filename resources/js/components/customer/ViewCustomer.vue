@@ -382,7 +382,7 @@
                                                 <div class="form-group mb-0 payment-method">
                                                     <label for="discount_credit">Credit amount</label>
                                                     <div class="w-100 py-2 bg-color px-3 rounded-3">
-                                                        <b>£</b> {{ form.discountLevel }}
+                                                        <b>£</b> {{ form.creditAmount }}
                                                     </div>
                                                 </div>
                                             </div>
@@ -391,8 +391,8 @@
                                                     <label for="add_credit">Add credit</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text fw-bold">£</span>
-                                                        <input type="text" v-model="form.discountCredit" class="form-control" id="add_credit" placeholder="0.00">
-                                                    </div>
+                                                        <input type="text" v-model="form.discountCredit"  class="form-control" id="add_credit" placeholder="0.00">
+                                                    </div> 
                                                 </div>
                                             </div>
                                         </div>
@@ -718,6 +718,7 @@
                 companyAddress1: '',
                 companyAddress2: '',
                 discountLevel: '',
+                discountCredit:'',
                 applyDiscountToSub: false,
                 creditAmount: 0,
                 addCredit: 0,
@@ -748,6 +749,7 @@
             const searchCustomer=ref(false);
             const currentOrders=ref([]);
             const pastOrders=ref([]);
+            const timeout =ref('');
             const paths=ref([
                 { name:'Customer', route:'Customer'},
             ]);            
@@ -769,6 +771,10 @@
                 axios.post('/get-customer-full-detail', {
                     customer_id: route.params.customer_id
                 }).then((res)=>{
+                   
+                    form.value.discountCredit = res.data.credit;
+                    form.value.creditAmount = res.data.credit;
+                    
                     paths.value.push(
                         { name: res.data.firstName +' ' + res.data.lastName , route:'ViewCustomer', params:{ customer_id: res.data.id }}
                     );
@@ -833,8 +839,10 @@
                     // companyAddress1: '',
                     // companyAddress2: '',
                     form.value.discountLevel = res.data.discount;
+                    
+                    
                     // applyDiscountToSub: false,
-                    form.value.creditAmount = res.data.credit;
+                    
 
                     // // preferences tab
                     Object.keys(res.data.preferences).forEach((item)=>{
@@ -960,7 +968,21 @@
                 }else{
                     return '';
                 }
-            }              
+            }  
+               watch(()=>form.value.discountCredit,(current_value, previous_value)=>{
+               clearTimeout(timeout.value);
+               timeout.value = setTimeout(function(){
+                   
+                    axios.post('/add-credit-customer', { credit : form.value.discountCredit , customer_id : route.params.customer_id } ).then((response)=>{
+                    console.log("response")
+                    }).catch((errors)=>{
+                        console.log(errors);
+                    
+                    })  
+                    }
+                   , 500)    
+               })
+
             return {
                 form,
                 step,

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class CustomerController extends Controller
 {
@@ -949,5 +950,24 @@ class CustomerController extends Controller
                                         'TotalSpend as spent', 'id'
                                     )->get();
         return response()->json($customer);
+    }
+
+    public function AddCreditCustomer(Request $request){
+        $user = Auth::user();
+
+        $info_credit = [
+
+            'user_id'   =>  $user->id,
+            'montant'   =>  $request->credit,
+            'CustomerID'=>  $request->customer_id,
+            'created_at'=> now(),
+        ];
+
+        DB::table('credits')->insert($info_credit);
+
+        $customer = DB::table('infoCustomer')
+        ->where('infoCustomer.id', $request->customer_id)->update(['credit' => $request->credit]);
+
+        return response()->json( $customer );
     }
 }
