@@ -412,7 +412,7 @@ Route::get('create-invoice-test',function(){
         }
     }
 
-});
+})->middleware('auth');
 
 /* END TEST ROUTES */
 

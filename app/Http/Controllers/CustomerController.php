@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Tranche;
 
 class CustomerController extends Controller
 {
@@ -28,7 +29,7 @@ class CustomerController extends Controller
                 'postCode' => 'required',
                 'deliveryAddress1' => 'required',
                 'city' => 'required',
-                  
+
             ]);
         } else {
 
@@ -37,13 +38,13 @@ class CustomerController extends Controller
                 'lastName' => 'required',
             ]);
 
-           
+
         }
 
         if ($validator->fails()) {
             return response()->json(['error'=> $validator->errors()]);
         }
-       
+
 
         // add a new record to infoCustomer table
         $info_customer = [
@@ -145,7 +146,7 @@ class CustomerController extends Controller
             'created_at'    => now(),
             'updated_at'    => now(),
         ];
-       
+
         try {
             DB::table('NewCustomer')->insert($new_customer);
         } catch (\Exception $e) {
@@ -509,8 +510,17 @@ class CustomerController extends Controller
                     })
                     ->first();
                     $infoCustomer->main_account=DB::table('infoCustomer')->where('infoCustomer.CustomerID','=',$infoCustomer->CustomerIDMaster)->first();
+
+
+
                     $infoCustomer->holidays=Holiday::all();
                     $deliveryask=DB::table('deliveryask')->where('CustomerID','=',$infoCustomer->CustomerIDMaster)->whereDate('date','>=',date('Y-m-d'))->first();
+
+                    if($deliveryask){
+                        $deliveryask->slot = Tranche::getSlotFromTranche($deliveryask->trancheFrom,$deliveryask->trancheto);
+                    }
+
+
                     $infoCustomer->main_account->recent_deliveryask=$deliveryask;
                 }
             $ltm_spend=DB::table('infoOrder')->select(['Total'])->where('CustomerID','=',$CustomerID)->where('Status','=','FULFILLED')->where('created_at','>=',date('Y-m-d',strtotime('-12 months')))->get();
@@ -646,7 +656,7 @@ class CustomerController extends Controller
                         DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
                         DB::raw('COUNT(infoOrder.id) as total_count'),
                     )->first();
-                    
+
         $customer->total_spent = $total->total_spent;
         $customer->total_count = $total->total_count;
         $customer->current_orders = DB::table('infoOrder')

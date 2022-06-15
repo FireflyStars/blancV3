@@ -36,6 +36,12 @@ class OrderController extends Controller
         $created_stamp = date('Y-m-d H:i:s');
         $id_booking = 0;
 
+        $recurring_data = [];
+        $recur_obj = false;
+
+        $is_sub_account = $new_order['sub_account_cust'];
+        $main_account_deliveryask_id = $new_order['sub_account_delivery_id'];
+
 
         $customer = DB::table('infoCustomer')->where('CustomerID',$new_order['CustomerID'])->first();
         $address = DB::table('address')->where('AddressID',$address_uuid)->first();
@@ -114,26 +120,31 @@ class OrderController extends Controller
 
             $tranche = BookingController::getBookingDetailFromSlot($slot);
 
+            $id_booking = 0;
+            if($is_sub_account){
+                $id_booking = $main_account_deliveryask_id;
+            }else{
+                $delivery_arr = [
+                    'PhoneNumber'=>(!empty($phones)?implode(",",$phones):""),
+                    'CodeCountry'=>$code_country,
+                    'TypeDelivery'=>'', //A confirmer
+                    'AddressID'=>$address_uuid,
+                    'CustomerID'=>$customerid,
+                    'DeliveryAskID'=>'',
+                    'id_customer'=>0,
+                    'created_at'=>date('Y-m-d H:i:s'),
+                    'comment'=>(!is_null($new_order['customer_instructions'])?$new_order['customer_instructions']:''),
+                    'trancheFrom'=>$tranche['tranchefrom'],
+                    'trancheto'=>$tranche['trancheto'],
+                    'address_id'=>($address?$address->id:0),
+                    'date'=>$new_order['do_delivery'],
+                    'status'=>'NEW',//'PMS'
+                    'order_id'=>$new_order_id,
 
-            $delivery_arr = [
-                'PhoneNumber'=>(!empty($phones)?implode(",",$phones):""),
-                'CodeCountry'=>$code_country,
-                'TypeDelivery'=>'', //A confirmer
-                'AddressID'=>$address_uuid,
-                'CustomerID'=>$customerid,
-                'DeliveryAskID'=>'',
-                'id_customer'=>0,
-                'created_at'=>date('Y-m-d H:i:s'),
-                'comment'=>(!is_null($new_order['customer_instructions'])?$new_order['customer_instructions']:''),
-                'trancheFrom'=>$tranche['tranchefrom'],
-                'trancheto'=>$tranche['trancheto'],
-                'address_id'=>($address?$address->id:0),
-                'date'=>$new_order['do_delivery'],
-                'status'=>'NEW',//'PMS'
-                'order_id'=>$new_order_id,
+                ];
 
-            ];
-            $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
+                $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
+            }
 
             $booking_do = DB::table('deliveryask')->where('id',$id_booking)->first();
 
@@ -159,7 +170,7 @@ class OrderController extends Controller
 
 
         //Add booking for home_Delivery
-        if($new_order['deliverymethod']=='home_delivery'){
+        if(!$is_sub_account && $new_order['deliverymethod']=='home_delivery'){
 
             $pickup_slot = $new_order['hd_pickup_timeslot'];
             $tranche_pickup = BookingController::getBookingDetailFromSlot($pickup_slot);
@@ -230,10 +241,9 @@ class OrderController extends Controller
 
         }
 
-        $recurring_data = [];
-        $recur_obj = false;
 
-        if($new_order['deliverymethod']=='recurring'){
+
+        if(!$is_sub_account && $new_order['deliverymethod']=='recurring'){
             $recurring_data = @json_decode($new_order['recurring_data']);
 
             $recurring = [
@@ -286,10 +296,13 @@ class OrderController extends Controller
         if($id_booking_pickup > 0){
             BookingController::logBookingHistory($id_booking_pickup,$new_order_id,$customer->id,$user->id,'pickup');
         }
+
+        //*/
         return response()->json([
             'new_order_id'=>$new_order_id,
             'recurring'=>$recurring_data,
             'recur_obj'=>$recur_obj,
+            'post'=>$request->all(),
 
             //'delivery_arr'=>$delivery_arr,
         ]);
