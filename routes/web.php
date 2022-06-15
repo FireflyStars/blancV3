@@ -299,6 +299,121 @@ Route::get('stripe-test',function(){
 
 });
 
+Route::get('create-invoice-test',function(){
+    $order_id = 83080;
+
+    $di = DB::table('detailingitem')->where('order_id',$order_id)->get();
+
+
+
+    $id_items = [];
+    if(count($di) > 0){
+        foreach($di as $k=>$v){
+            if($v->item_id !=0 && !in_array($v->item_id,$id_items)){
+                array_push($id_items,$v->item_id);
+            }
+        }
+    }
+
+    $items = [];
+    if(!empty($id_items)){
+        $items = DB::table('infoitems')->whereIn('id',$id_items)->orderBy('typeitem','ASC')->get()->toArray();
+    }
+
+    $perc = 0;
+
+    $grouped_by_type = [];
+    $grouped_by_inv = [];
+    $group_by_perc = [];
+    $sum_perc = [];
+
+    $two_slots_items = [];
+
+    if(count($items) > 0){
+        foreach($items as $k=>$v){
+            if($v->PERC==200){
+                $two_slots_items[] = $v->id;
+            }
+
+            $perc += $v->PERC;
+        }
+
+        if(!empty($two_slots_items)){
+            foreach($two_slots_items as $k=>$v){
+                //Creer un invoice par item a 200%
+            }
+
+            foreach($items as $k=>$v){
+                if(in_array($v->id,$two_slots_items)){
+                    unset($items[$k]);
+                }
+            }
+        }
+
+
+        if($perc <= 100){
+            //Cree un invoice
+        }else{
+
+            foreach($items as $k=>$v){
+                $grouped_by_type[$v->typeitem][] = (array) $v;
+            }
+
+
+
+
+            $i = 0;
+            $perc = 0;
+            $new_key = 0;
+
+            //Group BY PERC
+
+            for($i=0; $i < count($items); $i++){
+                $item = $items[$i];
+                $perc += $item->PERC;
+
+                $grouped_by_perc[$new_key][] = [
+                    'item_id'=>$item->id,
+                    'ItemID'=>$item->ItemID,
+                    'PERC'=>$item->PERC,
+                    'typeitem'=>$item->typeitem,
+                ];
+
+                if($perc >= 100){
+                    $new_key +=1;
+                    $perc = 0;
+                    continue;
+                }
+            }
+            //*/
+
+            //GROUP BY TYPEITEM et PERC
+            echo "<pre>";
+
+            foreach($grouped_by_type as $k=>$v){
+                $arr_perc = array_column($v,'PERC');
+                print_r($arr_perc);
+            }
+
+
+
+            echo "<pre>";
+
+            //print_r($grouped_by_type);
+
+            echo "<br/><h2>Invoices by PERC</h2>";
+            print_r($grouped_by_perc);
+/*
+            echo "<br/><h2>Invoices by TYPE and PERC</h2>";
+            print_r($grouped_by_inv);
+*/
+
+
+        }
+    }
+
+});
+
 /* END TEST ROUTES */
 
 // added by yonghuan to search customers to be linked
@@ -366,6 +481,8 @@ Route::post('/create-order-items',[DetailingController::class,'createOrderItems'
 Route::post('/get-checkout-items',[DetailingController::class,'getCheckoutItems'])->name('get-checkout-items')->middleware('auth');
 Route::post('/change-detailing-etape',[DetailingController::class,'changeDetailingEtape'])->name('change-detailing-etape')->middleware('auth');
 Route::post('/set-checkout-discount',[DetailingController::class,'setCheckoutDiscount'])->name('set-checkout-discount')->middleware('auth');
+Route::post('/make-payment-or-create-card',[OrderController::class,'makePaymentOrCreateCard'])->name('make-payment-or-create-card')->middleware('auth');
+Route::post('/complete-checkout',[OrderController::class,'completeCheckout'])->name('complete-checkout')->middleware('auth');
 
 /**
  * Voyager custom routes

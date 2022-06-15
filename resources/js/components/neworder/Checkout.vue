@@ -455,7 +455,7 @@
                                                         <div class="accordion-content p-4 mt-3">
                                                             <div class="row">
                                                                 <span class="sidebar_title text-white">Payment</span>
-                                                                <payment :custcard="custcard"></payment>
+                                                                <payment :custcard="custcard" :order_id="order_id" @reload-checkout="getCheckoutItems"></payment>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -467,6 +467,18 @@
                                     </div>
                                 </transition>
 
+                            </div>
+                        </div>
+                        <div class="row justify-content-end py-4" id="last-row-btns">
+                            <div class="col-4">
+                                <div class="row align-items-center">
+                                    <div class="col-6 px-4 text-align-center">
+                                        <a href="javascript:void(0)" @click="redirectToDetailingList">Previous</a>
+                                    </div>
+                                    <div class="col-6 px-4">
+                                        <button id="completeBtn" class="w-100 py-3" @click="completeCheckout">Proceed</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -632,6 +644,27 @@ export default {
             }
         }
 
+        function redirectToDetailingList(){
+            router.push('/order-content/'+order_id.value);
+        }
+
+        function completeCheckout(){
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
+                true,
+                "creating items....",
+            ]);
+
+            axios.post('/complete-checkout',{
+                order_id:order_id.value
+            }).then((res)=>{
+
+            }).catch((err)=>{
+
+            }).finally(()=>{
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            });
+        }
+
         return {
             order_id,
             paths,
@@ -655,6 +688,9 @@ export default {
             total_exc_vat,
             vat,
             custcard,
+            getCheckoutItems,
+            redirectToDetailingList,
+            completeCheckout,
         }
 
     },
@@ -982,6 +1018,29 @@ export default {
 .total-text{
     font:bold 22px "Gilroy";
     border-bottom: thin solid #c3c3c3;
+}
+
+#last-row-btns *{
+    font:normal 16px "Gotham Rounded";
+}
+
+#last-row-btns a{
+    color:#47454B;
+}
+
+#last-row-btns a:hover{
+    text-decoration: none;
+}
+
+#completeBtn{
+    background: #42A71E;
+    color:#fff;
+    border:none;
+    border-radius: 4px;
+}
+
+#completeBtn:hover{
+    background: #333;
 }
 
 </style>

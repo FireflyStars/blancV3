@@ -2,7 +2,7 @@
     <transition enter-active-class="animate__animated animate__fadeIn">
         <div class="col-4 right-panel" v-if="show">
             <div class="panel-header row" @click="show = !show">
-                <div class="col-5">Item n°{{ detailingitem.item_id }}</div>
+                <div class="col-5">Item n°{{ detailingitem.tracking }}</div>
                 <div class="col-4">Detailed by @{{ customerName }}</div>
                 <div class="col-3 price">£{{final_price}}</div>
             </div>
@@ -61,7 +61,7 @@
                                             >{{ item_description.brand_name }}</div>
                                             <div
                                                 class="col brand-coefcleaning"
-                                            >+{{ item_description.brand_coef_cleaning }}%</div>
+                                            >+{{ item_description.brand_coef_cleaning.toFixed(2) }}%</div>
                                         </div>
                                     </div>
                                     <div class="col-6">
