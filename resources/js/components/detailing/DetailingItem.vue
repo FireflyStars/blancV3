@@ -102,7 +102,6 @@
                                     :cleaning_services="cust_cleaning_services"
                                     :tailoring_services="tailoring_services"
                                     @save-item-services="saveItemDetails"
-                                    @init-detailing="initDetailing"
                                     @go-to-step="backPreviousStep"
                                 ></detailing-services>
                             </div>
@@ -249,6 +248,7 @@ export default {
         }
 
         initDetailing();
+
 
         watch(()=>step.value,(current_value,previous_value)=>{
             if(current_value==11){

@@ -755,6 +755,7 @@ import axios from 'axios';
             }
 
 
+
             const cur_cust = computed(()=>{
                 const current_customer = store.getters[`${NEWORDER_MODULE}${NEWORDER_CUR_CUSTOMER}`];
 
@@ -808,16 +809,18 @@ import axios from 'axios';
                             }
                             isc_pickup.value=collectionDate;
                             isc_pickup_disabled.value=true;
-                           
+
                         }else{
                              deliverymethod.value='delivery_only';
                               deliverymethod_disabled.value=true;
                               do_delivery_disabled.value=true;
                               if(current_customer.main_account.recent_deliveryask!=null){
                               do_delivery.value=current_customer.main_account.recent_deliveryask.date;
+                                do_delivery_timeslot.value = current_customer.main_account.recent_deliveryask.slot;
+
                               }else{
                                   no_main_booking.value=true;
-                                   
+
                               }
 
                         }
@@ -889,10 +892,13 @@ import axios from 'axios';
                    }
 
                 if(!card_details.value || card_details.value.id=='' || typeof(card_details.value.id)=='undefined'){
+                   /*
                    if(paymentMethod.value==''){
                        err_txt.push("Payment method not set");
                        err = true;
-                   }else if(paymentMethod.value=='Credit Card'){
+                   }*/
+
+                   if(paymentMethod.value=='Credit Card'){
                        let err_cc = validateCardDetails();
                        err_txt = err_txt.concat(err_cc);
                    }
@@ -959,11 +965,23 @@ import axios from 'axios';
 
                     new_order.dropoff_stamp = formatDateToDb(cur_date.value);
 
+                    new_order['sub_account_cust'] = false;
+                    new_order['sub_account_delivery_id'] = 0;
+
+
+                    if(cur_cust.value.main_account){
+                        new_order['sub_account_cust'] = true;
+
+                        if(cur_cust.value.main_account.recent_deliveryask){
+                            new_order['sub_account_delivery_id'] = cur_cust.value.main_account.recent_deliveryask.id;
+                        }
+
+                    }
+
+
                     new_order_obj.value = new_order;
 
                    evaluateOrderExpress(new_order);
-
-                    console.log(new_order_obj);
 
                     process_step.value=2;
 
@@ -1438,6 +1456,7 @@ import axios from 'axios';
             //Payment details
             const cardFormat = inject('cardFormat');
             const paymentMethod = ref("");
+
 
             const form = ref({
                 cardHolderName: '',

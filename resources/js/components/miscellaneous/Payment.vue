@@ -2,7 +2,7 @@
     <div class="col-12" v-if="custcard" id="has_card">
         <div class="row my-3">
             <div class="col-8">
-                <button id="pay_card_btn" class="save_pay_card_btn w-100">Pay now</button>
+                <button id="pay_card_btn" class="save_pay_card_btn w-100" @click="effectPayment">Pay now</button>
             </div>
         </div>
         <div class="row mb-3">
@@ -13,6 +13,16 @@
             <div class="col-6">
                 <label>Card number</label>
                 <input type="text" :value="custcard.cardNumber" id="saved_card_input" readonly/>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-4">
+                <label>Date</label>
+                <input type="text" :value="custcard.dateexpiration" readonly/>
+            </div>
+            <div class="col-3">
+                <label>CVV</label>
+                <input type="text" value="***" readonly/>
             </div>
         </div>
     </div>
@@ -74,11 +84,24 @@
                             <small>{{ cardErrors.cardCvc }}</small>
                         </div>
                     </div>
-                    <div class="col-3">
-                        <label>&nbsp;</label>
-                        <button class="btn btn-default w-100 py-0 save_pay_card_btn" @click="saveCardDetails">Save</button>
-                    </div>
+                </div>
+                <div class="row mt-4 mb-2">
+                    <div class="col-8">
+                        <!--
+                        <button class="btn btn-default w-100 py-0 save_pay_card_btn" @click="saveCardDetails">Save and pay</button>
+                        -->
+                        <select-options
+                            v-model="saveOrPay"
+                            :options="[
+                                { display:'Save and pay', value: 'Save and pay' },
+                                { display:'Save', value: 'Save' },
+                            ]"
+                            :placeholder="'Save or Pay'"
+                            :label="''"
+                            :name="'paymentType'">
+                        </select-options>
 
+                    </div>
                 </div>
 
             </div>
@@ -89,13 +112,24 @@
 </template>
 <script>
 import {ref,watch,inject,onMounted} from 'vue';
+import {useStore} from 'vuex';
 import SelectOptions from '../miscellaneous/SelectOptions.vue';
+import {
+    LOADER_MODULE,
+    DISPLAY_LOADER,
+    HIDE_LOADER,
+    TOASTER_MODULE,
+    TOASTER_MESSAGE,
+} from '../../store/types/types';
+
 export default {
     name: "Payment",
     components:{SelectOptions},
     props: {
         custcard: Object || null,
+        order_id: String,
     },
+    emits:['reload-checkout'],
     setup(props,context) {
          //Payment details
 
@@ -103,6 +137,8 @@ export default {
 
             const cardFormat = inject('cardFormat');
             const paymentMethod = ref("");
+            const saveOrPay = ref("");
+            const store = useStore();
 
             const form = ref({
                 cardHolderName: '',
@@ -158,13 +194,13 @@ export default {
             });
             */
 
-            function validateCardDetails(save){
+            function validateCardDetails(){
                 let err = false;
                 let err_txt = [];
-                if(save && CustomerID.value==''){
-                    err = true;
-                    err_txt.push("Customer not set");
-                }else if(form.value.cardHolderName.replace(/\s/g,'')=='' || form.value.cardDetails.replace(/\s/g,'')=='' || form.value.cardExpDate.replace(/\s/g,'')=='' || form.value.cardCVV.replace(/\s/g,'')==''){
+
+                let card_err_el = document.querySelectorAll('#credit_card_div .error');
+
+                if(form.value.cardHolderName.replace(/\s/g,'')=='' || form.value.cardDetails.replace(/\s/g,'')=='' || form.value.cardExpDate.replace(/\s/g,'')=='' || form.value.cardCVV.replace(/\s/g,'')==''){
                     err = true;
                     err_txt.push("Card details missing");
                 }else if(card_err_el.length > 0){
@@ -175,8 +211,78 @@ export default {
                 return err_txt;
             }
 
-            function saveCardDetails(){
+            watch(()=>saveOrPay.value,(current_value,previous_value)=>{
+                if(current_value !=''){
+                    saveCardDetails(current_value);
+                }
+            });
 
+
+            function saveCardDetails(type){
+                let err_txt = validateCardDetails();
+
+                if(err_txt.length > 0){
+                    err_txt.forEach(function(v,i){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                            {
+                                message: v,
+                                ttl: 5,
+                                type: 'danger'
+                            });
+                    })
+                }else{
+                    effectPayment(type);
+                }
+            }
+
+            function effectPayment(){
+                let loading_text = "Effecting payment";
+                if(saveOrPay.value=='Save'){
+                    loading_text = "Creating card";
+                }
+
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
+                    true,
+                    loading_text+"....",
+                ]);
+
+                let params = {};
+
+                if(!props.custcard){
+                    params = form.value;
+                    params['payment_type'] = saveOrPay.value;
+                }else{
+                    params['payment_type'] = 'Pay';
+                }
+
+                params['order_id'] = props.order_id;
+                params['card_id'] = (props.custcard?props.custcard.id:null);
+
+                axios.post('/make-payment-or-create-card',params)
+                    .then((res)=>{
+                        if(saveOrPay.value!='Save'){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                            {
+                                message: (res.data.paid?"Payment successful":res.data.err_payment),
+                                ttl: 5,
+                                type:(res.data.paid?'success':'danger'),
+                            });
+                        }
+                    }).catch((err)=>{
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                            {
+                                message: err,
+                                ttl: 5,
+                                type: 'danger'
+                            });
+                    }).finally(()=>{
+                        store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+
+                        if(saveOrPay.value=='Save'){
+                             context.emit("reload-checkout");
+                        }
+
+                    });
             }
 
             return {
@@ -184,6 +290,8 @@ export default {
                 form,
                 cardErrors,
                 saveCardDetails,
+                effectPayment,
+                saveOrPay,
             }
 
 
@@ -257,7 +365,7 @@ input.error:focus{
 #has_card{
     label{
         color:#fff;
-        font:normal 16pt "Gotham Rounded";
+        font:normal 16px "Gotham Rounded";
     }
 
     input[type='text']{

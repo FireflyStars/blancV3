@@ -7,8 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\InfoCustomer;
 use App\Http\Controllers\BookingController;
 use App\Models\OrderRecurringCreator;
-
-use function PHPUnit\Framework\isNull;
+use stdClass;
 
 class OrderController extends Controller
 {
@@ -36,6 +35,12 @@ class OrderController extends Controller
         $new_order_id = 0;
         $created_stamp = date('Y-m-d H:i:s');
         $id_booking = 0;
+
+        $recurring_data = [];
+        $recur_obj = false;
+
+        $is_sub_account = $new_order['sub_account_cust'];
+        $main_account_deliveryask_id = $new_order['sub_account_delivery_id'];
 
 
         $customer = DB::table('infoCustomer')->where('CustomerID',$new_order['CustomerID'])->first();
@@ -115,26 +120,31 @@ class OrderController extends Controller
 
             $tranche = BookingController::getBookingDetailFromSlot($slot);
 
+            $id_booking = 0;
+            if($is_sub_account){
+                $id_booking = $main_account_deliveryask_id;
+            }else{
+                $delivery_arr = [
+                    'PhoneNumber'=>(!empty($phones)?implode(",",$phones):""),
+                    'CodeCountry'=>$code_country,
+                    'TypeDelivery'=>'', //A confirmer
+                    'AddressID'=>$address_uuid,
+                    'CustomerID'=>$customerid,
+                    'DeliveryAskID'=>'',
+                    'id_customer'=>0,
+                    'created_at'=>date('Y-m-d H:i:s'),
+                    'comment'=>(!is_null($new_order['customer_instructions'])?$new_order['customer_instructions']:''),
+                    'trancheFrom'=>$tranche['tranchefrom'],
+                    'trancheto'=>$tranche['trancheto'],
+                    'address_id'=>($address?$address->id:0),
+                    'date'=>$new_order['do_delivery'],
+                    'status'=>'NEW',//'PMS'
+                    'order_id'=>$new_order_id,
 
-            $delivery_arr = [
-                'PhoneNumber'=>(!empty($phones)?implode(",",$phones):""),
-                'CodeCountry'=>$code_country,
-                'TypeDelivery'=>'', //A confirmer
-                'AddressID'=>$address_uuid,
-                'CustomerID'=>$customerid,
-                'DeliveryAskID'=>'',
-                'id_customer'=>0,
-                'created_at'=>date('Y-m-d H:i:s'),
-                'comment'=>(!is_null($new_order['customer_instructions'])?$new_order['customer_instructions']:''),
-                'trancheFrom'=>$tranche['tranchefrom'],
-                'trancheto'=>$tranche['trancheto'],
-                'address_id'=>($address?$address->id:0),
-                'date'=>$new_order['do_delivery'],
-                'status'=>'NEW',//'PMS'
-                'order_id'=>$new_order_id,
+                ];
 
-            ];
-            $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
+                $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
+            }
 
             $booking_do = DB::table('deliveryask')->where('id',$id_booking)->first();
 
@@ -160,7 +170,7 @@ class OrderController extends Controller
 
 
         //Add booking for home_Delivery
-        if($new_order['deliverymethod']=='home_delivery'){
+        if(!$is_sub_account && $new_order['deliverymethod']=='home_delivery'){
 
             $pickup_slot = $new_order['hd_pickup_timeslot'];
             $tranche_pickup = BookingController::getBookingDetailFromSlot($pickup_slot);
@@ -231,10 +241,9 @@ class OrderController extends Controller
 
         }
 
-        $recurring_data = [];
-        $recur_obj = false;
 
-        if($new_order['deliverymethod']=='recurring'){
+
+        if(!$is_sub_account && $new_order['deliverymethod']=='recurring'){
             $recurring_data = @json_decode($new_order['recurring_data']);
 
             $recurring = [
@@ -287,17 +296,27 @@ class OrderController extends Controller
         if($id_booking_pickup > 0){
             BookingController::logBookingHistory($id_booking_pickup,$new_order_id,$customer->id,$user->id,'pickup');
         }
+
+        //*/
         return response()->json([
             'new_order_id'=>$new_order_id,
             'recurring'=>$recurring_data,
             'recur_obj'=>$recur_obj,
+            'post'=>$request->all(),
 
             //'delivery_arr'=>$delivery_arr,
         ]);
     }
 
     public function saveCardDetails(Request $request){
-        $stripe = new \Stripe\StripeClient(env('STRIPE_TEST_SECURITY_KEY'));
+        $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
+
+        $stripe_test = env('STRIPE_TEST');
+        if($stripe_test){
+            $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
+        }
+
+        $stripe = new \Stripe\StripeClient(env($stripe_key));
 
         $customer_id = $request->CustomerID;
 
@@ -392,4 +411,433 @@ class OrderController extends Controller
             'err'=>$err_txt,
         ]);
     }
+
+    public function makePaymentOrCreateCard(Request $request){
+        $card = null;
+        $payment_intent = null;
+        $err_payment = "";
+        $paid = false;
+
+        $card_id = $request->card_id;
+        $order_id = (int) $request->order_id;
+
+        $card_exp = $request->cardExpDate;
+        $card_num =  $request->cardDetails;
+        $cardholder_name = $request->cardHolderName;
+        $card_cvv = $request->cardCVV;
+        $payment_type= $request->payment_type;
+
+        $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
+
+        $stripe_test = env('STRIPE_TEST');
+        if($stripe_test){
+            $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
+        }
+
+        $stripe = new \Stripe\StripeClient(env($stripe_key));
+
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+
+
+
+        if(!is_null($card_id)){
+            $card = DB::table('cards')->where('id',$card_id)->first();
+        }else{
+            //Create card
+
+            $card_exp_arr = explode("/",$card_exp);
+
+            $stripe_customer = null;
+
+            $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+            $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->first();
+
+            $err_txt = "";
+
+            $card_id = 0;
+
+            if($cust && $addr){
+                $card = $stripe->paymentMethods->create([
+                    'type' => 'card',
+                    'card' => [
+                        'number'      => $card_num ,
+                        'exp_month'   => (int) $card_exp_arr[0],
+                        'exp_year'    => (int) $card_exp_arr[1],
+                        'cvc'         => $card_cvv,
+                    ],
+                ]);
+
+
+                //create a customer object to stripe
+                $stripe_customer = $stripe->customers->create([
+                    'name'              => $cardholder_name,
+                    'email'             => $cust->EmailAddress,
+                    'payment_method'    => $card->id,
+                    'invoice_settings'  => ['default_payment_method' => $card->id],
+                    'metadata'          => [
+                                                'CustomerID' => $cust->CustomerID
+                                        ],
+                    'address'           => [
+                                            'city'          => $addr->Town,
+                                            'state'         => $addr->County,
+                                            'country'       => $addr->Country,
+                                            'postal_code'   => $addr->postcode,
+                                            'line1'         => $addr->address1,
+                                            'line2'         => $addr->address2,
+                                        ]
+                ]);
+
+
+
+                $credit_card = [
+                    'CustomerID'        => $cust->CustomerID,
+                    'cardHolderName'    => $cardholder_name,
+                    'type'              => $card->card->brand,
+                    'cardNumber'        => substr_replace($card_num, str_repeat('*', strlen($card_num) - 6), 3, -3),
+                    'dateexpiration'    => $card_exp,
+                    'stripe_customer_id'=> $stripe_customer->id,
+                    'stripe_card_id'    => $card->id,
+                    'created_at'        => now(),
+                    'updated_at'        => now(),
+                ];
+
+                $card_id = DB::table('cards')->insertGetId($credit_card);
+                $card = DB::table('cards')->where('id',$card_id)->first();
+            }
+
+        }
+
+
+        //Effecting payment
+
+
+        if($payment_type !='Save' && $card && $order && $order->CustomerID==$card->CustomerID){
+            $payment_intent = $stripe->paymentIntents->create([
+                'amount'            => 100*$order->Total, //100*0.01
+                'currency'          => 'gbp',
+                'confirm'           => true,
+                "payment_method"    => $card->stripe_card_id,
+                "customer"          => $card->stripe_customer_id,
+                "capture_method"    => "automatic",
+                'payment_method_types' => ['card'],
+                "description"=>"Order: ".$order_id,
+                "receipt_email"=>"rushdi@vpc-direct-service.com", //To change for customer email
+            ]);
+
+
+            if($payment_intent && isset($payment_intent->status)){
+                $payment_arr = [
+                    'type'=>'card',
+                    'datepayment'=>date('Y-m-d H:i:s'),
+                    'status'=>$payment_intent->status,
+                    'montant'=>$order->Total,
+                    'order_id'=>$order_id,
+                    'card_id'=>$card->id,
+                    'CustomerID'=>$order->CustomerID,
+                    'created_at'=>date('Y-m-d H:i:s'),
+                ];
+
+                $payment_id = DB::table('payments')->insertGetId($payment_arr);
+
+                if($payment_intent->status == 'succeeded'){
+                    //Update order
+                    DB::table('infoOrder')->where('id',$order_id)->update([
+                        'Paid'=>1,
+                        'payment_id'=>$payment_id,
+                    ]);
+
+                    $paid = true;
+
+                    //Create/update items, itempost and invoices
+
+
+                }else{
+                    $err_payment = $payment_intent->status;
+                }
+
+            }
+
+        }
+
+
+        //*/
+
+        return response()->json([
+            'card'=>$card,
+            'payment_intent'=>$payment_intent,
+            'post'=>$request->all(),
+            'err_payment'=>$err_payment,
+            'paid'=>$paid,
+        ]);
+    }
+
+    public static function createOrderItems($order_id){
+
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+
+        $items_created = [];
+
+        if($order){
+            //Retrieve booking for order
+            $promised_date = "";
+            $storename = 'ATELIER';
+            $stores = 'DELIVERY';
+
+            //In store collection
+            if($order->deliverymethod=='in_store_collection'){
+                $booking = DB::table('booking_store')->where('order_id',$order->id)->first();
+                $promised_date = $booking->pickup_date;
+                $storename = $booking->store_name;
+                $stores = 'STORES';
+            }
+            //Delivery
+            elseif(in_array($order->deliverymethod,['delivery_only','home_delivery'])){
+                $booking = DB::table('deliveryask')->where('order_id',$order->id)->where('status','NEW')->first();
+                if($booking){
+                    $promised_date = $booking->date;
+                }
+            }
+            //Recurring
+            elseif($order->deliverymethod=='recurring'){
+                $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
+                if($cust){
+                    $booking = DB::table('deliveryask')->where('order_id',$order->id)->where('status','REC')->first();
+                    //To confirm for pickup
+
+                    if($booking){
+                        $promised_date = $booking->date;
+                    }
+                }
+            }
+
+            $daynames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+            $day_promised_date = date('w',strtotime($promised_date));
+            $date_jour = $daynames[$day_promised_date];
+
+
+            $detailing_items = DB::table('detailingitem')
+                ->select('detailingitem.*','typeitem.name as typeitem','typeitem.PERC','typeitem.process','departments.name as department')
+                ->join('typeitem','detailingitem.typeitem_id','typeitem.id')
+                ->join('departments','typeitem.department_id','departments.id')
+                ->where('detailingitem.order_id',$order_id)
+                ->get();
+
+
+            $customer_type = DB::table('infoCustomer')
+                ->select('InfoCustomerPreference.*')
+                ->join('InfoCustomerPreference','infoCustomer.CustomerID','InfoCustomerPreference.CustomerID')
+                ->where('infoCustomer.CustomerID',$order->CustomerID)
+                ->where('InfoCustomerPreference.Delete',0)
+                ->where('Titre','Type Customer')
+                ->first();
+
+            $size_map = [];
+            $sizes = DB::table('sizes')->get();
+            if(count($sizes) > 0){
+                foreach($sizes as $k=>$v){
+                    $size_map[$v->id] = $v->name;
+                }
+            }
+
+            $vip = 0;
+            $star = 0;
+
+            if($customer_type=='VIP GOLD'){
+                $vip = 1;
+                $star = 1;
+            }elseif($customer_type=='VIP RED'){
+                $vip = 2;
+                $star = 2;
+            }
+
+            $items_to_insert = [];
+
+
+            if(count($detailing_items)> 0){
+                foreach($detailing_items as $k=>$v){
+
+                    $tailoring_services = $v->tailoring_services;
+
+                    $tailoring_arr = [];
+                    if(!is_null($tailoring_services ) && $tailoring_services !=''){
+                        $tailoring_arr = @json_encode($tailoring_services);
+                    }
+
+                    //Calculate New Post et processus
+
+                    $process_arr = DetailingController::calculateNextPost($v->id);
+
+
+                    $item = new stdClass();
+                    $item->spot = 0;
+                    $item->typeitem = $v->typeitem;
+                    $item->Status = 'In process';
+                    $item->PERC = $v->PERC;
+                    $item->Actif = 1;
+                    $item->tailoring = (!empty($tailoring_arr)?1:0);
+                    $item->DepartmentName = $v->department;
+                    $item->PromisedDate = $promised_date;
+
+
+                    $item->nextpost = $process_arr['nextpost'];
+                    $item->process = json_encode($process_arr['process']);
+
+                    $item->StoreName = $storename;
+                    $item->store = $stores;
+                    $item->express = $order->express;
+                    $item->priceClean = $v->pricecleaning;
+                    $item->ItemTrackingKey = $v->tracking;
+
+                    //Size
+                    if(!is_null($v->size_id) && isset($size_map[$v->size_id])){
+                        $item->Size = $size_map[$v->size_id];
+                    }
+
+                    //Patterns
+                    $pattern_text = "";
+                    if($v->pattern_id !='' && !is_null($v->pattern_id)){
+                        $pattern = DB::table('patterns')->where('id',$v->pattern_id)->first();
+                        if($pattern){
+                            $pattern_text = $pattern->name;
+                        }
+                    }
+                    $item->Patterns = $pattern_text;
+
+
+                    //Fabrics
+                    $fabric_text = "";
+                    if($v->fabric_id!='' && !is_null($v->fabric_id)){
+                        $fabric_id_arr = @json_decode($v->fabric_id);
+                        $fabric_names = [];
+                        if(is_array($fabric_id_arr) && !empty($fabric_id_arr)){
+                            $fabrics = DB::table('fabrics')->whereIn('id',$fabric_id_arr)->get();
+
+                            if(count($fabrics) > 0){
+                                foreach($fabrics as $key=>$val){
+                                    $fabric_names[] = $val->Name;
+                                }
+
+                                $fabric_text = implode(",",$fabric_names);
+                            }
+                        }
+                    }
+                    $item->Fabrics = $fabric_text;
+
+                    //Colors
+
+                    if($v->color_id!='' && !is_null($v->color_id)){
+                        $color_id_arr = @json_decode($v->color_id);
+                        $color_names = [];
+
+                        if(is_array($color_id_arr) && !empty($color_id_arr)){
+                            $colors = DB::table('colours')->whereIn('id',$color_id_arr)->get();
+
+                            if(count($colors) > 0){
+                                foreach($colors as $key=>$val){
+                                    $color_names[] = $val->name;
+                                }
+                                $color_text = implode(",",$color_names);
+                            }
+                        }
+                    }
+
+                    $item->Colors = $color_text;
+
+
+                    //Complexities
+                    $complexities_text = "";
+                    if($v->complexities_id !='' && !is_null($v->complexities_id)){
+                        $complexities_id_arr = @json_decode($v->complexities_id);
+                        $complexities_names = [];
+
+
+
+                        if(is_array($complexities_id_arr) && !empty($complexities_id_arr)){
+                            $complexities = DB::table('complexities')->whereIn('id',$complexities_id_arr)->get();
+
+
+                            if(count($complexities) > 0){
+                                foreach($complexities as $key=>$val){
+                                    $complexities_names[] = $val->name;
+                                }
+
+                                $complexities_text = implode("/",$complexities_names);
+                            }
+                        }
+                    }
+
+
+
+                    $item->Complexities = $complexities_text;
+
+
+                    //Condition
+                    $condition = DB::table('conditions')->where('id',$v->condition_id)->first();
+                    $item->generalState = $condition->name;
+
+
+                    //Brand
+                    $brand = DB::table('brands')->where('id',$v->brand_id)->first();
+                    $item->brand = $brand->name;
+
+
+
+                    $item->express = $order->express;
+                    $item->priceClean = $v->dry_cleaning_price+$v->cleaning_addon_price;
+                    $item->priceTail = $v->tailoring_price;
+                    $item->priceTotal = $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+                    $item->PromisedDate = $promised_date;
+                    $item->dateJour = $date_jour;
+                    $item->date_add = date('Y-m-d H:i:s');
+                    //Damages
+
+
+
+                    //To confirm
+                    $item->Vip = $vip;
+                    $item->star = $star;
+
+                    $cur_item = DB::table('infoitems')->where('ItemTrackingKey',$v->tracking)->first();
+
+                    $cur_item_id = 0;
+                    if($cur_item){
+                        DB::table("infoitems")->where('id',$cur_item->id)->update((array) $item);
+                        $cur_item_id = $cur_item->id;
+                    }else{
+                        $item->ItemID = '';
+                        $cur_item_id = DB::table("infoitems")->insertGetId((array) $item);
+                    }
+
+                    DB::table('detailingitem')->where('id',$v->id)->update([
+                        'item_id'=>$cur_item_id,
+                    ]);
+
+                    $items_created[] = $cur_item_id;
+
+                    //ADD ItemID in infoitempost
+
+
+
+                }
+
+
+            }
+        }
+
+        return $items_created;
+
+    }
+
+    public function completeCheckout(Request $request){
+        $order_id = $request->order_id;
+
+        $order_items = OrderController::createOrderItems($order_id);
+
+        return response()->json([
+            'order_items'=>$order_items,
+        ]);
+    }
+
 }
