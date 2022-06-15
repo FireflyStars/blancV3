@@ -966,16 +966,14 @@ import axios from 'axios';
                     new_order.dropoff_stamp = formatDateToDb(cur_date.value);
 
                     new_order['sub_account_cust'] = false;
-                    new_order['sub_account_delivery_id'] = 0;
+                    new_order['sub_account_booking_id'] = 0;
+                    new_order['sub_account_booking_type'] = '';
 
 
-                    if(cur_cust.value.main_account){
+                    if(cur_cust.value.main_account && cur_cust.value.main_account.recent_deliveryask){
                         new_order['sub_account_cust'] = true;
-
-                        if(cur_cust.value.main_account.recent_deliveryask){
-                            new_order['sub_account_delivery_id'] = cur_cust.value.main_account.recent_deliveryask.id;
-                        }
-
+                        new_order['sub_account_booking_id'] = cur_cust.value.main_account.recent_deliveryask.id;
+                        new_order['sub_account_booking_type'] = cur_cust.value.main_account.recent_deliveryask.type;
                     }
 
 

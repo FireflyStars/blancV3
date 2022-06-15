@@ -35,12 +35,14 @@ class OrderController extends Controller
         $new_order_id = 0;
         $created_stamp = date('Y-m-d H:i:s');
         $id_booking = 0;
+        $id_master_pickup = 0;
 
         $recurring_data = [];
         $recur_obj = false;
 
         $is_sub_account = $new_order['sub_account_cust'];
-        $main_account_deliveryask_id = $new_order['sub_account_delivery_id'];
+        $main_account_booking_id = $new_order['sub_account_booking_id'];
+        $main_account_booking_type = $new_order['sub_account_booking_type'];
 
 
         $customer = DB::table('infoCustomer')->where('CustomerID',$new_order['CustomerID'])->first();
@@ -120,9 +122,12 @@ class OrderController extends Controller
 
             $tranche = BookingController::getBookingDetailFromSlot($slot);
 
-            $id_booking = 0;
             if($is_sub_account){
-                $id_booking = $main_account_deliveryask_id;
+                if($main_account_booking_type=='pickup'){
+                    $id_master_pickup = $main_account_booking_id;
+                }elseif($main_account_booking_type=='deliveryask'){
+                    $id_booking = $main_account_booking_id;
+                }
             }else{
                 $delivery_arr = [
                     'PhoneNumber'=>(!empty($phones)?implode(",",$phones):""),
@@ -146,12 +151,23 @@ class OrderController extends Controller
                 $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
             }
 
-            $booking_do = DB::table('deliveryask')->where('id',$id_booking)->first();
+            if($id_booking !=0){
+                $booking_do = DB::table('deliveryask')->where('id',$id_booking)->first();
 
-            DB::table('infoOrder')->where('id',$new_order_id)->update([
-                'DeliveryaskID'=>$booking_do->DeliveryaskID,
-                'DateDeliveryAsk'=>$new_order['do_delivery']
-            ]);
+                DB::table('infoOrder')->where('id',$new_order_id)->update([
+                    'DeliveryaskID'=>$booking_do->DeliveryaskID,
+                    'DateDeliveryAsk'=>$new_order['do_delivery']
+                ]);
+            }
+
+            if($id_master_pickup !=0){
+                $master_pickup =  DB::table('pickup')->where('id',$id_master_pickup)->first();
+
+                DB::table('infoOrder')->where('id',$new_order_id)->update([
+                    'PickupID'=>$master_pickup->PickupID,
+                    'DatePickup'=>$new_order['do_delivery']
+                ]);
+            }
 
 
 
@@ -290,6 +306,10 @@ class OrderController extends Controller
         //Logs booking history
         if($id_booking > 0){
             BookingController::logBookingHistory($id_booking,$new_order_id,$customer->id,$user->id,($new_order['deliverymethod']=='home_delivery'?'delivery_ask':$new_order['deliverymethod']));
+        }
+
+        if($id_master_pickup > 0){
+            BookingController::logBookingHistory($id_master_pickup,$new_order_id,$customer->id,$user->id,'pickup');
         }
 
 

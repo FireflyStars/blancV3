@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Tranche;
+use App\Models\Delivery;
 
 class CustomerController extends Controller
 {
@@ -494,6 +495,10 @@ class CustomerController extends Controller
         $CustomerID=$request->post('CustomerID');
         $infoCustomer = null;
 
+        $delivery_ask_status_to_include = Delivery::getDeliveryAskStatusToInclude();
+        $pickup_status_to_include = Delivery::getPickupStatutToInclude();
+
+
         if($CustomerID!=''){
             $infoCustomer=DB::table('infoCustomer')->where('infoCustomer.CustomerID','=',$CustomerID)
                 ->leftJoin('address',function($join) {
@@ -512,17 +517,35 @@ class CustomerController extends Controller
                     ->first();
                     $infoCustomer->main_account=DB::table('infoCustomer')->where('infoCustomer.CustomerID','=',$infoCustomer->CustomerIDMaster)->first();
 
-
-
                     $infoCustomer->holidays=Holiday::all();
-                    $deliveryask=DB::table('deliveryask')->where('CustomerID','=',$infoCustomer->CustomerIDMaster)->whereDate('date','>=',date('Y-m-d'))->first();
+                    $deliveryask=DB::table('deliveryask')->where('CustomerID','=',$infoCustomer->CustomerIDMaster)->whereDate('date','>=',date('Y-m-d'))->whereIn('status',$delivery_ask_status_to_include)->first();
 
-                    if($deliveryask){
-                        $deliveryask->slot = Tranche::getSlotFromTranche($deliveryask->trancheFrom,$deliveryask->trancheto);
+                    $pickup = DB::table('pickup')->where('CustomerID','=',$infoCustomer->CustomerIDMaster)->whereDate('date','>=',date('Y-m-d'))->whereIn('status',$pickup_status_to_include)->first();
+
+                    $booking = null;
+
+                    if($pickup && !$deliveryask){
+                        $booking = $pickup;
+                    }elseif(!$pickup && $deliveryask){
+                        $booking = $deliveryask;
+                    }elseif($pickup && $deliveryask){
+                        $booking = $pickup;
+                        if($pickup->date > $deliveryask->date){
+                            $booking = $deliveryask;
+                        }
+                    }
+
+                    if(!is_null($booking)){
+                        $booking->slot = Tranche::getSlotFromTranche($booking->trancheFrom,$deliveryask->trancheto);
+                        if(isset($booking->DeliveryaskID)){
+                            $booking->type = 'deliveryask';
+                        }elseif(isset($booking->PickupID)){
+                            $booking->type = 'pickup';
+                        }
                     }
 
 
-                    $infoCustomer->main_account->recent_deliveryask=$deliveryask;
+                    $infoCustomer->main_account->recent_deliveryask=$booking;
                 }
             $ltm_spend=DB::table('infoOrder')->select(['Total'])->where('CustomerID','=',$CustomerID)->where('Status','=','FULFILLED')->where('created_at','>=',date('Y-m-d',strtotime('-12 months')))->get();
             $spend=0;
