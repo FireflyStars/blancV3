@@ -113,7 +113,7 @@
                                     <br />
                                     <span
                                         v-if="fabric.coefcleaning != 0"
-                                    >(£{{ fabric.coefcleaning * item_description.base_price }})</span>
+                                    >(£{{ (fabric.coefcleaning * item_description.base_price).toFixed(2) }})</span>
                                 </div>
                             </div>
                         </div>

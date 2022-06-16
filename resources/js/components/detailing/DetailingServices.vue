@@ -184,7 +184,7 @@ export default {
         //const main_services = ref({});
         //const cleaning_services = ref({});
         const main_service = ref(1);
-        const type_prices = ref(['Price now','Quote']);
+        const type_prices = ref(['Standard','Quote']);
         const sel_cleaning_group = ref([]);
         const sel_tailoring_group = ref([]);
         const sel_tailoring_service_id = ref([]);

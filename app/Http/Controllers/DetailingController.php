@@ -27,8 +27,8 @@ class DetailingController extends Controller
         $customer = (array) $customer->first();
 
         $detailingitemlist = DB::table('detailingitem')
-            ->select('typeitem.name as typeitem_name', 'detailingitem.pricecleaning as price','detailingitem.id as item_number','detailingitem.*',)
-            ->join('typeitem', 'typeitem.id', 'detailingitem.typeitem_id')
+            ->select( 'detailingitem.pricecleaning as price','detailingitem.id as item_number','detailingitem.*',)
+            //->join('typeitem', 'typeitem.id', 'detailingitem.typeitem_id')
             //->join('infoitems', 'infoitems.ItemTrackingKey', '=', 'detailingitem.item_id')
             //->join('infoInvoice', 'infoInvoice.SubOrderID', '=', 'infoitems.SubOrderID')
             ->where('detailingitem.order_id', '=', $order_id)
@@ -36,7 +36,15 @@ class DetailingController extends Controller
             //->orderBy('infoInvoice.NumInvoice')
             ->orderBy('detailingitem.id','ASC')
             ->get();
+        //'typeitem.name as typeitem_name',
 
+        $typeitem_map = [];
+        $typeitems = DB::table('typeitem')->get();
+        if(count($typeitems) > 0){
+            foreach($typeitems as $k=>$v){
+                $typeitem_map[$v->id] = $v->name;
+            }
+        }
 
         /*
         'infoitems.NoBag', 'infoInvoice.NumInvoice as sub_order', 'infoitems.ItemTrackingKey as item_number'
@@ -46,6 +54,8 @@ class DetailingController extends Controller
             foreach($detailingitemlist as $k=>$v){
                 $detailingitemlist[$k]->sub_order = "";
                 $detailingitemlist[$k]->NoBag = 0;
+
+                $detailingitemlist[$k]->typeitem_name = (isset($typeitem_map[$v->typeitem_id])?$typeitem_map[$v->typeitem_id]:"");
 
                 if($v->etape==11){
                     $cleaning_price = $v->dry_cleaning_price + $v->cleaning_addon_price;
@@ -174,6 +184,18 @@ class DetailingController extends Controller
                 }
             }
 
+        }
+
+        if(is_null($detailingitem['cleaning_price_type'])){
+            $detailingitem['cleaning_price_type'] = "Standard";
+
+            DB::table("detailingitem")->where('id',$detailingitem_id)->update(['cleaning_price_type'=>'Standard']);
+        }
+
+        if(is_null($detailingitem['tailoring_price_type'])){
+            $detailingitem['tailoring_price_type'] = "Standard";
+
+            DB::table("detailingitem")->where('id',$detailingitem_id)->update(['tailoring_price_type'=>'Standard']);
         }
 
         echo json_encode(
@@ -390,12 +412,18 @@ class DetailingController extends Controller
                     $cprices = $cleaning_prices;
                 }
 
-                DB::table('detailingitem')->where('id',$detailingitem_id)->update([
+
+                $cleaning_arr_to_update = [
                     'cleaning_services'=>$cleaning_services,
-                    'cleaning_price_type'=>$cleaning_price_type,
                     'dry_cleaning_price'=>(isset($cprices['Dry cleaning'])?$cprices['Dry cleaning']:0),
                     'cleaning_addon_price'=>(isset($cprices['Cleaning Add-on'])?$cprices['Cleaning Add-on']:0),
-                ]);
+                ];
+
+                if(!is_null($cleaning_price_type)){
+                    $cleaning_arr_to_update['cleaning_price_type'] = $cleaning_price_type;
+                }
+
+                DB::table('detailingitem')->where('id',$detailingitem_id)->update($cleaning_arr_to_update);
 
 
                 if($cleaning_price_type=='Quote'){
@@ -936,7 +964,7 @@ class DetailingController extends Controller
                         'creation_time'=>date('h:i',$creation_stamp)." ".strtolower(date("A",$creation_stamp)),
                         'delivery_date'=>date('d/m',$delivery_stamp),
                         'delivery_day'=>$days[$delivery_day_index],
-                        'delivery_time'=>$tranches[$delivery_slot],
+                        'delivery_time'=>(isset($tranches[$delivery_slot])?$tranches[$delivery_slot]:""),
                     ];
                 }
 
