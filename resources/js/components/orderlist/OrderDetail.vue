@@ -7,7 +7,7 @@
                 <image xlink:href="/images/pdficon.svg"  width="30" height="40"/>
             </svg>
             <h2>{{ORDER.detail.Status}}</h2>
-            <h2 >&numero; {{ORDER.detail.id}}</h2> <tag :name="ORDER.detail.Status" ></tag>
+            <h2 >&numero; {{ORDER.detail.order_id}}</h2> <tag :name="ORDER.detail.Status" ></tag>
         </div>
         <transition name="popinout">
             <div v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate==null&&!hasRoles(['cc'])" class="section-late-production-op row">

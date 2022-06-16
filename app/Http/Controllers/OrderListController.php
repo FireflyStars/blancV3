@@ -226,7 +226,7 @@ class OrderListController extends Controller
     public function getorderdetail(Request $request){
         $infoOrder_id=$request->post('infoOrder_id');
         $order=DB::table('infoOrder')
-            ->select(['infoOrder.id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.id' , 'infoCustomer.Phone','infoCustomer.CustomerID',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate'])
+            ->select(['infoOrder.id AS order_id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.id' , 'infoCustomer.Phone','infoCustomer.CustomerID',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate'])
             ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
 
             ->where('infoOrder.id','=',$infoOrder_id)->first();
@@ -235,7 +235,7 @@ class OrderListController extends Controller
             $delivery_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=',$order->TypeDelivery)->first();
 
             $infoitems=DB::table('infoitems')->select(['infoInvoice.NumInvoice','infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status','TypePost.Name as station',])->join('infoInvoice',function($join) use($order){
-               $join->on('infoInvoice.SubOrderID','=','infoitems.SubOrderID')
+               $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
                ->where('infoInvoice.OrderID','=',$order->OrderID);
             })->leftJoin('postes','postes.id','=','infoitems.nextpost')
                 ->leftJoin('TypePost','TypePost.id','=','postes.TypePost')
@@ -609,7 +609,7 @@ class OrderListController extends Controller
 
         if($current_tab != 'customer_care'){
             $orderlist=DB::table('infoOrder')
-                ->select( [ 
+                ->select( [
                     'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id',
                     'infoCustomer.Name','infoCustomer.TypeDelivery', 'infoInvoice.datesold', 'infoitems.PromisedDate', 'infoCustomer.CustomerID',
                     DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
@@ -628,16 +628,16 @@ class OrderListController extends Controller
                 ->where('infoOrder.OrderID','!=','')
                 ->where('infoInvoice.OrderID','!=','')
                 ->where('infoCustomer.CustomerID','=',$customerId);
-               
+
 
         }else{
             $orderlist=DB::table('infoOrder')
-                ->select( [ 
+                ->select( [
                     'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id','infoitems.PromisedDate',
                     'infoCustomer.Name as Customer','infoCustomer.TypeDelivery', 'infoInvoice.datesold', 'infoCustomer.CustomerID',
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
                     DB::raw('IF(infoOrder.Paid = 0, "unpaid", "paid") as paid'),
-                    'infoitems.CCStatus as Action', 
+                    'infoitems.CCStatus as Action',
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Prod'),
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Deliv'),
                 ])
@@ -689,7 +689,7 @@ class OrderListController extends Controller
         if($current_tab!='all_orders')
             $orderlist=$orderlist->whereNotIn('infoOrder.Status',['VOID', 'DELETE']);
         //filters
-     
+
 
         if(!empty($filters))
             foreach($filters as $colname => $values){
@@ -734,7 +734,7 @@ class OrderListController extends Controller
         $orderlist=$orderlist->get();
         // adding ready_sub_orders and deliv date
         foreach ($orderlist as $order) {
-            if( 
+            if(
                 (Carbon::parse($order->PromisedDate)->gt(Carbon::now()) || Carbon::parse($order->PromisedDate)->gt(Carbon::now()->subMonth())) &&
                 ($order->datesold == '' || $order->datesold == '2019-01-01 00:00:00')
             ){

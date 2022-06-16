@@ -888,6 +888,11 @@ class OrderController extends Controller
             DB::table('infoOrder')->where('id',$order_id)->update(['Status'=>'In process']);
         }
 
+        /*To remove
+        $res = new stdClass();
+        $res->result = "ok";
+        //End to remove */
+
         return $res;
 
 
