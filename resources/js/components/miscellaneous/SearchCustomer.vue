@@ -38,8 +38,8 @@
                       <div class="col-5">
                              <b class ="body_regular">{{customer.EmailAddress}}</b>
                        </div>
-                       <div class="col-2" style="text-align: end;">
-                            <tag  @click="goToOrderList(customer.CustomerID)" :name="'Orders'" ></tag>
+                       <div class="col-2" style="text-align: end;" @click="goToOrderList(customer.CustomerID)">
+                            <tag   :name="'Orders'" ></tag>
                         </div>
                        <div class="col-2" style="text-align: end;">
                             <tag   v-if="customer.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
@@ -98,10 +98,13 @@
                         <div class="col-3">
                          <span class="body_medium">{{order.Name.replace(',','').toLowerCase()}}</span>
                         </div>
-                        <div class="col-3  text-align: center;">
+                         <div class="col-1" >
+                            <span class="body_small">{{order.id}}</span>
+                        </div>
+                        <div class="col-2 " style = "text-align: center;">
                         <b class = "body_small">{{order.TypeDelivery}}</b>
                         </div>
-                        <div class=" col-2">
+                        <div class=" col-2 ">
                             <b class ="body_small">{{formatDate(order.DateDeliveryAsk)}}</b>
                         </div>
 
@@ -250,7 +253,7 @@ export default({
           function goToOrderList(customerId){
 
             this.clearSearch()
-           
+
             router.push({
                     name:'LandingPage',
                     params: {
@@ -261,12 +264,8 @@ export default({
           }
 
           function goCustomerView(customerId){
-
-            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
             this.clearSearch()
-          
              router.push('/customer-detail/'+ customerId);
-                
           }
             return {
                 submit,
