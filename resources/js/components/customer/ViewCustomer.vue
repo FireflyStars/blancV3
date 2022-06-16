@@ -245,13 +245,16 @@
                         <transition name="list" appear v-if="step =='payment'">
                             <div class="payment cust-page-content m-auto pt-5">
                                 <div class="payment-method-section" v-if="form.accountType !='Master'">
-                                    <h3 class="title">Payment method</h3>
+                                    <h3 class="title">Payment method <span v-if="!creditCardCustomer" class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="AddCreditCardCustomer()">Add</span></h3>
+                                      
                                     <div class="page-section">
+                                          <img v-if="creditCardCustomer" src="/images/trash.svg" style="float: right;" @click="DeleteCreditCardCustomer()"/>
                                         <div class="credit-card mt-5 d-flex justify-content-between">
                                             <div class="form-group col-3 cardholder mb-0">
                                                 <label for="">Cardholder name</label>
                                                 <div class="w-100 py-2 rounded-2 bg-color px-3">
-                                                    {{ form.cardHolderName }} &nbsp;
+                                                    <span v-if="!add_payement">{{ form.cardHolderName }}&nbsp;</span> 
+                                                    <input v-if="add_payement" type="text" v-model="form.cardHolderName" class="form-control" placeholder="Name">
                                                 </div>
                                             </div>
                                             <div class="form-group col-4 carddetails mb-0">
@@ -261,23 +264,27 @@
                                                         <i class="credit-card-icon" :class="cardBrand"></i>
                                                     </span>
                                                     <div class="py-2 rounded-2 bg-color px-3">
-                                                        {{ form.cardDetails }} &nbsp;
+                                                    <span v-if="!add_payement">{{ form.cardDetails }}&nbsp;</span> 
+                                                    <input v-if="add_payement"  v-model="form.cardDetails" class="form-control" type="tel" placeholder="Enter card details">
                                                     </div>                                                    
                                                 </div>
                                             </div>
                                             <div class="form-group col-2 cardexpdate mb-0">
                                                 <label for="">Expiration date</label>
                                                 <div class="w-100 py-2 rounded-2 bg-color px-3">
-                                                        {{ form.cardExpDate }} &nbsp;
+                                                    <span v-if="!add_payement">{{ form.cardExpDate }}&nbsp;</span> 
+                                                    <input v-if="add_payement" type="text" v-model="form.cardExpDate" class="form-control"  placeholder="mm/yy">
                                                 </div>     
                                             </div>
                                             <div class="form-group col-2 cardexpdate mb-0">
                                                 <label for="">CVV</label>
                                                 <div class="w-100 py-2 rounded-2 bg-color px-3">
-                                                        {{ form.cardCvc }} &nbsp;
+                                                    <span v-if="!add_payement">{{ form.cardCVV }}&nbsp;</span> 
+                                                    <input v-if="add_payement" type="text" v-model="form.cardCVV" class="form-control" placeholder="CVV">
                                                 </div>                 
                                             </div>
                                         </div>
+                                      
                                     </div>
                                 </div>
                                 <div class="invoice-details-panel" v-if="1 != 1">
@@ -382,7 +389,7 @@
                                                 <div class="form-group mb-0 payment-method">
                                                     <label for="discount_credit">Credit amount</label>
                                                     <div class="w-100 py-2 bg-color px-3 rounded-3">
-                                                        <b>£</b> {{ form.creditAmount }}
+                                                        <b>£</b> {{ form.discountCredit }}
                                                     </div>
                                                 </div>
                                             </div>
@@ -636,7 +643,7 @@
     import BreadCrumb from '../layout/BreadCrumb'
     import SideBar from '../layout/SideBar'
     import { useRouter, useRoute } from 'vue-router';
-    import {ref,onMounted, nextTick, computed, watch } from 'vue';
+    import {ref,onMounted, nextTick, computed, watch ,inject } from 'vue';
     import SelectOptions from '../test/SelectOptions';
     import MultipleEmail from '../test/MultipleEmail';
     import CheckBox from '../miscellaneous/CheckBox';
@@ -699,6 +706,7 @@
                 cardDetails: '',
                 cardExpDate: '',
                 cardCVV: '',
+                cardId:'',
                 attachReceiptToVatInvoice: false,
                 companyLegalName: '',
                 companyRepFirstName: '',
@@ -740,16 +748,21 @@
                 step.value = 'account_details';
             }
             const postcode = ref(null);
-            const cardBrand = ref('');
+            const cardBrand = ref('cc-unknown');
             const contact_details_edit = ref(false);
+            const add_payement = ref(false);
             const address_edit = ref(false);
             const companyPostCode = ref(null);
             const searchpanel = ref(null);
             const showcontainer=ref(false);
             const searchCustomer=ref(false);
+            const creditCardCustomer=ref(false);
             const currentOrders=ref([]);
             const pastOrders=ref([]);
             const timeout =ref('');
+            let name_regex = /^[a-zA-Z ]*$/;
+            const cardErrors = ref({});
+            const cardFormat = inject('cardFormat');
             const paths=ref([
                 { name:'Customer', route:'Customer'},
             ]);            
@@ -771,18 +784,20 @@
                 axios.post('/get-customer-full-detail', {
                     customer_id: route.params.customer_id
                 }).then((res)=>{
-                   
+                  
+                    if(res.data.card == null){
+                        creditCardCustomer.value = false ;
+                    } else {
+                        creditCardCustomer.value = true ;
+                    }
+
                     form.value.discountCredit = res.data.credit;
                     form.value.creditAmount = res.data.credit;
-                    
-                    paths.value.push(
-                        { name: res.data.firstName +' ' + res.data.lastName , route:'ViewCustomer', params:{ customer_id: res.data.id }}
-                    );
-                    form.value.customerID = res.data.customerID;
+                    form.value.customerID = res.data.CustomerID;
                     form.value.Name = res.data.Name;
                     form.value.booking = res.data.booking;
                     form.value.totalSpent = res.data.totalSpent;
-                    form.value.accountType = '',
+                    form.value.accountType = '';
                     form.value.customerType = res.data.customerType;
                     form.value.typeDelivery = res.data.typeDelivery;
                     form.value.programmeType = res.data.programmeType;
@@ -794,20 +809,24 @@
                     form.value.phoneNumber = phone.number;
                     form.value.email = res.data.email;
                     // address part in account details tab
-                    form.value.postCode = res.data.address.postCode;
-                    form.value.city = res.data.address.city;
-                    form.value.state = res.data.address.state;
-                    form.value.county = res.data.address.county;
-                    form.value.country = res.data.address.country;
-                    form.value.deliveryAddress1 = res.data.address.address1;
-                    form.value.deliveryAddress2 = res.data.address.address2;
-                    form.value.customerNote = res.data.customerNote;
+                    //form.value.postCode = res.data.address.postCode;
+                    // form.value.city = res.data.address.city;
+                    // form.value.state = res.data.address.state;
+                    // form.value.county = res.data.address.county;
+                    // form.value.country = res.data.address.country;
+                    // form.value.deliveryAddress1 = res.data.address.address1;
+                    // form.value.deliveryAddress2 = res.data.address.address2;
+                    // form.value.customerNote = res.data.customerNote;
                     // payment tab
+                    
                     form.value.paymentMethod  = res.data.paymentMethod == 1 ? 'Credit Card' : 'BACS';
+                    
                     if(res.data.paymentMethod == 1 && res.data.card){
-                        form.value.cardHolderName = res.data.card ?? res.data.card.cardHolderName;
-                        form.value.cardDetails = res.data.card ?? res.data.card.cardNumber;
-                        form.value.cardExpDate = res.data.card ?? res.data.card.expDate;
+                      
+                        form.value.cardHolderName =  res.data.card.cardHolderName;
+                        form.value.cardDetails = res.data.card.cardNumber;
+                        form.value.cardExpDate =  res.data.card.expDate;
+                        form.value.cardId = res.data.card.id;
                         form.value.cardCVV = '***';
                         if(res.data.card.type == 'Visa'){
                             cardBrand.value = 'cc-visa';
@@ -817,8 +836,10 @@
                             cardBrand.value = 'cc-amex';
                         }else if(res.data.card.type == 'discover'){
                             cardBrand.value = 'cc-discover';
+                        }else {
+                             cardBrand.value = 'cc-unknown';
                         }
-                    }
+                    };
                     currentOrders.value = res.data.currentOrders;
                     pastOrders.value = res.data.pastOrders;
                     // companyLegalName: '',
@@ -860,6 +881,10 @@
                     }
                     // linked accounts
                     form.value.linkedAccounts = res.data.linkedAccounts;
+
+                    paths.value.push(
+                        { name: res.data.firstName +' ' + res.data.lastName , route:'ViewCustomer', params:{ customer_id: res.data.id }}
+                    );
                 }).catch((error)=>{
                     console.log(error);
                 }).finally(()=>{
@@ -970,18 +995,96 @@
                 }
             }  
                watch(()=>form.value.discountCredit,(current_value, previous_value)=>{
+                
                clearTimeout(timeout.value);
                timeout.value = setTimeout(function(){
+
+                    axios.post('/add-credit-customer', { credit :current_value , customer_id : route.params.customer_id } ).then((response)=>{
                    
-                    axios.post('/add-credit-customer', { credit : form.value.discountCredit , customer_id : route.params.customer_id } ).then((response)=>{
-                    console.log("response")
                     }).catch((errors)=>{
                         console.log(errors);
-                    
                     })  
                     }
                    , 500)    
                })
+
+                watch(()=>form.value.cardHolderName,(current_value,previous_value)=>{
+                    if(current_value == 'Visa'){
+                            cardBrand.value = 'cc-visa';
+                        }else if(current_value == 'Mastercard'){
+                            cardBrand.value = 'cc-mastercard';
+                        }else if(current_value == 'Amex'){
+                            cardBrand.value = 'cc-amex';
+                        }else if(current_value == 'discover'){
+                            cardBrand.value = 'cc-discover';
+                        }else {
+                             cardBrand.value = 'cc-unknown';
+                        }
+                if(current_value.replace(/\s/g,'')=='' || !name_regex.test(current_value)){
+                    cardErrors.value.cardHolderName = "Invalid cardholder name.";
+                }else{
+                    delete cardErrors.value.cardHolderName;
+                }
+            })
+
+
+              // validation when the card detail changes
+            watch(()=>form.value.cardDetails,(current_value, previous_value)=>{
+                if(cardFormat.validateCardNumber(current_value)){
+                    delete cardErrors.value.cardNumber;
+                }else{
+                    cardErrors.value.cardNumber = "Invalid Credit Card Number.";
+                }
+            })
+            // validation when the card exp changes
+            watch(()=>form.value.cardExpDate,(current_value, previous_value)=>{
+                if(cardFormat.validateCardExpiry(current_value)){
+                    delete cardErrors.value.cardExpiry;
+                }else{
+                    cardErrors.value.cardExpiry = "Invalid Expiration Date.";
+                }
+            })
+            // validation when the card exp changes
+            watch(()=>form.value.cardCVV,(current_value, previous_value)=>{
+                if(cardFormat.validateCardCVC(current_value)){
+                    delete cardErrors.value.cardCvc;
+                }else{
+                    cardErrors.value.cardCvc = "Invalid CVV.";
+                }
+            })
+
+
+            function AddCreditCardCustomer(){
+               this.add_payement = !this.add_payement
+         
+                if(form.value.cardHolderName != "" && form.value.cardDetails != ""  && form.value.cardExpDate != "" &&  form.value.cardCVV != ""){
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Add Card Customer...']);    
+                axios.post('/add-credit-card', form.value ).then((res)=>{
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    form.value.cardId =  res.data
+                    creditCardCustomer.value = true
+                }).catch((error)=>{
+                    console.log(error);
+                })
+                }
+              
+            
+
+            }  
+            
+            function DeleteCreditCardCustomer(){
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Delete Card Customer...']);
+                axios.post('/delete-credit-card',{ id : form.value.cardId} ).then((res)=>{
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    form.value.cardHolderName ='',
+                    form.value.cardDetails ='' ,
+                    form.value.cardExpDate ='',
+                    form.value.cardCVV ='',
+                    creditCardCustomer.value = false
+                }).catch((error)=>{
+                    console.log(error);
+                })
+            }  
 
             return {
                 form,
@@ -1002,9 +1105,16 @@
                 selectedSubAccount,
                 removeLinkedAccount,
                 formatPhone,
-                cardBrand
+                cardBrand,
+                AddCreditCardCustomer,
+                add_payement,
+                cardErrors,
+                DeleteCreditCardCustomer,
+                creditCardCustomer
             }
+      
         },
+ 
     }
 </script>
 <style scoped lang="scss">

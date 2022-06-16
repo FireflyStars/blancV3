@@ -69,6 +69,9 @@ Route::post('/get-customer-detail',[CustomerController::class, 'getCustomerDetai
 Route::post('/get-customer-full-detail',[CustomerController::class, 'getCustomerFullDetail'])->middleware('auth')->name('get-customer-full-detail');
 Route::post('/get-customer-preferences',[CustomerController::class, 'getCustomerPreferences'])->middleware('auth')->name('get-customer-preferences');
 Route::post('/add-credit-customer',[CustomerController::class, 'AddCreditCustomer'])->middleware('auth')->name('add-credit-customer');
+Route::post('/add-credit-card',[CustomerController::class, 'AddCreditCard'])->middleware('auth')->name('add-credit-card');
+Route::post('/delete-credit-card',[CustomerController::class, 'DeleteCreditCard'])->middleware('auth')->name('delete-credit-card');
+
 
 Route::get('/permissions-test',function(){
     $user=User::find(56);

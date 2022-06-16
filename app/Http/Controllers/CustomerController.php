@@ -870,7 +870,8 @@ class CustomerController extends Controller
                                 ->where('CustomerID', $customer->CustomerID)
                                 ->whereNotIn('status', ['DEL', 'BILLING'])->first();
         if($customer->paymentMethod == 1){
-            $customer->card = DB::table('cards')->select('cardNumber', 'type', 'dateexpiration as expDate', 'cardHolderName', 'id')
+            $customer->card = DB::table('cards')->select('cardNumber', 'type', 'dateexpiration as expDate', 'cardHolderName', 'id' , 'Actif')
+                                ->where('Actif' , 1)
                                 ->where('CustomerID', $customer->CustomerID)->first();
         }else{
             // $customer->billing = DB::table('address')->where('CusotmerID', $customer->CustomerID)
@@ -979,5 +980,72 @@ class CustomerController extends Controller
         ->where('infoCustomer.id', $request->customer_id)->update(['credit' => $request->credit]);
 
         return response()->json( $customer );
+    }
+
+    public function AddCreditCard(Request $request){
+
+        $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
+
+        $stripe_test = env('STRIPE_TEST');
+        if($stripe_test){
+            $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
+        }
+
+        $stripe = new \Stripe\StripeClient(env($stripe_key));
+
+            //create a card object to stripe
+            $card = $stripe->paymentMethods->create([
+                'type' => 'card',
+                'card' => [
+                    'number'      => $request->cardDetails,
+                    'exp_month'   => intval(explode('/', $request->cardExpDate)[0]),
+                    'exp_year'    => intval(explode('/', $request->cardExpDate)[1]),
+                    'cvc'         => $request->cardCVC,
+                ],
+            ]);
+            //create a customer object to stripe
+            $stripe_customer = $stripe->customers->create([
+                'name'              => $request->cardHolderName,
+                'email'             => $request->email,
+                'payment_method'    => $card->id,
+                'invoice_settings'  => ['default_payment_method' => $card->id],
+                'metadata'          => [
+                'CustomerID'        => $request->CustomerID
+                                    ],
+                'address'           => [
+                                        'city'          => $request->city,
+                                        'state'         => $request->state,
+                                        'country'       => $request->country,
+                                        'postal_code'   => $request->postCode,
+                                        'line1'         => $request->deliveryAddress1,
+                                        'line2'         => $request->deliveryAddress2,
+                                    ]
+            ]);
+            //add a new record to cards table
+                $credit_card = [
+                    'CustomerID'        => $request->customerID,
+                    'cardHolderName'    => $request->cardHolderName,
+                    'type'              => $card->card->brand,
+                    'Actif'             => 1 ,
+                    'cardNumber'        => substr_replace($request->cardDetails, str_repeat('*', strlen($request->cardDetails) - 6), 3, -3),
+                    'dateexpiration'    => $request->cardExpDate,
+                    'stripe_customer_id'=> $stripe_customer->id,
+                    'stripe_card_id'    => $card->id,
+                    'created_at'        => now(),
+                    'updated_at'        => now(),
+                ];
+               
+                $credit_card_id = DB::table('cards')->insertGetId($credit_card);
+                 return response()->json( $credit_card_id );
+
+    }
+
+    public function DeleteCreditCard(Request $request){
+      
+        $card = DB::table('cards')
+        ->where('cards.id', $request->id)->update(['Actif' => 0]);
+        $card2 = DB::table('cards')->where('cards.id', $request->id)->first();
+        return response()->json( $card2 );
+       
     }
 }
