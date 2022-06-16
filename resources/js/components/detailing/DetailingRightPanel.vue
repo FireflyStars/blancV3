@@ -378,10 +378,10 @@ export default {
             const groupBy = (x, f) => x.reduce((a, b) => ((a[f(b)] ||= []).push(b), a), {});
 
             let gp = groupBy(services, v => v.group_name);
-
+/*
             console.log('gp',gp);
             console.log('base_price',base_price);
-
+*/
             let keys = Object.keys(gp);
 
             grouped_cleaning_services.value = {};
@@ -392,17 +392,41 @@ export default {
                 keys.forEach(function(v,i){
                     let sv = gp[v];
                     let price = 0;
+                    let price_add_on = 0
+                    let total_price = 0;
+
+                    let service_with_perc = [];
+                    let service_perc = [];
 
                     sv.forEach(function(service,index){
+
                         if(service.perc > 0){
-                            price += (service.perc/100)*base_price;
+                            service_with_perc[service.id] = service.perc;
+                            service_perc.push(service.id);
+
                         }else if(service.fixed_price > 0){
-                            price += service.fixed_price;
+                            price_add_on += service.fixed_price;
                         }
                     });
 
+                    let perc = 0;
+
+                    if(service_perc.includes(1) && service_perc.includes(3)){
+                        perc = 100;
+                    }else{
+                        service_with_perc.forEach(function(v,i){
+                            perc += v;
+                        });
+                    }
+
+                    console.log(perc);
+                    price = (perc/100)*base_price;
+
+
+                    total_price = price_add_on+price;
+
                     if(sv.length > 0){
-                        grouped_cleaning_price.value[v] = (typeof(price_type!='undefined') && price_type=='Quote'?parseFloat(0).toFixed(2):price.toFixed(2));
+                        grouped_cleaning_price.value[v] = (typeof(price_type!='undefined') && price_type=='Quote'?parseFloat(0).toFixed(2):total_price.toFixed(2));
                         grouped_cleaning_services.value[v] = sv;
                     }else{
                         grouped_cleaning_price.value[v] = {};

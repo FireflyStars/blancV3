@@ -176,6 +176,18 @@ class DetailingController extends Controller
 
         }
 
+        if(is_null($detailingitem['cleaning_price_type'])){
+            $detailingitem['cleaning_price_type'] = "Standard";
+
+            DB::table("detailingitem")->where('id',$detailingitem_id)->update(['cleaning_price_type'=>'Standard']);
+        }
+
+        if(is_null($detailingitem['tailoring_price_type'])){
+            $detailingitem['tailoring_price_type'] = "Standard";
+
+            DB::table("detailingitem")->where('id',$detailingitem_id)->update(['tailoring_price_type'=>'Standard']);
+        }
+
         echo json_encode(
             [
                 'user' => $user,
@@ -390,12 +402,18 @@ class DetailingController extends Controller
                     $cprices = $cleaning_prices;
                 }
 
-                DB::table('detailingitem')->where('id',$detailingitem_id)->update([
+
+                $cleaning_arr_to_update = [
                     'cleaning_services'=>$cleaning_services,
-                    'cleaning_price_type'=>$cleaning_price_type,
                     'dry_cleaning_price'=>(isset($cprices['Dry cleaning'])?$cprices['Dry cleaning']:0),
                     'cleaning_addon_price'=>(isset($cprices['Cleaning Add-on'])?$cprices['Cleaning Add-on']:0),
-                ]);
+                ];
+
+                if(!is_null($cleaning_price_type)){
+                    $cleaning_arr_to_update['cleaning_price_type'] = $cleaning_price_type;
+                }
+
+                DB::table('detailingitem')->where('id',$detailingitem_id)->update($cleaning_arr_to_update);
 
 
                 if($cleaning_price_type=='Quote'){
