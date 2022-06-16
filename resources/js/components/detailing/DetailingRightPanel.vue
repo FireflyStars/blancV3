@@ -114,7 +114,7 @@
                                             <div class="col description-text">{{ comp.name }}</div>
                                             <div
                                                 class="col comp-coefcleaning"
-                                            >£{{ comp.coefcleaning * item_description.base_price }}</div>
+                                            >£{{ (comp.coefcleaning * item_description.base_price).toFixed(2) }}</div>
                                         </div>
                                     </div>
                                 </div>
