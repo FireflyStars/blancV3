@@ -437,7 +437,13 @@ Route::get('test-validate-order',function(Request $request){
     //Si ok, passe infoOrder.Status = 'In process'
 
     $res =  json_decode($content);
-    var_dump($res);
+    echo "<pre>";
+    print_r($res);
+
+    /*
+    echo "<br/>";
+    echo $res->result;
+    */
 });
 
 /* END TEST ROUTES */

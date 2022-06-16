@@ -71,7 +71,7 @@
         <div  v-if="(typeof ORDER['detail']!='undefined')" class="row section4">
             <div class="col">
                 <span class="customername  body_bold  text-capitalize d-inline-block">
-                    {{ORDER.detail.Name.replace(',','').toLowerCase()}} 
+                    {{ORDER.detail.Name.replace(',','').toLowerCase()}}
                     <button type="button" class="btn-link-green body_regular" @click="EditCustomer(ORDER.detail.id)">Edit</button>
                 </span>
             </div>
@@ -404,7 +404,8 @@
                 close:(()=>{
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SELECT_CURRENT}`,'');
                     store.commit(`${ORDERDETAIL_MODULE}${ORDERDETAIL_SET_DETAILS}`,{});
-                    router.back();
+                    //router.back();
+                    router.push({name:'LandingPage'});
                 }),
                 ORDER,
                 featureunavailable,

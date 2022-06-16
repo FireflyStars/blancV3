@@ -1158,8 +1158,8 @@ class DetailingController extends Controller
 
                 $items[$k]->services = $services;
 
-                $items[$k]->brand = $brands_map[$v->brand_id];
-                $items[$k]->typeitem = $typeitem_map[$v->typeitem_id];
+                $items[$k]->brand = (isset($brands_map[$v->brand_id])?$brands_map[$v->brand_id]:"");
+                $items[$k]->typeitem = (isset($typeitem_map[$v->typeitem_id])?$typeitem_map[$v->typeitem_id]:"");
 
                 $items[$k]->size = "";
                 if(isset($size_map[$v->size_id])){
@@ -1170,7 +1170,7 @@ class DetailingController extends Controller
                 $total_price += $item_total_price;
 
                 $items[$k]->priceTotal = number_format($item_total_price,2);
-                $items[$k]->generalState = ucfirst($conditions_map[$v->condition_id]);
+                $items[$k]->generalState = (isset($conditions_map[$v->condition_id])?ucfirst($conditions_map[$v->condition_id]):"");
 
 
                 //Afficher la premiere couleur

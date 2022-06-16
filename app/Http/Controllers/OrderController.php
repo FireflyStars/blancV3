@@ -822,12 +822,12 @@ class OrderController extends Controller
 
                     //Condition
                     $condition = DB::table('conditions')->where('id',$v->condition_id)->first();
-                    $item->generalState = $condition->name;
+                    $item->generalState = ($condition?$condition->name:"");
 
 
                     //Brand
                     $brand = DB::table('brands')->where('id',$v->brand_id)->first();
-                    $item->brand = $brand->name;
+                    $item->brand = ($brand?$brand->name:"");
 
 
 
@@ -882,9 +882,13 @@ class OrderController extends Controller
         @$content = $response->getBody();
         $content = str_replace('\\"','',$content);
 
+        $res = @json_decode($content);
         //Si ok, passe infoOrder.Status = 'In process'
+        if(is_object($res) && isset($res->result) && $res->result=='ok'){
+            DB::table('infoOrder')->where('id',$order_id)->update(['Status'=>'In process']);
+        }
 
-        return json_decode($content);
+        return $res;
 
 
     }
@@ -895,7 +899,7 @@ class OrderController extends Controller
         $order_res = OrderController::createOrderItems($order_id);
 
         return response()->json([
-            'order_res'=>$order_res,
+            'output'=>$order_res,
         ]);
     }
 
