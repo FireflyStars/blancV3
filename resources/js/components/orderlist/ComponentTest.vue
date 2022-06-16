@@ -368,6 +368,10 @@
 
                 picto.value=current_val;
 
+                if(current_val != previous_val){
+                    stainzone.value = [];
+                }
+
             });
 
             function loadtranche(comp){
