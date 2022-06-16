@@ -39,6 +39,14 @@ class Delivery extends Model
         return $addr;
     }
 
+    public static function getDeliveryAskStatusToInclude(){
+        return  ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP'];
+    }
+
+    public static function getPickupStatutToInclude(){
+        return ['NEW','API','PMS','DONE', 'PMS-DONE', 'API-DONE','REC','REC-DONE','REC-NOK','PMS-NOK','API-NOK'];
+    }
+
 
 
 }

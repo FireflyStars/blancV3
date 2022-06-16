@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\InfoCustomer;
 use App\Http\Controllers\BookingController;
 use App\Models\OrderRecurringCreator;
+use App\Models\Delivery;
 use stdClass;
 
 class OrderController extends Controller
@@ -35,12 +36,14 @@ class OrderController extends Controller
         $new_order_id = 0;
         $created_stamp = date('Y-m-d H:i:s');
         $id_booking = 0;
+        $id_master_pickup = 0;
 
         $recurring_data = [];
         $recur_obj = false;
 
         $is_sub_account = $new_order['sub_account_cust'];
-        $main_account_deliveryask_id = $new_order['sub_account_delivery_id'];
+        $main_account_booking_id = $new_order['sub_account_booking_id'];
+        $main_account_booking_type = $new_order['sub_account_booking_type'];
 
 
         $customer = DB::table('infoCustomer')->where('CustomerID',$new_order['CustomerID'])->first();
@@ -120,9 +123,12 @@ class OrderController extends Controller
 
             $tranche = BookingController::getBookingDetailFromSlot($slot);
 
-            $id_booking = 0;
             if($is_sub_account){
-                $id_booking = $main_account_deliveryask_id;
+                if($main_account_booking_type=='pickup'){
+                    $id_master_pickup = $main_account_booking_id;
+                }elseif($main_account_booking_type=='deliveryask'){
+                    $id_booking = $main_account_booking_id;
+                }
             }else{
                 $delivery_arr = [
                     'PhoneNumber'=>(!empty($phones)?implode(",",$phones):""),
@@ -146,12 +152,23 @@ class OrderController extends Controller
                 $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
             }
 
-            $booking_do = DB::table('deliveryask')->where('id',$id_booking)->first();
+            if($id_booking !=0){
+                $booking_do = DB::table('deliveryask')->where('id',$id_booking)->first();
 
-            DB::table('infoOrder')->where('id',$new_order_id)->update([
-                'DeliveryaskID'=>$booking_do->DeliveryaskID,
-                'DateDeliveryAsk'=>$new_order['do_delivery']
-            ]);
+                DB::table('infoOrder')->where('id',$new_order_id)->update([
+                    'DeliveryaskID'=>$booking_do->DeliveryaskID,
+                    'DateDeliveryAsk'=>$new_order['do_delivery']
+                ]);
+            }
+
+            if($id_master_pickup !=0){
+                $master_pickup =  DB::table('pickup')->where('id',$id_master_pickup)->first();
+
+                DB::table('infoOrder')->where('id',$new_order_id)->update([
+                    'PickupID'=>$master_pickup->PickupID,
+                    'DatePickup'=>$new_order['do_delivery']
+                ]);
+            }
 
 
 
@@ -290,6 +307,10 @@ class OrderController extends Controller
         //Logs booking history
         if($id_booking > 0){
             BookingController::logBookingHistory($id_booking,$new_order_id,$customer->id,$user->id,($new_order['deliverymethod']=='home_delivery'?'delivery_ask':$new_order['deliverymethod']));
+        }
+
+        if($id_master_pickup > 0){
+            BookingController::logBookingHistory($id_master_pickup,$new_order_id,$customer->id,$user->id,'pickup');
         }
 
 
@@ -572,12 +593,17 @@ class OrderController extends Controller
     }
 
     public static function createOrderItems($order_id){
+        $delivery_ask_status_to_include = Delivery::getDeliveryAskStatusToInclude();
+        $pickup_status_to_include = Delivery::getPickupStatutToInclude();
+
 
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
         $items_created = [];
 
         if($order){
+            $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
             //Retrieve booking for order
             $promised_date = "";
             $storename = 'ATELIER';
@@ -599,7 +625,7 @@ class OrderController extends Controller
             }
             //Recurring
             elseif($order->deliverymethod=='recurring'){
-                $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
 
                 if($cust){
                     $booking = DB::table('deliveryask')->where('order_id',$order->id)->where('status','REC')->first();
@@ -610,6 +636,27 @@ class OrderController extends Controller
                     }
                 }
             }
+            //SubAccount
+            elseif($order->deliverymethod='delivery_only' && $cust->CustomerIDMaster!=''){
+                $deliveryask=DB::table('deliveryask')->where('CustomerID','=',$cust->CustomerIDMaster)->whereDate('date','>=',date('Y-m-d'))->whereIn('status',$delivery_ask_status_to_include)->first();
+
+                $pickup = DB::table('pickup')->where('CustomerID','=',$cust->CustomerIDMaster)->whereDate('date','>=',date('Y-m-d'))->whereIn('status',$pickup_status_to_include)->first();
+
+                $booking = null;
+
+                if($pickup && !$deliveryask){
+                    $booking = $pickup;
+                }elseif(!$pickup && $deliveryask){
+                    $booking = $deliveryask;
+                }elseif($pickup && $deliveryask){
+                    $booking = $pickup;
+                    if($pickup->date > $deliveryask->date){
+                        $booking = $deliveryask;
+                    }
+                }
+                $promised_date = $booking->date;
+            }
+
 
             $daynames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
@@ -775,12 +822,12 @@ class OrderController extends Controller
 
                     //Condition
                     $condition = DB::table('conditions')->where('id',$v->condition_id)->first();
-                    $item->generalState = $condition->name;
+                    $item->generalState = ($condition?$condition->name:"");
 
 
                     //Brand
                     $brand = DB::table('brands')->where('id',$v->brand_id)->first();
-                    $item->brand = $brand->name;
+                    $item->brand = ($brand?$brand->name:"");
 
 
 
@@ -816,27 +863,48 @@ class OrderController extends Controller
 
                     $items_created[] = $cur_item_id;
 
-                    //ADD ItemID in infoitempost
-
-
-
-                }
+               }
 
 
             }
         }
 
-        return $items_created;
+
+        $endpoint = "http://blancspot.vpc-direct-service.com/validorder.php";
+
+        $client = new \GuzzleHttp\Client();
+
+        $response = $client->request('GET', $endpoint, ['query' => [
+            'order_id'=>$order_id,
+        ]]);
+
+        $statusCode = $response->getStatusCode();
+        @$content = $response->getBody();
+        $content = str_replace('\\"','',$content);
+
+        $res = @json_decode($content);
+        //Si ok, passe infoOrder.Status = 'In process'
+        if(is_object($res) && isset($res->result) && $res->result=='ok'){
+            DB::table('infoOrder')->where('id',$order_id)->update(['Status'=>'In process']);
+        }
+
+        /*To remove
+        $res = new stdClass();
+        $res->result = "ok";
+        //End to remove */
+
+        return $res;
+
 
     }
 
     public function completeCheckout(Request $request){
         $order_id = $request->order_id;
 
-        $order_items = OrderController::createOrderItems($order_id);
+        $order_res = OrderController::createOrderItems($order_id);
 
         return response()->json([
-            'order_items'=>$order_items,
+            'output'=>$order_res,
         ]);
     }
 

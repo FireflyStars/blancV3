@@ -418,6 +418,37 @@ Route::get('create-invoice-test',function(){
 
 })->middleware('auth');
 
+Route::get('test-validate-order',function(Request $request){
+    $order_id = $request->order_id;
+
+    if(!isset($order_id)){
+        die('?order_id not set');
+    }
+
+    $endpoint = "http://blancspot.vpc-direct-service.com/validorder.php";
+
+    $client = new \GuzzleHttp\Client();
+
+    $response = $client->request('GET', $endpoint, ['query' => [
+        'order_id'=>$order_id,
+    ]]);
+
+    $statusCode = $response->getStatusCode();
+    @$content = $response->getBody();
+    $content = str_replace('\\"','',$content);
+
+    //Si ok, passe infoOrder.Status = 'In process'
+
+    $res =  json_decode($content);
+    echo "<pre>";
+    print_r($res);
+
+    /*
+    echo "<br/>";
+    echo $res->result;
+    */
+});
+
 /* END TEST ROUTES */
 
 // added by yonghuan to search customers to be linked

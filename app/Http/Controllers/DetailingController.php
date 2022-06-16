@@ -1012,17 +1012,15 @@ class DetailingController extends Controller
                 }
 
                 $booking_details['recurring'] = $recurring;
-
-
-
             }
 
         }
 
 
         $items = DB::table('detailingitem')
-            ->select('detailingitem.*','detailingitem.id AS detailingitem_id')
+            ->select('detailingitem.*','detailingitem.id AS detailingitem_id','typeitem.pricecleaning as baseprice')
             ->join('infoOrder','detailingitem.order_id','infoOrder.id')
+            ->join('typeitem','detailingitem.typeitem_id','typeitem.id')
             ->where('infoOrder.id',$order_id)
             ->get();
 
@@ -1160,8 +1158,8 @@ class DetailingController extends Controller
 
                 $items[$k]->services = $services;
 
-                $items[$k]->brand = $brands_map[$v->brand_id];
-                $items[$k]->typeitem = $typeitem_map[$v->typeitem_id];
+                $items[$k]->brand = (isset($brands_map[$v->brand_id])?$brands_map[$v->brand_id]:"");
+                $items[$k]->typeitem = (isset($typeitem_map[$v->typeitem_id])?$typeitem_map[$v->typeitem_id]:"");
 
                 $items[$k]->size = "";
                 if(isset($size_map[$v->size_id])){
@@ -1172,7 +1170,7 @@ class DetailingController extends Controller
                 $total_price += $item_total_price;
 
                 $items[$k]->priceTotal = number_format($item_total_price,2);
-                $items[$k]->generalState = ucfirst($conditions_map[$v->condition_id]);
+                $items[$k]->generalState = (isset($conditions_map[$v->condition_id])?ucfirst($conditions_map[$v->condition_id]):"");
 
 
                 //Afficher la premiere couleur
@@ -1200,7 +1198,7 @@ class DetailingController extends Controller
                     $coef_brand = $brand_coef_map[$v->brand_id];
 
                     if($coef_brand > 1){
-                        $diff = $coef_brand - 1;
+                        $diff = $coef_brand;
                         $perc = $diff*100;
                         $items[$k]->brand_coef_perc = ceil($perc);
                     }
@@ -1218,10 +1216,8 @@ class DetailingController extends Controller
                             $cur_comp = $complexities_coef[$val];
 
                             $comp_price = 0;
-                            if($cur_comp['cleaning'] > 1){
-                                $diff = $cur_comp['cleaning'] - 1;
-                                $comp_price = ($diff/100) * $v->priceClean;
-                            }
+
+                            $comp_price = $cur_comp['cleaning'] * $v->baseprice;
 
                             $complexities_arr[$complexities_coef[$val]['name']] = $comp_price;
                         }

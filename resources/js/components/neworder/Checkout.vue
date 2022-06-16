@@ -1,6 +1,6 @@
 <template>
     <transition enter-active-class="animate__animated animate__fadeIn">
-        <div class="container-fluid h-100 bg-color">
+        <div class="container-fluid bg-color">
             <!--<main-header></main-header>-->
             <div
                 class="row d-flex align-content-stretch align-items-stretch flex-row hmax"
@@ -531,6 +531,9 @@ export default {
 
         order_id.value = route.params.order_id;
 
+        let bodytag=document.getElementsByTagName( 'body' )[0]
+        bodytag.classList.remove('hide-overflowY');
+
         const paths = ref([
             { name: "Order", route: "LandingPage" },
             { name: "New order", route: "NewOrder" },
@@ -587,7 +590,11 @@ export default {
         }
 
         function firstCap(string){
-            return string[0].toUpperCase() + string.substring(1);
+            if(typeof(string[0])!='undefined' && typeof(string[1])!='undefined'){
+                return string[0].toUpperCase() + string.substring(1);
+            }else{
+                return "";
+            }
         }
 
         function goToDetailing(order_id,detailingitem_id,etape){
@@ -658,7 +665,32 @@ export default {
                 order_id:order_id.value
             }).then((res)=>{
 
+                if(res.data.output && res.data.output.result=='ok'){
+                    /*
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                    {
+                        message: "Order items created",
+                        ttl: 3,
+                        type: 'success'
+                    });
+                    */
+                   router.push('/order_details/'+order_id.value);
+                }else{
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                    {
+                        message: "An error has occured during items creation",
+                        ttl: 3,
+                        type: 'danger'
+                    });
+                }
+
             }).catch((err)=>{
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                    {
+                        message: JSON.stringify(err),
+                        ttl: 3,
+                        type: 'danger'
+                    });
 
             }).finally(()=>{
                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);

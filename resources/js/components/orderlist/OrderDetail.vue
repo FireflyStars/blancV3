@@ -7,7 +7,7 @@
                 <image xlink:href="/images/pdficon.svg"  width="30" height="40"/>
             </svg>
             <h2>{{ORDER.detail.Status}}</h2>
-            <h2 >&numero; {{ORDER.detail.id}}</h2> <tag :name="ORDER.detail.Status" ></tag>
+            <h2 >&numero; {{ORDER.detail.order_id}}</h2> <tag :name="ORDER.detail.Status" ></tag>
         </div>
         <transition name="popinout">
             <div v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate==null&&!hasRoles(['cc'])" class="section-late-production-op row">
@@ -71,7 +71,7 @@
         <div  v-if="(typeof ORDER['detail']!='undefined')" class="row section4">
             <div class="col">
                 <span class="customername  body_bold  text-capitalize d-inline-block">
-                    {{ORDER.detail.Name.replace(',','').toLowerCase()}} 
+                    {{ORDER.detail.Name.replace(',','').toLowerCase()}}
                     <button type="button" class="btn-link-green body_regular" @click="EditCustomer(ORDER.detail.id)">Edit</button>
                 </span>
             </div>
@@ -404,7 +404,8 @@
                 close:(()=>{
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SELECT_CURRENT}`,'');
                     store.commit(`${ORDERDETAIL_MODULE}${ORDERDETAIL_SET_DETAILS}`,{});
-                    router.back();
+                    //router.back();
+                    router.push({name:'LandingPage'});
                 }),
                 ORDER,
                 featureunavailable,
