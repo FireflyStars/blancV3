@@ -419,7 +419,6 @@ export default {
                         });
                     }
 
-                    console.log(perc);
                     price = (perc/100)*base_price;
 
 
