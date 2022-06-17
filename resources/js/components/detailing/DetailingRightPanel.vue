@@ -499,8 +499,9 @@ export default {
                 if(props.detailingitem.etape==11){
                     // parseFloat(props.detailingitem.pricecleaning)+
                     price = parseFloat(props.detailingitem.dry_cleaning_price)+parseFloat(props.detailingitem.cleaning_addon_price)+parseFloat(props.detailingitem.tailoring_price);
+                    final_price.value = price.toFixed(2);
                 }
-                final_price.value = price.toFixed(2);
+
             }
         });
 

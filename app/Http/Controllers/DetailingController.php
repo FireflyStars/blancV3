@@ -26,6 +26,8 @@ class DetailingController extends Controller
 
         $customer = (array) $customer->first();
 
+        $count_has_invoices = 0;
+
         $detailingitemlist = DB::table('detailingitem')
             ->select( 'detailingitem.pricecleaning as price','detailingitem.id as item_number','detailingitem.*',)
             //->join('typeitem', 'typeitem.id', 'detailingitem.typeitem_id')
@@ -69,6 +71,10 @@ class DetailingController extends Controller
 
                     $detailingitemlist[$k]->price = $price;
                 }
+
+                if($v->InvoiceID !=''){
+                    $count_has_invoices += 1;
+                }
             }
         }
 
@@ -76,7 +82,8 @@ class DetailingController extends Controller
             [
                 'user' => $user,
                 'detailing_list' => $detailingitemlist,
-                'customer' => $customer
+                'customer' => $customer,
+                'count_has_invoices'=>$count_has_invoices,
             ]
         );
     }
@@ -186,16 +193,18 @@ class DetailingController extends Controller
 
         }
 
-        if(is_null($detailingitem['cleaning_price_type'])){
-            $detailingitem['cleaning_price_type'] = "Standard";
+        if(count($detailingitem) > 0){
+            if(is_null($detailingitem['cleaning_price_type'])){
+                $detailingitem['cleaning_price_type'] = "Standard";
 
-            DB::table("detailingitem")->where('id',$detailingitem_id)->update(['cleaning_price_type'=>'Standard']);
-        }
+                DB::table("detailingitem")->where('id',$detailingitem_id)->update(['cleaning_price_type'=>'Standard']);
+            }
 
-        if(is_null($detailingitem['tailoring_price_type'])){
-            $detailingitem['tailoring_price_type'] = "Standard";
+            if(is_null($detailingitem['tailoring_price_type'])){
+                $detailingitem['tailoring_price_type'] = "Standard";
 
-            DB::table("detailingitem")->where('id',$detailingitem_id)->update(['tailoring_price_type'=>'Standard']);
+                DB::table("detailingitem")->where('id',$detailingitem_id)->update(['tailoring_price_type'=>'Standard']);
+            }
         }
 
         echo json_encode(

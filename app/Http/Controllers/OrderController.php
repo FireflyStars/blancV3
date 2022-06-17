@@ -701,6 +701,7 @@ class OrderController extends Controller
 
             $items_to_insert = [];
 
+            $detailing_map = [];
 
             if(count($detailing_items)> 0){
                 foreach($detailing_items as $k=>$v){
@@ -863,6 +864,7 @@ class OrderController extends Controller
 
                     $items_created[] = $cur_item_id;
 
+                    $detailing_map[$cur_item_id] = $v->id;
                }
 
 
@@ -870,12 +872,24 @@ class OrderController extends Controller
         }
 
 
-        $endpoint = "http://blancspot.vpc-direct-service.com/validorder.php";
+        $endpoint = "";
+        $token = "GhtfvbbG4489hGtyEfgARRGht3";
+
+        //http://blancspot.vpc-direct-service.com/validorder.php
+
+        $site_url = \Illuminate\Support\Facades\URL::to("/");
+
+        if(strpos($site_url,'blancposdev') > -1){
+            $endpoint = "http://blancspot.vpc-direct-service.com/validorder.php";
+        }elseif(strpos($site_url,'fullcirclepos') > -1){
+            $endpoint = "http://blancspot.vpc-direct-service.com/validorder-prod.php";
+        }
 
         $client = new \GuzzleHttp\Client();
 
         $response = $client->request('GET', $endpoint, ['query' => [
             'order_id'=>$order_id,
+            'token'=>$token
         ]]);
 
         $statusCode = $response->getStatusCode();
@@ -884,17 +898,22 @@ class OrderController extends Controller
 
         $res = @json_decode($content);
         //Si ok, passe infoOrder.Status = 'In process'
+
+        $updated = 0;
+
         if(is_object($res) && isset($res->result) && $res->result=='ok'){
             DB::table('infoOrder')->where('id',$order_id)->update(['Status'=>'In process']);
+
+            $items = DB::table('infoitems')->whereIn('id',$items_created)->get();
+
+            foreach($items as $k=>$v){
+                if(isset($detailing_map[$v->id]) && $v->InvoiceID !=''){
+                   $updated +=  DB::table('detailingitem')->where('id',$detailing_map[$v->id])->update(['InvoiceID'=>$v->InvoiceID]);
+                }
+            }
         }
 
-        /*To remove
-        $res = new stdClass();
-        $res->result = "ok";
-        //End to remove */
-
         return $res;
-
 
     }
 
@@ -905,6 +924,7 @@ class OrderController extends Controller
 
         return response()->json([
             'output'=>$order_res,
+            'item_inv'=>$updated,
         ]);
     }
 
