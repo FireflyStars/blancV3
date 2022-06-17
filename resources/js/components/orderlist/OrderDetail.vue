@@ -6,7 +6,7 @@
             <svg width="30" height="40" class="pdficon" @click="featureunavailable('Pdf Invoice')">
                 <image xlink:href="/images/pdficon.svg"  width="30" height="40"/>
             </svg>
-            <h2>{{ORDER.detail.Status}}</h2>
+            <!-- <h2>{{ORDER.detail.Status}}</h2> -->
             <h2 >&numero; {{ORDER.detail.order_id}}</h2> <tag :name="ORDER.detail.Status" ></tag>
         </div>
         <transition name="popinout">

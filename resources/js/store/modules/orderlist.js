@@ -193,7 +193,6 @@ export const orderlist= {
                 filters:state[state.current_tab].filters,
             })
                 .then(function (response) {
-                    console.log(response.data);
                     commit(ORDERLIST_ADD_TO_LIST, response.data);
 
                 })
@@ -327,15 +326,15 @@ export const orderlist= {
             dispatch(ORDERLIST_LOAD_LIST);
         },
         [ORDERLIST_CUSTOMER_ORDERS]:async({commit,dispatch,state},payload)=>{
-        
+          
             if(typeof payload!="undefined"&&payload.showmore){
                 commit(ORDERLIST_SHOWMORE_LIST,{skip:state[state.current_tab].skip+state[state.current_tab].take});
                 dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,state.loader_msg],{ root: true });
             }else{
+                state[state.current_tab].skip=0;
                 dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,state.loader_msg],{ root: true });
                 commit(ORDERLIST_RESET_ORDERLIST);
             }
-
            return axios.post('/getOrdersByCustomerId', {
                 skip: state[state.current_tab].skip,
                 take: state[state.current_tab].take,
@@ -345,7 +344,6 @@ export const orderlist= {
                 customerID:payload.customer,
             })
                 .then(function (response) {
-                    console.log(response.data);
                     commit(ORDERLIST_ADD_TO_LIST, response.data);
 
                 })

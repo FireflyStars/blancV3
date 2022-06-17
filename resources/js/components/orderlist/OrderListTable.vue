@@ -43,7 +43,7 @@
 <script>
     import {useRouter,useRoute} from 'vue-router'
     import {formatPrice, hasRoles} from '../helpers/helpers'
-    import {ref,computed } from 'vue';
+    import {ref,computed,watch } from 'vue';
     import {useStore} from 'vuex';
     import {
         ORDERLIST_LOAD_LIST,
@@ -65,7 +65,8 @@
         TOASTER_MESSAGE,
         ORDERLIST_CANCEL_ORDERS,
         ORDERLIST_LOAD_TAB,
-        ORDERLIST_MARK_AS_LATE
+        ORDERLIST_MARK_AS_LATE,
+        ORDERLIST_CUSTOMER_ORDERS
     } from '../../store/types/types';
     import Tag from  '../miscellaneous/Tag'
     import CheckBox from '../miscellaneous/CheckBox'
@@ -80,6 +81,7 @@
             const router = useRouter();
             const store=useStore();
             const route = useRoute();
+            const customerId = ref('');
             const ORDER_LIST=computed(()=>{
                 return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_LIST}`];
             });
@@ -93,12 +95,30 @@
                return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_SORT}`];
             });
             function loadMore(){
-                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading more, please wait...');
-                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`,{showmore:1}).finally(()=>{
-                     window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
+
+                if(customerId.value != ''){
+
+                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading more, please wait...');
+                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`,{customer:customerId.value , showmore:1}).finally(()=>{
+                 window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
                 });
 
+                }else {
+
+                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading more, please wait...');
+                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`,{showmore:1}).finally(()=>{
+                 window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
+                 });
+
+                }
+            
+
             }
+
+             watch(route, (to) => {
+                customerId.value = route.params.customerId;
+             })
+
             function formatSubOrderReady(def, val, order){
                 return (order.ready_sub_orders + '/' + val + '('+ parseInt(order.ready_sub_orders*100/val) +'%)');
             }
