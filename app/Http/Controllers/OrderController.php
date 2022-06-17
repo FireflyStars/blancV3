@@ -911,7 +911,6 @@ class OrderController extends Controller
         $endpoint = "";
         $token = "GhtfvbbG4489hGtyEfgARRGht3";
 
-
         $site_url = \Illuminate\Support\Facades\URL::to("/");
 
         if(strpos($site_url,'blancposdev') > -1){
@@ -932,21 +931,39 @@ class OrderController extends Controller
         $content = str_replace('\\"','',$content);
 
         $res = @json_decode($content);
-        //Si ok, passe infoOrder.Status = 'In process'
-
+        //*/
 
         if(is_object($res) && isset($res->result) && $res->result=='ok'){
             DB::table('infoOrder')->where('id',$order_id)->update(['Status'=>'In process']);
 
             $items = DB::table('infoitems')->whereIn('id',$items_created)->get();
 
+            $item_historique = [];
+
             foreach($items as $k=>$v){
-                if(isset($detailing_map[$v->id]) && $v->InvoiceID !=''){
-                   DB::table('detailingitem')->where('id',$detailing_map[$v->id])->update(['InvoiceID'=>$v->InvoiceID]);
+                if($v->InvoiceID !=''){
+                    if(isset($detailing_map[$v->id])){
+                        DB::table('detailingitem')->where('id',$detailing_map[$v->id])->update(['InvoiceID'=>$v->InvoiceID]);
+                    }
+                    $inv = DB::table("infoInvoice")->where('InvoiceID',$v->InvoiceID)->first();
+
+                    if($inv){
+                        $item_historique[] = [
+                            'CustomerID'=>$inv->CustomerID,
+                            'StoreName'=>$inv->StoreName,
+                            'ItemTrackingKey'=>$v->ItemTrackingKey,
+                            'NumInvoice'=>$inv->NumInvoice,
+                            'InvoiceID'=>$v->InvoiceID,
+                            'created_at'=>date('Y-m-d H:i:s'),
+                        ];
+                    }
                 }
             }
+
+            if(!empty($item_historique)){
+                DB::table('itemhistorique')->insert($item_historique);
+            }
         }
-        //*/
 
         return $res;
 
