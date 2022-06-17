@@ -63,7 +63,7 @@
                                 </tr>
                             </tbody>
                         </table>
-                        <div class="row add-item">
+                        <div class="row add-item" v-if="count_has_invoices==0">
                             <button class="btn btn-add-item col-4" @click="showTrackingModal"> <!-- addItem() -->
                                 <i class="bi bi-hash"></i> Add item<!-- without barcode-->
                             </button>
@@ -197,6 +197,7 @@ export default {
         const remove_item_modal = ref();
         const cur_tracking_to_remove = ref("");
         const cur_item_to_remove = ref(0);
+        const count_has_invoices = ref(0);
 
         store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
             true,
@@ -223,6 +224,7 @@ export default {
                     item_total.value = detailing_list.value.reduce((acc, ele) => {
                         return acc + ele.price;
                     }, 0);
+                    count_has_invoices.value = response.data.count_has_invoices;
                 } else {
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
                         message: response.data.message
@@ -436,7 +438,8 @@ export default {
             closeRemoveItemModal,
             removeDetailingItem,
             cur_tracking_to_remove,
-            cur_item_to_remove
+            cur_item_to_remove,
+            count_has_invoices,
         };
     },
 };
