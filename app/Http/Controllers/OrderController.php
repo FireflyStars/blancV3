@@ -703,6 +703,9 @@ class OrderController extends Controller
 
             $detailing_map = [];
 
+
+
+
             if(count($detailing_items)> 0){
                 foreach($detailing_items as $k=>$v){
 
@@ -839,7 +842,40 @@ class OrderController extends Controller
                     $item->PromisedDate = $promised_date;
                     $item->dateJour = $date_jour;
                     $item->date_add = date('Y-m-d H:i:s');
+
                     //Damages
+                    if($v->damages!='' && !is_null($v->damages) && is_array(@json_decode($v->damages)) && !empty($v->damages)){
+                        $damages = @json_decode($v->damages);
+
+                        $damages_to_save = [];
+
+                        foreach($damages as $id=>$damage){
+                            $dmg = new stdClass;
+                            $damage_txt = "";
+                            $zone_txt = "";
+                            $dmg->Titre = "";
+
+                            if($damage->id_issue > 0){
+                                $damage_txt = DB::table('issues_tag')->where('id',$damage->id_issue)->value('name');
+                            }
+
+                            if($damage->id_zone > 0){
+                                $zone = DB::table('itemzones')->where('id',$damage->id_zone)->first();
+
+                                if($zone){
+                                    $zone_txt = strtoupper($zone->face)." ".str_replace("_"," ",$zone->description);
+                                }
+                            }
+
+
+
+                            $dmg->Value = $damage_txt.($damage_txt!=""?" - ":"").$zone_txt;
+
+                            $damages_to_save[] = $dmg;
+                        }
+
+                        $item->damage = json_encode($damages_to_save);
+                    }
 
 
 
@@ -875,7 +911,6 @@ class OrderController extends Controller
         $endpoint = "";
         $token = "GhtfvbbG4489hGtyEfgARRGht3";
 
-        //http://blancspot.vpc-direct-service.com/validorder.php
 
         $site_url = \Illuminate\Support\Facades\URL::to("/");
 
@@ -899,7 +934,6 @@ class OrderController extends Controller
         $res = @json_decode($content);
         //Si ok, passe infoOrder.Status = 'In process'
 
-        $updated = 0;
 
         if(is_object($res) && isset($res->result) && $res->result=='ok'){
             DB::table('infoOrder')->where('id',$order_id)->update(['Status'=>'In process']);
@@ -908,10 +942,11 @@ class OrderController extends Controller
 
             foreach($items as $k=>$v){
                 if(isset($detailing_map[$v->id]) && $v->InvoiceID !=''){
-                   $updated +=  DB::table('detailingitem')->where('id',$detailing_map[$v->id])->update(['InvoiceID'=>$v->InvoiceID]);
+                   DB::table('detailingitem')->where('id',$detailing_map[$v->id])->update(['InvoiceID'=>$v->InvoiceID]);
                 }
             }
         }
+        //*/
 
         return $res;
 
@@ -924,7 +959,6 @@ class OrderController extends Controller
 
         return response()->json([
             'output'=>$order_res,
-            'item_inv'=>$updated,
         ]);
     }
 
