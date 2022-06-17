@@ -598,8 +598,8 @@ class DetailingController extends Controller
             'typeitem_picto' => isset($typeitem) ? $typeitem['draw1'] : '',
             'base_price' => isset($typeitem) ? $typeitem['pricecleaning'] : '',
             'size' => isset($size) ? $size['name'] : '',
-            'brand_name' => isset($brand) ? $brand['name'] : '',
-            'brand_coef_cleaning' => isset($brand) ? $brand['coefcleaning'] * 100 : '',
+            'brand_name' => isset($brand) && isset($brand['name']) ? $brand['name'] : '',
+            'brand_coef_cleaning' => isset($brand) &&  isset($brand['coefcleaning'])? $brand['coefcleaning'] * 100 : '',
             'fabrics_name' => isset($fabrics) ? $fabrics : '',
            // 'fabric_coef_cleaning' => isset($fabric) ? $fabric['coefcleaning'] * $typeitem['pricecleaning'] : '',
             'colors_name' => isset($colors) ? $colors : '',
@@ -690,36 +690,77 @@ class DetailingController extends Controller
     public function checkDetailingTracking(Request $request){
         $tracking = $request->tracking;
         $customer_id = $request->customer_id;
+        $order_id = $request->order_id;
 
+        $cust = DB::table('infoCustomer')->where('CustomerID',$customer_id)->first();
+        $duplicate_detailing_item = false;
 
         $item = DB::table('infoitems')->where('ItemTrackingKey',$tracking)->first();
-
+        $has_detailing_order = false;
         $err = '';
 
-        if($item){
-            $inv = DB::table('infoInvoice')
-                ->where('InvoiceID',$item->InvoiceID)
-                ->where('CustomerID',$customer_id)
-                ->get();
-
-            if(count($inv)==0){
-                $err = "HSL $tracking already linked with another customer.";
-            }
-        }
-
-        $has_detailing_order = DB::table('detailingitem')->where('tracking',$tracking)
-            ->where('status','In Process')
+        $previous_detailed_item = DB::table('detailingitem')
+            ->where('tracking',$tracking)
+            ->where('customer_id',$cust->id)
+            ->where('status','Completed')
             ->latest('id')
             ->first();
 
-        if($has_detailing_order){
-            $err = "HSL $tracking is already being detailed.";
+        $detailingitem_id = 0;
+
+        if($previous_detailed_item){
+            $duplicate_detailing_item = (array) $previous_detailed_item;
+
+            $duplicate_detailing_item['id'] = '';
+            $duplicate_detailing_item['etape'] = 9;
+            $duplicate_detailing_item['InvoiceID'] = '';
+            $duplicate_detailing_item['order_id'] = $order_id;
+            $duplicate_detailing_item['tailoring_services'] = '';
+            $duplicate_detailing_item['status'] = 'In Process';
+
+            $int_field_to_clear = ['dry_cleaning_price','cleaning_addon_price','tailoring_price'];
+            $fields_to_clear = ['stains','damages','cleaning_services','cleaning_price_type','tailoring_price_type'];
+
+            foreach($duplicate_detailing_item as $key=>$value){
+                if(in_array($key,$int_field_to_clear)){
+                    $duplicate_detailing_item[$key] = 0;
+                }
+                if(in_array($key,$fields_to_clear)){
+                    $duplicate_detailing_item[$key] = null;
+                }
+            }
+
+            $detailingitem_id = DB::table('detailingitem')->insertGetId($duplicate_detailing_item);
+
+        }else{
+            if($item){
+                $inv = DB::table('infoInvoice')
+                    ->where('InvoiceID',$item->InvoiceID)
+                    ->where('CustomerID',$customer_id)
+                    ->get();
+
+                if(count($inv)==0){
+                    $err = "HSL $tracking already linked with another customer.";
+                }
+            }
+
+            $has_detailing_order = DB::table('detailingitem')->where('tracking',$tracking)
+                ->where('status','In Process')
+                ->latest('id')
+                ->first();
+
+            if($has_detailing_order){
+                $err = "HSL $tracking is already being detailed.";
+            }
         }
 
         return response()->json([
             'item'=>$item,
             'err'=>$err,
             'has_detailing_order'=>$has_detailing_order,
+            'previous_detailed_item'=>$previous_detailed_item,
+            'detailingitem_id'=>$detailingitem_id,
+
             //'post'=>$request->all(),
         ]);
     }

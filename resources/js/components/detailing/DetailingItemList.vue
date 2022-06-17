@@ -305,6 +305,7 @@ export default {
                     axios.post('/check-detailing-tracking',{
                         tracking:value,
                         customer_id:cur_customer.value.CustomerID,
+                        order_id:order_id.value,
                     }).then((res)=>{
                         if(res.data.err!=''){
                             let err_msg = res.data.err;
@@ -321,10 +322,14 @@ export default {
                                 });
                             current_hsl.value = '';
                         }else{
-                            if(res.data.item){
-                                addItem(res.data.item.ItemTrackingKey,res.data.item.id);
+                            if(res.data.previous_detailed_item){
+                                router.push('/detailing_item/'+order_id.value+'/'+res.data.detailingitem_id);
                             }else{
-                                addItem(value,0);
+                                if(res.data.item){
+                                    addItem(res.data.item.ItemTrackingKey,res.data.item.id);
+                                }else{
+                                    addItem(value,0);
+                                }
                             }
                         }
 
