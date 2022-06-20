@@ -449,6 +449,43 @@ Route::get('test-validate-order',function(Request $request){
     */
 });
 
+Route::get('test-stripe-terminal',function(Request $request){
+    $reader = $request->reader;
+
+    if(!isset($reader) && $reader==''){
+        die('Reader not set');
+    }
+
+    $readers_id = [
+        'ATELIER'=>'tmr_Eqz4ewJhXq5eu6',
+    ];
+
+    if(isset($readers_id[$reader])){
+        $reader_id = $readers_id[$reader];
+
+        $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+        $stripe->terminal->readers->retrieve($reader_id, []);
+
+
+        $payment_intent = $stripe->paymentIntents->create([
+            'amount' => 30,
+            'currency' => 'gbp',
+            'payment_method_types' => ['card_present'],
+            'capture_method' => 'manual',
+          ]);
+
+/*
+          $stripe->terminal->readers->processPaymentIntent(
+            $reader_id,
+            ['payment_intent' => $payment_intent->id]
+          );
+*/
+
+    }
+
+});
+
+
 /* END TEST ROUTES */
 
 // added by yonghuan to search customers to be linked
@@ -518,6 +555,8 @@ Route::post('/change-detailing-etape',[DetailingController::class,'changeDetaili
 Route::post('/set-checkout-discount',[DetailingController::class,'setCheckoutDiscount'])->name('set-checkout-discount')->middleware('auth');
 Route::post('/make-payment-or-create-card',[OrderController::class,'makePaymentOrCreateCard'])->name('make-payment-or-create-card')->middleware('auth');
 Route::post('/complete-checkout',[OrderController::class,'completeCheckout'])->name('complete-checkout')->middleware('auth');
+Route::post('/get-stripe-terminal',[DetailingController::class,'getStripeTerminal'])->name('get-stripe-terminal')->middleware('auth');
+Route::post('/get-terminal-token',[DetailingController::class,'getTerminalToken'])->name('get-terminal-token')->middleware('auth');
 
 /**
  * Voyager custom routes

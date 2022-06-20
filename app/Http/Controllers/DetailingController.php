@@ -1389,6 +1389,17 @@ class DetailingController extends Controller
         $vat = number_format(0.15*$total_with_discount,2);
         $total_exc_vat = number_format($total_with_discount-$vat,2);
 
+        $stripe_security_key = 'STRIPE_LIVE_SECURITY_KEY';
+        $stripe_public_key = 'STRIPE_LIVE_PUBLIC_KEY';
+
+        $stripe_test = env('STRIPE_TEST');
+
+        if($stripe_test){
+            $stripe_security_key = 'STRIPE_TEST_SECURITY_KEY';
+            $stripe_public_key = 'STRIPE_TEST_PUBLIC_KEY';
+        }
+
+
         return response()->json([
             'post'=>$request->all(),
             'items'=>$items,
@@ -1404,6 +1415,8 @@ class DetailingController extends Controller
             'vat'=>$vat,
             'total_exc_vat'=>$total_exc_vat,
             'custcard'=>$cust_card,
+            'stripe_public_key'=>env($stripe_public_key),
+            'stripe_security_key'=>env($stripe_security_key),
         ]);
     }
 
@@ -1442,6 +1455,52 @@ class DetailingController extends Controller
 
         return response()->json([
             'post'=>$request->all(),
+        ]);
+    }
+
+    public function getTerminalToken(Request $request){
+        $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+        $connectionToken = $stripe->terminal->connectionTokens->create();
+
+        return response()->json([
+            'token'=>$connectionToken,
+        ]);
+
+    }
+
+    public function getStripeTerminal(Request $request){
+        $reader = $request->reader;
+        $amount = $request->amount;
+
+        $terminal = null;
+        $payment_intent = null;
+
+        if(!isset($reader) && $reader==''){
+            die('Reader not set');
+        }
+
+        $readers_id = [
+            'ATELIER'=>'tmr_Eqz4ewJhXq5eu6',
+        ];
+
+        if(isset($readers_id[$reader])){
+            $reader_id = $readers_id[$reader];
+
+            $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+            $terminal = $stripe->terminal->readers->retrieve($reader_id, []);
+
+            $payment_intent = $stripe->paymentIntents->create([
+                'amount' => $amount*100,
+                'currency' => 'gbp',
+                'payment_method_types' => ['card_present'],
+                'capture_method' => 'manual',
+            ]);
+
+        }
+
+        return response()->json([
+            'terminal'=>$terminal,
+            'payment_intent'=>$payment_intent,
         ]);
     }
 

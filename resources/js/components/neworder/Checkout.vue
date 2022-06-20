@@ -476,7 +476,7 @@
                                         <a href="javascript:void(0)" @click="redirectToDetailingList">Previous</a>
                                     </div>
                                     <div class="col-6 px-4">
-                                        <button id="completeBtn" class="w-100 py-3" @click="completeCheckout">Proceed</button>
+                                        <button id="completeBtn" class="w-100 py-3" @click="validatePayment">Proceed</button>
                                     </div>
                                 </div>
                             </div>
@@ -487,6 +487,38 @@
             </div>
         </div>
     </transition>
+
+    <modal ref="no_payment_modal">
+        <template #closebtn>
+            <span class="close" id="addon_modal_close" @click="closeNoPaymentModal"></span>
+        </template>
+        <template #bheader>
+            <div class="bmodal-header py-5 text-center">No payment method</div>
+        </template>
+        <template #bcontent>
+        </template>
+        <template #mbuttons>
+            <div class="row mx-0 justify-content-center my-5 py-3">
+                <div class="col-10">
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-6">
+                            <button class="pay-btn w-100 py-3" @click="payNow">Pay now</button>
+                        </div>
+                        <div class="col-6">
+                            <button class="pay-btn w-100 py-3" @click="completeCheckout">Pay later</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <button id="payment_method_btn" class="w-100 py-3" @click="closeNoPaymentModal">Add payment method</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </modal>
+
+
 </template>
 <script>
 
@@ -504,10 +536,11 @@ import {
     TOASTER_MESSAGE,
 } from '../../store/types/types';
 import Payment from '../miscellaneous/Payment.vue';
+import Modal from '../miscellaneous/Modal.vue';
 
 export default {
     name: "Checkout",
-    components: { BreadCrumb, SideBar, MainHeader,Payment},
+    components: { BreadCrumb, SideBar, MainHeader,Payment,Modal},
     setup() {
         const router = useRouter();
         const route = useRoute();
@@ -528,6 +561,8 @@ export default {
         const vat = ref(0);
         const total_exc_vat = ref(0);
         const custcard = ref({});
+        const no_payment_modal = ref();
+        const stripe_public_key = ref('');
 
         order_id.value = route.params.order_id;
 
@@ -563,6 +598,7 @@ export default {
                 total_exc_vat.value = res.data.total_exc_vat;
                 vat.value = res.data.vat;
                 custcard.value = res.data.custcard;
+                stripe_public_key.value = res.data.stripe_public_key;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -697,6 +733,101 @@ export default {
             });
         }
 
+        function validatePayment(){
+            let err = false;
+            if(cust.value.bycard==1 && !custcard.value){
+                err = true;
+                no_payment_modal.value.showModal();
+            }
+
+            if(!err){
+                completeCheckout();
+            }
+        }
+
+        function closeNoPaymentModal(){
+            no_payment_modal.value.closeModal();
+        }
+
+        function payNow(){
+            /*
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
+                true,
+                "Please wait....",
+            ]);
+            */
+            axios.post('/get-terminal-token',{})
+                .then((res)=>{
+                    if(res.data.token){
+
+
+                        const terminal = StripeTerminal.create({
+                            onFetchConnectionToken: res.data.token.secret,
+                            onUnexpectedReaderDisconnect: unexpectedDisconnect,
+                        });
+
+                        console.log(terminal);
+                        /*
+                        async function connectReaderHandler() {
+                            const config = {simulated: false};
+                            const discoverResult = await terminal.discoverReaders(config);
+
+                            console.log(discoverResult);
+
+                            if (discoverResult.error) {
+                                console.log('Failed to discover: ', discoverResult.error);
+                            } else if (discoverResult.discoveredReaders.length === 0) {
+                                console.log('No available readers.');
+                            } else {
+                                // Just select the first reader here.
+                                const selectedReader = discoverResult.discoveredReaders[0];
+
+                                const connectResult = await terminal.connectReader(selectedReader);
+                                if (connectResult.error) {
+                                console.log('Failed to connect: ', connectResult.error);
+                                } else {
+                                console.log('Connected to reader: ', connectResult.reader.label);
+                                }
+                            }
+                        }
+
+                        connectReaderHandler();
+                        */
+
+
+                    }
+
+                }).catch((err)=>{
+
+                }).finally(()=>{
+
+                });
+
+
+        /*
+            axios.post('/get-stripe-terminal',{
+                reader:'ATELIER',
+                amount:total_with_discount.value,
+            }).then((res)=>{
+                if(res.data.terminal && res.data.payment_intent){
+
+
+                }
+            }).catch((err)=>{
+
+            }).finally(()=>{
+                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            });
+
+        */
+
+        }
+
+        function unexpectedDisconnect() {
+            // You might want to display UI to notify the user and start re-discovering readers
+             console.log("Disconnected from reader");
+        }
+
         return {
             order_id,
             paths,
@@ -723,6 +854,11 @@ export default {
             getCheckoutItems,
             redirectToDetailingList,
             completeCheckout,
+            validatePayment,
+            no_payment_modal,
+            closeNoPaymentModal,
+            payNow,
+            stripe_public_key,
         }
 
     },
@@ -1073,6 +1209,33 @@ export default {
 
 #completeBtn:hover{
     background: #333;
+}
+
+.bmodal-header{
+    font:bold 22px "Gilroy";
+    color:#F4003D;
+    background:#FFEFED;
+}
+
+.pay-btn,#payment_method_btn{
+    font:normal 16px "Gotham Rounded";
+    border-radius:4px;
+}
+.pay-btn{
+    border:thin solid #47454B;
+    background:#fff;
+}
+
+#payment_method_btn{
+    border:none;
+    background:#47454b;
+    color:#fff;
+}
+
+.pay-btn:hover,#payment_method_btn:hover{
+    color:#fff;
+    background: #42A71E;
+    border-color: #42A71E;
 }
 
 </style>

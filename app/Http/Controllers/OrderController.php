@@ -44,10 +44,15 @@ class OrderController extends Controller
         $is_sub_account = $new_order['sub_account_cust'];
         $main_account_booking_id = $new_order['sub_account_booking_id'];
         $main_account_booking_type = $new_order['sub_account_booking_type'];
+        $payment_method = $new_order['payment_method'];
 
 
         $customer = DB::table('infoCustomer')->where('CustomerID',$new_order['CustomerID'])->first();
         $address = DB::table('address')->where('AddressID',$address_uuid)->first();
+
+        if($customer && $payment_method=='BACS'){
+            DB::table('infoCustomer')->where('id',$customer->id)->update(['bycard'=>0]);
+        }
 
         $phones = [];
         $code_country = "";

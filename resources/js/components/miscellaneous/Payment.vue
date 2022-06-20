@@ -27,6 +27,7 @@
         </div>
     </div>
      <div class="col-12" v-else>
+        <!--
         <div class="row mb-2 mt-3">
             <div class="form-group mb-0 col-6 payment-method">
                 <select-options
@@ -41,8 +42,8 @@
                 </select-options>
             </div>
         </div>
-        <transition>
-            <div class="row" appear v-if="paymentMethod=='Credit Card'" id="credit_card_div">
+        -->
+            <div class="row" id="credit_card_div">
             <div class="credit-card col-12">
 
                 <div class="row mb-2">
@@ -105,8 +106,7 @@
                 </div>
 
             </div>
-            </div>
-        </transition>
+        </div>
 
     </div>
 </template>
