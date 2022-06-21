@@ -8,6 +8,9 @@
             <side-bar></side-bar>
                 <div class="col main-view p-5">
                     <h2>Component library</h2>
+                    <div class="row my-4">
+                        <div class="col-3"><button class="btn btn-outline-success" @click="router.push({name:'VueStripeTest'})">Stripe test</button></div>
+                    </div>
                     <div class="row">
                         <div class="col-3">
 
@@ -259,6 +262,7 @@
     import ItemPictoNew from '../miscellaneous/ItemPictoNew.vue'
     import DetailingRightPanel from '../detailing/DetailingRightPanel.vue';
     import Modal from '../miscellaneous/Modal.vue';
+    import { useRouter, useRoute } from "vue-router";
 
 
     export default {
@@ -298,6 +302,7 @@
             const shp_postcode =ref('');
             const hd_pickup =ref('');
             const available_slots = ref([]);
+            const router = useRouter();
 
             watch(() => Scan.value, (current_val, previous_val) => {
               if(Scan.value == false) {
@@ -546,6 +551,7 @@
                 checkMethod,
                 bmodal,
                 showModal,
+                router,
             }
         },
 
