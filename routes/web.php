@@ -20,6 +20,7 @@ use App\Http\Controllers\PosteController;
 use Illuminate\Support\Facades\DB;
 use TCG\Voyager\Facades\Voyager;
 use App\Http\Controllers\CategoryTailoringController;
+use App\Http\Controllers\StripeTerminalController;
 use App\Models\DetailingServices;
 use App\Models\Infoitem;
 use Illuminate\Http\Request;
@@ -307,7 +308,7 @@ Route::get('stripe-test',function(){
     ]);
     */
 
-});
+})->middleware('auth');
 
 Route::get('create-invoice-test',function(){
     $order_id = 83080;
@@ -563,6 +564,58 @@ Route::post('/make-payment-or-create-card',[OrderController::class,'makePaymentO
 Route::post('/complete-checkout',[OrderController::class,'completeCheckout'])->name('complete-checkout')->middleware('auth');
 Route::post('/get-stripe-terminal',[DetailingController::class,'getStripeTerminal'])->name('get-stripe-terminal')->middleware('auth');
 Route::post('/get-terminal-token',[DetailingController::class,'getTerminalToken'])->name('get-terminal-token')->middleware('auth');
+
+/**
+ * Routes for stripe terminal test
+ *  */
+
+
+Route::group(['prefix'=>'stripe-test'],function(){
+    Route::get('/',[StripeTerminalController::class,'index'])->name('stripe-test')->middleware('auth');
+
+    //Get connection
+    Route::post('/connection_token',function(){
+        $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+
+        try {
+            // The ConnectionToken's secret lets you connect to any Stripe Terminal reader
+            // and take payments with your Stripe account.
+            // Be sure to authenticate the endpoint for creating connection tokens.
+            $connectionToken = $stripe->terminal->connectionTokens->create();
+            echo json_encode(array('secret' => $connectionToken->secret));
+        } catch (Throwable $e) {
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    });
+
+    Route::post('/create_payment_intent',function(){
+        $stripe = new \Stripe\StripeClient('sk_test_26PHem9AhJZvU623DfE1x4sd');
+
+        try {
+            $json_str = file_get_contents('php://input');
+            $json_obj = json_decode($json_str);
+
+            // For Terminal payments, the 'payment_method_types' parameter must include
+            // 'card_present' and the 'capture_method' must be set to 'manual'
+            $intent = $stripe->paymentIntents->create([
+                'amount' => $json_obj->amount,
+                'currency' => 'aud',
+                'payment_method_types' => [
+                'card_present',
+                ],
+                'capture_method' => 'manual',
+            ]);
+
+            echo json_encode($intent);
+        } catch (Throwable $e) {
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    });
+});
+
 
 /**
  * Voyager custom routes
