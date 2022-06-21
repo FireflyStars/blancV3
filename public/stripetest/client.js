@@ -62,6 +62,7 @@ function fetchPaymentIntentClientSecret(amount) {
     body: bodyContent
   })
   .then(function(response) {
+	  console.log('paymentIntent',response);
     return response.json();
   })
   .then(function(data) {
@@ -91,7 +92,7 @@ function collectPayment(amount) {
 }
 
 function capture(paymentIntentId) {
-  return fetch('/capture_payment_intent', {
+  return fetch('/stripe-test/capture_payment_intent', {
     method: "POST",
     headers: {
         'Content-Type': 'application/json'
@@ -99,6 +100,7 @@ function capture(paymentIntentId) {
       body: JSON.stringify({"payment_intent_id": paymentIntentId})
   })
   .then(function(response) {
+	  console.log('capture',response);
     return response.json();
   })
   .then(function(data) {
