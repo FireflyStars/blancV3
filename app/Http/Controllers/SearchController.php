@@ -38,12 +38,15 @@ public function SearchCustomer(Request $request)
 
 
     $users = DB::table('infoCustomer')
+    ->select('Name', 'EmailAddress', 'Phone','infoCustomer.id', 'infoCustomer.CustomerID' , DB::raw(' IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as cust_type')
+    )
     ->where('FirstName', 'LIKE', $query . '%')
     ->orWhere('LastName','LIKE', $query . '%')
     ->paginate($PerPageUser);
     foreach ($users as $item) {
         $item->Phone=json_decode($item->Phone);
     }
+
 
     $emails = DB::table('infoCustomer')
     ->where('FirstName', 'LIKE', $query . '%')

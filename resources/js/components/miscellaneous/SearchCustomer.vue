@@ -17,14 +17,17 @@
         <li class="list-group-item" v-if ="Customer.length > 0">
             <div class="content-wraper " style="padding-top: 31px;">
                 <span class="subtitle col-6">Name</span>
-                <a class="d-flex justify-content-end col-6 show-more"  @click="loadMore('search_name')" >Show more</a>
+                <div class="d-flex justify-content-end col-6 ">
+                <a class="d-flex justify-content-end col-3 display-all" @click="displayAll('search_name')" >Display all</a>
+                <a class="d-flex justify-content-end col-3 show-more"   @click="loadMore('search_name')" >Show more</a>
+                </div>
              </div>
              <ul  class="list-group list-group-flush" >
                 <li v-for ="customer in Customer" :key="customer">
                   <div class="container">
                     <div class="row">
                        <div class="col-3">
-                          <span class="body_medium"><a href="javascript:void(0)" @click="goCustomerView(customer.id)" >{{customer.Name.replace(',','').toLowerCase()}}</a></span>
+                          <span class="body_medium"><a href="javascript:void(0)" @click="goCustomerView(customer.id)" >{{customer.Name}}</a></span>
                             <div  v-if="customer.Phone!=''&&customer.Phone!=null" >
                               <div v-for="phone in customer.Phone.slice(0,1)" :key="phone">
                                <b class ="body_regular">+{{phone.replace('|',' ')}}</b>
@@ -42,7 +45,7 @@
                             <tag   :name="'Orders'" ></tag>
                         </div>
                        <div class="col-2" style="text-align: end;">
-                            <tag   v-if="customer.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
+                            <tag   v-if="customer.cust_type=='B2C'" :name="'B2C'" ></tag>
                             <tag   v-else :name="'B2B'" ></tag>
                         </div>
 
@@ -89,14 +92,17 @@
              <div class="content-wraper">
                 <span class="subtitle col-6">Order</span>
 
-                <a class="d-flex justify-content-end col-6 show-more"  @click="loadMore('search_order')" >Show more</a>
+                 <div class="d-flex justify-content-end col-6 ">
+                <a class="d-flex justify-content-end col-3 display-all"  @click="displayAll('search_order')" >Display all</a>
+                <a class="d-flex justify-content-end col-3 show-more"    @click="loadMore('search_order')" >Show more</a>
+                </div>
              </div>
              <ul   class="list-group list-group-flush" >
                 <li v-for ="(order,index) in CustomerOrders" :key="order">
                   <div class="container">
                     <div class="row" @click="selectrow(order.id,order.Status,index)">
                         <div class="col-3">
-                         <span class="body_medium">{{order.Name.replace(',','').toLowerCase()}}</span>
+                         <span class="body_medium">{{order.Name}}</span>
                         </div>
                          <div class="col-1" >
                             <span class="body_small">{{order.id}}</span>
@@ -148,12 +154,14 @@
         ORDERLIST_SELECT_CURRENT,
         LOADER_MODULE,
         DISPLAY_LOADER,
-        HIDE_LOADER
-
-
+        HIDE_LOADER,
+        ORDERLIST_FILTER,
+        CUSTOMER_MODULE,
+        SET_CUSTOMER_FILTER,
     } from "../../store/types/types";
     import {formatDate} from "../helpers/helpers";
     import {useStore} from 'vuex';
+import templateBuilder from '@babel/template';
 export default({
      name: "SearchCustomer",
      components:{Tag,WaveLoader},
@@ -165,7 +173,9 @@ export default({
            const clear = ref('');
            const show_loader= ref(false);
            const showbutton = ref(false);
-
+           const preselection=ref({});
+           const filterDef = ref({});
+            
 
            const featureunavailable=((feature)=>{
                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:feature+' feature not yet implemented.',ttl:5,type:'success'});
@@ -182,7 +192,7 @@ export default({
 
                showSearch.value = false;
                show_loader.value= false;
-                if(colname=='line_select') return;
+              //  if(colname=='line_select') return;
 
                 if(status=='PENDING'){
                      router.push({
@@ -213,6 +223,13 @@ export default({
                      store.dispatch(`${CUSTOMERLIST_MODULE}${CUSTOMER_LOAD_LIST}`,{query:e.target.value}).then((response)=>{
                             if(e.target.value){
                               showSearch.value = true;
+                            //   filterDef.value={
+                            //             'Customername':{
+                            //                 name:"Customer name",
+                            //                 value: e.target.value
+                            //             },
+                            // };
+                            // preselection.value = filterDef.value
                             } else {
                               showSearch.value = false;
                               show_loader.value= false;
@@ -246,12 +263,36 @@ export default({
           function loadMore(tab){
                  store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
                  store.dispatch(`${CUSTOMERLIST_MODULE}${CUSTOMER_LOAD_LIST}`,{showmore:tab,query:clear.value}).finally(()=>{
-                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
             }
+
+          function displayAll(tab){
+               
+               featureunavailable('Display All');
+            //   if(tab == "search_name"){
+
+            //     // store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
+            //     // store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_FILTER}`, preselection.value);
+            //     // store.dispatch(`${CUSTOMER_MODULE}${FILTER_CUSTOMER_LIST}`).finally(()=>{
+            //     //     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+
+            //     // });
+            
+            //   console.log("this is name list")
+
+            //   } else if (tab == "search_order") {
+
+            //         store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
+            //         store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER_SEARCH}`,_.cloneDeep(preselection.value)).finally(()=>{
+            //         store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+
+            //     });
+            //  }
+                
+          }
             
           function goToOrderList(customerId){
-
             this.clearSearch()
 
             router.push({
@@ -282,7 +323,9 @@ export default({
                 show_loader,
                 loadMore,
                 goToOrderList,
-                goCustomerView
+                goCustomerView,
+                displayAll,
+                filterDef
 
             }
         }
@@ -360,6 +403,19 @@ export default({
         text-decoration-line: underline;
         color: #000000;
         cursor: pointer;
+    }
+    .display-all{
+      font-family: Gilroy;
+        font-style: normal;
+        font-weight: 600;
+        font-size: 18px;
+        line-height: 100%;
+        display: flex;
+        align-items: center;
+        text-decoration-line: underline;
+        color: red;
+        cursor: pointer;
+
     }
     .col{
     display: flex;

@@ -66,7 +66,7 @@
         ORDERLIST_CANCEL_ORDERS,
         ORDERLIST_LOAD_TAB,
         ORDERLIST_MARK_AS_LATE,
-        ORDERLIST_CUSTOMER_ORDERS
+        ORDERLIST_CUSTOMER_ORDERS,
     } from '../../store/types/types';
     import Tag from  '../miscellaneous/Tag'
     import CheckBox from '../miscellaneous/CheckBox'
@@ -120,7 +120,7 @@
              })
 
             function formatSubOrderReady(def, val, order){
-                return (order.ready_sub_orders + '/' + val + '('+ parseInt(order.ready_sub_orders*100/val) +'%)');
+                return (order.ready_sub_orders + '/' + val + ' ('+ parseInt(order.ready_sub_orders*100/val) +'%)');
             }
             function preprocess(def,val,order) {
                 if(typeof def.type!="undefined"&&def.type=="tag"){

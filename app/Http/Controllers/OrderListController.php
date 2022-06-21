@@ -26,8 +26,8 @@ class OrderListController extends Controller
                     'infoCustomer.Name','infoCustomer.TypeDelivery', 'infoInvoice.datesold', 'infoitems.PromisedDate',
                     DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
-                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Prod'),
-                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Deliv'),
+                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
+                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
                     DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
@@ -47,8 +47,8 @@ class OrderListController extends Controller
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
                     DB::raw('IF(infoOrder.Paid = 0, "unpaid", "paid") as paid'),
                     'infoitems.CCStatus as Action',
-                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Prod'),
-                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Deliv'),
+                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
+                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -150,7 +150,7 @@ class OrderListController extends Controller
                     ->where('infoOrder.id', $order->id)
                     ->where('pickup.status', 'not like', '%DEL%')
                     ->where('deliveryask.status', 'not like', '%DEL%')
-                    ->select(DB::raw('DATE_FORMAT(IF( MIN(pickup.date) > MIN(deliveryask.date), IF (MIN(deliveryask.date) <> "2020-01-01", MIN(deliveryask.date), MIN(pickup.date)), IF (MIN(pickup.date) <> "2020-01-01", MIN(pickup.date), MIN(deliveryask.date))), "%d/%m") AS Deliv'))
+                    ->select(DB::raw('DATE_FORMAT(IF( MIN(pickup.date) > MIN(deliveryask.date), IF (MIN(deliveryask.date) <> "2020-01-01", MIN(deliveryask.date), MIN(pickup.date)), IF (MIN(pickup.date) <> "2020-01-01", MIN(pickup.date), MIN(deliveryask.date))), "%d/%m/%Y") AS Deliv'))
                     ->value('Deliv');
             }
             if( $order->datesold !='' && $order->datesold !='2019-01-01 00:00:00' ){
@@ -614,8 +614,8 @@ class OrderListController extends Controller
                     'infoCustomer.Name','infoCustomer.TypeDelivery', 'infoInvoice.datesold', 'infoitems.PromisedDate', 'infoCustomer.CustomerID',
                     DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
-                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Prod'),
-                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Deliv'),
+                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
+                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
                     DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
@@ -638,8 +638,8 @@ class OrderListController extends Controller
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
                     DB::raw('IF(infoOrder.Paid = 0, "unpaid", "paid") as paid'),
                     'infoitems.CCStatus as Action',
-                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Prod'),
-                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m") as Deliv'),
+                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
+                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -744,7 +744,7 @@ class OrderListController extends Controller
                     ->where('infoOrder.id', $order->id)
                     ->where('pickup.status', 'not like', '%DEL%')
                     ->where('deliveryask.status', 'not like', '%DEL%')
-                    ->select(DB::raw('DATE_FORMAT(IF( MIN(pickup.date) > MIN(deliveryask.date), IF (MIN(deliveryask.date) <> "2020-01-01", MIN(deliveryask.date), MIN(pickup.date)), IF (MIN(pickup.date) <> "2020-01-01", MIN(pickup.date), MIN(deliveryask.date))), "%d/%m") AS Deliv'))
+                    ->select(DB::raw('DATE_FORMAT(IF( MIN(pickup.date) > MIN(deliveryask.date), IF (MIN(deliveryask.date) <> "2020-01-01", MIN(deliveryask.date), MIN(pickup.date)), IF (MIN(pickup.date) <> "2020-01-01", MIN(pickup.date), MIN(deliveryask.date))), "%d/%m/%Y") AS Deliv'))
                     ->value('Deliv');
             }
             if( $order->datesold !='' && $order->datesold !='2019-01-01 00:00:00' ){
