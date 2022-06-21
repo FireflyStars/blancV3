@@ -935,6 +935,7 @@ import axios from 'axios';
                     new_order.postcode = shp_postcode.value;
                     new_order.town = shp_town.value;
                     new_order.store_name = store_name.value;
+                    new_order.payment_method = paymentMethod.value;
 
                     let arr = [];
 

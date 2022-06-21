@@ -9,9 +9,11 @@
 
         <title>Blanc &copy;</title>
         <link  rel="stylesheet" href="{{ mix('css/app.css') }}">
+        <script src="https://js.stripe.com/terminal/v1/"></script>
     </head>
     <body id="app">
     </body>
+
     <script defer src="https://maps.googleapis.com/maps/api/js?&libraries=geometry,places&key=AIzaSyBzskMTlZlX35Ai_39lAq4lDJ7sQVWTFmY"></script>
     <script src="{{ mix('js/app.js') }}"></script>
 </html>

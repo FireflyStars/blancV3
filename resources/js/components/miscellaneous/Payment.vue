@@ -27,6 +27,7 @@
         </div>
     </div>
      <div class="col-12" v-else>
+        <!--
         <div class="row mb-2 mt-3">
             <div class="form-group mb-0 col-6 payment-method">
                 <select-options
@@ -41,8 +42,8 @@
                 </select-options>
             </div>
         </div>
-        <transition>
-            <div class="row" appear v-if="paymentMethod=='Credit Card'" id="credit_card_div">
+        -->
+            <div class="row" id="credit_card_div">
             <div class="credit-card col-12">
 
                 <div class="row mb-2">
@@ -105,8 +106,7 @@
                 </div>
 
             </div>
-            </div>
-        </transition>
+        </div>
 
     </div>
 </template>
@@ -129,7 +129,7 @@ export default {
         custcard: Object || null,
         order_id: String,
     },
-    emits:['reload-checkout'],
+    emits:['reload-checkout','complete-checkout'],
     setup(props,context) {
          //Payment details
 
@@ -267,6 +267,14 @@ export default {
                                 ttl: 5,
                                 type:(res.data.paid?'success':'danger'),
                             });
+
+                            if(res.data.paid){
+                                async function createItems(){
+                                    await delayPage(5);
+
+                                    context.emit('complete-checkout');
+                                }
+                            }
                         }
                     }).catch((err)=>{
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
@@ -283,6 +291,12 @@ export default {
                         }
 
                     });
+            }
+
+            function delayPage(n){
+                return new Promise(function(resolve){
+                    setTimeout(resolve,n*1000);
+                });
             }
 
             return {

@@ -20,6 +20,7 @@ use App\Http\Controllers\PosteController;
 use Illuminate\Support\Facades\DB;
 use TCG\Voyager\Facades\Voyager;
 use App\Http\Controllers\CategoryTailoringController;
+use App\Http\Controllers\StripeTerminalController;
 use App\Models\DetailingServices;
 use App\Models\Infoitem;
 use Illuminate\Http\Request;
@@ -182,7 +183,7 @@ Route::get('tailoring-services-test',function(){
 
 
 Route::get('stripe-test',function(){
-    $id_customer = 	19688;
+    $id_customer = 	3428;
 
     $cust = DB::table('infoCustomer')->where('id',$id_customer)->first();
 
@@ -190,11 +191,12 @@ Route::get('stripe-test',function(){
 
     $stripe = new \Stripe\StripeClient(env('STRIPE_TEST_SECURITY_KEY'));
 
-    $card_exp = '12/34';
-    $card_num =  '4242 4242 4242 4242';
-    $cardholder_name = $cust->FirstName.$cust->LastName;
+    $card_exp = '12/23';
+    $card_num =  '4850180100577561';
+    $cardholder_name = 'Franck Gavois';
 
     $stripe_customer = null;
+    $card = null;
 
     try {
 
@@ -217,8 +219,8 @@ Route::get('stripe-test',function(){
                 'type' => 'card',
                 'card' => [
                     'number'      => $card_num ,
-                    'exp_month'   => 12,
-                    'exp_year'    => 34,
+                    'exp_month'   => 03,
+                    'exp_year'    => 23,
                     'cvc'         => 999,
                 ],
             ]);
@@ -259,9 +261,9 @@ Route::get('stripe-test',function(){
 
             DB::table('cards')->insert($credit_card);
         }
-
+        /*
         $payment_intent = $stripe->paymentIntents->create([
-            'amount'            => 100*100, //100*0.01
+            'amount'            => 30, //100*0.01
             'currency'          => 'gbp',
             'confirm'           => true,
             "payment_method"    => $card->stripe_card_id,
@@ -272,13 +274,18 @@ Route::get('stripe-test',function(){
             "receipt_email"=>"rushdi@vpc-direct-service.com",
         ]);
 
+        echo "<pre>";
+        print($payment_intent);
+
         if($payment_intent->status == 'succeeded'){
             //Update order
             echo "payment succeeded";
         }
+        //*/
 
     }catch(Exception $e){
-
+        echo "<pre>";
+        print_r($e);
     }
 
     /*
@@ -301,7 +308,7 @@ Route::get('stripe-test',function(){
     ]);
     */
 
-});
+})->middleware('auth');
 
 Route::get('create-invoice-test',function(){
     $order_id = 83080;
@@ -449,6 +456,43 @@ Route::get('test-validate-order',function(Request $request){
     */
 });
 
+Route::get('test-stripe-terminal',function(Request $request){
+    $reader = $request->reader;
+
+    if(!isset($reader) && $reader==''){
+        die('Reader not set');
+    }
+
+    $readers_id = [
+        'ATELIER'=>'tmr_Eqz4ewJhXq5eu6',
+    ];
+
+    if(isset($readers_id[$reader])){
+        $reader_id = $readers_id[$reader];
+
+        $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+        $stripe->terminal->readers->retrieve($reader_id, []);
+
+
+        $payment_intent = $stripe->paymentIntents->create([
+            'amount' => 30,
+            'currency' => 'gbp',
+            'payment_method_types' => ['card_present'],
+            'capture_method' => 'manual',
+          ]);
+
+/*
+          $stripe->terminal->readers->processPaymentIntent(
+            $reader_id,
+            ['payment_intent' => $payment_intent->id]
+          );
+*/
+
+    }
+
+});
+
+
 /* END TEST ROUTES */
 
 // added by yonghuan to search customers to be linked
@@ -518,6 +562,60 @@ Route::post('/change-detailing-etape',[DetailingController::class,'changeDetaili
 Route::post('/set-checkout-discount',[DetailingController::class,'setCheckoutDiscount'])->name('set-checkout-discount')->middleware('auth');
 Route::post('/make-payment-or-create-card',[OrderController::class,'makePaymentOrCreateCard'])->name('make-payment-or-create-card')->middleware('auth');
 Route::post('/complete-checkout',[OrderController::class,'completeCheckout'])->name('complete-checkout')->middleware('auth');
+Route::post('/get-stripe-terminal',[DetailingController::class,'getStripeTerminal'])->name('get-stripe-terminal')->middleware('auth');
+Route::post('/get-terminal-token',[DetailingController::class,'getTerminalToken'])->name('get-terminal-token')->middleware('auth');
+
+/**
+ * Routes for stripe terminal test
+ *  */
+
+
+Route::group(['prefix'=>'stripe-test'],function(){
+    Route::get('/',[StripeTerminalController::class,'index'])->name('stripe-test')->middleware('auth');
+
+    //Get connection
+    Route::post('/connection_token',function(){
+        $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+
+        try {
+            // The ConnectionToken's secret lets you connect to any Stripe Terminal reader
+            // and take payments with your Stripe account.
+            // Be sure to authenticate the endpoint for creating connection tokens.
+            $connectionToken = $stripe->terminal->connectionTokens->create();
+            echo json_encode(array('secret' => $connectionToken->secret));
+        } catch (Throwable $e) {
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    });
+
+    Route::post('/create_payment_intent',function(){
+        $stripe = new \Stripe\StripeClient('sk_test_26PHem9AhJZvU623DfE1x4sd');
+
+        try {
+            $json_str = file_get_contents('php://input');
+            $json_obj = json_decode($json_str);
+
+            // For Terminal payments, the 'payment_method_types' parameter must include
+            // 'card_present' and the 'capture_method' must be set to 'manual'
+            $intent = $stripe->paymentIntents->create([
+                'amount' => $json_obj->amount,
+                'currency' => 'aud',
+                'payment_method_types' => [
+                'card_present',
+                ],
+                'capture_method' => 'manual',
+            ]);
+
+            echo json_encode($intent);
+        } catch (Throwable $e) {
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    });
+});
+
 
 /**
  * Voyager custom routes
