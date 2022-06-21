@@ -182,7 +182,7 @@ Route::get('tailoring-services-test',function(){
 
 
 Route::get('stripe-test',function(){
-    $id_customer = 	19688;
+    $id_customer = 	3428;
 
     $cust = DB::table('infoCustomer')->where('id',$id_customer)->first();
 
@@ -190,11 +190,12 @@ Route::get('stripe-test',function(){
 
     $stripe = new \Stripe\StripeClient(env('STRIPE_TEST_SECURITY_KEY'));
 
-    $card_exp = '12/34';
-    $card_num =  '4242 4242 4242 4242';
-    $cardholder_name = $cust->FirstName.$cust->LastName;
+    $card_exp = '12/23';
+    $card_num =  '4850180100577561';
+    $cardholder_name = 'Franck Gavois';
 
     $stripe_customer = null;
+    $card = null;
 
     try {
 
@@ -217,8 +218,8 @@ Route::get('stripe-test',function(){
                 'type' => 'card',
                 'card' => [
                     'number'      => $card_num ,
-                    'exp_month'   => 12,
-                    'exp_year'    => 34,
+                    'exp_month'   => 03,
+                    'exp_year'    => 23,
                     'cvc'         => 999,
                 ],
             ]);
@@ -259,9 +260,9 @@ Route::get('stripe-test',function(){
 
             DB::table('cards')->insert($credit_card);
         }
-
+        /*
         $payment_intent = $stripe->paymentIntents->create([
-            'amount'            => 100*100, //100*0.01
+            'amount'            => 30, //100*0.01
             'currency'          => 'gbp',
             'confirm'           => true,
             "payment_method"    => $card->stripe_card_id,
@@ -272,13 +273,18 @@ Route::get('stripe-test',function(){
             "receipt_email"=>"rushdi@vpc-direct-service.com",
         ]);
 
+        echo "<pre>";
+        print($payment_intent);
+
         if($payment_intent->status == 'succeeded'){
             //Update order
             echo "payment succeeded";
         }
+        //*/
 
     }catch(Exception $e){
-
+        echo "<pre>";
+        print_r($e);
     }
 
     /*

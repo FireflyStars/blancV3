@@ -106,7 +106,7 @@
                                                         <div class="item-sub-heading">Complexities</div>
                                                         <div class="row each-desc-row py-1 my-1" v-for="(price,comp) in item.complexities_arr">
                                                             <div class="col-10 item-desc-text">{{comp}}</div>
-                                                            <div class="col-2 text-align-right item-desc-text">&#163;{{price}}</div>
+                                                            <div class="col-2 text-align-right item-desc-text">&#163;{{price.toFixed(2)}}</div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -455,7 +455,7 @@
                                                         <div class="accordion-content p-4 mt-3">
                                                             <div class="row">
                                                                 <span class="sidebar_title text-white">Payment</span>
-                                                                <payment :custcard="custcard" :order_id="order_id" @reload-checkout="getCheckoutItems"></payment>
+                                                                <payment :custcard="custcard" :order_id="order_id" @reload-checkout="getCheckoutItems" @complete-checkout="completeCheckout"></payment>
                                                             </div>
                                                         </div>
                                                     </div>

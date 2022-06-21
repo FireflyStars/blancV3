@@ -129,7 +129,7 @@ export default {
         custcard: Object || null,
         order_id: String,
     },
-    emits:['reload-checkout'],
+    emits:['reload-checkout','complete-checkout'],
     setup(props,context) {
          //Payment details
 
@@ -267,6 +267,14 @@ export default {
                                 ttl: 5,
                                 type:(res.data.paid?'success':'danger'),
                             });
+
+                            if(res.data.paid){
+                                async function createItems(){
+                                    await delayPage(5);
+
+                                    context.emit('complete-checkout');
+                                }
+                            }
                         }
                     }).catch((err)=>{
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
@@ -283,6 +291,12 @@ export default {
                         }
 
                     });
+            }
+
+            function delayPage(n){
+                return new Promise(function(resolve){
+                    setTimeout(resolve,n*1000);
+                });
             }
 
             return {

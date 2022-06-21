@@ -547,7 +547,7 @@ class OrderController extends Controller
                 "capture_method"    => "automatic",
                 'payment_method_types' => ['card'],
                 "description"=>"Order: ".$order_id,
-                "receipt_email"=>"rushdi@vpc-direct-service.com", //To change for customer email
+                "receipt_email"=>$cust->EmailAddress, //To change for customer email
             ]);
 
 
