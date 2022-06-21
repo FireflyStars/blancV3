@@ -591,7 +591,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
     });
 
     Route::post('/create_payment_intent',function(){
-        $stripe = new \Stripe\StripeClient('sk_test_26PHem9AhJZvU623DfE1x4sd');
+        $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
 
         try {
             $json_str = file_get_contents('php://input');
@@ -601,7 +601,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
             // 'card_present' and the 'capture_method' must be set to 'manual'
             $intent = $stripe->paymentIntents->create([
                 'amount' => $json_obj->amount,
-                'currency' => 'aud',
+                'currency' => 'gbp',
                 'payment_method_types' => [
                 'card_present',
                 ],
@@ -614,6 +614,23 @@ Route::group(['prefix'=>'stripe-test'],function(){
             echo json_encode(['error' => $e->getMessage()]);
         }
     });
+
+    Route::post('/capture_payment_intent',function(){
+        $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+        try {
+        $json_str = file_get_contents('php://input');
+        $json_obj = json_decode($json_str);
+
+        $intent = $stripe->paymentIntents->capture($json_obj->payment_intent_id);
+
+        echo json_encode($intent);
+        } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['error' => $e->getMessage()]);
+        }
+    });
+
 });
 
 

@@ -17,6 +17,7 @@ class VerifyCsrfToken extends Middleware
         'logout',
         'authenticate',
         '/stripe-test/connection_token',
-        '/stripe-test/create_payment_intent'
+        '/stripe-test/create_payment_intent',
+        '/stripe-test/capture_payment_intent'
     ];
 }

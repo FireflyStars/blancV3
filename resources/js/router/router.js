@@ -191,6 +191,15 @@ const router = createRouter({
             meta:{
                 authenticated:true
             },
+        },
+        {
+            path:'/vue-stripe-test',
+            name:'VueStripeTest',
+            component:()=> import('../components/miscellaneous/StripeTest'),
+            meta:{
+                authenticated:true
+            },
+
         }
 
     ]

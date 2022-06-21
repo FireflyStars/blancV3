@@ -37,7 +37,7 @@ class ItemController extends Controller{
         $svg = Db::table('itemzones')
             ->where('zone_type', $item_type)
             //->where('face','front')
-            ->orderBy('description', 'desc')
+            ->orderBy('id', 'asc')
             ->get();
 
         $svg_details = Db::table('itemsvg')->where('name', $item_type)->first();
