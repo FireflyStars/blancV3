@@ -6,8 +6,10 @@
             <svg width="30" height="40" class="pdficon" @click="featureunavailable('Pdf Invoice')">
                 <image xlink:href="/images/pdficon.svg"  width="30" height="40"/>
             </svg>
-            <!-- <h2>{{ORDER.detail.Status}}</h2> -->
-            <h2 >&numero; {{ORDER.detail.order_id}}</h2> <tag :name="ORDER.detail.Status" ></tag>
+            
+            <h2 >&numero; {{ORDER.detail.order_id}}<button v-if="ORDER['items'].length !== 0" type="button" class="btn-link-green body_regular"  @click='EditOrder(ORDER.detail.order_id)'>Edit</button></h2> 
+            <tag :name="ORDER.detail.Status" ></tag>
+            
         </div>
         <transition name="popinout">
             <div v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate==null&&!hasRoles(['cc'])" class="section-late-production-op row">
@@ -124,10 +126,18 @@
             </div>
         </div>
         <div class="mt-3 mb-3 row" v-if="(typeof ORDER['detail']!='undefined')">
-            <div class="col-4">
+            <div class="col-4" v-if="ORDER['items'].length !== 0">
                 <button class="btn btn-outline-danger body_medium" @click="markaslate" v-if="ORDER['detail'].Status!='LATE'">Mark as late</button>
             </div>
-        </div>
+           
+             <div class="col-4" v-if="ORDER['items'].length === 0">
+                <button class="btn btn-outline-dark body_medium">Print ticket(s)</button>
+            </div>
+             <div class="col-4" v-if="ORDER['items'].length === 0">
+                <button class="btn btn-outline-danger body_medium" v-if="ORDER['detail'].Status!='RECURRING'">Cancel booking</button>
+            </div>
+            </div>
+       
         <split-confirmation :show_conf="show_split_conf" @close="show_split_conf=false"></split-confirmation>
     </div>
 </template>
@@ -243,6 +253,7 @@
             const availabledates=ref([]);
             const availabletimeslot=ref([]);
             const disabledtodate=ref('');
+            const orderId = ref(0);
 
 
             const ORDER=computed(()=>{
@@ -395,6 +406,11 @@
                         },
                     });
             }
+            
+            function EditOrder(order_id){
+                orderId.value = order_id
+                router.push('/order-content/'+orderId.value);
+            }
 
             return {
                 showorderdetail,
@@ -427,7 +443,8 @@
                 showNewDeliveryDateMsg,
                 disabledtodate,
                 show_split_conf,
-                EditCustomer
+                EditCustomer,
+                EditOrder
             }
         }
     }

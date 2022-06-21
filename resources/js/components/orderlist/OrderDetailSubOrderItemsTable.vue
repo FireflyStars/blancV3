@@ -23,7 +23,7 @@
             </div>
         </section>
         <section class="nodata p-2" v-if="Object.entries(ITEM_LIST).length === 0">
-            <p>No items available.</p>
+           <button class="detail-btn detail-btn-detail-order text-center" @click="EditOrder()"> Detail order </button>
         </section>
         <transition name="trans-batch-actions">
             <div class=" batch-actions" v-if="Object.entries(MULTI_CHECKED).length !== 0"><button class="btn btn-outline-dark body_medium"  @click="show_split_conf">Split</button><button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Delete items')">Delete</button></div>
@@ -65,6 +65,7 @@
             const router = useRouter();
             const store=useStore();
             const route = useRoute();
+            const orderId = ref(0);
             const ITEM_LIST=computed(()=>{
                 return store.getters[`${ORDERDETAIL_MODULE}${ORDERDETAIL_GET_DETAILS}`].items;
             });
@@ -118,7 +119,6 @@
 
             }
 
-
             const featureunavailable=((feature)=>{
                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:feature+' feature not yet implemented.',ttl:5,type:'success'});
             });
@@ -135,6 +135,11 @@
                 });
 */
             });
+
+            function EditOrder(){
+                orderId.value = route.params.order_id
+                router.push('/order-content/'+orderId.value);
+            }
 
             const show_split_conf=()=>{
                 context.emit("show_conf");
@@ -156,6 +161,7 @@
                 checkboxallclicked,
                 featureunavailable,
                 cancelorders,
+                EditOrder
 
 
 
@@ -187,6 +193,14 @@
         z-index:10000;
         background: rgb(247, 251, 246);
         box-shadow: inset 0px -1px 0px rgba(168, 168, 168, 0.25);
+    }
+    .detail-btn-detail-order{
+        background: #42A71E;
+        color: #FFFFFF;
+        width: 225px;
+        border-radius: 4px;
+        height: 40px;
+        border-color: #42A71E;           
     }
     /*list transitions*/
     .list-enter-from{

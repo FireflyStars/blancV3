@@ -120,7 +120,11 @@
              })
 
             function formatSubOrderReady(def, val, order){
-                return (order.ready_sub_orders + '/' + val + ' ('+ parseInt(order.ready_sub_orders*100/val) +'%)');
+                if(val == 0 ){
+                    return ('-' + ' ('+ order.ready_sub_orders+'%)');
+                } else {
+                    return (order.ready_sub_orders + '/' + val + ' ('+ parseInt(order.ready_sub_orders*100/val) +'%)');
+                }  
             }
             function preprocess(def,val,order) {
                 if(typeof def.type!="undefined"&&def.type=="tag"){

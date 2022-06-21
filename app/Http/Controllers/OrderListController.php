@@ -21,24 +21,25 @@ class OrderListController extends Controller
         $filters=$request->get('filters');
         if($current_tab != 'customer_care'){
             $orderlist=DB::table('infoOrder')
+              
                 ->select( [
                     'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id',
                     'infoCustomer.Name','infoCustomer.TypeDelivery', 'infoInvoice.datesold', 'infoitems.PromisedDate',
-                    DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
-                    DB::raw('GROUP_CONCAT(infoitems.express) as express'),
-                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
-                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
-                    DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
-                ])
-                ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
-                ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
-                ->join('infoitems',function($join){
-                    $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
-                        ->where('infoitems.InvoiceID','!=','')
-                        ->whereNotIn('infoitems.Status',['DELETE','VOID']);
-                })
-                ->where('infoOrder.OrderID','!=','')
-                ->where('infoInvoice.OrderID','!=','');
+                DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
+                DB::raw('GROUP_CONCAT(infoitems.express) as express'),
+                DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
+                DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
+                DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
+            ])
+            ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
+            ->leftJoin('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+            ->leftJoin('infoitems',function($join){
+                $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
+                    ->where('infoitems.InvoiceID','!=','')
+                    ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+            })
+            ->where('infoOrder.OrderID','!=','')
+            ->whereNotIn('infoOrder.Status',['VOID', 'DELETE']);
         }else{
             $orderlist=DB::table('infoOrder')
                 ->select( [
@@ -609,26 +610,26 @@ class OrderListController extends Controller
 
         if($current_tab != 'customer_care'){
             $orderlist=DB::table('infoOrder')
-                ->select( [
+            ->select( [
                     'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id',
                     'infoCustomer.Name','infoCustomer.TypeDelivery', 'infoInvoice.datesold', 'infoitems.PromisedDate', 'infoCustomer.CustomerID',
-                    DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
-                    DB::raw('GROUP_CONCAT(infoitems.express) as express'),
-                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
-                    DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
-                    DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
-                ])
-                ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
-                ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
-                ->join('infoitems',function($join){
-                    $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
-                        ->where('infoitems.InvoiceID','!=','')
-                        ->whereNotIn('infoitems.Status',['DELETE','VOID']);
-                })
-                ->where('infoOrder.OrderID','!=','')
-                ->where('infoInvoice.OrderID','!=','')
-                ->where('infoCustomer.CustomerID','=',$customerId);
-
+                DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
+                DB::raw('GROUP_CONCAT(infoitems.express) as express'),
+                DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
+                DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
+                DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
+            ])
+            ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
+            ->leftJoin('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+            ->leftJoin('infoitems',function($join){
+                $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
+                    ->where('infoitems.InvoiceID','!=','')
+                    ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+            })
+            ->where('infoOrder.OrderID','!=','')
+            ->where('infoCustomer.CustomerID','=',$customerId)
+            ->whereNotIn('infoOrder.Status',['VOID', 'DELETE']);
+    
 
         }else{
             $orderlist=DB::table('infoOrder')
