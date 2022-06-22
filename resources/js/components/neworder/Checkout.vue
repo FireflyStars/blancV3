@@ -502,7 +502,7 @@
                 <div class="col-10">
                     <div class="row justify-content-center mb-4">
                         <div class="col-6">
-                            <button class="pay-btn w-100 py-3" @click="payNow">Pay now</button>
+                            <stripe-pay-now :user="cur_user" :order="order"></stripe-pay-now>
                         </div>
                         <div class="col-6">
                             <button class="pay-btn w-100 py-3" @click="completeCheckout">Pay later</button>
@@ -537,10 +537,11 @@ import {
 } from '../../store/types/types';
 import Payment from '../miscellaneous/Payment.vue';
 import Modal from '../miscellaneous/Modal.vue';
+import StripePayNow from '../miscellaneous/StripePayNow.vue';
 
 export default {
     name: "Checkout",
-    components: { BreadCrumb, SideBar, MainHeader,Payment,Modal},
+    components: { BreadCrumb, SideBar, MainHeader,Payment,Modal,StripePayNow},
     setup() {
         const router = useRouter();
         const route = useRoute();
@@ -563,6 +564,7 @@ export default {
         const custcard = ref({});
         const no_payment_modal = ref();
         const stripe_public_key = ref('');
+        const cur_user = ref({});
 
         order_id.value = route.params.order_id;
 
@@ -599,6 +601,7 @@ export default {
                 vat.value = res.data.vat;
                 custcard.value = res.data.custcard;
                 stripe_public_key.value = res.data.stripe_public_key;
+                cur_user.value = res.data.cur_user;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -749,85 +752,6 @@ export default {
             no_payment_modal.value.closeModal();
         }
 
-        function payNow(){
-            /*
-            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
-                true,
-                "Please wait....",
-            ]);
-            */
-            axios.post('/get-terminal-token',{})
-                .then((res)=>{
-                    if(res.data.token){
-
-
-                        const terminal = StripeTerminal.create({
-                            onFetchConnectionToken: res.data.token.secret,
-                            onUnexpectedReaderDisconnect: unexpectedDisconnect,
-                        });
-
-                        console.log(terminal);
-                        /*
-                        async function connectReaderHandler() {
-                            const config = {simulated: false};
-                            const discoverResult = await terminal.discoverReaders(config);
-
-                            console.log(discoverResult);
-
-                            if (discoverResult.error) {
-                                console.log('Failed to discover: ', discoverResult.error);
-                            } else if (discoverResult.discoveredReaders.length === 0) {
-                                console.log('No available readers.');
-                            } else {
-                                // Just select the first reader here.
-                                const selectedReader = discoverResult.discoveredReaders[0];
-
-                                const connectResult = await terminal.connectReader(selectedReader);
-                                if (connectResult.error) {
-                                console.log('Failed to connect: ', connectResult.error);
-                                } else {
-                                console.log('Connected to reader: ', connectResult.reader.label);
-                                }
-                            }
-                        }
-
-                        connectReaderHandler();
-                        */
-
-
-                    }
-
-                }).catch((err)=>{
-
-                }).finally(()=>{
-
-                });
-
-
-        /*
-            axios.post('/get-stripe-terminal',{
-                reader:'ATELIER',
-                amount:total_with_discount.value,
-            }).then((res)=>{
-                if(res.data.terminal && res.data.payment_intent){
-
-
-                }
-            }).catch((err)=>{
-
-            }).finally(()=>{
-                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-            });
-
-        */
-
-        }
-
-        function unexpectedDisconnect() {
-            // You might want to display UI to notify the user and start re-discovering readers
-             console.log("Disconnected from reader");
-        }
-
         return {
             order_id,
             paths,
@@ -857,8 +781,8 @@ export default {
             validatePayment,
             no_payment_modal,
             closeNoPaymentModal,
-            payNow,
             stripe_public_key,
+            cur_user,
         }
 
     },

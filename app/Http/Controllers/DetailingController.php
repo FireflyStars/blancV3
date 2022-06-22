@@ -1417,6 +1417,7 @@ class DetailingController extends Controller
             'custcard'=>$cust_card,
             'stripe_public_key'=>env($stripe_public_key),
             'stripe_security_key'=>env($stripe_security_key),
+            'cur_user'=>Auth::user(),
         ]);
     }
 
