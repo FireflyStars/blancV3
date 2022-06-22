@@ -199,7 +199,7 @@ export default {
 
 
         async function fetchPaymentIntentClientSecret(amount) {
-            const bodyContent = JSON.stringify({ amount: amount });
+            const bodyContent = JSON.stringify({ amount: amount,order_id:props.order.id });
             return fetch('/stripe-test/create_payment_intent', {
                 method: "POST",
                 headers: {
@@ -232,6 +232,9 @@ export default {
                 })
                 .then(function(data) {
                     console.log('server.capture', data);
+                    //To log data for payment logs
+
+
                     if(data.status=='succeeded'){
                         let amount = parseInt(data.amount)/100;
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
@@ -240,7 +243,19 @@ export default {
                                     type: "success",
                         });
 
-                        context.emit('complete-checkout');
+                        async function setOrderPaid(){
+                            await axios.post('/set-order-paid',{
+                                order_id:props.order.id
+                            }).then((res)=>{
+
+                            }).catch((err)=>{
+                                console.log(err);
+                            }).finally(()=>{
+                                context.emit('complete-checkout');
+                            });
+                        }
+
+                        setOrderPaid();
                     }
 
                 }).finally(()=>{
