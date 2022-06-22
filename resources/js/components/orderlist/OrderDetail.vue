@@ -6,8 +6,7 @@
             <svg width="30" height="40" class="pdficon" @click="featureunavailable('Pdf Invoice')">
                 <image xlink:href="/images/pdficon.svg"  width="30" height="40"/>
             </svg>
-            
-            <h2 >&numero; {{ORDER.detail.order_id}}<button v-if="ORDER['items'].length !== 0" type="button" class="btn-link-green body_regular"  @click='EditOrder(ORDER.detail.order_id)'>Edit</button></h2> 
+            <h2 >&numero; {{ORDER.detail.order_id}}<button v-if="ORDER['detailingitemlist'].length !== 0" type="button" class="btn-link-green body_regular"  @click='EditOrder(ORDER.detail.order_id)'>Edit</button></h2> 
             <tag :name="ORDER.detail.Status" ></tag>
             
         </div>
@@ -121,7 +120,7 @@
         <hr v-if="(typeof ORDER['detail']!='undefined')"/>
         <div class="row">
             <div class="col">
-                <order-detail-sub-order-items-table @show_conf="show_split_conf=true" :tabledef="itemsfields" :id="'items_table'" v-if="(typeof ORDER['detail']!='undefined')">
+                <order-detail-sub-order-items-table @show_conf="show_split_conf=true" :tabledef="itemsfields" :id="'items_table'" :status="ORDER['detail'].Status" v-if="(typeof ORDER['detail']!='undefined')">
                 </order-detail-sub-order-items-table>
             </div>
         </div>

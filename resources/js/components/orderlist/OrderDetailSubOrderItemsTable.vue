@@ -23,7 +23,8 @@
             </div>
         </section>
         <section class="nodata p-2" v-if="Object.entries(ITEM_LIST).length === 0">
-           <button class="detail-btn detail-btn-detail-order text-center" @click="EditOrder()"> Detail order </button>
+           <button v-if="status == 'RECURRING' || status == 'SCHEDULED' " class="detail-btn detail-btn-detail-order text-center" @click="EditOrder()"> Detail order </button>
+           <p v-if="status != 'RECURRING' && status != 'SCHEDULED' ">No items available.</p>
         </section>
         <transition name="trans-batch-actions">
             <div class=" batch-actions" v-if="Object.entries(MULTI_CHECKED).length !== 0"><button class="btn btn-outline-dark body_medium"  @click="show_split_conf">Split</button><button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Delete items')">Delete</button></div>
@@ -59,7 +60,7 @@
 
     export default {
         name: "OrderDetailSubOrderItemsTable",
-        props:['tabledef',"tab","id"],
+        props:['tabledef',"tab","id" , "status"],
         components:{ColorTag, Tag,CheckBox},
         setup(props,context){
             const router = useRouter();

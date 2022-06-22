@@ -294,8 +294,12 @@ class OrderListController extends Controller
                 }
             }
         }
+        $detailingitemlist = DB::table('detailingitem')
+        ->where('detailingitem.order_id', '=', $infoOrder_id)
+        ->orderBy('detailingitem.id','ASC')
+        ->get();
 
-        return response()->json(['order'=>['detail'=>$order,'billing'=>$billing_add,'delivery'=>$delivery_add,'items'=>$items,'available_slots'=>$available_slots]]);
+        return response()->json(['order'=>['detail'=>$order,'billing'=>$billing_add,'delivery'=>$delivery_add,'items'=>$items,'available_slots'=>$available_slots ,'detailingitemlist' => $detailingitemlist]] );
     }
 
     public function getitemdetail(Request $request){
