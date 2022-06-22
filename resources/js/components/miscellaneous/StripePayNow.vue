@@ -25,7 +25,7 @@ export default {
         const terminal = ref();
         const readers = ref([]);
         const paymentIntentId = ref();
-        const cur_reader = ref();
+        const selected_reader = ref({});
 
         let readers_id = {};
         readers_id[1] = 'tmr_Eqz4ewJhXq5eu6'; //Atelier
@@ -100,7 +100,7 @@ export default {
                         type: "danger",
                     });
                 } else {
-                    cur_reader.value = connectResult.reader;
+                    selected_reader.value = connectResult.reader;
                     console.log('Connected to reader: ', connectResult.reader.label);
                 }
             }).finally(()=>{
@@ -127,8 +127,8 @@ export default {
 
                     await selectReader(cur_reader);
 
-                    if(cur_reader.value){
-                        await createPaymentIntent(props.order.total);
+                    if(typeof(selected_reader.value.id)!='undefined'){
+                        await createPaymentIntent(props.order.Total);
                     }
 
                 }
@@ -239,6 +239,8 @@ export default {
                                     ttl: 5,
                                     type: "success",
                         });
+
+                        context.emit('complete-checkout');
                     }
 
                 }).finally(()=>{

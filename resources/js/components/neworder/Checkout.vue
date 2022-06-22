@@ -502,7 +502,7 @@
                 <div class="col-10">
                     <div class="row justify-content-center mb-4">
                         <div class="col-6">
-                            <stripe-pay-now :user="cur_user" :order="order"></stripe-pay-now>
+                            <stripe-pay-now :user="cur_user" :order="order" @complete-checkout="completeCheckout"></stripe-pay-now>
                         </div>
                         <div class="col-6">
                             <button class="pay-btn w-100 py-3" @click="completeCheckout">Pay later</button>
