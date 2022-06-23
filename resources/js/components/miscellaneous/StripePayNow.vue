@@ -250,23 +250,12 @@ export default {
                     //To log data for payment logs
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
 
-                     async function updateTerminalOrder(){
-                            await axios.post('/update-terminal-order',{
-                                order_id:props.order.id,
-                                amount:amount.toFixed(2),
-                                terminal:selected_reader.value.label,
-                                status:data.status,
-                                info:JSON.stringify(data),
-                            }).then((res)=>{
 
-                            }).catch((err)=>{
-                                console.log(err);
-                            }).finally(()=>{
+                    async function updateOrder(){
+                       await updateTerminalOrder(data.amount,data.status,data);
+                    }
 
-                            });
-                        }
-
-                    updateTerminalOrder();
+                    updateOrder();
 
                      if(data.status=='succeeded'){
                             let amount = parseInt(data.amount)/100;
@@ -282,6 +271,35 @@ export default {
                     console.log('capture ended');
                 });
             }
+        }
+
+        function updateTerminalOrder(amount,status,data){
+            console.log('update order started');
+
+            const bodyContent = JSON.stringify({
+                order_id:props.order.id,
+                amount:amount.toFixed(2),
+                terminal:selected_reader.value.label,
+                status:status,
+                info:JSON.stringify(data),
+            });
+
+            return fetch('/stripe-test/update-terminal-order', {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: bodyContent
+            })
+            .then(function(response) {
+                //console.log(response);
+                return response.json();
+            })
+            .then(function(data) {
+                console.log(data);
+            }).finally(()=>{
+                console.log('update order ended');
+            });
         }
 
 

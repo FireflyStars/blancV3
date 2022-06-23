@@ -564,8 +564,6 @@ Route::post('/make-payment-or-create-card',[OrderController::class,'makePaymentO
 Route::post('/complete-checkout',[OrderController::class,'completeCheckout'])->name('complete-checkout')->middleware('auth');
 Route::post('/get-stripe-terminal',[DetailingController::class,'getStripeTerminal'])->name('get-stripe-terminal')->middleware('auth');
 Route::post('/get-terminal-token',[DetailingController::class,'getTerminalToken'])->name('get-terminal-token')->middleware('auth');
-Route::post('/update-terminal-order',[OrderController::class,'updateOrderTerminal'])->name('set-order-paid')->middleware('auth');
-
 
 /**
  * Routes for stripe terminal - DO NOT REMOVE
@@ -640,6 +638,37 @@ Route::group(['prefix'=>'stripe-test'],function(){
         http_response_code(500);
         echo json_encode(['error' => $e->getMessage()]);
         }
+    });
+
+    Route::post('/update-terminal-order',function(){
+        $json_str = file_get_contents('php://input');
+        $request = json_decode($json_str);
+
+        $order_id = $request->order_id;
+        $terminal = $request->terminal;
+        $amount = $request->amount;
+        $status = $request->status;
+        $info = $request->info;
+
+        $stamp = date('Y-m-d H:i:s');
+
+        $order = DB::table("infoOrder")->where('id',$order_id)->first();
+
+        $payment_id = DB::table('payment')->insertGetId([
+            'type'=>$terminal,
+            'datepayment'=>$stamp,
+            'status'=>$status,
+            'montant'=>$amount,
+            'CustomerID'=>$order->CustomerID,
+            'created_at'=>$stamp,
+            'info'=>$info,
+        ]);
+
+        if($status=='succeeded'){
+            $updated = DB::table("infoOrder")->where('id',$order_id)->update(['Paid'=>1]);
+        }
+
+        echo json_encode(['payment_id'=>$payment_id]);
     });
 
 });
