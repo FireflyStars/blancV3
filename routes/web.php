@@ -564,9 +564,11 @@ Route::post('/make-payment-or-create-card',[OrderController::class,'makePaymentO
 Route::post('/complete-checkout',[OrderController::class,'completeCheckout'])->name('complete-checkout')->middleware('auth');
 Route::post('/get-stripe-terminal',[DetailingController::class,'getStripeTerminal'])->name('get-stripe-terminal')->middleware('auth');
 Route::post('/get-terminal-token',[DetailingController::class,'getTerminalToken'])->name('get-terminal-token')->middleware('auth');
+Route::post('/set-order-paid',[OrderController::class,'setOrderPaid'])->name('set-order-paid')->middleware('auth');
+
 
 /**
- * Routes for stripe terminal test
+ * Routes for stripe terminal - DO NOT REMOVE
  *  */
 
 
@@ -603,9 +605,10 @@ Route::group(['prefix'=>'stripe-test'],function(){
                 'amount' => $json_obj->amount,
                 'currency' => 'gbp',
                 'payment_method_types' => [
-                'card_present',
-                ],
+                                            'card_present',
+                                        ],
                 'capture_method' => 'manual',
+                'description'=>'Order: '.$json_obj->order_id,
             ]);
 
             echo json_encode($intent);
@@ -632,6 +635,10 @@ Route::group(['prefix'=>'stripe-test'],function(){
     });
 
 });
+
+/**
+ * END - Route for Stripe Terminal
+ */
 
 
 /**

@@ -984,4 +984,14 @@ class OrderController extends Controller
         ]);
     }
 
+    public function setOrderPaid(Request $request){
+        $order_id = $request->order_id;
+
+        $updated = DB::table("infoOrder")->where('id',$order_id)->update(['Paid'=>1]);
+
+        return response()->json([
+           'updated'=>$updated,
+        ]);
+    }
+
 }

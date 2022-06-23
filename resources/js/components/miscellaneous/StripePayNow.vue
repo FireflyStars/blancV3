@@ -1,68 +1,9 @@
 <template>
-    <div class="container-fluid h-100 bg-color">
-            <main-header></main-header>
-            <div
-                class="row d-flex align-content-stretch align-items-stretch flex-row hmax"
-                style="z-index: 100"
-            >
-                <side-bar></side-bar>
-                <div class="col main">
-                    <div class="content mt-4">
-                        <h2>Stripe test</h2>
-                        <div class="row">
-                            <div class="col-7">
-                                <div class="row py-4">
-                                    <div class="col-5">
-                                        <button class="btn btn-outline-success w-100" @click="listReaders">1. List Readers</button>
-                                    </div>
-                                </div>
-                                <div class="row my-2">
-                                    <div class="col-12 form-group" v-if="readers.length > 0">
-                                        <div class="row" v-for="(reader,index) in readers">
-                                            <div class="col-1">
-                                                <input type="radio" :value="reader.id" name="eachreader" class="eachreader" v-model="selected_reader_id"/>
-                                            </div>
-                                            <div class="col-11">
-                                                {{reader.label}} - {{reader.status}}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row pt-4">
-                                    <div class="col-5">
-                                        <button class="btn btn-outline-success w-100" @click="selectReader">2. Select Reader</button>
-                                    </div>
-                                </div>
-                                <div class="row pt-2 pb-4">
-                                    <div class="col-12">
-                                        Connected reader: {{connected_reader}}
-                                    </div>
-                                </div>
-                                <div class="row pt-4 pb-2">
-                                     <div class="col-2 text-align-right">Amount</div>
-                                    <div class="col-2 form-group">
-                                        <input type="text" class="form-control" v-model="payment_amount"/>
-                                    </div>
-                                </div>
-                                <div class="row pt-2">
-                                    <div class="col-5">
-                                        <button class="btn btn-outline-success w-100" @click="createPaymentIntent(payment_amount)">3. Create payment intent</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-5"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    </div>
+    <button class="pay-btn w-100 py-3" @click="payNow">Pay now</button>
 </template>
 <script>
 import {ref,watch} from 'vue';
 import {useStore} from 'vuex';
-import SideBar from '../layout/SideBar.vue';
-import MainHeader from '../layout/MainHeader.vue';
-import CheckBox from './CheckBox.vue';
 import {
     LOADER_MODULE,
     SET_LOADER_MSG,
@@ -73,20 +14,28 @@ import {
 } from '../../store/types/types';
 
 export default {
-    name:'StripeTest',
-    components:{MainHeader, SideBar, CheckBox},
-    setup() {
+    name:"StripePayNow",
+    props:{
+        user: Object || null,
+        order: Object || null,
+    },
+    emits:['complete-checkout'],
+    setup(props,context) {
         const store = useStore();
-
         const terminal = ref();
         const readers = ref([]);
-        const selected_reader_id = ref("");
-        const selected_reader = ref();
-        const connected_reader = ref("");
-        const payment_amount = ref(0.30);
-        const paymentIntentId = ref("");
+        const paymentIntentId = ref();
+        const selected_reader = ref({});
 
-        function getConnectionToken(){
+        let readers_id = {};
+        readers_id[1] = 'tmr_Eqz4ewJhXq5eu6'; //Atelier
+        readers_id[2] = 'tmr_Eq0HXA4Oj7Yjqo'; //Marylebone
+        readers_id[3] = 'tmr_EqzSAXwuoVzKs0'; //Chelsea
+        readers_id[4] = 'tmr_Eqz9KQMTISyB47'; //South Ken
+        readers_id[5] = 'tmr_EqzjQIwM2PjDQy'; //Notting Hill
+
+
+        async function getConnectionToken(){
             terminal.value = StripeTerminal.create({
                 onFetchConnectionToken: fetchConnectionToken,
                 onUnexpectedReaderDisconnect: unexpectedDisconnect,
@@ -95,7 +44,7 @@ export default {
 
         getConnectionToken();
 
-        function unexpectedDisconnect() {
+          function unexpectedDisconnect() {
             // In this function, your app should notify the user that the reader disconnected.
             // You can also include a way to attempt to reconnect to a reader.
             console.log("Disconnected from reader")
@@ -113,17 +62,20 @@ export default {
                 });
         }
 
-        function listReaders(){
+        getConnectionToken();
+
+        async function listReaders(){
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
                 true,
-                "Please wait....",
+                "Connecting to reader....",
             ]);
 
-            getConnectionToken();
+            await getConnectionToken();
+
             var config = {simulated: false};
             let discoveredReaders = [];
 
-            terminal.value.discoverReaders(config).then((discoverResult)=>{
+            await terminal.value.discoverReaders(config).then((discoverResult)=>{
 
                 if (discoverResult.error) {
                 console.log('Failed to discover: ', discoverResult.error);
@@ -135,52 +87,57 @@ export default {
                     readers.value = discoveredReaders;
                 }
 
+            });
+        }
+
+        async function selectReader(reader){
+           await terminal.value.connectReader(reader).then((connectResult)=>{
+                if (connectResult.error) {
+                    //console.log('Failed to connect: ', connectResult.error);
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                        message: 'Failed to connect: '+JSON.stringify(connectResult.error),
+                        ttl: 5,
+                        type: "danger",
+                    });
+                } else {
+                    selected_reader.value = connectResult.reader;
+                    console.log('Connected to reader: ', connectResult.reader.label);
+                }
             }).finally(()=>{
                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
             });
         }
 
-        function selectReader(){
-
-            if(selected_reader_id.value==''){
-                console.log('selected',selected_reader_id.value);
-
-                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
-                        message: "Reader not selected",
-                        ttl: 5,
-                        type: "danger",
-                    });
-            }else{
-                let selected_index = readers.value.findIndex((z) => { return z.id === selected_reader_id.value});
-
-                selected_reader.value = readers.value[selected_index];
-
-                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
-                    true,
-                    "Connecting to "+selected_reader.value.label+"....",
-                ]);
 
 
-                terminal.value.connectReader(selected_reader.value).then((connectResult)=>{
-                    if (connectResult.error) {
-                        //console.log('Failed to connect: ', connectResult.error);
-                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
-                            message: 'Failed to connect: '+JSON.stringify(connectResult.error),
-                            ttl: 5,
-                            type: "danger",
-                        });
-                    } else {
-                        console.log('Connected to reader: ', connectResult.reader.label);
-                        connected_reader.value = selected_reader.value.label;
+        async function payNow(){
+            console.log('call start');
+
+            await listReaders();
+
+            if(readers.value.length > 0){
+                let store_id = props.user.store;
+
+                if(typeof(readers_id[store_id]) !='undefined'){
+                    let reader_id = readers_id[store_id];
+
+                    let selected_index = readers.value.findIndex((z) => { return z.id === reader_id});
+
+                    let cur_reader = readers.value[selected_index];
+
+                    await selectReader(cur_reader);
+
+                    if(typeof(selected_reader.value.id)!='undefined'){
+                        await createPaymentIntent(props.order.Total);
                     }
-                }).finally(()=>{
-                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                });
+
+                }
             }
+
         }
 
 
-        function createPaymentIntent(amount) {
+        async function createPaymentIntent(amount) {
             let pay_amount = amount*100;
 
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
@@ -189,7 +146,7 @@ export default {
             ]);
 
 
-            fetchPaymentIntentClientSecret(pay_amount).then((client_secret)=>{
+            await fetchPaymentIntentClientSecret(pay_amount).then((client_secret)=>{
                 //terminal.value.setSimulatorConfiguration({testCardNumber: '4242424242424242'});
 
 
@@ -221,6 +178,7 @@ export default {
                                 console.log('terminal.collectPaymentMethod', result.paymentIntent);
 
                                 paymentIntentId.value = result.paymentIntent.id;
+
                                 capture();
                                 //console.log('terminal.processPayment', result.paymentIntent);
                             }
@@ -240,8 +198,8 @@ export default {
         }
 
 
-        function fetchPaymentIntentClientSecret(amount) {
-            const bodyContent = JSON.stringify({ amount: amount });
+        async function fetchPaymentIntentClientSecret(amount) {
+            const bodyContent = JSON.stringify({ amount: amount,order_id:props.order.id });
             return fetch('/stripe-test/create_payment_intent', {
                 method: "POST",
                 headers: {
@@ -258,7 +216,7 @@ export default {
         }
 
 
-        function capture() {
+        async function capture() {
             console.log('capture started');
             if(paymentIntentId.value !=''){
                 return fetch('/stripe-test/capture_payment_intent', {
@@ -274,6 +232,9 @@ export default {
                 })
                 .then(function(data) {
                     console.log('server.capture', data);
+                    //To log data for payment logs
+
+
                     if(data.status=='succeeded'){
                         let amount = parseInt(data.amount)/100;
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
@@ -281,6 +242,20 @@ export default {
                                     ttl: 5,
                                     type: "success",
                         });
+
+                        async function setOrderPaid(){
+                            await axios.post('/set-order-paid',{
+                                order_id:props.order.id
+                            }).then((res)=>{
+
+                            }).catch((err)=>{
+                                console.log(err);
+                            }).finally(()=>{
+                                context.emit('complete-checkout');
+                            });
+                        }
+
+                        setOrderPaid();
                     }
 
                 }).finally(()=>{
@@ -290,28 +265,13 @@ export default {
         }
 
 
-
-
-
         return {
-            listReaders,
-            readers,
-            selectReader,
-            selected_reader,
-            selected_reader_id,
-            connected_reader,
-            payment_amount,
-            createPaymentIntent,
-            paymentIntentId,
-            capture,
+            payNow,
         }
-    }
 
+    },
 }
 </script>
 <style scoped>
-    select{
-        height: 45.2px;
-    }
 
 </style>

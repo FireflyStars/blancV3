@@ -10,6 +10,9 @@
         <title>Blanc &copy;</title>
         <link  rel="stylesheet" href="{{ mix('css/app.css') }}">
         <script src="https://js.stripe.com/terminal/v1/"></script>
+        <!--
+        <script src="https://js.stripe.com/v3/"></script>
+        -->
     </head>
     <body id="app">
     </body>
