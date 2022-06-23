@@ -564,7 +564,7 @@ Route::post('/make-payment-or-create-card',[OrderController::class,'makePaymentO
 Route::post('/complete-checkout',[OrderController::class,'completeCheckout'])->name('complete-checkout')->middleware('auth');
 Route::post('/get-stripe-terminal',[DetailingController::class,'getStripeTerminal'])->name('get-stripe-terminal')->middleware('auth');
 Route::post('/get-terminal-token',[DetailingController::class,'getTerminalToken'])->name('get-terminal-token')->middleware('auth');
-Route::post('/set-order-paid',[OrderController::class,'setOrderPaid'])->name('set-order-paid')->middleware('auth');
+Route::post('/update-terminal-order',[OrderController::class,'updateOrderTerminal'])->name('set-order-paid')->middleware('auth');
 
 
 /**
@@ -605,8 +605,11 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
             // For Terminal payments, the 'payment_method_types' parameter must include
             // 'card_present' and the 'capture_method' must be set to 'manual'
+
+            $amount_two_dp = number_format($json_obj->amount,2);
+
             $intent = $stripe->paymentIntents->create([
-                'amount' => $json_obj->amount,
+                'amount' => 100*$amount_two_dp,
                 'currency' => 'gbp',
                 'payment_method_types' => [
                                             'card_present',

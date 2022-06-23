@@ -454,8 +454,9 @@
                                                     <div class="accordion-body d-table w-100 px-0 py-0">
                                                         <div class="accordion-content p-4 mt-3">
                                                             <div class="row">
-                                                                <span class="sidebar_title text-white">Payment</span>
-                                                                <payment :custcard="custcard" :order_id="order_id" :cust="cust" @reload-checkout="getCheckoutItems" @complete-checkout="completeCheckout"></payment>
+                                                                <span class="sidebar_title text-white mb-3">Payment details <a href="javascript:void(0)" v-if="custcard" id="editcard" @click="setEditCard" :class="{'canceleditcard':editcard}"><span v-if="!editcard">Edit</span><span v-else>Cancel</span></a></span>
+
+                                                                <payment ref="payment_comp" :custcard="custcard" :order_id="order_id" :cust="cust" @reload-checkout="closeEditCardAndReload" @complete-checkout="completeCheckout"></payment>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -476,7 +477,7 @@
                                         <a href="javascript:void(0)" @click="redirectToDetailingList">Previous</a>
                                     </div>
                                     <div class="col-6 px-4">
-                                        <button id="completeBtn" class="w-100 py-3" @click="validatePayment">Proceed</button>
+                                        <button id="completeBtn" class="w-100 py-3" @click="validatePayment" :disabled="editcard">Proceed</button>
                                     </div>
                                 </div>
                             </div>
@@ -565,6 +566,8 @@ export default {
         const no_payment_modal = ref();
         const stripe_public_key = ref('');
         const cur_user = ref({});
+        const payment_comp = ref();
+        const editcard = ref(false);
 
         order_id.value = route.params.order_id;
 
@@ -737,22 +740,49 @@ export default {
         }
 
         function validatePayment(){
-            no_payment_modal.value.showModal();
+            if(editcard.value==true){
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                    {
+                        message: "Please save card details or cancel editing",
+                        ttl: 3,
+                        type: 'danger'
+                    });
+            }else{
+                let err = false;
+                if(cust.value.bycard==1 && !custcard.value){
+                    err = true;
+                    no_payment_modal.value.showModal();
+                }
 
-            let err = false;
-            if(cust.value.bycard==1 && !custcard.value){
-                err = true;
-                no_payment_modal.value.showModal();
+                if(!err){
+                    if(cust.value.bycard==1 && typeof(custcard.value.id)!='undefined'){
+                        payment_comp.value.effectPayment('Pay')
+                    }else{
+                        completeCheckout();
+                    }
+                }
             }
+        }
 
-            if(!err){
-                completeCheckout();
+        function closeEditCardAndReload(){
+            if(editcard.value==true){
+                setEditCard();
             }
-
+            getCheckoutItems();
         }
 
         function closeNoPaymentModal(){
             no_payment_modal.value.closeModal();
+        }
+
+        function setEditCard(){
+            if(editcard.value==false){
+                editcard.value = true;
+            }else{
+                editcard.value = false;
+            }
+
+            payment_comp.value.setEditCard(editcard.value);
         }
 
         return {
@@ -786,6 +816,10 @@ export default {
             closeNoPaymentModal,
             stripe_public_key,
             cur_user,
+            payment_comp,
+            editcard,
+            setEditCard,
+            closeEditCardAndReload,
         }
 
     },
@@ -1163,6 +1197,19 @@ export default {
     color:#fff;
     background: #42A71E;
     border-color: #42A71E;
+}
+
+#editcard{
+    font:normal 16px "Gotham Rounded";
+    color:#42A71E;
+}
+
+#editcard.canceleditcard{
+    color:#EB5757;
+}
+
+#editcard:hover{
+    text-decoration: none;
 }
 
 </style>

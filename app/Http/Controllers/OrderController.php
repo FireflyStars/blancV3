@@ -452,6 +452,7 @@ class OrderController extends Controller
         $cardholder_name = $request->cardHolderName;
         $card_cvv = $request->cardCVV;
         $payment_type= $request->payment_type;
+        $editcard = $request->editcard;
 
         $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
 
@@ -467,9 +468,13 @@ class OrderController extends Controller
         $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
 
 
-        if(!is_null($card_id)){
+        if(!is_null($card_id) && !$editcard){
             $card = DB::table('cards')->where('id',$card_id)->first();
         }else{
+            if($editcard){
+                DB::table('cards')->where('id',$card_id)->update(['Actif'=>0]);
+            }
+
             //Create card
 
             $card_exp_arr = explode("/",$card_exp);
@@ -585,9 +590,7 @@ class OrderController extends Controller
                 }else{
                     $err_payment = $payment_intent->status;
                 }
-
             }
-
         }
 
 
@@ -599,6 +602,8 @@ class OrderController extends Controller
             'post'=>$request->all(),
             'err_payment'=>$err_payment,
             'paid'=>$paid,
+            'payment_type'=>$payment_type,
+            'post'=>$request->all(),
         ]);
     }
 
@@ -989,10 +994,30 @@ class OrderController extends Controller
         ]);
     }
 
-    public function setOrderPaid(Request $request){
+    public function updateOrderTerminal(Request $request){
         $order_id = $request->order_id;
+        $terminal = $request->terminal;
+        $amount = $request->amount;
+        $status = $request->status;
+        $info = $request->info;
 
-        $updated = DB::table("infoOrder")->where('id',$order_id)->update(['Paid'=>1]);
+        $stamp = date('Y-m-d H:i:s');
+
+        $order = DB::table("infoOrder")->where('id',$order_id)->first();
+
+        DB::table('payment')->insert([
+            'type'=>$terminal,
+            'datepayment'=>$stamp,
+            'status'=>$status,
+            'montant'=>$amount,
+            'CustomerID'=>$order->CustomerID,
+            'created_at'=>$stamp,
+            'info'=>$info,
+        ]);
+
+        if($status=='succeeded'){
+            $updated = DB::table("infoOrder")->where('id',$order_id)->update(['Paid'=>1]);
+        }
 
         return response()->json([
            'updated'=>$updated,

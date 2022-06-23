@@ -131,14 +131,21 @@ export default {
                     let selected_index = readers.value.findIndex((z) => { return z.id === reader_id});
                     selected_reader.value = readers.value[selected_index];
 
+                    console.log('calling selectReader');
                     await selectReader(selected_reader.value);
+                    console.log('End calling selectReader');
 
-/*
                     if(typeof(selected_reader.value.id)!='undefined'){
                         await createPaymentIntent(props.order.Total);
                     }
-                    */
 
+
+                }else{
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                        message: 'Store reader not set for user '+props.user.name,
+                        ttl: 5,
+                        type: "danger",
+                    });
                 }
             }
 
@@ -146,7 +153,6 @@ export default {
 
 
         async function createPaymentIntent(amount) {
-            let pay_amount = amount*100;
 
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
                 true,
@@ -154,12 +160,13 @@ export default {
             ]);
 
 
-            await fetchPaymentIntentClientSecret(pay_amount).then((client_secret)=>{
+            await fetchPaymentIntentClientSecret(amount).then((client_secret)=>{
                 //terminal.value.setSimulatorConfiguration({testCardNumber: '4242424242424242'});
 
 
-                //console.log('client secret from fetch payment',client_secret);
+                console.log('client secret from fetch payment',client_secret);
                 console.log('collectPaymentMethod started');
+
 
                 terminal.value.collectPaymentMethod(client_secret).then((result)=>{
 
@@ -241,30 +248,35 @@ export default {
                 .then(function(data) {
                     console.log('server.capture', data);
                     //To log data for payment logs
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
 
-
-                    if(data.status=='succeeded'){
-                        let amount = parseInt(data.amount)/100;
-                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
-                                    message: "Payment of GBP"+amount.toFixed(2)+" received",
-                                    ttl: 5,
-                                    type: "success",
-                        });
-
-                        async function setOrderPaid(){
-                            await axios.post('/set-order-paid',{
-                                order_id:props.order.id
+                     async function updateTerminalOrder(){
+                            await axios.post('/update-terminal-order',{
+                                order_id:props.order.id,
+                                amount:amount.toFixed(2),
+                                terminal:selected_reader.value.label,
+                                status:data.status,
+                                info:JSON.stringify(data),
                             }).then((res)=>{
 
                             }).catch((err)=>{
                                 console.log(err);
                             }).finally(()=>{
-                                context.emit('complete-checkout');
+
                             });
                         }
 
-                        setOrderPaid();
-                    }
+                    updateTerminalOrder();
+
+                     if(data.status=='succeeded'){
+                            let amount = parseInt(data.amount)/100;
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                                        message: "Payment of GBP"+amount.toFixed(2)+" received",
+                                        ttl: 5,
+                                        type: "success",
+                            });
+                            context.emit('complete-checkout');
+                        }
 
                 }).finally(()=>{
                     console.log('capture ended');

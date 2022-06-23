@@ -932,12 +932,23 @@ class DetailingController extends Controller
             $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
 
 
+
             $cust->phone_num = [];
             if($cust){
                 $cust->cust_type = "";
+                $cust->pay_name = $cust->Name;
 
                 $addr = Delivery::getAddressByCustomerUUID($order->CustomerID);
-                $cust_card = DB::table('cards')->where('CustomerID',$cust->CustomerID)->where('Actif',1)->first();
+
+                $cust_id = $cust->CustomerID;
+                if($cust->CustomerIDMaster !=''){
+                    $cust_id = $cust->CustomerIDMaster;
+
+                    $master_cust = DB::table('infoCustomer')->where('CustomerID',$cust->CustomerIDMaster)->first();
+                    $cust->pay_name = $master_cust->Name;
+                }
+
+                $cust_card = DB::table('cards')->where('CustomerID',$cust_id)->where('Actif',1)->first();
 
                 if($cust->Phone !='' && !is_null($cust->Phone) && is_array(@json_decode($cust->Phone))){
                     $phone_num = @json_decode($cust->Phone);
