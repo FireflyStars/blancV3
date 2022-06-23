@@ -25,7 +25,7 @@ export default {
         const terminal = ref();
         const readers = ref([]);
         const paymentIntentId = ref();
-        const selected_reader = ref({});
+        const selected_reader = ref();
 
         let readers_id = {};
         readers_id[1] = 'tmr_Eqz4ewJhXq5eu6'; //Atelier
@@ -87,13 +87,16 @@ export default {
                     readers.value = discoveredReaders;
                 }
 
+            }).finally(()=>{
+                //store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
             });
         }
 
         async function selectReader(reader){
+            console.log('connecting to reader',reader);
            await terminal.value.connectReader(reader).then((connectResult)=>{
                 if (connectResult.error) {
-                    //console.log('Failed to connect: ', connectResult.error);
+                    console.log('Failed to connect: ', connectResult.error);
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
                         message: 'Failed to connect: '+JSON.stringify(connectResult.error),
                         ttl: 5,
@@ -103,8 +106,12 @@ export default {
                     selected_reader.value = connectResult.reader;
                     console.log('Connected to reader: ', connectResult.reader.label);
                 }
-            }).finally(()=>{
+            }).catch((err)=>{
+                console.log(err);
+            })
+            .finally(()=>{
                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                console.log('finished connecting with reader');
             });
         }
 
@@ -122,14 +129,15 @@ export default {
                     let reader_id = readers_id[store_id];
 
                     let selected_index = readers.value.findIndex((z) => { return z.id === reader_id});
+                    selected_reader.value = readers.value[selected_index];
 
-                    let cur_reader = readers.value[selected_index];
+                    await selectReader(selected_reader.value);
 
-                    await selectReader(cur_reader);
-
+/*
                     if(typeof(selected_reader.value.id)!='undefined'){
                         await createPaymentIntent(props.order.Total);
                     }
+                    */
 
                 }
             }
@@ -267,6 +275,7 @@ export default {
 
         return {
             payNow,
+            selected_reader,
         }
 
     },

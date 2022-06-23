@@ -599,6 +599,10 @@ Route::group(['prefix'=>'stripe-test'],function(){
             $json_str = file_get_contents('php://input');
             $json_obj = json_decode($json_str);
 
+            $order_id = $json_obj->order_id;
+            $order = DB::table('infoOrder')->where('id',$order_id)->first();
+            $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
             // For Terminal payments, the 'payment_method_types' parameter must include
             // 'card_present' and the 'capture_method' must be set to 'manual'
             $intent = $stripe->paymentIntents->create([
@@ -608,7 +612,8 @@ Route::group(['prefix'=>'stripe-test'],function(){
                                             'card_present',
                                         ],
                 'capture_method' => 'manual',
-                'description'=>'Order: '.$json_obj->order_id,
+                'description'=>'Order: '.$order_id,
+                "receipt_email"=>$cust->EmailAddress,
             ]);
 
             echo json_encode($intent);

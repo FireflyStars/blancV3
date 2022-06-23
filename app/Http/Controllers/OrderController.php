@@ -464,6 +464,7 @@ class OrderController extends Controller
 
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
+        $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
 
 
         if(!is_null($card_id)){
@@ -475,7 +476,7 @@ class OrderController extends Controller
 
             $stripe_customer = null;
 
-            $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
             $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->first();
 
             $err_txt = "";
@@ -538,8 +539,12 @@ class OrderController extends Controller
 
 
         if($payment_type !='Save' && $card && $order && $order->CustomerID==$card->CustomerID){
+            $amount_one_dp = number_format($order->Total,2);
+
+            $total_amount = 100*$amount_one_dp;
+
             $payment_intent = $stripe->paymentIntents->create([
-                'amount'            => 100*$order->Total, //100*0.01
+                'amount'            => $total_amount, //100*0.01
                 'currency'          => 'gbp',
                 'confirm'           => true,
                 "payment_method"    => $card->stripe_card_id,
@@ -556,7 +561,7 @@ class OrderController extends Controller
                     'type'=>'card',
                     'datepayment'=>date('Y-m-d H:i:s'),
                     'status'=>$payment_intent->status,
-                    'montant'=>$order->Total,
+                    'montant'=>number_format($order->Total,2),
                     'order_id'=>$order_id,
                     'card_id'=>$card->id,
                     'CustomerID'=>$order->CustomerID,

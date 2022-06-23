@@ -1,8 +1,13 @@
 <template>
     <div class="col-12" v-if="custcard" id="has_card">
         <div class="row my-3">
-            <div class="col-8">
+            <!--
+            <div class="col-6">
                 <button id="pay_card_btn" class="save_pay_card_btn w-100" @click="effectPayment">Pay now</button>
+            </div>
+            -->
+            <div class="col-6">
+                <button class="save_pay_card_btn w-100">Change card</button>
             </div>
         </div>
         <div class="row mb-3">
@@ -128,6 +133,7 @@ export default {
     props: {
         custcard: Object || null,
         order_id: String,
+        cust: Object || null,
     },
     emits:['reload-checkout','complete-checkout'],
     setup(props,context) {
@@ -274,6 +280,8 @@ export default {
 
                                     context.emit('complete-checkout');
                                 }
+
+                                createItems();
                             }
                         }
                     }).catch((err)=>{

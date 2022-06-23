@@ -455,7 +455,7 @@
                                                         <div class="accordion-content p-4 mt-3">
                                                             <div class="row">
                                                                 <span class="sidebar_title text-white">Payment</span>
-                                                                <payment :custcard="custcard" :order_id="order_id" @reload-checkout="getCheckoutItems" @complete-checkout="completeCheckout"></payment>
+                                                                <payment :custcard="custcard" :order_id="order_id" :cust="cust" @reload-checkout="getCheckoutItems" @complete-checkout="completeCheckout"></payment>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -737,6 +737,8 @@ export default {
         }
 
         function validatePayment(){
+            no_payment_modal.value.showModal();
+
             let err = false;
             if(cust.value.bycard==1 && !custcard.value){
                 err = true;
@@ -746,6 +748,7 @@ export default {
             if(!err){
                 completeCheckout();
             }
+
         }
 
         function closeNoPaymentModal(){
