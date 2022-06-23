@@ -70,18 +70,84 @@
         </div>
         <hr v-if="(typeof ORDER['detail']!='undefined')" />
         <div  v-if="(typeof ORDER['detail']!='undefined')" class="row section4">
-            <div class="col">
-                <span class="customername  body_bold  text-capitalize d-inline-block">
-                    {{ORDER.detail.Name.replace(',','').toLowerCase()}}
-                    <button type="button" class="btn-link-green body_regular" @click="EditCustomer(ORDER.detail.id)">Edit</button>
-                </span>
+       
+            <div class="accordion-container">
+                <div class="accordion accordion-flush" id="accordionFlushExample">
+                    <div class="accordion-item">
+                        <div class="col-12 accordion-header accordion-button collapsed" id="flush-headingOne"
+                                type="button"
+                                @click="openAccordionclick()"
+                                :class="{ opened: instAcc === true}"
+                        >
+                            <span class="col-10 customername  body_bold  text-capitalize d-inline-block">
+                                {{ORDER.detail.Name.replace(',','').toLowerCase()}}
+                                <button type="button" class="btn-link-green body_regular" @click="EditCustomer(ORDER.detail.id)">Edit</button>
+                            </span>
+                            <div class="col-2">
+                                    <tag  v-if="ORDER.detail.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
+                                    <tag  v-else :name="'B2B'" ></tag>
+                              </div>
+                            
+                             
+                        </div>
+                        <div
+                            id="flush-collapseOne"
+                            class="accordion-collapse collapse"
+                            :class="{ show: instAcc === true }"
+                        >
+                            <div class="accordion-body">
+                              
+                                    <div  v-if="(typeof ORDER['detail']!='undefined')" class="row section5">
+                                            <div class="col">
+                                                <AddressFormat :title="'Delivery address'" :address="ORDER.delivery" ></AddressFormat>
+                                            </div>
+                                            <div class="col">
+                                            <AddressFormat :title="'Billing address'"  v-if="ORDER.billing!=null" :address="ORDER.billing" ></AddressFormat>
+                                            <AddressFormat :title="'Billing address'" v-else :address="ORDER.delivery" ></AddressFormat>
+                                        </div>
+                                    </div>
+
+                            <div v-if="(typeof ORDER['detail']!='undefined')" class="row section6">
+                                <div class="col" v-if="ORDER.detail.Phone!=''&&ORDER.detail.Phone!=null">
+                                    <div class="row" v-for="(phone,index) in ORDER.detail.Phone" :key="index">
+                                        <div class="col">
+                                            <div class="body_small_medium">Phone number {{index+1}}</div>
+                                            <div class="phone body_small">+{{phone.replace('|',' ')}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else class="col">
+                                    <div class="body_small_medium">Phone number</div>
+                                    <div class="phone body_small">--</div>
+                                </div>
+                                <div class="col">
+                                    <div class="row ">
+                                        <div class="col">
+                                            <div class="body_small_medium">Payment method</div>
+                                            <span class="body_small">--</span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="body_small_medium">Payment details</div>
+                                            <span class="body_small">--</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                           </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
-            <div class="col">
+
+
+            
+            <!-- <div class="col">
                 <tag  v-if="ORDER.detail.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
                 <tag  v-else :name="'B2B'" ></tag>
-            </div>
+            </div> -->
         </div>
-        <div  v-if="(typeof ORDER['detail']!='undefined')" class="row section5">
+        <!-- <div  v-if="(typeof ORDER['detail']!='undefined')" class="row section5">
             <div class="col">
                 <AddressFormat :title="'Delivery address'" :address="ORDER.delivery" ></AddressFormat>
             </div>
@@ -89,35 +155,10 @@
                 <AddressFormat :title="'Billing address'"  v-if="ORDER.billing!=null" :address="ORDER.billing" ></AddressFormat>
                 <AddressFormat :title="'Billing address'" v-else :address="ORDER.delivery" ></AddressFormat>
             </div>
-        </div>
+        </div> -->
 
-        <div v-if="(typeof ORDER['detail']!='undefined')" class="row section6">
-            <div class="col" v-if="ORDER.detail.Phone!=''&&ORDER.detail.Phone!=null">
-                <div class="row" v-for="(phone,index) in ORDER.detail.Phone" :key="index">
-                    <div class="col">
-                        <div class="body_small_medium">Phone number {{index+1}}</div>
-                        <div class="phone body_small">+{{phone.replace('|',' ')}}</div>
-                    </div>
-                </div>
-            </div>
-            <div v-else class="col">
-                <div class="body_small_medium">Phone number</div>
-                <div class="phone body_small">--</div>
-            </div>
-            <div class="col">
-                <div class="row ">
-                    <div class="col">
-                        <div class="body_small_medium">Payment method</div>
-                        <span class="body_small">--</span>
-                    </div>
-                    <div class="col">
-                        <div class="body_small_medium">Payment details</div>
-                        <span class="body_small">--</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <hr v-if="(typeof ORDER['detail']!='undefined')"/>
+      
+        <!-- <hr v-if="(typeof ORDER['detail']!='undefined')"/> -->
         <div class="row">
             <div class="col">
                 <order-detail-sub-order-items-table @show_conf="show_split_conf=true" :tabledef="itemsfields" :id="'items_table'" :status="ORDER['detail'].Status" v-if="(typeof ORDER['detail']!='undefined')">
@@ -253,6 +294,8 @@
             const availabletimeslot=ref([]);
             const disabledtodate=ref('');
             const orderId = ref(0);
+            const instAcc = ref(false);
+
 
 
             const ORDER=computed(()=>{
@@ -410,6 +453,12 @@
                 orderId.value = order_id
                 router.push('/order-content/'+orderId.value);
             }
+             function openAccordionclick(i) {
+           
+                instAcc.value = !instAcc.value;
+               
+            }
+        
 
             return {
                 showorderdetail,
@@ -443,14 +492,44 @@
                 disabledtodate,
                 show_split_conf,
                 EditCustomer,
-                EditOrder
+                EditOrder,
+                openAccordionclick,
+                instAcc
+
             }
         }
     }
 </script>
 
 <style scoped>
-    .align-right{
+.accordion-button {
+    background: #ffffff;
+    box-sizing: border-box;
+    border-radius: 6px;
+    font-family: Gotham Rounded;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 19.6px;
+    color: #000000;
+    height: 40px;
+}
+.accordion-item {
+    /* margin: 10px; */
+    border-radius: 6px;
+    border: none;
+}
+.accordion-flush .accordion-item .accordion-button {
+    background-color: #F8F8F8;
+    box-shadow: inset 0px -1px 0px rgb(168 168 168 / 25%);
+    margin-bottom: 15px;
+    height: 44px;
+    border-radius: 10px;
+    }
+.accordion-body {
+    background: #f8f8f8;
+}
+.align-right{
         text-align: right;
     }
     .section1{
@@ -467,8 +546,8 @@
      }
     .section4{
         margin-bottom: 8px;
-        margin-left: -2px;
-        margin-right: -2px;
+        /* margin-left: -2px;
+        margin-right: -2px; */
     }
     .section5{
         margin-bottom: 30px;
