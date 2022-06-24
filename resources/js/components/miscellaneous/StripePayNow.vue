@@ -252,7 +252,7 @@ export default {
 
 
                     async function updateOrder(){
-                       await updateTerminalOrder(data.amount,data.status,data);
+                       await updateTerminalOrder(data.amount,data.status);
                     }
 
                     updateOrder();
@@ -273,7 +273,7 @@ export default {
             }
         }
 
-        function updateTerminalOrder(amount,status,data){
+        function updateTerminalOrder(amount,status){
             console.log('update order started');
 
             const bodyContent = JSON.stringify({
@@ -281,7 +281,8 @@ export default {
                 amount:amount.toFixed(2),
                 terminal:selected_reader.value.label,
                 status:status,
-                info:JSON.stringify(data),
+                info:'',
+                //info:data,
             });
 
             return fetch('/stripe-test/update-terminal-order', {
