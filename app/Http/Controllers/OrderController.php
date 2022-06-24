@@ -458,6 +458,7 @@ class OrderController extends Controller
         $card_cvv = $request->cardCVV;
         $payment_type= $request->payment_type;
         $editcard = $request->editcard;
+        $amount_to_pay = $request->amount_to_pay;
 
         $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
 
@@ -549,9 +550,9 @@ class OrderController extends Controller
 
 
         if($payment_type !='Save' && $card && $order && $order->CustomerID==$card->CustomerID){
-            $amount_one_dp = number_format($order->Total,2);
+            $amount_two_dp = number_format($amount_to_pay,2);
 
-            $total_amount = 100*$amount_one_dp;
+            $total_amount = 100*$amount_two_dp;
 
             $payment_intent = $stripe->paymentIntents->create([
                 'amount'            => $total_amount, //100*0.01
@@ -991,6 +992,39 @@ class OrderController extends Controller
 
     public function completeCheckout(Request $request){
         $order_id = $request->order_id;
+        $balance = number_format($request->balance,2);
+        $amount_to_pay = number_format($request->amount_to_pay,2);
+
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+        $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
+        $credit_remaining = $cust->credit;
+
+        if($cust->credit > 0){
+            if($cust->credit > $balance){
+                $credit_remaining = $cust->credit - $balance;
+
+                if($cust->credit > $balance){
+                    DB::table('infoOrder')->where('id',$order_id)->update(['Paid'=>1]);
+                }
+            }
+
+            $credit_remaining = number_format($credit_remaining,2);
+
+            DB::table('infoCustomer')->where('id',$cust->id)->update(['credit'=>($credit_remaining>0?$credit_remaining:0)]);
+
+            $stamp = date('Y-m-d H:i:s');
+
+            DB::table('payments')->insert([
+                'type'=>'cust_credit',
+                'datepayment'=>$stamp,
+                'status'=>'succeeded',
+                'montant'=>$amount_to_pay,
+                'CustomerID'=>$order->CustomerID,
+                'created_at'=>$stamp,
+                'info'=>'',
+            ]);
+        }
 
         $order_res = OrderController::createOrderItems($order_id);
 
@@ -1028,5 +1062,4 @@ class OrderController extends Controller
            'updated'=>$updated,
         ]);
     }
-
 }

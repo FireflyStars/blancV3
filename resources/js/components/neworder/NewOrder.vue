@@ -777,11 +777,15 @@ import axios from 'axios';
                     shp_postcode.value = current_customer.postcode;
                     shp_town.value = current_customer.Town;
                     CustomerID.value = current_customer.CustomerID;
-                    customer_instructions.value = current_customer.commentDelivery;
+                    //customer_instructions.value = current_customer.commentDelivery;
                     cust_type_delivery.value = (current_customer.TypeDelivery=='DELIVERY'?'Atelier':current_customer.TypeDelivery);
 
                     card_details.value = current_customer.card_details;
 
+                    if(current_customer.delivery_preference){
+                        customer_instructions.value = current_customer.delivery_preference.OtherInstruction;
+                        alternate_contact.value = current_customer.delivery_preference.PhoneNumber;
+                    }
 
                     if(typeof current_customer.main_account!="undefined"){
                         if(current_customer.main_account.TypeDelivery!="DELIVERY"){

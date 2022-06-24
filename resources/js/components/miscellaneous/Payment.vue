@@ -94,6 +94,7 @@ export default {
         custcard: Object || null,
         order_id: String,
         cust: Object || null,
+        amounttopay: Number,
     },
     emits:['reload-checkout','complete-checkout'],
     setup(props,context) {
@@ -195,11 +196,16 @@ export default {
             }
 
             function effectPayment(type){
+                if(type=='pay' && props.amounttopay==0){
+                    console.log('no card payment');
+                    return false;
+                }
 
                 let loading_text = "Effecting payment";
                 if(type=='Save'){
                     loading_text = "Creating card";
                 }
+
 
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
                     true,
@@ -213,6 +219,7 @@ export default {
                 params['card_id'] = (props.custcard?props.custcard.id:null);
                 params['editcard'] = editcard.value;
                 params['payment_type'] = type;
+                params['amount_to_pay'] = props.amounttopay;
 
                 axios.post('/make-payment-or-create-card',params)
                     .then((res)=>{

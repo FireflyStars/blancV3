@@ -18,6 +18,7 @@ export default {
     props:{
         user: Object || null,
         order: Object || null,
+        amounttopay: Number,
     },
     emits:['complete-checkout'],
     setup(props,context) {
@@ -136,7 +137,7 @@ export default {
                     console.log('End calling selectReader');
 
                     if(typeof(selected_reader.value.id)!='undefined'){
-                        await createPaymentIntent(props.order.Total);
+                        await createPaymentIntent(props.order.amounttopay);
                     }
 
 

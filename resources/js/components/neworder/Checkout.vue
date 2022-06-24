@@ -204,6 +204,15 @@
                                             <div class="col-9">VAT</div>
                                             <div class="col-3 text-align-right">&#163;{{vat}}</div>
                                         </div>
+
+                                        <div class="row px-0 mt-3 py-2 balance-text">
+                                            <div class="col-9">Balance</div>
+                                            <div class="col-3 text-align-right">&#163;{{order_balance.toFixed(2)}}</div>
+                                        </div>
+                                        <div class="row px-0 py-2 balance-text">
+                                            <div class="col-9">Credit available</div>
+                                            <div class="col-3 text-align-right">&#163;{{cust_credit.toFixed(2)}}</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -456,7 +465,7 @@
                                                             <div class="row">
                                                                 <span class="sidebar_title text-white mb-3">Payment details <a href="javascript:void(0)" v-if="custcard" id="editcard" @click="setEditCard" :class="{'canceleditcard':editcard}"><span v-if="!editcard">Edit</span><span v-else>Cancel</span></a></span>
 
-                                                                <payment ref="payment_comp" :custcard="custcard" :order_id="order_id" :cust="cust" @reload-checkout="closeEditCardAndReload" @complete-checkout="completeCheckout"></payment>
+                                                                <payment ref="payment_comp" :custcard="custcard" :order_id="order_id" :cust="cust" :amounttopay="amounttopay" @reload-checkout="closeEditCardAndReload" @complete-checkout="completeCheckout"></payment>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -503,7 +512,7 @@
                 <div class="col-10">
                     <div class="row justify-content-center mb-4">
                         <div class="col-6">
-                            <stripe-pay-now :user="cur_user" :order="order" @complete-checkout="completeCheckout"></stripe-pay-now>
+                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="amount_to_pay.value" @complete-checkout="completeCheckout"></stripe-pay-now>
                         </div>
                         <div class="col-6">
                             <button class="pay-btn w-100 py-3" @click="completeCheckout">Pay later</button>
@@ -568,8 +577,10 @@ export default {
         const cur_user = ref({});
         const payment_comp = ref();
         const editcard = ref(false);
-
+        const order_balance = ref(0);
+        const cust_credit = ref(0);
         order_id.value = route.params.order_id;
+        const amount_to_pay = ref(0);
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
@@ -605,6 +616,10 @@ export default {
                 custcard.value = res.data.custcard;
                 stripe_public_key.value = res.data.stripe_public_key;
                 cur_user.value = res.data.cur_user;
+                order_balance.value = res.data.order.balance;
+                cust_credit.value = res.data.cust.credit;
+
+                amount_to_pay.value = res.data.amount_to_pay;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -704,7 +719,9 @@ export default {
             ]);
 
             axios.post('/complete-checkout',{
-                order_id:order_id.value
+                order_id:order_id.value,
+                amount_to_pay:amount_to_pay.value,
+                balance:order_balance.value,
             }).then((res)=>{
 
                 if(res.data.output && res.data.output.result=='ok'){
@@ -755,9 +772,12 @@ export default {
                 }
 
                 if(!err){
-                    if(cust.value.bycard==1 && typeof(custcard.value.id)!='undefined'){
+
+                    if(cust.value.bycard==1 && typeof(custcard.value.id)!='undefined' && amount_to_pay.value > 0){
+                        //console.log(amount_to_pay.value);
                         payment_comp.value.effectPayment('Pay')
-                    }else{
+                    }
+                    else{
                         completeCheckout();
                     }
                 }
@@ -820,6 +840,9 @@ export default {
             editcard,
             setEditCard,
             closeEditCardAndReload,
+            cust_credit,
+            order_balance,
+            amount_to_pay,
         }
 
     },
@@ -1140,13 +1163,22 @@ export default {
 }
 
 .total-text,
-.sub-total-text{
+.sub-total-text,
+.balance-text{
     color:#47454B;
 }
 
-.total-text{
+.total-text,
+.balance-text{
     font:bold 22px "Gilroy";
+}
+
+.total-text{
     border-bottom: thin solid #c3c3c3;
+}
+
+.balance-text{
+    border-top: thin solid #c3c3c3;
 }
 
 #last-row-btns *{
