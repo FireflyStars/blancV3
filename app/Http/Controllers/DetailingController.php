@@ -927,6 +927,9 @@ class DetailingController extends Controller
         $cust_card = null;
 
         $booking_details = [];
+        $amount_to_pay = 0;
+        $balance = 0;
+
         if($order){
 
             $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
@@ -1103,7 +1106,8 @@ class DetailingController extends Controller
 
             $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
 
-            $order->balance = $order->Total;
+            $balance = $order->Total;
+
             $amount_paid = 0;
             if(count($payments) > 0){
                 foreach($payments as $k=>$v){
@@ -1111,21 +1115,32 @@ class DetailingController extends Controller
                 }
 
                 $balance = $order->Total - $amount_paid;
-                $order->balance = $balance;
+
             }
 
+
+
+
+            $amount_to_pay = $balance;
+
+            if($cust->credit >= $balance){
+                $amount_to_pay = 0;
+            }else{
+                $amount_to_pay = $balance - $cust->credit;
+            }
+
+            if($cust->credit > 0){
+                if($balance > $cust->credit){
+                    $balance = $balance - $cust->credit;
+                }else{
+                    $balance = 0;
+                }
+            }
+
+
+            $order->balance = $balance;
+
         }
-
-
-        $amount_to_pay = $order->balance;
-
-        if($cust->credit >= $order->balance){
-            $amount_to_pay = 0;
-        }else{
-            $amount_to_pay = $order->balance - $cust->credit;
-        }
-
-
 
         $items = DB::table('detailingitem')
             ->select('detailingitem.*','detailingitem.id AS detailingitem_id','typeitem.pricecleaning as baseprice')

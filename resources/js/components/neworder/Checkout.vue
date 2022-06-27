@@ -465,7 +465,7 @@
                                                             <div class="row">
                                                                 <span class="sidebar_title text-white mb-3">Payment details <a href="javascript:void(0)" v-if="custcard" id="editcard" @click="setEditCard" :class="{'canceleditcard':editcard}"><span v-if="!editcard">Edit</span><span v-else>Cancel</span></a></span>
 
-                                                                <payment ref="payment_comp" :custcard="custcard" :order_id="order_id" :cust="cust" :amounttopay="amounttopay" @reload-checkout="closeEditCardAndReload" @complete-checkout="completeCheckout"></payment>
+                                                                <payment ref="payment_comp" :custcard="custcard" :order_id="order_id" :cust="cust" :amounttopay="parseFloat(amount_to_pay)" @reload-checkout="closeEditCardAndReload" @complete-checkout="completeCheckout"></payment>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -512,7 +512,7 @@
                 <div class="col-10">
                     <div class="row justify-content-center mb-4">
                         <div class="col-6">
-                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="amount_to_pay.value" @complete-checkout="completeCheckout"></stripe-pay-now>
+                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="parseFloat(amount_to_pay)" @complete-checkout="completeCheckout"></stripe-pay-now>
                         </div>
                         <div class="col-6">
                             <button class="pay-btn w-100 py-3" @click="completeCheckout">Pay later</button>
@@ -774,10 +774,11 @@ export default {
                 if(!err){
 
                     if(cust.value.bycard==1 && typeof(custcard.value.id)!='undefined' && amount_to_pay.value > 0){
-                        //console.log(amount_to_pay.value);
+                        console.log('by card',amount_to_pay.value);
                         payment_comp.value.effectPayment('Pay')
                     }
                     else{
+                        console.log('by credit',amount_to_pay.value);
                         completeCheckout();
                     }
                 }
