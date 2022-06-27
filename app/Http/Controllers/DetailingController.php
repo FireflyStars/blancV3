@@ -1103,7 +1103,7 @@ class DetailingController extends Controller
 
             $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
 
-            $order->balance = $order->Total;
+            $order->balance = $order->Total - $cust->credit;
             $amount_paid = 0;
             if(count($payments) > 0){
                 foreach($payments as $k=>$v){
