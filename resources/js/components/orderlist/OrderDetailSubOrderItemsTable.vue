@@ -3,7 +3,19 @@
         <section class="itemlist-table " v-if="Object.entries(ITEM_LIST).length !== 0">
             <div class="suborder" v-for="(ITEMS,suborder) in ITEM_LIST" :key="suborder">
                 <transition-group tag="div" class="position-relative" name="list" appear>
-                    <div class="subordernum body_small_medium" v-if="Object.entries(ITEM_LIST).length !== 0">Sub order {{suborder}}</div>
+                    <div class="suborderheader" v-if="Object.entries(ITEM_LIST).length !== 0">
+                            <span class="col-9  subordernum body_small_medium">
+                              Sub order {{suborder}}
+                            </span>
+                            <div class="col-3">
+                                <img class="img-arrow" src="/images/flesh.png" />
+                                <img v-if="ITEMS.length > 1" class="img-arrow" @click="setSubOrderFulfilled(ITEMS[0].InvoiceID)" src="/images/check.png" />
+                                <img class="img-arrow" src="/images/download.png" @click="openModal(ITEMS[0].InvoiceID)" />
+                                <img class="img-arrow" @click="OpenSubOrderOptions()" src="/images/menu.png" />   
+                            </div>
+                    </div>
+                    <SubOrderOptions v-if="open_options" :items="ITEMS" :invoice_id="ITEMS[0].InvoiceID" ></SubOrderOptions>
+                    <qz-print ref="qz_printer"></qz-print>
                         <header v-if="Object.entries(ITEM_LIST).length !== 0">
                             <div class="tcol noselect"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}" >{{col.name}}
                                 <check-box v-if="col.type=='checkbox'&& ITEMS.length>0" :checked_checkbox="typeof MULTI_CHECKED[suborder]!=='undefined'&&ITEMS.length==MULTI_CHECKED[suborder].length"  @checkbox-clicked="checkboxallclicked" :name="suborder"></check-box>
@@ -56,17 +68,20 @@
     import Tag from  '../miscellaneous/Tag'
     import CheckBox from '../miscellaneous/CheckBox'
     import ColorTag from "../miscellaneous/ColorTag";
-
+    import SubOrderOptions from "../miscellaneous/SubOrderOptions";
+    import QzPrint from "../QzPrint";
 
     export default {
         name: "OrderDetailSubOrderItemsTable",
         props:['tabledef',"tab","id" , "status"],
-        components:{ColorTag, Tag,CheckBox},
+        components:{ColorTag, Tag,CheckBox, SubOrderOptions, QzPrint},
         setup(props,context){
             const router = useRouter();
             const store=useStore();
             const route = useRoute();
             const orderId = ref(0);
+            const open_options = ref(false);
+            const qz_printer = ref(null);
             const ITEM_LIST=computed(()=>{
                 return store.getters[`${ORDERDETAIL_MODULE}${ORDERDETAIL_GET_DETAILS}`].items;
             });
@@ -145,6 +160,27 @@
             const show_split_conf=()=>{
                 context.emit("show_conf");
             }
+        
+            function setSubOrderFulfilled(suborderid){
+
+               axios.post('/setInvoiceFulfilled',{
+                   suborderid: suborderid,
+                   nextpost:28
+               }).then((res)=>{
+                   console.log("ressssponse" , res)
+                  store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
+
+               }).catch((error)=>{
+                 console.log("error" , error)
+                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
+               })
+            }
+
+            function OpenSubOrderOptions(){
+              this.open_options = !this.open_options
+            }
+
+          
 
             return {
                 route,
@@ -157,17 +193,26 @@
                 checkboxclicked,
                 show_split_conf,
 
-
-
                 checkboxallclicked,
                 featureunavailable,
                 cancelorders,
-                EditOrder
-
+                EditOrder,
+                setSubOrderFulfilled,
+                OpenSubOrderOptions,
+                open_options,
+                qz_printer
 
 
             }
+            
+        },
+
+        methods:{
+        openModal(SubOrdersId){
+            this.$refs.qz_printer.loadPrinterModal(SubOrdersId)
         }
+    },   
+ 
     }
 </script>
 
@@ -185,6 +230,10 @@
         font-weight: 500;
         color:#868686;
         margin: 0 0 14px 13px;
+       
+    }
+    .suborderheader{
+      display: flex;
     }
     .container-fluid{
         padding: 0px;
@@ -279,5 +328,8 @@
     }
 .tcol.Status,.tcol.paid{
     text-align: center;
+}
+.img-arrow{
+    margin :0 5px;
 }
 </style>

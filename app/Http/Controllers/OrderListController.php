@@ -235,7 +235,7 @@ class OrderListController extends Controller
             $billing_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=','BILLING')->first();
             $delivery_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=',$order->TypeDelivery)->first();
 
-            $infoitems=DB::table('infoitems')->select(['infoInvoice.NumInvoice','infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status','TypePost.Name as station',])->join('infoInvoice',function($join) use($order){
+            $infoitems=DB::table('infoitems')->select(['infoInvoice.NumInvoice','infoInvoice.InvoiceID' , 'infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status','TypePost.Name as station',])->join('infoInvoice',function($join) use($order){
                $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
                ->where('infoInvoice.OrderID','=',$order->OrderID);
             })->leftJoin('postes','postes.id','=','infoitems.nextpost')
@@ -300,6 +300,94 @@ class OrderListController extends Controller
         ->get();
 
         return response()->json(['order'=>['detail'=>$order,'billing'=>$billing_add,'delivery'=>$delivery_add,'items'=>$items,'available_slots'=>$available_slots ,'detailingitemlist' => $detailingitemlist]] );
+    }
+
+     public function setInvoiceFulfilled(Request $request){
+        $invoice_id = $request->post('suborderid');
+
+        $endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v1.php";
+        $client = new \GuzzleHttp\Client();
+        $content = "";
+
+        $user = Auth::user();
+
+        $params = [
+            'token'=>'GhtfvbbG4489hGtyEfgARRGht3',
+            'invoiceid'=>$invoice_id,
+            'userid'=>$user->id,
+        ];
+
+        $response = $client->request('GET', $endpoint, ['query' => $params]);
+
+        $statusCode = $response->getStatusCode();
+        @$content = $response->getBody();
+
+        $content = str_replace('\"', '', $content);
+
+        $output = @json_decode($content);
+
+        if($output && isset($output->result) && $output->result=='ok'){
+            $items = DB::table('infoitems')->where('InvoiceID',$invoice_id)->get();
+
+            if(count($items) > 0){
+                foreach($items as $k=>$v){
+
+                    DB::table('production')->insert([
+                                            'user_id'=>$user->id,
+                                            'ID_item'=>$v->id_items,
+                                            'item_id'=>$v->id,
+                                            'poste_id'=> 28,
+                                            'date_add'=>date('Y-m-d H:i:s')
+                                         ]);
+            }
+        }
+    }
+
+        return \response()->json([
+            'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=$invoice_id&userid=".$user->id,
+            'output'=>$output,
+            'status_code'=>$statusCode,
+        ]);
+    }
+
+    public function SplitSubOrder(Request $request){
+
+        $invoice_id = $request->post('suborderid');
+        $items = $request->post('items');
+        
+        $endpoint = "http://blancspot.vpc-direct-service.com/split-v1.php";
+        $arr = http_build_query($items,"item[");
+        $array_item = serialize(preg_replace('/\[\d/', '\\0]', $arr));
+        
+        $client = new \GuzzleHttp\Client();
+        $content = "";
+
+        $user = Auth::user();
+
+        $params = [
+            'token'=>'GhtfvbbG44$hhGtyEfgARRGht3',
+            'invoiceid'=>$invoice_id,
+            $array_item
+
+        ];
+
+        $response = $client->request('GET', $endpoint, ['query' => $params]);
+        
+        $statusCode = $response->getStatusCode();
+
+
+        @$content = $response->getBody();
+
+        $content = str_replace('\"', '', $content);
+
+        $output = @json_decode($content);
+
+
+        return \response()->json([
+            'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=.$invoice_id&".$array_item,
+            'output'=>$output,
+            'status_code'=>$statusCode,
+        ]);
     }
 
     public function getitemdetail(Request $request){

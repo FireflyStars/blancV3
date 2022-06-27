@@ -32,6 +32,7 @@ public function SearchCustomer(Request $request)
     ->orWhere('LastName','LIKE', $query . '%')
     ->orWhere('infoOrder.id',$query)
     ->orWhere('infoitems.ItemTrackingKey',$query)
+    ->orWhere('infoitems.id',$query)
     ->groupBy('infoOrder.CustomerID')
     ->orderBy('Name')
     ->paginate($PerPageOrder);
