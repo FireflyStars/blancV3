@@ -9,12 +9,12 @@
                             </span>
                             <div class="col-3">
                                 <img class="img-arrow" src="/images/flesh.png" />
-                                <img v-if="ITEMS.length > 1" class="img-arrow" @click="setSubOrderFulfilled(ITEMS[0].InvoiceID)" src="/images/check.png" />
+                                <img class="img-arrow" @click="setSubOrderFulfilled(ITEMS[0].InvoiceID)" src="/images/check.png" />
                                 <img class="img-arrow" src="/images/download.png" @click="openModal(ITEMS[0].InvoiceID)" />
-                                <img class="img-arrow" @click="OpenSubOrderOptions()" src="/images/menu.png" />   
+                                <img class="img-arrow" @click="OpenSubOrderOptions(suborder)"  src="/images/menu.png"   :class="{ active: show === suborder }"/>   
                             </div>
                     </div>
-                    <SubOrderOptions v-if="open_options" :items="ITEMS" :invoice_id="ITEMS[0].InvoiceID" ></SubOrderOptions>
+                    <SubOrderOptions  v-if="show === suborder && open_options" :suborder=suborder :items="ITEMS" :item_selected="Object.entries(MULTI_CHECKED)" :invoice_id="ITEMS[0].InvoiceID" ></SubOrderOptions>
                     <qz-print ref="qz_printer"></qz-print>
                         <header v-if="Object.entries(ITEM_LIST).length !== 0">
                             <div class="tcol noselect"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}" >{{col.name}}
@@ -81,6 +81,7 @@
             const route = useRoute();
             const orderId = ref(0);
             const open_options = ref(false);
+            const show = ref('');
             const qz_printer = ref(null);
             const ITEM_LIST=computed(()=>{
                 return store.getters[`${ORDERDETAIL_MODULE}${ORDERDETAIL_GET_DETAILS}`].items;
@@ -176,8 +177,15 @@
                })
             }
 
-            function OpenSubOrderOptions(){
-              this.open_options = !this.open_options
+            function OpenSubOrderOptions(idx){
+                this.open_options = !this.open_options
+                if(this.open_options == true)  {
+                    show.value = idx 
+                
+                } else {
+                    show.value = ''
+                }
+                  
             }
 
           
@@ -200,7 +208,8 @@
                 setSubOrderFulfilled,
                 OpenSubOrderOptions,
                 open_options,
-                qz_printer
+                qz_printer,
+                show
 
 
             }

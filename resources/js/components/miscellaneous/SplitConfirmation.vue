@@ -9,7 +9,10 @@
             <div class="confirmation-title">
                 <span class="subtitle">Split</span>
             </div>
-            <div class="confirmation-msg body_regular"><p>You are about to split an item from this order</p></div>
+            <!-- <div class="confirmation-msg body_regular"><p>You are about to split an item from this order</p></div> -->
+             <div class="confirmation-msg body_regular">
+             <p>Do you want to split items OUT OF sub-order {{suborder}} </p>
+             </div>
             <div class="confirmation-btn">
                 <button class="btn btn-outline-danger body_medium" style="margin-right: 59px" @click="close">Cancel</button>
                 <button class="btn btn-dark body_medium" style="" @click="split">Split</button>
@@ -30,11 +33,15 @@
         props:{
             show_conf:{
                 type:Boolean
-            }
+            }, 
+            'items':Array,
+            'suborder': String
+
         },
         setup(props,context){
             const show=ref(false);
             const store=useStore();
+            
             watch(() => props.show_conf, (toval, fromval) => {
                 show.value=toval;
             });
