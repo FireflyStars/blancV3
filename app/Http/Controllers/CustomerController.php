@@ -562,6 +562,14 @@ class CustomerController extends Controller
                 $infoCustomer->card_details = $card;
             }
 
+            $infoCustomer->delivery_preference = null;
+
+            $delivery_preference = DB::table('DeliveryPreference')->where('CustomerID',$CustomerID)->first();
+
+            if($delivery_preference){
+                $infoCustomer->delivery_preference = $delivery_preference;
+            }
+
 
         }
 
@@ -1057,18 +1065,18 @@ class CustomerController extends Controller
                     'created_at'        => now(),
                     'updated_at'        => now(),
                 ];
-               
+
                 $credit_card_id = DB::table('cards')->insertGetId($credit_card);
                  return response()->json( $credit_card_id );
 
     }
 
     public function DeleteCreditCard(Request $request){
-      
+
         $card = DB::table('cards')
         ->where('cards.id', $request->id)->update(['Actif' => 0]);
         $card2 = DB::table('cards')->where('cards.id', $request->id)->first();
         return response()->json( $card2 );
-       
+
     }
 }

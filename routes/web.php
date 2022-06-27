@@ -567,8 +567,7 @@ Route::post('/make-payment-or-create-card',[OrderController::class,'makePaymentO
 Route::post('/complete-checkout',[OrderController::class,'completeCheckout'])->name('complete-checkout')->middleware('auth');
 Route::post('/get-stripe-terminal',[DetailingController::class,'getStripeTerminal'])->name('get-stripe-terminal')->middleware('auth');
 Route::post('/get-terminal-token',[DetailingController::class,'getTerminalToken'])->name('get-terminal-token')->middleware('auth');
-Route::post('/set-order-paid',[OrderController::class,'setOrderPaid'])->name('set-order-paid')->middleware('auth');
-
+Route::post('/pay-from-credit',[OrderController::class,'payFromCredit'])->name('pay-from-credit')->middleware('auth');
 
 /**
  * Routes for stripe terminal - DO NOT REMOVE
@@ -602,16 +601,24 @@ Route::group(['prefix'=>'stripe-test'],function(){
             $json_str = file_get_contents('php://input');
             $json_obj = json_decode($json_str);
 
+            $order_id = $json_obj->order_id;
+            $order = DB::table('infoOrder')->where('id',$order_id)->first();
+            $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
             // For Terminal payments, the 'payment_method_types' parameter must include
             // 'card_present' and the 'capture_method' must be set to 'manual'
+
+            $amount_two_dp = number_format($json_obj->amount,2);
+
             $intent = $stripe->paymentIntents->create([
-                'amount' => $json_obj->amount,
+                'amount' => 100*$amount_two_dp,
                 'currency' => 'gbp',
                 'payment_method_types' => [
                                             'card_present',
                                         ],
                 'capture_method' => 'manual',
-                'description'=>'Order: '.$json_obj->order_id,
+                'description'=>'Order: '.$order_id,
+                "receipt_email"=>$cust->EmailAddress,
             ]);
 
             echo json_encode($intent);
@@ -635,6 +642,37 @@ Route::group(['prefix'=>'stripe-test'],function(){
         http_response_code(500);
         echo json_encode(['error' => $e->getMessage()]);
         }
+    });
+
+    Route::post('/update-terminal-order',function(){
+        $json_str = file_get_contents('php://input');
+        $request = json_decode($json_str);
+
+        $order_id = $request->order_id;
+        $terminal = $request->terminal;
+        $amount = $request->amount;
+        $status = $request->status;
+        $info = $request->info;
+
+        $stamp = date('Y-m-d H:i:s');
+
+        $order = DB::table("infoOrder")->where('id',$order_id)->first();
+
+        $payment_id = DB::table('payment')->insertGetId([
+            'type'=>$terminal,
+            'datepayment'=>$stamp,
+            'status'=>$status,
+            'montant'=>$amount,
+            'CustomerID'=>$order->CustomerID,
+            'created_at'=>$stamp,
+            'info'=>$info,
+        ]);
+
+        if($status=='succeeded'){
+            $updated = DB::table("infoOrder")->where('id',$order_id)->update(['Paid'=>1]);
+        }
+
+        echo json_encode(['payment_id'=>$payment_id]);
     });
 
 });

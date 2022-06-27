@@ -931,13 +931,22 @@ class DetailingController extends Controller
 
             $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
 
-
             $cust->phone_num = [];
             if($cust){
                 $cust->cust_type = "";
+                $cust->pay_name = $cust->Name;
 
                 $addr = Delivery::getAddressByCustomerUUID($order->CustomerID);
-                $cust_card = DB::table('cards')->where('CustomerID',$cust->CustomerID)->where('Actif',1)->first();
+
+                $cust_id = $cust->CustomerID;
+                if($cust->CustomerIDMaster !=''){
+                    $cust_id = $cust->CustomerIDMaster;
+
+                    $master_cust = DB::table('infoCustomer')->where('CustomerID',$cust->CustomerIDMaster)->first();
+                    $cust->pay_name = $master_cust->Name;
+                }
+
+                $cust_card = DB::table('cards')->where('CustomerID',$cust_id)->where('Actif',1)->first();
 
                 if($cust->Phone !='' && !is_null($cust->Phone) && is_array(@json_decode($cust->Phone))){
                     $phone_num = @json_decode($cust->Phone);
@@ -1092,7 +1101,30 @@ class DetailingController extends Controller
                 $booking_details['recurring'] = $recurring;
             }
 
+            $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
+
+            $order->balance = $order->Total;
+            $amount_paid = 0;
+            if(count($payments) > 0){
+                foreach($payments as $k=>$v){
+                    $amount_paid += number_format($v->montant,2);
+                }
+
+                $balance = $order->Total - $amount_paid;
+                $order->balance = $balance;
+            }
+
         }
+
+
+        $amount_to_pay = $order->balance;
+
+        if($cust->credit >= $order->balance){
+            $amount_to_pay = 0;
+        }else{
+            $amount_to_pay = $order->balance - $cust->credit;
+        }
+
 
 
         $items = DB::table('detailingitem')
@@ -1418,6 +1450,7 @@ class DetailingController extends Controller
             'stripe_public_key'=>env($stripe_public_key),
             'stripe_security_key'=>env($stripe_security_key),
             'cur_user'=>Auth::user(),
+            'amount_to_pay'=>number_format($amount_to_pay,2),
         ]);
     }
 

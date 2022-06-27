@@ -119,6 +119,11 @@ class OrderController extends Controller
                 'created_at'=>$created_stamp,
             ]);
 
+            DB::table('infoOrder')->where('id',$new_order_id)->update([
+                'DatePickup'=>substr($dropoff_stamp,0,10),
+                'DateDeliveryAsk'=>$new_order['isc_pickup'],
+            ]);
+
         }
 
         //Add booking for delivery only
@@ -452,6 +457,8 @@ class OrderController extends Controller
         $cardholder_name = $request->cardHolderName;
         $card_cvv = $request->cardCVV;
         $payment_type= $request->payment_type;
+        $editcard = $request->editcard;
+        $amount_to_pay = $request->amount_to_pay;
 
         $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
 
@@ -464,18 +471,23 @@ class OrderController extends Controller
 
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
+        $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
 
 
-        if(!is_null($card_id)){
+        if(!is_null($card_id) && !$editcard){
             $card = DB::table('cards')->where('id',$card_id)->first();
         }else{
+            if($editcard){
+                DB::table('cards')->where('id',$card_id)->update(['Actif'=>0]);
+            }
+
             //Create card
 
             $card_exp_arr = explode("/",$card_exp);
 
             $stripe_customer = null;
 
-            $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
             $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->first();
 
             $err_txt = "";
@@ -538,8 +550,12 @@ class OrderController extends Controller
 
 
         if($payment_type !='Save' && $card && $order && $order->CustomerID==$card->CustomerID){
+            $amount_two_dp = number_format($amount_to_pay,2);
+
+            $total_amount = 100*$amount_two_dp;
+
             $payment_intent = $stripe->paymentIntents->create([
-                'amount'            => 100*$order->Total, //100*0.01
+                'amount'            => $total_amount, //100*0.01
                 'currency'          => 'gbp',
                 'confirm'           => true,
                 "payment_method"    => $card->stripe_card_id,
@@ -556,7 +572,7 @@ class OrderController extends Controller
                     'type'=>'card',
                     'datepayment'=>date('Y-m-d H:i:s'),
                     'status'=>$payment_intent->status,
-                    'montant'=>$order->Total,
+                    'montant'=>number_format($order->Total,2),
                     'order_id'=>$order_id,
                     'card_id'=>$card->id,
                     'CustomerID'=>$order->CustomerID,
@@ -580,9 +596,7 @@ class OrderController extends Controller
                 }else{
                     $err_payment = $payment_intent->status;
                 }
-
             }
-
         }
 
 
@@ -594,6 +608,8 @@ class OrderController extends Controller
             'post'=>$request->all(),
             'err_payment'=>$err_payment,
             'paid'=>$paid,
+            'payment_type'=>$payment_type,
+            'post'=>$request->all(),
         ]);
     }
 
@@ -976,6 +992,39 @@ class OrderController extends Controller
 
     public function completeCheckout(Request $request){
         $order_id = $request->order_id;
+        $balance = number_format($request->balance,2);
+        $amount_to_pay = number_format($request->amount_to_pay,2);
+
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+        $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
+        $credit_remaining = $cust->credit;
+
+        if($cust->credit > 0){
+            if($cust->credit > $balance){
+                $credit_remaining = $cust->credit - $balance;
+
+                if($cust->credit > $balance){
+                    DB::table('infoOrder')->where('id',$order_id)->update(['Paid'=>1]);
+                }
+            }
+
+            $credit_remaining = number_format($credit_remaining,2);
+
+            DB::table('infoCustomer')->where('id',$cust->id)->update(['credit'=>($credit_remaining>0?$credit_remaining:0)]);
+
+            $stamp = date('Y-m-d H:i:s');
+
+            DB::table('payments')->insert([
+                'type'=>'cust_credit',
+                'datepayment'=>$stamp,
+                'status'=>'succeeded',
+                'montant'=>$amount_to_pay,
+                'CustomerID'=>$order->CustomerID,
+                'created_at'=>$stamp,
+                'info'=>'',
+            ]);
+        }
 
         $order_res = OrderController::createOrderItems($order_id);
 
@@ -984,14 +1033,33 @@ class OrderController extends Controller
         ]);
     }
 
-    public function setOrderPaid(Request $request){
+    public function updateOrderTerminal(Request $request){
         $order_id = $request->order_id;
+        $terminal = $request->terminal;
+        $amount = $request->amount;
+        $status = $request->status;
+        $info = $request->info;
 
-        $updated = DB::table("infoOrder")->where('id',$order_id)->update(['Paid'=>1]);
+        $stamp = date('Y-m-d H:i:s');
+
+        $order = DB::table("infoOrder")->where('id',$order_id)->first();
+
+        DB::table('payment')->insert([
+            'type'=>$terminal,
+            'datepayment'=>$stamp,
+            'status'=>$status,
+            'montant'=>$amount,
+            'CustomerID'=>$order->CustomerID,
+            'created_at'=>$stamp,
+            'info'=>$info,
+        ]);
+
+        if($status=='succeeded'){
+            $updated = DB::table("infoOrder")->where('id',$order_id)->update(['Paid'=>1]);
+        }
 
         return response()->json([
            'updated'=>$updated,
         ]);
     }
-
 }
