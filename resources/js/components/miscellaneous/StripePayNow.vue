@@ -261,7 +261,7 @@ export default {
                      if(data.status=='succeeded'){
                             let amount = parseInt(data.amount)/100;
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
-                                        message: "Payment of GBP"+amount.toFixed(2)+" received",
+                                        message: "Payment of GBP "+amount.toFixed(2)+" received",
                                         ttl: 5,
                                         type: "success",
                             });

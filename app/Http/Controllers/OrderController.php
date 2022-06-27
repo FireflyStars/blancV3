@@ -572,7 +572,7 @@ class OrderController extends Controller
                     'type'=>'card',
                     'datepayment'=>date('Y-m-d H:i:s'),
                     'status'=>$payment_intent->status,
-                    'montant'=>number_format($order->Total,2),
+                    'montant'=>number_format($amount_two_dp,2),
                     'order_id'=>$order_id,
                     'card_id'=>$card->id,
                     'CustomerID'=>$order->CustomerID,
@@ -1000,13 +1000,15 @@ class OrderController extends Controller
 
         $credit_remaining = $cust->credit;
 
-        if($cust->credit > 0){
+        if($cust->credit >= 0){
             if($cust->credit > $balance){
                 $credit_remaining = $cust->credit - $balance;
 
                 if($cust->credit > $balance){
                     DB::table('infoOrder')->where('id',$order_id)->update(['Paid'=>1]);
                 }
+            }else{
+                $credit_remaining = 0;
             }
 
             $credit_remaining = number_format($credit_remaining,2);
@@ -1017,9 +1019,10 @@ class OrderController extends Controller
 
             DB::table('payments')->insert([
                 'type'=>'cust_credit',
+                'order_id'=>$order_id,
                 'datepayment'=>$stamp,
                 'status'=>'succeeded',
-                'montant'=>$amount_to_pay,
+                'montant'=>($cust->credit > $balance?$balance:$cust->credit),
                 'CustomerID'=>$order->CustomerID,
                 'created_at'=>$stamp,
                 'info'=>'',
