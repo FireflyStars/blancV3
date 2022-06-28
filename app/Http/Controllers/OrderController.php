@@ -1065,4 +1065,14 @@ class OrderController extends Controller
            'updated'=>$updated,
         ]);
     }
+
+    public function updateOrderToDetailing(Request $request){
+        $order_id = $request->order_id;
+
+        $updated = DB::table("infoOrder")->where('id',$order_id)->update(['Status'=>'IN DETAILING']);
+
+        return response()->json([
+            'updated'=>$updated,
+        ]);
+    }
 }

@@ -528,6 +528,7 @@ Route::post('/get-tranche-by-postcode',[BookingController::class,'getTrancheByPo
 Route::post('/create-new-order',[OrderController::class,'createNewOrder'])->name('create-new-order')->middleware('auth');
 Route::post('/get-slots-by-day',[BookingController::class,'getSlotsByDay'])->name('get-slots-by-day')->middleware('auth');
 Route::post('/save-order-card-details',[OrderController::class,'saveCardDetails'])->name('save-order-card-details')->middleware('auth');
+Route::post('/update-order-to-detailing',[OrderController::class,'updateOrderToDetailing'])->name('updateOrderToDetailing')->middleware('auth');
 
 /*
  * QZ Print

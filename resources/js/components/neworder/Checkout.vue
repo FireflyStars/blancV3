@@ -520,7 +520,7 @@
                     </div>
                     <div class="row">
                         <div class="col-12">
-                            <button id="payment_method_btn" class="w-100 py-3" @click="closeNoPaymentModal">Add payment method</button>
+                            <button id="payment_method_btn" class="w-100 py-3" @click="openPaymentAccordion">Add payment method</button>
                         </div>
                     </div>
                 </div>
@@ -806,6 +806,11 @@ export default {
             payment_comp.value.setEditCard(editcard.value);
         }
 
+        function openPaymentAccordion(){
+            openAccordionclick('payment');
+            closeNoPaymentModal();
+        }
+
         return {
             order_id,
             paths,
@@ -844,6 +849,7 @@ export default {
             cust_credit,
             order_balance,
             amount_to_pay,
+            openPaymentAccordion,
         }
 
     },

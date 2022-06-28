@@ -1103,43 +1103,6 @@ class DetailingController extends Controller
 
                 $booking_details['recurring'] = $recurring;
             }
-
-            $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
-
-            $balance = $order->Total;
-
-            $amount_paid = 0;
-            if(count($payments) > 0){
-                foreach($payments as $k=>$v){
-                    $amount_paid += number_format($v->montant,2);
-                }
-
-                $balance = $order->Total - $amount_paid;
-
-            }
-
-
-
-
-            $amount_to_pay = $balance;
-
-            if($cust->credit >= $balance){
-                $amount_to_pay = 0;
-            }else{
-                $amount_to_pay = $balance - $cust->credit;
-            }
-
-            if($cust->credit > 0){
-                if($balance > $cust->credit){
-                    $balance = $balance - $cust->credit;
-                }else{
-                    $balance = 0;
-                }
-            }
-
-
-            $order->balance = $balance;
-
         }
 
         $items = DB::table('detailingitem')
@@ -1426,6 +1389,45 @@ class DetailingController extends Controller
         if($order->OrderDiscount > 0){
             $total_with_discount = $total_price - $order->OrderDiscount;
         }
+
+
+        $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
+
+        $balance = $total_with_discount;
+
+        $amount_paid = 0;
+        if(count($payments) > 0){
+            foreach($payments as $k=>$v){
+                $amount_paid += number_format($v->montant,2);
+            }
+
+            $balance = $total_with_discount - $amount_paid;
+
+        }
+
+
+        $amount_to_pay = $balance;
+
+        if($cust->credit >= $balance){
+            $amount_to_pay = 0;
+        }else{
+            $amount_to_pay = $balance - $cust->credit;
+        }
+
+        if($cust->credit > 0){
+            if($balance > $cust->credit){
+                $balance = $balance - $cust->credit;
+            }else{
+                $balance = 0;
+            }
+        }
+
+
+        $order->balance = $balance;
+
+
+
+
 
         //Mise a jour montant commande
         DB::table('infoOrder')->where('id',$order_id)->update([

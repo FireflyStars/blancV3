@@ -497,7 +497,7 @@
                                             <button class="btn btn-outline-danger w-100" @click="$router.push({name:'LandingPage'})">NO, Booking only</button>
                                         </div>
                                         <div class="col-5">
-                                            <button class="btn btn-outline-success w-100" @click="$router.push('/order-content/'+neworder_id)">YES, Detail order</button>
+                                            <button class="btn btn-outline-success w-100" @click="updateOrderAndDetail">YES, Detail order</button>
                                         </div>
                                     </div>
                                 </template>
@@ -1575,6 +1575,21 @@ import axios from 'axios';
                 }
             }
 
+            function updateOrderAndDetail(){
+                axios.post('/update-order-to-detailing',{
+                    order_id:neworder_id.value
+                }).then((res)=>{
+                    if(res.data.updated){
+                        router.push('/order-content/'+neworder_id.value);
+                    }
+                }).catch((err)=>{
+
+                }).finally(()=>{
+
+                });
+
+            }
+
             return {
                 showcontainer,
                 paths,
@@ -1658,6 +1673,7 @@ import axios from 'axios';
                 cardErrors,
                 saveCardDetails,
                 card_details,
+                updateOrderAndDetail,
             }
         },
         data(){
