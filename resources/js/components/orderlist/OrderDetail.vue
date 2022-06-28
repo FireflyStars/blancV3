@@ -173,11 +173,15 @@
              <div class="col-4" v-if="ORDER['items'].length === 0">
                 <button class="btn btn-outline-dark body_medium">Print ticket(s)</button>
             </div>
-             <div class="col-4" v-if="ORDER['items'].length === 0">
-                <button class="btn btn-outline-danger body_medium" v-if="ORDER['detail'].Status!='RECURRING'">Cancel booking</button>
+             <div class="col-4" v-if="ORDER['items'].length === 0 && ORDER['detail'].Status!='RECURRING'">
+                <button class="btn btn-outline-danger body_medium">Cancel booking</button>
+            </div>
+             <div class="col-1 options_btn"  v-if="ORDER['items'].length === 0">
+                <button @click="openOptions()" class="btn btn-outline-dark body_medium menu"><span>...</span></button>
+                <OrderOptions v-if="show_options_btn"></OrderOptions>
             </div>
             </div>
-       
+          
         <split-confirmation :show_conf="show_split_conf" @close="show_split_conf=false"></split-confirmation>
     </div>
 </template>
@@ -192,7 +196,8 @@
     import TimeSlotPicker from '../miscellaneous/TimeSlotPicker';
     import OrderDetailSubOrderItemsTable from './OrderDetailSubOrderItemsTable'
     import {formatPrice,hasRoles,formatDate} from "../helpers/helpers";
-    import SplitConfirmation from '../miscellaneous/SplitConfirmation'
+    import SplitConfirmation from '../miscellaneous/SplitConfirmation';
+     import OrderOptions from '../miscellaneous/OrderOptions'
     import {
         ORDERLIST_MODULE,
         ORDERLIST_GET_CURRENT_SELECTED,
@@ -219,13 +224,14 @@
 
     export default {
         name: "OrderDetail",
-        components:{Tag,AddressFormat,OrderDetailSubOrderItemsTable,DatePicker,TimeSlotPicker,SplitConfirmation},
+        components:{Tag,AddressFormat,OrderDetailSubOrderItemsTable,DatePicker,TimeSlotPicker,SplitConfirmation ,OrderOptions},
         setup(){
             const route =useRoute();
             const router=useRouter();
             const store =useStore();
 
             const show_split_conf=ref(false);
+            const show_options_btn=ref(false);
 
             const itemsfields=ref({
                 line_select:{
@@ -458,6 +464,9 @@
                 instAcc.value = !instAcc.value;
                
             }
+            function openOptions(){
+               show_options_btn.value = !show_options_btn.value
+            }
         
 
             return {
@@ -494,7 +503,9 @@
                 EditCustomer,
                 EditOrder,
                 openAccordionclick,
-                instAcc
+                instAcc,
+                show_options_btn,
+                openOptions
 
             }
         }
@@ -528,6 +539,24 @@
     }
 .accordion-body {
     background: #f8f8f8;
+}
+.options_btn{
+    position: relative;
+}
+.menu{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+}
+.menu span{
+    font-size: 26px;
+    line-height: 26px;
+    height: 26px;
+    display: inline-block;
+    justify-content: center;
+    align-items: center;
+    margin-top: -9px;
 }
 .align-right{
         text-align: right;
