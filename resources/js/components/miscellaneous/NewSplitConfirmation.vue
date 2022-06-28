@@ -9,10 +9,13 @@
             <div class="confirmation-title">
                 <span class="subtitle">Split</span>
             </div>
-            <div class="confirmation-msg body_regular"><p>You are about to split an item from this order</p></div>
+            <div class="confirmation-msg body_regular">
+                <p>Do you want to split items
+                <br>
+                OUT OF sub-order {{suborder}}</p></div>
             <div class="confirmation-btn">
-                <button class="btn btn-outline-danger body_medium" style="margin-right: 59px" @click="close">Cancel</button>
-                <button class="btn btn-dark body_medium" style="" @click="split">Split</button>
+                <button class="btn btn-outline-danger body_medium" style="margin-right: 59px" @click="close">No, Cancel</button>
+                <button class="btn btn-dark body_medium" style="" @click="split">Yes ,Split</button>
             </div>
         </div>
 
@@ -26,15 +29,18 @@
     import {useStore} from 'vuex';
     import {ORDERDETAIL_MODULE, ORDERDETAIL_SPLIT} from "../../store/types/types";
     export default {
-        name: "SplitConfirmation",
+        name: "NewSplitConfirmation",
         props:{
             show_conf:{
                 type:Boolean
-            }
+            },
+            suborder :String,
+            items :Array
         },
         setup(props,context){
             const show=ref(false);
             const store=useStore();
+
             watch(() => props.show_conf, (toval, fromval) => {
                 show.value=toval;
             });

@@ -3,7 +3,7 @@
     <div class="options position-absolute">
         <div class="row">
           
-            <div v-if="btn_split_show"  class="col-12 row-option"  @click="selectSplit()" >
+            <div  v-if="btn_split_show" class="col-12 row-option"  @click="selectSplit()" >
                 <img class="img-arrow" src="/images/split.png" />
                 <span>Split</span>
             </div>
@@ -28,7 +28,7 @@
                 <span>Void</span>
             </div>
         </div>
-            <split-confirmation :items="item_selected" :suborder="suborder" :show_conf="show_split_conf" @close="show_split_conf=false"></split-confirmation>
+        <NewSplitConfirmation :items="item_selected" :suborder="suborder" :show_conf="show_split_conf" @close="show_split_conf=false"></NewSplitConfirmation>
 
     </div>
 </template>
@@ -37,11 +37,11 @@
     import {ref} from 'vue';
     import {TOASTER_MODULE, TOASTER_MESSAGE} from "../../store/types/types";
     import {useStore} from 'vuex';
-     import SplitConfirmation from '../miscellaneous/SplitConfirmation'
+     import NewSplitConfirmation from '../miscellaneous/NewSplitConfirmation'
     export default {
         name: "SubOrderOptions",
         props:['items' ,'invoice_id','item_selected','suborder' ],
-        components:{ SplitConfirmation},
+        components:{ NewSplitConfirmation},
         setup(props){
            const store=useStore();
            const listItems =ref([]);
@@ -66,17 +66,17 @@
                show_split_conf.value = true
               
 
-            //    axios.post('/SplitSubOrder',{
-            //        suborderid: props.invoice_id ,
-            //        items:listItems.value
-            //    }).then((res)=>{
-            //        console.log("response" , res)
-            //      // store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success.',ttl:5,type:'success'});
+               axios.post('/SplitSubOrder',{
+                   suborderid: props.invoice_id ,
+                   items:listItems.value
+               }).then((res)=>{
+                   console.log("response" , res)
+                 // store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success.',ttl:5,type:'success'});
 
-            //    }).catch((error)=>{
-            //      console.log("error" , error)
-            //     // store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
-            //    })
+               }).catch((error)=>{
+                 console.log("error" , error)
+                // store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
+               })
            
            }
             return {
