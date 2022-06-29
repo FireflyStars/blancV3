@@ -62,7 +62,7 @@ export default {
                     face: "",//props.face ? props.face : "front", //all or front
                 })
                 .then((res) => {
-                    console.log(res.data);
+                    //console.log(res.data);
 
                     if (res.data.svg_details) {
                         svg_viewpoint.value = res.data.svg_details.viewpoint;

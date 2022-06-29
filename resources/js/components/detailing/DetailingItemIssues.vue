@@ -1,13 +1,13 @@
 <template>
     <div
         class="stains-title stains-select-text"
-        v-if="issuesStep == 1"
+        v-if="[0,1,2].includes(issuesStep)"
     >Please select location of the stain</div>
     <div
         class="stains-title stains-select-text"
-        v-if="issuesStep == 4"
+        v-if="[3,4,5].includes(issuesStep)"
     >Please select location of the damage</div>
-    <div class="picto" v-if="issuesStep == 0 || issuesStep == 1">
+    <div class="picto" v-if="[0,1,2].includes(issuesStep)">
         <item-picto-new
             :pictoname="typeitemPicto"
             face="all"
@@ -17,7 +17,7 @@
             issue_type="stain"
         ></item-picto-new>
     </div>
-    <div class="picto" v-if="issuesStep == 3 || issuesStep == 4">
+    <div class="picto" v-if="[3,4,5].includes(issuesStep)">
         <item-picto-new
             :pictoname="typeitemPicto"
             face="all"
@@ -27,6 +27,7 @@
             issue_type="damage"
         ></item-picto-new>
     </div>
+    <!--
     <div class="picto" v-if="issuesStep == 2">
         <item-picto-new
             :pictoname="typeitemPicto"
@@ -45,27 +46,35 @@
             issue_type="damage" @back-step="back"
         ></item-picto-new>
     </div>
-    <div class="row" v-if="issuesStep == 0">
+    -->
+    <div class="row" v-if="[0,1,2].includes(issuesStep)">
         <div class="stains-title">Any stains ?</div>
+
         <div>
             To add a stain to the description, please click on its position on the illustration above.
             <br />Then specify the kind of stain.
         </div>
+
+        <!--
         <div class="row">
             <div class="stain-type" v-for="(stain, index) in stainType">{{ stain }}</div>
         </div>
+        -->
     </div>
-    <div class="row" v-if="issuesStep == 3">
+
+    <div class="row" v-if="[3,4,5].includes(issuesStep)">
         <div class="stains-title">Any damages ?</div>
         <div>
             To add a damage to the description, please click on its position on the illustration above.
             <br />Then specify the kind of damage it is below.
         </div>
+        <!--
         <div class="row">
             <div class="stain-type" v-for="(dam, index) in damageKind">{{ dam.name }}</div>
         </div>
+        -->
     </div>
-    <div class="row" v-if="issuesStep == 2">
+    <div class="row mt-4" v-if="[0,1,2].includes(issuesStep)">
         <div class="stains-title">Can you be more specific</div>
         <div>If you know the kind of stain, please indicate below.</div>
         <div class="row">
@@ -87,7 +96,7 @@
             ></textarea>
         </div>
     </div>
-    <div class="row" v-if="issuesStep == 5">
+    <div class="row mt-4" v-if="[3,4,5].includes(issuesStep)">
         <div class="stains-title">Can you be more specific</div>
         <div>If you know the kind of damage, please indicate below.</div>
         <div class="row">
@@ -103,8 +112,11 @@
         <div class="col-10 text-align-right">
             <button class="btn btn-link btn-previous" @click="back">Previous</button>
         </div>
+
+
         <div class="col-2 text-align-right">
-            <button class="btn btn-next text-white" :disabled="!valid" @click="save">Next</button>
+            <button class="btn btn-next text-white" @click="save">Next</button>
+            <!-- :disabled="!valid" -->
         </div>
     </div>
 </template>
@@ -163,13 +175,15 @@ export default {
 
         valid.value = true;
 
+        /*
         watch(() => stainZone.value, (current_stainZone, previous_stainZone) => {
-            valid.value = issuesStep.value == 2 && current_stainZone.length == 0 ? false : true;
+            valid.value = issuesStep.value == 0 && current_stainZone.length == 0 ? false : true;
         });
 
         watch(() => damageZone.value, (current_damageZone, previous_damageZone) => {
             valid.value = issuesStep.value == 4 && current_damageZone.length == 0 ? false : true;
         });
+        */
 
         function addStainZone(id) {
             if (!stainZone.value.some(z => z.id_zone === id)) {
@@ -182,9 +196,10 @@ export default {
             } else {
                 stainZone.value.splice(stainZone.value.findIndex((z) => { return z.id_zone === id }), 1);
                 cur_zone_id.value = 0;
+                stainTag.value = 0;
             }
 
-            issuesStep.value = issuesStep.value == 0 ? issuesStep.value + 1 : issuesStep.value;
+            //issuesStep.value = issuesStep.value == 0 ? issuesStep.value + 1 : issuesStep.value;
             valid.value = stainZone.value.length > 0;
 
 
@@ -208,7 +223,7 @@ export default {
                 damageTag.value = 0;
             }
 
-            issuesStep.value = issuesStep.value == 3 ? issuesStep.value + 1 : issuesStep.value;
+            //issuesStep.value = issuesStep.value == 3 ? issuesStep.value + 1 : issuesStep.value;
             valid.value = damageZone.value.length > 0;
 
             context.emit("save-item-issues", {
@@ -252,7 +267,7 @@ export default {
             }
         }
         function addFreeText(e) {
-            if (issuesStep.value == 2) {
+            if ([0,1,2].includes(issuesStep.value)) {
                 stainZone.value[0].description = e.target.value;
                 context.emit("save-item-issues", {
                     detailingitem_id: props.detailingitem.id,
@@ -261,7 +276,8 @@ export default {
             }
         }
         function save() {
-            if (issuesStep.value === 3 || issuesStep.value === 5) {
+
+            if ([3,4,5].includes(issuesStep.value)) {
                 context.emit("save-item-issues", {
                     detailingitem_id: props.detailingitem.id,
                     step: 11
@@ -279,8 +295,9 @@ export default {
         function back() {
             console.log('back called');
 
-            (issuesStep.value == 3 && stainZone.value.length == 0) ? issuesStep.value = 0 :
-                issuesStep.value == 0 ? context.emit("go-to-step", 9) : (issuesStep.value = issuesStep.value - 1);
+            ([3,4,5].includes(issuesStep.value) ? issuesStep.value = 0 :
+                [0,1,2].includes(issuesStep.value)? context.emit("go-to-step", 9) :issuesStep.value);
+                //(issuesStep.value = issuesStep.value - 1)
             window.scrollTo(0, 0);
         }
 
