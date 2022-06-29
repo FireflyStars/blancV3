@@ -7,7 +7,7 @@
         class="stains-title stains-select-text"
         v-if="[3,4,5].includes(issuesStep)"
     >Please select location of the damage</div>
-    <div class="picto" v-if="[0,1,2].includes(issuesStep)">
+    <div class="picto text-align-center" v-if="[0,1,2].includes(issuesStep)">
         <item-picto-new
             :pictoname="typeitemPicto"
             face="all"
@@ -17,7 +17,7 @@
             issue_type="stain"
         ></item-picto-new>
     </div>
-    <div class="picto" v-if="[3,4,5].includes(issuesStep)">
+    <div class="picto text-align-center" v-if="[3,4,5].includes(issuesStep)">
         <item-picto-new
             :pictoname="typeitemPicto"
             face="all"
