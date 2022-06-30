@@ -1,19 +1,18 @@
 <template>
-    <svg
-        version="1.1"
-        id="Layer_1"
-        xmlns="http://www.w3.org/2000/svg"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-        x="0px"
-        y="0px"
-        :enable-background="'new ' + svg_viewpoint"
-        xml:space="preserve"
-        style="pointer-events: fill"
-        @click="onPartClick"
-    >
-        <g id="svg_path" v-html="picto_details" />
-    </svg>
-
+        <svg
+            version="1.1"
+            id="Layer_1"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            x="0px"
+            y="0px"
+            :enable-background="'new ' + svg_viewpoint"
+            xml:space="preserve"
+            style="pointer-events: fill" :width="svg_scale+'%'"
+            @click="onPartClick"
+        >
+            <g id="svg_path" v-html="picto_details" />
+        </svg>
 </template>
 <script>
 import { ref, watch} from "vue";
@@ -36,13 +35,13 @@ export default {
         const picto_details = ref("");
         const svg_data = ref({});
         const svg_viewbox = ref([]);
+        const svg_picto = ref();
 
         const store = useStore();
         const route = useRoute();
 
 
         const loadSvgZones = (type_picto) => {
-
             let zones = [
                 { position: "sleave", face: "front", side: "left" },
                 { position: "bottom", face: "back", side: "" },
@@ -62,11 +61,12 @@ export default {
                     face: "",//props.face ? props.face : "front", //all or front
                 })
                 .then((res) => {
-                    console.log(res.data);
+                    //console.log(res.data);
 
                     if (res.data.svg_details) {
                         svg_viewpoint.value = res.data.svg_details.viewpoint;
                         svg_scale.value = res.data.svg_details.scale;
+                        svg_picto.value = res.data.svg_details;
 
                         document.getElementById('Layer_1').setAttribute('viewBox', String(res.data.svg_details.viewpoint));
 
@@ -235,6 +235,7 @@ export default {
                             myText.setAttributeNS(null,"stroke-width","1px");
                             myText.setAttributeNS(null,"dy",".3em");
 
+
                             var index = 0;
 
                             if(route.name=='ComponentTest'){
@@ -244,17 +245,21 @@ export default {
 
                             if(route.name=='DetailingItem'){
                                 if(props.stainzone){
+                                    index = props.stainzone.length;
                                     props.stainzone.forEach(function(v,i){
-                                        if(v.id_zone==svg_row[0].id){
-                                            index = i+1;
+                                        if(v.id_zone!=svg_row[0].id){
+                                            document.getElementById('mytext'+v.id_zone).innerHTML = i+1;
                                         }
                                     });
                                 }
 
                                 if(props.damagezone){
+                                    index = props.damagezone.length;
+
                                     props.damagezone.forEach(function(v,i){
-                                        if(v.id_zone==svg_row[0].id){
-                                            index = i+1;
+                                        if(v.id_zone!=svg_row[0].id){
+                                            //index = i+1;
+                                            document.getElementById('mytext'+v.id_zone).innerHTML = i+1;
                                         }
                                     });
                                 }
@@ -383,6 +388,7 @@ export default {
             svg_viewbox,
             getZone,
             updateLabelPos,
+            svg_picto,
         };
     },
 };

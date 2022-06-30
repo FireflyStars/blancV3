@@ -183,7 +183,7 @@
                                 <!-- Summary -->
                                 <div class="row justify-content-end mt-3 mx-0">
                                     <div class="col-8 py-3" id="summary_div">
-                                        <span class="summary-title">Order Summary</span><span id="summary_item_count">{{order_items.length}} item<span v-if="order_items.length > 1">s</span></span>
+                                        <span class="summary-title">Order Total</span><span id="summary_item_count">{{order_items.length}} item<span v-if="order_items.length > 1">s</span></span>
                                         <div class="row px-0 mt-4 sub-total-text">
                                             <div class="col-9">Subtotal (incl. VAT)</div>
                                             <div class="col-3 text-align-right">&#163;{{sub_total}}</div>
@@ -204,17 +204,33 @@
                                             <div class="col-9">VAT</div>
                                             <div class="col-3 text-align-right">&#163;{{vat}}</div>
                                         </div>
-
-                                        <div class="row px-0 mt-3 py-2 balance-text">
-                                            <div class="col-9">Balance</div>
-                                            <div class="col-3 text-align-right">&#163;{{order_balance.toFixed(2)}}</div>
+                                    </div>
+                                </div>
+                                <!-- Credit / Balance -->
+                                <div class="row justify-content-end mt-3 mx-0">
+                                    <div class="col-8 py-3" id="credit_div">
+                                        <div class="d-flex align-items-center">
+                                            <img src="/images/unpaid_cross.svg" class="paid_icon" v-if="amount_to_pay > 0"/>
+                                            <img src="/images/icon_check.svg" class="paid_icon" v-if="amount_to_pay == 0 && order.Paid==1"/>
+                                            <span class="summary-title" v-if="amount_to_pay == 0 && order.Paid==1">Paid</span>
+                                            <span class="summary-title" v-else>Pending payments</span>
                                         </div>
-                                        <div class="row px-0 py-2 balance-text">
-                                            <div class="col-9">Credit available</div>
+                                        <div class="row mt-4 px-0 py-1 sub-total-text">
+                                            <div class="col-9">Paid by customer</div>
+                                            <div class="col-3 text-align-right">&#163;{{amount_paid.toFixed(2)}}</div>
+                                        </div>
+                                        <div class="row px-0 py-1 sub-total-text">
+                                            <div class="col-9">Minus cash credit</div>
                                             <div class="col-3 text-align-right">&#163;{{cust_credit.toFixed(2)}}</div>
+                                        </div>
+
+                                         <div class="row px-0 mt-4 py-2 balance-text">
+                                            <div class="col-9">Order balance to pay</div>
+                                            <div class="col-3 text-align-right">&#163;{{order_balance.toFixed(2)}}</div>
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
 
 
@@ -512,7 +528,7 @@
                 <div class="col-10">
                     <div class="row justify-content-center mb-4">
                         <div class="col-6">
-                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="parseFloat(amount_to_pay)" @complete-checkout="completeCheckout"></stripe-pay-now>
+                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="parseFloat(amount_to_pay)" @complete-checkout="completeCheckout" @close-payment-modal="closePaymentAndShowLoading" @close-awaiting-payment="closeAwaitingPaymentModal"></stripe-pay-now>
                         </div>
                         <div class="col-6">
                             <button class="pay-btn w-100 py-3" @click="completeCheckout">Pay later</button>
@@ -520,11 +536,20 @@
                     </div>
                     <div class="row">
                         <div class="col-12">
-                            <button id="payment_method_btn" class="w-100 py-3" @click="closeNoPaymentModal">Add payment method</button>
+                            <button id="payment_method_btn" class="w-100 py-3" @click="openPaymentAccordion">Add payment method</button>
                         </div>
                     </div>
                 </div>
             </div>
+        </template>
+    </modal>
+
+    <modal ref="awaiting_payment_modal">
+         <template #closebtn>
+            <span class="close" id="addon_modal_close" @click="closeAwaitingPaymentModal"></span>
+        </template>
+        <template #bheader>
+            <div class="bmodal-header py-5 text-center">Awaiting payment</div>
         </template>
     </modal>
 
@@ -581,6 +606,8 @@ export default {
         const cust_credit = ref(0);
         order_id.value = route.params.order_id;
         const amount_to_pay = ref(0);
+        const amount_paid = ref(0);
+        const awaiting_payment_modal = ref();
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
@@ -620,6 +647,7 @@ export default {
                 cust_credit.value = res.data.cust.credit;
 
                 amount_to_pay.value = res.data.amount_to_pay;
+                amount_paid.value = res.data.amount_paid;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -806,6 +834,20 @@ export default {
             payment_comp.value.setEditCard(editcard.value);
         }
 
+        function openPaymentAccordion(){
+            openAccordionclick('payment');
+            closeNoPaymentModal();
+        }
+
+        function closePaymentAndShowLoading(){
+            closeNoPaymentModal();
+            awaiting_payment_modal.value.showModal();
+        }
+
+        function closeAwaitingPaymentModal(){
+            awaiting_payment_modal.value.closeModal();
+        }
+
         return {
             order_id,
             paths,
@@ -844,6 +886,11 @@ export default {
             cust_credit,
             order_balance,
             amount_to_pay,
+            openPaymentAccordion,
+            amount_paid,
+            awaiting_payment_modal,
+            closePaymentAndShowLoading,
+            closeAwaitingPaymentModal,
         }
 
     },
@@ -1152,7 +1199,8 @@ export default {
     color:#fff;
 }
 
-#summary_div{
+#summary_div,
+#credit_div{
     background:#fff;
     padding-left:3rem;
     padding-right:3rem;
@@ -1243,6 +1291,10 @@ export default {
 
 #editcard:hover{
     text-decoration: none;
+}
+
+.paid_icon{
+    margin-right:0.5rem;
 }
 
 </style>

@@ -620,6 +620,9 @@ class OrderController extends Controller
 
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
+        $is_new_invoice = DB::table('NewInvoice')->where('order_id',$order_id)->get();
+
+
         $items_created = [];
 
         if($order){
@@ -907,13 +910,22 @@ class OrderController extends Controller
                     $cur_item = DB::table('infoitems')->where('ItemTrackingKey',$v->tracking)->first();
 
                     $cur_item_id = 0;
+
                     if($cur_item){
-                        DB::table("infoitems")->where('id',$cur_item->id)->update((array) $item);
+                        $item_to_update = (array) $item;
+                        if(count($is_new_invoice) == 0){
+                            unset($item_to_update['nextpost']);
+                            unset($item_to_update['process']);
+                            unset($item_to_update['Status']);
+                        }
+
+                        DB::table("infoitems")->where('id',$cur_item->id)->update($item_to_update);
                         $cur_item_id = $cur_item->id;
                     }else{
                         $item->ItemID = '';
                         $cur_item_id = DB::table("infoitems")->insertGetId((array) $item);
                     }
+
 
                     DB::table('detailingitem')->where('id',$v->id)->update([
                         'item_id'=>$cur_item_id,
@@ -955,34 +967,36 @@ class OrderController extends Controller
         //*/
 
         if(is_object($res) && isset($res->result) && $res->result=='ok'){
-            DB::table('infoOrder')->where('id',$order_id)->update(['Status'=>'In process']);
+            if(count($is_new_invoice)==0){
+                DB::table('infoOrder')->where('id',$order_id)->update(['Status'=>'In process']);
 
-            $items = DB::table('infoitems')->whereIn('id',$items_created)->get();
+                $items = DB::table('infoitems')->whereIn('id',$items_created)->get();
 
-            $item_historique = [];
+                $item_historique = [];
 
-            foreach($items as $k=>$v){
-                if($v->InvoiceID !=''){
-                    if(isset($detailing_map[$v->id])){
-                        DB::table('detailingitem')->where('id',$detailing_map[$v->id])->update(['InvoiceID'=>$v->InvoiceID]);
-                    }
-                    $inv = DB::table("infoInvoice")->where('InvoiceID',$v->InvoiceID)->first();
+                foreach($items as $k=>$v){
+                    if($v->InvoiceID !=''){
+                        if(isset($detailing_map[$v->id])){
+                            DB::table('detailingitem')->where('id',$detailing_map[$v->id])->update(['InvoiceID'=>$v->InvoiceID]);
+                        }
+                        $inv = DB::table("infoInvoice")->where('InvoiceID',$v->InvoiceID)->first();
 
-                    if($inv){
-                        $item_historique[] = [
-                            'CustomerID'=>$inv->CustomerID,
-                            'StoreName'=>$inv->StoreName,
-                            'ItemTrackingKey'=>$v->ItemTrackingKey,
-                            'NumInvoice'=>$inv->NumInvoice,
-                            'InvoiceID'=>$v->InvoiceID,
-                            'created_at'=>date('Y-m-d H:i:s'),
-                        ];
+                        if($inv){
+                            $item_historique[] = [
+                                'CustomerID'=>$inv->CustomerID,
+                                'StoreName'=>$inv->StoreName,
+                                'ItemTrackingKey'=>$v->ItemTrackingKey,
+                                'NumInvoice'=>$inv->NumInvoice,
+                                'InvoiceID'=>$v->InvoiceID,
+                                'created_at'=>date('Y-m-d H:i:s'),
+                            ];
+                        }
                     }
                 }
-            }
 
-            if(!empty($item_historique)){
-                DB::table('itemhistorique')->insert($item_historique);
+                if(!empty($item_historique)){
+                    DB::table('itemhistorique')->insert($item_historique);
+                }
             }
         }
 
@@ -1063,6 +1077,16 @@ class OrderController extends Controller
 
         return response()->json([
            'updated'=>$updated,
+        ]);
+    }
+
+    public function updateOrderToDetailing(Request $request){
+        $order_id = $request->order_id;
+
+        $updated = DB::table("infoOrder")->where('id',$order_id)->update(['Status'=>'IN DETAILING']);
+
+        return response()->json([
+            'updated'=>$updated,
         ]);
     }
 }
