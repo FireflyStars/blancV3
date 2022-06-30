@@ -1468,6 +1468,7 @@ class DetailingController extends Controller
             'stripe_security_key'=>env($stripe_security_key),
             'cur_user'=>Auth::user(),
             'amount_to_pay'=>number_format($amount_to_pay,2),
+            'amount_paid'=>$amount_paid,
         ]);
     }
 
