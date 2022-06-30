@@ -620,7 +620,7 @@ class OrderController extends Controller
 
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
-        $is_new_invoice = DB::table('newInvoice')->where('order_id',$order_id)->get();
+        $is_new_invoice = DB::table('NewInvoice')->where('order_id',$order_id)->get();
 
 
         $items_created = [];

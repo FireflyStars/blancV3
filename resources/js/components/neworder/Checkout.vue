@@ -528,7 +528,7 @@
                 <div class="col-10">
                     <div class="row justify-content-center mb-4">
                         <div class="col-6">
-                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="parseFloat(amount_to_pay)" @complete-checkout="completeCheckout"></stripe-pay-now>
+                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="parseFloat(amount_to_pay)" @complete-checkout="completeCheckout" @close-payment-modal="closePaymentAndShowLoading" @close-awaiting-payment="closeAwaitingPaymentModal"></stripe-pay-now>
                         </div>
                         <div class="col-6">
                             <button class="pay-btn w-100 py-3" @click="completeCheckout">Pay later</button>
@@ -541,6 +541,15 @@
                     </div>
                 </div>
             </div>
+        </template>
+    </modal>
+
+    <modal ref="awaiting_payment_modal">
+         <template #closebtn>
+            <span class="close" id="addon_modal_close" @click="closeAwaitingPaymentModal"></span>
+        </template>
+        <template #bheader>
+            <div class="bmodal-header py-5 text-center">Awaiting payment</div>
         </template>
     </modal>
 
@@ -598,6 +607,7 @@ export default {
         order_id.value = route.params.order_id;
         const amount_to_pay = ref(0);
         const amount_paid = ref(0);
+        const awaiting_payment_modal = ref();
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
@@ -829,6 +839,15 @@ export default {
             closeNoPaymentModal();
         }
 
+        function closePaymentAndShowLoading(){
+            closeNoPaymentModal();
+            awaiting_payment_modal.value.showModal();
+        }
+
+        function closeAwaitingPaymentModal(){
+            awaiting_payment_modal.value.closeModal();
+        }
+
         return {
             order_id,
             paths,
@@ -869,6 +888,9 @@ export default {
             amount_to_pay,
             openPaymentAccordion,
             amount_paid,
+            awaiting_payment_modal,
+            closePaymentAndShowLoading,
+            closeAwaitingPaymentModal,
         }
 
     },

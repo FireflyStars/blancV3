@@ -659,15 +659,22 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
         $order = DB::table("infoOrder")->where('id',$order_id)->first();
 
-        $payment_id = DB::table('payment')->insertGetId([
+        $to_insert = [
             'type'=>$terminal,
             'datepayment'=>$stamp,
             'status'=>$status,
             'montant'=>$amount,
             'CustomerID'=>$order->CustomerID,
             'created_at'=>$stamp,
-            'info'=>$info,
-        ]);
+            'order_id'=>$order_id,
+            'info'=>json_encode($info),
+        ];
+
+        if($status=='succeeded'){
+            unset($to_insert['info']);
+        }
+
+        $payment_id = DB::table('payments')->insertGetId($to_insert);
 
         if($status=='succeeded'){
             $updated = DB::table("infoOrder")->where('id',$order_id)->update(['Paid'=>1]);

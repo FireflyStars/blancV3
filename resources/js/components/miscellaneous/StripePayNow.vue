@@ -20,7 +20,7 @@ export default {
         order: Object || null,
         amounttopay: Number,
     },
-    emits:['complete-checkout'],
+    emits:['complete-checkout','close-payment-modal'],
     setup(props,context) {
         const store = useStore();
         const terminal = ref();
@@ -119,6 +119,7 @@ export default {
 
 
         async function payNow(){
+            context.emit('close-payment-modal');
             console.log('call start');
 
             await listReaders();
@@ -137,7 +138,7 @@ export default {
                     console.log('End calling selectReader');
 
                     if(typeof(selected_reader.value.id)!='undefined'){
-                        await createPaymentIntent(props.order.amounttopay);
+                        await createPaymentIntent(props.amounttopay,props.order.id);
                     }
 
 
@@ -153,17 +154,16 @@ export default {
         }
 
 
-        async function createPaymentIntent(amount) {
+        async function createPaymentIntent(amount,order_id) {
 
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
                 true,
                 "Sending payment....",
             ]);
 
-
             await fetchPaymentIntentClientSecret(amount).then((client_secret)=>{
                 //terminal.value.setSimulatorConfiguration({testCardNumber: '4242424242424242'});
-
+        if(typeof(client_secret) !='undefined'){
 
                 console.log('client secret from fetch payment',client_secret);
                 console.log('collectPaymentMethod started');
@@ -171,7 +171,7 @@ export default {
 
                 terminal.value.collectPaymentMethod(client_secret).then((result)=>{
 
-                    console.log('collect payment',result);
+                    //console.log('collect payment',result);
                     if (result.error) {
                         // Placeholder for handling result.error
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
@@ -184,13 +184,18 @@ export default {
 
                         terminal.value.processPayment(result.paymentIntent).then((result)=>{
 
+                            context.emit('close-awaiting-payment');
                             if (result.error) {
+
+
+                                 updateTerminalOrder(order_id,amount,'Failed',result);
                                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
-                                    message: JSON.stringify(result.error),
+                                    message: "Payment declined",
                                     ttl: 5,
                                     type: "danger",
                                 });
                             } else{
+                                updateTerminalOrder(order_id,amount,'succeeded','');
                                 console.log('terminal.collectPaymentMethod', result.paymentIntent);
 
                                 paymentIntentId.value = result.paymentIntent.id;
@@ -200,16 +205,18 @@ export default {
                             }
                         });
                     }
+
                 }).catch((err)=>{
                     console.log(err);
                 }).finally(()=>{
                     console.log('collectPayment method ended');
                 });
-
+            }
 
             }).finally(()=>{
                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
             });
+
 
         }
 
@@ -251,12 +258,8 @@ export default {
                     //To log data for payment logs
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
 
-
-                    async function updateOrder(){
-                       await updateTerminalOrder(data.amount,data.status);
-                    }
-
-                    updateOrder();
+                   console.log('data',data);
+                  // updateTerminalOrder(data.amount,data.status);
 
                      if(data.status=='succeeded'){
                             let amount = parseInt(data.amount)/100;
@@ -274,17 +277,18 @@ export default {
             }
         }
 
-        function updateTerminalOrder(amount,status){
+        function updateTerminalOrder(order_id,amount,status,msg){
             console.log('update order started');
 
             const bodyContent = JSON.stringify({
-                order_id:props.order.id,
+                order_id:order_id,
                 amount:amount.toFixed(2),
                 terminal:selected_reader.value.label,
                 status:status,
-                info:'',
-                //info:data,
+                info:msg,
             });
+
+            console.log(bodyContent);
 
             return fetch('/stripe-test/update-terminal-order', {
                     method: "POST",
