@@ -913,7 +913,7 @@ class OrderController extends Controller
 
                     if($cur_item){
                         $item_to_update = (array) $item;
-                        if(count($is_new_invoice)==0){
+                        if(count($is_new_invoice) == 0){
                             unset($item_to_update['nextpost']);
                             unset($item_to_update['process']);
                             unset($item_to_update['Status']);
