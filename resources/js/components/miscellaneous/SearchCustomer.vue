@@ -139,7 +139,7 @@
 </template>
 <script>
    import WaveLoader from '../WaveLoader';
-    import {useRouter} from 'vue-router'
+    import {useRouter, useRoute} from 'vue-router'
     import {ref,computed,watch, nextTick } from 'vue';
     import Tag from  '../miscellaneous/Tag'
        import {
@@ -158,6 +158,7 @@
         ORDERLIST_FILTER,
         CUSTOMER_MODULE,
         SET_CUSTOMER_FILTER,
+        FILTER_CUSTOMER_LIST
     } from "../../store/types/types";
     import {formatDate} from "../helpers/helpers";
     import {useStore} from 'vuex';
@@ -167,6 +168,7 @@ export default({
      components:{Tag,WaveLoader},
        setup(){
            const router = useRouter();
+           const route = useRoute();
            const store =useStore();
            const showSearch=ref(false);
            const timeout =ref('');
@@ -174,6 +176,7 @@ export default({
            const show_loader= ref(false);
            const showbutton = ref(false);
            const preselection=ref({});
+           const search_value =ref('');
            const filterDef = ref({});
             
 
@@ -223,13 +226,14 @@ export default({
                      store.dispatch(`${CUSTOMERLIST_MODULE}${CUSTOMER_LOAD_LIST}`,{query:e.target.value}).then((response)=>{
                             if(e.target.value){
                               showSearch.value = true;
-                            //   filterDef.value={
-                            //             'Customername':{
-                            //                 name:"Customer name",
-                            //                 value: e.target.value
-                            //             },
-                            // };
-                            // preselection.value = filterDef.value
+                              filterDef.value={
+                                        'Customername':{
+                                            name:"Customer name",
+                                            value: e.target.value
+                                        },
+                            };
+                            preselection.value = filterDef.value
+                            search_value.value = e.target.value
                             } else {
                               showSearch.value = false;
                               show_loader.value= false;
@@ -268,27 +272,47 @@ export default({
             }
 
           function displayAll(tab){
-               
-               featureunavailable('Display All');
-            //   if(tab == "search_name"){
+     
+              if(tab == "search_name"){
+ 
+                this.clearSearch()
+                if(route.name == "Customer"){
+                  store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
+                  store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_FILTER}`, _.cloneDeep(preselection.value))
+                  store.dispatch(`${CUSTOMER_MODULE}${FILTER_CUSTOMER_LIST}`).finally(()=>{
+                  store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    });
+                } else {
+                   router.push({
+                    name:'Customer',
+                    params: {
+                           'name':"Customer name",
+                           'value': search_value.value
+                    },
+                })
+                }
 
-            //     // store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
-            //     // store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_FILTER}`, preselection.value);
-            //     // store.dispatch(`${CUSTOMER_MODULE}${FILTER_CUSTOMER_LIST}`).finally(()=>{
-            //     //     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+              } else if (tab == "search_order") {
+              //  this.clearSearch()
+              //  if(route.name == "LandingPage"){
 
-            //     // });
-            
-            //   console.log("this is name list")
+              //      store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
+              //      store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,_.cloneDeep(preselection.value)).finally(()=>{
+              //      store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
 
-            //   } else if (tab == "search_order") {
+              //   });   
+              //  } else {
+    
+              //       router.push({
+              //       name:'LandingPage',
+              //       params: {
+              //              'name':"Customer name",
+              //              'value': search_value.value
+              //       },
+              //   })
 
-            //         store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
-            //         store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER_SEARCH}`,_.cloneDeep(preselection.value)).finally(()=>{
-            //         store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-
-            //     });
-            //  }
+              //  }
+             }
                 
           }
             
@@ -407,13 +431,13 @@ export default({
     .display-all{
       font-family: Gilroy;
         font-style: normal;
-        font-weight: 600;
+        font-weight: normal;
         font-size: 18px;
         line-height: 100%;
         display: flex;
         align-items: center;
         text-decoration-line: underline;
-        color: red;
+        color: #000000;
         cursor: pointer;
 
     }

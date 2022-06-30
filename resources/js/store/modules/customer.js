@@ -44,6 +44,7 @@ export const Customer = {
             total_spent: '',
             last_order_start: '',
             last_order_end: '',
+            Customername :'',
         }
     },
     mutations:{
@@ -56,7 +57,7 @@ export const Customer = {
         [SET_CUSTOMER_LIST]: (state, payload)=>{
             state.total_customer_count = payload.total_count;
             state.customer_list = payload.customers;
-            state.filter.skip = state.customer_list.length;
+            state.filter.skip = state.customer_list.length;    
         },
         [SET_CURRENT_SELECTED_CUSTOMER]: (state, payload)=>{
             state.current_selected = payload;
@@ -65,12 +66,16 @@ export const Customer = {
             state.filter.selected_nav = payload;
         },
         [SET_CUSTOMER_FILTER]: (state, payload)=>{
-            state.filter.customer_type = payload.customer_type.value;
-            state.filter.customer_location = payload.customer_location.value;
-            state.filter.invoice_preference = payload.invoice_preference.value;
-            state.filter.total_spent = payload.total_spent.value;
-            state.filter.last_order_start = payload.last_order.value.start;
-            state.filter.last_order_end = payload.last_order.value.end;
+            if(payload.Customername){
+                state.filter.Customername = payload.Customername.value;
+            }else {
+                state.filter.customer_type = payload.customer_type.value;
+                state.filter.customer_location = payload.customer_location.value;
+                state.filter.invoice_preference = payload.invoice_preference.value;
+                state.filter.total_spent = payload.total_spent.value;
+                state.filter.last_order_start = payload.last_order.value.start;
+                state.filter.last_order_end = payload.last_order.value.end;
+            } 
         },
         [SET_CUSTOMER_DETAIL]:(state, payload)=>{
             state.customer_detail = payload;
@@ -91,6 +96,8 @@ export const Customer = {
             });
         },
         [SET_CUSTOMER_LIST]: async ({ commit, dispatch, state })=>{
+            state.filter.Customername = '';
+            state.filter.skip = 0 ;
             dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading customer data...'], {root: true});
             await axios.post('/get-all-customers', state.filter).then(function (response) {
                 commit(SET_CUSTOMER_LIST, response.data);

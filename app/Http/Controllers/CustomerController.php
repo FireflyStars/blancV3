@@ -585,10 +585,36 @@ class CustomerController extends Controller
      * @return all_customers
      */
     public function getAllCustomers(Request $request){
-        $customers = DB::table('infoCustomer')
+
+        if($request->Customername !=''){
+
+            $customers = DB::table('infoCustomer')
+            ->Leftjoin( 'address', function ($join){
+                $join->on( 'address.CustomerID', '=', 'infoCustomer.CustomerID');                
+            })
+            ->Leftjoin( 'infoOrder', function ($join){
+                $join->on( 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID');  
+            })
+            ->select('infoCustomer.id',
+              DB::raw(' IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as type'),
+              DB::raw('LCASE(infoCustomer.TypeDelivery) as active_in'),
+              DB::raw('LCASE(infoCustomer.Name) as name'),
+              DB::raw('IF(infoCustomer.Phone = "", "--", infoCustomer.Phone) as phone'),
+              DB::raw('LCASE(infoCustomer.EmailAddress) as email'),
+              DB::raw('CONCAT_WS(", ", CONCAT_WS(" ", address.address1, address.address2), address.Town, address.Country, address.postcode) as address'),
+              DB::raw('IF(DATE_FORMAT(MAX(infoOrder.created_at), "%d/%m/%y") = "", "--", DATE_FORMAT(MAX(infoOrder.created_at), "%d/%m/%y")) as last_order'),
+              DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
+            
+             )
+            ->where('infoCustomer.FirstName', 'LIKE', $request->Customername . '%')
+            ->orWhere('infoCustomer.LastName','LIKE', $request->Customername . '%')
+            ->groupBy('infoCustomer.CustomerID');
+    
+        }else {
+                  $customers = DB::table('infoCustomer')
                         ->join( 'address', function ($join){
                             $join->on( 'address.CustomerID', '=', 'infoCustomer.CustomerID')
-                                 ->where('address.status', "DELIVERY");
+                            ->where('address.status', "DELIVERY");
                         })
                         ->Leftjoin( 'infoOrder', function ($join){
                             $join->on( 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID');
@@ -608,7 +634,8 @@ class CustomerController extends Controller
                             // 'infoCustomer.TotalSpend as total_spent',
                         )
                         ->groupBy('infoCustomer.CustomerID')
-                        ->orderBy('infoCustomer.id');
+                        ->orderBy('infoCustomer.id');      
+        }
         if($request->selected_nav == 'B2B' || $request->customer_type == 'B2B'){
             $customers = $customers->where( function( $query ) {
                 $query->where('infoCustomer.CustomerIDMaster', '!=', '')

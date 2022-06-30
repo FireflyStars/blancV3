@@ -65,7 +65,10 @@ import {
     LOAD_MORE_CUSTOMER,
     SET_CURRENT_SELECTED_CUSTOMER,
     SET_CUSTOMER_DETAIL,
-    SET_CUSTOMER_LIST
+    SET_CUSTOMER_LIST,
+    SET_CUSTOMER_FILTER,
+    FILTER_CUSTOMER_LIST
+
 } from "../../store/types/types";
 import { useStore } from 'vuex';
 import CheckBox from '../miscellaneous/CheckBox';
@@ -78,6 +81,14 @@ export default {
         const store = useStore();
         const route = useRoute();
         const router = useRouter();
+        const filterDef = ref({});
+
+        filterDef.value={
+            'Customername':{
+                name:route.params.name,
+                value:route.params.value
+            },
+        };
         const tableColumnsDef = [
                 {
                     label: '',
@@ -151,10 +162,16 @@ export default {
             store.dispatch(`${CUSTOMER_MODULE}${LOAD_MORE_CUSTOMER}`);
         }
         onMounted(()=>{
-            store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_LIST}`);
+            if(route.params != null){
+              store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_FILTER}`, _.cloneDeep(filterDef.value))
+              store.dispatch(`${CUSTOMER_MODULE}${FILTER_CUSTOMER_LIST}`)
+            } else {
+             store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_LIST}`);
+            }
+            
         })
         const formatPhone = (phoneString)=>{
-            if(phoneString !="--"){
+            if(phoneString !== "" &&  phoneString !="--" && phoneString !== null){
                 var phone = phoneString.split('"')[1];
                 var area_code = phone.split("|")[0];
                 var number = phone.split("|")[1];
