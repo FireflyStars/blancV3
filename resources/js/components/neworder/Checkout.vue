@@ -183,17 +183,19 @@
                                 <!-- Summary -->
                                 <div class="row justify-content-end mt-3 mx-0">
                                     <div class="col-8 py-3" id="summary_div">
-                                        <span class="summary-title">Order Total</span><span id="summary_item_count">{{order_items.length}} item<span v-if="order_items.length > 1">s</span></span>
+                                        <span class="summary-title">Order Total</span><span id="summary_item_count" v-if="created_date !=''">Placed on {{created_date}}</span>
                                         <div class="row px-0 mt-4 sub-total-text">
-                                            <div class="col-9">Subtotal (incl. VAT)</div>
+                                            <div class="col-4">Subtotal</div>
+                                            <div class="col-5 sub-total-desc">{{order_items.length}} item<span v-if="order_items.length > 1">s</span> (Incl. VAT)</div>
                                             <div class="col-3 text-align-right">&#163;{{sub_total}}</div>
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text">
-                                            <div class="col-9">Discount applied</div>
-                                            <div class="col-3 text-align-right">&#163;{{discount}}</div>
+                                            <div class="col-4">Discount</div>
+                                            <div class="col-5 sub-total-desc"> <span v-if="discount > 0">{{discount_perc.toFixed()}}% (applied)</span></div>
+                                            <div class="col-3 text-align-right"><span v-if="discount > 0">-</span>&#163;{{discount}}</div>
                                         </div>
                                         <div class="row px-0 mt-3 pb-4 total-text">
-                                            <div class="col-9">Total (incl. VAT)</div>
+                                            <div class="col-9">Total</div>
                                             <div class="col-3 text-align-right">&#163;{{total_with_discount}}</div>
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text">
@@ -201,7 +203,7 @@
                                             <div class="col-3 text-align-right">&#163;{{total_exc_vat}}</div>
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text">
-                                            <div class="col-9">VAT</div>
+                                            <div class="col-9">Tax (20% VAT included in item prices)</div>
                                             <div class="col-3 text-align-right">&#163;{{vat}}</div>
                                         </div>
                                     </div>
@@ -216,12 +218,29 @@
                                             <span class="summary-title" v-else>Pending payments</span>
                                         </div>
                                         <div class="row mt-4 px-0 py-1 sub-total-text">
-                                            <div class="col-9">Paid by customer</div>
-                                            <div class="col-3 text-align-right">&#163;{{amount_paid_card.toFixed(2)}}</div>
+                                            <div class="col-4">Paid by customer</div>
+                                            <div class="col-8" v-if="amount_paid_card.length > 0">
+                                                <div class="row" v-for="a in amount_paid_card">
+                                                    <div class="col-9 px-0 payment-desc-text">Paid: {{a.date}}</div>
+                                                    <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-8 text-align-right" v-else>&#163;0.00</div>
                                         </div>
-                                        <div class="row px-0 py-1 sub-total-text">
+
+                                        <div class="row px-0 py-1 sub-total-text" v-if="order.Paid==1">
+                                            <div class="col-4">Minus cash credit</div>
+                                            <div class="col-8" v-if="amount_paid_credit.length > 0">
+                                                <div class="row" v-for="a in amount_paid_credit">
+                                                    <div class="col-9 px-0 payment-desc-text">Used: {{a.date}}</div>
+                                                    <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-8 text-align-right" v-else>&#163;0.00</div>
+                                        </div>
+                                        <div class="row px-0 py-1 sub-total-text" v-else>
                                             <div class="col-9">Minus cash credit</div>
-                                            <div class="col-3 text-align-right">&#163;<span v-if="order.Paid==1">{{amount_paid_credit.toFixed(2)}}</span><span v-else>{{cust_credit.toFixed(2)}}</span></div>
+                                            <div class="col-3 text-align-right">&#163;{{cust_credit.toFixed(2)}}</div>
                                         </div>
 
                                          <div class="row px-0 mt-4 py-2 balance-text">
@@ -479,7 +498,20 @@
                                                     <div class="accordion-body d-table w-100 px-0 py-0">
                                                         <div class="accordion-content p-4 mt-3">
                                                             <div class="row">
-                                                                <span class="sidebar_title text-white mb-3">Payment details <a href="javascript:void(0)" v-if="custcard" id="editcard" @click="setEditCard" :class="{'canceleditcard':editcard}"><span v-if="!editcard">Edit</span><span v-else>Cancel</span></a></span>
+                                                                <div class="col-12 payment_title mb-4">
+                                                                    <span class="sidebar_title text-white mb-3">Account credit details</span>
+                                                                    <div class="row cust_credit_detail">
+                                                                        <div class="col-7 cust_credit_desc">Account credit available</div>
+                                                                        <div class="col-5 cust_credit_value text-white">&#163;{{cust_credit.toFixed(2)}}</div>
+                                                                    </div>
+                                                                    <div class="row cust_credit_detail">
+                                                                        <div class="col-7 cust_credit_desc">Customer payment status</div>
+                                                                        <div class="col-5 cust_credit_value text-white">Pay as you go</div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-12 payment_title">
+                                                                    <span class="sidebar_title text-white mb-3">Card details <a href="javascript:void(0)" v-if="custcard" id="editcard" @click="setEditCard" :class="{'canceleditcard':editcard}"><span v-if="!editcard">Edit</span><span v-else>Cancel</span></a></span>
+                                                                </div>
 
                                                                 <payment ref="payment_comp" :custcard="custcard" :order_id="order_id" :cust="cust" :amounttopay="parseFloat(amount_to_pay)" @reload-checkout="closeEditCardAndReload" @complete-checkout="completeCheckout"></payment>
                                                             </div>
@@ -610,6 +642,8 @@ export default {
         const awaiting_payment_modal = ref();
         const amount_paid_card = ref(0);
         const amount_paid_credit = ref(0);
+        const discount_perc = ref(0);
+        const created_date = ref("");
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
@@ -652,6 +686,8 @@ export default {
                 amount_paid.value = res.data.amount_paid;
                 amount_paid_card.value = res.data.amount_paid_card;
                 amount_paid_credit.value = res.data.amount_paid_credit;
+                discount_perc.value = res.data.discount_perc;
+                created_date.value = res.data.created_date;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -897,6 +933,8 @@ export default {
             closeAwaitingPaymentModal,
             amount_paid_card,
             amount_paid_credit,
+            discount_perc,
+            created_date,
         }
 
     },
@@ -1213,7 +1251,7 @@ export default {
 }
 
 #summary_item_count{
-    font: normal 20px "Gotham Rounded";
+    font: normal 16px "Gotham Rounded";
     color:#868686;
 }
 
@@ -1301,6 +1339,24 @@ export default {
 
 .paid_icon{
     margin-right:0.5rem;
+}
+
+.payment_title .sidebar_title{
+    border-bottom:0.5px solid #f8f8f8;
+    display:block;
+}
+
+.cust_credit_desc{
+    color: #afafaf;
+}
+
+.sub-total-desc,
+.payment-desc-text{
+    color:#c4c4c4;
+}
+
+.payment-desc-text{
+    font:normal 15px "Gotham Rounded";
 }
 
 </style>

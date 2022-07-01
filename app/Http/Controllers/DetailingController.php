@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\DetailingServices;
 use App\Models\Tranche;
 use DateTime;
+use PDO;
 use stdClass;
 
 class DetailingController extends Controller
@@ -929,8 +930,9 @@ class DetailingController extends Controller
         $booking_details = [];
         $amount_to_pay = 0;
         $balance = 0;
-        $amount_paid_card = 0;
-        $amount_paid_credit = 0;
+        $amount_paid_card = [];
+        $amount_paid_credit = [];
+        $discount_perc = 0;
 
         if($order){
 
@@ -1386,16 +1388,27 @@ class DetailingController extends Controller
 
         }
 
+        if($order->express==1){
+            $total_price = $total_price * 1.4;
+        }elseif($order->express==6){
+            $total_price = $total_price * 1.2;
+        }
+
         $total_with_discount = $total_price;
 
         if($order->OrderDiscount > 0){
             $total_with_discount = $total_price - $order->OrderDiscount;
+
+            $discount_perc = ($order->OrderDiscount/$total_price) * 100;
         }
 
 
         $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
 
         $balance = $total_with_discount;
+
+
+
 
         $amount_paid = 0;
 
@@ -1404,9 +1417,15 @@ class DetailingController extends Controller
                 $amount_paid += number_format($v->montant,2);
 
                 if($v->type=='cust_credit'){
-                    $amount_paid_credit += number_format($v->montant,2);
+                    $amount_paid_credit[] = [
+                        'montant'=> number_format($v->montant,2),
+                        'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('h:i A',strtotime($v->created_at)),
+                    ];
                 }else{
-                    $amount_paid_card += number_format($v->montant,2);
+                    $amount_paid_card[] = [
+                        'montant'=> number_format($v->montant,2),
+                        'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('h:i A',strtotime($v->created_at)),
+                    ];
                 }
             }
 
@@ -1434,8 +1453,13 @@ class DetailingController extends Controller
 
         $order->balance = $balance;
 
+        $created_date = "";
 
+        $has_new_inv = DB::table('NewInvoice')->where('order_id',$order_id)->latest('id')->first();
 
+        if($has_new_inv){
+            $created_date = $has_new_inv->created_at;
+        }
 
 
         //Mise a jour montant commande
@@ -1444,7 +1468,7 @@ class DetailingController extends Controller
             'Total'=>$total_with_discount,
         ]);
 
-        $vat = number_format(0.15*$total_with_discount,2);
+        $vat = number_format(0.20*$total_with_discount,2);
         $total_exc_vat = number_format($total_with_discount-$vat,2);
 
         $stripe_security_key = 'STRIPE_LIVE_SECURITY_KEY';
@@ -1480,6 +1504,8 @@ class DetailingController extends Controller
             'amount_paid'=>$amount_paid,
             'amount_paid_card'=>$amount_paid_card,
             'amount_paid_credit'=>$amount_paid_credit,
+            'discount_perc'=>$discount_perc,
+            'created_date'=>$created_date,
         ]);
     }
 
