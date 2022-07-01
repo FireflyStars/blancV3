@@ -238,7 +238,7 @@ class OrderListController extends Controller
             $billing_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=','BILLING')->first();
             $delivery_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=',$order->TypeDelivery)->first();
 
-            $infoitems=DB::table('infoitems')->select(['infoInvoice.NumInvoice','infoInvoice.InvoiceID' , 'infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status','TypePost.Name as station',])->join('infoInvoice',function($join) use($order){
+            $infoitems=DB::table('infoitems')->select(['infoInvoice.NumInvoice','infoInvoice.InvoiceID' , 'infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status','postes.nominterface as station',])->join('infoInvoice',function($join) use($order){
                $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
                ->where('infoInvoice.OrderID','=',$order->OrderID);
             })->leftJoin('postes','postes.id','=','infoitems.nextpost')
