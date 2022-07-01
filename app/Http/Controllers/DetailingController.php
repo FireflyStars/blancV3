@@ -929,6 +929,8 @@ class DetailingController extends Controller
         $booking_details = [];
         $amount_to_pay = 0;
         $balance = 0;
+        $amount_paid_card = 0;
+        $amount_paid_credit = 0;
 
         if($order){
 
@@ -1396,9 +1398,16 @@ class DetailingController extends Controller
         $balance = $total_with_discount;
 
         $amount_paid = 0;
+
         if(count($payments) > 0){
             foreach($payments as $k=>$v){
                 $amount_paid += number_format($v->montant,2);
+
+                if($v->type=='cust_credit'){
+                    $amount_paid_credit += number_format($v->montant,2);
+                }else{
+                    $amount_paid_card += number_format($v->montant,2);
+                }
             }
 
             $balance = $total_with_discount - $amount_paid;
@@ -1469,6 +1478,8 @@ class DetailingController extends Controller
             'cur_user'=>Auth::user(),
             'amount_to_pay'=>number_format($amount_to_pay,2),
             'amount_paid'=>$amount_paid,
+            'amount_paid_card'=>$amount_paid_card,
+            'amount_paid_credit'=>$amount_paid_credit,
         ]);
     }
 

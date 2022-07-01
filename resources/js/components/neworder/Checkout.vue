@@ -217,11 +217,11 @@
                                         </div>
                                         <div class="row mt-4 px-0 py-1 sub-total-text">
                                             <div class="col-9">Paid by customer</div>
-                                            <div class="col-3 text-align-right">&#163;{{amount_paid.toFixed(2)}}</div>
+                                            <div class="col-3 text-align-right">&#163;{{amount_paid_card.toFixed(2)}}</div>
                                         </div>
                                         <div class="row px-0 py-1 sub-total-text">
                                             <div class="col-9">Minus cash credit</div>
-                                            <div class="col-3 text-align-right">&#163;{{cust_credit.toFixed(2)}}</div>
+                                            <div class="col-3 text-align-right">&#163;<span v-if="order.Paid==1">{{amount_paid_credit.toFixed(2)}}</span><span v-else>{{cust_credit.toFixed(2)}}</span></div>
                                         </div>
 
                                          <div class="row px-0 mt-4 py-2 balance-text">
@@ -608,6 +608,8 @@ export default {
         const amount_to_pay = ref(0);
         const amount_paid = ref(0);
         const awaiting_payment_modal = ref();
+        const amount_paid_card = ref(0);
+        const amount_paid_credit = ref(0);
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
@@ -648,6 +650,8 @@ export default {
 
                 amount_to_pay.value = res.data.amount_to_pay;
                 amount_paid.value = res.data.amount_paid;
+                amount_paid_card.value = res.data.amount_paid_card;
+                amount_paid_credit.value = res.data.amount_paid_credit;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -794,14 +798,14 @@ export default {
                     });
             }else{
                 let err = false;
-                if(cust.value.bycard==1 && !custcard.value){
+                if(amount_to_pay.value > 0 && cust.value.bycard==1 && !custcard.value){
                     err = true;
                     no_payment_modal.value.showModal();
                 }
 
                 if(!err){
 
-                    if(cust.value.bycard==1 && typeof(custcard.value.id)!='undefined' && amount_to_pay.value > 0){
+                    if(custcard.value && cust.value.bycard==1 && typeof(custcard.value.id)!='undefined' && amount_to_pay.value > 0){
                         console.log('by card',amount_to_pay.value);
                         payment_comp.value.effectPayment('Pay')
                     }
@@ -891,6 +895,8 @@ export default {
             awaiting_payment_modal,
             closePaymentAndShowLoading,
             closeAwaitingPaymentModal,
+            amount_paid_card,
+            amount_paid_credit,
         }
 
     },
