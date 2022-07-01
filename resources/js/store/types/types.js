@@ -128,6 +128,7 @@ export const GET_ALL_SELECTED_CUSTOMER = 'GET_ALL_SELECTED_CUSTOMER'; //getter
 export const SET_CUSTOMER_DETAIL = 'SET_CUSTOMER_DETAIL'; //getter
 export const SET_CUSTOMER_SELECTED_TAB = 'SET_CUSTOMER_SELECTED_TAB'; //action
 export const SET_CUSTOMER_FILTER = 'SET_CUSTOMER_FILTER'; //action
+export const REMOVE_CUSTOMER_FILTER = 'REMOVE_CUSTOMER_FILTER'; //action
 export const FILTER_CUSTOMER_LIST = 'FILTER_CUSTOMER_LIST'; //action
 export const LOAD_CUSTOMER_DETAIL = 'LOAD_CUSTOMER_DETAIL'; //action
 // end all customer page

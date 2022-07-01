@@ -2,7 +2,11 @@
     <button class="btn btn-outline-dark position-absolute filter body_small_bold" :class="{active:showfilter,hasfilters:hasActiveFilters}" @click="toggleShow">Filters <span></span></button>
     <transition name="trans-filter" >
     <div class="filters position-absolute" v-if="showfilter">
-        <h2 class="subtitle">Filter by</h2>
+     <div  class="subtitle">
+      <h2 class ="col-8">Filter by</h2>
+      <span @click="removefilter()">Remove filters</span>
+     </div>
+        
         <div class="row" v-for="(select, ind) in filterDef.def" :key="ind">
             <div class="col" v-if="select.type == 'select'">
                 <div class="select" :class="{active: current_filter==ind}" @click="selectclick(ind)">{{select.name}}
@@ -134,6 +138,9 @@
                 toggleShow();
 
             }
+            function removefilter(){
+              preselection.value = {}
+            }
             return {
                 showfilter,
                 current_filter,
@@ -146,6 +153,7 @@
                 hasActiveFilters,
                 prodDate,
                 delivDate,
+                removefilter
             }
         }
     }
@@ -239,6 +247,15 @@
     }
     .filters h2{
         margin:30px 0 20px 0;
+    }
+    .filters span{
+        margin:30px 0 20px 0;
+        font-size: 16px;
+        font-weight: normal;
+        font-family: 'Gotham Rounded Light';
+    }
+    .subtitle{
+        display: flex;
     }
 
     .trans-filter-enter-from{

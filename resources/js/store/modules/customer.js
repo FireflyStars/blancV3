@@ -15,6 +15,7 @@ import {
     SET_CURRENT_SELECTED_CUSTOMER,
     SET_CUSTOMER_SELECTED_TAB,
     SET_CUSTOMER_FILTER,
+    REMOVE_CUSTOMER_FILTER,
     FILTER_CUSTOMER_LIST,
     SET_CUSTOMER_DETAIL,
     LOAD_CUSTOMER_DETAIL,
@@ -77,6 +78,15 @@ export const Customer = {
                 state.filter.last_order_end = payload.last_order.value.end;
             } 
         },
+        [REMOVE_CUSTOMER_FILTER]: (state, payload)=>{    
+
+                state.filter.customer_type = '';
+                state.filter.customer_location = '';
+                state.filter.invoice_preference = '';
+                state.filter.total_spent = '';
+                state.filter.last_order_start = '';
+                state.filter.last_order_end = '';    
+        },
         [SET_CUSTOMER_DETAIL]:(state, payload)=>{
             state.customer_detail = payload;
         },
@@ -117,6 +127,9 @@ export const Customer = {
         },
         [SET_CUSTOMER_FILTER]: ( { commit } , payload)=>{
             commit(SET_CUSTOMER_FILTER, payload);
+        },
+        [REMOVE_CUSTOMER_FILTER]: ( { commit } , payload)=>{
+            commit(REMOVE_CUSTOMER_FILTER, payload);
         },
         [FILTER_CUSTOMER_LIST]: async ( { commit, dispatch, state })=>{
             dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Filtering customer data...'], {root: true});

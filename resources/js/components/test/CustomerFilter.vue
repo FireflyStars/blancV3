@@ -2,7 +2,10 @@
     <button class="btn btn-outline-dark filter position-relative body_small_bold" :class="{active:showfilter}" @click="toggleShow">Filters <span></span></button>
     <transition name="trans-filter" >
         <div class="filters position-absolute" v-if="showfilter">
-            <h2 class="subtitle">Filter by</h2>
+            <div  class="subtitle">
+                <h2 class ="col-8">Filter by</h2>
+                <span @click="removefilter()">Remove filters</span>
+            </div>
             <div class="row">
                 <div class="mb-2 col-12" v-for="(filterItem, key) in filterDef" :key="key">
                     <div class="form-group" v-if="filterItem.type == 'select'">
@@ -35,6 +38,7 @@
         CUSTOMER_MODULE, 
         SET_CUSTOMER_FILTER,
         FILTER_CUSTOMER_LIST,
+        REMOVE_CUSTOMER_FILTER
     } from '../../store/types/types';
     import { useStore } from 'vuex';
     import SelectOptions from '../test/SelectOptions';
@@ -65,13 +69,22 @@
             const toggleShow = ()=>{
                 showfilter.value =! showfilter.value;
             }
+            function removefilter(){
+
+                store.dispatch(`${CUSTOMER_MODULE}${REMOVE_CUSTOMER_FILTER}`);
+                store.dispatch(`${CUSTOMER_MODULE}${FILTER_CUSTOMER_LIST}`);
+                toggleShow();
+            }
             return {
                 showfilter,
                 startDisabledtodate,
                 endDisabledtodate,
                 applyFilter,
                 cancel,
-                toggleShow
+                toggleShow,
+                removefilter
+                
+                
             }
         },
         methods:{
@@ -164,6 +177,15 @@
     }
     .filters h2{
         margin:30px 0 20px 0;
+    }
+    .filters span{
+        margin:30px 0 20px 0;
+        font-size: 16px;
+        font-weight: normal;
+        font-family: 'Gotham Rounded Light';
+    }
+    .subtitle{
+        display: flex;
     }
 
     .trans-filter-enter-from{
