@@ -44,7 +44,12 @@
         ORDERLIST_GET_LIST,
         ORDERLIST_LOADERMSG,
         ORDERLIST_RESET_ORDERLIST, ORDERLIST_SET_LIMIT, ORDERLIST_LOAD_TAB,
-        ORDERLIST_CUSTOMER_ORDERS
+        ORDERLIST_CUSTOMER_ORDERS,
+        LOADER_MODULE,
+        HIDE_LOADER,
+        ORDERLIST_FILTER,
+        DISPLAY_LOADER
+
     } from '../../store/types/types';
     import {useRoute} from 'vue-router';
 
@@ -56,6 +61,7 @@
             const showcontainer=ref(false);
             const store=useStore();
             const route=useRoute();
+            const filterDef = ref({});
 
          
             const tabs=ref({});
@@ -276,6 +282,18 @@
                     showcontainer.value=true;
 
                      let data = route.params.customerId;
+                     if(route.params.name == "Customer name"){
+                        filterDef.value={
+                                        'Customername':{
+                                            name:"Customer name",
+                                            value: route.params.value
+                                        },
+                        };
+                       store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
+                       store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,_.cloneDeep(filterDef.value)).finally(()=>{
+                       store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                     });
+                    }
 
                     if( data != null){
 
@@ -290,7 +308,7 @@
 
 
             watch(route, (to) => {
-             
+
                 if( route.params.customerId != null){
 
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`, {customer:route.params.customerId} );

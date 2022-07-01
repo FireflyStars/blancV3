@@ -293,25 +293,25 @@ export default({
                 }
 
               } else if (tab == "search_order") {
-              //  this.clearSearch()
-              //  if(route.name == "LandingPage"){
+               this.clearSearch()
+               if(route.name == "LandingPage"){
 
-              //      store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
-              //      store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,_.cloneDeep(preselection.value)).finally(()=>{
-              //      store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                   store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
+                   store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,_.cloneDeep(preselection.value)).finally(()=>{
+                   store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
 
-              //   });   
-              //  } else {
+                });   
+               } else {
     
-              //       router.push({
-              //       name:'LandingPage',
-              //       params: {
-              //              'name':"Customer name",
-              //              'value': search_value.value
-              //       },
-              //   })
+                    router.push({
+                    name:'LandingPage',
+                    params: {
+                           'name':"Customer name",
+                           'value': search_value.value
+                    },
+                })
 
-              //  }
+               }
              }
                 
           }

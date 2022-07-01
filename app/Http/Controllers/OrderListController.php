@@ -100,6 +100,9 @@ class OrderListController extends Controller
 
         if(!empty($filters))
             foreach($filters as $colname => $values){
+                if($colname =='Customername'){ 
+                  $orderlist=$orderlist->where('Name','LIKE','%'.$values['value'].'%' );
+                } else 
                 if($colname =='infoitems.express'){
                         $express=[];
                         if(in_array('standard',$values)){
