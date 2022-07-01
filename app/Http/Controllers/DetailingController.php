@@ -1419,12 +1419,12 @@ class DetailingController extends Controller
                 if($v->type=='cust_credit'){
                     $amount_paid_credit[] = [
                         'montant'=> number_format($v->montant,2),
-                        'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('h:i A',strtotime($v->created_at)),
+                        'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
                     ];
                 }else{
                     $amount_paid_card[] = [
                         'montant'=> number_format($v->montant,2),
-                        'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('h:i A',strtotime($v->created_at)),
+                        'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
                     ];
                 }
             }
@@ -1458,7 +1458,7 @@ class DetailingController extends Controller
         $has_new_inv = DB::table('NewInvoice')->where('order_id',$order_id)->latest('id')->first();
 
         if($has_new_inv){
-            $created_date = $has_new_inv->created_at;
+            $created_date = date('F d, Y',strtotime($has_new_inv->created_at))." at ".date('g:i A',strtotime($has_new_inv->created_at));
         }
 
 
