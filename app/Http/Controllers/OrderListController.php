@@ -306,9 +306,9 @@ class OrderListController extends Controller
     }
 
      public function setInvoiceFulfilled(Request $request){
-        $invoice_id = $request->post('suborderid');
 
-        $endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v1.php";
+        $invoice_id = $request->post('suborderid');
+        $endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v2.php";
         $client = new \GuzzleHttp\Client();
         $content = "";
 

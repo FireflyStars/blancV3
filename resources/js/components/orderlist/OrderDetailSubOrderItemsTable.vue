@@ -14,6 +14,8 @@
                                 <img class="img-arrow" @click="OpenSubOrderOptions(suborder)"  src="/images/menu.png"   :class="{ active: show === suborder }"/>   
                             </div>
                     </div>
+                   
+                  
                     <SubOrderOptions  v-if="show === suborder && open_options" :suborder=suborder :items="ITEMS" :item_selected="Object.entries(MULTI_CHECKED)" :invoice_id="ITEMS[0].InvoiceID" ></SubOrderOptions>
                     <qz-print ref="qz_printer"></qz-print>
                         <header v-if="Object.entries(ITEM_LIST).length !== 0">
@@ -41,6 +43,7 @@
         <transition name="trans-batch-actions">
             <div class=" batch-actions" v-if="Object.entries(MULTI_CHECKED).length !== 0"><button class="btn btn-outline-dark body_medium"  @click="show_split_conf">Split</button><button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Delete items')">Delete</button></div>
         </transition>
+         <FulfillConfirmation  :invoice_id= "invoiceId" :show_conf="show_model_Fulfil" @close="show_model_Fulfil=false"></FulfillConfirmation>
     </div>
 </template>
 
@@ -69,12 +72,13 @@
     import CheckBox from '../miscellaneous/CheckBox'
     import ColorTag from "../miscellaneous/ColorTag";
     import SubOrderOptions from "../miscellaneous/SubOrderOptions";
+    import FulfillConfirmation from "../miscellaneous/FulfillConfirmation";
     import QzPrint from "../QzPrint";
 
     export default {
         name: "OrderDetailSubOrderItemsTable",
         props:['tabledef',"tab","id" , "status"],
-        components:{ColorTag, Tag,CheckBox, SubOrderOptions, QzPrint},
+        components:{ColorTag, Tag,CheckBox, SubOrderOptions, QzPrint , FulfillConfirmation},
         setup(props,context){
             const router = useRouter();
             const store=useStore();
@@ -82,7 +86,9 @@
             const orderId = ref(0);
             const open_options = ref(false);
             const show = ref('');
+            const show_model_Fulfil = ref(false);
             const qz_printer = ref(null);
+            const invoiceId = ref('');
             const ITEM_LIST=computed(()=>{
                 return store.getters[`${ORDERDETAIL_MODULE}${ORDERDETAIL_GET_DETAILS}`].items;
             });
@@ -163,18 +169,8 @@
             }
         
             function setSubOrderFulfilled(suborderid){
-
-               axios.post('/setInvoiceFulfilled',{
-                   suborderid: suborderid,
-                   nextpost:28
-               }).then((res)=>{
-                   console.log("ressssponse" , res)
-                  store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
-
-               }).catch((error)=>{
-                 console.log("error" , error)
-                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
-               })
+                  show_model_Fulfil.value = true
+                  invoiceId.value = suborderid
             }
 
             function OpenSubOrderOptions(idx){
@@ -209,7 +205,10 @@
                 OpenSubOrderOptions,
                 open_options,
                 qz_printer,
-                show
+                show,
+                show_model_Fulfil,
+                invoiceId
+
 
 
             }
