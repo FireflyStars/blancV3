@@ -29,10 +29,12 @@
                             :class="{ selected: typeitem_id === item.id && category_id === cat.id }"
                         >
                             <img
-                                v-if="item.draw1 == null"
+
                                 class="item-no-picto"
                                 src="/images/nopicto.svg"
                             />
+                            <!--
+                                 v-if="item.draw1 == null"
                             <item-picto
                                 v-else
                                 class="item-picto"
@@ -40,6 +42,7 @@
                                 :pictoname="item.draw1"
                                 face="front"
                             ></item-picto>
+                            -->
                             {{ item.name }}
                         </div>
                     </div>

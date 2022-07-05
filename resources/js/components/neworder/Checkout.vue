@@ -534,7 +534,8 @@
                                         <a href="javascript:void(0)" @click="redirectToDetailingList">Previous</a>
                                     </div>
                                     <div class="col-6 px-4">
-                                        <button id="completeBtn" class="w-100 py-3" @click="validatePayment" :disabled="editcard">Proceed</button>
+                                        <button id="closeBtn" class="w-100 py-3" v-if="order.Paid==1 && amount_to_pay==0">Close</button>
+                                        <button v-else id="completeBtn" class="w-100 py-3" @click="validatePayment" :disabled="editcard">Proceed</button>
                                     </div>
                                 </div>
                             </div>
@@ -1295,6 +1296,17 @@ export default {
 
 #completeBtn:hover{
     background: #333;
+}
+
+#closeBtn{
+    background:#fff;
+    border:thin solid #000;
+    border-radius:4px;
+}
+
+#closeBtn:hover{
+    background:#000;
+    color:#fff;
 }
 
 .bmodal-header{

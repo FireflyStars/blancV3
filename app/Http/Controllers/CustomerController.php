@@ -590,10 +590,10 @@ class CustomerController extends Controller
 
             $customers = DB::table('infoCustomer')
             ->Leftjoin( 'address', function ($join){
-                $join->on( 'address.CustomerID', '=', 'infoCustomer.CustomerID');                
+                $join->on( 'address.CustomerID', '=', 'infoCustomer.CustomerID');
             })
             ->Leftjoin( 'infoOrder', function ($join){
-                $join->on( 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID');  
+                $join->on( 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID');
             })
             ->select('infoCustomer.id',
               DB::raw(' IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as type'),
@@ -604,12 +604,12 @@ class CustomerController extends Controller
               DB::raw('CONCAT_WS(", ", CONCAT_WS(" ", address.address1, address.address2), address.Town, address.Country, address.postcode) as address'),
               DB::raw('IF(DATE_FORMAT(MAX(infoOrder.created_at), "%d/%m/%y") = "", "--", DATE_FORMAT(MAX(infoOrder.created_at), "%d/%m/%y")) as last_order'),
               DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
-            
+
              )
             ->where('infoCustomer.FirstName', 'LIKE', $request->Customername . '%')
             ->orWhere('infoCustomer.LastName','LIKE', $request->Customername . '%')
             ->groupBy('infoCustomer.CustomerID');
-    
+
         }else {
                   $customers = DB::table('infoCustomer')
                         ->join( 'address', function ($join){
@@ -634,7 +634,7 @@ class CustomerController extends Controller
                             // 'infoCustomer.TotalSpend as total_spent',
                         )
                         ->groupBy('infoCustomer.CustomerID')
-                        ->orderBy('infoCustomer.id');      
+                        ->orderBy('infoCustomer.id');
         }
         if($request->selected_nav == 'B2B' || $request->customer_type == 'B2B'){
             $customers = $customers->where( function( $query ) {
@@ -1018,6 +1018,11 @@ class CustomerController extends Controller
                                         DB::raw('IF(SignupDateOnline = "2000-01-01", DATE_FORMAT(SignupDate, "%d/%m/%Y"), DATE_FORMAT(SignupDateOnline, "%d/%m/%Y")) as date'),
                                         'TotalSpend as spent', 'id'
                                     )->get();
+        $user = Auth::user();
+        $customer->current_user = null;
+        if($user){
+            $customer->current_user = $user;
+        }
         return response()->json($customer);
     }
 

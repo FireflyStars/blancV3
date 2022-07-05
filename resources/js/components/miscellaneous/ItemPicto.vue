@@ -6,7 +6,6 @@
         xmlns:xlink="http://www.w3.org/1999/xlink"
         x="0px"
         y="0px"
-        :width="this.svg_scale + '%'"
         :viewBox="svg_viewpoint"
         :enable-background="'new ' + svg_viewpoint"
         xml:space="preserve"
@@ -85,7 +84,7 @@ export default {
                                     '"id="path_' +
                                     v.id +
                                     '" class="each-svg-el each-path-' +
-                                    v.face.toUpperCase() +
+                                    (v.face?v.face.toUpperCase():'') +
                                     " path_" +
                                     v.description +
                                     '" ' +
@@ -100,7 +99,7 @@ export default {
                                     (v.clickable == 1
                                         ? v.position +
                                         " - " +
-                                        v.face +
+                                        (v.face?v.face:'') +
                                         " - " +
                                         v.side
                                         : "") +
@@ -130,7 +129,7 @@ export default {
                                     '<polygon fill="none" id="path_' +
                                     v.id +
                                     '" class="each-svg-el each-path-' +
-                                    v.face.toUpperCase() +
+                                    (v.face?v.face.toUpperCase():'') +
                                     " path_" +
                                     v.description +
                                     '" points="' +

@@ -1,5 +1,5 @@
 <template>
-    <!--<transition enter-active-class="animate__animated animate__fadeIn">-->
+    <transition enter-active-class="animate__animated animate__fadeIn">
         <div class="container-fluid h-100 bg-color p-0" v-if="showcontainer">
             <div class="d-flex align-content-stretch align-items-stretch flex-row hmax">
                 <side-bar></side-bar>
@@ -393,7 +393,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-4">
+                                            <div class="col-4" v-if="current_user && current_user.role_id==1">
                                                 <div class="form-group col-6">
                                                     <label for="add_credit">Add credit</label>
                                                     <div class="input-group">
@@ -636,7 +636,7 @@
                 </div>
             </div>
         </div>
-    <!--</transition>-->
+    </transition>
 </template>
 
 <script>
@@ -767,6 +767,8 @@
                 { name:'Customer', route:'Customer'},
             ]);
 
+            const current_user = ref(null);
+
 
             onMounted(()=>{
                 nextTick(()=>{
@@ -891,6 +893,8 @@
                     paths.value.push(
                         { name: res.data.firstName +' ' + res.data.lastName , route:'ViewCustomer', params:{ customer_id: res.data.id }}
                     );
+
+                    current_user.value = res.data.current_user;
                 }).catch((error)=>{
                     //console.log(error);
                 }).finally(()=>{
@@ -1118,7 +1122,8 @@
                 add_payement,
                 cardErrors,
                 DeleteCreditCardCustomer,
-                creditCardCustomer
+                creditCardCustomer,
+                current_user,
             }
 
         },
