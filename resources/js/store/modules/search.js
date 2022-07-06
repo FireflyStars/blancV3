@@ -12,7 +12,9 @@ import {
     CUSTOMER_GET_SEARCH_LIST,
     CUSTOMER_SEARCH_SET_LIST,
     CUSTOMER_SEARCH_SET_COUNT,
-    CUSTOMER_GET_SEARCH_COUNT
+    CUSTOMER_GET_SEARCH_COUNT,
+    CUSTOMERITEMS_GET_LIST,
+    CUSTOMERITEMS_SET_LIST
 
 
 } from "../types/types";
@@ -26,6 +28,7 @@ export const search= {
         PerPageOrder:'',
         PerPageUser:'',
         PerPageEmails:'',
+        PerPageItems:'',
         PerPage:'',
         countcustomers:'',
         listcustomers:{
@@ -40,6 +43,9 @@ export const search= {
         listsearchcustomers:{
 
         },
+        listitemscustomers:{
+
+        },
     },
     mutations: {
         [CUSTOMER_SET_LIST]: (state,payload) =>state.listcustomers=payload,
@@ -48,6 +54,7 @@ export const search= {
         [CUSTOMER_SET_LOADER]: (state, payload) => state.loader = payload,
         [CUSTOMER_SEARCH_SET_LIST]: (state,payload) =>state.listsearchcustomers=payload,
         [CUSTOMER_SEARCH_SET_COUNT]: (state,payload) =>state.countcustomers=payload,
+        [CUSTOMERITEMS_SET_LIST]: (state,payload) =>state.listitemscustomers=payload,
     },
     actions: {
         [CUSTOMER_LOAD_LIST]:async ({commit,state},payload )=>{
@@ -63,10 +70,14 @@ export const search= {
             if(payload.showmore == 'search_order'){
                 state.PerPageOrder = parseInt(state.PerPageOrder) + 10;
             }
+            if(payload.showmore == 'search_items'){
+                state.PerPageItems = parseInt(state.PerPageItems) + 10;
+            }
             else if(payload.showmore == undefined) {
                 state.PerPageUser = '3';
                 state.PerPageEmails = '3';
                 state.PerPageOrder = '3';
+                state.PerPageItems = '3';
             }
 
 
@@ -74,6 +85,7 @@ export const search= {
                 query:payload.query ,
                 PerPageOrder:state.PerPageOrder,
                 PerPageUser:state.PerPageUser, 
+                PerPageItems:state.PerPageItems, 
                 PerPageEmails:state.PerPageEmails})
             .then( (response)=>{
 
@@ -81,6 +93,7 @@ export const search= {
                         commit(CUSTOMER_SET_LIST ,response.data.customers.data);
                         commit(CUSTOMEREMAILS_SET_LIST ,response.data.customers_emails.data);
                         commit(CUSTOMERORDERS_SET_LIST ,response.data.customers_orders.data);
+                        commit(CUSTOMERITEMS_SET_LIST ,response.data.items.data);
                 }
                 return Promise.resolve(response);
             })
@@ -130,6 +143,7 @@ export const search= {
         [CUSTOMERORDERS_GET_LIST]:state=>state.listorderscustomers,
         [CUSTOMER_GET_SEARCH_LIST]:state=>state.listsearchcustomers,
         [CUSTOMER_GET_SEARCH_COUNT]:state=>state.countcustomers,
+        [CUSTOMERITEMS_GET_LIST]:state=>state.listitemscustomers,
        
 
     }

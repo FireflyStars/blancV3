@@ -129,6 +129,49 @@
              </ul>
         </li>
 
+         <li class="list-group-item" v-if="ListItems.length>0">
+
+             <div class="content-wraper">
+                <span class="subtitle col-6">ITEM</span>
+
+                 <div class="d-flex justify-content-end col-6 ">
+                <!-- <a class="d-flex justify-content-end col-3 display-all"  @click="displayAll('search_item')" >Display all</a> -->
+                <a class="d-flex justify-content-end col-3 show-more"    @click="loadMore('search_items')" >Show more</a>
+                </div>
+             </div>
+             <ul   class="list-group list-group-flush" >
+                <li v-for ="(item , index) in ListItems" :key="item">
+                  <div class="container">
+
+                    <div class="row" @click="selectrow(item.id,item.Status,index)">
+                        <div class="col-3">
+                         <span class="body_medium">{{item.DepartmentName}}</span>
+                        </div>
+                         <div class="col-1" >
+                            <span class="body_small">{{item.id}}</span>
+                        </div>
+                        <div class="col-2 " style = "text-align: center;">
+                        <b class = "body_small">{{item.StoreName}}</b>
+                        </div>
+                        <div class=" col-2 ">
+                            <b class ="body_small">{{item.typeitem}}</b>
+                        </div>
+
+                        <div class=" col-2">
+                            <tag  :name="item.Status" ></tag>
+                        </div>
+                          <div class="col-2" style="text-align: end;">
+                            <tag   v-if="item.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
+                            <tag   v-else :name="'B2B'" ></tag>
+                         </div>
+                     </div>
+
+
+                    </div>
+               </li>
+             </ul>
+        </li>
+
 
      </ul>
 
@@ -158,7 +201,8 @@
         ORDERLIST_FILTER,
         CUSTOMER_MODULE,
         SET_CUSTOMER_FILTER,
-        FILTER_CUSTOMER_LIST
+        FILTER_CUSTOMER_LIST,
+        CUSTOMERITEMS_GET_LIST
     } from "../../store/types/types";
     import {formatDate} from "../helpers/helpers";
     import {useStore} from 'vuex';
@@ -263,6 +307,10 @@ export default({
 
                 return store.getters[`${CUSTOMERLIST_MODULE}${CUSTOMERORDERS_GET_LIST}`];
             });
+            const ListItems=computed(()=>{
+
+                return store.getters[`${CUSTOMERLIST_MODULE}${CUSTOMERITEMS_GET_LIST}`];
+            });
 
           function loadMore(tab){
                  store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
@@ -340,6 +388,7 @@ export default({
                 showSearch,
                 CustomerEmails,
                 CustomerOrders,
+                ListItems,
                 formatDate,
                 featureunavailable,
                 showbutton,

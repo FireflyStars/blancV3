@@ -19,6 +19,7 @@ public function SearchCustomer(Request $request)
     $PerPageOrder = $request['PerPageOrder'];
     $PerPageUser = $request['PerPageUser'];
     $PerPageEmails = $request['PerPageEmails'];
+    $PerPageItems = $request['PerPageItems'];
 
     $orders = DB::table('infoOrder')->select(['infoOrder.id','infoOrder.Status','infoOrder.DateDeliveryAsk','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CustomerID',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate'])
     ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
@@ -28,8 +29,9 @@ public function SearchCustomer(Request $request)
     //->where('infoitems.InvoiceID','!=','')
     ->whereNotIn('infoitems.Status',['DELETE','VOID']);
      })
-    ->where('FirstName', 'LIKE', $query . '%')
-    ->orWhere('LastName','LIKE', $query . '%')
+    ->where('FirstName', 'LIKE', '%'. $query . '%')
+    ->orWhere('LastName','LIKE', '%'. $query . '%')
+    ->orWhere('EmailAddress','LIKE', '%'.$query.'%')
     ->orWhere('infoOrder.id',$query)
     ->orWhere('infoitems.ItemTrackingKey',$query)
     ->orWhere('infoitems.id',$query)
@@ -43,6 +45,7 @@ public function SearchCustomer(Request $request)
     )
     ->where('FirstName', 'LIKE', $query . '%')
     ->orWhere('LastName','LIKE', $query . '%')
+    ->orWhere('EmailAddress','LIKE', '%'.$query.'%')
     ->paginate($PerPageUser);
     foreach ($users as $item) {
         $item->Phone=json_decode($item->Phone);
@@ -54,11 +57,16 @@ public function SearchCustomer(Request $request)
     ->orWhere('LastName','LIKE', $query . '%')
     ->paginate($PerPageEmails);
 
+    $items = DB::table('infoitems')
+    ->Where('infoitems.ItemTrackingKey',$query)
+    ->orWhere('infoitems.id',$query)
+    ->paginate($PerPageItems);
+
     foreach ($emails as $item) {
         $item->Phone=json_decode($item->Phone);
     }
 
-        return response()->json( ['customers_orders'=>$orders ,  'customers_emails'=>$emails , 'customers'=>$users  ]);
+        return response()->json( ['customers_orders'=>$orders ,  'customers_emails'=>$emails , 'customers'=>$users , 'items' => $items  ]);
 
 }
 
