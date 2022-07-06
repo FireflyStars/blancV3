@@ -935,6 +935,8 @@ class DetailingController extends Controller
         $discount_perc = 0;
         $credit_to_deduct = 0;
         $cust_discount = 0;
+        $express_addon = 0;
+        $order_without_express = 0;
 
         if($order){
 
@@ -1390,11 +1392,16 @@ class DetailingController extends Controller
 
         }
 
+        $order_without_express = $total_price;
+
+
         if($order->express==1){
-            $total_price = $total_price * 1.4;
+            $express_addon = $total_price * 0.4;
         }elseif($order->express==6){
-            $total_price = $total_price * 1.2;
+            $express_addon = $total_price * 0.2;
         }
+
+        $total_price = $total_price + $express_addon;
 
         $total_with_discount = $total_price;
 
@@ -1516,6 +1523,8 @@ class DetailingController extends Controller
             'created_date'=>$created_date,
             'credit_to_deduct'=>$credit_to_deduct,
             'cust_discount'=>$cust_discount,
+            'express_addon'=>$express_addon,
+            'order_without_express'=>$order_without_express,
         ]);
     }
 
