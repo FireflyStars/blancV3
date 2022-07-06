@@ -1,6 +1,6 @@
 <template>
     <transition enter-active-class="animate__animated animate__fadeIn">
-        <div class="container-fluid h-100 bg-color p-0" v-if="showcontainer">
+        <div class="container-fluid bg-color p-0" v-if="showcontainer">
             <div class="d-flex align-content-stretch align-items-stretch flex-row hmax">
                 <side-bar></side-bar>
                 <div class="w-100">
@@ -781,7 +781,6 @@
                     showcontainer.value=true;
                 });
                 getCustomerFullDetail();
-
 
                 setTimeout(() => {
                     /*

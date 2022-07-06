@@ -187,10 +187,24 @@
                                         <div class="row px-0 mt-4 sub-total-text">
                                             <div class="col-4">Subtotal</div>
                                             <div class="col-5 sub-total-desc">{{order_items.length}} item<span v-if="order_items.length > 1">s</span> (Incl. VAT)</div>
-                                            <div class="col-3 text-align-right">&#163;{{sub_total}}</div>
+
+                                            <div class="col-3 text-align-right" v-if="[1,6].includes(order.express)">&#163;{{order_without_express.toFixed(2)}}</div>
+                                            <div class="col-3 text-align-right" v-else>&#163;{{sub_total}}</div>
+
+                                        </div>
+
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="[1,6].includes(order.express)">
+                                            <div class="col-9">Express <span v-if="order.express==1">24</span><span v-else-if="order.express==6">48</span></div>
+                                            <div class="col-3 text-align-right">+&#163;{{express_addon.toFixed(2)}}</div>
+                                        </div>
+
+                                        <div class="row px-0 mt-2 sub-total-text">
+                                            <div class="col-4">Account Discount</div>
+                                            <div class="col-5 sub-total-desc"> <span v-if="cust.discount > 0">{{cust.discount}}% (applied)</span></div>
+                                            <div class="col-3 text-align-right"><span v-if="discount > 0">-</span>&#163;{{cust_discount.toFixed(2)}}</div>
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text">
-                                            <div class="col-4">Discount</div>
+                                            <div class="col-4">Order Discount</div>
                                             <div class="col-5 sub-total-desc"> <span v-if="discount > 0">{{discount_perc.toFixed()}}% (applied)</span></div>
                                             <div class="col-3 text-align-right"><span v-if="discount > 0">-</span>&#163;{{discount}}</div>
                                         </div>
@@ -236,9 +250,12 @@
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
                                                 </div>
                                             </div>
-                                            <div class="col-8" v-else>
+                                        </div>
+                                        <div class="row px-0 py-1 sub-total-text" v-if="order.Paid==0">
+                                            <div class="col-4">Minus cash credit</div>
+                                            <div class="col-8">
                                                 <div class="row">
-                                                    <div class="col-9"></div>
+                                                    <div class="col-9 px-0 payment-desc-text">Available</div>
                                                     <div class="col-3 text-align-right">&#163;{{credit_to_deduct.toFixed(2)}}</div>
                                                 </div>
                                             </div>
@@ -647,6 +664,9 @@ export default {
         const discount_perc = ref(0);
         const created_date = ref("");
         const credit_to_deduct = ref(0);
+        const cust_discount = ref(0);
+        const express_addon = ref(0);
+        const order_without_express = ref(0);
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
@@ -692,6 +712,10 @@ export default {
                 discount_perc.value = res.data.discount_perc;
                 created_date.value = res.data.created_date;
                 credit_to_deduct.value = res.data.credit_to_deduct;
+                order_discount.value = res.data.order.DiscountPerc;
+                cust_discount.value = res.data.cust_discount;
+                express_addon.value = res.data.express_addon;
+                order_without_express.value = res.data.order_without_express;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -946,6 +970,9 @@ export default {
             created_date,
             redirectToOrderDetail,
             credit_to_deduct,
+            cust_discount,
+            express_addon,
+            order_without_express,
         }
 
     },

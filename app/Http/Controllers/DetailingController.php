@@ -934,6 +934,9 @@ class DetailingController extends Controller
         $amount_paid_credit = [];
         $discount_perc = 0;
         $credit_to_deduct = 0;
+        $cust_discount = 0;
+        $express_addon = 0;
+        $order_without_express = 0;
 
         if($order){
 
@@ -1389,26 +1392,35 @@ class DetailingController extends Controller
 
         }
 
+        $order_without_express = $total_price;
+
+
         if($order->express==1){
-            $total_price = $total_price * 1.4;
+            $express_addon = $total_price * 0.4;
         }elseif($order->express==6){
-            $total_price = $total_price * 1.2;
+            $express_addon = $total_price * 0.2;
         }
+
+        $total_price = $total_price + $express_addon;
 
         $total_with_discount = $total_price;
 
-        if($order->OrderDiscount > 0){
-            $total_with_discount = $total_price - $order->OrderDiscount;
+        if($cust->discount > 0){
+            $cust_discount = ($cust->discount/100) * $total_with_discount;
+            $total_with_discount = $total_with_discount - $cust_discount;
+        }
 
-            $discount_perc = ($order->OrderDiscount/$total_price) * 100;
+        $order_discount = ($order->DiscountPerc/100) * $total_price;
+        $discount_perc = $order->DiscountPerc;
+
+        if($order_discount > 0){
+            $total_with_discount = $total_with_discount - $order_discount;
         }
 
 
         $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
 
         $balance = $total_with_discount;
-
-
 
 
         $amount_paid = 0;
@@ -1510,6 +1522,9 @@ class DetailingController extends Controller
             'discount_perc'=>$discount_perc,
             'created_date'=>$created_date,
             'credit_to_deduct'=>$credit_to_deduct,
+            'cust_discount'=>$cust_discount,
+            'express_addon'=>$express_addon,
+            'order_without_express'=>$order_without_express,
         ]);
     }
 
@@ -1544,7 +1559,7 @@ class DetailingController extends Controller
             $discount_price = 0;
         }
 
-        DB::table('infoOrder')->where('id',$order_id)->update(['OrderDiscount'=>$discount_price]);
+        DB::table('infoOrder')->where('id',$order_id)->update(['OrderDiscount'=>$discount_price,'DiscountPerc'=>$discount]);
 
         return response()->json([
             'post'=>$request->all(),
