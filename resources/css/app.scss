@@ -1091,3 +1091,11 @@ padding:0 1.2rem;
 
     }
 }
+
+html{
+    &.ViewCustomer{
+        .hide-overflowY{
+            overflow-y: auto;
+        }
+    }
+}

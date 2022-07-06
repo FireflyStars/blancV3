@@ -190,12 +190,12 @@
                                             <div class="col-3 text-align-right">&#163;{{sub_total}}</div>
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text">
-                                            <div class="col-4">Discount Account</div>
+                                            <div class="col-4">Account Discount</div>
                                             <div class="col-5 sub-total-desc"> <span v-if="cust.discount > 0">{{cust.discount}}% (applied)</span></div>
                                             <div class="col-3 text-align-right"><span v-if="discount > 0">-</span>&#163;{{cust_discount.toFixed(2)}}</div>
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text">
-                                            <div class="col-4">Discount</div>
+                                            <div class="col-4">Order Discount</div>
                                             <div class="col-5 sub-total-desc"> <span v-if="discount > 0">{{discount_perc.toFixed()}}% (applied)</span></div>
                                             <div class="col-3 text-align-right"><span v-if="discount > 0">-</span>&#163;{{discount}}</div>
                                         </div>
