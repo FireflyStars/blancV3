@@ -1118,4 +1118,16 @@ class CustomerController extends Controller
         return response()->json( $card2 );
 
     }
+
+    public function setCustomerDiscount(Request $request){
+        $customer_id = $request->customer_id;
+        $discount = $request->discount;
+
+        $updated = DB::table('infoCustomer')->where('id',$customer_id)->update(['discount'=>$discount]);
+
+        return response()->json([
+            'updated'=>$updated,
+            'discount'=>$discount,
+        ]);
+    }
 }

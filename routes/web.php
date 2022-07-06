@@ -75,6 +75,7 @@ Route::post('/get-customer-preferences',[CustomerController::class, 'getCustomer
 Route::post('/add-credit-customer',[CustomerController::class, 'AddCreditCustomer'])->middleware('auth')->name('add-credit-customer');
 Route::post('/add-credit-card',[CustomerController::class, 'AddCreditCard'])->middleware('auth')->name('add-credit-card');
 Route::post('/delete-credit-card',[CustomerController::class, 'DeleteCreditCard'])->middleware('auth')->name('delete-credit-card');
+Route::post('/set-customer-discount',[CustomerController::class,'setCustomerDiscount'])->middleware('auth')->name('set-customer-discount');
 
 
 Route::get('/permissions-test',function(){

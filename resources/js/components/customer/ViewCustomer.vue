@@ -379,9 +379,14 @@
                                         <div class="d-flex">
                                             <div class="col-4">
                                                 <div class="form-group mb-0 payment-method">
-                                                    <label for="discount_credit">Discount Level</label>
+                                                    <label for="discount_credit">Discount Level (%)</label>
+                                                    <!--
                                                     <div class="w-100 py-2 bg-color px-3 rounded-3">
                                                         {{ form.discountLevel }}%
+                                                    </div>
+                                                    -->
+                                                    <div class="form-group">
+                                                        <input type="text" class="form-control w-auto" v-model="form.discountLevel" @keyup="setCustomerDiscount"/>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1132,6 +1137,24 @@
             }
 
 
+            function setCustomerDiscount(event){
+                if(event.keyCode==13){
+                    if(parseInt(form.value.discountLevel)){
+                        axios.post('/set-customer-discount',{
+                            discount:form.value.discountLevel,
+                            customer_id:route.params.customer_id
+                        }).then((res)=>{
+                            console.log(res);
+                        }).catch((err)=>{
+
+                        }).finally(()=>{
+
+                        });
+                    }
+                }
+            }
+
+
             return {
                 form,
                 step,
@@ -1160,6 +1183,7 @@
                 current_user,
                 addCustomerCredit,
                 credit_to_add,
+                setCustomerDiscount,
             }
 
         },
