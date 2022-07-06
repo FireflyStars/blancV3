@@ -457,7 +457,7 @@
             
             function EditOrder(order_id){
                 orderId.value = order_id
-                router.push('/order-content/'+orderId.value);
+                router.push('/checkout/'+orderId.value);
             }
              function openAccordionclick(i) {
            
