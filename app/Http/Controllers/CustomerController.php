@@ -1039,10 +1039,17 @@ class CustomerController extends Controller
 
         DB::table('credits')->insert($info_credit);
 
-        $customer = DB::table('infoCustomer')
-        ->where('infoCustomer.id', $request->customer_id)->update(['credit' => $request->credit]);
+        $cust = DB::table('infoCustomer')->where('id',$request->customer_id)->first();
+        $credit_to_add = $request->credit;
 
-        return response()->json( $customer );
+        $credit_total = $cust->credit + $credit_to_add;
+
+        $customer = DB::table('infoCustomer')
+        ->where('infoCustomer.id', $request->customer_id)->update(['credit' => $credit_total]);
+
+        $cust2 = DB::table('infoCustomer')->where('id',$request->customer_id)->first();
+
+        return response()->json( $cust2);
     }
 
     public function AddCreditCard(Request $request){
