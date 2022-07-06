@@ -140,12 +140,12 @@
                 </div>
              </div>
              <ul   class="list-group list-group-flush" >
-                <li v-for ="(item , index) in ListItems" :key="item">
+                <li v-for ="item in ListItems" :key="item">
                   <div class="container">
 
-                    <div class="row" @click="selectrow(item.id,item.Status,index)">
-                        <div class="col-3">
-                         <span class="body_medium">{{item.DepartmentName}}</span>
+                    <div class="row">
+                         <div class="col-3">
+                         <span class="body_medium">{{item.typeitem}}</span>
                         </div>
                          <div class="col-1" >
                             <span class="body_small">{{item.id}}</span>
@@ -154,7 +154,7 @@
                         <b class = "body_small">{{item.StoreName}}</b>
                         </div>
                         <div class=" col-2 ">
-                            <b class ="body_small">{{item.typeitem}}</b>
+                            <b class ="body_small">{{item.store}}</b>
                         </div>
 
                         <div class=" col-2">
