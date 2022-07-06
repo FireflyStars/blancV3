@@ -933,6 +933,7 @@ class DetailingController extends Controller
         $amount_paid_card = [];
         $amount_paid_credit = [];
         $discount_perc = 0;
+        $credit_to_deduct = 0;
 
         if($order){
 
@@ -1438,8 +1439,10 @@ class DetailingController extends Controller
 
         if($cust->credit >= $balance){
             $amount_to_pay = 0;
+            $credit_to_deduct = $balance;
         }else{
             $amount_to_pay = $balance - $cust->credit;
+            $credit_to_deduct = $cust->credit;
         }
 
         if($cust->credit > 0){
@@ -1506,6 +1509,7 @@ class DetailingController extends Controller
             'amount_paid_credit'=>$amount_paid_credit,
             'discount_perc'=>$discount_perc,
             'created_date'=>$created_date,
+            'credit_to_deduct'=>$credit_to_deduct,
         ]);
     }
 

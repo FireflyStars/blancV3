@@ -940,7 +940,6 @@ class OrderController extends Controller
             }
         }
 
-
         $endpoint = "";
         $token = "GhtfvbbG4489hGtyEfgARRGht3";
 
@@ -964,7 +963,7 @@ class OrderController extends Controller
         $content = str_replace('\\"','',$content);
 
         $res = @json_decode($content);
-        //*/
+
 
         if(is_object($res) && isset($res->result) && $res->result=='ok'){
             if(count($is_new_invoice)==0){
@@ -999,6 +998,7 @@ class OrderController extends Controller
                 }
             }
         }
+        //*/
 
         return $res;
 
@@ -1008,6 +1008,7 @@ class OrderController extends Controller
         $order_id = $request->order_id;
         $balance = number_format($request->balance,2);
         $amount_to_pay = number_format($request->amount_to_pay,2);
+        $credit_to_deduct = number_format($request->credit_to_deduct,2);
 
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
         $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
@@ -1015,6 +1016,7 @@ class OrderController extends Controller
         $credit_remaining = $cust->credit;
 
         if($cust->credit >= 0){
+            /*
             if($cust->credit > $balance){
                 $credit_remaining = $cust->credit - $balance;
 
@@ -1024,6 +1026,8 @@ class OrderController extends Controller
             }else{
                 $credit_remaining = 0;
             }
+            */
+            $credit_remaining = $cust->credit - $credit_to_deduct;
 
             $credit_remaining = number_format($credit_remaining,2);
 
@@ -1036,7 +1040,7 @@ class OrderController extends Controller
                 'order_id'=>$order_id,
                 'datepayment'=>$stamp,
                 'status'=>'succeeded',
-                'montant'=>($cust->credit > $balance?$balance:$cust->credit),
+                'montant'=>$credit_to_deduct,
                 'CustomerID'=>$order->CustomerID,
                 'created_at'=>$stamp,
                 'info'=>'',

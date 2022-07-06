@@ -398,7 +398,7 @@
                                                     <label for="add_credit">Add credit</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text fw-bold">£</span>
-                                                        <input type="text" v-model="form.discountCredit"  class="form-control" id="add_credit" placeholder="0.00">
+                                                        <input type="text" v-model="credit_to_add"  class="form-control" id="add_credit" placeholder="0.00" @keyup="addCustomerCredit">
                                                     </div>
                                                 </div>
                                             </div>
@@ -768,6 +768,7 @@
             ]);
 
             const current_user = ref(null);
+            const credit_to_add = ref(0);
 
 
             onMounted(()=>{
@@ -1006,19 +1007,28 @@
                     return '';
                 }
             }
+               /*
                watch(()=>form.value.discountCredit,(current_value, previous_value)=>{
 
                clearTimeout(timeout.value);
                timeout.value = setTimeout(function(){
 
-                    axios.post('/add-credit-customer', { credit :current_value , customer_id : route.params.customer_id } ).then((response)=>{
-
+                    axios.post('/add-credit-customer', { credit :(current_value==''?0:current_value) , customer_id : route.params.customer_id } ).then((response)=>{
+                        if(response.data==0 || response.data==1){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                            {
+                                message:"Customer credit updated",
+                                ttl: 3,
+                                type: 'success'
+                            });
+                        }
                     }).catch((errors)=>{
                         console.log(errors);
                     })
                     }
                    , 500)
                })
+               */
 
                 watch(()=>form.value.cardHolderName,(current_value,previous_value)=>{
                     if(current_value == 'Visa'){
@@ -1098,6 +1108,30 @@
                 })
             }
 
+            function addCustomerCredit(event){
+                if(event.keyCode==13){
+                    if(parseInt(credit_to_add.value)){
+                        axios.post('/add-credit-customer', { credit :credit_to_add.value , customer_id : route.params.customer_id } ).then((response)=>{
+
+                                form.value.discountCredit = response.data.credit;
+                                credit_to_add.value = 0;
+                                    /*
+                                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                                    {
+                                        message:"Customer credit updated",
+                                        ttl: 3,
+                                        type: 'success'
+                                    });
+                                    */
+
+                            }).catch((errors)=>{
+                                console.log(errors);
+                            })
+                    }
+                }
+            }
+
+
             return {
                 form,
                 step,
@@ -1124,6 +1158,8 @@
                 DeleteCreditCardCustomer,
                 creditCardCustomer,
                 current_user,
+                addCustomerCredit,
+                credit_to_add,
             }
 
         },

@@ -212,7 +212,7 @@
                                 <div class="row justify-content-end mt-3 mx-0">
                                     <div class="col-8 py-3" id="credit_div">
                                         <div class="d-flex align-items-center">
-                                            <img src="/images/unpaid_cross.svg" class="paid_icon" v-if="amount_to_pay > 0"/>
+                                            <img src="/images/unpaid_cross.svg" class="paid_icon" v-if="order.Paid==0"/>
                                             <img src="/images/icon_check.svg" class="paid_icon" v-if="amount_to_pay == 0 && order.Paid==1"/>
                                             <span class="summary-title" v-if="amount_to_pay == 0 && order.Paid==1">Paid</span>
                                             <span class="summary-title" v-else>Pending payments</span>
@@ -228,7 +228,7 @@
                                             <div class="col-8 text-align-right" v-else>&#163;0.00</div>
                                         </div>
 
-                                        <div class="row px-0 py-1 sub-total-text" v-if="order.Paid==1">
+                                        <div class="row px-0 py-1 sub-total-text">
                                             <div class="col-4">Minus cash credit</div>
                                             <div class="col-8" v-if="amount_paid_credit.length > 0">
                                                 <div class="row" v-for="a in amount_paid_credit">
@@ -236,11 +236,12 @@
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
                                                 </div>
                                             </div>
-                                            <div class="col-8 text-align-right" v-else>&#163;0.00</div>
-                                        </div>
-                                        <div class="row px-0 py-1 sub-total-text" v-else>
-                                            <div class="col-9">Minus cash credit</div>
-                                            <div class="col-3 text-align-right">&#163;{{cust_credit.toFixed(2)}}</div>
+                                            <div class="col-8" v-else>
+                                                <div class="row">
+                                                    <div class="col-9"></div>
+                                                    <div class="col-3 text-align-right">&#163;{{credit_to_deduct.toFixed(2)}}</div>
+                                                </div>
+                                            </div>
                                         </div>
 
                                          <div class="row px-0 mt-4 py-2 balance-text">
@@ -534,7 +535,7 @@
                                         <a href="javascript:void(0)" @click="redirectToDetailingList">Previous</a>
                                     </div>
                                     <div class="col-6 px-4">
-                                        <button id="closeBtn" class="w-100 py-3" v-if="order.Paid==1 && amount_to_pay==0">Close</button>
+                                        <button id="closeBtn" @click="redirectToOrderDetail" class="w-100 py-3" v-if="order.Paid==1 && amount_to_pay==0">Close</button>
                                         <button v-else id="completeBtn" class="w-100 py-3" @click="validatePayment" :disabled="editcard">Proceed</button>
                                     </div>
                                 </div>
@@ -645,6 +646,7 @@ export default {
         const amount_paid_credit = ref(0);
         const discount_perc = ref(0);
         const created_date = ref("");
+        const credit_to_deduct = ref(0);
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
@@ -689,6 +691,7 @@ export default {
                 amount_paid_credit.value = res.data.amount_paid_credit;
                 discount_perc.value = res.data.discount_perc;
                 created_date.value = res.data.created_date;
+                credit_to_deduct.value = res.data.credit_to_deduct;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -791,6 +794,7 @@ export default {
                 order_id:order_id.value,
                 amount_to_pay:amount_to_pay.value,
                 balance:order_balance.value,
+                credit_to_deduct:credit_to_deduct.value,
             }).then((res)=>{
 
                 if(res.data.output && res.data.output.result=='ok'){
@@ -847,7 +851,7 @@ export default {
                         payment_comp.value.effectPayment('Pay')
                     }
                     else{
-                        console.log('by credit',amount_to_pay.value);
+                        console.log('by credit',credit_to_deduct.value);
                         completeCheckout();
                     }
                 }
@@ -887,6 +891,10 @@ export default {
 
         function closeAwaitingPaymentModal(){
             awaiting_payment_modal.value.closeModal();
+        }
+
+        function redirectToOrderDetail(){
+            router.push('/order_details/'+order_id.value);
         }
 
         return {
@@ -936,6 +944,8 @@ export default {
             amount_paid_credit,
             discount_perc,
             created_date,
+            redirectToOrderDetail,
+            credit_to_deduct,
         }
 
     },
