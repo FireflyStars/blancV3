@@ -937,6 +937,7 @@ class DetailingController extends Controller
         $cust_discount = 0;
         $express_addon = 0;
         $order_without_express = 0;
+        $amount_without_credit = 0;
 
         if($order){
 
@@ -1446,7 +1447,7 @@ class DetailingController extends Controller
 
         }
 
-
+        $amount_without_credit = $balance;
         $amount_to_pay = $balance;
 
         if($cust->credit >= $balance){
@@ -1525,6 +1526,7 @@ class DetailingController extends Controller
             'cust_discount'=>$cust_discount,
             'express_addon'=>$express_addon,
             'order_without_express'=>$order_without_express,
+            'amount_without_credit'=>number_format($amount_without_credit,2),
         ]);
     }
 

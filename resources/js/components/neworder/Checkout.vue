@@ -226,8 +226,8 @@
                                 <div class="row justify-content-end mt-3 mx-0">
                                     <div class="col-8 py-3" id="credit_div">
                                         <div class="d-flex align-items-center">
-                                            <img src="/images/unpaid_cross.svg" class="paid_icon" v-if="order.Paid==0"/>
-                                            <img src="/images/icon_check.svg" class="paid_icon" v-if="amount_to_pay == 0 && order.Paid==1"/>
+                                            <img src="/images/icon_check.svg" class="paid_icon" v-if="amount_without_credit == 0 && order.Paid==1"/>
+                                             <img src="/images/unpaid_cross.svg" class="paid_icon" v-else/>
                                             <span class="summary-title" v-if="amount_to_pay == 0 && order.Paid==1">Paid</span>
                                             <span class="summary-title" v-else>Pending payments</span>
                                         </div>
@@ -242,16 +242,16 @@
                                             <div class="col-8 text-align-right" v-else>&#163;0.00</div>
                                         </div>
 
-                                        <div class="row px-0 py-1 sub-total-text">
+                                        <div class="row px-0 py-1 sub-total-text" v-if="amount_paid_credit.length > 0">
                                             <div class="col-4">Minus cash credit</div>
-                                            <div class="col-8" v-if="amount_paid_credit.length > 0">
+                                            <div class="col-8">
                                                 <div class="row" v-for="a in amount_paid_credit">
                                                     <div class="col-9 px-0 payment-desc-text">Used: {{a.date}}</div>
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="row px-0 py-1 sub-total-text" v-if="order.Paid==0">
+                                        <div class="row px-0 py-1 sub-total-text" v-if="amount_without_credit > 0">
                                             <div class="col-4">Minus cash credit</div>
                                             <div class="col-8">
                                                 <div class="row">
@@ -667,6 +667,7 @@ export default {
         const cust_discount = ref(0);
         const express_addon = ref(0);
         const order_without_express = ref(0);
+        const amount_without_credit = ref(0);
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
@@ -716,6 +717,7 @@ export default {
                 cust_discount.value = res.data.cust_discount;
                 express_addon.value = res.data.express_addon;
                 order_without_express.value = res.data.order_without_express;
+                amount_without_credit.value = res.data.amount_without_credit;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -973,6 +975,7 @@ export default {
             cust_discount,
             express_addon,
             order_without_express,
+            amount_without_credit,
         }
 
     },
