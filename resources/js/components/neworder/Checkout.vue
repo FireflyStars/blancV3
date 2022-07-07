@@ -189,7 +189,7 @@
                                             <div class="col-5 sub-total-desc">{{order_items.length}} item<span v-if="order_items.length > 1">s</span> (Incl. VAT)</div>
 
                                             <div class="col-3 text-align-right" v-if="[1,6].includes(order.express)">&#163;{{order_without_express.toFixed(2)}}</div>
-                                            <div class="col-3 text-align-right" v-else>&#163;{{sub_total}}</div>
+                                            <div class="col-3 text-align-right" v-else>&#163;{{total_inc_vat}}</div>
 
                                         </div>
 
@@ -210,11 +210,11 @@
                                         </div>
                                         <div class="row px-0 mt-3 pb-4 total-text">
                                             <div class="col-9">Total</div>
-                                            <div class="col-3 text-align-right">&#163;{{total_with_discount}}</div>
+                                            <div class="col-3 text-align-right">&#163;{{total_inc_vat}}</div>
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text">
                                             <div class="col-9">Total (excl. VAT)</div>
-                                            <div class="col-3 text-align-right">&#163;{{total_exc_vat}}</div>
+                                            <div class="col-3 text-align-right">&#163;{{total_exc_vat.toFixed(2)}}</div>
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text">
                                             <div class="col-9">Tax (20% VAT included in item prices)</div>
@@ -646,6 +646,7 @@ export default {
         const discount = ref(0);
         const total_with_discount = ref(0);
         const vat = ref(0);
+        const total_inc_vat = ref(0);
         const total_exc_vat = ref(0);
         const custcard = ref({});
         const no_payment_modal = ref();
@@ -698,6 +699,7 @@ export default {
                 sub_total.value = res.data.sub_total;
                 discount.value = res.data.discount;
                 total_with_discount.value = res.data.total_with_discount;
+                total_inc_vat.value = res.data.total_inc_vat;
                 total_exc_vat.value = res.data.total_exc_vat;
                 vat.value = res.data.vat;
                 custcard.value = res.data.custcard;
@@ -943,6 +945,7 @@ export default {
             sub_total,
             discount,
             total_with_discount,
+            total_inc_vat,
             total_exc_vat,
             vat,
             custcard,

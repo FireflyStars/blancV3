@@ -1418,6 +1418,11 @@ class DetailingController extends Controller
             $total_with_discount = $total_with_discount - $order_discount;
         }
 
+        $total_exc_vat = $total_with_discount;
+        $vat = number_format(0.20*$total_with_discount,2);
+        $total_inc_vat = number_format($total_with_discount+$vat,2);
+
+        $total_with_discount = $total_inc_vat;
 
         $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
 
@@ -1484,8 +1489,6 @@ class DetailingController extends Controller
             'Total'=>$total_with_discount,
         ]);
 
-        $vat = number_format(0.20*$total_with_discount,2);
-        $total_exc_vat = number_format($total_with_discount-$vat,2);
 
         $stripe_security_key = 'STRIPE_LIVE_SECURITY_KEY';
         $stripe_public_key = 'STRIPE_LIVE_PUBLIC_KEY';
@@ -1511,6 +1514,7 @@ class DetailingController extends Controller
             'total_with_discount'=>number_format($total_with_discount,2),
             'discount'=>number_format($order->OrderDiscount,2),
             'vat'=>$vat,
+            'total_inc_vat'=>$total_inc_vat,
             'total_exc_vat'=>$total_exc_vat,
             'custcard'=>$cust_card,
             'stripe_public_key'=>env($stripe_public_key),
