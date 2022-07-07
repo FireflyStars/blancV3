@@ -256,7 +256,7 @@
                                             <div class="col-8">
                                                 <div class="row">
                                                     <div class="col-9 px-0 payment-desc-text">Available</div>
-                                                    <div class="col-3 text-align-right">&#163;{{credit_to_deduct.toFixed(2)}}</div>
+                                                    <div class="col-3 text-align-right">&#163;{{credit_to_deduct}}</div>
                                                 </div>
                                             </div>
                                         </div>
