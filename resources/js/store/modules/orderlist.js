@@ -323,10 +323,14 @@ export const orderlist= {
             commit(ORDERLIST_RESET_ORDERLIST);
             commit(ORDERLIST_SET_LIMIT,{skip:0,take:10});
             dispatch(ORDERLIST_LOADERMSG, `Loading ${payload.name.toLowerCase()}...`);
-            dispatch(ORDERLIST_LOAD_LIST);
+            if(payload.customer){
+                dispatch(ORDERLIST_CUSTOMER_ORDERS , {customer:payload.customer});
+            }else {
+                dispatch(ORDERLIST_LOAD_LIST);
+            }
+            
         },
         [ORDERLIST_CUSTOMER_ORDERS]:async({commit,dispatch,state},payload)=>{
-          
             if(typeof payload!="undefined"&&payload.showmore){
                 commit(ORDERLIST_SHOWMORE_LIST,{skip:state[state.current_tab].skip+state[state.current_tab].take});
                 dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,state.loader_msg],{ root: true });

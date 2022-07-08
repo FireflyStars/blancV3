@@ -75,7 +75,7 @@
     import Filters from '../miscellaneous/Filters'
     export default {
         name: "OrderListTable",
-        props:['tabledef',"tab","id"],
+        props:['tabledef',"tab","id","customer_id"],
         components:{Filters, Tag,CheckBox,ExpressIcon,SortArrows},
         setup(props){
             const router = useRouter();
@@ -95,11 +95,10 @@
                return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_SORT}`];
             });
             function loadMore(){
-
-                if(customerId.value != ''){
+                if(props.customer_id != ''){
 
                  store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading more, please wait...');
-                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`,{customer:customerId.value , showmore:1}).finally(()=>{
+                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`,{customer:props.customer_id  , showmore:1}).finally(()=>{
                  window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
                 });
 

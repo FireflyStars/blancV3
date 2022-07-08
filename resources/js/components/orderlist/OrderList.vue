@@ -13,8 +13,8 @@
                             </template>
                         </div>
                         <template v-for="(tab,tab_index) in tabs" :key="tab_index">
-                            <order-list-table :tabledef="allordertablefields" :tab="tab" :id="tab_index" v-if="tab.active && tab.name != 'Customer Care'"></order-list-table>
-                            <order-list-table :tabledef="customercaretablefields" :tab="tab" :id="tab_index" v-if="tab.active && tab.name == 'Customer Care'"></order-list-table>
+                            <order-list-table :tabledef="allordertablefields" :tab="tab" :id="tab_index" :customer_id ="customerID"  v-if="tab.active && tab.name != 'Customer Care'"></order-list-table>
+                            <order-list-table :tabledef="customercaretablefields" :tab="tab" :id="tab_index" :customer_id ="customerID" v-if="tab.active && tab.name == 'Customer Care'"></order-list-table>
                         </template>
                         <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
                             <div v-if="showlayer" class="back-layer"></div>
@@ -62,7 +62,7 @@
             const store=useStore();
             const route=useRoute();
             const filterDef = ref({});
-
+            const customerID = ref('');
          
             const tabs=ref({});
             if(hasRoles(['cc'])){
@@ -308,7 +308,7 @@
 
 
             watch(route, (to) => {
-
+                customerID.value =  route.params.customerId
                 if( route.params.customerId != null){
 
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`, {customer:route.params.customerId} );
@@ -326,7 +326,7 @@
 
                 tabs.value[tab].active=true;
 
-                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_TAB}`,{tab:tab,name:tabs.value[tab].name});
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_TAB}`,{tab:tab,name:tabs.value[tab].name, customer:customerID.value  });
                /* store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SET_CURRENTTAB}`,tab);
                 store.commit(`${ORDERLIST_MODULE}${ORDERLIST_RESET_ORDERLIST}`);
                 store.commit(`${ORDERLIST_MODULE}${ORDERLIST_SET_LIMIT}`,{skip:0,take:10});
@@ -344,6 +344,7 @@
                 showcontainer,
                 allordertablefields,
                 customercaretablefields,
+                customerID,
                 showlayer:computed(()=>{return (route.params.order_id>0&&store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_CURRENT_SELECTED}`]);})
             }
         }

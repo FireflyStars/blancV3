@@ -194,7 +194,7 @@ class OrderListController extends Controller
                             if($pickupDate <  $DeliveryDate){
                                 $order->Deliv = date_create($order->DateDeliveryAsk)->format('d/m/Y') ;
                             } else {
-                                $order->Deliv = $order->DatePickup;
+                                $order->Deliv = date_create($order->DatePickup)->format('d/m/Y');
                             }
                         }
                         if($order->DateDeliveryAsk != ''){
@@ -994,7 +994,7 @@ class OrderListController extends Controller
                         if($pickupDate <  $DeliveryDate){
                             $order->Deliv = date_create($order->DateDeliveryAsk)->format('d/m/Y') ;
                         } else {
-                            $order->Deliv = $order->DatePickup;
+                            $order->Deliv = date_create($order->DatePickup)->format('d/m/Y');
                         }
                     }
                     if($order->DateDeliveryAsk != ''){
