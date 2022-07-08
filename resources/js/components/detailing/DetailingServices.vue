@@ -60,6 +60,7 @@
                     <div class="col-2 d-flex text-center each-sub-service py-4 justify-content-center cleaning-subservice cleaning-prices" v-for="name in type_prices" :id="'sub_service_'+name.replace(' ','')" @click="toggleSubService(name.replace(' ',''))" :data-cleaning-price-type="name" :class="{'sel_service':detailingitem.cleaning_price_type==name}">
                        {{name}}
                     </div>
+                     <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" @click="loadPriceNowModal('cleaning')">Price now</div>
 
                 </div>
             </div>
@@ -110,6 +111,7 @@
                     <div class="col-2 d-flex text-center each-sub-service py-4 justify-content-center tailoring-subservice tailoring-price-type" :id="'sub_service_tailoring_'+type.replace(' ','')" :class="{'sel_service':detailingitem.tailoring_price_type==type}" v-for="type in type_prices" :data-tailoring-price-type="type" @click="toggleSubService('tailoring_'+type.replace(' ',''))">
                         {{type}}
                     </div>
+                    <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" @click="loadPriceNowModal('tailoring')">Price now</div>
 
                 </div>
             </div>
@@ -154,6 +156,25 @@
         </template>
     </modal>
 
+    <modal ref="pricenow_modal">
+        <template #closebtn>
+            <span class="close" id="pricenow_modal_close" @click="closePriceNowModal"></span>
+        </template>
+        <template #bheader>
+            <div class="bmodal-header py-4 text-center">Enter price</div>
+        </template>
+        <template #bcontent>
+            <div class="row justify-content-center pt-4">
+                <div class="col-4 form-group"><input type="text" class="form-control py-2" v-model="price_now_value"></div>
+            </div>
+            <div class="row justify-content-center py-4">
+                <div class="col-3 form-group"><button class="btn btn-outline-success w-100" @click="priceNow">OK</button></div>
+            </div>
+        </template>
+
+    </modal>
+
+
 
 </template>
 <script>
@@ -193,6 +214,9 @@ export default {
         const sel_tailoring_price_type = ref("");
         const addon_modal = ref();
         const sel_addon_id = ref(0);
+        const price_now_type = ref('');
+        const pricenow_modal = ref();
+        const price_now_value = ref('');
 
         function toggleMainService(id){
             let el = document.getElementById('main_service_'+id);
@@ -580,6 +604,50 @@ export default {
             addon_modal.value.closeModal();
         }
 
+        function loadPriceNowModal(type){
+            price_now_type.value = type;
+            pricenow_modal.value.showModal();
+        }
+
+        function priceNow(){
+           let montant = price_now_value.value;
+
+            if(montant=='' || !parseFloat(montant)){
+                price_now_value.value = '';
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                        message: 'Invalid price now value',
+                        ttl: 5,
+                        type: 'danger'
+                    });
+            }else{
+                axios.post('/set-price-now',{
+                    id:props.detailingitem.id,
+                    type:price_now_type.value,
+                    montant:montant,
+                }).then((res)=>{
+                    //console.log(res);
+                    if(res.data.updated){
+                        price_now_value.value='';
+                        price_now_type.value = '';
+                        closePriceNowModal();
+
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                            message: 'Item price updated',
+                            ttl: 5,
+                            type: 'success'
+                        });
+                    }
+                }).catch((err)=>{
+                    console.log(err);
+                }).finally(()=>{
+
+                });
+            }
+        }
+
+        function closePriceNowModal(){
+            pricenow_modal.value.closeModal();
+        }
 
         return {
             back,
@@ -601,6 +669,12 @@ export default {
             setServiceToggle,
             closeAddOnModal,
             sel_addon_id,
+            priceNow,
+            price_now_type,
+            pricenow_modal,
+            loadPriceNowModal,
+            closePriceNowModal,
+            price_now_value,
         };
     },
 }
@@ -610,13 +684,13 @@ export default {
         font:normal 16px/1.5em "Gotham Rounded Light";
     }
 
-    .each-main-service, .each-sub-service{
+    .each-main-service, .each-sub-service, .each-price-now-btn{
         box-shadow: 0px 0px 4px rgba(80,80,80,0.2);
         border-radius:4px;
         font:normal 16px "Gotham Rounded Light";
     }
 
-    .each-sub-service{
+    .each-sub-service, .each-price-now-btn{
         margin-right: 25px;
         height:70px;
     }
@@ -632,7 +706,8 @@ export default {
     .each-main-service:hover,
     .each-main-service.sel_service,
     .each-sub-service:hover,
-    .each-sub-service.sel_service{
+    .each-sub-service.sel_service,
+    .each-price-now-btn:hover{
         cursor:pointer;
         color:#fff;
         background:#47454B;

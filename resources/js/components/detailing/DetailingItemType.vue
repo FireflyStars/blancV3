@@ -28,13 +28,15 @@
                             @click="typeItemClick(item.id)"
                             :class="{ selected: typeitem_id === item.id && category_id === cat.id }"
                         >
+
                             <img
 
                                 class="item-no-picto"
-                                src="/images/nopicto.svg"
+                                src="/images/nopicto.svg" v-if="item.draw1 == null || item.draw1==''"
                             />
+                            <img v-else class="item-picto" :src="'/images/pictos/'+item.draw1+'.svg'"/>
+
                             <!--
-                                 v-if="item.draw1 == null"
                             <item-picto
                                 v-else
                                 class="item-picto"
@@ -43,6 +45,7 @@
                                 face="front"
                             ></item-picto>
                             -->
+
                             {{ item.name }}
                         </div>
                     </div>
@@ -189,6 +192,7 @@ export default {
 .item-picto {
     pointer-events: fill;
     width: 65px;
+    height:80px;
     padding-bottom: 15px;
 }
 .item-type:hover > .item-picto {

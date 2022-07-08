@@ -550,6 +550,7 @@ Route::post('/get-services',[DetailingController::class,'getServices'])->name('g
 Route::post('/complete-detailing-item',[DetailingController::class,'completeDetailing'])->name('complete-detailing-item')->middleware('auth');
 Route::post('/update-cust-preference-from-service',[DetailingController::class,'updateCustomerServicePref'])->name('update-cust-preference-from-service')->middleware('auth');
 Route::post('/remove-detailing-item',[DetailingController::class,'removeDetailingItem'])->name('remove-detailing-item')->middleware('auth');
+Route::post('/set-price-now',[DetailingController::class,'setPriceNow'])->name('set-price-now')->middleware('auth');
 
 /*
 * Create items from detailing
@@ -678,7 +679,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
         $payment_id = DB::table('payments')->insertGetId($to_insert);
 
         if($status=='succeeded'){
-            $updated = DB::table("infoOrder")->where('id',$order_id)->update(['Paid'=>1]);
+            //$updated = DB::table("infoOrder")->where('id',$order_id)->update(['Paid'=>1]);
         }
 
         echo json_encode(['payment_id'=>$payment_id]);

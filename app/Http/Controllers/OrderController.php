@@ -584,7 +584,7 @@ class OrderController extends Controller
                 if($payment_intent->status == 'succeeded'){
                     //Update order
                     DB::table('infoOrder')->where('id',$order_id)->update([
-                        'Paid'=>1,
+                        //'Paid'=>1,
                         'payment_id'=>$payment_id,
                     ]);
 
@@ -972,9 +972,14 @@ class OrderController extends Controller
                 $items = DB::table('infoitems')->whereIn('id',$items_created)->get();
 
                 $item_historique = [];
+                $invoices_id = [];
 
                 foreach($items as $k=>$v){
                     if($v->InvoiceID !=''){
+                        if(!in_array($v->InvoiceID,$invoices_id)){
+                            array_push($invoices_id,$v->InvoiceID);
+                        }
+
                         if(isset($detailing_map[$v->id])){
                             DB::table('detailingitem')->where('id',$detailing_map[$v->id])->update(['InvoiceID'=>$v->InvoiceID]);
                         }
@@ -997,6 +1002,25 @@ class OrderController extends Controller
                     DB::table('itemhistorique')->insert($item_historique);
                 }
             }
+
+            //To add paid
+
+            $amount_paid = 0;
+            $payments = DB::table("payments")->where('order_id',$order_id)->where('status','succeeded')->get();
+            if(count($payments) > 0){
+                foreach($payments as $k=>$v){
+                    $amount_paid += $v->montant;
+                }
+            }
+
+            if($order && $amount_paid >= $order->Total){
+                DB::table('infoOrder')->where('id',$order_id)->update(['Paid'=>1]);
+                DB::table('infoInvoice')->whereIn('InvoiceID',$invoices_id)->update(['Paid'=>1]);
+            }
+
+
+
+
         }
         //*/
 
@@ -1027,6 +1051,7 @@ class OrderController extends Controller
                 $credit_remaining = 0;
             }
             */
+
             $credit_remaining = $cust->credit - $credit_to_deduct;
 
             $credit_remaining = number_format($credit_remaining,2);
