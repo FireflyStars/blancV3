@@ -60,7 +60,7 @@
                     <div class="col-2 d-flex text-center each-sub-service py-4 justify-content-center cleaning-subservice cleaning-prices" v-for="name in type_prices" :id="'sub_service_'+name.replace(' ','')" @click="toggleSubService(name.replace(' ',''))" :data-cleaning-price-type="name" :class="{'sel_service':detailingitem.cleaning_price_type==name}">
                        {{name}}
                     </div>
-                     <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" @click="loadPriceNowModal('cleaning')">Price now</div>
+                     <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" id="pricenow_cleaning" @click="loadPriceNowModal('cleaning')" :class="{'sel_service':detailingitem.cleaning_price_type=='PriceNow'}">Price now</div>
 
                 </div>
             </div>
@@ -111,7 +111,7 @@
                     <div class="col-2 d-flex text-center each-sub-service py-4 justify-content-center tailoring-subservice tailoring-price-type" :id="'sub_service_tailoring_'+type.replace(' ','')" :class="{'sel_service':detailingitem.tailoring_price_type==type}" v-for="type in type_prices" :data-tailoring-price-type="type" @click="toggleSubService('tailoring_'+type.replace(' ',''))">
                         {{type}}
                     </div>
-                    <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" @click="loadPriceNowModal('tailoring')">Price now</div>
+                    <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" id="pricenow_tailoring" @click="loadPriceNowModal('tailoring')" :class="{'sel_service':detailingitem.tailoring_price_type=='PriceNow'}">Price now</div>
 
                 </div>
             </div>
@@ -339,6 +339,10 @@ export default {
                         let elp = cleaning_prices[i];
                         elp.classList.remove('sel_service');
                     }
+
+                    if(classes.includes('sel_service')){
+                        document.getElementById('pricenow_cleaning').classList.remove('sel_service');
+                    }
                 }
 
                 if(classes.includes('tailoring-price-type')){
@@ -351,6 +355,10 @@ export default {
                     for(i in keys){
                         let elp = cleaning_prices[i];
                         elp.classList.remove('sel_service');
+                    }
+
+                    if(classes.includes('sel_service')){
+                        document.getElementById('pricenow_tailoring').classList.remove('sel_service');
                     }
                 }
 
@@ -401,6 +409,12 @@ export default {
             }else{
                 document.getElementById('main_service_2').classList.remove('main_selected');
             }
+
+            let price_now_el = document.querySelectorAll('#pricenow_tailoring.sel_service');
+            if(price_now_el.length > 0){
+                price_type = 'PriceNow';
+            }
+
 
             sel_tailoring_price_type.value = price_type;
 
@@ -468,6 +482,11 @@ export default {
                 if(pricing_el.length == 1){
                     cleaning_pricing_type = pricing_el[0].getAttribute('data-cleaning-price-type');
                     sel_cleaning_price_type.value = cleaning_pricing_type;
+                }
+
+                let price_now_el = document.querySelectorAll('#pricenow_cleaning.sel_service');
+                if(price_now_el.length > 0){
+                    sel_cleaning_price_type.value = 'PriceNow';
                 }
 
             }else{
@@ -605,8 +624,31 @@ export default {
         }
 
         function loadPriceNowModal(type){
-            price_now_type.value = type;
-            pricenow_modal.value.showModal();
+            let el = document.getElementById('pricenow_'+type);
+            el.classList.toggle('sel_service');
+
+            let classes = Object.values(el.classList);
+
+            if(classes.includes('sel_service')){
+                if(type=='tailoring'){
+                    sel_tailoring_price_type.value = 'PriceNow';
+                    let elt = Object.values(document.querySelectorAll('.tailoring-price-type'));
+                    elt.forEach(function(v,i){
+                        v.classList.remove('sel_service');
+                    });
+
+                }
+                else if(type=='cleaning'){
+                    sel_cleaning_price_type.value = 'PriceNow';
+                    let elc = Object.values(document.querySelectorAll('.cleaning-prices'));
+                    elc.forEach(function(v,i){
+                        v.classList.remove('sel_service');
+                    });
+                }
+
+                price_now_type.value = type;
+                pricenow_modal.value.showModal();
+            }
         }
 
         function priceNow(){
@@ -630,6 +672,17 @@ export default {
                         price_now_value.value='';
                         price_now_type.value = '';
                         closePriceNowModal();
+
+                        context.emit("save-item-services", {
+                            step:11,
+                            detailingitem_id: props.detailingitem.id,
+                            cleaning_services: JSON.stringify(sel_cleaning_service_id.value),
+                            cleaning_price_type: sel_cleaning_price_type.value,
+                            tailoring_services: JSON.stringify(sel_tailoring_service_id.value),
+                            tailoring_price_type:sel_tailoring_price_type.value,
+                            montant:montant,
+                        });
+
 
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
                             message: 'Item price updated',
@@ -707,7 +760,8 @@ export default {
     .each-main-service.sel_service,
     .each-sub-service:hover,
     .each-sub-service.sel_service,
-    .each-price-now-btn:hover{
+    .each-price-now-btn:hover,
+    .each-price-now-btn.sel_service{
         cursor:pointer;
         color:#fff;
         background:#47454B;
