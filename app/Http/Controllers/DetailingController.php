@@ -435,6 +435,13 @@ class DetailingController extends Controller
 
                 DB::table('detailingitem')->where('id',$detailingitem_id)->update($cleaning_arr_to_update);
 
+                if($cleaning_price_type=='PriceNow'){
+                    DB::table('detailingitem')->where('id',$detailingitem_id)->update([
+                        'dry_cleaning_price'=>$request->montant,
+                        'cleaning_addon_price'=>0,
+                    ]);
+                }
+
 
                 if($cleaning_price_type=='Quote'){
                     DB::table('detailingitem')->where('id',$detailingitem_id)->update([
@@ -1407,7 +1414,7 @@ class DetailingController extends Controller
         $total_with_discount = $total_price;
 
         if($cust->discount > 0){
-            $cust_discount = ($cust->discount/100) * $total_with_discount;
+            $cust_discount = ($cust->discount/100) * $total_price;
             $total_with_discount = $total_with_discount - $cust_discount;
         }
 
@@ -1418,9 +1425,9 @@ class DetailingController extends Controller
             $total_with_discount = $total_with_discount - $order_discount;
         }
 
-        $total_exc_vat = $total_with_discount;
-        $vat = number_format(0.20*$total_with_discount,2);
-        $total_inc_vat = number_format($total_with_discount+$vat,2);
+        $total_inc_vat = $total_with_discount;
+        $total_exc_vat = number_format(($total_with_discount/1.2),2);
+        $vat = $total_inc_vat - $total_exc_vat;
 
         $total_with_discount = $total_inc_vat;
 
@@ -1487,6 +1494,7 @@ class DetailingController extends Controller
         DB::table('infoOrder')->where('id',$order_id)->update([
             'Subtotal'=>$total_price,
             'Total'=>$total_with_discount,
+            'OrderDiscount'=>number_format($order_discount+$cust_discount,2),
         ]);
 
 
@@ -1501,6 +1509,8 @@ class DetailingController extends Controller
         }
 
 
+
+
         return response()->json([
             'post'=>$request->all(),
             'items'=>$items,
@@ -1512,10 +1522,10 @@ class DetailingController extends Controller
             'address'=>$addr,
             'sub_total'=>number_format($total_price,2),
             'total_with_discount'=>number_format($total_with_discount,2),
-            'discount'=>number_format($order->OrderDiscount,2),
-            'vat'=>$vat,
-            'total_inc_vat'=>$total_inc_vat,
-            'total_exc_vat'=>$total_exc_vat,
+            'discount'=>number_format($order_discount,2),
+            'vat'=>number_format($vat,2),
+            'total_inc_vat'=>number_format($total_inc_vat,2),
+            'total_exc_vat'=>number_format($total_exc_vat,2),
             'custcard'=>$cust_card,
             'stripe_public_key'=>env($stripe_public_key),
             'stripe_security_key'=>env($stripe_security_key),
@@ -1526,11 +1536,12 @@ class DetailingController extends Controller
             'amount_paid_credit'=>$amount_paid_credit,
             'discount_perc'=>$discount_perc,
             'created_date'=>$created_date,
-            'credit_to_deduct'=>$credit_to_deduct,
+            'credit_to_deduct'=>number_format($credit_to_deduct,2),
             'cust_discount'=>$cust_discount,
             'express_addon'=>$express_addon,
             'order_without_express'=>$order_without_express,
             'amount_without_credit'=>number_format($amount_without_credit,2),
+            'amount_diff'=>DetailingController::getAmountToPay($order_id),
         ]);
     }
 
@@ -1644,6 +1655,23 @@ class DetailingController extends Controller
         return response()->json([
             'updated'=>$updated,
         ]);
+    }
+
+    public static function getAmountToPay($order_id){
+        $amount_to_pay = 0;
+
+        $amount_paid = 0;
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+        $payments = DB::table("payments")->where('order_id',$order_id)->where('status','succeeded')->get();
+        if(count($payments) > 0){
+            foreach($payments as $k=>$v){
+                $amount_paid += $v->montant;
+            }
+        }
+
+        $amount_to_pay = $order->Total - $amount_paid;
+
+        return $amount_to_pay;
     }
 
 }

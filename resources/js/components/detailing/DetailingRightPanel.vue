@@ -208,6 +208,7 @@
                                                 <span class="question_mark">?</span>
                                                 &#163;0.00
                                             </span>
+                                            <span v-else-if="cleaning_price_type=='PriceNow'"></span>
                                             <span v-else>&#163;{{grouped_cleaning_price[gpService]}}</span>
                                         </span>
                                     </div>
@@ -216,9 +217,9 @@
                                     <div class="col-9"><h5 class="gp_service mb-0">Tailoring</h5></div>
                                     <div class="col-3 d-flex justify-content-end">
                                         <span v-if="detailingitem.tailoring_price_type=='Quote'">
-                                            <span class="question_mark">?</span>
-                                            &#163;0.00
+                                            <span class="question_mark">?</span>&#163;0.00
                                         </span>
+                                        <span v-else-if="detailingitem.tailoring_price_type=='PriceNow'"></span>
                                         <span v-else>&#163;{{tailoring_price}}</span>
                                     </div>
                                 </div>
@@ -421,11 +422,10 @@ export default {
 
                     price = (perc/100)*base_price;
 
-
                     total_price = price_add_on+price;
 
                     if(sv.length > 0){
-                        grouped_cleaning_price.value[v] = (typeof(price_type!='undefined') && price_type=='Quote'?parseFloat(0).toFixed(2):total_price.toFixed(2));
+                        grouped_cleaning_price.value[v] = (typeof(price_type!='undefined') && ['Quote','PriceNow'].includes(price_type)?parseFloat(0).toFixed(2):total_price.toFixed(2));
                         grouped_cleaning_services.value[v] = sv;
                     }else{
                         grouped_cleaning_price.value[v] = {};
@@ -455,7 +455,7 @@ export default {
             all_tailoring_services.value = services;
         }
 
-        function refreshTailoringServices(services_id,tailoring_price_type){
+        function refreshTailoringServices(services_id,tailoring_price_type,fixed_price){
             let services_int_id = [];
             let all_services = all_tailoring_services.value;
             let sel_services = [];
@@ -485,7 +485,11 @@ export default {
             sel_tailoring_services.value = sel_services;
             tailoring_price.value = price.toFixed(2);
 
-            return price;
+            if(tailoring_price_type=='PriceNow'){
+                return fixed_price;
+            }else{
+                return price;
+            }
         }
 
         onMounted(()=>{
@@ -501,6 +505,8 @@ export default {
                     price = parseFloat(props.detailingitem.dry_cleaning_price)+parseFloat(props.detailingitem.cleaning_addon_price)+parseFloat(props.detailingitem.tailoring_price);
                     final_price.value = price.toFixed(2);
                 }
+
+
 
             }
         });

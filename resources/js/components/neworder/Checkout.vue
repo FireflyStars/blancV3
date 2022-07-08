@@ -189,7 +189,7 @@
                                             <div class="col-5 sub-total-desc">{{order_items.length}} item<span v-if="order_items.length > 1">s</span> (Incl. VAT)</div>
 
                                             <div class="col-3 text-align-right" v-if="[1,6].includes(order.express)">&#163;{{order_without_express.toFixed(2)}}</div>
-                                            <div class="col-3 text-align-right" v-else>&#163;{{total_inc_vat}}</div>
+                                            <div class="col-3 text-align-right" v-else>&#163;{{sub_total}}</div>
 
                                         </div>
 
@@ -214,7 +214,7 @@
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text">
                                             <div class="col-9">Total (excl. VAT)</div>
-                                            <div class="col-3 text-align-right">&#163;{{total_exc_vat.toFixed(2)}}</div>
+                                            <div class="col-3 text-align-right">&#163;{{total_exc_vat}}</div>
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text">
                                             <div class="col-9">Tax (20% VAT included in item prices)</div>
@@ -226,9 +226,9 @@
                                 <div class="row justify-content-end mt-3 mx-0">
                                     <div class="col-8 py-3" id="credit_div">
                                         <div class="d-flex align-items-center">
-                                            <img src="/images/icon_check.svg" class="paid_icon" v-if="amount_without_credit == 0 && order.Paid==1"/>
+                                            <img src="/images/icon_check.svg" class="paid_icon" v-if="amount_diff==0"/>
                                              <img src="/images/unpaid_cross.svg" class="paid_icon" v-else/>
-                                            <span class="summary-title" v-if="amount_to_pay == 0 && order.Paid==1">Paid</span>
+                                            <span class="summary-title" v-if="amount_diff==0">Paid</span>
                                             <span class="summary-title" v-else>Pending payments</span>
                                         </div>
                                         <div class="row mt-4 px-0 py-1 sub-total-text">
@@ -262,7 +262,7 @@
                                         </div>
 
                                          <div class="row px-0 mt-4 py-2 balance-text">
-                                            <div class="col-9">Order balance to pay</div>
+                                            <div class="col-9">Order balance to pay by card</div>
                                             <div class="col-3 text-align-right">&#163;{{order_balance.toFixed(2)}}</div>
                                         </div>
                                     </div>
@@ -552,7 +552,7 @@
                                         <a href="javascript:void(0)" @click="redirectToDetailingList">Previous</a>
                                     </div>
                                     <div class="col-6 px-4">
-                                        <button id="closeBtn" @click="redirectToOrderDetail" class="w-100 py-3" v-if="order.Paid==1 && amount_to_pay==0">Close</button>
+                                        <button id="closeBtn" @click="redirectToOrderDetail" class="w-100 py-3" v-if="amount_diff==0">Close</button>
                                         <button v-else id="completeBtn" class="w-100 py-3" @click="validatePayment" :disabled="editcard">Proceed</button>
                                     </div>
                                 </div>
@@ -669,6 +669,7 @@ export default {
         const express_addon = ref(0);
         const order_without_express = ref(0);
         const amount_without_credit = ref(0);
+        const amount_diff = ref(0);
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
@@ -720,6 +721,7 @@ export default {
                 express_addon.value = res.data.express_addon;
                 order_without_express.value = res.data.order_without_express;
                 amount_without_credit.value = res.data.amount_without_credit;
+                amount_diff.value = res.data.amount_diff;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -979,6 +981,7 @@ export default {
             express_addon,
             order_without_express,
             amount_without_credit,
+            amount_diff,
         }
 
     },
