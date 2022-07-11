@@ -82,6 +82,8 @@ class OrderController extends Controller
             $order_to_insert['DateDeliveryAsk']= $new_order['isc_pickup'];
         }
 
+
+
         if($new_order['deliverymethod'] !='recurring'){
             $order_to_insert = [
                 'deliverymethod'=>$new_order['deliverymethod'],
@@ -124,12 +126,12 @@ class OrderController extends Controller
                 'created_at'=>$created_stamp,
             ]);
 
-            /*
+
             DB::table('infoOrder')->where('id',$new_order_id)->update([
                 'DatePickup'=>substr($dropoff_stamp,0,10),
                 'DateDeliveryAsk'=>$new_order['isc_pickup'],
             ]);
-            */
+
 
         }
 
