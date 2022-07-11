@@ -64,10 +64,10 @@
                                             <select-options
                                                 v-model="form.typeDelivery"
                                                 :options="[
-                                                    { display:'Marylebone', value: 'Marylebone' },
-                                                    { display:'Chelsea', value: 'Chelsea' },
-                                                    { display:'Notting Hill', value: 'Notting Hill' },
-                                                    { display:'Delivery', value: 'Delivery' },
+                                                    { display:'Marylebone', value: 'MARYLEBONE' },
+                                                    { display:'Chelsea', value: 'CHELSEA' },
+                                                    { display:'Notting Hill', value: 'NOTTING HILL' },
+                                                    { display:'Delivery', value: 'DELIVERY' },
                                                 ]"
                                                 :placeholder="'Delivery Type'"
                                                 :name="'typeDelivery'">
@@ -153,6 +153,7 @@
                                                 <div class="phone-country-code" v-if="contact_details_edit">
                                                     <select-options
                                                         v-model="form.phoneCountryCode"
+                                                        :modelValue="form.phoneCountryCode"
                                                         :options="phoneCodesSorted"
                                                         :width = "'100px'"
                                                         :name="'phoneCountryCode'">
@@ -170,13 +171,18 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="customer-email w-55 mt-3">
-                                        <div class="form-group m-0">
-                                            <label class="form-label d-block m-0" for="email">{{ form.customerType == 'B2C' ? "Email" : form.accountType == 'Main' ? 'Representative email address' : 'Business email address' }}</label>
-                                            <input v-if="contact_details_edit" type="text" v-model="form.email" class="form-control custom-input" placeholder="Email">
-                                            <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
-                                                {{ form.email }} &nbsp;
+                                    <div class="d-flex mt-3 align-items-end">
+                                        <div class="customer-email w-55">
+                                            <div class="form-group m-0">
+                                                <label class="form-label d-block m-0" for="email">{{ form.customerType == 'B2C' ? "Email" : form.accountType == 'Main' ? 'Representative email address' : 'Business email address' }}</label>
+                                                <input v-if="contact_details_edit" type="text" v-model="form.email" class="form-control custom-input" placeholder="Email">
+                                                <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
+                                                    {{ form.email }} &nbsp;
+                                                </div>
                                             </div>
+                                        </div>
+                                        <div class="w-45 d-flex justify-content-end" v-if="contact_details_edit">
+                                            <button class="btn btn btn-success each-save-btn" @click="validateAndSaveContactDetails">Save</button>
                                         </div>
                                     </div>
                                 </div>
@@ -220,24 +226,35 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="w-55 mt-3">
-                                        <div class="form-group mb-0">
-                                            <label for="customer_address1">Delivery address</label>
-                                            <input type="text" v-model="form.deliveryAddress1" placeholder="Address line 1" class="form-control custom-input" v-if="address_edit">
-                                            <div v-else class="w-100 py-2 rounded-2 bg-color px-3">
-                                                {{ form.deliveryAddress1 }} &nbsp;
+                                    <div class="d-flex mt-3 align-items-end">
+                                        <div class="w-55 mt-3">
+                                            <div class="form-group mb-0">
+                                                <label for="customer_address1">Delivery address</label>
+                                                <input type="text" v-model="form.deliveryAddress1" placeholder="Address line 1" class="form-control custom-input" v-if="address_edit">
+                                                <div v-else class="w-100 py-2 rounded-2 bg-color px-3">
+                                                    {{ form.deliveryAddress1 }} &nbsp;
+                                                </div>
+                                                <input type="text" v-model="form.deliveryAddress2" placeholder="Address line 2" class="form-control custom-input mt-3" v-if="address_edit">
+                                                <div v-else class="w-100 py-2 rounded-2 bg-color px-3 mt-3">
+                                                    {{ form.deliveryAddress2 }} &nbsp;
+                                                </div>
                                             </div>
-                                            <input type="text" v-model="form.deliveryAddress2" placeholder="Address line 2" class="form-control custom-input mt-3" v-if="address_edit">
-                                            <div v-else class="w-100 py-2 rounded-2 bg-color px-3 mt-3">
-                                                {{ form.deliveryAddress2 }} &nbsp;
-                                            </div>
+                                        </div>
+                                        <div class="w-45 d-flex justify-content-end" v-if="address_edit">
+                                            <button class="btn btn btn-success each-save-btn" @click="validateAndSaveContactAddress">Save</button>
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="page-section">
-                                    <h3 class="title m-0">{{ form.customerType == 'B2B' ? 'Notes' : 'Customer Notes' }}</h3>
+                                    <h3 class="title m-0">{{ form.customerType == 'B2B' ? 'Notes' : 'Customer Notes' }} <span class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="customer_note_edit = !customer_note_edit">Edit</span></h3>
                                     <div class="w-75 mt-3">
-                                        <textarea v-model="form.customerNote" name="customer_note" rows="4" class="form-control"></textarea>
+                                        <textarea v-model="form.customerNote" name="customer_note" rows="4" class="form-control" :readonly="!customer_note_edit"></textarea>
+                                    </div>
+                                    <div class="d-flex" v-if="customer_note_edit">
+                                        <div class="w-25 mt-3">
+                                            <button class="btn btn-success each-save-btn" @click="saveCustomerNote">Save</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -757,6 +774,7 @@
             const contact_details_edit = ref(false);
             const add_payement = ref(false);
             const address_edit = ref(false);
+            const customer_note_edit = ref(false);
             const companyPostCode = ref();
             const searchpanel = ref(null);
             const showcontainer=ref(false);
@@ -818,6 +836,9 @@
                     form.value.firstName = res.data.firstName;
                     form.value.lastName = res.data.lastName;
                     var phone = getPhone(res.data.phone);
+
+                    console.log(phone);
+
                     form.value.phoneCountryCode = phone.code;
                     form.value.phoneNumber = phone.number;
                     form.value.email = res.data.email;
@@ -829,7 +850,7 @@
                     form.value.country = res.data.address.country;
                     form.value.deliveryAddress1 = res.data.address.address1;
                     form.value.deliveryAddress2 = res.data.address.address2;
-                    form.value.customerNote = res.data.customerNote;
+                    form.value.customerNote = res.data.CustomerNotes;
                     // payment tab
 
                     form.value.paymentMethod  = res.data.paymentMethod == 1 ? 'Credit Card' : 'BACS';
@@ -1153,6 +1174,128 @@
                 }
             }
 
+            function validateAndSaveContactDetails(){
+                let err = [];
+
+                const email_regex=/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/g;
+
+                if(form.value.firstName=='' || form.value.lastName==''){
+                    err.push('Please enter contact name');
+                }
+
+                if(form.value.phoneNumber==''){
+                    err.push('Please enter phone number');
+                }
+
+                if(form.value.email!='' && !email_regex.test(form.value.email.toLowerCase())){
+                    err.push('Please enter a valid email address');
+                }
+
+                if(err.length > 0){
+                    err.forEach(function(v,i){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                            message: v,
+                            ttl: 5,
+                            type: 'danger'
+                        });
+                    })
+                }else{
+                    axios.post('/update-customer-contact',{
+                        customer_id:route.params.customer_id,
+                        type_delivery:form.value.typeDelivery,
+                        customer_type:form.value.customerType,
+                        programme_type:form.value.programmeType,
+                        kiosk_number:form.value.kioskNumber,
+                        firstname:form.value.firstName,
+                        lastname:form.value.lastName,
+                        phone_country_code:form.value.phoneCountryCode,
+                        phone_num:form.value.phoneNumber,
+                        email:form.value.email,
+                    }).then((res)=>{
+                        if(res.data.updated){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                message: 'Contact details updated',
+                                ttl: 5,
+                                type: 'success'
+                            });
+                            contact_details_edit.value = false;
+                        }
+                    }).catch((err)=>{
+                        console.log(err);
+                    }).finally(()=>{
+
+                    });
+                }
+            }
+
+
+            function validateAndSaveContactAddress(){
+                let err = [];
+
+                if(form.value.postCode==''){
+                    err.push("Please enter Postcode");
+                }
+                if(form.value.city==''){
+                    err.push("Please enter City");
+                }
+                if(form.value.deliveryAddress1==''){
+                    err.push("Please enter Address 1");
+                }
+
+                if(err.length > 0){
+                    err.forEach(function(v,i){
+                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                            message: v,
+                            ttl: 5,
+                            type: 'danger'
+                        });
+                    });
+                }else{
+                    axios.post('/update-customer-address',{
+                        customer_id:route.params.customer_id,
+                        postcode:form.value.postCode,
+                        county:form.value.county,
+                        city:form.value.city,
+                        address1:form.value.deliveryAddress1,
+                        address2:form.value.deliveryAddress2,
+                    }).then((res)=>{
+                        if(res.data.new_address_id){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                message: 'Customer address updated',
+                                ttl: 5,
+                                type: 'success'
+                            });
+                            address_edit.value = false;
+                        }
+                    }).catch((err)=>{
+                        console.log(err);
+                    }).finally(()=>{
+
+                    });
+
+                }
+            }
+
+            function saveCustomerNote(){
+                axios.post('/update-customer-note',{
+                    customer_id:route.params.customer_id,
+                    notes:form.value.customerNote,
+                }).then((res)=>{
+                    if(res.data.updated==1 || res.data.updated==0){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                message: 'Customer notes updated',
+                                ttl: 5,
+                                type: 'success'
+                            });
+                        customer_note_edit.value = false;
+                    }
+                }).catch((err)=>{
+
+                }).finally(()=>{
+
+                });
+            }
+
 
             return {
                 form,
@@ -1183,6 +1326,10 @@
                 addCustomerCredit,
                 credit_to_add,
                 setCustomerDiscount,
+                validateAndSaveContactDetails,
+                validateAndSaveContactAddress,
+                customer_note_edit,
+                saveCustomerNote,
             }
 
         },
@@ -1497,6 +1644,9 @@ background: #4E58E7;
     .w-55{
         width: 55%;
     }
+    .w-25{
+        width:25%;
+    }
     .w-45{
         width: 45%;
         padding-left: 2.5rem;
@@ -1580,5 +1730,14 @@ background: #4E58E7;
 input.error:focus{
     outline: none;
     border-color: #EB5757;
+}
+
+.each-save-btn{
+    color:#fff;
+}
+
+.each-save-btn:hover{
+    background:#333;
+    color:#fff;
 }
 </style>
