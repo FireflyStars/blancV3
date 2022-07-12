@@ -591,7 +591,7 @@ class CustomerController extends Controller
             $keywordRaw = $request->Customername;
             $keywordRaw = str_replace(",", " ",  $keywordRaw);
             $keywords   = explode(' ', $keywordRaw);
-       
+
             $customers = DB::table('infoCustomer')
             ->Leftjoin( 'address', function ($join){
                 $join->on( 'address.CustomerID', '=', 'infoCustomer.CustomerID');
@@ -1250,6 +1250,61 @@ class CustomerController extends Controller
 
         return response()->json([
             'updated'=>$updated,
+        ]);
+    }
+
+    public function saveCustomerPreferences(Request $request){
+        $customer_id = $request->customer_id;
+        $preferences = (array) @json_decode($request->preferences);
+        $updated = false;
+
+        $cust = DB::table('infoCustomer')->where('id',$customer_id)->first();
+
+        if($cust){
+            if(count($preferences) > 0){
+                foreach($preferences as $k=>$v){
+                    $updated = DB::table('InfoCustomerPreference')
+                        ->where('CustomerID',$cust->CustomerID)
+                        ->where('Delete',0)
+                        ->where('id_preference',$k)
+                        ->update([
+                            'Value'=>$v,
+                            'updated_at'=>date('Y-m-d H:i:s')
+                        ]);
+                }
+            }
+        }
+
+        return response()->json([
+            //'post'=>$request->all(),
+            'cust_id'=>$cust->CustomerID,
+            'preferences'=>$preferences,
+            'updated'=>$updated,
+        ]);
+    }
+
+    public function saveCustomerDeliveryInstructions(Request $request){
+        $customer_id = $request->customer_id;
+        $updated = false;
+
+        $cust = DB::table('infoCustomer')->where('id',$customer_id)->first();
+        if($cust){
+            $updated = DB::table('DeliveryPreference')->updateOrInsert(['CustomerID'=>$cust->CustomerID],[
+                'CustomerID'=>$cust->CustomerID,
+                'TypeDelivery'=>$request->type_delivery,
+                'Name'=>$request->name,
+                'CodeCountry'=>$request->country_code,
+                'PhoneNumber'=>$request->phone_num,
+                'OtherInstruction'=>$request->driver_instructions,
+                'created_at'=>date('Y-m-d H:i:s'),
+                'updated_at'=>date('Y-m-d H:i:s')
+            ]);
+        }
+
+
+        return response()->json([
+            'updated'=>$updated,
+            'post'=>$request->all(),
         ]);
     }
 }
