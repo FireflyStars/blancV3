@@ -952,7 +952,7 @@ class CustomerController extends Controller
         $customer->pastOrders = false;
 
         //TO UNCOMMENT AFTER SAVE
-
+/*
         $customer->currentOrders = DB::table('infoOrder')
                     ->select(
                         'infoOrder.id as order_id',
@@ -1306,5 +1306,81 @@ class CustomerController extends Controller
             'updated'=>$updated,
             'post'=>$request->all(),
         ]);
+    }
+
+    public function getCustomerOrderDetails(Request $request){
+        $customer_id = $request->customer_id;
+
+        $customer = DB::table('infoCustomer')->where('id',$customer_id)->first();
+
+        if($customer){
+            $customer->currentOrders = false;
+            $customer->pastOrders = false;
+
+        //TO UNCOMMENT AFTER SAVE
+
+        $customer->currentOrders = DB::table('infoOrder')
+                    ->select(
+                        'infoOrder.id as order_id',
+                        DB::raw('if(infoOrder.Paid=0,"unpaid","paid") as paid'), 'infoOrder.Total as total',
+                        DB::raw('DATE_FORMAT(infoOrder.created_at, "%d/%m/%Y") as items_received'),
+                        'infoOrder.underquote', 'infoOrder.TypeDelivery as destination', 'infoOrder.Status as status',
+                        DB::raw('IF(
+                            infoitems.PromisedDate > CURRENT_DATE(),
+                            IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")),
+                            DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y")) as deliv'),
+                            DB::raw('count(distinct(infoitems.id)) as items'),
+                            'TypePost.bg_color as location_color', 'postes.nom as location',
+                            'TypePost.process', 'TypePost.circle_color',
+                    )
+                    ->leftJoin('pickup', 'pickup.PickupID', '=', 'infoOrder.PickupID')
+                    ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
+                    ->join('postes', 'infoOrder.Status', '=', 'postes.nominterface')
+                    ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
+                    ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+                    ->join('infoitems',function($join){
+                        $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
+                            ->where('infoitems.InvoiceID','!=','')
+                            ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+                    })
+                    ->where('infoOrder.OrderID','!=','')
+                    ->where('infoOrder.CustomerID', $customer->CustomerID)
+                    ->whereNotIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
+                    ->groupBy('infoOrder.id')
+                    ->get();
+        $customer->pastOrders = DB::table('infoOrder')
+                    ->select(
+                        'infoOrder.id as order_id',
+                        DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'), 'infoOrder.Total as total',
+                        DB::raw('DATE_FORMAT(infoOrder.created_at, "%d/%m/%Y") as items_received'),
+                        'infoOrder.underquote', 'infoOrder.TypeDelivery as destination', 'infoOrder.Status as status',
+                        DB::raw('IF(
+                            infoitems.PromisedDate > CURRENT_DATE(),
+                            IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")),
+                            DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y")) as deliv'),
+                            DB::raw('count(distinct(infoitems.id)) as items'),
+                            'TypePost.bg_color as location_color', 'postes.nom as location',
+                            'TypePost.process', 'TypePost.circle_color',
+                    )
+                    ->leftJoin('pickup', 'pickup.PickupID', '=', 'infoOrder.PickupID')
+                    ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
+                    ->join('postes', 'infoOrder.Status', '=', 'postes.nominterface')
+                    ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
+                    ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+                    ->join('infoitems',function($join){
+                        $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
+                            ->where('infoitems.InvoiceID','!=','')
+                            ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+                    })
+                    ->where('infoOrder.OrderID','!=','')
+                    ->where('infoOrder.CustomerID', $customer->CustomerID)
+                    ->whereIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
+                    ->groupBy('infoOrder.id')
+                    ->get();
+        //*/
+
+        }
+
+        return response()->json($customer);
     }
 }

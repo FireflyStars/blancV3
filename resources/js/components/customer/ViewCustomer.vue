@@ -1001,6 +1001,19 @@
             }
             const selectNav = (nav)=>{
                 step.value = nav;
+                if(nav=='order_management'){
+                    store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading customer order details...']);
+                    axios.post('/get-customer-order-details',{
+                        customer_id:route.params.customer_id
+                    }).then((res)=>{
+                        currentOrders.value = res.data.currentOrders;
+                        pastOrders.value = res.data.pastOrders;
+                    }).catch((err)=>{
+
+                    }).finally(()=>{
+                        store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    });
+                }
             }
             const phoneCodesSorted = [...new Map(phoneCodes.map(item =>
                             [item.value, item])).values()].sort((a, b)=>{

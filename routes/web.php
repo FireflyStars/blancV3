@@ -25,6 +25,7 @@ use App\Models\DetailingServices;
 use App\Models\Infoitem;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Stripe\Service\CustomerService;
 
 use function PHPUnit\Framework\isNull;
 
@@ -81,6 +82,8 @@ Route::post('/update-customer-address',[CustomerController::class,'updateCustome
 Route::post('/update-customer-note',[CustomerController::class,'updateCustomerNote'])->name('update-customer-note')->middleware('auth');
 Route::post('/save-customer-preferences',[CustomerController::class,'saveCustomerPreferences'])->name('save-customer-preferences')->middleware('auth');
 Route::post('/save-customer-delivery-instructions',[CustomerController::class,'saveCustomerDeliveryInstructions'])->name('save-customer-delivery-instructions')->middleware('auth');
+
+Route::post('/get-customer-order-details',[CustomerController::class,'getCustomerOrderDetails'])->name('get-customer-order-details')->middleware('auth');
 
 Route::get('/permissions-test',function(){
     $user=User::find(56);
