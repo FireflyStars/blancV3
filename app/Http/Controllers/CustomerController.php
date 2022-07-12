@@ -929,7 +929,7 @@ class CustomerController extends Controller
                     ->select('infoCustomer.FirstName as firstName', 'infoCustomer.LastName as lastName', 'infoCustomer.Name as Name' ,  'infoCustomer.EmailAddress as email', 'infoCustomer.Phone as phone',
                         'infoCustomer.TotalSpend as totalSpent', 'infoCustomer.cardvip as kioskNumber', 'bycard as paymentMethod',
                         DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'), 'infoCustomer.TypeDelivery as typeDelivery',
-                        'infoCustomer.CustomerNotes as cusomerNote', 'infoCustomer.id', 'infoCustomer.CustomerID',
+                        'infoCustomer.CustomerNotes', 'infoCustomer.id', 'infoCustomer.CustomerID',
                         DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recuring", "Normal") as booking'), 'discount', 'credit',
                     )
                     ->where('infoCustomer.id', $request->customer_id)
@@ -947,6 +947,12 @@ class CustomerController extends Controller
             // $customer->billing = DB::table('address')->where('CusotmerID', $customer->CustomerID)
             //                     ->select('')
         }
+
+        $customer->currentOrders = false;
+        $customer->pastOrders = false;
+
+        //TO UNCOMMENT AFTER SAVE
+
         $customer->currentOrders = DB::table('infoOrder')
                     ->select(
                         'infoOrder.id as order_id',
@@ -1005,6 +1011,7 @@ class CustomerController extends Controller
                     ->whereIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
                     ->groupBy('infoOrder.id')
                     ->get();
+        //*/
         $preferences = DB::table('customerpreferences')->where('deleted', 0)
                     ->where('category', '!=', 'Other')
                     ->select('title', 'category', 'description', 'id', 'value', 'preference_type as type', 'dropdown_values')
@@ -1140,6 +1147,109 @@ class CustomerController extends Controller
         return response()->json([
             'updated'=>$updated,
             'discount'=>$discount,
+        ]);
+    }
+
+    public function updateCustomerContact(Request $request){
+        $customer_id = $request->customer_id;
+        $customer_type = $request->customer_type;
+        $phone_country_code = $request->phone_country_code;
+        $phone_num = $request->phone_num;
+
+        $updated = false;
+
+        $cust = DB::table('infoCustomer')->where('id',$customer_id)->first();
+
+        if($cust){
+            //$phones = $cust->Phone;
+
+            $phone_arr = [];
+            /*
+            if($phones !=''){
+                $phone_arr = @json_decode($phones);
+            }
+            */
+
+            if($phone_country_code !='' && $phone_num !=''){
+                array_push($phone_arr,str_replace("+","",$phone_country_code)."|".$phone_num);
+            }
+
+
+            $updated = DB::table('InfoCustomerPreference')
+                ->where('CustomerID',$cust->CustomerID)
+                ->where('Titre','Type Customer')
+                ->where('Delete',0)
+                ->update(['value'=>$request->programme_type,'updated_at'=>date('Y-m-d H:i:s')]);
+
+            DB::table('infoCustomer')->where('id',$customer_id)->update([
+                    'TypeDelivery'=>strtoupper($request->type_delivery),
+                    'btob'=>($request->customer_type=='B2B'?1:0),
+                    'cardvip'=>$request->kiosk_number,
+                    'FirstName'=>$request->firstname,
+                    'LastName'=>$request->lastname,
+                    'Name'=>$request->lastname.($request->firstname!=''?", ":"").$request->firstname,
+                    'EmailAddress'=>$request->email,
+                    'Phone'=>(!empty($phone_arr)?json_encode($phone_arr):""),
+                ]);
+
+
+        }
+
+        return response()->json([
+            'post'=>$request->all(),
+            'updated'=>$updated,
+        ]);
+    }
+
+    public function updateCustomerAddress(Request $request){
+        $customer_id = $request->customer_id;
+
+        $updated = false;
+        $cust = DB::table('infoCustomer')->where('id',$customer_id)->first();
+        $new_address_id = 0;
+
+        if($cust){
+            $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->first();
+
+            $updated = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->update([
+                'address1'=>$request->address1,
+                'address2'=>$request->address2,
+                'postcode'=>$request->postcode,
+                //'County'=>$request->county,
+                'Town'=>$request->city,
+            ]);
+
+            $new_address_id = DB::table('NewAddress')->insertGetId([
+                'AddressID'=>'',
+                'CustomerID'=>$cust->CustomerID,
+                'created_at'=>date('Y-m-d H:i:s'),
+                'address1'=>$request->address1,
+                'address2'=>$request->address2,
+                'postcode'=>$request->postcode,
+                //'State'=>$request->county,
+                'City'=>$request->city,
+                'Status'=>($addr?'EXIST':'NEW'),
+
+
+            ]);
+
+        }
+
+        return response()->json([
+            'post'=>$request->all(),
+            'new_address_id'=>$new_address_id,
+            'updated'=>$updated,
+        ]);
+    }
+
+    public function updateCustomerNote(Request $request){
+        $customer_id = $request->customer_id;
+        $notes = $request->notes;
+
+        $updated = DB::table('infoCustomer')->where('id',$customer_id)->update(['CustomerNotes'=>$notes]);
+
+        return response()->json([
+            'updated'=>$updated,
         ]);
     }
 }

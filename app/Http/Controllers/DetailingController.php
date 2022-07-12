@@ -1363,10 +1363,12 @@ class DetailingController extends Controller
                         $dc[] = $cs[$val];
                     }
 
-                    $items[$k]->detailed_services[] = [
-                        'name'=>"Dry cleaning (".implode(",",$dc).")",
-                        'price'=>number_format($v->dry_cleaning_price + $v->cleaning_addon_price,2),
-                    ];
+                    if(!empty($dc)){
+                        $items[$k]->detailed_services[] = [
+                            'name'=>"Dry cleaning (".implode(",",$dc).")",
+                            'price'=>number_format($v->dry_cleaning_price + $v->cleaning_addon_price,2),
+                        ];
+                    }
                 }
 
                 //To add grouped tailoring prices
@@ -1388,7 +1390,7 @@ class DetailingController extends Controller
                         foreach($group_by_tailoring_service as $group=>$prices){
                             $t_arr = [
                                 'name'=>$group,
-                                'price'=>number_format(array_sum($prices),2),
+                                'price'=>($v->tailoring_price_type=='PriceNow'?'Price now':number_format(array_sum($prices),2)),
                             ];
 
                             $items[$k]->detailed_services[] = $t_arr;
