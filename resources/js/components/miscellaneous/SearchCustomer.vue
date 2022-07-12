@@ -9,7 +9,7 @@
             enter-active-class="animate__animated animate__fadeIn"
  >
  <div v-if="showSearch" class="search">
-   <section class="nodata p-2" v-if ="Customer.length == 0 && CustomerEmails.length == 0 && CustomerOrders.length == 0">
+   <section class="nodata p-2" v-if ="Customer.length == 0 && CustomerEmails.length == 0 && CustomerOrders.length == 0 && ListItems.length == 0">
             <p v-if="!loader_running">we couldn't find any customers.</p>
   </section>
 
@@ -128,7 +128,6 @@
                </li>
              </ul>
         </li>
-
          <li class="list-group-item" v-if="ListItems.length>0">
 
              <div class="content-wraper">
@@ -141,28 +140,26 @@
              </div>
              <ul   class="list-group list-group-flush" >
                 <li v-for ="item in ListItems" :key="item">
-                  <div class="container">
+                  <div class="container" >
 
-                    <div class="row">
+                    <div class="row" @click="selectItem(item.item_id)">
                          <div class="col-3">
-                         <span class="body_medium">{{item.typeitem}}</span>
+                         <span class="body_medium">{{item.iteminfo}}</span>
                         </div>
                          <div class="col-1" >
-                            <span class="body_small">{{item.id}}</span>
+                            <span class="body_small">{{item.ItemTrackingKey}}</span>
                         </div>
                         <div class="col-2 " style = "text-align: center;">
-                        <b class = "body_small">{{item.StoreName}}</b>
+                        <b class = "body_small">{{item.brand}}</b>
                         </div>
                         <div class=" col-2 ">
-                            <b class ="body_small">{{item.store}}</b>
+                            <b class ="body_small">{{item.sub_order}}</b>
                         </div>
 
                         <div class=" col-2">
-                            <tag  :name="item.Status" ></tag>
+                            <tag  :name="item.nominterface" ></tag>
                         </div>
                           <div class="col-2" style="text-align: end;">
-                            <tag   v-if="item.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
-                            <tag   v-else :name="'B2B'" ></tag>
                          </div>
                      </div>
 
@@ -311,7 +308,7 @@ export default({
 
                 return store.getters[`${CUSTOMERLIST_MODULE}${CUSTOMERITEMS_GET_LIST}`];
             });
-
+           
           function loadMore(tab){
                  store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
                  store.dispatch(`${CUSTOMERLIST_MODULE}${CUSTOMER_LOAD_LIST}`,{showmore:tab,query:clear.value}).finally(()=>{
@@ -380,6 +377,20 @@ export default({
             this.clearSearch()
              router.push('/customer-detail/'+ customerId);
           }
+
+          function selectItem(item_id){
+            featureunavailable('item details');
+            // store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
+            // store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`, item_id);
+            // router.push({
+            //     name:'ItemDetails',
+            //     params: {
+            //         item_id:item_id,
+            //     },
+            // })
+            // store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+
+          }
             return {
                 submit,
                 clearSearch,
@@ -398,7 +409,8 @@ export default({
                 goToOrderList,
                 goCustomerView,
                 displayAll,
-                filterDef
+                filterDef,
+                selectItem
 
             }
         }

@@ -15,6 +15,10 @@ class SearchController extends Controller
 
 public function SearchCustomer(Request $request)
 {
+    $keywordRaw = $request['query'];
+    $keywordRaw = str_replace(",", " ",  $keywordRaw);
+    $keywords   = explode(' ', $keywordRaw);
+ 
     $query = $request['query'];
     $PerPageOrder = $request['PerPageOrder'];
     $PerPageUser = $request['PerPageUser'];
@@ -31,43 +35,69 @@ public function SearchCustomer(Request $request)
      })
     ->where('FirstName', 'LIKE', '%'. $query . '%')
     ->orWhere('LastName','LIKE', '%'. $query . '%')
-    ->orWhere('EmailAddress','LIKE', '%'.$query.'%')
-    ->orWhere('infoOrder.id',$query)
-    ->orWhere('infoitems.ItemTrackingKey',$query)
-    ->orWhere('infoitems.id',$query)
+    ->orWhere('EmailAddress','LIKE', '%'. $query.'%')
+    ->orWhereIn('FirstName', $keywords)
+    ->orWhereIn('LastName', $keywords)
+    ->orWhereIn('EmailAddress', $keywords)
+    ->orWhere('infoOrder.id','LIKE' , $query)
+    ->orWhere('infoitems.ItemTrackingKey','LIKE' ,$query)
+    ->orWhere('infoitems.id_items',$query)
+    ->orWhere('infoInvoice.NumInvoice', 'LIKE', $query)
     ->groupBy('infoOrder.CustomerID')
-    ->orderBy('Name')
+    ->orderBy('infoOrder.id')
     ->paginate($PerPageOrder);
 
 
     $users = DB::table('infoCustomer')
     ->select('Name', 'EmailAddress', 'Phone','infoCustomer.id', 'infoCustomer.CustomerID' , DB::raw(' IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as cust_type')
-    )
-    ->where('FirstName', 'LIKE', $query . '%')
-    ->orWhere('LastName','LIKE', $query . '%')
-    ->orWhere('EmailAddress','LIKE', '%'.$query.'%')
-    ->paginate($PerPageUser);
+    );
+    foreach($keywords as $searchTerm){
+        $users->where(function($q) use ($searchTerm){
+            $q->where('FirstName', 'like', '%'.$searchTerm.'%')
+            ->orWhere('LastName', 'like', '%'.$searchTerm.'%')
+            ->orWhere('Name', 'like', '%'.$searchTerm.'%')
+            ->orWhere('EmailAddress', 'like', '%'.$searchTerm.'%');
+            // and so on
+        });
+    };
+    
+    $users = $users->paginate($PerPageUser);
     foreach ($users as $item) {
         $item->Phone=json_decode($item->Phone);
     }
 
-
     $emails = DB::table('infoCustomer')
-    ->where('FirstName', 'LIKE', $query . '%')
-    ->orWhere('LastName','LIKE', $query . '%')
+    ->where('FirstName', 'LIKE', '%'. $query . '%')
+    ->orWhere('LastName','LIKE', '%'. $query . '%')
     ->paginate($PerPageEmails);
 
-    $items = DB::table('infoitems')
-    ->Where('infoitems.ItemTrackingKey',$query)
-    ->orWhere('infoitems.id',$query)
+    $items = DB::table('infoitems') 
+    ->select( 
+        'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey', 
+        'infoitems.typeitem as iteminfo', 'infoitems.id AS item_id','infoitems.brand',
+        'infoitems.nextpost', 'infoitems.store',  'postes.nom as location', 'postes.nominterface'
+       
+    )
+    ->Join('infoInvoice','infoitems.InvoiceID','infoInvoice.InvoiceID')
+    ->Join('infoOrder','infoInvoice.OrderID','infoOrder.OrderID')
+    ->leftJoin('postes','postes.id','=','infoitems.nextpost');
+    
+
+     if(str_contains($query , "-")){
+        $items = $items->Where('infoInvoice.NumInvoice', '=', $query);
+     } else {
+        $items = $items ->Where('infoitems.ItemTrackingKey', 'LIKE', $query)
+        ->orWhere('infoitems.id', 'LIKE', $query)
+        ->orWhere('infoitems.id_items', 'LIKE', $query)
+        ->orWhere('infoOrder.id', 'LIKE', $query);
+     }
+
+   
+     $items = $items->orderBy('infoitems.date_add', 'desc')
     ->paginate($PerPageItems);
 
-    foreach ($emails as $item) {
-        $item->Phone=json_decode($item->Phone);
-    }
 
         return response()->json( ['customers_orders'=>$orders ,  'customers_emails'=>$emails , 'customers'=>$users , 'items' => $items  ]);
-
 }
 
 public function SearchByCustomer(Request $request)

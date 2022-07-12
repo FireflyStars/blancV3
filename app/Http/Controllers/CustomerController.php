@@ -588,6 +588,10 @@ class CustomerController extends Controller
 
         if($request->Customername !=''){
 
+            $keywordRaw = $request->Customername;
+            $keywordRaw = str_replace(",", " ",  $keywordRaw);
+            $keywords   = explode(' ', $keywordRaw);
+       
             $customers = DB::table('infoCustomer')
             ->Leftjoin( 'address', function ($join){
                 $join->on( 'address.CustomerID', '=', 'infoCustomer.CustomerID');
@@ -605,10 +609,18 @@ class CustomerController extends Controller
               DB::raw('IF(DATE_FORMAT(MAX(infoOrder.created_at), "%d/%m/%y") = "", "--", DATE_FORMAT(MAX(infoOrder.created_at), "%d/%m/%y")) as last_order'),
               DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
 
-             )
-            ->where('infoCustomer.FirstName', 'LIKE', $request->Customername . '%')
-            ->orWhere('infoCustomer.LastName','LIKE', $request->Customername . '%')
-            ->groupBy('infoCustomer.CustomerID');
+             );
+             foreach($keywords as $searchTerm){
+                $customers->where(function($q) use ($searchTerm){
+                    $q->where('infoCustomer.FirstName', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('infoCustomer.LastName', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('infoCustomer.Name', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('infoCustomer.EmailAddress', 'like', '%'.$searchTerm.'%');
+                    // and so on
+                });
+            }
+
+            $customers = $customers->groupBy('infoCustomer.CustomerID');
 
         }else {
                   $customers = DB::table('infoCustomer')
