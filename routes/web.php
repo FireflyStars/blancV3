@@ -85,6 +85,8 @@ Route::post('/save-customer-delivery-instructions',[CustomerController::class,'s
 
 Route::post('/get-customer-order-details',[CustomerController::class,'getCustomerOrderDetails'])->name('get-customer-order-details')->middleware('auth');
 
+
+
 Route::get('/permissions-test',function(){
     $user=User::find(56);
  foreach ($user->profiles as $profile){
@@ -578,6 +580,7 @@ Route::post('/complete-checkout',[OrderController::class,'completeCheckout'])->n
 Route::post('/get-stripe-terminal',[DetailingController::class,'getStripeTerminal'])->name('get-stripe-terminal')->middleware('auth');
 Route::post('/get-terminal-token',[DetailingController::class,'getTerminalToken'])->name('get-terminal-token')->middleware('auth');
 Route::post('/pay-from-credit',[OrderController::class,'payFromCredit'])->name('pay-from-credit')->middleware('auth');
+Route::post('/set-checkout-addon',[DetailingController::class,'setCheckoutAddon'])->name('set-checkout-addon')->middleware('auth');
 
 /**
  * Routes for stripe terminal - DO NOT REMOVE

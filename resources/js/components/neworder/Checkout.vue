@@ -188,14 +188,14 @@
                                             <div class="col-4">Subtotal</div>
                                             <div class="col-5 sub-total-desc">{{order_items.length}} item<span v-if="order_items.length > 1">s</span> (Incl. VAT)</div>
 
-                                            <div class="col-3 text-align-right" v-if="[1,6].includes(order.express)">&#163;{{order_without_express.toFixed(2)}}</div>
+                                            <div class="col-3 text-align-right" v-if="upcharges > 0">&#163;{{order_without_upcharges.toFixed(2)}}</div>
                                             <div class="col-3 text-align-right" v-else>&#163;{{sub_total}}</div>
 
                                         </div>
 
-                                        <div class="row px-0 mt-2 sub-total-text" v-if="[1,6].includes(order.express)">
-                                            <div class="col-9">Express <span v-if="order.express==1">24</span><span v-else-if="order.express==6">48</span></div>
-                                            <div class="col-3 text-align-right">+&#163;{{express_addon.toFixed(2)}}</div>
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="upcharges > 0">
+                                            <div class="col-9">Upcharges</div>
+                                            <div class="col-3 text-align-right">+&#163;{{upcharges.toFixed(2)}}</div>
                                         </div>
 
                                         <div class="row px-0 mt-2 sub-total-text">
@@ -471,6 +471,39 @@
                                                 </div>
                                             </div>
 
+                                            <!-- Accordion for Order add ons -->
+                                            <div class="accordion-item mx-2 mb-4">
+                                                <h2 class="accordion-header" id="flush-headingOne">
+                                                    <button
+                                                        class="accordion-button collapsed gilroy-extra-bold"
+                                                        type="button"
+                                                        @click="openAccordionclick('orderaddons')" id="acdbtn_orderaddons"
+                                                    >Order Add Ons</button>
+                                                </h2>
+                                                <div class="accordion-collapse collapse" id="acdpanel_orderaddons">
+                                                    <div class="accordion-body d-table w-100 px-0 py-0">
+                                                        <div class="accordion-content p-4 mt-3">
+                                                            <div class="sidebar_title text-white">Order Add Ons</div>
+                                                            <div class="row" v-for="(items,category) in addons">
+                                                                <div class="col-12 addon-catname mt-3 mb-1">
+                                                                    {{category}} Charges
+                                                                </div>
+                                                                <div class="col-12">
+                                                                    <div class="row">
+                                                                        <div class="col-6" v-for="a in items">
+                                                                            <button class="each-addon-btn w-100 py-2" @click="setOrderUpcharge(a.id)" :id="'upcharge_btn_'+a.id" :class="{'addon-selected':order_upcharges.includes(a.id),'is-express-upcharge':a.category_id==1}" :data-id="a.id">{{a.name}}
+                                                                                <span v-if="a.type=='perc'">(+{{a.amount}}%)</span>
+                                                                                <span v-else-if="a.type=='fixed'">(&#163;{{a.amount}})</span>
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             <!-- Accordion for Vouchers -->
                                             <div class="accordion-item mx-2 mb-4">
                                                 <h2 class="accordion-header" id="flush-headingOne">
@@ -666,10 +699,12 @@ export default {
         const created_date = ref("");
         const credit_to_deduct = ref(0);
         const cust_discount = ref(0);
-        const express_addon = ref(0);
-        const order_without_express = ref(0);
+        const upcharges = ref(0);
+        const order_without_upcharges = ref(0);
         const amount_without_credit = ref(0);
         const amount_diff = ref(0);
+        const addons = ref([]);
+        const order_upcharges = ref([]);
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
@@ -718,10 +753,12 @@ export default {
                 credit_to_deduct.value = res.data.credit_to_deduct;
                 order_discount.value = res.data.order.DiscountPerc;
                 cust_discount.value = res.data.cust_discount;
-                express_addon.value = res.data.express_addon;
-                order_without_express.value = res.data.order_without_express;
+                upcharges.value = res.data.order_addon;
+                order_without_upcharges.value = res.data.order_without_upcharges;
                 amount_without_credit.value = res.data.amount_without_credit;
                 amount_diff.value = res.data.amount_diff;
+                addons.value = res.data.addons;
+                order_upcharges.value = res.data.order_upcharges;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -927,6 +964,53 @@ export default {
             router.push('/order_details/'+order_id.value);
         }
 
+        function setOrderUpcharge(id){
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
+                true,
+                "Setting upcharges....",
+            ]);
+
+            let el = document.getElementById('upcharge_btn_'+id);
+            el.classList.toggle('addon-selected');
+
+            let classes = Object.values(el.classList);
+            let selected = false;
+            let other_exp_ids = [];
+
+
+
+            if(classes.includes('addon-selected')){
+                selected = true;
+
+                if(classes.includes('is-express-upcharge')){
+                    let other_exp_els = Object.values(document.querySelectorAll('.is-express-upcharge:not(#upcharge_btn_'+id+')'));
+
+                    if(other_exp_els.length > 0){
+                        other_exp_els.forEach((v,i)=>{
+                            let other_id = v.getAttribute('data-id');
+                            other_exp_ids.push(other_id);
+                            v.classList.remove('addon-selected');
+                        });
+                    }
+                }
+            }
+
+            axios.post('/set-checkout-addon',{
+                order_id:order_id.value,
+                addon_id:id,
+                exp_addons_to_remove:JSON.stringify(other_exp_ids),
+                selected:selected,
+            }).then((res)=>{
+                console.log(res);
+            }).catch((err)=>{
+
+            }).finally(()=>{
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                getCheckoutItems();
+
+            });
+        }
+
         return {
             order_id,
             paths,
@@ -978,10 +1062,13 @@ export default {
             redirectToOrderDetail,
             credit_to_deduct,
             cust_discount,
-            express_addon,
-            order_without_express,
+            upcharges,
+            order_without_upcharges,
             amount_without_credit,
             amount_diff,
+            addons,
+            setOrderUpcharge,
+            order_upcharges,
         }
 
     },
@@ -1415,6 +1502,25 @@ export default {
 
 .payment-desc-text{
     font:normal 15px "Gotham Rounded";
+}
+
+.addon-catname{
+    color:#fff;
+    font:normal 16px "Gotham Rounded";
+}
+
+.each-addon-btn{
+    color:#fff;
+    font:normal 16px "Gotham Rounded Light";
+    border:thin solid #fff;
+    border-radius: 4px;
+    background:none;
+}
+
+.each-addon-btn:hover,
+.each-addon-btn.addon-selected{
+    color:#47454B;
+    background: #fff;
 }
 
 </style>
