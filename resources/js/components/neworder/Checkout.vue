@@ -226,9 +226,9 @@
                                 <div class="row justify-content-end mt-3 mx-0">
                                     <div class="col-8 py-3" id="credit_div">
                                         <div class="d-flex align-items-center">
-                                            <img src="/images/icon_check.svg" class="paid_icon" v-if="amount_diff==0"/>
+                                            <img src="/images/icon_check.svg" class="paid_icon" v-if="amount_diff<=0"/>
                                              <img src="/images/unpaid_cross.svg" class="paid_icon" v-else/>
-                                            <span class="summary-title" v-if="amount_diff==0">Paid</span>
+                                            <span class="summary-title" v-if="amount_diff<=0">Paid</span>
                                             <span class="summary-title" v-else>Pending payments</span>
                                         </div>
                                         <div class="row mt-4 px-0 py-1 sub-total-text">
@@ -263,7 +263,7 @@
 
                                          <div class="row px-0 mt-4 py-2 balance-text">
                                             <div class="col-9">Order balance to pay by card</div>
-                                            <div class="col-3 text-align-right">&#163;{{order_balance.toFixed(2)}}</div>
+                                            <div class="col-3 text-align-right">&#163;{{amount_diff.toFixed(2)}}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -585,7 +585,7 @@
                                         <a href="javascript:void(0)" @click="redirectToDetailingList">Previous</a>
                                     </div>
                                     <div class="col-6 px-4">
-                                        <button id="closeBtn" @click="redirectToOrderDetail" class="w-100 py-3" v-if="amount_diff==0">Close</button>
+                                        <button id="closeBtn" @click="redirectToOrderDetail" class="w-100 py-3" v-if="amount_diff<=0">Close</button>
                                         <button v-else id="completeBtn" class="w-100 py-3" @click="validatePayment" :disabled="editcard">Proceed</button>
                                     </div>
                                 </div>
