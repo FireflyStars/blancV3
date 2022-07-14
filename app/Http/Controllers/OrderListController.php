@@ -433,10 +433,10 @@ class OrderListController extends Controller
                     $order->Prod  = '--';
                 }
 
-                if( $order->Deliv == null){
+                if( $order->Deliv == null || $order->Deliv == "01/01/2020"){
                     $order->Deliv = '--';
                 }
-                if( $order->Prod == null){
+                if( $order->Prod == null || $order->Prod == "01/01/2020"){
                     $order->Prod = '--';
                 }
 
@@ -540,8 +540,6 @@ class OrderListController extends Controller
                     ->orWhereIn('LastName', $keywords)
                     ->orWhereIn('EmailAddress', $keywords);
         }
-
-        dd($orderlist);
         if($current_tab=='with_partner')
         $orderlist=$orderlist->where('infoitems.idPartner','!=','0')
             ->where('infoitems.PartnerINOUT','=','1');
@@ -866,10 +864,10 @@ class OrderListController extends Controller
                 $order->Deliv = '--';
                 $order->Prod  = '--';
             }
-            if( $order->Deliv == null){
+            if( $order->Deliv == null || $order->Deliv == "01/01/2020"){
                 $order->Deliv = '--';
             }
-            if( $order->Prod == null){
+            if( $order->Prod == null || $order->Prod == "01/01/2020"){
                 $order->Prod = '--';
             }
 
@@ -1799,10 +1797,10 @@ class OrderListController extends Controller
                 $order->Deliv = '--';
                 $order->Prod  = '--';
             }
-            if( $order->Deliv == null){
+            if( $order->Deliv == null || $order->Deliv == "01/01/2020"){
                 $order->Deliv = '--';
             }
-            if( $order->Prod == null){
+            if( $order->Prod == null || $order->Prod == "01/01/2020"){
                 $order->Prod = '--';
             }
 
