@@ -177,7 +177,6 @@ export const orderlist= {
     actions: {
 
         [ORDERLIST_LOAD_LIST]:async({commit,state,dispatch},payload)=>{
-
             if(typeof payload!="undefined"&&payload.showmore){
                 commit(ORDERLIST_SHOWMORE_LIST,{skip:state[state.current_tab].skip+state[state.current_tab].take});
                 dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,state.loader_msg],{ root: true });
@@ -185,6 +184,30 @@ export const orderlist= {
                 dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[true,state.loader_msg],{ root: true });
                 commit(ORDERLIST_RESET_ORDERLIST);
             }
+
+            if(typeof payload!="undefined"&&payload.search){
+
+                return axios.post('/getorderlistbysearch', {
+                    skip: state[state.current_tab].skip,
+                    take: state[state.current_tab].take,
+                    current_tab:state.current_tab,
+                    sort:state[state.current_tab].sort,
+                    filters:state[state.current_tab].filters,
+                    search_value : payload.search,
+                })
+                    .then(function (response) {
+                        commit(ORDERLIST_ADD_TO_LIST, response.data);
+    
+                    })
+                    .catch(function (error) {
+                        if(typeof error.response !="undefined")
+                        dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'},{ root: true });
+                    }).finally(function(){
+                    dispatch(`${LOADER_MODULE}${HIDE_LOADER}`,{},{ root: true });
+                });
+
+           } else {
+
             return axios.post('/getorderlist', {
                 skip: state[state.current_tab].skip,
                 take: state[state.current_tab].take,
@@ -202,6 +225,7 @@ export const orderlist= {
                 }).finally(function(){
                 dispatch(`${LOADER_MODULE}${HIDE_LOADER}`,{},{ root: true });
             });
+           }
         },
         [ORDERLIST_SELECT_CURRENT]:({commit}, payload)=>{
             commit(ORDERLIST_SET_CURRENT_SELECTED,payload);
@@ -326,7 +350,7 @@ export const orderlist= {
             if(payload.customer){
                 dispatch(ORDERLIST_CUSTOMER_ORDERS , {customer:payload.customer});
             }else {
-                dispatch(ORDERLIST_LOAD_LIST);
+                dispatch(ORDERLIST_LOAD_LIST , {search:payload.search});
             }
             
         },

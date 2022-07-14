@@ -63,7 +63,7 @@
             const route=useRoute();
             const filterDef = ref({});
             const customerID = ref('');
-         
+            
             const tabs=ref({});
             if(hasRoles(['cc'])){
                 tabs.value= {
@@ -301,7 +301,7 @@
 
                     } else if( data == null) {
 
-                       store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`);
+                       store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`, {search:route.params.value});
                     } 
                 });
             });
@@ -315,7 +315,7 @@
 
                 } else {
 
-                       store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`);
+                       store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`,{search:route.params.value});
                 }
                 
              })
@@ -326,7 +326,7 @@
 
                 tabs.value[tab].active=true;
 
-                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_TAB}`,{tab:tab,name:tabs.value[tab].name, customer:customerID.value  });
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_TAB}`,{tab:tab,name:tabs.value[tab].name, customer:customerID.value , search:route.params.value  });
                /* store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SET_CURRENTTAB}`,tab);
                 store.commit(`${ORDERLIST_MODULE}${ORDERLIST_RESET_ORDERLIST}`);
                 store.commit(`${ORDERLIST_MODULE}${ORDERLIST_SET_LIMIT}`,{skip:0,take:10});

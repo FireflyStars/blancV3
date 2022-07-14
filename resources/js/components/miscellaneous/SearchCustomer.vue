@@ -199,7 +199,8 @@
         CUSTOMER_MODULE,
         SET_CUSTOMER_FILTER,
         FILTER_CUSTOMER_LIST,
-        CUSTOMERITEMS_GET_LIST
+        CUSTOMERITEMS_GET_LIST,
+        ORDERLIST_LOAD_LIST
     } from "../../store/types/types";
     import {formatDate} from "../helpers/helpers";
     import {useStore} from 'vuex';
@@ -339,24 +340,28 @@ export default({
 
               } else if (tab == "search_order") {
                this.clearSearch()
-               if(route.name == "LandingPage"){
+              //  if(route.name == "LandingPage"){
+              //      route.params = {
+              //              'name':"search",
+              //              'value': search_value.value
+              //      },     
+              //      console.log("routtttttte" ,route.params );
+              //      store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
+              //      store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`, {search:search_value.value} , _.cloneDeep(preselection.value)).finally(()=>{
+              //      store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
 
-                   store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
-                   store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,_.cloneDeep(preselection.value)).finally(()=>{
-                   store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-
-                });   
-               } else {
+              //   });   
+              //  } else {
     
                     router.push({
                     name:'LandingPage',
                     params: {
-                           'name':"Customer name",
+                           'name':"search",
                            'value': search_value.value
                     },
                 })
 
-               }
+              //  }
              }
                 
           }

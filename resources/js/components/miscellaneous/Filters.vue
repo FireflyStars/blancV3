@@ -60,9 +60,9 @@
     import {ORDERLIST_FILTER, ORDERLIST_GET_FILTER, ORDERLIST_MODULE,ORDERLIST_RESET_MULITCHECKED} from "../../store/types/types";
     export default {
         name: "Filters",
-        props:['filterDef'],
+        props:['filterDef', 'data'],
         components:{CheckBox, DateRangePicker},
-        setup(){
+        setup(props){
             const showfilter=ref(false);
             const current_filter=ref('');
             const prodDate=ref({
@@ -78,7 +78,8 @@
             const store=useStore();
 
             const toggleShow=(()=>showfilter.value=!showfilter.value);
-
+            const data = ref('');
+            data.value = props.data;
 
 
             function selectclick(sel) {
@@ -153,7 +154,8 @@
                 hasActiveFilters,
                 prodDate,
                 delivDate,
-                removefilter
+                removefilter,
+                data
             }
         }
     }

@@ -47,6 +47,7 @@ Route::post('/auth/login',function () {
     return view('welcome');
 })->name('login');
 Route::post('/getorderlist',[OrderListController::class, 'getorderlist'])->middleware('auth')->name('orderlist');
+Route::post('/getorderlistbysearch',[OrderListController::class, 'getorderlistbysearch'])->middleware('auth')->name('getorderlistbysearch');
 Route::post('/getOrdersByCustomerId',[OrderListController::class, 'getOrdersByCustomerId'])->middleware('auth')->name('ordersByCustomerId');
 Route::post('/cancelorders',[OrderListController::class, 'cancelorders'])->middleware('auth')->name('cancelorders');
 Route::post('/markaslate',[OrderListController::class, 'markaslate'])->middleware('auth')->name('markaslate');

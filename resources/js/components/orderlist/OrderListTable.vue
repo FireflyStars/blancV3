@@ -1,6 +1,6 @@
 <template>
     <div class="container-fluid position-relative p-0">
-        <filters :filterDef="filterDef"></filters>
+        <filters :filterDef="filterDef" :data="data"></filters>
         <table class="orderlist-table" v-if="ORDER_LIST.length>0">
             <thead>
                 <tr>
@@ -82,6 +82,8 @@
             const store=useStore();
             const route = useRoute();
             const customerId = ref('');
+            const data = ref('');
+            data.value = route.params.value;
             const ORDER_LIST=computed(()=>{
                 return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_LIST}`];
             });
@@ -95,8 +97,8 @@
                return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_SORT}`];
             });
             function loadMore(){
-                if(props.customer_id != ''){
-
+            
+                if(props.customer_id != undefined && props.customer_id != '' ){      
                  store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading more, please wait...');
                  store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`,{customer:props.customer_id  , showmore:1}).finally(()=>{
                  window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
@@ -105,7 +107,7 @@
                 }else {
 
                  store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading more, please wait...');
-                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`,{showmore:1}).finally(()=>{
+                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`,{search:route.params.value, showmore:1}).finally(()=>{
                  window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
                  });
 
@@ -114,7 +116,7 @@
 
             }
 
-             watch(route, (to) => {
+             watch(route, (to) => {       
                 customerId.value = route.params.customerId;
              })
 
@@ -434,7 +436,8 @@
                 hideOnLate,
                 markaslate,
                 hasRoles,
-                colspan
+                colspan,
+                data
             }
         }
     }
