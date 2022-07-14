@@ -530,37 +530,49 @@
                                             <div class="item-block py-3 border-bottom" v-for="(item, key) in group.data" :key="key">
                                                 <div class="d-flex justify-content-between">
                                                     <div class="col-8">
+                                                        <!--<pre>{{item}}</pre>-->
                                                         <h4 class="sub-title col-12">{{ item.title }}</h4>
                                                         <p class="m-0 col-12">{{ item.description }}</p>
                                                     </div>
                                                     <div class="col-3" :class="item.type == 'switch' ? 'd-flex justify-content-end align-items-start': ''">
-                                                        <switch-btn class="ms-auto" v-if="item.type == 'switch'" v-model="item.value"></switch-btn>
+                                                        <switch-btn class="ms-auto each-cust-pref" :data-category="group.key" v-if="item.type == 'switch'" v-model="item.value" :data-index="item.id" :data-value="item.value"></switch-btn>
                                                         <div class="preference-radio" v-else>
                                                             <label class="custom-radio" v-for="(value, key) in item.dropdown_values.split('\r\n')" :key="key">{{ value }}
-                                                                <input type="radio" :checked="item.value == value ? true : false" :value="value" v-model="item.value" :name="'pref_'+item.id">
+                                                                <input type="radio" :checked="item.value == value ? true : false" :value="value" v-model="item.value" :name="'pref_'+item.id" class="each-cust-pref" :data-category="group.key" :data-index="item.id" :data-value="item.value">
                                                                 <span class="checkmark"></span>
                                                             </label>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div class="item-block py-4 border-bottom">
+                                                <button class="btn btn-success each-save-btn" @click="saveCustomerPreferences(group.key)">Save {{group.key.toLowerCase()}}</button>
+                                            </div>
                                         </div>
+
                                     </div>
+
                                     <div class="blocks">
-                                        <h3 class="title mb-3">Delivery instructions</h3>
+                                        <h3 class="title mb-3">Delivery instructions <span class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="delivery_instructions_edit = !delivery_instructions_edit">Edit</span></h3>
                                         <div class="page-section p-4">
                                             <div class="d-flex justify-content-between">
                                                 <div class="payment-method">
                                                     <div class="form-group mb-0">
                                                         <label for="">Deliver to</label>
-                                                        <div class="w-100 bg-color py-2 rounded-3 px-3">
+                                                        <div class="form-group m-0" v-if="delivery_instructions_edit">
+                                                            <input type="text" class="form-control custom-input" v-model="form.altTypeDelivery"/>
+                                                        </div>
+                                                        <div class="w-100 bg-color py-2 rounded-3 px-3" v-else>
                                                             {{ form.altTypeDelivery }} &nbsp;
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="form-group m-0 payment-method">
                                                     <label for="">Name</label>
-                                                    <div class="w-100 bg-color py-2 rounded-3 px-3">
+                                                    <div class="form-group m-0" v-if="delivery_instructions_edit">
+                                                            <input type="text" class="form-control custom-input" v-model="form.altName"/>
+                                                        </div>
+                                                    <div class="w-100 bg-color py-2 rounded-3 px-3" v-else>
                                                         {{ form.altName }} &nbsp;
                                                     </div>
                                                 </div>
@@ -570,13 +582,25 @@
                                                     <label>Phone Number</label>
                                                 </div>
                                                 <div class="d-flex">
-                                                    <div class="phone-country-code">
+                                                    <div class="phone-country-code" v-if="delivery_instructions_edit">
+                                                        <select-options
+                                                            v-model="form.altPhoneCountryCode"
+                                                            :modelValue="form.altPhoneCountryCode"
+                                                            :options="phoneCodesSorted"
+                                                            :width = "'100px'"
+                                                            :name="'altPhoneCountryCode'">
+                                                        </select-options>
+                                                    </div>
+                                                    <div class="phone-country-code" v-else>
                                                         <div class="w-100 bg-color py-2 px-4 rounded-3">
                                                             {{ form.altPhoneCountryCode }} &nbsp;
                                                         </div>
                                                     </div>
                                                     <div class="form-group payment-method ms-2">
-                                                        <div class="w-100 bg-color py-2 rounded-3 px-3">
+                                                        <div class="form-group m-0" v-if="delivery_instructions_edit">
+                                                            <input type="text" class="form-control custom-input" v-model="form.altPhoneNumber"/>
+                                                        </div>
+                                                        <div class="w-100 bg-color py-2 rounded-3 px-3" v-else>
                                                             {{ form.altPhoneNumber }} &nbsp;
                                                         </div>
                                                     </div>
@@ -585,8 +609,11 @@
                                             <div class="w-100 mt-3">
                                                 <div class="form-group m-0">
                                                     <label for="" class="form-label d-block m-0">Driver instructions</label>
-                                                    <textarea readonly name="customer_note" rows="4" class="form-control border-none bg-color" v-html="form.altDriverInstruction"></textarea>
+                                                    <textarea name="customer_note" rows="4" class="form-control" v-html="form.altDriverInstruction" :readonly="!delivery_instructions_edit" :class="{'bg-color':!delivery_instructions_edit,'border-none':!delivery_instructions_edit}"></textarea>
                                                 </div>
+                                            </div>
+                                            <div class="w-100 pt-4" v-if="delivery_instructions_edit">
+                                                <button class="btn btn-success each-save-btn" @click="saveDeliveryInstructions">Save</button>
                                             </div>
                                         </div>
                                     </div>
@@ -775,6 +802,7 @@
             const add_payement = ref(false);
             const address_edit = ref(false);
             const customer_note_edit = ref(false);
+            const delivery_instructions_edit = ref(false);
             const companyPostCode = ref();
             const searchpanel = ref(null);
             const showcontainer=ref(false);
@@ -906,12 +934,12 @@
                             key: item,
                         })
                     })
-                    if(res.data.deliveryPreference){
-                        form.value.altTypeDelivery = res.data.deliveryPreference.altTypeDelivery;
-                        form.value.altName = res.data.deliveryPreference.altName;
-                        form.value.altPhoneCountryCode = res.data.deliveryPreference.altPhoneCountryCode;
-                        form.value.altPhoneNumber = res.data.deliveryPreference.altPhoneNumber;
-                        form.value.altDriverInstruction = res.data.deliveryPreference.altDriverInstruction;
+                    if(res.data.deliveryPreferences){
+                        form.value.altTypeDelivery = res.data.deliveryPreferences.altTypeDelivery;
+                        form.value.altName = res.data.deliveryPreferences.altName;
+                        form.value.altPhoneCountryCode = res.data.deliveryPreferences.altPhoneCountryCode;
+                        form.value.altPhoneNumber = res.data.deliveryPreferences.altPhoneNumber;
+                        form.value.altDriverInstruction = res.data.deliveryPreferences.altDriverInstruction;
                     }
                     // linked accounts
                     form.value.linkedAccounts = res.data.linkedAccounts;
@@ -973,6 +1001,19 @@
             }
             const selectNav = (nav)=>{
                 step.value = nav;
+                if(nav=='order_management'){
+                    store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading customer order details...']);
+                    axios.post('/get-customer-order-details',{
+                        customer_id:route.params.customer_id
+                    }).then((res)=>{
+                        currentOrders.value = res.data.currentOrders;
+                        pastOrders.value = res.data.pastOrders;
+                    }).catch((err)=>{
+
+                    }).finally(()=>{
+                        store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    });
+                }
             }
             const phoneCodesSorted = [...new Map(phoneCodes.map(item =>
                             [item.value, item])).values()].sort((a, b)=>{
@@ -1164,7 +1205,13 @@
                             discount:form.value.discountLevel,
                             customer_id:route.params.customer_id
                         }).then((res)=>{
-                            console.log(res);
+                            if(res.data.updated==1 || res.data.updated==0){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                    message:"Customer discount updated",
+                                        ttl: 3,
+                                        type: 'success'
+                                });
+                            }
                         }).catch((err)=>{
 
                         }).finally(()=>{
@@ -1297,6 +1344,111 @@
             }
 
 
+            function saveCustomerPreferences(group){
+                let els = Object.values(document.querySelectorAll('.each-cust-pref'));
+                let authorisation_pref = {};
+                let finish_pref = {};
+                let params = {};
+
+                if(els.length > 0){
+                    els.forEach(function(el,index){
+                        let category = el.getAttribute('data-category');
+                        let id = el.getAttribute('data-index');
+                        let value = el.getAttribute('data-value');
+                        if(category=='Authorisations'){
+                            authorisation_pref[id] = value;
+                        }
+                        if(category=='Finish instructions'){
+                            finish_pref[id] = value;
+                        }
+                    });
+
+
+                    params['customer_id'] = route.params.customer_id;
+
+                    if(group=='Authorisations'){
+                        params['preferences'] = JSON.stringify(authorisation_pref);
+                    }
+
+                    if(group=='Finish instructions'){
+                        params['preferences'] = JSON.stringify(finish_pref);
+                    }
+
+
+                    axios.post('/save-customer-preferences',params)
+                        .then((res)=>{
+                            if(res.data.updated){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                    message: 'Customer '+group.toLowerCase()+' updated',
+                                    ttl: 5,
+                                    type: 'success'
+                                });
+                            }
+                        }).catch((err)=>{
+                            console.log(err);
+                        }).finally(()=>{
+
+                        });
+                }else{
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                        message: 'Error saving customer preferences',
+                        ttl: 5,
+                        type: 'danger'
+                    });
+                }
+            }
+
+            function saveDeliveryInstructions(){
+                let err = [];
+
+                if(form.value.altTypeDelivery==''){
+                    err.push("Please enter type delivery");
+                }
+
+                if(form.value.altName==''){
+                    err.push("Please enter contact name");
+                }
+
+                if(form.value.altPhoneCountryCode==''){
+                    err.push("Please enter contact country code");
+                }
+
+                if(form.value.altPhoneNumber==''){
+                    err.push("Please enter contact phone number");
+                }
+
+                if(err.length > 0){
+                    err.forEach(function(err_msg,index){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                            message: err_msg,
+                            ttl: 5,
+                            type: 'danger'
+                        });
+                    });
+                }else{
+                    axios.post('/save-customer-delivery-instructions',{
+                        customer_id:route.params.customer_id,
+                        type_delivery:form.value.altTypeDelivery,
+                        name:form.value.altName,
+                        country_code:form.value.altPhoneCountryCode,
+                        phone_num:form.value.altPhoneNumber,
+                        driver_instructions:form.value.altDriverInstruction
+                    }).then((res)=>{
+                        if(res.data.updated){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                message: 'Customer delivery instructions updated',
+                                ttl: 5,
+                                type: 'success'
+                            });
+                        }
+                    }).catch((err)=>{
+
+                    }).finally(()=>{
+
+                    });
+                }
+            }
+
             return {
                 form,
                 step,
@@ -1330,6 +1482,9 @@
                 validateAndSaveContactAddress,
                 customer_note_edit,
                 saveCustomerNote,
+                saveCustomerPreferences,
+                saveDeliveryInstructions,
+                delivery_instructions_edit,
             }
 
         },

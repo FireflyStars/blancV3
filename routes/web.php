@@ -25,6 +25,7 @@ use App\Models\DetailingServices;
 use App\Models\Infoitem;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Stripe\Service\CustomerService;
 
 use function PHPUnit\Framework\isNull;
 
@@ -80,6 +81,11 @@ Route::post('/set-customer-discount',[CustomerController::class,'setCustomerDisc
 Route::post('/update-customer-contact',[CustomerController::class,'updateCustomerContact'])->name('update-customer-contact')->middleware('auth');
 Route::post('/update-customer-address',[CustomerController::class,'updateCustomerAddress'])->name('update-customer-address')->middleware('auth');
 Route::post('/update-customer-note',[CustomerController::class,'updateCustomerNote'])->name('update-customer-note')->middleware('auth');
+Route::post('/save-customer-preferences',[CustomerController::class,'saveCustomerPreferences'])->name('save-customer-preferences')->middleware('auth');
+Route::post('/save-customer-delivery-instructions',[CustomerController::class,'saveCustomerDeliveryInstructions'])->name('save-customer-delivery-instructions')->middleware('auth');
+
+Route::post('/get-customer-order-details',[CustomerController::class,'getCustomerOrderDetails'])->name('get-customer-order-details')->middleware('auth');
+Route::post('/update-detailing-issues-text',[DetailingController::class,'updateIssuesText'])->name('update-detailing-issues-text')->middleware('auth');
 
 
 Route::get('/permissions-test',function(){
@@ -546,6 +552,7 @@ Route::post('get-suborder-and-print', [ PosteController::class, 'getSubOrderToPr
 */
 Route::post('update-zone-label-pos',[ItemController::class,'updateZoneLabelPos'])->name('update-zone-label-pos')->middleware('auth');
 
+
 /*
 * Detailing Services
 */
@@ -575,6 +582,7 @@ Route::post('/complete-checkout',[OrderController::class,'completeCheckout'])->n
 Route::post('/get-stripe-terminal',[DetailingController::class,'getStripeTerminal'])->name('get-stripe-terminal')->middleware('auth');
 Route::post('/get-terminal-token',[DetailingController::class,'getTerminalToken'])->name('get-terminal-token')->middleware('auth');
 Route::post('/pay-from-credit',[OrderController::class,'payFromCredit'])->name('pay-from-credit')->middleware('auth');
+Route::post('/set-checkout-addon',[DetailingController::class,'setCheckoutAddon'])->name('set-checkout-addon')->middleware('auth');
 
 /**
  * Routes for stripe terminal - DO NOT REMOVE

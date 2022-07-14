@@ -467,7 +467,6 @@ class DetailingController extends Controller
         $item_description = $this->getItemDescription($detailingitem);
 
 
-
         /* CLEANING SERVICES */
 
         $cust_cleaning_services = DetailingController::getCustCleaningServices($detailingitem);
@@ -942,8 +941,8 @@ class DetailingController extends Controller
         $discount_perc = 0;
         $credit_to_deduct = 0;
         $cust_discount = 0;
-        $express_addon = 0;
-        $order_without_express = 0;
+        $order_addons = 0;
+        $order_without_upcharges = 0;
         $amount_without_credit = 0;
 
         if($order){
@@ -1402,16 +1401,25 @@ class DetailingController extends Controller
 
         }
 
-        $order_without_express = $total_price;
+        $order_without_upcharges = $total_price;
+        $order_addon = 0;
 
+        $upcharges = DB::table('order_upcharges')->where('order_id',$order_id)->get();
+        if(count($upcharges) > 0){
+            foreach($upcharges as $k=>$v){
+                $order_addon += $v->amount;
+            }
+        }
 
+        /*
         if($order->express==1){
             $express_addon = $total_price * 0.4;
         }elseif($order->express==6){
             $express_addon = $total_price * 0.2;
         }
+        */
 
-        $total_price = $total_price + $express_addon;
+        $total_price = $total_price + $order_addon;
 
         $total_with_discount = $total_price;
 
@@ -1510,7 +1518,26 @@ class DetailingController extends Controller
             $stripe_public_key = 'STRIPE_TEST_PUBLIC_KEY';
         }
 
+        $grouped_addons = [];
+        $addons = DB::table('upcharges')
+            ->select('upcharges.*','upcharges_category.name as category')
+            ->join('upcharges_category','upcharges.category_id','upcharges_category.id')
+            ->where('deleted',0)
+            ->get();
 
+        if(count($addons) > 0){
+            foreach($addons as $k=>$v){
+                $grouped_addons[$v->category][] = $v;
+            }
+        }
+
+        $order_upcharges = [];
+        $ou = DB::table('order_upcharges')->where('order_id',$order_id)->get();
+        if(count($ou) > 0){
+            foreach($ou as $k=>$v){
+                $order_upcharges[] = $v->upcharges_id;
+            }
+        }
 
 
         return response()->json([
@@ -1540,10 +1567,12 @@ class DetailingController extends Controller
             'created_date'=>$created_date,
             'credit_to_deduct'=>number_format($credit_to_deduct,2),
             'cust_discount'=>$cust_discount,
-            'express_addon'=>$express_addon,
-            'order_without_express'=>$order_without_express,
+            'order_addon'=>$order_addon,
+            'order_without_upcharges'=>$order_without_upcharges,
             'amount_without_credit'=>number_format($amount_without_credit,2),
             'amount_diff'=>DetailingController::getAmountToPay($order_id),
+            'addons'=>$grouped_addons,
+            'order_upcharges'=>$order_upcharges,
         ]);
     }
 
@@ -1674,6 +1703,90 @@ class DetailingController extends Controller
         $amount_to_pay = $order->Total - $amount_paid;
 
         return $amount_to_pay;
+    }
+
+    public function setCheckoutAddon(Request $request){
+        $order_id = $request->order_id;
+        $addon_id = $request->addon_id;
+        $selected = $request->selected;
+        $exp_addons_to_remove = json_decode($request->exp_addons_to_remove);
+
+        $updated = false;
+
+        if($selected){
+            $order_total = 0;
+            $items = DB::table('detailingitem')->where('order_id',$order_id)->get();
+            if(count($items) > 0){
+                foreach($items as $k=>$v){
+                    $item_total = $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+                    $order_total += $item_total;
+                }
+            }
+
+            $amount = 0;
+
+            $addon = DB::table('upcharges')->where('id',$addon_id)->first();
+            if($addon){
+                if($addon->type=='fixed'){
+                    $amount = $addon->amount;
+                }
+                if($addon->type=='perc'){
+                    $amount = ($addon->amount/100)*$order_total;
+                }
+            }
+
+            if(!empty($exp_addons_to_remove)){
+                DB::table('order_upcharges')->whereIn('upcharges_id',$exp_addons_to_remove)->delete();
+            }
+
+            $updated = DB::table('order_upcharges')->updateOrInsert(
+                ['order_id'=>$order_id,'upcharges_id'=>$addon_id],
+                [
+                'order_id'=>$order_id,
+                'upcharges_id'=>$addon_id,
+                'user_id'=>Auth::user()->id,
+                'amount'=>number_format($amount,2),
+                'created_at'=>date('Y-m-d H:i:s'),
+
+            ]);
+        }else{
+            $updated = DB::table('order_upcharges')->where('upcharges_id',$addon_id)->delete();
+        }
+
+        return response()->json([
+            'post'=>$request->all(),
+            'updated'=>$updated,
+        ]);
+    }
+
+    public function updateIssuesText(Request $request){
+        $detailingitem_id = $request->detailingitem_id;
+        $stains_text = $request->stains_text;
+        $damages_text = $request->damages_text;
+        $updated = false;
+
+        if(isset($stains_text)){
+            $updated = DB::table('detailingitem')
+                ->where('id',$detailingitem_id)
+                ->update([
+                    'stainstext'=>$stains_text,
+                    'updated_at'=>date('Y-m-d H:i:s')
+                ]);
+        }
+
+        if(isset($damages_text)){
+            $updated = DB::table('detailingitem')
+                ->where('id',$detailingitem_id)
+                ->update([
+                    'damagestext'=>$damages_text,
+                    'updated_at'=>date('Y-m-d H:i:s')
+                ]);
+        }
+
+        return response()->json([
+            'post'=>$request->all(),
+            'updated'=>$updated,
+        ]);
     }
 
 }
