@@ -132,8 +132,9 @@ export const orderdetail= {
                 });
         },
         [ORDERDETAIL_NEW_DELIVERY_DATE]:async({commit,state},payload)=>{
+
             return axios.post('/newdeliverydate', {
-                infoOrder_id:state.orderdetail.detail.id,
+                infoOrder_id:state.orderdetail.detail.order_id,
                 PromisedDate:payload.PromisedDate,
                 timeslot:payload.timeslot
 

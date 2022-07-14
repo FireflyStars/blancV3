@@ -6,9 +6,9 @@
             <svg width="30" height="40" class="pdficon" @click="featureunavailable('Pdf Invoice')">
                 <image xlink:href="/images/pdficon.svg"  width="30" height="40"/>
             </svg>
-            <h2 >&numero; {{ORDER.detail.order_id}}<button v-if="ORDER['detailingitemlist'].length !== 0" type="button" class="btn-link-green body_regular"  @click='EditOrder(ORDER.detail.order_id)'>Edit</button></h2> 
+            <h2 >&numero; {{ORDER.detail.order_id}}<button v-if="ORDER['detailingitemlist'].length !== 0" type="button" class="btn-link-green body_regular"  @click='EditOrder(ORDER.detail.order_id)'>Edit</button></h2>
             <tag :name="ORDER.detail.Status" ></tag>
-            
+
         </div>
         <transition name="popinout">
             <div v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate==null&&!hasRoles(['cc'])" class="section-late-production-op row">
@@ -32,8 +32,10 @@
             </div>
             <div v-else-if="showslots" class="section-late-production-op date-suggested row"  :class="{cc:hasRoles(['cc','admin','Blanc Admin'])}">
                 <div class="col" style="padding-left:32px;">
+                    <span :class="{'d-none':setDeliveryDate}">
                     <b style="margin-left: 0">This order is late</b>
                     <br/>
+                    </span>
                     <span class="f14">Please suggest a delivery date</span>
                 </div>
                 <div class="col-6  p-0 d-flex justify-content-evenly">
@@ -61,7 +63,8 @@
         </div>
         <div v-if="(typeof ORDER['detail']!='undefined')"  class="row section3">
             <div class="col-9">
-                <span class="body_medium">Promised date: {{ ORDER.detail.PromisedDate.toUpperCase() }}  <button type="button" class="btn-link-green body_regular"  @click='featureunavailable("Edit promised date")'>Edit</button></span>
+                <span class="body_medium">Promised date: {{ ORDER.detail.PromisedDate.toUpperCase() }}  <button type="button" class="btn-link-green body_regular"  @click='showDeliverySlots'>Edit</button></span>
+                <!--featureunavailable("Edit promised date")-->
             </div>
             <div class="col-3 text-center body_bold">
                <b> {{formatPrice(ORDER.detail.Total)}}</b>
@@ -70,7 +73,7 @@
         </div>
         <hr v-if="(typeof ORDER['detail']!='undefined')" />
         <div  v-if="(typeof ORDER['detail']!='undefined')" class="row section4">
-       
+
             <div class="accordion-container">
                 <div class="accordion accordion-flush" id="accordionFlushExample">
                     <div class="accordion-item">
@@ -87,8 +90,8 @@
                                     <tag  v-if="ORDER.detail.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
                                     <tag  v-else :name="'B2B'" ></tag>
                               </div>
-                            
-                             
+
+
                         </div>
                         <div
                             id="flush-collapseOne"
@@ -96,7 +99,7 @@
                             :class="{ show: instAcc === true }"
                         >
                             <div class="accordion-body">
-                              
+
                                     <div  v-if="(typeof ORDER['detail']!='undefined')" class="row section5">
                                             <div class="col">
                                                 <AddressFormat :title="'Delivery address'" :address="ORDER.delivery" ></AddressFormat>
@@ -141,7 +144,7 @@
             </div>
 
 
-            
+
             <!-- <div class="col">
                 <tag  v-if="ORDER.detail.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
                 <tag  v-else :name="'B2B'" ></tag>
@@ -157,7 +160,7 @@
             </div>
         </div> -->
 
-      
+
         <!-- <hr v-if="(typeof ORDER['detail']!='undefined')"/> -->
         <div class="row">
             <div class="col">
@@ -169,7 +172,7 @@
             <div class="col-4" v-if="ORDER['items'].length !== 0">
                 <button class="btn btn-outline-danger body_medium" @click="markaslate" v-if="ORDER['detail'].Status!='LATE'">Mark as late</button>
             </div>
-           
+
              <div class="col-4" v-if="ORDER['items'].length === 0">
                 <button class="btn btn-outline-dark body_medium">Print ticket(s)</button>
             </div>
@@ -181,7 +184,7 @@
                 <OrderOptions v-if="show_options_btn"></OrderOptions>
             </div>
             </div>
-          
+
         <split-confirmation :show_conf="show_split_conf" @close="show_split_conf=false"></split-confirmation>
     </div>
 </template>
@@ -418,10 +421,10 @@
                     if(response.data.updated!==false) {
                         store.commit(`${ORDERDETAIL_MODULE}${ORDERDETAIL_UPDATE}`, {
                             PromisedDate: formatDate(cc_new_delivery_date.value, 'DAY DD/MM'),
-                            Status: 'IN PROCESS'
+                            Status: 'In Process'
                         });
                         store.commit(`${ORDERLIST_MODULE}${ORDERLIST_NEW_DELIVERY_DATE}`, {
-                            infoOrder_id: ORDER.value.detail.id,
+                            infoOrder_id: ORDER.value.detail.order_id,
                             PromisedDate: formatDate(cc_new_delivery_date.value)
                         });
                        /* store.commit(`${ORDERLIST_MODULE}${ORDERLIST_UPDATE_STATUS}`, {
@@ -454,20 +457,26 @@
                         },
                     });
             }
-            
+
             function EditOrder(order_id){
                 orderId.value = order_id
                 router.push('/checkout/'+orderId.value);
             }
              function openAccordionclick(i) {
-           
+
                 instAcc.value = !instAcc.value;
-               
+
             }
             function openOptions(){
                show_options_btn.value = !show_options_btn.value
             }
-        
+
+            const setDeliveryDate = ref(false);
+
+            function showDeliverySlots(){
+                showslots.value = true;
+                setDeliveryDate.value = true;
+            }
 
             return {
                 showorderdetail,
@@ -505,8 +514,9 @@
                 openAccordionclick,
                 instAcc,
                 show_options_btn,
-                openOptions
-
+                openOptions,
+                setDeliveryDate,
+                showDeliverySlots,
             }
         }
     }
