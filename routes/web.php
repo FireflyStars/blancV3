@@ -84,7 +84,7 @@ Route::post('/save-customer-preferences',[CustomerController::class,'saveCustome
 Route::post('/save-customer-delivery-instructions',[CustomerController::class,'saveCustomerDeliveryInstructions'])->name('save-customer-delivery-instructions')->middleware('auth');
 
 Route::post('/get-customer-order-details',[CustomerController::class,'getCustomerOrderDetails'])->name('get-customer-order-details')->middleware('auth');
-
+Route::post('/update-detailing-issues-text',[DetailingController::class,'updateIssuesText'])->name('update-detailing-issues-text')->middleware('auth');
 
 
 Route::get('/permissions-test',function(){
@@ -550,6 +550,7 @@ Route::post('get-suborder-and-print', [ PosteController::class, 'getSubOrderToPr
 /* Update svg zone label position
 */
 Route::post('update-zone-label-pos',[ItemController::class,'updateZoneLabelPos'])->name('update-zone-label-pos')->middleware('auth');
+
 
 /*
 * Detailing Services

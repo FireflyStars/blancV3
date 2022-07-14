@@ -467,7 +467,6 @@ class DetailingController extends Controller
         $item_description = $this->getItemDescription($detailingitem);
 
 
-
         /* CLEANING SERVICES */
 
         $cust_cleaning_services = DetailingController::getCustCleaningServices($detailingitem);
@@ -1752,6 +1751,36 @@ class DetailingController extends Controller
             ]);
         }else{
             $updated = DB::table('order_upcharges')->where('upcharges_id',$addon_id)->delete();
+        }
+
+        return response()->json([
+            'post'=>$request->all(),
+            'updated'=>$updated,
+        ]);
+    }
+
+    public function updateIssuesText(Request $request){
+        $detailingitem_id = $request->detailingitem_id;
+        $stains_text = $request->stains_text;
+        $damages_text = $request->damages_text;
+        $updated = false;
+
+        if(isset($stains_text)){
+            $updated = DB::table('detailingitem')
+                ->where('id',$detailingitem_id)
+                ->update([
+                    'stainstext'=>$stains_text,
+                    'updated_at'=>date('Y-m-d H:i:s')
+                ]);
+        }
+
+        if(isset($damages_text)){
+            $updated = DB::table('detailingitem')
+                ->where('id',$detailingitem_id)
+                ->update([
+                    'damagestext'=>$damages_text,
+                    'updated_at'=>date('Y-m-d H:i:s')
+                ]);
         }
 
         return response()->json([

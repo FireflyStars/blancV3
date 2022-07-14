@@ -92,7 +92,7 @@
                 class="free-text-input"
                 maxlength="30"
                 v-model="stain_free_text"
-                @keyup.enter="addFreeText"
+                @blur="addFreeText"
             ></textarea>
         </div>
     </div>
@@ -106,6 +106,16 @@
                 v-for="(dam, index) in damageKind"
                 @click="addTag(dam.id)"
             >{{ dam.name }}</div>
+        </div>
+        <div class="row free-text">
+            <span class="free-text-label">Free text</span>
+            <textarea
+                placeholder="Specification about damage"
+                class="free-text-input"
+                maxlength="30"
+                v-model="damage_free_text"
+                @blur="addFreeText"
+            ></textarea><!-- @keyup.enter="addFreeText" -->
         </div>
     </div>
     <div class="row buttons">
@@ -123,6 +133,8 @@
 <script>
 import { ref, watch } from 'vue';
 import ItemPictoNew from '../miscellaneous/ItemPictoNew.vue'
+import {TOASTER_MODULE, TOASTER_MESSAGE} from '../../store/types/types';
+import {useStore} from 'vuex';
 export default {
     name: "DetailingItemIssues",
     components: { ItemPictoNew },
@@ -133,6 +145,7 @@ export default {
     },
     emits: ['save-item-issues', 'go-to-step'],
     setup(props, context) {
+        const store = useStore();
         const stainZone = ref([]);
         const damageZone = ref([]);
         const stainType = ref([]);
@@ -145,6 +158,7 @@ export default {
         const cur_zone_id = ref(0);
 
         const stain_free_text = ref('');
+        const damage_free_text = ref('');
         const damageKind = ref([]);
         stainType.value = ['Oil', 'Organic', 'Light', 'Heavy'];
         stainKind.value = props.detailingData.issues_tags.filter((tag) => tag.type == 'stain');
@@ -153,16 +167,18 @@ export default {
         stainZone.value = props.detailingitem.stains ? JSON.parse(props.detailingitem.stains) : [];
         damageZone.value = props.detailingitem.damages ? JSON.parse(props.detailingitem.damages) : [];
         issuesStep.value = damageZone.value.length > 0 ? 5 : (stainZone.value.length > 0 ? 2 : 0);
+        stain_free_text.value = props.detailingitem.stainstext;
+        damage_free_text.value = props.detailingitem.damagestext;
 
         //stainTag.value = stainZone.value.length > 0 ? stainZone.value[0].id_issue : 0;
 
         if(stainZone.value.length==1){
             stainTag.value = stainZone.value[0].id_issue;
-            stain_free_text.value = stainZone.value[0].description;
+            //stain_free_text.value = stainZone.value[0].description;
 
         }else if(stainZone.value.length > 1){
             stainTag.value = stainZone.value[stainZone.value.length - 1].id_issue;
-            stain_free_text.value = stainZone.value[stainZone.value.length - 1].description;
+            //stain_free_text.value = stainZone.value[stainZone.value.length - 1].description;
         }
 
 
@@ -232,7 +248,7 @@ export default {
             });
         }
         function addTag(tag_id) {
-            if (issuesStep.value == 2) {
+            if (issuesStep.value == 2 || issuesStep.value==0) {
                 stainTag.value = stainTag.value == tag_id ? 0 : tag_id;
 
                 if(stainZone.value.length==1){
@@ -248,7 +264,7 @@ export default {
                     stains: JSON.stringify(stainZone.value)
                 });
             }
-            if (issuesStep.value == 5) {
+            if (issuesStep.value == 5 || issuesStep.value==3) {
                 damageTag.value = damageTag.value == tag_id ? 0 : tag_id;
 
                 if(damageZone.value.length==1){
@@ -267,15 +283,48 @@ export default {
             }
         }
         function addFreeText(e) {
+            let data = {};
+            data['detailingitem_id'] = props.detailingitem.id;
             if ([0,1,2].includes(issuesStep.value)) {
-                stainZone.value[0].description = e.target.value;
+                /*
+                //stainZone.value[0].description = e.target.value;
                 context.emit("save-item-issues", {
                     detailingitem_id: props.detailingitem.id,
-                    stains: JSON.stringify(stainZone.value)
+                    stains_text: e.target.value,
+                    //JSON.stringify(stainZone.value)
                 });
+                */
+                data['stains_text']  = e.target.value;
             }
+            if ([3,4,5].includes(issuesStep.value)) {
+               /*
+               context.emit("save-item-issues", {
+                    detailingitem_id: props.detailingitem.id,
+                    damages_text: e.target.value,
+                });
+                */
+               data['damages_text'] = e.target.value;
+            }
+
+            axios.post('/update-detailing-issues-text',data)
+                .then((res)=>{
+                    if(res.data.updated){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                            message: 'Free text updated',
+                            ttl: 5,
+                            type: 'success'
+                        });
+                    }
+                }).catch((err)=>{
+
+                }).finally(()=>{
+
+                });
+
         }
         function save() {
+            //Axios to save free text
+
 
             if ([3,4,5].includes(issuesStep.value)) {
                 context.emit("save-item-issues", {
@@ -311,6 +360,7 @@ export default {
             issuesStep,
             stainTag,
             stain_free_text,
+            damage_free_text,
             damageKind,
             damageZone,
             damageTag,
