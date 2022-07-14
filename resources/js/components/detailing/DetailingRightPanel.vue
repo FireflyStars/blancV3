@@ -504,6 +504,8 @@ export default {
                     // parseFloat(props.detailingitem.pricecleaning)+
                     price = parseFloat(props.detailingitem.dry_cleaning_price)+parseFloat(props.detailingitem.cleaning_addon_price)+parseFloat(props.detailingitem.tailoring_price);
                     final_price.value = price.toFixed(2);
+                }else{
+                    final_price.value = props.detailingitem.pricecleaning.toFixed(2);
                 }
 
 
