@@ -49,10 +49,17 @@
             function Fulfill(){
                
                    axios.post('/setInvoiceFulfilled',{
-                   suborderid: props.invoice_id,
+                   invoice_id: props.invoice_id,
                    nextpost:28
                     }).then((res)=>{
-                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
+                        console.log(res.status_message , res.data.status_message  )
+                        if( res.data.status_message == "ok"){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
+                             location.reload();
+                        }else {
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${res.data.status_message}`,ttl:5,type:'danger'});
+                        }
+                       
                          close();
                     }).catch((error)=>{
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
