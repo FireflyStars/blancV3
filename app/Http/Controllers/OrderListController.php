@@ -312,7 +312,7 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
                    
-                            $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->DateDeliveryAsk)->format('d-m-Y');
+                            $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->DateDeliveryAsk)->format('d/m/Y');
                             $lastDate=Carbon::parse($order->Deliv)->subDays(1);
 
                             $this->holidays=Holiday::getHolidays();
@@ -326,7 +326,7 @@ class OrderListController extends Controller
                 } else {
                     if(!is_null($order->PromisedDate)  ){
 
-                        $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->PromisedDate)->format('d-m-Y');
+                        $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->PromisedDate)->format('d/m/Y');
                         $lastDate=Carbon::parse($order->Deliv)->subDays(1);
 
                         $this->holidays=Holiday::getHolidays();
@@ -741,7 +741,7 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
               
-                    $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->DateDeliveryAsk)->format('d-m-Y');
+                    $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->DateDeliveryAsk)->format('d/m/Y');
                     $lastDate=Carbon::parse($order->Deliv)->subDays(1);
 
                     $this->holidays=Holiday::getHolidays();
@@ -1686,7 +1686,7 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
                    
-                            $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->DateDeliveryAsk)->format('d-m-Y');
+                            $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->DateDeliveryAsk)->format('d/m/Y');
                             $lastDate=Carbon::parse($order->Deliv)->subDays(1);
 
                             $this->holidays=Holiday::getHolidays();
@@ -1700,7 +1700,7 @@ class OrderListController extends Controller
                 } else {
                     if(!is_null($order->PromisedDate)){
     
-                        $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->PromisedDate)->format('d-m-Y');
+                        $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->PromisedDate)->format('d/m/Y');
                         $lastDate=Carbon::parse($order->Deliv)->subDays(1);
 
                         $this->holidays=Holiday::getHolidays();
