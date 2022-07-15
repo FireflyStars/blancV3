@@ -263,7 +263,7 @@
 
                                          <div class="row px-0 mt-4 py-2 balance-text">
                                             <div class="col-9">Order balance to pay by card</div>
-                                            <div class="col-3 text-align-right">&#163;{{amount_diff.toFixed(2)}}</div>
+                                            <div class="col-3 text-align-right">&#163;{{order_balance.toFixed(2)}}</div>
                                         </div>
                                     </div>
                                 </div>
