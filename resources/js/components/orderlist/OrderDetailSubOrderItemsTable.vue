@@ -110,6 +110,7 @@
             function selectrow(id,colname){
                 if(colname=='line_select') return;
                 console.log(id,colname);
+                close()
 
             }
             function checkboxclicked(check,id,name) {
@@ -119,6 +120,7 @@
                 if(check===false){
                     store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_MULTI_ITEMS_UNCHECKED}`,{infoitems_id:id,suborder:name});
                 }
+                close()
             }
             function checkboxallclicked(check,id,suborder) {
 
@@ -139,9 +141,13 @@
                             }
                         });
 
-
+                close()
             }
 
+            const close=()=>{
+                context.emit('close');
+                open_options.value=false;
+            }
             const featureunavailable=((feature)=>{
                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:feature+' feature not yet implemented.',ttl:5,type:'success'});
             });
@@ -207,7 +213,8 @@
                 qz_printer,
                 show,
                 show_model_Fulfil,
-                invoiceId
+                invoiceId,
+                close
 
 
 

@@ -27,7 +27,7 @@
 
     import {watch ,ref} from 'vue';
     import {useStore} from 'vuex';
-    import {ORDERDETAIL_MODULE, ORDERDETAIL_SPLIT} from "../../store/types/types";
+    import {TOASTER_MODULE, TOASTER_MESSAGE} from "../../store/types/types";
     export default {
         name: "NewSplitConfirmation",
         props:{
@@ -35,23 +35,44 @@
                 type:Boolean
             },
             suborder :String,
-            items :Array
+            items :Array,
+            invoice_id: String,
+            item_selected:Array
         },
         setup(props,context){
             const show=ref(false);
             const store=useStore();
+            const listItems =ref([]);
 
             watch(() => props.show_conf, (toval, fromval) => {
                 show.value=toval;
             });
+
+            console.log("rrrrrrrr", props.item_selected);
             const close=()=>{
                 context.emit('close');
                 show.value=false;
             }
-            const split=()=>{
-                close();
-                store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_SPLIT}`);
-            }
+            
+           function split(){
+               console.log("list item selected", listItems.value)
+               axios.post('/SplitSubOrder',{
+                   invoice_id: props.invoice_id ,
+                   items:props.item_selected
+               }).then((res)=>{
+                        if( res.data.status_message == "ok"){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
+                             location.reload();
+                        }else {
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${res.data.status_message}`,ttl:5,type:'danger'});
+                        }
+                       
+                         close();
+                    }).catch((error)=>{
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
+                    })
+                  close()
+           }
             return {
                 show,
                 close,

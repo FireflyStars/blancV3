@@ -173,7 +173,7 @@ class OrderListController extends Controller
             //Booking Only
             if($order->TypeDelivery == "DELIVERY" && ($order->Status == "RECURRING" || $order->Status == "SCHEDULED")  && $order->deliverymethod == '' ){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && $order->DateDeliveryAsk != "" ){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
 
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
                     $order->Prod  = $order->Deliv;
@@ -190,7 +190,7 @@ class OrderListController extends Controller
             //Store New
             else if($order->deliverymethod == 'in_store_collection' ){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && $order->DateDeliveryAsk != "" ){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
                                        
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y');
                     //dateProd
@@ -205,7 +205,7 @@ class OrderListController extends Controller
                         }
                 } else {
 
-                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" && $order->DateDeliveryAsk != ""  && $order->DatePickup != ""){
+                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" && !is_null($order->DateDeliveryAsk)  && !is_null($order->DateDeliveryAsk)){
 
                         $pickupDate   = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
                         $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
@@ -244,7 +244,7 @@ class OrderListController extends Controller
             //Delivery New
             else if($order->deliverymethod == 'home_delivery' ){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && $order->DateDeliveryAsk != "" ){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
                     
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
                     
@@ -252,7 +252,7 @@ class OrderListController extends Controller
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
 
-                       if($order->DatePickup != null && $order->DateDeliveryAsk != null){
+                       if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
                             $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
                             $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
 
@@ -277,7 +277,7 @@ class OrderListController extends Controller
              //Delivery Only New
             else if($order->deliverymethod == 'delivery_only'){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && $order->DateDeliveryAsk != ""){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk)){
                     
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
                     
@@ -310,7 +310,7 @@ class OrderListController extends Controller
             //Store Old
             else if($order->TypeDelivery != "DELIVERY" && $order->deliverymethod == ''){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && $order->DateDeliveryAsk != "" ){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
                    
                             $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->DateDeliveryAsk)->format('d-m-Y');
                             $lastDate=Carbon::parse($order->Deliv)->subDays(1);
@@ -324,7 +324,7 @@ class OrderListController extends Controller
                                 }
 
                 } else {
-                    if($order->PromisedDate != null  ){
+                    if(!is_null($order->PromisedDate)  ){
 
                         $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->PromisedDate)->format('d-m-Y');
                         $lastDate=Carbon::parse($order->Deliv)->subDays(1);
@@ -351,7 +351,7 @@ class OrderListController extends Controller
             //Delivery Old
             else if($order->TypeDelivery == "DELIVERY" && $order->deliverymethod == ''){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && $order->DateDeliveryAsk != "" ){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
                     
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
                     $order->Prod  = $order->Deliv;
@@ -360,7 +360,7 @@ class OrderListController extends Controller
                 } else {
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
-                        if($order->DatePickup != null && $order->DateDeliveryAsk != null){
+                        if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
 
                             $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
                             $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
@@ -384,7 +384,7 @@ class OrderListController extends Controller
             //Fulfiled
             else if($order->Status == "FULFILLED " ){
 
-                    if($order->Orderdatesold != '2020-01-01'  && $order->Orderdatesold != ""){
+                    if($order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
                             
                         $order->Deliv = Carbon::parse($order->Orderdatesold)->format('d/m/Y') ;
                         $order->Prod  = Carbon::parse($order->Orderdatesold)->format('d/m/Y');
@@ -601,7 +601,7 @@ class OrderListController extends Controller
             //Booking Only
             if($order->TypeDelivery == "DELIVERY" && ($order->Status == "RECURRING" || $order->Status == "SCHEDULED")  && $order->deliverymethod == '' ){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && $order->DateDeliveryAsk != "" ){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
 
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
                     $order->Prod  = $order->Deliv;
@@ -618,7 +618,7 @@ class OrderListController extends Controller
             //Store New
             else if($order->deliverymethod == 'in_store_collection' ){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && $order->DateDeliveryAsk != "" ){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
                                        
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y');
                     //dateProd
@@ -634,7 +634,7 @@ class OrderListController extends Controller
                         }
                 } else {
 
-                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" && $order->DateDeliveryAsk != "" && $order->DatePickup != "" ){
+                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" && !is_null($order->DateDeliveryAsk) && !is_null($order->DatePickup) ){
 
                         $pickupDate   = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
                         $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
@@ -673,7 +673,7 @@ class OrderListController extends Controller
             //Delivery New
             else if($order->deliverymethod == 'home_delivery' ){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && $order->DateDeliveryAsk != "" ){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk)){
                     
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
                     
@@ -681,7 +681,7 @@ class OrderListController extends Controller
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
 
-                       if($order->DatePickup != null && $order->DateDeliveryAsk != null){
+                       if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
                             $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
                             $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
 
@@ -706,7 +706,7 @@ class OrderListController extends Controller
              //Delivery Only New
             else if($order->deliverymethod == 'delivery_only'){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && $order->DateDeliveryAsk != ""){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk)){
                     
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
                     
@@ -714,7 +714,7 @@ class OrderListController extends Controller
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
 
-                       if($order->DatePickup != null && $order->DateDeliveryAsk != null){
+                       if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
                             $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
                             $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
 
@@ -739,7 +739,7 @@ class OrderListController extends Controller
             //Store Old
             else if($order->TypeDelivery != "DELIVERY" && $order->deliverymethod == ''){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && $order->DateDeliveryAsk != "" ){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
               
                     $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->DateDeliveryAsk)->format('d-m-Y');
                     $lastDate=Carbon::parse($order->Deliv)->subDays(1);
@@ -753,7 +753,7 @@ class OrderListController extends Controller
                         }
                     
                 } else {
-                    if($order->PromisedDate != null){
+                    if(!is_null($order->PromisedDate)){
                         $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->PromisedDate)->format('d-m-Y');
                         $lastDate=Carbon::parse($order->Deliv)->subDays(1);
 
@@ -779,7 +779,7 @@ class OrderListController extends Controller
             //Delivery Old
             else if($order->TypeDelivery == "DELIVERY" && $order->deliverymethod == ''){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && $order->DateDeliveryAsk != "" ){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
                     
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
                     $order->Prod  = $order->Deliv;
@@ -788,7 +788,7 @@ class OrderListController extends Controller
                 } else {
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
-                        if($order->DatePickup != null && $order->DateDeliveryAsk != null){
+                        if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
 
                             $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
                             $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
@@ -812,7 +812,7 @@ class OrderListController extends Controller
             //Fulfiled
             else if($order->Status == "FULFILLED " ){
 
-                    if($order->Orderdatesold != '2020-01-01'  && $order->Orderdatesold != ""){
+                    if($order->Orderdatesold != '2020-01-01'  && !is_null($order->Orderdatesold)){
                             
                         $order->Deliv = Carbon::parse($order->Orderdatesold)->format('d/m/Y') ;
                         $order->Prod  = Carbon::parse($order->Orderdatesold)->format('d/m/Y');
@@ -1040,11 +1040,15 @@ class OrderListController extends Controller
 
         $invoice_id = $request->post('suborderid');
         $items = $request->post('items');
+        $arr = $items[0]; 
+        $array_item = http_build_query($arr,"item[");
+       // echo preg_replace('/\[\d/', '\\0]', array_item);
+       
+
 
         $endpoint = "http://blancspot.vpc-direct-service.com/split-v1.php";
-        $arr = http_build_query($items,"item[");
-        $array_item = serialize(preg_replace('/\[\d/', '\\0]', $arr));
-
+        // $arr = http_build_query($items,"item[");
+        $array_item = preg_replace('/\[\d/', '\\0]', $array_item);
         $client = new \GuzzleHttp\Client();
         $content = "";
 
@@ -1058,7 +1062,7 @@ class OrderListController extends Controller
         ];
 
         $response = $client->request('GET', $endpoint, ['query' => $params]);
-
+        dd($response);
         $statusCode = $response->getStatusCode();
 
 
@@ -1073,6 +1077,7 @@ class OrderListController extends Controller
             'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=.$invoice_id&".$array_item,
             'output'=>$output,
             'status_code'=>$statusCode,
+            'status_message'=>$output->result
         ]);
     }
 
@@ -1541,7 +1546,7 @@ class OrderListController extends Controller
             //Booking Only
             if($order->TypeDelivery == "DELIVERY" && ($order->Status == "RECURRING" || $order->Status == "SCHEDULED")  && $order->deliverymethod == '' ){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && $order->DateDeliveryAsk != "" ){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
 
                     $order->Deliv = date_create($order->DateDeliveryAsk)->format('d/m/Y') ;
                     $order->Prod  = $order->Deliv;
@@ -1558,7 +1563,7 @@ class OrderListController extends Controller
             //Store New
             else if($order->deliverymethod == 'in_store_collection' ){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && $order->DateDeliveryAsk != "" ){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
                                        
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y');
                     //dateProd
@@ -1574,7 +1579,7 @@ class OrderListController extends Controller
                         }
                 } else {
 
-                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" && $order->DateDeliveryAsk != "" && $order->DatePickup != "" ){
+                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" && !is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk) ){
 
                         $pickupDate   = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
                         $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
@@ -1613,7 +1618,7 @@ class OrderListController extends Controller
             //Delivery New
             else if($order->deliverymethod == 'home_delivery' ){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && $order->DateDeliveryAsk != "" ){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
                     
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
                     
@@ -1621,7 +1626,7 @@ class OrderListController extends Controller
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
 
-                       if($order->DatePickup != null && $order->DateDeliveryAsk != null){
+                       if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
                             $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
                             $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
 
@@ -1646,7 +1651,7 @@ class OrderListController extends Controller
              //Delivery Only New
             else if($order->deliverymethod == 'delivery_only'){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && $order->DateDeliveryAsk != ""){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk)){
                     
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
                     
@@ -1654,7 +1659,7 @@ class OrderListController extends Controller
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
 
-                       if($order->DatePickup != null && $order->DateDeliveryAsk != null){
+                       if(!is_null($order->DatePickup) != null && !is_null($order->DateDeliveryAsk)){
                             $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
                             $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
 
@@ -1679,7 +1684,7 @@ class OrderListController extends Controller
             //Store Old
             else if($order->TypeDelivery != "DELIVERY" && $order->deliverymethod == ''){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && $order->DateDeliveryAsk != "" ){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
                    
                             $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->DateDeliveryAsk)->format('d-m-Y');
                             $lastDate=Carbon::parse($order->Deliv)->subDays(1);
@@ -1693,7 +1698,7 @@ class OrderListController extends Controller
                                 }
 
                 } else {
-                    if($order->PromisedDate != null){
+                    if(!is_null($order->PromisedDate)){
     
                         $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->PromisedDate)->format('d-m-Y');
                         $lastDate=Carbon::parse($order->Deliv)->subDays(1);
@@ -1720,7 +1725,7 @@ class OrderListController extends Controller
             //Delivery Old
             else if($order->TypeDelivery == "DELIVERY" && $order->deliverymethod == ''){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && $order->DateDeliveryAsk != "" ){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
                     
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
                     $order->Prod  = $order->Deliv;
@@ -1729,7 +1734,7 @@ class OrderListController extends Controller
                 } else {
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
-                        if($order->DatePickup != null && $order->DateDeliveryAsk != null){
+                        if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
 
                             $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
                             $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
@@ -1753,7 +1758,7 @@ class OrderListController extends Controller
             //Fulfiled
             else if($order->Status == "FULFILLED " ){
 
-                    if($order->Orderdatesold != '2020-01-01'  && $order->Orderdatesold != ""){
+                    if($order->Orderdatesold != '2020-01-01'  && !is_null($order->Orderdatesold)){
                             
                         $order->Deliv = Carbon::parse($order->Orderdatesold)->format('d/m/Y') ;
                         $order->Prod  = Carbon::parse($order->Orderdatesold)->format('d/m/Y');

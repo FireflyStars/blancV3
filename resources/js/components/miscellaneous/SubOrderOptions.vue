@@ -2,11 +2,11 @@
 
     <div class="options position-absolute">
         <div class="row">
-          
-            <div  v-if="btn_split_show" class="col-12 row-option"  @click="selectSplit()" >
+
+            <!-- <div  v-if="btn_split_show" class="col-12 row-option"  @click="selectSplit()" >
                 <img class="img-arrow" src="/images/split.png" />
                 <span>Split</span>
-            </div>
+            </div> -->
             <div class="col-12 row-option" >
                 <img class="img-arrow" src="/images/offload.png" />
                 <span>Offload</span>
@@ -28,7 +28,7 @@
                 <span>Void</span>
             </div>
         </div>
-        <NewSplitConfirmation :items="item_selected" :suborder="suborder" :show_conf="show_split_conf" @close="show_split_conf=false"></NewSplitConfirmation>
+        <NewSplitConfirmation :items="items" :item_selected="listItems" :invoice_id="invoice_id"  :suborder="suborder" :show_conf="show_split_conf" @close="show_split_conf=false"></NewSplitConfirmation>
 
     </div>
 </template>
@@ -40,48 +40,39 @@
      import NewSplitConfirmation from '../miscellaneous/NewSplitConfirmation'
     export default {
         name: "SubOrderOptions",
-        props:['items' ,'invoice_id','item_selected','suborder' ],
+        props:['items' ,'invoice_id','item_selected','suborder'],
         components:{ NewSplitConfirmation},
         setup(props){
-           const store=useStore();
-           const listItems =ref([]);
+
            const btn_split_show = ref(false)
            const show_split_conf=ref(false);
+           const listItems =ref([]);
 
-            if(listItems.value.length > 1 && props.items.length != listItems.value.length){
-              btn_split_show.value = true
-            } else {
-              btn_split_show.value = false
-            }
-            
             props.item_selected.forEach(item => {
                 
                listItems.value.push(item[1])
 
-            });            
+            });  
+
+            if(listItems.value.length > 0){
+              btn_split_show.value = true
+            } else {
+              btn_split_show.value = false
+            }
+
+            function selectSplit(){
+             show_split_conf.value = true
+            }       
 
 
 
-           function selectSplit(){
-               show_split_conf.value = true
-              
 
-               axios.post('/SplitSubOrder',{
-                   suborderid: props.invoice_id ,
-                   items:listItems.value
-               }).then((res)=>{
-                   console.log("response" , res)
-                 // store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success.',ttl:5,type:'success'});
-
-               }).catch((error)=>{
-                 console.log("error" , error)
-                // store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
-               })
-           
-           }
             return {
                selectSplit,
-               show_split_conf
+               show_split_conf,
+               btn_split_show,
+               listItems
+
             }
         }
     }
