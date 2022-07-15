@@ -175,7 +175,7 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
 
-                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
+                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)) ;
                     $order->Prod  = $order->Deliv;
 
                 } else {
@@ -192,45 +192,44 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
                                        
-                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y');
+                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                     //dateProd
-                    $date = Carbon::parse($order->Deliv);
-                    $lastDate=Carbon::parse($order->DateDeliveryAsk)->subDays(1);
+                    $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->DateDeliveryAsk)));
+
                     $this->holidays=Holiday::getHolidays();
 
-                        if(($date->format('l')) != "Saturday" &&  ($date->format('l')) != "Sunday" && $this->isDateHoliday($date) == false){
+                        if((Carbon::parse($order->Deliv)->format('l'))  != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l'))  != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                         $order->Prod = $order->Deliv;
                         } else {
-                            $order->Prod = $lastDate;
+                         $order->Prod = $lastDate;
                         }
                 } else {
 
-                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" && !is_null($order->DateDeliveryAsk)  && !is_null($order->DateDeliveryAsk)){
+                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" && !is_null($order->DateDeliveryAsk)  && !is_null($order->DatePickup)){
 
                         $pickupDate   = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
                         $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
 
                             if($pickupDate <  $DeliveryDate){
 
-                                $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
-                                $date = Carbon::parse($order->DateDeliveryAsk);
-                                $lastDate=Carbon::parse($order->DateDeliveryAsk)->subDays(1)->format('d/m/Y');
+                                $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)) ;
+                                $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->DateDeliveryAsk)));
                                 $this->holidays=Holiday::getHolidays();
 
-                                    if(($date->format('l')) != "Saturday" &&  ($date->format('l')) != "Sunday" && $this->isDateHoliday($date) == false){
-                                    $order->Prod = date_create($order->Deliv)->format('d/m/Y');
+                                    if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  ((Carbon::parse($order->Deliv)->format('l')) ->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                    $order->Prod = $order->Deliv;
                                     } else {
-                                        $order->Prod = $lastDate;
+                                     $order->Prod = $lastDate;
                                     }
 
                             } else {
-                                $order->Deliv = Carbon::parse($order->DatePickup)->format('d/m/Y');
 
-                                $date = Carbon::parse($order->DatePickup);
-                                $lastDate=Carbon::parse($order->DatePickup)->subDays(1)->format('d/m/Y');
+                                $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
+                                $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->DatePickup)));
+
                                 $this->holidays=Holiday::getHolidays();
 
-                                    if(($date->format('l')) != "Saturday" &&  ($date->format('l')) != "Sunday" && $this->isDateHoliday($date) == false){
+                                    if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                                     $order->Prod = date_create($order->Deliv)->format('d/m/Y');
                                     } else {
                                         $order->Prod = $lastDate;
@@ -246,20 +245,21 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
                     
-                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
+                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)) ;
 
                 } else {
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
 
                        if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
+                        
                             $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
                             $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
 
                                 if($pickupDate <  $DeliveryDate){
-                                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
+                                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)) ;
                                 } else {
-                                    $order->Deliv = Carbon::parse($order->DatePickup)->format('d/m/Y');
+                                    $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                 }
                         }else {
 
@@ -279,7 +279,7 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk)){
                     
-                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
+                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)) ;
 
                 } else {
 
@@ -290,9 +290,9 @@ class OrderListController extends Controller
                             $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
 
                                 if($pickupDate <  $DeliveryDate){
-                                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
+                                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                 } else {
-                                    $order->Deliv = Carbon::parse($order->DatePickup)->format('d/m/Y');
+                                    $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                 }
                         }else {
 
@@ -312,8 +312,8 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
                    
-                            $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->DateDeliveryAsk)->format('d/m/Y');
-                            $lastDate=Carbon::parse($order->Deliv)->subDays(1);
+                            $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                            $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->DateDeliveryAsk)));
 
                             $this->holidays=Holiday::getHolidays();
 
@@ -324,10 +324,10 @@ class OrderListController extends Controller
                                 }
 
                 } else {
-                    if(!is_null($order->PromisedDate)  ){
-
-                        $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->PromisedDate)->format('d/m/Y');
-                        $lastDate=Carbon::parse($order->Deliv)->subDays(1);
+                    if(!is_null($order->PromisedDate)){
+                    
+                        $order->Deliv = date('d/m/Y',strtotime($order->PromisedDate));
+                        $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->PromisedDate)));
 
                         $this->holidays=Holiday::getHolidays();
 
@@ -353,7 +353,7 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
                     
-                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
+                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)); ;
                     $order->Prod  = $order->Deliv;
 
 
@@ -366,9 +366,9 @@ class OrderListController extends Controller
                             $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
 
                                 if($pickupDate <  $DeliveryDate){
-                                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
+                                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                 } else {
-                                    $order->Deliv = Carbon::parse($order->DatePickup)->format('d/m/Y');
+                                    $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                 }
                                 $order->Prod  = $order->Deliv;
                         } else {
@@ -386,8 +386,8 @@ class OrderListController extends Controller
 
                     if($order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
                             
-                        $order->Deliv = Carbon::parse($order->Orderdatesold)->format('d/m/Y') ;
-                        $order->Prod  = Carbon::parse($order->Orderdatesold)->format('d/m/Y');
+                        $order->Deliv = date('d/m/Y',strtotime($order->Orderdatesold)) ;
+                        $order->Prod  = date('d/m/Y',strtotime($order->Orderdatesold));
 
                     } else {
                         if($order->PromisedDate != null){
@@ -587,7 +587,8 @@ class OrderListController extends Controller
         $orderlist=$orderlist->skip($skip)->take($take);
         $orderlist=$orderlist->get();
 
-        foreach ($orderlist as $order) {
+           // adding ready_sub_orders and deliv date
+           foreach ($orderlist as $order) {
 
             if($current_tab != 'customer_care'){
 
@@ -597,13 +598,12 @@ class OrderListController extends Controller
                     ->where('infoOrder.id', $order->id)
                     ->where('infoInvoice.Status', 'READY')->count();
             }
-
             //Booking Only
             if($order->TypeDelivery == "DELIVERY" && ($order->Status == "RECURRING" || $order->Status == "SCHEDULED")  && $order->deliverymethod == '' ){
 
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
 
-                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
+                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)) ;
                     $order->Prod  = $order->Deliv;
 
                 } else {
@@ -620,47 +620,45 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
                                        
-                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y');
+                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                     //dateProd
+                    $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->DateDeliveryAsk)));
 
-                    $date = Carbon::parse($order->DateDeliveryAsk);
-                    $lastDate=Carbon::parse($order->DateDeliveryAsk)->subDays(1)->format('d/m/Y');
                     $this->holidays=Holiday::getHolidays();
 
-                        if(($date->format('l')) != "Saturday" &&  ($date->format('l')) != "Sunday" && $this->isDateHoliday($date) == false){
-                        $order->Prod = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y');
+                        if((Carbon::parse($order->Deliv)->format('l'))  != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l'))  != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                        $order->Prod = $order->Deliv;
                         } else {
-                            $order->Prod = $lastDate;
+                         $order->Prod = $lastDate;
                         }
                 } else {
 
-                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" && !is_null($order->DateDeliveryAsk) && !is_null($order->DatePickup) ){
+                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" && !is_null($order->DateDeliveryAsk)  && !is_null($order->DatePickup)){
 
                         $pickupDate   = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
                         $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
 
                             if($pickupDate <  $DeliveryDate){
-                                $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
 
-                                $date = Carbon::parse($order->DateDeliveryAsk);
-                                $lastDate=Carbon::parse($order->Deliv)->subDays(1)->format('d/m/Y');
+                                $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)) ;
+                                $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->DateDeliveryAsk)));
                                 $this->holidays=Holiday::getHolidays();
 
-                                    if(($date->format('l')) != "Saturday" &&  ($date->format('l')) != "Sunday" && $this->isDateHoliday($date) == false){
-                                    $order->Prod = Carbon::parse($order->Deliv)->format('d/m/Y');
+                                    if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  ((Carbon::parse($order->Deliv)->format('l')) ->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                    $order->Prod = $order->Deliv;
                                     } else {
-                                        $order->Prod = $lastDate;
+                                     $order->Prod = $lastDate;
                                     }
 
                             } else {
-                                $order->Deliv = Carbon::parse($order->DatePickup)->format('d/m/Y');
 
-                                $date = Carbon::parse($order->DatePickup);
-                                $lastDate=Carbon::parse($order->Deli)->subDays(1)->format('d/m/Y');
+                                $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
+                                $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->DatePickup)));
+
                                 $this->holidays=Holiday::getHolidays();
 
-                                    if(($date->format('l')) != "Saturday" &&  ($date->format('l')) != "Sunday" && $this->isDateHoliday($date) == false){
-                                    $order->Prod = Carbon::parse($order->Deliv)->format('d/m/Y');
+                                    if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                    $order->Prod = date_create($order->Deliv)->format('d/m/Y');
                                     } else {
                                         $order->Prod = $lastDate;
                                     }
@@ -673,22 +671,23 @@ class OrderListController extends Controller
             //Delivery New
             else if($order->deliverymethod == 'home_delivery' ){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk)){
+                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
                     
-                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
+                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)) ;
 
                 } else {
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
 
                        if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
+                        
                             $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
                             $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
 
                                 if($pickupDate <  $DeliveryDate){
-                                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
+                                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)) ;
                                 } else {
-                                    $order->Deliv = Carbon::parse($order->DatePickup)->format('d/m/Y');
+                                    $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                 }
                         }else {
 
@@ -708,20 +707,20 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk)){
                     
-                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
+                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)) ;
 
                 } else {
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
 
-                       if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
+                       if($order->DatePickup != null && $order->DateDeliveryAsk != null){
                             $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
                             $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
 
                                 if($pickupDate <  $DeliveryDate){
-                                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
+                                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                 } else {
-                                    $order->Deliv = Carbon::parse($order->DatePickup)->format('d/m/Y');
+                                    $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                 }
                         }else {
 
@@ -740,22 +739,23 @@ class OrderListController extends Controller
             else if($order->TypeDelivery != "DELIVERY" && $order->deliverymethod == ''){
 
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
-              
-                    $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->DateDeliveryAsk)->format('d/m/Y');
-                    $lastDate=Carbon::parse($order->Deliv)->subDays(1);
+                   
+                            $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                            $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->DateDeliveryAsk)));
 
-                    $this->holidays=Holiday::getHolidays();
+                            $this->holidays=Holiday::getHolidays();
 
-                        if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
-                           $order->Prod = $order->Deliv;
-                        } else {
-                            $order->Prod = $lastDate;
-                        }
+                                if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                   $order->Prod = $order->Deliv;
+                                } else {
+                                    $order->Prod = $lastDate;
+                                }
 
                 } else {
                     if(!is_null($order->PromisedDate)){
-                        $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->PromisedDate)->format('d-m-Y');
-                        $lastDate=Carbon::parse($order->Deliv)->subDays(1);
+                    
+                        $order->Deliv = date('d/m/Y',strtotime($order->PromisedDate));
+                        $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->PromisedDate)));
 
                         $this->holidays=Holiday::getHolidays();
 
@@ -781,7 +781,7 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
                     
-                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
+                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)); ;
                     $order->Prod  = $order->Deliv;
 
 
@@ -794,9 +794,9 @@ class OrderListController extends Controller
                             $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
 
                                 if($pickupDate <  $DeliveryDate){
-                                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
+                                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                 } else {
-                                    $order->Deliv = Carbon::parse($order->DatePickup)->format('d/m/Y');
+                                    $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                 }
                                 $order->Prod  = $order->Deliv;
                         } else {
@@ -812,10 +812,10 @@ class OrderListController extends Controller
             //Fulfiled
             else if($order->Status == "FULFILLED " ){
 
-                    if($order->Orderdatesold != '2020-01-01'  && !is_null($order->Orderdatesold)){
+                    if($order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
                             
-                        $order->Deliv = Carbon::parse($order->Orderdatesold)->format('d/m/Y') ;
-                        $order->Prod  = Carbon::parse($order->Orderdatesold)->format('d/m/Y');
+                        $order->Deliv = date('d/m/Y',strtotime($order->Orderdatesold)) ;
+                        $order->Prod  = date('d/m/Y',strtotime($order->Orderdatesold));
 
                     } else {
                         if($order->PromisedDate != null){
@@ -1531,270 +1531,269 @@ class OrderListController extends Controller
 
         $orderlist=$orderlist->skip($skip)->take($take);
         $orderlist=$orderlist->get();
-        // adding ready_sub_orders and deliv date
-        foreach ($orderlist as $order) {
+    
+            // adding ready_sub_orders and deliv date
+            foreach ($orderlist as $order) {
 
-            if($current_tab != 'customer_care'){
-
-                $order->ready_sub_orders = DB::table('infoOrder')
-                    ->join('infoInvoice', 'infoOrder.OrderID','=', 'infoInvoice.OrderID')
-                    ->distinct('infoInvoice.InvoiceID')
-                    ->where('infoOrder.id', $order->id)
-                    ->where('infoInvoice.Status', 'READY')->count();
-            }
-
-            //Booking Only
-            if($order->TypeDelivery == "DELIVERY" && ($order->Status == "RECURRING" || $order->Status == "SCHEDULED")  && $order->deliverymethod == '' ){
-
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
-
-                    $order->Deliv = date_create($order->DateDeliveryAsk)->format('d/m/Y') ;
-                    $order->Prod  = $order->Deliv;
-
-                } else {
-
+                if($current_tab != 'customer_care'){
+    
+                    $order->ready_sub_orders = DB::table('infoOrder')
+                        ->join('infoInvoice', 'infoOrder.OrderID','=', 'infoInvoice.OrderID')
+                        ->distinct('infoInvoice.InvoiceID')
+                        ->where('infoOrder.id', $order->id)
+                        ->where('infoInvoice.Status', 'READY')->count();
+                }
+                //Booking Only
+                if($order->TypeDelivery == "DELIVERY" && ($order->Status == "RECURRING" || $order->Status == "SCHEDULED")  && $order->deliverymethod == '' ){
+    
+                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
+    
+                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)) ;
+                        $order->Prod  = $order->Deliv;
+    
+                    } else {
+    
+                        $order->Deliv = '--';
+                        $order->Prod  = '--';
+    
+                    }
+    
+                }
+    
+                //Store New
+                else if($order->deliverymethod == 'in_store_collection' ){
+    
+                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
+                                           
+                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                        //dateProd
+                        $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->DateDeliveryAsk)));
+    
+                        $this->holidays=Holiday::getHolidays();
+    
+                            if((Carbon::parse($order->Deliv)->format('l'))  != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l'))  != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                            $order->Prod = $order->Deliv;
+                            } else {
+                             $order->Prod = $lastDate;
+                            }
+                    } else {
+    
+                        if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" && !is_null($order->DateDeliveryAsk)  && !is_null($order->DatePickup)){
+    
+                            $pickupDate   = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
+                            $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
+    
+                                if($pickupDate <  $DeliveryDate){
+    
+                                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)) ;
+                                    $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->DateDeliveryAsk)));
+                                    $this->holidays=Holiday::getHolidays();
+    
+                                        if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  ((Carbon::parse($order->Deliv)->format('l')) ->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                        $order->Prod = $order->Deliv;
+                                        } else {
+                                         $order->Prod = $lastDate;
+                                        }
+    
+                                } else {
+    
+                                    $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
+                                    $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->DatePickup)));
+    
+                                    $this->holidays=Holiday::getHolidays();
+    
+                                        if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                        $order->Prod = date_create($order->Deliv)->format('d/m/Y');
+                                        } else {
+                                            $order->Prod = $lastDate;
+                                        }
+                                }
+                        }
+                    }
+    
+                }
+    
+                //Delivery New
+                else if($order->deliverymethod == 'home_delivery' ){
+    
+                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
+                        
+                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)) ;
+    
+                    } else {
+    
+                        if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
+    
+                           if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
+                            
+                                $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
+                                $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
+    
+                                    if($pickupDate <  $DeliveryDate){
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)) ;
+                                    } else {
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
+                                    }
+                            }else {
+    
+                                $order->Deliv = '--';
+                                $order->Prod = '--';
+                            }
+    
+    
+                        }
+                    }
+    
+                    $order->Prod = $order->Deliv;
+                }
+    
+                 //Delivery Only New
+                else if($order->deliverymethod == 'delivery_only'){
+    
+                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk)){
+                        
+                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)) ;
+    
+                    } else {
+    
+                        if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
+    
+                           if($order->DatePickup != null && $order->DateDeliveryAsk != null){
+                                $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
+                                $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
+    
+                                    if($pickupDate <  $DeliveryDate){
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                                    } else {
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
+                                    }
+                            }else {
+    
+                                $order->Deliv = '--';
+                                $order->Prod = '--';
+                            }
+    
+    
+                        }
+                    }
+    
+                    $order->Prod = $order->Deliv;
+                }
+    
+                //Store Old
+                else if($order->TypeDelivery != "DELIVERY" && $order->deliverymethod == ''){
+    
+                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                       
+                                $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                                $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->DateDeliveryAsk)));
+    
+                                $this->holidays=Holiday::getHolidays();
+    
+                                    if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                       $order->Prod = $order->Deliv;
+                                    } else {
+                                        $order->Prod = $lastDate;
+                                    }
+    
+                    } else {
+                        if(!is_null($order->PromisedDate)){
+                        
+                            $order->Deliv = date('d/m/Y',strtotime($order->PromisedDate));
+                            $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->PromisedDate)));
+    
+                            $this->holidays=Holiday::getHolidays();
+    
+                                if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                  $order->Prod = $order->Deliv;
+                                } else {
+                                    $order->Prod = $lastDate ;
+                                }
+    
+                        } else {
+    
+                            $order->Deliv = '--';
+                            $order->Prod = '--';
+    
+                        }
+    
+                    }
+    
+                }
+    
+                //Delivery Old
+                else if($order->TypeDelivery == "DELIVERY" && $order->deliverymethod == ''){
+    
+                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                        
+                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)); ;
+                        $order->Prod  = $order->Deliv;
+    
+    
+                    } else {
+    
+                        if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
+                            if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
+    
+                                $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
+                                $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
+    
+                                    if($pickupDate <  $DeliveryDate){
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                                    } else {
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
+                                    }
+                                    $order->Prod  = $order->Deliv;
+                            } else {
+    
+                                $order->Deliv = '--' ;
+                                $order->Prod  = '--';
+                            }
+    
+                        }
+                    }
+                }
+    
+                //Fulfiled
+                else if($order->Status == "FULFILLED " ){
+    
+                        if($order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
+                                
+                            $order->Deliv = date('d/m/Y',strtotime($order->Orderdatesold)) ;
+                            $order->Prod  = date('d/m/Y',strtotime($order->Orderdatesold));
+    
+                        } else {
+                            if($order->PromisedDate != null){
+                                $order->Deliv = $order->PromisedDate ;
+                                $order->Prod  = $order->PromisedDate;
+                            }else {
+                                $order->Deliv = '--' ;
+                                $order->Prod  = '--';
+                            }
+    
+    
+                        }
+                }
+                //VOID && DELETE
+                else if( $order->Status == "VOID " || $order->Status == "DELETE"){
+    
                     $order->Deliv = '--';
                     $order->Prod  = '--';
-
-                }
-
-            }
-
-            //Store New
-            else if($order->deliverymethod == 'in_store_collection' ){
-
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
-                                       
-                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y');
-                    //dateProd
-
-                    $date = Carbon::parse($order->DateDeliveryAsk);
-                    $lastDate=Carbon::parse($order->DateDeliveryAsk)->subDays(1)->format('d/m/Y');
-                    $this->holidays=Holiday::getHolidays();
-
-                        if(($date->format('l')) != "Saturday" &&  ($date->format('l')) != "Sunday" && $this->isDateHoliday($date) == false){
-                        $order->Prod = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y');
-                        } else {
-                            $order->Prod = $lastDate;
-                        }
-                } else {
-
-                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" && !is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk) ){
-
-                        $pickupDate   = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
-                        $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
-
-                            if($pickupDate <  $DeliveryDate){
-
-                                $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
-                                $date = Carbon::parse($order->DateDeliveryAsk);
-                                $lastDate=Carbon::parse($order->Deliv)->subDays(1)->format('d/m/Y');
-                                $this->holidays=Holiday::getHolidays();
-
-                                    if(($date->format('l')) != "Saturday" &&  ($date->format('l')) != "Sunday" && $this->isDateHoliday($date) == false){
-                                    $order->Prod = Carbon::parse($order->Deliv)->format('d/m/Y');
-                                    } else {
-                                        $order->Prod = $lastDate;
-                                    }
-
-                            } else {
-                                $order->Deliv = Carbon::parse($order->DatePickup)->format('d/m/Y');
-
-                                $date = Carbon::parse($order->DatePickup);
-                                $lastDate=Carbon::parse($order->DatePickup)->subDays(1)->format('d/m/Y');
-                                $this->holidays=Holiday::getHolidays();
-
-                                    if(($date->format('l')) != "Saturday" &&  ($date->format('l')) != "Sunday" && $this->isDateHoliday($date) == false){
-                                    $order->Prod = Carbon::parse($order->Deliv)->format('d/m/Y');
-                                    } else {
-                                        $order->Prod = $lastDate;
-                                    }
-                            }
-                    }
-                }
-
-            }
-
-            //Delivery New
-            else if($order->deliverymethod == 'home_delivery' ){
-
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
-                    
-                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
-
-                } else {
-
-                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
-
-                       if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
-                            $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
-                            $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
-
-                                if($pickupDate <  $DeliveryDate){
-                                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
-                                } else {
-                                    $order->Deliv = Carbon::parse($order->DatePickup)->format('d/m/Y');
-                                }
-                        }else {
-
-                            $order->Deliv = '--';
-                            $order->Prod = '--';
-                        }
-
-
-                    }
-                }
-
-                $order->Prod = $order->Deliv;
-            }
-
-             //Delivery Only New
-            else if($order->deliverymethod == 'delivery_only'){
-
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk)){
-                    
-                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
-
-                } else {
-
-                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
-
-                       if(!is_null($order->DatePickup) != null && !is_null($order->DateDeliveryAsk)){
-                            $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
-                            $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
-
-                                if($pickupDate <  $DeliveryDate){
-                                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
-                                } else {
-                                    $order->Deliv = Carbon::parse($order->DatePickup)->format('d/m/Y');
-                                }
-                        }else {
-
-                            $order->Deliv = '--';
-                            $order->Prod = '--';
-                        }
-
-
-                    }
-                }
-
-                $order->Prod = $order->Deliv;
-            }
-
-            //Store Old
-            else if($order->TypeDelivery != "DELIVERY" && $order->deliverymethod == ''){
-
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
-                   
-                            $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->DateDeliveryAsk)->format('d/m/Y');
-                            $lastDate=Carbon::parse($order->Deliv)->subDays(1);
-
-                            $this->holidays=Holiday::getHolidays();
-
-                                if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
-                                   $order->Prod = $order->Deliv;
-                                } else {
-                                    $order->Prod = $lastDate;
-                                }
-
-                } else {
-                    if(!is_null($order->PromisedDate)){
     
-                        $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->PromisedDate)->format('d/m/Y');
-                        $lastDate=Carbon::parse($order->Deliv)->subDays(1);
-
-                        $this->holidays=Holiday::getHolidays();
-
-                            if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
-                              $order->Prod = $order->Deliv;
-                            } else {
-                                $order->Prod = $lastDate ;
-                            }
-
-                    } else {
-
-                        $order->Deliv = '--';
-                        $order->Prod = '--';
-
-                    }
-
                 }
-
-            }
-
-            //Delivery Old
-            else if($order->TypeDelivery == "DELIVERY" && $order->deliverymethod == ''){
-
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
-                    
-                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
-                    $order->Prod  = $order->Deliv;
-
-
-                } else {
-
-                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
-                        if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
-
-                            $pickupDate = strtotime(date('d/m/Y', strtotime($order->DatePickup) ) );
-                            $DeliveryDate = strtotime(date('d/m/Y', strtotime($order->DateDeliveryAsk) ) );
-
-                                if($pickupDate <  $DeliveryDate){
-                                    $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
-                                } else {
-                                    $order->Deliv = Carbon::parse($order->DatePickup)->format('d/m/Y');
-                                }
-                                $order->Prod  = $order->Deliv;
-                        } else {
-
-                            $order->Deliv = '--' ;
-                            $order->Prod  = '--';
-                        }
-
-                    }
+    
+                else {
+                    $order->Deliv = '--';
+                    $order->Prod  = '--';
                 }
-            }
-
-            //Fulfiled
-            else if($order->Status == "FULFILLED " ){
-
-                    if($order->Orderdatesold != '2020-01-01'  && !is_null($order->Orderdatesold)){
-                            
-                        $order->Deliv = Carbon::parse($order->Orderdatesold)->format('d/m/Y') ;
-                        $order->Prod  = Carbon::parse($order->Orderdatesold)->format('d/m/Y');
-
-                    } else {
-                        if($order->PromisedDate != null){
-                            $order->Deliv = $order->PromisedDate ;
-                            $order->Prod  = $order->PromisedDate ;
-                        }else {
-                            $order->Deliv = '--' ;
-                            $order->Prod  = '--';
-                        }
-
-
-                    }
-            }
-            //VOID && DELETE
-            else if( $order->Status == "VOID " || $order->Status == "DELETE"){
-
-                $order->Deliv = '--';
-                $order->Prod  = '--';
-
-            }
-
-            else {
-                $order->Deliv = '--';
-                $order->Prod  = '--';
-            }
-            if( $order->Deliv == null || $order->Deliv == "01/01/2020"){
-                $order->Deliv = '--';
-            }
-            if( $order->Prod == null || $order->Prod == "01/01/2020"){
-                $order->Prod = '--';
-            }
-
-    }
+                if( $order->Deliv == null || $order->Deliv == "01/01/2020"){
+                    $order->Deliv = '--';
+                }
+                if( $order->Prod == null || $order->Prod == "01/01/2020"){
+                    $order->Prod = '--';
+                }
+    
+        }
         return response()->json($orderlist);
     }
 
