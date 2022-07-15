@@ -247,7 +247,7 @@ class OrderListController extends Controller
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
                     
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
-                    
+
                 } else {
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
@@ -280,7 +280,7 @@ class OrderListController extends Controller
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk)){
                     
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
-                    
+
                 } else {
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
@@ -314,7 +314,7 @@ class OrderListController extends Controller
                    
                             $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->DateDeliveryAsk)->format('d-m-Y');
                             $lastDate=Carbon::parse($order->Deliv)->subDays(1);
-                            
+
                             $this->holidays=Holiday::getHolidays();
 
                                 if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
@@ -328,7 +328,7 @@ class OrderListController extends Controller
 
                         $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->PromisedDate)->format('d-m-Y');
                         $lastDate=Carbon::parse($order->Deliv)->subDays(1);
-                        
+
                         $this->holidays=Holiday::getHolidays();
 
                             if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
@@ -388,7 +388,7 @@ class OrderListController extends Controller
                             
                         $order->Deliv = Carbon::parse($order->Orderdatesold)->format('d/m/Y') ;
                         $order->Prod  = Carbon::parse($order->Orderdatesold)->format('d/m/Y');
-                       
+
                     } else {
                         if($order->PromisedDate != null){
                             $order->Deliv = $order->PromisedDate ;
@@ -477,7 +477,7 @@ class OrderListController extends Controller
             $orderlist=DB::table('infoOrder')
                 ->select( [
                     'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id',
-                    'infoCustomer.Name as Customer','infoCustomer.TypeDelivery', 
+                    'infoCustomer.Name as Customer','infoCustomer.TypeDelivery',
                     'infoOrder.DateDeliveryAsk','infoInvoice.datesold','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold','infoOrder.deliverymethod'
                     ,'pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask',
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
@@ -676,7 +676,7 @@ class OrderListController extends Controller
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk)){
                     
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
-                    
+
                 } else {
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
@@ -709,7 +709,7 @@ class OrderListController extends Controller
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk)){
                     
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
-                    
+
                 } else {
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
@@ -743,7 +743,7 @@ class OrderListController extends Controller
               
                     $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->DateDeliveryAsk)->format('d-m-Y');
                     $lastDate=Carbon::parse($order->Deliv)->subDays(1);
-                    
+
                     $this->holidays=Holiday::getHolidays();
 
                         if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
@@ -751,7 +751,7 @@ class OrderListController extends Controller
                         } else {
                             $order->Prod = $lastDate;
                         }
-                    
+
                 } else {
                     if(!is_null($order->PromisedDate)){
                         $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->PromisedDate)->format('d-m-Y');
@@ -816,7 +816,7 @@ class OrderListController extends Controller
                             
                         $order->Deliv = Carbon::parse($order->Orderdatesold)->format('d/m/Y') ;
                         $order->Prod  = Carbon::parse($order->Orderdatesold)->format('d/m/Y');
-                       
+
                     } else {
                         if($order->PromisedDate != null){
                             $order->Deliv = $order->PromisedDate ;
@@ -1127,7 +1127,7 @@ class OrderListController extends Controller
             $suggested_delivery_date=$request->post('suggested_delivery_date');
             $user=Auth::user();
             $update=false;
-            if($user->hasRoles(['admin','Blanc Admin','user'])){ // cc cannot suggest a date
+            if($user->hasRoles(['admin','Blanc Admin','user','Super Admin'])){ // cc cannot suggest a date
                 $update= DB::table('infoOrder')->where('id','=',$infoOrder_id)->update(
                     [
                         'suggestedDeliveryDate'=>$suggested_delivery_date
@@ -1621,7 +1621,7 @@ class OrderListController extends Controller
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
                     
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
-                    
+
                 } else {
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
@@ -1654,7 +1654,7 @@ class OrderListController extends Controller
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk)){
                     
                     $order->Deliv = Carbon::parse($order->DateDeliveryAsk)->format('d/m/Y') ;
-                    
+
                 } else {
 
                     if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
@@ -1688,7 +1688,7 @@ class OrderListController extends Controller
                    
                             $order->Deliv = Carbon::createFromFormat('d/m/Y', $order->DateDeliveryAsk)->format('d-m-Y');
                             $lastDate=Carbon::parse($order->Deliv)->subDays(1);
-                            
+
                             $this->holidays=Holiday::getHolidays();
 
                                 if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
@@ -1762,7 +1762,7 @@ class OrderListController extends Controller
                             
                         $order->Deliv = Carbon::parse($order->Orderdatesold)->format('d/m/Y') ;
                         $order->Prod  = Carbon::parse($order->Orderdatesold)->format('d/m/Y');
-                       
+
                     } else {
                         if($order->PromisedDate != null){
                             $order->Deliv = $order->PromisedDate ;

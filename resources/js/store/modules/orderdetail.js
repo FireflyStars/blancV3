@@ -114,7 +114,7 @@ export const orderdetail= {
         [ORDERDETAIL_UPDATE_SUGGESTED_DELIVERY_DATE]:async ({commit,state},payload)=>{
 
             return axios.post('/suggestdate', {
-                infoOrder_id:state.orderdetail.detail.id,
+                infoOrder_id:state.orderdetail.detail.order_id,
                 suggested_delivery_date:payload
 
             }).then( (response)=>{

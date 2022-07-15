@@ -197,7 +197,7 @@ export const orderlist= {
                 })
                     .then(function (response) {
                         commit(ORDERLIST_ADD_TO_LIST, response.data);
-    
+
                     })
                     .catch(function (error) {
                         if(typeof error.response !="undefined")
@@ -314,8 +314,27 @@ export const orderlist= {
             })
         },
         [ORDERLIST_MARK_AS_LATE]:async({commit,dispatch,state},payload)=>{
+            dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, state.loader_msg], {root: true});
+                return axios.post('/markaslate', {
+                    orderids: payload
 
+                }).then((response) => {
+                    if (response.data.done == 'ok') {
+
+                        commit(ORDERLIST_UPDATE_STATUS, {status: 'LATE', orderids: payload});
+
+                    }
+                    return Promise.resolve(response);
+                })
+                    .catch((error) => {
+                        return Promise.reject(error);
+                    }).finally(() => {
+                        dispatch(`${LOADER_MODULE}${HIDE_LOADER}`, {}, {root: true});
+                    });
+
+            /*
            return perm(PERMISSIONS.MARK_AS_LATE).then((res)=> {
+                console.log(res);
                 dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, state.loader_msg], {root: true});
                 return axios.post('/markaslate', {
                     orderids: payload
@@ -341,6 +360,7 @@ export const orderlist= {
                    }
                });
             })
+            //*/
         },
         [ORDERLIST_LOAD_TAB]:({commit,dispatch},payload)=>{
             dispatch(ORDERLIST_SET_CURRENTTAB,payload.tab);
@@ -352,7 +372,7 @@ export const orderlist= {
             }else {
                 dispatch(ORDERLIST_LOAD_LIST , {search:payload.search});
             }
-            
+
         },
         [ORDERLIST_CUSTOMER_ORDERS]:async({commit,dispatch,state},payload)=>{
             if(typeof payload!="undefined"&&payload.showmore){

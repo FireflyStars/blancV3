@@ -354,7 +354,7 @@
             });
 
             const markaslate=(()=>{
-                const order=[ORDER.value.detail.id];
+                const order=[ORDER.value.detail.order_id];
 
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,`Marking order as late, please wait...`);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_MARK_AS_LATE}`,order).then(()=>{
@@ -393,7 +393,7 @@
                     return false;
                 }
                 store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_UPDATE_SUGGESTED_DELIVERY_DATE}`,suggested_date.value).then(()=>{
-                   store.commit(`${ORDERLIST_MODULE}${ORDERLIST_UPDATE_SUGGESTED_DELIVERY_DATE}`,{infoOrder_id:ORDER.value.detail.id,suggested_date:suggested_date.value});
+                   store.commit(`${ORDERLIST_MODULE}${ORDERLIST_UPDATE_SUGGESTED_DELIVERY_DATE}`,{infoOrder_id:ORDER.value.detail.order_id,suggested_date:suggested_date.value});
                 }).catch((error)=>{
                     if(typeof error.response!="undefined")
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
