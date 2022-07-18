@@ -16,7 +16,7 @@
                     </div>
                    
                   
-                    <SubOrderOptions  v-if="show === suborder && open_options" :suborder=suborder :items="ITEMS" :item_selected="Object.entries(MULTI_CHECKED)" :invoice_id="ITEMS[0].InvoiceID" ></SubOrderOptions>
+                    <SubOrderOptions  v-if="show === suborder && open_options" :suborder=suborder :items="Object.entries(ITEMS)" :item_selected="Object.entries(MULTI_CHECKED)" :invoice_id="ITEMS[0].InvoiceID" ></SubOrderOptions>
                     <qz-print ref="qz_printer"></qz-print>
                         <header v-if="Object.entries(ITEM_LIST).length !== 0">
                             <div class="tcol noselect"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}" >{{col.name}}

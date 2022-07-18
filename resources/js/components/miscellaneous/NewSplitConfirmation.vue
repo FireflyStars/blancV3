@@ -12,6 +12,8 @@
             <div class="confirmation-msg body_regular">
                 <p>Do you want to split items
                 <br>
+                {{listItems}}
+                <br>
                 OUT OF sub-order {{suborder}}</p></div>
             <div class="confirmation-btn">
                 <button class="btn btn-outline-danger body_medium" style="margin-right: 59px" @click="close">No, Cancel</button>
@@ -42,20 +44,19 @@
         setup(props,context){
             const show=ref(false);
             const store=useStore();
-            const listItems =ref([]);
+            const listItems = ref('');
 
             watch(() => props.show_conf, (toval, fromval) => {
                 show.value=toval;
             });
 
-            console.log("rrrrrrrr", props.item_selected);
+            listItems.value = props.item_selected.join(',').replace(',', ' and ');
             const close=()=>{
                 context.emit('close');
                 show.value=false;
             }
             
            function split(){
-               console.log("list item selected", listItems.value)
                axios.post('/SplitSubOrder',{
                    invoice_id: props.invoice_id ,
                    items:props.item_selected
@@ -77,7 +78,8 @@
             return {
                 show,
                 close,
-                split
+                split,
+                listItems
             }
         }
     }

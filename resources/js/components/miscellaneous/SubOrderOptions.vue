@@ -47,15 +47,14 @@
            const btn_split_show = ref(false)
            const show_split_conf=ref(false);
            const listItems =ref([]);
-
             props.item_selected.forEach(item => {
                 
                listItems.value.push(item[1])
 
             });  
-            // console.log("tessssst" ,listItems.value.join(' and '));
-            // console.log("tessssst0000" ,listItems.value.join(',').replace(/, ([^,]*)$/, ' and '));
-            if(listItems.value.length > 0){
+
+         
+            if(listItems.value.length > 0 && props.items.length > 1 ){
               btn_split_show.value = true
             } else {
               btn_split_show.value = false
