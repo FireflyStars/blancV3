@@ -230,7 +230,7 @@ class OrderListController extends Controller
                                 $this->holidays=Holiday::getHolidays();
 
                                     if((date('l',strtotime($order->Deliv))) != "Saturday" &&  (date('l',strtotime($order->Deliv))) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
-                                    $order->Prod = date_create($order->Deliv)->format('d/m/Y');
+                                    $order->Prod = $order->Deliv;
                                     } else {
                                         $order->Prod = $lastDate;
                                     }
@@ -657,7 +657,7 @@ class OrderListController extends Controller
                                 $this->holidays=Holiday::getHolidays();
 
                                     if((date('l',strtotime($order->Deliv))) != "Saturday" &&  (date('l',strtotime($order->Deliv))) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
-                                    $order->Prod = date_create($order->Deliv)->format('d/m/Y');
+                                    $order->Prod = $order->Deliv;
                                     } else {
                                         $order->Prod = $lastDate;
                                     }
@@ -1594,7 +1594,7 @@ class OrderListController extends Controller
                                     $this->holidays=Holiday::getHolidays();
     
                                         if((date('l',strtotime($order->Deliv))) != "Saturday" &&  (date('l',strtotime($order->Deliv))) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
-                                        $order->Prod = date_create($order->Deliv)->format('d/m/Y');
+                                        $order->Prod = $order->Deliv;
                                         } else {
                                             $order->Prod = $lastDate;
                                         }

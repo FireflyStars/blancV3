@@ -49,8 +49,12 @@
             watch(() => props.show_conf, (toval, fromval) => {
                 show.value=toval;
             });
+              const regex = /\,(?=[^,]*$)/g;
+              var reg =/[ ,-]/g;
+         
+              listItems.value = props.item_selected.map(String);
+              listItems.value = listItems.value[0].replace(reg , ', ').replace(regex, ' and ');
 
-            listItems.value = props.item_selected.join(',').replace(',', ' and ');
             const close=()=>{
                 context.emit('close');
                 show.value=false;
@@ -61,7 +65,7 @@
                    invoice_id: props.invoice_id ,
                    items:props.item_selected
                }).then((res)=>{
-                console.log("res.data.status_message" , res.data.status_message)
+             
                         if( res.data.status_message == "OK"){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
                              location.reload();

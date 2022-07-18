@@ -47,13 +47,14 @@
            const btn_split_show = ref(false)
            const show_split_conf=ref(false);
            const listItems =ref([]);
+         
+           
             props.item_selected.forEach(item => {
-                
-               listItems.value.push(item[1])
-
+                if (item[0] == props.suborder){
+                   listItems.value.push(item[1])
+                }
             });  
 
-         
             if(listItems.value.length > 0 && props.items.length > 1 ){
               btn_split_show.value = true
             } else {
