@@ -198,7 +198,7 @@ class OrderListController extends Controller
 
                     $this->holidays=Holiday::getHolidays();
 
-                        if((Carbon::parse($order->Deliv)->format('l'))  != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l'))  != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                        if((date('l',strtotime($order->Deliv)))  != "Saturday" &&  (date('l',strtotime($order->Deliv)))  != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                         $order->Prod = $order->Deliv;
                         } else {
                          $order->Prod = $lastDate;
@@ -216,7 +216,7 @@ class OrderListController extends Controller
                                 $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->DateDeliveryAsk)));
                                 $this->holidays=Holiday::getHolidays();
 
-                                    if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  ((Carbon::parse($order->Deliv)->format('l')) ->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                    if((date('l',strtotime($order->Deliv))) != "Saturday" &&  ((date('l',strtotime($order->Deliv)))) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                                     $order->Prod = $order->Deliv;
                                     } else {
                                      $order->Prod = $lastDate;
@@ -229,7 +229,7 @@ class OrderListController extends Controller
 
                                 $this->holidays=Holiday::getHolidays();
 
-                                    if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                    if((date('l',strtotime($order->Deliv))) != "Saturday" &&  (date('l',strtotime($order->Deliv))) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                                     $order->Prod = date_create($order->Deliv)->format('d/m/Y');
                                     } else {
                                         $order->Prod = $lastDate;
@@ -311,13 +311,12 @@ class OrderListController extends Controller
             else if($order->TypeDelivery != "DELIVERY" && $order->deliverymethod == ''){
 
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
-                   
                             $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                             $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->DateDeliveryAsk)));
 
                             $this->holidays=Holiday::getHolidays();
 
-                                if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                if((date('l',strtotime($order->Deliv))) != "Saturday" &&  ((date('l',strtotime($order->Deliv)))) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                                    $order->Prod = $order->Deliv;
                                 } else {
                                     $order->Prod = $lastDate;
@@ -331,7 +330,7 @@ class OrderListController extends Controller
 
                         $this->holidays=Holiday::getHolidays();
 
-                            if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                            if((date('l',strtotime($order->Deliv))) != "Saturday" &&  (date('l',strtotime($order->Deliv))) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                               $order->Prod = $order->Deliv;
                             } else {
                                 $order->Prod = $lastDate ;
@@ -626,7 +625,7 @@ class OrderListController extends Controller
 
                     $this->holidays=Holiday::getHolidays();
 
-                        if((Carbon::parse($order->Deliv)->format('l'))  != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l'))  != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                        if((date('l',strtotime($order->Deliv))) != "Saturday" &&  (date('l',strtotime($order->Deliv))) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                         $order->Prod = $order->Deliv;
                         } else {
                          $order->Prod = $lastDate;
@@ -644,7 +643,7 @@ class OrderListController extends Controller
                                 $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->DateDeliveryAsk)));
                                 $this->holidays=Holiday::getHolidays();
 
-                                    if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  ((Carbon::parse($order->Deliv)->format('l')) ->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                    if((date('l',strtotime($order->Deliv))) != "Saturday" &&  (date('l',strtotime($order->Deliv)))!= "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                                     $order->Prod = $order->Deliv;
                                     } else {
                                      $order->Prod = $lastDate;
@@ -657,7 +656,7 @@ class OrderListController extends Controller
 
                                 $this->holidays=Holiday::getHolidays();
 
-                                    if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                    if((date('l',strtotime($order->Deliv))) != "Saturday" &&  (date('l',strtotime($order->Deliv))) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                                     $order->Prod = date_create($order->Deliv)->format('d/m/Y');
                                     } else {
                                         $order->Prod = $lastDate;
@@ -745,7 +744,7 @@ class OrderListController extends Controller
 
                             $this->holidays=Holiday::getHolidays();
 
-                                if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                if((date('l',strtotime($order->Deliv))) != "Saturday" &&  (date('l',strtotime($order->Deliv))) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                                    $order->Prod = $order->Deliv;
                                 } else {
                                     $order->Prod = $lastDate;
@@ -759,7 +758,7 @@ class OrderListController extends Controller
 
                         $this->holidays=Holiday::getHolidays();
 
-                            if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                            if((date('l',strtotime($order->Deliv))) != "Saturday" &&  (date('l',strtotime($order->Deliv))) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                               $order->Prod = $order->Deliv;
                             } else {
                                 $order->Prod = $lastDate ;
@@ -1062,22 +1061,14 @@ class OrderListController extends Controller
         ];
 
         $response = $client->request('GET', $endpoint, ['query' => $params]);
-        dd($response);
         $statusCode = $response->getStatusCode();
-
-
-        @$content = $response->getBody();
-
-        $content = str_replace('\"', '', $content);
-
-        $output = @json_decode($content);
-
-
+        $statusText = $response->getReasonPhrase();
+      
+    
         return \response()->json([
             'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=.$invoice_id&".$array_item,
-            'output'=>$output,
             'status_code'=>$statusCode,
-            'status_message'=>$output->result
+            'status_message'=>$statusText
         ]);
     }
 
@@ -1571,7 +1562,7 @@ class OrderListController extends Controller
     
                         $this->holidays=Holiday::getHolidays();
     
-                            if((Carbon::parse($order->Deliv)->format('l'))  != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l'))  != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                            if((date('l',strtotime($order->Deliv)))  != "Saturday" &&  (date('l',strtotime($order->Deliv))) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                             $order->Prod = $order->Deliv;
                             } else {
                              $order->Prod = $lastDate;
@@ -1589,7 +1580,7 @@ class OrderListController extends Controller
                                     $lastDate= date('d/m/Y', strtotime("-1 day", strtotime($order->DateDeliveryAsk)));
                                     $this->holidays=Holiday::getHolidays();
     
-                                        if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  ((Carbon::parse($order->Deliv)->format('l')) ->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                        if((date('l',strtotime($order->Deliv)))!= "Saturday" &&  (date('l',strtotime($order->Deliv))) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                                         $order->Prod = $order->Deliv;
                                         } else {
                                          $order->Prod = $lastDate;
@@ -1602,7 +1593,7 @@ class OrderListController extends Controller
     
                                     $this->holidays=Holiday::getHolidays();
     
-                                        if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                        if((date('l',strtotime($order->Deliv))) != "Saturday" &&  (date('l',strtotime($order->Deliv))) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                                         $order->Prod = date_create($order->Deliv)->format('d/m/Y');
                                         } else {
                                             $order->Prod = $lastDate;
@@ -1690,7 +1681,7 @@ class OrderListController extends Controller
     
                                 $this->holidays=Holiday::getHolidays();
     
-                                    if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                    if((date('l',strtotime($order->Deliv))) != "Saturday" &&  (date('l',strtotime($order->Deliv))) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                                        $order->Prod = $order->Deliv;
                                     } else {
                                         $order->Prod = $lastDate;
@@ -1704,7 +1695,7 @@ class OrderListController extends Controller
     
                             $this->holidays=Holiday::getHolidays();
     
-                                if((Carbon::parse($order->Deliv)->format('l')) != "Saturday" &&  (Carbon::parse($order->Deliv)->format('l')) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
+                                if((date('l',strtotime($order->Deliv))) != "Saturday" &&  (date('l',strtotime($order->Deliv))) != "Sunday" && $this->isDateHoliday($order->Deliv) == false){
                                   $order->Prod = $order->Deliv;
                                 } else {
                                     $order->Prod = $lastDate ;

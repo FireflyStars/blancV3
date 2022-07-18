@@ -60,14 +60,15 @@
                    invoice_id: props.invoice_id ,
                    items:props.item_selected
                }).then((res)=>{
-                        if( res.data.status_message == "ok"){
+                console.log("res.data.status_message" , res.data.status_message)
+                        if( res.data.status_message == "OK"){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
                              location.reload();
                         }else {
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${res.data.status_message}`,ttl:5,type:'danger'});
                         }
                        
-                         close();
+                     close();
                     }).catch((error)=>{
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
                     })

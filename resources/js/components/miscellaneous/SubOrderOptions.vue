@@ -3,10 +3,10 @@
     <div class="options position-absolute">
         <div class="row">
 
-            <!-- <div  v-if="btn_split_show" class="col-12 row-option"  @click="selectSplit()" >
+            <div  v-if="btn_split_show" class="col-12 row-option"  @click="selectSplit()" >
                 <img class="img-arrow" src="/images/split.png" />
                 <span>Split</span>
-            </div> -->
+            </div>
             <div class="col-12 row-option" >
                 <img class="img-arrow" src="/images/offload.png" />
                 <span>Offload</span>
@@ -53,7 +53,8 @@
                listItems.value.push(item[1])
 
             });  
-
+            // console.log("tessssst" ,listItems.value.join(' and '));
+            // console.log("tessssst0000" ,listItems.value.join(',').replace(/, ([^,]*)$/, ' and '));
             if(listItems.value.length > 0){
               btn_split_show.value = true
             } else {
