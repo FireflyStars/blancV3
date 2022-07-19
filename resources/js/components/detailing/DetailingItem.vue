@@ -30,7 +30,7 @@
                             <h2
                                 class="subtitle"
                                 v-else-if="detailingitem.etape === 10"
-                            >Describe item issuses</h2>
+                            >Describe item issues</h2>
                             <h2 class="subtitle mb-5" v-else-if="detailingitem.etape==11">
                                 Select the desired service(s)
                             </h2>
