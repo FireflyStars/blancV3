@@ -11,8 +11,8 @@
             </div>
             <div class="confirmation-msg body_regular"><p>Do you want to Fulfill Sub Order </p></div>
             <div class="confirmation-btn">
-                <button class="btn btn-outline-danger body_medium" style="margin-right: 59px" @click="close">No ,cancel</button>
-                <button class="btn btn-dark body_medium" style="" @click="Fulfill">Yes , fulfill</button>
+                <button class="btn btn-outline-danger body_medium" style="margin-right: 59px" @click="close">No, cancel</button>
+                <button class="btn btn-dark body_medium" style="" @click="Fulfill">Yes, fulfill</button>
             </div>
         </div>
 
