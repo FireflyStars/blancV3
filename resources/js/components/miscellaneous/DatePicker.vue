@@ -91,6 +91,7 @@
                 type: String,
                 required: true
             },
+            availableDays:Array | null,
         },
         emits: ['update:modelValue','loadtranche'],
         setup(props,context){
@@ -303,6 +304,15 @@
                             displayed_dates.value[i].notavailable=true;
                         }
                     }
+                    if(typeof props.availableDays!='undefined' && props.availableDays.length > 0){
+                        let curdate=new Date(datestr);
+                        let day_index = curdate.getDay();
+
+                        if(!props.availableDays.includes(day_index)){
+                            displayed_dates.value[i].notavailable = true;
+                        }
+                    }
+
                     /*
                      //disabledFromDate
                     if(typeof props.disabledFromDate!="undefined"&&props.disabledFromDate!=""){

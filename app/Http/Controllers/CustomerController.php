@@ -547,6 +547,51 @@ class CustomerController extends Controller
 
                     $infoCustomer->main_account->recent_deliveryask=$booking;
                 }
+
+
+
+                $allpostcodes = DB::table('tranchepostcode')
+                ->select(DB::raw('DISTINCT(Postcode) AS post_code'))
+                ->get();
+
+                $postcode = $infoCustomer->postcode;
+
+                $postcode = str_replace(' ','',$postcode);
+                $postcode = substr($postcode,0,-3);
+
+                if (count($allpostcodes) > 0) {
+                    foreach ($allpostcodes as $k=>$v){
+                        $cur_postcode = $v->post_code;
+                        if($postcode==$cur_postcode){
+                            $sel_postcode = $cur_postcode;
+                        }
+                    }
+                }
+
+                $tranche_details = [];
+                $formatted_tranche = [];
+
+                if($sel_postcode !=''){
+                    $tranche_details = DB::table('tranchepostcode')
+                        ->where('Postcode',$sel_postcode)
+                        ->get();
+                }
+
+                $infoCustomer->available_days = [];
+
+                $days = ['SUNDAY'=>0,'MONDAY'=>1,'TUESDAY'=>2,'WEDNESDAY'=>3,'THURSDAY'=>4,'FRIDAY'=>5,'SATURDAY'=>6];
+
+                $available_days = [];
+                if(count($tranche_details) > 0){
+                    foreach($tranche_details as $k=>$v){
+                        if(isset($days[$v->day])){
+                            $available_days[] = $days[$v->day];
+                        }
+                    }
+                }
+                $infoCustomer->trancheDetails = $tranche_details;
+                $infoCustomer->available_days = $available_days;
+
             $ltm_spend=DB::table('infoOrder')->select(['Total'])->where('CustomerID','=',$CustomerID)->where('Status','=','FULFILLED')->where('created_at','>=',date('Y-m-d',strtotime('-12 months')))->get();
             $spend=0;
             foreach ($ltm_spend as $order){
@@ -569,8 +614,6 @@ class CustomerController extends Controller
             if($delivery_preference){
                 $infoCustomer->delivery_preference = $delivery_preference;
             }
-
-
         }
 
         return response()->json(['customer'=>$infoCustomer]);
@@ -1022,12 +1065,15 @@ class CustomerController extends Controller
             if($value_selected)
                 $item->value = $value_selected;
         }
+
         $customer->preferences = $preferences->groupBy('category');
+
         $customer->deliveryPreferences = DB::table('DeliveryPreference')
                                         ->where('CustomerID', $customer->CustomerID)
                                         ->select('TypeDelivery as altTypeDelivery', 'CodeCountry as altPhoneCountryCode',
                                         'OtherInstruction as altDriverInstruction', 'PhoneNumber as altPhoneNumber',
                                         'Name as altName')->first();
+
         $customer->linkedAccounts = DB::table('infoCustomer')
                                     ->where('CustomerID', $customer->CustomerID)
                                     ->orWhere('CustomerIDMaster', $customer->CustomerID)
@@ -1044,6 +1090,7 @@ class CustomerController extends Controller
         }
         return response()->json($customer);
     }
+
 
     public function AddCreditCustomer(Request $request){
         $user = Auth::user();
