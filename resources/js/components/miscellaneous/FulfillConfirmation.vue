@@ -33,7 +33,7 @@
             },
             invoice_id :{
                type:String
-            } 
+            }
         },
         setup(props,context){
             const show=ref(false);
@@ -45,9 +45,9 @@
                 context.emit('close');
                 show.value=false;
             }
-           
+
             function Fulfill(){
-               
+
                    axios.post('/setInvoiceFulfilled',{
                    invoice_id: props.invoice_id,
                    nextpost:28
@@ -59,7 +59,7 @@
                         }else {
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${res.data.status_message}`,ttl:5,type:'danger'});
                         }
-                       
+
                          close();
                     }).catch((error)=>{
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});

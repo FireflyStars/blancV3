@@ -172,7 +172,6 @@
             <div class="col-4" v-if="ORDER['items'].length !== 0">
                 <button class="btn btn-outline-danger body_medium" @click="markaslate" v-if="ORDER['detail'].Status!='LATE'">Mark as late</button>
             </div>
-
              <div class="col-4" v-if="ORDER['items'].length === 0">
                 <button class="btn btn-outline-dark body_medium">Print ticket(s)</button>
             </div>
@@ -186,6 +185,7 @@
             </div>
 
         <split-confirmation :show_conf="show_split_conf" @close="show_split_conf=false"></split-confirmation>
+
     </div>
 </template>
 

@@ -255,8 +255,8 @@
                                             <div class="col-4">Minus cash credit</div>
                                             <div class="col-8">
                                                 <div class="row">
-                                                    <div class="col-9 px-0 payment-desc-text">Available</div>
-                                                    <div class="col-3 text-align-right">&#163;{{credit_to_deduct}}</div>
+                                                    <div class="col-9 px-0 payment-desc-text"></div>
+                                                    <div class="col-3 text-align-right"><span v-if="credit_to_deduct > 0">-</span>&#163;{{credit_to_deduct}}</div>
                                                 </div>
                                             </div>
                                         </div>
