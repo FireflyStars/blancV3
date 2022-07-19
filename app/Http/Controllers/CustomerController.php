@@ -582,15 +582,18 @@ class CustomerController extends Controller
                 $days = ['SUNDAY'=>0,'MONDAY'=>1,'TUESDAY'=>2,'WEDNESDAY'=>3,'THURSDAY'=>4,'FRIDAY'=>5,'SATURDAY'=>6];
 
                 $available_days = [];
+                $available_slots = [];
                 if(count($tranche_details) > 0){
                     foreach($tranche_details as $k=>$v){
                         if(isset($days[$v->day])){
                             $available_days[] = $days[$v->day];
+                            $available_slots[$days[$v->day]] = @json_decode($v->tranche);
                         }
                     }
                 }
                 $infoCustomer->trancheDetails = $tranche_details;
                 $infoCustomer->available_days = $available_days;
+                $infoCustomer->available_slots = $available_slots;
 
             $ltm_spend=DB::table('infoOrder')->select(['Total'])->where('CustomerID','=',$CustomerID)->where('Status','=','FULFILLED')->where('created_at','>=',date('Y-m-d',strtotime('-12 months')))->get();
             $spend=0;
