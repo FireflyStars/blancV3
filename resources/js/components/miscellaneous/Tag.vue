@@ -111,6 +111,14 @@
     border-radius: 8px;
 }
 
+.tag.fulfilled{
+    background:#E0E0E0;
+    color:#000;
+}
+
+.tag.fulfilled:before{
+    background: #767676;
+}
 
 
 .tag.assembling,.tag.offloaded{

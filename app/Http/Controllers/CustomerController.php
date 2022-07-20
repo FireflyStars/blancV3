@@ -1398,9 +1398,12 @@ class CustomerController extends Controller
                     })
                     ->where('infoOrder.OrderID','!=','')
                     ->where('infoOrder.CustomerID', $customer->CustomerID)
-                    ->whereNotIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
+                    ->whereNotIn('infoOrder.Status', ['FULFILLED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
                     ->groupBy('infoOrder.id')
                     ->get();
+
+
+
         $customer->pastOrders = DB::table('infoOrder')
                     ->select(
                         'infoOrder.id as order_id',
@@ -1427,7 +1430,7 @@ class CustomerController extends Controller
                     })
                     ->where('infoOrder.OrderID','!=','')
                     ->where('infoOrder.CustomerID', $customer->CustomerID)
-                    ->whereIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
+                    ->whereIn('infoOrder.Status', ['FULFILLED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
                     ->groupBy('infoOrder.id')
                     ->get();
         //*/
