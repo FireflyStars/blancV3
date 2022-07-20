@@ -871,7 +871,7 @@ class CustomerController extends Controller
                                         ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
                                         ->where('infoitems.priceTotal', '!=', 0)
                                         ->where('infoOrder.CustomerID', $customer->CustomerID)
-                                        ->whereNotIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
+                                        ->whereNotIn('infoOrder.Status', ['FULFILLED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
                                         ->get()->groupBy(['order_id','sub_order_id'])->reverse()->values();
         $customer->past_orders = DB::table('infoOrder')
                                         ->select(
@@ -965,7 +965,7 @@ class CustomerController extends Controller
                                         ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
                                         ->where('infoitems.priceTotal', '!=', 0)
                                         ->where('infoOrder.CustomerID', $customer->CustomerID)
-                                        ->whereIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
+                                        ->whereIn('infoOrder.Status', ['FULFILLED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
                                         ->get()->groupBy(['order_id', 'sub_order_id'])->reverse()->values();
         return response()->json( $customer );
     }
