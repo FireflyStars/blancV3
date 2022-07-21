@@ -32,7 +32,7 @@
                         {{ Order.order_right_text }} <span v-if="Order.right_edit" class="ms-2 cursor-pointer text-underline">Edit</span>
                     </p>
                     <p class="mb-0">{{ Order.order_right_date }}</p>
-                    <p class="mb-0">From {{ Order.order_right_time }}</p>
+                    <p class="mb-0">{{ Order.order_right_time }}</p>
                 </div>
             </div>
         </div>
