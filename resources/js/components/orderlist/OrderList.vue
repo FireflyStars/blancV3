@@ -17,7 +17,7 @@
                             <order-list-table :tabledef="customercaretablefields" :tab="tab" :id="tab_index" :customer_id ="customerID" v-if="tab.active && tab.name == 'Customer Care'"></order-list-table>
                         </template>
                         <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
-                            <div v-if="showlayer" class="back-layer"></div>
+                            <div v-if="showlayer" class="back-layer" @click="hideOrderDetail"></div>
                         </transition>
                         <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
                             <component :is="Component" />
@@ -36,6 +36,7 @@
     import SideBar from '../layout/SideBar'
     import OrderListTable from './OrderListTable';
     import {useStore} from 'vuex';
+    import {useRouter} from 'vue-router';
     import {
         ORDERLIST_LOAD_LIST,
         ORDERLIST_MODULE,
@@ -57,13 +58,14 @@
         name: "OrderList",
         components: { SideBar, MainHeader,OrderListTable},
         setup(props,context){
-          
+
             const showcontainer=ref(false);
             const store=useStore();
             const route=useRoute();
             const filterDef = ref({});
             const customerID = ref('');
-            
+            const router = useRouter();
+
             const tabs=ref({});
             if(hasRoles(['cc'])){
                 tabs.value= {
@@ -302,7 +304,7 @@
                     } else if( data == null) {
 
                        store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`, {search:route.params.value});
-                    } 
+                    }
                 });
             });
 
@@ -317,7 +319,7 @@
 
                        store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`,{search:route.params.value});
                 }
-                
+
              })
 
             function showtab(tab) {
@@ -337,7 +339,13 @@
               //  }
                 console.log(tabs.value);*/
             }
-            
+
+            function hideOrderDetail(event){
+                router.push({
+                    name:'LandingPage',
+                });
+            }
+
             return {
                 showtab,
                 tabs,
@@ -345,7 +353,8 @@
                 allordertablefields,
                 customercaretablefields,
                 customerID,
-                showlayer:computed(()=>{return (route.params.order_id>0&&store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_CURRENT_SELECTED}`]);})
+                showlayer:computed(()=>{return (route.params.order_id>0&&store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_CURRENT_SELECTED}`]);}),
+                hideOrderDetail,
             }
         }
     }

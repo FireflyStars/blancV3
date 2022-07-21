@@ -163,6 +163,7 @@ export const orderlist= {
             })
         },
         [ORDERLIST_REMOVE_ORDERS]:(state,payload)=>{
+            console.log(payload);
             state[state.current_tab].order_list=state[state.current_tab].order_list.filter(order=>!payload.includes(order.id));
         },
         [ORDERLIST_UPDATE_SUGGESTED_DELIVERY_DATE]:(state,payload)=>{

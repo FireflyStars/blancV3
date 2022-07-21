@@ -32,7 +32,7 @@
                         {{ Order.order_right_text }} <span v-if="Order.right_edit" class="ms-2 cursor-pointer text-underline">Edit</span>
                     </p>
                     <p class="mb-0">{{ Order.order_right_date }}</p>
-                    <p class="mb-0">From {{ Order.order_right_time }}</p>
+                    <p class="mb-0">{{ Order.order_right_time }}</p>
                 </div>
             </div>
         </div>
@@ -73,7 +73,7 @@
                                     <svg v-else class="me-2" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" :fill="'#'+item.circle_color"/>
                                         <circle cx="6" cy="6" r="5" :stroke="'#'+item.circle_color" stroke-width="2"/>
-                                    </svg>                                
+                                    </svg>
                                     <span>{{ item.location }}</span>
                                 </div>
                             </td>
@@ -87,14 +87,14 @@
                                 </div>
                             </td>
                             <td valign=middle v-else>
-                                <span class="price">£{{ item.price }}</span>
+                                <span class="price">£{{ item.price.toFixed(2) }}</span>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-    </div>    
+    </div>
     <div class="order-item-footer mt-2" v-if="show">
         <div class="d-flex justify-content-between">
             <div class="col-6 d-flex">
@@ -124,7 +124,7 @@ export default {
         const selectedSubOrders = ref([]);
         show.value = props.show;
         Order.value = Object.values(Object.values(props.subOrders)[0])[0];
-        
+
         const getSubOrder = (subOrder)=>{
             var subOrderValue = {
                 id: '',
@@ -153,7 +153,7 @@ export default {
         openModal(){
             this.$refs.qz_printer.loadPrinterModal(this.selectedSubOrders)
         }
-    },       
+    },
     props:{
         show: {
             type: Boolean,
@@ -275,7 +275,7 @@ export default {
                     /* Show the checkmark when checked */
                     input:checked ~ .checkmark:after {
                         display: block;
-                    }   
+                    }
                     .checkmark:after {
                         left: 4px;
                         top: 1px;
@@ -286,7 +286,7 @@ export default {
                         -webkit-transform: rotate(45deg);
                         -ms-transform: rotate(45deg);
                         transform: rotate(45deg);
-                    }                 
+                    }
                 }
             }
             .sub-order-body{
@@ -299,7 +299,7 @@ export default {
                 th,
                 td{
                     font-family: 'Gotham Rounded Book';
-                    font-style: normal;                        
+                    font-style: normal;
                     font-size: 12px;
                     line-height: 140%;
                     color: #47454B;
@@ -308,10 +308,10 @@ export default {
                     font-family: 'Gotham Rounded';
                     .price{
                         font-family: 'Gotham Rounded';
-                        font-style: normal;                        
+                        font-style: normal;
                         font-size: 12px;
                         line-height: 140%;
-                        color: #47454B;                        
+                        color: #47454B;
                     }
                     .price.underquote{
                         color: #C3C3C3;
@@ -364,7 +364,7 @@ export default {
                 background:  #42A71E;
                 color: #FFFFFF;
                 transition: all .3s ease-in;
-            }            
+            }
         }
     }
 </style>

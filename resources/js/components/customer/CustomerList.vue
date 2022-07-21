@@ -16,7 +16,7 @@
                     @click="selectrow(customer.id)"
                 >
                     <!-- checkbox column -->
-                    <td valign="middle">
+                    <td valign="middle" align="center">
                         <check-box :checked_checkbox="(customer.id == CURRENT_SELECTED && route.params.customer_id > 0)" :id="customer.id" @checkbox-clicked="checkboxclicked"></check-box>
                     </td>
                     <!-- Customer Type -->
@@ -26,7 +26,9 @@
                     <!-- Customer Name -->
                     <td class="text-capitalize fw-16" valign="middle">{{ customer.name }}</td>
                     <!-- address -->
-                    <td class="fw-14" valign="middle">{{ customer.address }}</td>
+                    <td class="fw-14" valign="middle">{{ customer.address1 }}<span v-if="customer.address2 && customer.address2 !=''">,&nbsp; {{customer.address2}}</span></td>
+                    <!-- Postcode -->
+                    <th class="fw-14">{{customer.postcode}}</th>
                     <!-- Email -->
                     <td class="fw-16" valign="middle">{{ customer.email }}</td>
                     <!-- Phone -->
@@ -34,7 +36,7 @@
                     <!-- last order -->
                     <td class="fw-16" valign="middle">{{ customer.last_order ? customer.last_order : "--" }}</td>
                     <!--  total spent-->
-                    <td class="fw-16 fw-bold" valign="middle">{{ customer.total_spent ? ('£'+customer.total_spent) : "--" }}</td>
+                    <td class="fw-16 fw-bold" valign="middle">{{ customer.total_spent ? ('£'+customer.total_spent.toFixed(2)) : "--" }}</td>
                 </tr>
             </transition-group>
             <tr v-if="customerList.length == 0">
@@ -113,7 +115,13 @@ export default {
                 },
                 {
                     label: 'Address',
-                    key: 'address',
+                    key: 'address1',
+                    thClass: 'customer-table-th',
+                    tdClass: 'fw-16',
+                },
+                {
+                    label: 'Postcode',
+                    key: 'postcode',
                     thClass: 'customer-table-th',
                     tdClass: 'fw-16',
                 },
@@ -157,7 +165,7 @@ export default {
         });
         const MULTI_SELECTED=computed(()=>{
             return store.getters[`${CUSTOMER_MODULE}${GET_ALL_SELECTED_CUSTOMER}`];
-        });        
+        });
         const loadMoreCustomer = ()=>{
             store.dispatch(`${CUSTOMER_MODULE}${LOAD_MORE_CUSTOMER}`);
         }
@@ -168,7 +176,7 @@ export default {
             } else {
              store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_LIST}`);
             }
-            
+
         })
         const formatPhone = (phoneString)=>{
             if(phoneString !== "" &&  phoneString !="--" && phoneString !== null){
@@ -185,7 +193,7 @@ export default {
         const checkboxclicked = ( check, id, name )=>{
             if(CURRENT_SELECTED.value == id && check == false){
                 store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`,'');
-                store.commit(`${CUSTOMER_MODULE}${SET_CUSTOMER_DETAIL}`, { 
+                store.commit(`${CUSTOMER_MODULE}${SET_CUSTOMER_DETAIL}`, {
                     name: ''
                 });
                 router.back();
@@ -194,7 +202,7 @@ export default {
         const selectrow = (customerID)=>{
             if(CURRENT_SELECTED.value == customerID){
                 store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`,'');
-                store.commit(`${CUSTOMER_MODULE}${SET_CUSTOMER_DETAIL}`, { 
+                store.commit(`${CUSTOMER_MODULE}${SET_CUSTOMER_DETAIL}`, {
                     name: ''
                 });
                 router.back();
@@ -207,7 +215,7 @@ export default {
                     },
                 })
             }
-        }        
+        }
         return {
             route,
             CURRENT_SELECTED,
@@ -223,7 +231,7 @@ export default {
             showlayer: computed( ()=> {
                 return (route.params.customer_id > 0 && CURRENT_SELECTED.value != '');
                 // return false;
-            }),            
+            }),
         }
     }
 }
@@ -244,26 +252,26 @@ export default {
     .trow.multi{
         transition: background-color 300ms ease-out;
         background: #F8F8F8;
-    } 
+    }
     .current_sel{
         position: relative;
         z-index: 10000;
         background: rgb(247, 251, 246);
         box-shadow: inset 0px -1px 0px rgba(168, 168, 168, 0.25);
-    }    
+    }
     .invoice-table-th span{
         font-family: "Gotham Rounded";
         font-weight: 400;
         font-size: 14px;
         color: #868686;
-    }    
+    }
     th span{
         font-family: 'Gotham Rounded';
         font-style: normal;
         font-weight: 400;
         font-size: 14px;
         line-height: 140%;
-        color: #868686;        
+        color: #868686;
     }
     td span.b2b{
         font-family: "Gotham Rounded";
@@ -309,7 +317,7 @@ export default {
     }
     .list-move{
         transition:all 0.9s ease;
-    } 
+    }
     .back-layer{
         background:rgba(224, 224, 224,0.6);
         position: fixed;
@@ -318,14 +326,18 @@ export default {
         height: 100%;
         width: 100%;
         z-index: 9999;
-    }    
+    }
 </style>
 <style>
+    .chkbox_wrap{
+        margin-left:15px;
+    }
+
     .trow span.chkbox {
         border: 2px solid #FFF;
         transition: border-color 300ms ease-out;
-    }    
-    .trow:hover span.chkbox, 
+    }
+    .trow:hover span.chkbox,
     .trow.multi span.chkbox {
         border-color: #868686;
         transition: border-color 300ms ease-out;

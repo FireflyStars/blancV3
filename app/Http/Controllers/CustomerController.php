@@ -547,6 +547,54 @@ class CustomerController extends Controller
 
                     $infoCustomer->main_account->recent_deliveryask=$booking;
                 }
+
+
+
+                $allpostcodes = DB::table('tranchepostcode')
+                ->select(DB::raw('DISTINCT(Postcode) AS post_code'))
+                ->get();
+
+                $postcode = $infoCustomer->postcode;
+
+                $postcode = str_replace(' ','',$postcode);
+                $postcode = substr($postcode,0,-3);
+
+                if (count($allpostcodes) > 0) {
+                    foreach ($allpostcodes as $k=>$v){
+                        $cur_postcode = $v->post_code;
+                        if($postcode==$cur_postcode){
+                            $sel_postcode = $cur_postcode;
+                        }
+                    }
+                }
+
+                $tranche_details = [];
+                $formatted_tranche = [];
+
+                if($sel_postcode !=''){
+                    $tranche_details = DB::table('tranchepostcode')
+                        ->where('Postcode',$sel_postcode)
+                        ->get();
+                }
+
+                $infoCustomer->available_days = [];
+
+                $days = ['SUNDAY'=>0,'MONDAY'=>1,'TUESDAY'=>2,'WEDNESDAY'=>3,'THURSDAY'=>4,'FRIDAY'=>5,'SATURDAY'=>6];
+
+                $available_days = [];
+                $available_slots = [];
+                if(count($tranche_details) > 0){
+                    foreach($tranche_details as $k=>$v){
+                        if(isset($days[$v->day])){
+                            $available_days[] = $days[$v->day];
+                            $available_slots[$days[$v->day]] = @json_decode($v->tranche);
+                        }
+                    }
+                }
+                $infoCustomer->trancheDetails = $tranche_details;
+                $infoCustomer->available_days = $available_days;
+                $infoCustomer->available_slots = $available_slots;
+
             $ltm_spend=DB::table('infoOrder')->select(['Total'])->where('CustomerID','=',$CustomerID)->where('Status','=','FULFILLED')->where('created_at','>=',date('Y-m-d',strtotime('-12 months')))->get();
             $spend=0;
             foreach ($ltm_spend as $order){
@@ -569,8 +617,6 @@ class CustomerController extends Controller
             if($delivery_preference){
                 $infoCustomer->delivery_preference = $delivery_preference;
             }
-
-
         }
 
         return response()->json(['customer'=>$infoCustomer]);
@@ -605,9 +651,11 @@ class CustomerController extends Controller
               DB::raw('LCASE(infoCustomer.Name) as name'),
               DB::raw('IF(infoCustomer.Phone = "", "--", infoCustomer.Phone) as phone'),
               DB::raw('LCASE(infoCustomer.EmailAddress) as email'),
-              DB::raw('CONCAT_WS(", ", CONCAT_WS(" ", address.address1, address.address2), address.Town, address.Country, address.postcode) as address'),
+              //DB::raw('CONCAT_WS(", ", CONCAT_WS(" ", address.address1, address.address2), address.Town, address.Country, address.postcode) as address'),
+              'address1','address2','postcode',
               DB::raw('IF(DATE_FORMAT(MAX(infoOrder.created_at), "%d/%m/%y") = "", "--", DATE_FORMAT(MAX(infoOrder.created_at), "%d/%m/%y")) as last_order'),
-              DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
+              //DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
+              'infoCustomer.TotalSpend as total_spent'
 
              );
              foreach($keywords as $searchTerm){
@@ -637,13 +685,14 @@ class CustomerController extends Controller
                             DB::raw('IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as type'),
                             DB::raw('LCASE(infoCustomer.TypeDelivery) as active_in'),
                             DB::raw('LCASE(infoCustomer.Name) as name'),
-                            DB::raw('CONCAT_WS(", ", CONCAT_WS(" ", address.address1, address.address2), address.Town, address.Country, address.postcode) as address'),
+                            //DB::raw('CONCAT_WS(", ", CONCAT_WS(" ", address.address1, address.address2), address.Town, address.Country, address.postcode) as address'),
+                            'address1','address2','postcode',
                             DB::raw('LCASE(infoCustomer.EmailAddress) as email'),
                             DB::raw('IF(infoCustomer.Phone = "", "--", infoCustomer.Phone) as phone'),
                             DB::raw('IF(DATE_FORMAT(MAX(infoOrder.created_at), "%d/%m/%y") = "", "--", DATE_FORMAT(MAX(infoOrder.created_at), "%d/%m/%y")) as last_order'),
                             // DB::raw('IF(infoCustomer.LastOrderDate = "", "--", DATE_FORMAT(infoCustomer.LastOrderDate, "%d/%m/%y")) as last_order'),
-                            DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
-                            // 'infoCustomer.TotalSpend as total_spent',
+                            //DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
+                            'infoCustomer.TotalSpend as total_spent',
                         )
                         ->groupBy('infoCustomer.CustomerID')
                         ->orderBy('infoCustomer.id');
@@ -730,7 +779,11 @@ class CustomerController extends Controller
 
         $customer->total_spent = $total->total_spent;
         $customer->total_count = $total->total_count;
-        $customer->current_orders = DB::table('infoOrder')
+
+
+        $tranches_slots = Tranche::getDeliveryPlanningTranchesForApi();
+
+        $current_orders = DB::table('infoOrder')
                                         ->select(
                                             'infoOrder.id as order_id', 'infoInvoice.NumInvoice as sub_order', 'infoInvoice.id as sub_order_id',
                                             DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
@@ -738,7 +791,7 @@ class CustomerController extends Controller
                                             'infoitems.priceTotal as price', 'infoitems.id as item_id',
                                             'infoitems.typeitem as item_name', 'infoitems.brand', 'infoitems.ItemTrackingKey as barcode',
                                             'TypePost.bg_color as location_color', 'postes.nom as location',
-                                            'TypePost.circle_color', 'TypePost.process', 'infoOrder.underquote', 'infoitems.Colors as colors',
+                                            'TypePost.circle_color', 'TypePost.process', 'infoOrder.underquote', 'infoitems.Colors as colors','infoOrder.deliverymethod',
                                             DB::raw(
                                                 'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN "Store Drop Off"
                                                       WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN "Pickup"
@@ -789,9 +842,9 @@ class CustomerController extends Controller
                                                 END as order_left_time'
                                             ),
                                             DB::raw(
-                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN DATE_FORMAT(booking_store.pickup_time, "%h:%i %p")
-                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN DATE_FORMAT(deliveryask.trancheFrom, "%h:%i %p")
-                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN DATE_FORMAT(deliveryask.trancheFrom, "%h:%i %p")
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN "6-8pm"
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN CONCAT(deliveryask.trancheFrom,"_",deliveryask.trancheto)
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN CONCAT(deliveryask.trancheFrom,"_",deliveryask.trancheto)
                                                       WHEN infoOrder.deliverymethod = "recurring" THEN "--"
                                                 END as order_right_time'
                                             ),
@@ -822,9 +875,30 @@ class CustomerController extends Controller
                                         ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
                                         ->where('infoitems.priceTotal', '!=', 0)
                                         ->where('infoOrder.CustomerID', $customer->CustomerID)
-                                        ->whereNotIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
+                                        ->whereNotIn('infoOrder.Status', ['FULFILLED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
                                         ->get()->groupBy(['order_id','sub_order_id'])->reverse()->values();
-        $customer->past_orders = DB::table('infoOrder')
+
+                                        foreach($current_orders as $k=>$v){
+                                            foreach($v as $i=>$x){
+                                                 foreach($x as $key=>$item){
+                                                     $delivery_method = $item->deliverymethod;
+                                                     //if(in_array($delivery_method,['home_delivery','delivery_only'])){
+                                                         $tranche = $item->order_right_time;
+                                                         $tranche_arr = explode("_",$tranche);
+                                                         if(isset($tranche_arr[0]) && isset($tranche_arr[1])){
+                                                             $slot = Tranche::getSlotFromTranche($tranche_arr[0],$tranche_arr[1]);
+                                                             $timeslot = $tranches_slots[$slot];
+                                                             $current_orders[$k][$i][$key]->order_right_time = $timeslot;
+                                                         }
+                                                     //}
+                                                 }
+
+                                            }
+                                         }
+
+        $customer->current_orders = $current_orders;
+
+        $past_orders = DB::table('infoOrder')
                                         ->select(
                                             'infoOrder.id as order_id', 'infoInvoice.NumInvoice as sub_order', 'infoInvoice.id as sub_order_id',
                                             DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
@@ -832,7 +906,7 @@ class CustomerController extends Controller
                                             'infoitems.priceTotal as price', 'infoitems.id as item_id',
                                             'infoitems.typeitem as item_name', 'infoitems.brand', 'infoitems.ItemTrackingKey as barcode',
                                             'TypePost.bg_color as location_color', 'postes.nom as location',
-                                            'TypePost.circle_color', 'TypePost.process', 'infoOrder.underquote', 'infoitems.Colors as colors',
+                                            'TypePost.circle_color', 'TypePost.process', 'infoOrder.underquote', 'infoitems.Colors as colors','infoOrder.deliverymethod',
                                             DB::raw(
                                                 'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN "Store Drop Off"
                                                       WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN "Pickup"
@@ -883,9 +957,9 @@ class CustomerController extends Controller
                                                 END as order_left_time'
                                             ),
                                             DB::raw(
-                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN DATE_FORMAT(booking_store.pickup_time, "%h:%i %p")
-                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN DATE_FORMAT(deliveryask.trancheFrom, "%h:%i %p")
-                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN DATE_FORMAT(deliveryask.trancheFrom, "%h:%i %p")
+                                                'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN "6-8pm"
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN CONCAT(deliveryask.trancheFrom,"_",deliveryask.trancheto)
+                                                      WHEN infoOrder.deliverymethod = "delivery_only" THEN CONCAT(deliveryask.trancheFrom,"_",deliveryask.trancheto)
                                                       WHEN infoOrder.deliverymethod = "recurring" THEN "--"
                                                 END as order_right_time'
                                             ),
@@ -916,8 +990,32 @@ class CustomerController extends Controller
                                         ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
                                         ->where('infoitems.priceTotal', '!=', 0)
                                         ->where('infoOrder.CustomerID', $customer->CustomerID)
-                                        ->whereIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
+                                        ->whereIn('infoOrder.Status', ['FULFILLED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
                                         ->get()->groupBy(['order_id', 'sub_order_id'])->reverse()->values();
+
+
+                                        foreach($past_orders as $k=>$v){
+                                            foreach($v as $i=>$x){
+                                                 foreach($x as $key=>$item){
+                                                     $delivery_method = $item->deliverymethod;
+                                                     //if(in_array($delivery_method,['home_delivery','delivery_only'])){
+                                                         $tranche = $item->order_right_time;
+                                                         $tranche_arr = explode("_",$tranche);
+                                                         if(isset($tranche_arr[0]) && isset($tranche_arr[1])){
+                                                             $slot = Tranche::getSlotFromTranche($tranche_arr[0],$tranche_arr[1]);
+                                                             $timeslot = $tranches_slots[$slot];
+                                                             $past_orders[$k][$i][$key]->order_right_time = $timeslot;
+                                                         }
+                                                     //}
+                                                 }
+
+                                            }
+                                         }
+
+
+        $customer->past_orders = $past_orders;
+
+
         return response()->json( $customer );
     }
 
@@ -1022,12 +1120,15 @@ class CustomerController extends Controller
             if($value_selected)
                 $item->value = $value_selected;
         }
+
         $customer->preferences = $preferences->groupBy('category');
+
         $customer->deliveryPreferences = DB::table('DeliveryPreference')
                                         ->where('CustomerID', $customer->CustomerID)
                                         ->select('TypeDelivery as altTypeDelivery', 'CodeCountry as altPhoneCountryCode',
                                         'OtherInstruction as altDriverInstruction', 'PhoneNumber as altPhoneNumber',
                                         'Name as altName')->first();
+
         $customer->linkedAccounts = DB::table('infoCustomer')
                                     ->where('CustomerID', $customer->CustomerID)
                                     ->orWhere('CustomerIDMaster', $customer->CustomerID)
@@ -1044,6 +1145,7 @@ class CustomerController extends Controller
         }
         return response()->json($customer);
     }
+
 
     public function AddCreditCustomer(Request $request){
         $user = Auth::user();
@@ -1345,9 +1447,12 @@ class CustomerController extends Controller
                     })
                     ->where('infoOrder.OrderID','!=','')
                     ->where('infoOrder.CustomerID', $customer->CustomerID)
-                    ->whereNotIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
+                    ->whereNotIn('infoOrder.Status', ['FULFILLED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
                     ->groupBy('infoOrder.id')
                     ->get();
+
+
+
         $customer->pastOrders = DB::table('infoOrder')
                     ->select(
                         'infoOrder.id as order_id',
@@ -1374,7 +1479,7 @@ class CustomerController extends Controller
                     })
                     ->where('infoOrder.OrderID','!=','')
                     ->where('infoOrder.CustomerID', $customer->CustomerID)
-                    ->whereIn('infoOrder.Status', ['FULLFILED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
+                    ->whereIn('infoOrder.Status', ['FULFILLED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
                     ->groupBy('infoOrder.id')
                     ->get();
         //*/

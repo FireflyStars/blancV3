@@ -21,7 +21,7 @@
                     <span class="cust-location-name ms-1">{{ CUSTOMER.location == 0 ? '--' : CUSTOMER.location }}</span>
                     <svg class="detail-close ms-4" width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" @click="close">
                         <path fill-rule="evenodd" clip-rule="evenodd" d="M1.78812 0.297179C1.3976 -0.0953162 0.764438 -0.0953162 0.373917 0.297179C-0.0166053 0.689674 -0.0166053 1.32604 0.373916 1.71853L5.58834 6.9593L0.292891 12.2815C-0.0976305 12.674 -0.0976304 13.3104 0.292891 13.7029C0.683413 14.0954 1.31657 14.0954 1.7071 13.7029L7.00254 8.38065L12.293 13.6978C12.6835 14.0903 13.3166 14.0903 13.7072 13.6978C14.0977 13.3053 14.0977 12.6689 13.7072 12.2765L8.41675 6.9593L13.6261 1.72358C14.0167 1.33109 14.0167 0.694726 13.6261 0.302231C13.2356 -0.0902646 12.6025 -0.0902643 12.2119 0.302231L7.00254 5.53795L1.78812 0.297179Z" fill="white"/>
-                    </svg>  
+                    </svg>
                 </div>
             </div>
             <div class="detail-body">
@@ -72,17 +72,17 @@
                     <div class="toggle-panel-content" :class="{ 'd-none': selected_panel != 'current_orders' }">
                         <OrderItem :show="index == 0" :key="index" v-for="(subOrders, index) in CUSTOMER.current_orders" :subOrders="subOrders" />
                     </div>
-                </div>            
+                </div>
                 <div class="toggle-panel" :class="{ active: selected_panel =='past_orders' }" >
                     <div class="toggle-panel-header" @click="selectPanel('past_orders')">
                         <h4 class="m-0">Past Orders ( {{ CUSTOMER.past_orders.length }} )</h4>
                     </div>
                     <div class="toggle-panel-content" :class="{ 'd-none': selected_panel != 'past_orders' }">
-                        <div class="toggle-panel-content" :class="{ 'd-none': selected_panel != 'current_orders' }">
+                        <div class="toggle-panel-content" :class="{ 'd-none': selected_panel != 'past_orders' }">
                             <OrderItem :show="index == 0" :key="index" v-for="(subOrders, index) in CUSTOMER.past_orders" :subOrders="subOrders" />
                         </div>
                     </div>
-                </div>            
+                </div>
                 <div class="toggle-panel" :class="{ active: selected_panel =='payment_method' }" >
                     <div class="toggle-panel-header" @click="selectPanel('payment_method')">
                         <h4 class="m-0">Payment Method</h4>
@@ -90,7 +90,7 @@
                     <div class="toggle-panel-content" :class="{ 'd-none': selected_panel != 'payment_method' }">
 
                     </div>
-                </div>            
+                </div>
                 <div class="toggle-panel" :class="{ active: selected_panel =='preferences' }" >
                     <div class="toggle-panel-header" @click="selectPanel('preferences')">
                         <h4 class="m-0">Preferences</h4>
@@ -98,7 +98,7 @@
                     <div class="toggle-panel-content" :class="{ 'd-none': selected_panel != 'preferences' }">
 
                     </div>
-                </div>            
+                </div>
                 <div class="toggle-panel" :class="{ active: selected_panel =='customer_notes' }" >
                     <div class="toggle-panel-header" @click="selectPanel('customer_notes')">
                         <h4 class="m-0">Customer notes</h4>
@@ -106,7 +106,7 @@
                     <div class="toggle-panel-content" :class="{ 'd-none': selected_panel != 'customer_notes' }">
 
                     </div>
-                </div>            
+                </div>
             </div>
             <div class="detail-footer bg-white">
                 <div class="d-flex col-12 p-0">
@@ -129,7 +129,7 @@
     </div>
 </template>
 <script>
-import { 
+import {
   CUSTOMER_MODULE,
   SET_CURRENT_SELECTED_CUSTOMER,
   GET_CURRENT_SELECTED_CUSTOMER,
@@ -164,23 +164,23 @@ export default {
         }
         const close = ()=>{
             store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`,'');
-            store.commit(`${CUSTOMER_MODULE}${SET_CUSTOMER_DETAIL}`, { 
+            store.commit(`${CUSTOMER_MODULE}${SET_CUSTOMER_DETAIL}`, {
                 name: ''
-            });            
+            });
             router.push({
                 name: 'Customer'
             });
         }
         const CURRENT_SELECTED=computed(()=>{
             return store.getters[`${CUSTOMER_MODULE}${GET_CURRENT_SELECTED_CUSTOMER}`];
-        });        
+        });
         if(CURRENT_SELECTED.value == '' && route.params.customer_id >0){
             store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`,route.params.customer_id);
-        }   
-        
+        }
+
         const showCustomerDetail = computed(()=>{
             return CURRENT_SELECTED.value !='' && route.params.customer_id > 0;
-        })        
+        })
         const CUSTOMER = computed( () =>{
             return store.getters[`${CUSTOMER_MODULE}${GET_CUSTOMER_DETAIL}`];
         })
@@ -199,7 +199,7 @@ export default {
             //         customer_id: route.params.customer_id,
             //         step: 'order_management'
             //     }
-            // });            
+            // });
             // store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Manage Order is not implemented yet.',ttl:5,type:'success'});
         }
         const appSMS =()=>{
@@ -215,11 +215,11 @@ export default {
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
                 });;
             });
-        }          
+        }
         onMounted(()=>{
         })
         const formatPhone = (phoneString)=>{
-      
+
             if(phoneString !== "" &&  phoneString !="--" ){
                 var phone = phoneString.split('"')[1];
                 var area_code = phone.split("|")[0];
@@ -230,8 +230,8 @@ export default {
                     return phone.replace(/\D/g, '').replace(/(\d{2})(\d{3})(\d{3})(\d{3,4})/, "+$1 $2 $3 $3");
             }
             return phoneString;
-        }   
-        
+        }
+
 
             function EditCustomer(customerId){
 
@@ -259,7 +259,7 @@ export default {
             }),
             EditCustomer
         }
-    }   
+    }
 }
 </script>
 <style lang="scss" scoped>
@@ -270,17 +270,17 @@ export default {
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #E0E0E0; 
+  background: #E0E0E0;
 }
- 
+
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #47454B; 
+  background: #47454B;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #47454B; 
+  background: #47454B;
 }
 </style>
 <style lang="scss">
@@ -408,7 +408,7 @@ export default {
             border: 0.5px solid #C3C3C3;
             box-sizing: border-box;
             border-radius: 6px;
-            margin-top: 20px;        
+            margin-top: 20px;
             .toggle-panel-header{
                 padding: 20px;
                 cursor: pointer;
@@ -437,11 +437,11 @@ export default {
         position: fixed;
         padding: 10px 20px;
         width: 674px;
-        bottom: 0;        
+        bottom: 0;
         .detail-btn{
             cursor: pointer;
             font-size: 16px;
-            line-height: 140%;        
+            line-height: 140%;
             padding: 9px 0;
             border-radius: 4px;
             background: transparent;
@@ -475,7 +475,7 @@ export default {
                 color: #42A71E;
                 border: 1px solid #42A71E;
                 transition: all .3s ease-in;
-            }            
+            }
         }
     }
 }

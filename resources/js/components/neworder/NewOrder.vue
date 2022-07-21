@@ -205,7 +205,7 @@
                                                     </div>
 
                                                     <div class="col-3">
-                                                        <date-picker :disabled="do_delivery_disabled" v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="addRemoveDays('add',3,cur_date)" @loadtranche="loadtranche('do_delivery')" ref="do_delivery_datepicker" :disabled-sunday="true"></date-picker>
+                                                        <date-picker :disabled="do_delivery_disabled" v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="addRemoveDays('add',0,cur_date)" @loadtranche="loadtranche('do_delivery')" ref="do_delivery_datepicker" :disabled-sunday="true" :available-days="available_days"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="do_delivery_timeslot"   name="do_delivery_timeslot" :available-slots="do_delivery_tranche"  label=" "></time-slot-picker>
@@ -216,14 +216,14 @@
                                             <transition name="popinout">
                                                 <div class="row mt-3" v-if="deliverymethod=='home_delivery'&&!isRecurring">
                                                     <div class="col-3">
-                                                        <date-picker v-model="hd_pickup" name="hd_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pick up" :disabledToDate="yesterday" :disabledFromDate="hd_delivery"  @loadtranche="loadtranche('hd_pickup')" ref="hd_pickup_datepicker" :disabledSunday="true"></date-picker>
+                                                        <date-picker v-model="hd_pickup" name="hd_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pick up" :disabledToDate="yesterday" :disabledFromDate="hd_delivery"  @loadtranche="loadtranche('hd_pickup')" ref="hd_pickup_datepicker" :disabledSunday="true" :available-days="available_days"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="hd_pickup_timeslot"   name="hd_pickup_timeslot" :available-slots="hd_pickup_tranche"  label=" "></time-slot-picker>
                                                     </div>
 
                                                     <div class="col-3">
-                                                        <date-picker v-model="hd_delivery" name="hd_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="addRemoveDays('add',3,hd_pickup)"   @loadtranche="loadtranche('hd_delivery')" ref="hd_delivery_datepicker" :disabledSunday="true"></date-picker>
+                                                        <date-picker v-model="hd_delivery" name="hd_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="addRemoveDays('add',3,hd_pickup)"   @loadtranche="loadtranche('hd_delivery')" ref="hd_delivery_datepicker" :disabledSunday="true" :available-days="available_days"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="hd_delivery_timeslot"   name="hd_delivery_timeslot" :available-slots="hd_delivery_tranche"  label=" "></time-slot-picker>
@@ -629,6 +629,8 @@ import axios from 'axios';
             const cur_date = ref('');
 
             const order_express = ref('');
+            const available_days = ref([]);
+            const available_cust_slots = ref([]);
 
 
             const all_timeslots_def = store.getters[`${NEWORDER_MODULE}${NEWORDER_GET_ALL_TIMESLOTS}`];
@@ -759,6 +761,7 @@ import axios from 'axios';
             const cur_cust = computed(()=>{
                 const current_customer = store.getters[`${NEWORDER_MODULE}${NEWORDER_CUR_CUSTOMER}`];
 
+
                 if(current_customer){
                     deliverymethod.value='';
                     store_name.value='';
@@ -831,7 +834,8 @@ import axios from 'axios';
 
                     }
                     //store.dispatch(`${NEWORDER_MODULE}${NEW_ORDER_SET_TRANCHE_POSTCODE}`,current_customer.postcode);
-
+                    available_days.value = current_customer.available_days;
+                    available_cust_slots.value = current_customer.available_slots;
                 }
 
                 return current_customer;
@@ -1342,16 +1346,12 @@ import axios from 'axios';
                 const temp_var_tranche = eval(mapped_timeslot_tranche);
 
                 let all_tranches = [1,3,5,7,9,11];
-                let available_tranches = [];
-
-                let cur_date = var_tmp_date.value;
-
                 let comp_ref_name = comp+'_datepicker';
                 const comp_ref = eval(comp_ref_name);
 
                 if(shp_postcode.value !=''){
 
-
+                    /*
                     store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading available slots'], {root: true});
 
                     axios.post('/get-tranche-by-postcode',{
@@ -1376,6 +1376,30 @@ import axios from 'axios';
                     }).finally(()=>{
                         store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`, {}, {root: true});
                     });
+                    */
+
+
+                    let cur_date = new Date(var_tmp_date.value);
+                    let day_index = cur_date.getDay();
+
+                    let available_tranches = [];
+
+                    if(typeof available_cust_slots.value[day_index] !='undefined'){
+                        let tranches = available_cust_slots.value[day_index];
+
+                        tranches.forEach(function(v,i){
+                            available_tranches.push(parseInt(v));
+                        })
+                    }
+
+                    temp_var_tranche.value = available_tranches;
+
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                        message:"Available slots set",
+                        ttl:3,
+                        type:'success',
+                    });
+
 
                 }else{
                     //console.log('resetPicker called');
@@ -1674,6 +1698,8 @@ import axios from 'axios';
                 saveCardDetails,
                 card_details,
                 updateOrderAndDetail,
+                available_days,
+                available_cust_slots,
             }
         },
         data(){

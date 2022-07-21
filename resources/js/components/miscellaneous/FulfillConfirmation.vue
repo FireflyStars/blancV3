@@ -11,8 +11,8 @@
             </div>
             <div class="confirmation-msg body_regular"><p>Do you want to Fulfill Sub Order </p></div>
             <div class="confirmation-btn">
-                <button class="btn btn-outline-danger body_medium" style="margin-right: 59px" @click="close">No ,cancel</button>
-                <button class="btn btn-dark body_medium" style="" @click="Fulfill">Yes , fulfill</button>
+                <button class="btn btn-outline-danger body_medium" style="margin-right: 59px" @click="close">No, cancel</button>
+                <button class="btn btn-dark body_medium" style="" @click="Fulfill">Yes, fulfill</button>
             </div>
         </div>
 
@@ -33,7 +33,7 @@
             },
             invoice_id :{
                type:String
-            } 
+            }
         },
         setup(props,context){
             const show=ref(false);
@@ -45,9 +45,9 @@
                 context.emit('close');
                 show.value=false;
             }
-           
+
             function Fulfill(){
-               
+
                    axios.post('/setInvoiceFulfilled',{
                    invoice_id: props.invoice_id,
                    nextpost:28
@@ -59,7 +59,7 @@
                         }else {
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${res.data.status_message}`,ttl:5,type:'danger'});
                         }
-                       
+
                          close();
                     }).catch((error)=>{
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
