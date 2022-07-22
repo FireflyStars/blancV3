@@ -28,6 +28,10 @@ use Carbon\Carbon;
 use Stripe\Service\CustomerService;
 
 use function PHPUnit\Framework\isNull;
+use App\Http\Controllers\CustomerPreferenceController;
+use App\Http\Controllers\Voyager\VoyagerPostcodesController;
+use App\Http\Controllers\InvoiceEmailVerificationController;
+use App\Http\Controllers\SupervisionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -506,6 +510,66 @@ Route::get('test-stripe-terminal',function(Request $request){
 
 });
 
+Route::get('test-cam-orders',function(){
+    $customer = DB::table('infoCustomer')->where('id',3428)->first();
+
+
+
+
+    $current_orders = DB::table('infoOrder')
+    ->select(
+        'infoOrder.id as order_id',
+        DB::raw('if(infoOrder.Paid=0,"unpaid","paid") as paid'), 'infoOrder.Total as total',
+        DB::raw('DATE_FORMAT(infoOrder.created_at, "%d/%m/%Y") as items_received'),
+        'infoOrder.underquote', 'infoOrder.TypeDelivery as destination', 'infoOrder.Status as status',
+        DB::raw('IF(
+            infoitems.PromisedDate > CURRENT_DATE(),
+            IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")),
+            DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y")) as deliv'),
+            DB::raw('count(distinct(infoitems.id)) as items'),
+            'TypePost.bg_color as location_color', 'postes.nom as location',
+            'TypePost.process', 'TypePost.circle_color','infoOrder.deliverymethod'
+    )
+    ->leftJoin('pickup', 'pickup.PickupID', '=', 'infoOrder.PickupID')
+    ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
+    ->join('postes', 'infoOrder.Status', '=', 'postes.nominterface')
+    ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
+    ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+    ->join('infoitems',function($join){
+        $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
+            ->where('infoitems.InvoiceID','!=','')
+            ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+    })
+    ->where('infoOrder.OrderID','!=','')
+    ->where('infoOrder.CustomerID', $customer->CustomerID)
+    ->whereNotIn('infoOrder.Status', ['FULFILLED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
+    ->groupBy('infoOrder.id')
+    ->get();
+
+    foreach($current_orders as $k=>$v){
+        if($v->deliverymethod !=''){
+            $current_orders[$k]->created_by = [];
+
+
+            if($v->deliverymethod!=''){
+                $booking_user = DB::table('booking_histories')
+                    ->select('users.*')
+                    ->join('users','booking_histories.user_id','users.id')
+                    ->orderBy('booking_histories.id')->first();
+
+                if($booking_user){
+                    $current_orders[$k]->created_by = $booking_user->name;
+                }
+            }
+
+        }
+    }
+
+    echo "<pre>";
+    print_r($current_orders);
+
+});
+
 
 /* END TEST ROUTES */
 
@@ -710,9 +774,29 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
 Route::group(['prefix' => 'admin'], function () {
     Voyager::routes();
+/*
     Route::get('category-tailoring',[CategoryTailoringController::class,'index'])->name('category-tailoring')->middleware('auth');
-});
+    Route::get('client-poste', 'ClientPosteController@index')->name('client-poste');
+*/
+    Route::get('supervision', [SupervisionController::class,'index'])->name('supervision')->middleware('auth');
+    Route::get('supervisiondata', [SupervisionController::class,'supervisionData'])->name('supervisiondata')->middleware('auth');
 
+    Route::get('customer-email-verification', [InvoiceEmailVerificationController::class,'index'])->name('customer-email-verification')->middleware('auth');
+    Route::get('bad-customer-email-edit', [InvoiceEmailVerificationController::class,'checkbademail'])->name('bad-customer-email-edit')->middleware('auth');
+    Route::get('customer-without-address', [InvoiceEmailVerificationController::class,'customerWithoutAddress'])->name('customer-without-address')->middleware('auth');
+    Route::post('bad-customer-email-save', [InvoiceEmailVerificationController::class,'postprocess'])->name('bad-customer-email-save')->middleware('auth');
+    Route::get('restore-customer',[InvoiceEmailVerificationController::class,'restoreCustomer'])->name('restore-customer')->middleware('auth');
+
+    Route::get('configure-postcodes', [VoyagerPostcodesController::class,'index'])->name('configure-postcodes')->middleware('auth');
+    Route::post('save-postcodes', [VoyagerPostcodesController::class,'postprocess'])->name('save-postcodes')->middleware('auth');
+
+    Route::get('customer-preference', [CustomerPreferenceController::class,'index'])->name('customer-preference')->middleware('auth');
+    Route::get('view-customer-preference', [CustomerPreferenceController::class,'show'])->name('view-customer-preference')->middleware('auth');
+    Route::post('save-customer-preference', [CustomerPreferenceController::class,'upsert'])->name('save-customer-preference')->middleware('auth');
+
+    Route::post('update-sequence', [CustomerPreferenceController::class,'updateSequence'])->name('update-sequence')->middleware('auth');
+    Route::get('delete-customer-pref', [CustomerPreferenceController::class,'setPrefDeleted'])->name('delete-customer-pref')->middleware('auth');
+});
 
 /*ALWAYS AT THE BOTTOM*/
 Route::get('{any}', function () {

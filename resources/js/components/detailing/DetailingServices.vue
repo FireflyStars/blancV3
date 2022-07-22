@@ -821,6 +821,7 @@ export default {
 
     #completeDetailingBtn:hover{
         background:#333;
+        border:thin solid #333;
     }
 
     .pref-disable-icon{

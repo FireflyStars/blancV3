@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,5 +24,5 @@ class Poste extends Model
             ['formatted_name'=>'In <br> shelving','group_name'=>'shelving'],
         );
         return $formatted_postes;
-    }    
+    }
 }

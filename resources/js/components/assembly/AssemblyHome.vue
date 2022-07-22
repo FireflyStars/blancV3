@@ -11,11 +11,11 @@
                             </div>
                             <div class="col-8 pr-5">
                                 <div class="red-stats text-white d-flex justify-content-between text-center rounded-pill">
-                                    <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_today_deliveries<10?
-                                    10:(mainStats.percent_today_deliveries>90?90:mainStats.percent_today_deliveries))+'%'}">
+                                    <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_today_deliveries<15?
+                                    15:(mainStats.percent_today_deliveries>85?85:mainStats.percent_today_deliveries))+'%'}">
                                     {{ mainStats.due_today_deliveries ? parseInt(mainStats.due_today_deliveries) : 0}}</div>
-                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_exp_today<10?
-                                    10:(mainStats.percent_today_stores>90?90:mainStats.percent_today_stores))+'%'}">
+                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_exp_today<15?
+                                    15:(mainStats.percent_today_stores>85?85:mainStats.percent_today_stores))+'%'}">
                                     {{mainStats.due_today_stores ? parseInt(mainStats.due_today_stores) : 0}}</div>
                                 </div>
                                 <div class="d-flex count-under-label">
@@ -30,15 +30,15 @@
                             <div class="col-8 pr-5">
                                 <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
                                     <div class="standard-bar py-1 px-2"
-                                    :style="{'width':+(mainStats.percent_today_inprocess_deliveries<10?
-                                    10:(mainStats.percent_today_inprocess_deliveries>90?
-                                    90:mainStats.percent_today_inprocess_deliveries))+'%'}"
+                                    :style="{'width':+(mainStats.percent_today_inprocess_deliveries<15?
+                                    15:(mainStats.percent_today_inprocess_deliveries>85?
+                                    85:mainStats.percent_today_inprocess_deliveries))+'%'}"
                                     :class="{'col-6':mainStats.due_today_deliveries==0,'px-0':mainStats.due_today_deliveries==0}">
                                     {{ mainStats.percent_today_inprocess_deliveries ? parseInt(mainStats.percent_today_inprocess_deliveries) : 0}}%
                                     </div>
-                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_today_done_deliveries<10?
-                                    10:(mainStats.percent_today_done_deliveries>90?
-                                    90:mainStats.percent_today_done_deliveries))+'%'}"
+                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_today_done_deliveries<15?
+                                    15:(mainStats.percent_today_done_deliveries>85?
+                                    85:mainStats.percent_today_done_deliveries))+'%'}"
                                     :class="{'col-6':mainStats.due_today_deliveries==0,'px-0':mainStats.due_today_deliveries==0}">
                                     {{mainStats.percent_today_done_deliveries ? parseInt(mainStats.percent_today_done_deliveries) : 0}}%
                                     </div>
@@ -54,15 +54,15 @@
                             <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_today_stores ? mainStats.due_today_stores : 0}}</div>
                             <div class="col-8 pr-5">
                                 <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
-                                    <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_today_inprocess_stores<10?
-                                    10:(mainStats.percent_today_inprocess_stores>90?
-                                    90:mainStats.percent_today_inprocess_stores))+'%'}"
+                                    <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_today_inprocess_stores<15?
+                                    15:(mainStats.percent_today_inprocess_stores>85?
+                                    85:mainStats.percent_today_inprocess_stores))+'%'}"
                                     :class="{'col-6':mainStats.due_today_stores==0,'px-0':mainStats.due_today_stores==0}">
                                     {{ mainStats.percent_today_inprocess_stores? parseInt(mainStats.percent_today_inprocess_stores) : 0}}%
                                     </div>
-                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_today_done_stores<10?
-                                    10:(mainStats.percent_today_done_stores>90?
-                                    90:mainStats.percent_today_done_stores))+'%'}"
+                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_today_done_stores<15?
+                                    15:(mainStats.percent_today_done_stores>85?
+                                    85:mainStats.percent_today_done_stores))+'%'}"
                                     :class="{'col-6':mainStats.due_today_stores==0,'px-0':mainStats.due_today_stores==0}">
                                     {{ mainStats.percent_today_done_stores? parseInt(mainStats.percent_today_done_stores) : 0 }}%
                                     </div>
@@ -84,11 +84,11 @@
                             <div class="col-2 px-2 text-end total_stats_num">{{mainStats.total_due_tomorrow ? mainStats.total_due_tomorrow : 0}}</div>
                             <div class="col-8 pr-5">
                                 <div class="red-stats text-white d-flex justify-content-between text-center">
-                                    <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_deliveries<10?
-                                    10:(mainStats.percent_tomorrow_deliveries>90?90:mainStats.percent_tomorrow_deliveries))+'%'}">
+                                    <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_deliveries<15?
+                                    15:(mainStats.percent_tomorrow_deliveries>85?85:mainStats.percent_tomorrow_deliveries))+'%'}">
                                     {{mainStats.due_tomorrow_deliveries ? mainStats.due_tomorrow_deliveries : 0 }}</div>
                                     <div class="py-1 px-2" :style="{'width':+(mainStats.percent_exp_tomorrow<10?
-                                    10:(mainStats.percent_tomorrow_stores>90?90:mainStats.percent_tomorrow_stores))+'%'}">
+                                    10:(mainStats.percent_tomorrow_stores>85?85:mainStats.percent_tomorrow_stores))+'%'}">
                                     {{mainStats.due_tomorrow_stores ? mainStats.due_tomorrow_stores : 0}}</div>
                                 </div>
                                 <div class="d-flex count-under-label">
@@ -104,15 +104,15 @@
                             <div class="col-8 pr-5">
                                 <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
                                     <div class="standard-bar py-1 px-2"
-                                    :style="{'width':+(mainStats.percent_tomorrow_inprocess_deliveries<10?
-                                    10:(mainStats.percent_tomorrow_inprocess_deliveries>90?
-                                    90:mainStats.percent_tomorrow_inprocess_deliveries))+'%'}"
+                                    :style="{'width':+(mainStats.percent_tomorrow_inprocess_deliveries<15?
+                                    15:(mainStats.percent_tomorrow_inprocess_deliveries>85?
+                                    85:mainStats.percent_tomorrow_inprocess_deliveries))+'%'}"
                                     :class="{'col-6':mainStats.due_tomorrow_deliveries==0,'px-0':mainStats.due_tomorrow_deliveries==0}">
                                     {{mainStats.percent_tomorrow_inprocess_deliveries ? parseInt(mainStats.percent_tomorrow_inprocess_deliveries) : 0}}%
                                     </div>
-                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_done_deliveries<10?
-                                    10:(mainStats.percent_tomorrow_done_deliveries>90?
-                                    90:mainStats.percent_tomorrow_done_deliveries))+'%'}"
+                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_done_deliveries<15?
+                                    15:(mainStats.percent_tomorrow_done_deliveries>85?
+                                    85:mainStats.percent_tomorrow_done_deliveries))+'%'}"
                                     :class="{'col-6':mainStats.due_tomorrow_deliveries==0,'px-0':mainStats.due_tomorrow_deliveries==0}">
                                     {{ mainStats.percent_tomorrow_done_deliveries ? parseInt(mainStats.percent_tomorrow_done_deliveries) : 0}}%
                                     </div>
@@ -128,15 +128,15 @@
                             <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_tomorrow_stores ? mainStats.due_tomorrow_stores : 0}}</div>
                             <div class="col-8 pr-5">
                                 <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
-                                    <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_inprocess_stores<10?
-                                    10:(mainStats.percent_tomorrow_inprocess_stores>90?
-                                    90:mainStats.percent_tomorrow_inprocess_stores))+'%'}"
+                                    <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_inprocess_stores<15?
+                                    15:(mainStats.percent_tomorrow_inprocess_stores>85?
+                                    85:mainStats.percent_tomorrow_inprocess_stores))+'%'}"
                                     :class="{'col-6':mainStats.due_tomorrow_stores==0,'px-0':mainStats.due_tomorrow_stores==0}">
                                     {{ mainStats.percent_tomorrow_inprocess_stores ? parseInt(mainStats.percent_tomorrow_inprocess_stores) : 0}}%
                                     </div>
-                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_done_stores<10?
-                                    10:(mainStats.percent_tomorrow_done_stores>90?
-                                    90:mainStats.percent_tomorrow_done_stores))+'%'}"
+                                    <div class="py-1 px-2" :style="{'width':+(mainStats.percent_tomorrow_done_stores<15?
+                                    15:(mainStats.percent_tomorrow_done_stores>85?
+                                    85:mainStats.percent_tomorrow_done_stores))+'%'}"
                                     :class="{'col-6':mainStats.due_tomorrow_stores==0,'px-0':mainStats.due_tomorrow_stores==0}">
                                     {{mainStats.percent_tomorrow_done_stores ? parseInt(mainStats.percent_tomorrow_done_stores) : 0}}%
                                     </div>
@@ -159,10 +159,10 @@
                         <div class="col-8 pr-5">
                             <div class="red-stats text-white d-flex justify-content-between text-center">
                                 <div class="standard-bar py-1 px-2"
-                                    :style="{'width':+ ( mainStats.percent_later_deliveries < 10 ? 10: ( mainStats.percent_later_deliveries>90?90:mainStats.percent_later_deliveries))+'%'}">
+                                    :style="{'width':+ ( mainStats.percent_later_deliveries < 15 ? 15: ( mainStats.percent_later_deliveries>85?85:mainStats.percent_later_deliveries))+'%'}">
                                 {{mainStats.due_later_deliveries ? mainStats.due_later_deliveries : 0 }}</div>
-                                <div class="py-1 px-2" :style="{'width':+(mainStats.percent_exp_later<10?
-                                10:(mainStats.percent_later_stores>90?90:mainStats.percent_later_stores))+'%'}">
+                                <div class="py-1 px-2" :style="{'width':+(mainStats.percent_exp_later<15?
+                                15:(mainStats.percent_later_stores>85?85:mainStats.percent_later_stores))+'%'}">
                                 {{mainStats.due_later_stores ? mainStats.due_later_stores : 0}}</div>
                             </div>
                             <div class="d-flex count-under-label">
@@ -178,15 +178,15 @@
                         <div class="col-8 pr-5">
                             <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
                                 <div class="standard-bar py-1 px-2"
-                                :style="{'width':+(mainStats.percent_later_inprocess_deliveries<10?
-                                10:(mainStats.percent_later_inprocess_deliveries>90?
-                                90:mainStats.percent_later_inprocess_deliveries))+'%'}"
+                                :style="{'width':+(mainStats.percent_later_inprocess_deliveries<15?
+                                15:(mainStats.percent_later_inprocess_deliveries>85?
+                                85:mainStats.percent_later_inprocess_deliveries))+'%'}"
                                 :class="{'col-6':mainStats.due_later_deliveries==0,'px-0':mainStats.due_later_deliveries==0}">
                                 {{mainStats.percent_later_inprocess_deliveries ? parseInt(mainStats.percent_later_inprocess_deliveries) : 0}}%
                                 </div>
-                                <div class="py-1 px-2" :style="{'width':+(mainStats.percent_later_done_deliveries<10?
-                                10:(mainStats.percent_later_done_deliveries>90?
-                                90:mainStats.percent_later_done_deliveries))+'%'}"
+                                <div class="py-1 px-2" :style="{'width':+(mainStats.percent_later_done_deliveries<15?
+                                15:(mainStats.percent_later_done_deliveries>85?
+                                85:mainStats.percent_later_done_deliveries))+'%'}"
                                 :class="{'col-6':mainStats.due_later_deliveries==0,'px-0':mainStats.due_later_deliveries==0}">
                                 {{ mainStats.percent_later_done_deliveries ? parseInt(mainStats.percent_later_done_deliveries) : 0}}%
                                 </div>
@@ -202,15 +202,15 @@
                         <div class="col-2 px-2 text-end total_stats_num">{{mainStats.due_later_stores ? mainStats.due_later_stores : 0}}</div>
                         <div class="col-8 pr-5">
                             <div class="red-stats text-white d-flex justify-content-between text-center is_percent">
-                                <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_later_inprocess_stores<10?
-                                10:(mainStats.percent_later_inprocess_stores>90?
-                                90:mainStats.percent_later_inprocess_stores))+'%'}"
+                                <div class="standard-bar py-1 px-2" :style="{'width':+(mainStats.percent_later_inprocess_stores<15?
+                                15:(mainStats.percent_later_inprocess_stores>85?
+                                85:mainStats.percent_later_inprocess_stores))+'%'}"
                                 :class="{'col-6':mainStats.due_later_stores==0,'px-0':mainStats.due_later_stores==0}">
                                 {{ mainStats.percent_later_inprocess_stores ? parseInt(mainStats.percent_later_inprocess_stores) : 0}}%
                                 </div>
-                                <div class="py-1 px-2" :style="{'width':+(mainStats.percent_later_done_stores<10?
-                                10:(mainStats.percent_later_done_stores>90?
-                                90:mainStats.percent_later_done_stores))+'%'}"
+                                <div class="py-1 px-2" :style="{'width':+(mainStats.percent_later_done_stores<15?
+                                15:(mainStats.percent_later_done_stores>85?
+                                85:mainStats.percent_later_done_stores))+'%'}"
                                 :class="{'col-6':mainStats.due_later_stores==0,'px-0':mainStats.due_later_stores==0}">
                                 {{mainStats.percent_later_done_stores ? parseInt(mainStats.percent_later_done_stores) : 0}}%
                                 </div>
@@ -416,7 +416,7 @@
                                                     <svg v-else width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                         <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" :fill="'#'+invoiceRow.circle_color"/>
                                                         <circle cx="6" cy="6" r="5" :stroke="'#'+invoiceRow.circle_color" stroke-width="2"/>
-                                                    </svg>                                                    
+                                                    </svg>
                                                     &nbsp;&nbsp;<span class="d-block text-center text-nowrap" :style="{ width: 'calc( 100% - 12px )'}">{{ invoiceRow.location }}</span>
                                                 </div>
                                             </td>
@@ -431,14 +431,14 @@
                                     <tr v-if="currentLoadedInvoiceCount != totalInvoiceCount">
                                         <td class="tcol" style="text-align: center" :colspan="Object.keys(columns).length"><button class="btn btn-link" @click="loadMoreInvoice">Show more ( {{ currentLoadedInvoiceCount }} / {{ totalInvoiceCount }})</button></td>
                                     </tr>
-                                </tfoot>                                    
+                                </tfoot>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div> 
+    </div>
     <!-- <router-view /> -->
 </template>
 
@@ -452,9 +452,9 @@
         SET_ASSEMBLY_STATE,
         SET_INVOICE_LIST,
         GET_INVOICE_LIST,
-        GET_TOTAL_INVOICE_COUNT, 
-        GET_LOADED_INVOICE_COUNT, 
-        LOAD_MORE_INVOICE,     
+        GET_TOTAL_INVOICE_COUNT,
+        GET_LOADED_INVOICE_COUNT,
+        LOAD_MORE_INVOICE,
         INVOICELIST_GET_CURRENT_SELECTED,
         INVOICELIST_GET_ALL_SELECTED,
         INVOICELIST_SET_CURRENT_SELECTED,
@@ -493,7 +493,7 @@
             const assemblyStatsLater = ref({});
             const selectMode = ref('multi');
             const selectAll = ref(false);
-            
+
             const columns = ref([
                     {
                         key: 'selected',
@@ -588,7 +588,7 @@
             });
             const MULTI_SELECTED=computed(()=>{
                 return store.getters[`${ASSEMBLY_HOME_MODULE}${INVOICELIST_GET_ALL_SELECTED}`];
-            });        
+            });
             const currentLoadedInvoiceCount = computed(()=>{
                 return store.getters[`${ASSEMBLY_HOME_MODULE}${GET_LOADED_INVOICE_COUNT}`];
             });
@@ -646,12 +646,12 @@
             const checkboxclicked = ( check, id, name )=>{
                 if(CURRENT_SELECTED.value == id && check == false){
                     store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`,'');
-                    store.commit(`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_SET_DETAIL}`, { 
+                    store.commit(`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_SET_DETAIL}`, {
                         breif_info: {
                             id: ''
                         },
                         location_history: []
-                    });                           
+                    });
                     router.back();
                 }
                 if(check == true){
@@ -667,7 +667,7 @@
                 if(check){
                     const list=_.cloneDeep(invoiceList.value);
                     list.forEach(item => store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_ALL_SELECTED}`, item.item_id));
-                }            
+                }
             }
             const selectrow = (item_id)=>{
                 store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`, item_id);
@@ -677,7 +677,7 @@
                         item_id:item_id,
                     },
                 })
-            }            
+            }
             return {
                 groupedPosteWidth,
                 poste,
@@ -745,7 +745,7 @@
 .invoice-table-th span{
     font-family: "Gotham Rounded";
     font-weight: 400;
-    font-size: 14px;    
+    font-size: 14px;
     color: #868686;
 }
 .assembly-home-nav-item{
@@ -809,7 +809,7 @@ tr:hover .visible-hidden .form-check{
 .trow.multi{
     transition: background-color 300ms ease-out;
     background: #F8F8F8;
-}    
+}
 .current_sel{
     position: relative;
     z-index:10000;
@@ -844,16 +844,16 @@ tr:hover .visible-hidden .form-check{
 }
 .list-move{
     transition:all 0.9s ease;
-} 
+}
 </style>
 <style>
     .trow span.chkbox {
         border: 2px solid #FFF;
         transition: border-color 300ms ease-out;
-    }    
-    .trow:hover span.chkbox, 
+    }
+    .trow:hover span.chkbox,
     .trow.multi span.chkbox {
         border-color: #868686;
         transition: border-color 300ms ease-out;
-    }   
+    }
 </style>

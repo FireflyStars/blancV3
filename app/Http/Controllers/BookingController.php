@@ -3,7 +3,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\Tranche;
+use App\Tranche;
 
 
 class BookingController extends Controller {
@@ -112,83 +112,6 @@ class BookingController extends Controller {
             'type'=>$delivery_method,
             'status'=>$status,
             'created_at'=>date('Y-m-d H:i:s'),
-        ]);
-    }
-
-    public function getSlotsByDay(Request $request){
-        $postcode = $request->postcode;
-
-        $allpostcodes = DB::table('tranchepostcode')
-        ->select(DB::raw('DISTINCT(Postcode) AS post_code'))
-        ->get();
-
-
-        $sel_postcode = "";
-
-        $postcode = str_replace(' ', '', $postcode);
-        $postcode = substr($postcode, 0, -3);
-
-        if (count($allpostcodes) > 0) {
-            foreach ($allpostcodes as $k => $v) {
-                $cur_postcode = $v->post_code;
-                //if(strpos($postcode,$cur_postcode)===0){
-                if ($postcode == $cur_postcode) {
-                    $sel_postcode = $cur_postcode;
-                    //break;
-                }
-            }
-        }
-        $day_keys = [];
-
-        $array_map = [
-            'MONDAY'=>'DeliveryMon',
-            'TUESDAY'=>'DeliveryTu',
-            'WEDNESDAY'=>'DeliveryWed',
-            'THURSDAY'=>'DeliveryTh',
-            'FRIDAY'=>'DeliveryFri',
-            'SATURDAY'=>'DeliverySat'
-        ];
-
-        foreach($array_map as $k=>$v){
-            $day_keys[] = $v;
-        }
-
-        $tranche_details = [];
-        $formatted_tranche = [];
-
-        if($sel_postcode !=''){
-            $tranche_details = DB::table('tranchepostcode')
-                ->where('Postcode',$sel_postcode)
-                ->get();
-        }
-
-        if(count($tranche_details) > 0){
-            foreach($tranche_details as $k=>$v){
-
-                $details = json_decode($v->tranche);
-                if(!empty($details)) {
-                    foreach($details as $id=>$val){
-                        $details[$id] = (int) $val;
-                    }
-                    $details[] = 13;
-                }
-                //$formatted_tranche[$v->day] = $details;
-                if(isset($array_map[$v->day])){
-                    $day_key = $array_map[$v->day];
-                    $formatted_tranche[$day_key] = $details;
-                }
-            }
-
-            foreach($day_keys as $k=>$v){
-                if(!isset($formatted_tranche[$v])){
-                    $formatted_tranche[$v] = [];
-                }
-            }
-        }
-
-
-        return response()->json([
-            'tranches'=>$formatted_tranche,
         ]);
     }
 
