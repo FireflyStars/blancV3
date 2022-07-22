@@ -13,7 +13,7 @@ class VoyagerPostcodesController extends Controller
     public static  $DAYS=['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
 
     public function index(Request $request){
-        $this->authorize('read_configure-postcodes');
+        //$this->authorize('read_configure-postcodes');
         $postcodes = DB::table('tranchepostcode')->orderBy('Postcode')->get();
 
         foreach ($postcodes as $postcode) {
@@ -29,7 +29,7 @@ class VoyagerPostcodesController extends Controller
     {
 
         if (isset($_POST['newpostcodes'])) {
-            $this->authorize('add_configure-postcodes');
+            //$this->authorize('add_configure-postcodes');
             $postcodes = $request->get('newpostcodes');
             $postcodes = explode(',', $postcodes);
             $existing_postcodes = [];
@@ -55,7 +55,7 @@ class VoyagerPostcodesController extends Controller
 
 
         if (isset($_POST['bulkdelete'])) {
-            $this->authorize('delete_configure-postcodes');
+            //$this->authorize('delete_configure-postcodes');
             if (!isset($_POST['sel_postcode'])) {
 
                 return redirect()->route('configure-postcodes', ['delete' => 0]);
@@ -70,7 +70,7 @@ class VoyagerPostcodesController extends Controller
         }
 
         if (isset($_POST['bulksave'])) {
-            $this->authorize('edit_configure-postcodes');
+            //$this->authorize('edit_configure-postcodes');
             $postcodes = [];
             $t_ = $request->post('t_');
 
