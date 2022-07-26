@@ -75,7 +75,7 @@
     import Filters from '../miscellaneous/Filters'
     export default {
         name: "OrderListTable",
-        props:['tabledef',"tab","id","customer_id"],
+        props:['tabledef',"tab","id","customer_id","search_value"],
         components:{Filters, Tag,CheckBox,ExpressIcon,SortArrows},
         setup(props){
             const router = useRouter();
@@ -97,8 +97,8 @@
                return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_SORT}`];
             });
             function loadMore(){
-            
-                if(props.customer_id != undefined && props.customer_id != '' ){      
+
+                if(props.customer_id != undefined && props.customer_id != "" && props.customer_id != null && props.customer_id != 'undefined'){     
                  store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading more, please wait...');
                  store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`,{customer:props.customer_id  , showmore:1}).finally(()=>{
                  window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
@@ -158,6 +158,8 @@
                     name:'OrderDetails',
                     params: {
                         order_id:id,
+                        customerId:route.params.customerId,
+                        value:route.params.value
                     },
                 })
             }
@@ -290,7 +292,116 @@
                         },                        
                     }
                 }
-            }else{
+            }else if(props.tab.name == 'Customer Care'){
+               filterDef.value={
+                    def:{
+                        'infoOrder.paid':{
+                            name:"Payment status",
+                            type: 'select',
+                            options:{
+                                0:"Unpaid",
+                                1:"Paid",
+                            }
+                        },
+                        'infoitems.CCStatus':{
+                            name:"Action Needed",
+                            type: 'select',
+                            options:{
+
+                                'Delivered Not Paid	':'Delivered Not Paid',
+                                'Failed Delivery':'Failed Delivery',
+                                'Late Delivery' : 'Late Delivery',
+                                'Overdue Pickup Store' : 'Overdue Pickup Store',
+                                'Awaiting SALE':'Awaiting SALE',
+                                'Authorisation Pending':'Authorisation Pending',
+                                'Quote Pending':'Quote Pending',
+                                'Complaint Investigation':'Complaint Investigation',
+                                'Lost Owner (No barcode)':'Lost Owner (No barcode)',
+                                'No Delivery Date':'No Delivery Date',
+                                'Failed Payment':'Failed Payment',	
+                                'Lost Item Investigation':'Lost Item Investigation',
+                                'Late Prod - Call Customer +2 days':'Late Prod - Call Customer +2 days',
+                                'Late Prod - Call Customer +3 days':'Late Prod - Call Customer +3 days',
+                                'Late Prod - Call Customer +5 days':'Late Prod - Call Customer +5 days',
+                                'No Delivered Not Paid'	:'No Delivered Not Paid',   
+                            }
+                        },
+                        'infoOrder.Status':{
+                            name:"Order status",
+                            type: 'select',
+                            options:{
+                                'ASSEMBLING':'ASSEMBLING',
+                                'AWAITING REDELIVERY':'AWAITING REDELIVERY',
+                                'AWAITING SALE':'AWAITING SALE',
+                                'CANCELLED':'CANCELLED',
+                                'CHECK IN ATELIER':'CHECK IN ATELIER',
+                                'COLLECTED':'COLLECTED',
+                                'DELETE':'DELETE',
+                                'DELIVERED':'DELIVERED',
+                                'DELIVERED TO STORE':'DELIVERED TO STORE',
+                                'DELIVERY IN STORE':'DELIVERY IN STORE',
+                                'DONATED TO CHARITY':'DONATED TO CHARITY',
+                                'DROPPED OFF':'DROPPED OFF',
+                                'FAILED DELIVERY':'FAILED DELIVERY',
+                                'FAILED PAYMENT':'FAILED PAYMENT',
+                                'FULFILLED':'FULFILLED',
+                                'IN PROCESS':'IN PROCESS',
+                                'IN STORAGE':'IN STORAGE',
+                                'LATE':'LATE',
+                                'LATE DELIVERY':'LATE DELIVERY',
+                                'MISSED PICKUP':'MISSED PICKUP',
+                                'OFFLOADED':'OFFLOADED',
+                                'ON VAN':'ON VAN',
+                                'OVERDUE FOR COLLECTION':'OVERDUE FOR COLLECTION',
+                                'OVERDUE STORE':'OVERDUE STORE',
+                                'PART ON HOLD':'PART ON HOLD',
+                                'PART PENDING':'PART PENDING',
+                                'PICKED UP':'PICKED UP',
+                                'READY':'READY',
+                                'RECURRING':'RECURRING',
+                                'READY IN STORE':'READY IN STORE',
+                                'SCHEDULED':'SCHEDULED',
+                                'SOLD':'SOLD',
+                                'VOID':'VOID',
+
+                            }
+                        },
+                        'infoCustomer.TypeDelivery':{
+                            name:"Destination",
+                            type: 'select',
+                            options:{
+                                'DELIVERY':'DELIVERY',
+                                'CHELSEA':'CHELSEA',
+                                'MARYLEBONE':'MARYLEBONE',
+                                'NOTTING HILL':'NOTTING HILL',
+                                'SOUTH KEN':'SOUTH KEN'
+                            }
+
+                        },
+                        'infoitems.express':{
+                            name: "Turnaround time",
+                            type: 'select',
+                            options:{
+                                standard:"Standard",
+                                exp24:"Express 24h",
+                                exp48:"Express 48h"
+                            }
+
+                        },
+                        'infoitems.prod': {
+                            name: 'Production Date',
+                            id: 'prod_date',
+                            type: 'datepicker',
+                        },
+                        'infoitems.deliv': {
+                            name: 'Delivery Date',
+                            id: 'deliv_date',
+                            type: 'datepicker',
+                        },                        
+                    }
+                }
+            }
+            else{
                 filterDef.value={
                     def:{
                         'infoOrder.paid':{

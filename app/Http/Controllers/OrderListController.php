@@ -130,10 +130,10 @@ class OrderListController extends Controller
             ->where('infoitems.PartnerINOUT','=','1');
 
         if($current_tab=='due_today')
-            $orderlist=$orderlist->whereDate('infoOrder.DateDeliveryAsk','=',date('Y-m-d'));
+            $orderlist=$orderlist->whereDate('infoOrder.dateprod','=',date('Y-m-d'));
 
         if($current_tab=='due_tomorrow')
-            $orderlist=$orderlist->whereDate('infoOrder.DateDeliveryAsk','=',date('Y-m-d',strtotime('tomorrow')));
+            $orderlist=$orderlist->whereDate('infoOrder.dateprod','=',date('Y-m-d',strtotime('tomorrow')));
 
         if($current_tab=='unfulfilled'){
             $orderlist=$orderlist->whereNotIn('infoOrder.Status',['FULFILLED','DELETE','DELIVERED','SOLD','VOID','CANCEL']);
@@ -424,6 +424,14 @@ class OrderListController extends Controller
                 $order->Prod = '--';
             }
 
+           
+            // if($order->Prod != "--" && !is_null($order->Prod)){
+            //     $date = str_replace('/', '-', $order->Prod);
+            //     $order->Production = date('Y-m-d H:i:s',strtotime($date));
+                
+            // }else {
+            //     $order->Production = '';
+            // }
     }
 
         return response()->json($orderlist);
@@ -437,19 +445,17 @@ class OrderListController extends Controller
         $sort=$request->get('sort');
         $filters=$request->get('filters');
         $searchValue = $request->get('search_value');
-
+        
         $keyword =  $searchValue;
         $keyword = str_replace(",", " ",  $keyword);
         $keywords   = explode(' ', $keyword);
 
         if($current_tab != 'customer_care'){
             $orderlist=DB::table('infoOrder')
-
-                ->select( [
-                    'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id',
-                    'infoCustomer.Name','infoCustomer.TypeDelivery',
-                    'infoOrder.DateDeliveryAsk','infoInvoice.datesold','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold','infoOrder.deliverymethod'
-                    ,'pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask',
+            ->select( [
+                'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id',
+                'infoCustomer.Name','infoCustomer.TypeDelivery', 'infoitems.PromisedDate',
+                'infoOrder.DateDeliveryAsk','infoInvoice.datesold','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold', 'infoOrder.deliverymethod','pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask',
                 DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
                 DB::raw('GROUP_CONCAT(infoitems.express) as express'),
                 DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
@@ -457,7 +463,6 @@ class OrderListController extends Controller
                 DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
                 DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                 DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID')
-                
             ])
             ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID)'))
             ->leftJoin('pickup', 'infoOrder.id', '=', 'pickup.order_id')
@@ -469,24 +474,25 @@ class OrderListController extends Controller
                     ->whereNotIn('infoitems.Status',['DELETE','VOID']);
             })
             ->where('infoOrder.OrderID','!=','')
-            ->whereNotIn('infoOrder.Status',['VOID', 'DELETE'])
-            ->where('Name','LIKE','%'.$keyword.'%' )
-            ->orwhere('LastName','LIKE','%'.$keyword.'%' )
-            ->orwhere('EmailAddress','LIKE','%'.$keyword.'%' )
-            ->orWhere('infoOrder.id','LIKE',$keyword )
-            ->orWhere('infoitems.ItemTrackingKey','LIKE' ,$keyword)
-            ->orWhere('infoitems.id_items', $keyword)
-            ->orWhere('infoInvoice.NumInvoice', 'LIKE', $keyword)
-            ->orWhereIn('FirstName', $keywords)
-            ->orWhereIn('LastName', $keywords)
-            ->orWhereIn('EmailAddress', $keywords);
+            ->where(function($q) use ($keyword , $keywords) {
+                $q->Where('Name','LIKE','%'.$keyword.'%')
+                    ->orWhere('LastName','LIKE','%'.$keyword.'%')
+                    ->orWhere('EmailAddress','LIKE','%'.$keyword.'%')
+                    ->orWhere('infoOrder.id','LIKE',$keyword)
+                    ->orWhere('infoitems.ItemTrackingKey','LIKE' ,$keyword)
+                    ->orWhere('infoitems.id_items', $keyword)
+                    ->orWhere('infoInvoice.NumInvoice', 'LIKE', $keyword)
+                    ->orWhereIn('FirstName', $keywords)
+                    ->orWhereIn('LastName', $keywords)
+                    ->orWhereIn('EmailAddress', $keywords);
+            });
+
         }else{
             $orderlist=DB::table('infoOrder')
                 ->select( [
                     'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id',
-                    'infoCustomer.Name as Customer','infoCustomer.TypeDelivery',
-                    'infoOrder.DateDeliveryAsk','infoInvoice.datesold','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold','infoOrder.deliverymethod'
-                    ,'pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask',
+                    'infoCustomer.Name as Customer','infoCustomer.TypeDelivery', 'infoInvoice.datesold', 'infoCustomer.CustomerID','infoOrder.datesold as Orderdatesold','infoCustomer.DeliverybyDay','infoOrder.DatePickup','infoOrder.DateDeliveryAsk',
+                    'infoOrder.deliverymethod','pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask',
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
                     DB::raw('IF(infoOrder.Paid = 0, "unpaid", "paid") as paid'),
                     'infoitems.CCStatus as Action',
@@ -519,26 +525,30 @@ class OrderListController extends Controller
                                 ->where('infoOrder.DateDeliveryAsk','!=','2020-01-01');
                         });
                     })
-                    ->where('Name','LIKE','%'.$keyword.'%' )
-                    ->orwhere('LastName','LIKE','%'.$keyword.'%' )
-                    ->orwhere('EmailAddress','LIKE','%'.$keyword.'%' )
-                    ->orWhere('infoOrder.id','LIKE',$keyword )
-                    ->orWhere('infoitems.ItemTrackingKey','LIKE' ,$keyword)
-                    ->orWhere('infoitems.id_items', $keyword)
-                    ->orWhere('infoInvoice.NumInvoice', 'LIKE', $keyword)
-                    ->orWhereIn('FirstName', $keywords)
-                    ->orWhereIn('LastName', $keywords)
-                    ->orWhereIn('EmailAddress', $keywords);
+                    ->where('infoOrder.OrderID','!=','')
+                    ->where(function($q) use ($keyword , $keywords) {
+                        $q->Where('Name','LIKE','%'.$keyword.'%')
+                            ->orWhere('LastName','LIKE','%'.$keyword.'%')
+                            ->orWhere('EmailAddress','LIKE','%'.$keyword.'%')
+                            ->orWhere('infoOrder.id','LIKE',$keyword)
+                            ->orWhere('infoitems.ItemTrackingKey','LIKE' ,$keyword)
+                            ->orWhere('infoitems.id_items', $keyword)
+                            ->orWhere('infoInvoice.NumInvoice', 'LIKE', $keyword)
+                            ->orWhereIn('FirstName', $keywords)
+                            ->orWhereIn('LastName', $keywords)
+                            ->orWhereIn('EmailAddress', $keywords);
+                    });
         }
+
         if($current_tab=='with_partner')
         $orderlist=$orderlist->where('infoitems.idPartner','!=','0')
             ->where('infoitems.PartnerINOUT','=','1');
 
         if($current_tab=='due_today')
-            $orderlist=$orderlist->whereDate('infoOrder.DateDeliveryAsk','=',date('Y-m-d'));
+            $orderlist=$orderlist->whereDate('infoOrder.dateprod','=',date('Y-m-d'));
 
         if($current_tab=='due_tomorrow')
-            $orderlist=$orderlist->whereDate('infoOrder.DateDeliveryAsk','=',date('Y-m-d',strtotime('tomorrow')));
+            $orderlist=$orderlist->whereDate('infoOrder.dateprod','=',date('Y-m-d',strtotime('tomorrow')));
 
         if($current_tab=='unfulfilled'){
             $orderlist=$orderlist->whereNotIn('infoOrder.Status',['FULFILLED','DELETE','DELIVERED','SOLD','VOID','CANCEL']);
@@ -548,6 +558,8 @@ class OrderListController extends Controller
                 ->where('infoOrder.DateDeliveryAsk','<=',date('Y-m-d'))
                 ->where('infoitems.ItemTrackingKey','<>','');
         }
+
+
         if($current_tab!='all_orders')
             $orderlist=$orderlist->whereNotIn('infoOrder.Status',['VOID', 'DELETE']);
         //filters
@@ -594,242 +606,248 @@ class OrderListController extends Controller
 
         $orderlist=$orderlist->skip($skip)->take($take);
         $orderlist=$orderlist->get();
+    
+            // adding ready_sub_orders and deliv date
+            foreach ($orderlist as $order) {
 
-           // adding ready_sub_orders and deliv date
-           foreach ($orderlist as $order) {
-
-            if($current_tab != 'customer_care'){
-
-                $order->ready_sub_orders = DB::table('infoOrder')
-                    ->join('infoInvoice', 'infoOrder.OrderID','=', 'infoInvoice.OrderID')
-                    ->distinct('infoInvoice.InvoiceID')
-                    ->where('infoOrder.id', $order->id)
-                    ->where('infoInvoice.Status', 'READY')->count();
-            }
-
-           
-             
-            //Booking Only
-            if($order->TypeDelivery == "DELIVERY" && ($order->Status == "RECURRING" || $order->Status == "SCHEDULED")  && $order->deliverymethod == '' ){
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
-                    
-                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                    $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-
-                } else {
-                            $order->Deliv = '--' ;
-                            $order->Prod = '--'; 
+                if($current_tab != 'customer_care'){
+    
+                    $order->ready_sub_orders = DB::table('infoOrder')
+                        ->join('infoInvoice', 'infoOrder.OrderID','=', 'infoInvoice.OrderID')
+                        ->distinct('infoInvoice.InvoiceID')
+                        ->where('infoOrder.id', $order->id)
+                        ->where('infoInvoice.Status', 'READY')->count();
                 }
-
-            }
-
-            //Store New
-            else if($order->deliverymethod == 'in_store_collection' ){
-
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
-                                       
-                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                    //dateProd
-                    $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-
-                } else {
-  
-                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
-                        if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
-
-                            $pickupDate =  strtotime($order->DatePickup) ;
-                            $DeliveryDate = strtotime($order->DateDeliveryAsk);
-
-                                if($pickupDate <  $DeliveryDate){
-
-                                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                                    $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-                                } else if($pickupDate >  $DeliveryDate){
-                                    $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
-                                    $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
-                                }
-                        } else {
-
-                            $order->Deliv = '--' ;
-                            $order->Prod = '--';
-                        }
-
-                    }
-                }
-
-            }
-
-            //Delivery New
-            else if($order->deliverymethod == 'home_delivery' ){
-
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
-                    
-                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));;
-                    $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-
-                } else {
-
-                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
-                        if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
-
-                            $pickupDate =  strtotime($order->DatePickup) ;
-                            $DeliveryDate = strtotime($order->DateDeliveryAsk);
-
-                                if($pickupDate <  $DeliveryDate){
-
-                                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                                    $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-                                } else if($pickupDate >  $DeliveryDate){
-                                    $order->Deliv = $order->DatePickup;
-                                    $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
-                                }
-                        } else {
-
-                            $order->Deliv = '--' ;
-                            $order->Prod = '--';
-                        }
-
-                    }
-                }
-
-            }
-
-             //Delivery Only New
-            else if($order->deliverymethod == 'delivery_only'){
-
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
-                    
-                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                    $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-
-                } else {
-
-                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
-                        if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
-
-                            $pickupDate =  strtotime($order->DatePickup) ;
-                            $DeliveryDate = strtotime($order->DateDeliveryAsk);
-
-                                if($pickupDate <  $DeliveryDate){
-
-                                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                                    $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-                                } else if($pickupDate >  $DeliveryDate){
-                                    $order->Deliv = $order->DatePickup;
-                                    $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
-                                }
-                        } else {
-
-                            $order->Deliv = '--' ;
-                            $order->Prod = '--';
-                        }
-
-                    }
-                }
-            }
-
-            //Store Old
-            else if($order->TypeDelivery != "DELIVERY" && $order->deliverymethod == ''){
-
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
-                   
-                            $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                            $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-
-                } else {
-                    if(!is_null($order->PromisedDate)){
-
-                        $promisedDate = date('Y-m-d',strtotime($order->PromisedDate));
-                        $order->Deliv = date('d/m/Y',strtotime($order->PromisedDate));
-                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($promisedDate)));
-
+    
+               
+                 
+                //Booking Only
+                if($order->TypeDelivery == "DELIVERY" && ($order->Status == "RECURRING" || $order->Status == "SCHEDULED")  && $order->deliverymethod == '' ){
+                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                        
+                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+    
                     } else {
-
-                        $order->Deliv = '--';
-                        $order->Prod = '--';
-
+                                $order->Deliv = '--' ;
+                                $order->Prod = '--'; 
                     }
-
+    
                 }
-
-            }
-            //$PreviousDate = date( 'd/m/Y',(int)strtotime($order->DateDeliveryAsk) + 86400) ;
-            //Delivery Old
-            else if($order->TypeDelivery == "DELIVERY" && $order->deliverymethod == ''){
-
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
-                    
-                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)); ;
-                    $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-
-
-                } else {
-
-                    if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
-                        if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
-
-                            $pickupDate = strtotime($order->DatePickup);
-                            $DeliveryDate = strtotime($order->DateDeliveryAsk);
-
-                                if($pickupDate <  $DeliveryDate){
-                                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                                    $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-                                } else if($pickupDate >  $DeliveryDate){
-                                    $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
-                                    $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
-                                }
-                               
-                        } else {
-
-                            $order->Deliv = '--' ;
-                            $order->Prod  = '--';
-                        }
-
-                    }
-                }
-            }
-
-            //Fulfiled
-            else if($order->Status == "FULFILLED " ){
-
-                if($order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
-                            
-                        $order->Deliv = date('d/m/Y',strtotime($order->Orderdatesold)) ;
-                        $order->Prod  = date('d/m/Y',strtotime($order->Orderdatesold));
-
+    
+                //Store New
+                else if($order->deliverymethod == 'in_store_collection' ){
+    
+                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
+                                           
+                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                        //dateProd
+                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+    
                     } else {
-                        if($order->PromisedDate != null){
-                            $order->Deliv = date('d/m/Y',strtotime($order->PromisedDate)) ;
-                            $order->Prod  = date('d/m/Y',strtotime($order->PromisedDate)) ;
-                        }else {
-                            $order->Deliv = '--' ;
-                            $order->Prod  = '--';
+      
+                        if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
+                            if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
+    
+                                $pickupDate =  strtotime($order->DatePickup) ;
+                                $DeliveryDate = strtotime($order->DateDeliveryAsk);
+    
+                                    if($pickupDate <  $DeliveryDate){
+    
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+                                    } else if($pickupDate >  $DeliveryDate) {
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));;
+                                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
+                                    }
+                            } else {
+    
+                                $order->Deliv = '--' ;
+                                $order->Prod = '--';
+                            }
+    
                         }
-
-
                     }
-            }
-            //VOID && DELETE
-            else if( $order->Status == "VOID " || $order->Status == "DELETE"){
+    
+                }
+    
+                //Delivery New
+                else if($order->deliverymethod == 'home_delivery' ){
+    
+                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                        
+                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));;
+                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+    
+                    } else {
+    
+                        if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
+                            if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
+    
+                                $pickupDate =  strtotime($order->DatePickup) ;
+                                $DeliveryDate = strtotime($order->DateDeliveryAsk);
+    
+                                    if($pickupDate <  $DeliveryDate){
+    
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+                                    } else if($pickupDate >  $DeliveryDate){
+                                        $order->Deliv = $order->DatePickup;
+                                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
+                                    }
+                            } else {
+    
+                                $order->Deliv = '--' ;
+                                $order->Prod = '--';
+                            }
+    
+                        }
+                    }
+    
+                }
+    
+                 //Delivery Only New
+                else if($order->deliverymethod == 'delivery_only'){
+    
+                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                        
+                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+    
+                    } else {
+    
+                        if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
+                            if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
+    
+                                $pickupDate =  strtotime($order->DatePickup) ;
+                                $DeliveryDate = strtotime($order->DateDeliveryAsk);
+    
+                                    if($pickupDate <  $DeliveryDate){
+    
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+                                    } else if ($pickupDate >  $DeliveryDate) {
+                                        $order->Deliv = $order->DatePickup;
+                                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
+                                    }
+                            } else {
+    
+                                $order->Deliv = '--' ;
+                                $order->Prod = '--';
+                            }
+    
+                        }
+                    }
+                }
+    
+                //Store Old
+                else if($order->TypeDelivery != "DELIVERY" && $order->deliverymethod == ''){
+    
+                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                       
+                                $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                                $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+    
+                    } else {
+                        if(!is_null($order->PromisedDate)){
+    
+                            $promisedDate = date('Y-m-d',strtotime($order->PromisedDate));
+                            $order->Deliv = date('d/m/Y',strtotime($order->PromisedDate));
+                            $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($promisedDate)));
+    
+                        } else {
+    
+                            $order->Deliv = '--';
+                            $order->Prod = '--';
+    
+                        }
+    
+                    }
+    
+                }
+                //$PreviousDate = date( 'd/m/Y',(int)strtotime($order->DateDeliveryAsk) + 86400) ;
+                //Delivery Old
+                else if($order->TypeDelivery == "DELIVERY" && $order->deliverymethod == ''){
+    
+                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                        
+                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)); ;
+                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+    
+    
+                    } else {
+    
+                        if($order->status_deliveryask != "DEL" && $order->status_pickup != "DEL" ){
+                            if(!is_null($order->DatePickup) && !is_null($order->DateDeliveryAsk)){
+    
+                                $pickupDate = strtotime($order->DatePickup);
+                                $DeliveryDate = strtotime($order->DateDeliveryAsk);
+    
+                                    if($pickupDate <  $DeliveryDate){
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+                                    } else if ($pickupDate >  $DeliveryDate) {
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
+                                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
+                                    }
+                                   
+                            } else {
+    
+                                $order->Deliv = '--' ;
+                                $order->Prod  = '--';
+                            }
+    
+                        }
+                    }
+                }
+    
+                //Fulfiled
+                else if($order->Status == "FULFILLED " ){
+    
+                    if($order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
+                                
+                            $order->Deliv = date('d/m/Y',strtotime($order->Orderdatesold)) ;
+                            $order->Prod  = date('d/m/Y',strtotime($order->Orderdatesold));
+    
+                        } else {
+                            if($order->PromisedDate != null){
+                                $order->Deliv = date('d/m/Y',strtotime($order->PromisedDate)) ;
+                                $order->Prod  = date('d/m/Y',strtotime($order->PromisedDate)) ;
+                            }else {
+                                $order->Deliv = '--' ;
+                                $order->Prod  = '--';
+                            }
+    
+    
+                        }
+                }
+                //VOID && DELETE
+                else if( $order->Status == "VOID " || $order->Status == "DELETE"){
+    
+                    $order->Deliv = '--';
+                    $order->Prod  = '--';
+    
+                }
+    
+                else {
+                    $order->Deliv = '--';
+                    $order->Prod  = '--';
+                }
+                if( $order->Deliv == null || $order->Deliv == "01/01/2020"){
+                    $order->Deliv = '--';
+                }
+                if( $order->Prod == null || $order->Prod == "01/01/2020"){
+                    $order->Prod = '--';
+                }
 
-                $order->Deliv = '--';
-                $order->Prod  = '--';
-
-            }
-
-            else {
-                $order->Deliv = '--';
-                $order->Prod  = '--';
-            }
-            if( $order->Deliv == null || $order->Deliv == "01/01/2020"){
-                $order->Deliv = '--';
-            }
-            if( $order->Prod == null || $order->Prod == "01/01/2020"){
-                $order->Prod = '--';
-            }
-
-    }
-
+                // if($order->Prod != "--" && !is_null($order->Prod)){
+                //     $date = str_replace('/', '-', $order->Prod);
+                //     $order->Production = date('Y-m-d H:i:s',strtotime($date));
+                    
+                // }else {
+                //     $order->Production = '';
+                // }
+        }
         return response()->json($orderlist);
     }
 
@@ -1444,10 +1462,10 @@ class OrderListController extends Controller
             ->where('infoitems.PartnerINOUT','=','1');
 
         if($current_tab=='due_today')
-            $orderlist=$orderlist->whereDate('infoOrder.DateDeliveryAsk','=',date('Y-m-d'));
+            $orderlist=$orderlist->whereDate('infoOrder.dateprod','=',date('Y-m-d'));
 
         if($current_tab=='due_tomorrow')
-            $orderlist=$orderlist->whereDate('infoOrder.DateDeliveryAsk','=',date('Y-m-d',strtotime('tomorrow')));
+            $orderlist=$orderlist->whereDate('infoOrder.dateprod','=',date('Y-m-d',strtotime('tomorrow')));
 
         if($current_tab=='unfulfilled'){
             $orderlist=$orderlist->whereNotIn('infoOrder.Status',['FULFILLED','DELETE','DELIVERED','SOLD','VOID','CANCEL']);
@@ -1738,7 +1756,14 @@ class OrderListController extends Controller
                 if( $order->Prod == null || $order->Prod == "01/01/2020"){
                     $order->Prod = '--';
                 }
-    
+
+                // if($order->Prod != "--" && !is_null($order->Prod)){
+                //     $date = str_replace('/', '-', $order->Prod);
+                //     $order->Production = date('Y-m-d H:i:s',strtotime($date));
+                    
+                // }else {
+                //     $order->Production = '';
+                // }
         }
         return response()->json($orderlist);
     }

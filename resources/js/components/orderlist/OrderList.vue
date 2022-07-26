@@ -13,7 +13,7 @@
                             </template>
                         </div>
                         <template v-for="(tab,tab_index) in tabs" :key="tab_index">
-                            <order-list-table :tabledef="allordertablefields" :tab="tab" :id="tab_index" :customer_id ="customerID"  v-if="tab.active && tab.name != 'Customer Care'"></order-list-table>
+                            <order-list-table :tabledef="allordertablefields" :tab="tab" :id="tab_index" :customer_id ="customerID" :search_value ="searchValue" v-if="tab.active && tab.name != 'Customer Care'"></order-list-table>
                             <order-list-table :tabledef="customercaretablefields" :tab="tab" :id="tab_index" :customer_id ="customerID" v-if="tab.active && tab.name == 'Customer Care'"></order-list-table>
                         </template>
                         <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
@@ -64,8 +64,8 @@
             const route=useRoute();
             const filterDef = ref({});
             const customerID = ref('');
+            const searchValue = ref('');
             const router = useRouter();
-
             const tabs=ref({});
             if(hasRoles(['cc'])){
                 tabs.value= {
@@ -297,11 +297,11 @@
                      });
                     }
 
-                    if( data != null){
+                    if( data != null &&  data != undefined){
 
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`, {customer:data} );
 
-                    } else if( data == null) {
+                    } else {
 
                        store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`, {search:route.params.value});
                     }
@@ -311,7 +311,8 @@
 
             watch(route, (to) => {
                 customerID.value =  route.params.customerId
-                if( route.params.customerId != null){
+                searchValue.value = route.params.value
+                if( route.params.customerId != null && route.params.customerId != 'undefined' && route.params.customerId != undefined){
 
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`, {customer:route.params.customerId} );
 
@@ -327,8 +328,8 @@
                     tabs.value[prop].active=false;
 
                 tabs.value[tab].active=true;
-
-                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_TAB}`,{tab:tab,name:tabs.value[tab].name, customer:customerID.value , search:route.params.value  });
+                
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_TAB}`,{tab:tab,name:tabs.value[tab].name, customer:customerID.value , search:route.params.value});
                /* store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SET_CURRENTTAB}`,tab);
                 store.commit(`${ORDERLIST_MODULE}${ORDERLIST_RESET_ORDERLIST}`);
                 store.commit(`${ORDERLIST_MODULE}${ORDERLIST_SET_LIMIT}`,{skip:0,take:10});
@@ -353,6 +354,7 @@
                 allordertablefields,
                 customercaretablefields,
                 customerID,
+                searchValue,
                 showlayer:computed(()=>{return (route.params.order_id>0&&store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_CURRENT_SELECTED}`]);}),
                 hideOrderDetail,
             }

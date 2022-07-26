@@ -183,6 +183,8 @@
         font-size: 16px;
         font-weight: normal;
         font-family: 'Gotham Rounded Light';
+        text-decoration: underline;
+        cursor: pointer;
     }
     .subtitle{
         display: flex;

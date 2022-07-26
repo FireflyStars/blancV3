@@ -56,6 +56,7 @@
     import {ref,computed, watch} from 'vue';
     import DateRangePicker from '../miscellaneous/DateRangePicker';
     import CheckBox from '../miscellaneous/CheckBox';
+    import {useRoute} from 'vue-router';
     import {useStore} from 'vuex';
     import {ORDERLIST_FILTER, ORDERLIST_GET_FILTER, ORDERLIST_MODULE,ORDERLIST_RESET_MULITCHECKED} from "../../store/types/types";
     export default {
@@ -80,7 +81,7 @@
             const toggleShow=(()=>showfilter.value=!showfilter.value);
             const data = ref('');
             data.value = props.data;
-
+            const route = useRoute();
 
             function selectclick(sel) {
                 if(current_filter.value != sel) {
@@ -128,7 +129,7 @@
                     delete preselection.value['infoitems.DelivDate']
                 console.log(preselection);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
-                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,_.cloneDeep(preselection.value));
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,{ customer: route.params.customerId , search:route.params.value , filter:preselection.value});
                 current_filter.value='';
                 toggleShow();
             }
@@ -255,6 +256,8 @@
         font-size: 16px;
         font-weight: normal;
         font-family: 'Gotham Rounded Light';
+        text-decoration: underline;
+        cursor: pointer;
     }
     .subtitle{
         display: flex;

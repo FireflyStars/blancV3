@@ -186,7 +186,7 @@ export const orderlist= {
                 commit(ORDERLIST_RESET_ORDERLIST);
             }
 
-            if(typeof payload!="undefined"&&payload.search){
+            if(typeof payload!="undefined"&&payload.search&&payload.search != "undefined"){
 
                 return axios.post('/getorderlistbysearch', {
                     skip: state[state.current_tab].skip,
@@ -276,11 +276,16 @@ export const orderlist= {
             commit(ORDERLIST_SET_LOADERMSG,payload);
         },
         [ORDERLIST_FILTER]:({commit,dispatch},payload)=>{
-            commit(ORDERLIST_SET_FILTER,payload);
+            commit(ORDERLIST_SET_FILTER,payload.filter);
             commit(ORDERLIST_SET_LIMIT,{skip:0,take:10});
             commit(ORDERLIST_SET_LOADERMSG,'Applying Filters...');
-            dispatch(ORDERLIST_LOAD_LIST);
+            if(payload.customer != undefined && payload.customer != 'undefined' && payload.customer != null && payload.customer != '' ){
+                dispatch(ORDERLIST_CUSTOMER_ORDERS , {customer:payload.customer});
+            }else {
+                dispatch(ORDERLIST_LOAD_LIST , {search:payload.search});
+            }
         },
+
         [ORDERLIST_RESET_MULITCHECKED]:({commit})=>{
             commit(ORDERLIST_SET_MULITCHECKED,[]);
         },
@@ -368,7 +373,7 @@ export const orderlist= {
             commit(ORDERLIST_RESET_ORDERLIST);
             commit(ORDERLIST_SET_LIMIT,{skip:0,take:10});
             dispatch(ORDERLIST_LOADERMSG, `Loading ${payload.name.toLowerCase()}...`);
-            if(payload.customer){
+            if(payload.customer != undefined && payload.customer != 'undefined' && payload.customer != null && payload.customer != '' ){
                 dispatch(ORDERLIST_CUSTOMER_ORDERS , {customer:payload.customer});
             }else {
                 dispatch(ORDERLIST_LOAD_LIST , {search:payload.search});

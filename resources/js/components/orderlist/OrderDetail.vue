@@ -487,7 +487,13 @@
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SELECT_CURRENT}`,'');
                     store.commit(`${ORDERDETAIL_MODULE}${ORDERDETAIL_SET_DETAILS}`,{});
                     //router.back();
-                    router.push({name:'LandingPage'});
+                    router.push({
+                        name:'LandingPage',
+                        params: {
+                        customerId:route.params.customerId,
+                        value:route.params.value,
+                       },
+                    });
                 }),
                 ORDER,
                 featureunavailable,
