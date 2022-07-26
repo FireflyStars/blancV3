@@ -346,4 +346,10 @@
 .img-arrow{
     margin :0 5px;
 }
+span.tool-tip.body_small {
+    margin-left: 6px;
+}
+.tag {
+    max-width: 130px;
+}
 </style>
