@@ -5,8 +5,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class TypeItem extends Model{
-    protected $table="typeitem";
+class Complexity extends Model{
+    protected $table="complexities";
 	
 	use HasFactory;
     use SoftDeletes;
