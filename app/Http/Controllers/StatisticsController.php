@@ -8,7 +8,7 @@ use Carbon\Carbon;
 use App\Models\InfoOrder;
 use App\Models\InfoCustomer;
 use App\Models\Infoitem;
-use App\Models\Poste;
+use App\Poste;
 use App\Models\Item;
 
 class StatisticsController extends Controller
@@ -29,7 +29,7 @@ class StatisticsController extends Controller
         if(!$compareCustomFilter){
             if($compareMode == 'year')
                 $last_period    = [ Carbon::parse($startDate)->subYear(1)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->subYear(1)->endOfDay()->toDateTimeString() ];
-            else        
+            else
                 $last_period    = [ Carbon::parse($startDate)->subMonth(1)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->subMonth(1)->endOfDay()->toDateTimeString() ];
         }else{
             $last_period = [ Carbon::parse($compareStartDate)->subMonth(1)->startOfDay()->toDateTimeString(), Carbon::parse($compareEndDate)->subMonth(1)->endOfDay()->toDateTimeString() ];
@@ -75,14 +75,14 @@ class StatisticsController extends Controller
                     $last_period = [Carbon::now()->subYear()->subMonth()->startOfDay()->toDateTimeString(), Carbon::now()->subYear()->endOfDay()->toDateTimeString()];
                 }else{
                     $last_period = [Carbon::now()->subMonth(2)->startOfDay()->toDateTimeString(), Carbon::now()->subMonth(1)->endOfDay()->toDateTimeString()];
-                }                
+                }
             }else if ( $dateRangeType == 'Year to date' ){
                 $period = [Carbon::now()->startOfYear()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
                 if(!$compareCustomFilter && $compareMode == 'year'){
                     $last_period = [Carbon::now()->subYear()->startOfYear()->toDateTimeString(), Carbon::now()->subYear()->endOfDay()->toDateTimeString()];
                 }else{
                     $last_period = [Carbon::now()->subMonth()->startOfMonth()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
-                }                
+                }
             }else if ( $dateRangeType == '4th Quarter' ){
                 $period = [Carbon::parse($start_first_quarter_day)->addMonths(9)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->addMonths(9)->endOfDay()->toDateTimeString()];
                 if(!$compareCustomFilter && $compareMode == 'year')
@@ -113,12 +113,12 @@ class StatisticsController extends Controller
         $total_sale_stores = InfoOrder::whereBetween('created_at', $period)
                                     ->select(DB::raw('CEIL(AVG(Total)) as avg'), DB::raw('CEIL(SUM(Total)) as total'), 'TypeDelivery')
                                     ->groupBy('TypeDelivery')
-                                    ->get();    
+                                    ->get();
         $last_total_sale_stores = InfoOrder::whereBetween('created_at', $last_period)
                                     ->select(DB::raw('CEIL(AVG(Total)) as avg'), DB::raw('CEIL(SUM(Total)) as total'), 'TypeDelivery')
                                     ->groupBy('TypeDelivery')
                                     ->get();
-        
+
         $stats = [];
         $statistique['mb'] = 0;
         $statistique['nh'] = 0;
@@ -128,16 +128,16 @@ class StatisticsController extends Controller
         $statistique['last_nh'] = 0;
         $statistique['last_sk'] = 0;
         $statistique['last_ch'] = 0;
-        
+
         $total_sales_store = 0;
         $last_total_sales_store = 0;
-        
+
         $avg_store_order = 0;
         $last_avg_store_order = 0;
-        
+
         $avg_delivery_order = 0;
         $last_avg_delivery_order = 0;
-        
+
         $toal_delivery_sale = 0;
         $last_toal_delivery_sale = 0;
 
@@ -191,23 +191,23 @@ class StatisticsController extends Controller
             }
         }
         // end total sales store
-        
+
         // start total sales deliveries (B2B, B2C)
 
         // $statistique['avg_store_order'] = ($total_sale_stores->count() - $delivery_count) <= 0 ? 0 : number_format( $total_sales_store / ($total_sale_stores->count() - $delivery_count), 0);
-        $statistique['avg_store_order'] = number_format( 
+        $statistique['avg_store_order'] = number_format(
             InfoOrder::whereBetween('created_at', $period)
                                     ->select(DB::raw('AVG(Total) as avg'))
                                     ->where('TypeDelivery', '!=', 'DELIVERY')->value('avg') , 2);
-        $statistique['last_avg_store_order'] = number_format( 
+        $statistique['last_avg_store_order'] = number_format(
             InfoOrder::whereBetween('created_at', $last_period)
                                     ->select(DB::raw('AVG(Total) as avg'))
                                     ->where('TypeDelivery', '!=', 'DELIVERY')->value('avg') , 2);
-        $statistique['avg_delivery_order'] = number_format( 
+        $statistique['avg_delivery_order'] = number_format(
             InfoOrder::whereBetween('created_at', $period)
                     ->select(DB::raw('AVG(Total) as avg'))
                     ->where('TypeDelivery', 'DELIVERY')->value('avg'), 2);
-        $statistique['last_avg_delivery_order'] = number_format( 
+        $statistique['last_avg_delivery_order'] = number_format(
             InfoOrder::whereBetween('created_at', $last_period)
                     ->select(DB::raw('AVG(Total) as avg'))
                     ->where('TypeDelivery', 'DELIVERY')->value('avg'), 2);
@@ -219,7 +219,7 @@ class StatisticsController extends Controller
                                                 ->orWhere('infoCustomer.CustomerIDMasterAccount', '!=', '')
                                                 ->orWhere('infoCustomer.IsMaster', 1)
                                                 ->orWhere('infoCustomer.IsMasterAccount', 1);
-                                    } )                                    
+                                    } )
                                     ->where('total', '!=', 0)
                                     ->select(DB::raw('AVG(Total) as avg'), DB::raw('CEIL(SUM(Total)) as total'))
                                     ->first();
@@ -230,7 +230,7 @@ class StatisticsController extends Controller
                                                 ->orWhere('infoCustomer.CustomerIDMasterAccount', '!=', '')
                                                 ->orWhere('infoCustomer.IsMaster', 1)
                                                 ->orWhere('infoCustomer.IsMasterAccount', 1);
-                                    } )                                    
+                                    } )
                                     ->where('total', '!=', 0)
                                     ->select(DB::raw('AVG(Total) as avg'), DB::raw('CEIL(SUM(Total)) as total'))
                                     ->first();
@@ -388,11 +388,11 @@ class StatisticsController extends Controller
         // booking data
         $statistique['total_booking'] = DB::table('pickup')
                                           ->whereBetween('date', $period)
-                                          ->where('status', 'not LIKE', '%DEL%') 
+                                          ->where('status', 'not LIKE', '%DEL%')
                                           ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
         $statistique['last_total_booking'] = DB::table('pickup')
                                           ->whereBetween('date', $last_period)
-                                          ->where('status', 'not LIKE', '%DEL%') 
+                                          ->where('status', 'not LIKE', '%DEL%')
                                           ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
 
         $statistique['app_booking'] = DB::table('pickup')
@@ -447,7 +447,7 @@ class StatisticsController extends Controller
             $store = Infoitem::whereBetween('PromisedDate', $period)
                     ->where('StoreName', '!=', 'ATELIER')
                     ->where('DepartmentName', $dep->DepartmentName)
-                    ->select( 
+                    ->select(
                         DB::raw('CEIL(SUM(priceTotal)) as total'), DB::raw('COUNT(*) as count'),
                     )
                     ->first();
@@ -459,10 +459,10 @@ class StatisticsController extends Controller
             $delivery = Infoitem::whereBetween('PromisedDate', $period)
                     ->where('StoreName', 'ATELIER')
                     ->where('DepartmentName', $dep->DepartmentName)
-                    ->select( 
+                    ->select(
                         DB::raw('CEIL(SUM(priceTotal)) as total'), DB::raw('COUNT(*) as count'),
                     )
-                    ->first();            
+                    ->first();
             $statistique['sale_delivery_by_dep'][] = $delivery->total ? $delivery->total : 0;
             $statistique['total_sale_delivery_by_dep'] += $delivery->total ? $delivery->total : 0;
             $statistique['item_delivery_by_dep'][] = $delivery->count ? $delivery->count : 0;
@@ -471,18 +471,18 @@ class StatisticsController extends Controller
         // $store_by_dep = Infoitem::where('PromisedDate', $period)
         //                             ->where('StoreName', '!=', 'ATELIER')
         //                             ->groupBy('DepartmentName')
-        //                             ->select( 
+        //                             ->select(
         //                                 DB::raw('SUM(priceTotal) as total'), 'DepartmentName',
         //                                 DB::raw('COUNT(*) as count'),
         //                             )
-        //                             ->orderByRaw( 
+        //                             ->orderByRaw(
         //                                 "FIELD(DepartmentName, 'Garment Care','Shirts Hung','Shirts Folded','Shirts','Business','Laundry','Bedlinen','Household','Suede/Leather/Wax','Laundry Bag','Other')")
         //                             ->get();
-                                    
+
         // $delivery_by_dep = Infoitem::where('PromisedDate', $period)
         //                             ->where('StoreName', 'ATELIER')
         //                             ->groupBy('DepartmentName')
-        //                             ->select( 
+        //                             ->select(
         //                                 DB::raw('(SUM(priceTotal)) as total'), 'DepartmentName',
         //                                 DB::raw('COUNT(*) as count'),
         //                             )
@@ -1921,7 +1921,7 @@ class StatisticsController extends Controller
             $main_stats->percent_tomorrow_inprocess_stores=50;
         }
         // main stats for later
-        
+
         $main_stats->due_later_deliveries = Db::table('infoitems')->where('PromisedDate', '>',$tomorrow)->where('StoreName','ATELIER')->count();
         $main_stats->due_later_stores = Db::table('infoitems')->where('PromisedDate', '>',$tomorrow)->where('StoreName','!=','ATELIER')->count();
         $main_stats->total_due_later = $main_stats->due_later_deliveries + $main_stats->due_later_stores;
@@ -2034,8 +2034,8 @@ class StatisticsController extends Controller
             'stats_total'=>$stats_total,
             [$today,$tomorrow]
         ]);
-    }   
-    
+    }
+
     public function getPartnerDetails(Request $request){
         $day = $request->post('day');
         $poste_id = $request->post('poste');
@@ -2087,18 +2087,18 @@ class StatisticsController extends Controller
 
 
         $invoices = Db::table('infoitems')
-            ->select( 
-                'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode', 
+            ->select(
+                'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode',
                 'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as prod'), 'infoitems.id AS item_id',
                 'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
                 'infoitems.idPartner', 'TypePost.bg_color as location_color', 'TypePost.process','TypePost.circle_color',
-                DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),                    
+                DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),
                 // DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as deliv')
                 )
             ->where('infoitems.PromisedDate', $operator, $date_stats);
-    
 
-        if($typepost == 'Partner'){   
+
+        if($typepost == 'Partner'){
             $invoices = $invoices->where('infoitems.PartnerINOUT','=',1);
         }else{
             $invoices = $invoices->where('infoitems.PartnerINOUT','!=',1);
@@ -2140,7 +2140,7 @@ class StatisticsController extends Controller
         }
         if($type =='delivery'){
             $invoices = $invoices->where('infoitems.store','=','DELIVERY');
-        }    
+        }
         if($type=='store'){
             $invoices=$invoices->where('infoitems.store','=','STORES');
         }
@@ -2149,14 +2149,14 @@ class StatisticsController extends Controller
                                 ->join('infoInvoice', 'infoitems.SubOrderID', '=', 'infoInvoice.SubOrderID')
                                 // ->join('infoOrder', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID')
                                 // ->join('pickup', 'infoOrder.PickupID', '=', 'pickup.PickupID')
-                                // ->join('deliveryask', 'infoOrder.DeliveryaskID', '=', 'deliveryask.DeliveryaskID')                                
+                                // ->join('deliveryask', 'infoOrder.DeliveryaskID', '=', 'deliveryask.DeliveryaskID')
                                 ->join('infoCustomer', 'infoInvoice.CustomerID', '=', 'infoCustomer.CustomerID')
                                 ->join('postes', 'infoitems.nextpost', '=', 'postes.id')
                                 ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
                                 ->where('infoitems.SubOrderID','!=','')
                                 // ->whereIN('deliveryask.status', ['NEW','API','PMS','DONE', 'PMS-DONE', 'API-DONE','REC','REC-DONE','REC-NOK','PMS-NOK','API-NOK'])
                                 // ->whereIN('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP'])
-                                // ->whereNotIn('infoOrder.Status',['VOID', 'DELETE'])                                
+                                // ->whereNotIn('infoOrder.Status',['VOID', 'DELETE'])
                                 ->orderBy('item_id');
 
         $total_count=  $invoices->count();
@@ -2180,8 +2180,8 @@ class StatisticsController extends Controller
      */
     public function getAllInvoices(Request $request){
         $invoices = Db::table('infoitems')
-                        ->select( 
-                            'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode', 
+                        ->select(
+                            'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode',
                             'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as prod'), 'infoitems.id AS item_id',
                             'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
                             'infoitems.idPartner', 'TypePost.bg_color as location_color',  'TypePost.process', 'TypePost.circle_color',
@@ -2215,8 +2215,8 @@ class StatisticsController extends Controller
             $invoices   = $invoices->whereIn('postes.nom', explode(',', $request->location));
         }
         if($request->prod_date_from != '' && $request->prod_date_to != ''){
-            $invoices   = $invoices->whereBetween('infoitems.PromisedDate', 
-                                    [ 
+            $invoices   = $invoices->whereBetween('infoitems.PromisedDate',
+                                    [
                                         Carbon::parse($request->prod_date_from)->toDateTimeString(),
                                         Carbon::parse($request->prod_date_to)->toDateTimeString(),
                                     ]
@@ -2228,8 +2228,8 @@ class StatisticsController extends Controller
         }
 
         if($request->deliv_date_from != '' && $request->deliv_date_to != ''){
-            $invoices   = $invoices->whereBetween('infoitems.PromisedDate', 
-                                    [ 
+            $invoices   = $invoices->whereBetween('infoitems.PromisedDate',
+                                    [
                                         Carbon::parse($request->deliv_date_from)->toDateTimeString(),
                                         Carbon::parse($request->deliv_date_to)->toDateTimeString(),
                                     ]
@@ -2261,7 +2261,7 @@ class StatisticsController extends Controller
         //         // $pick_up_date = DB::table('pickup')
         //         //                     ->where('CustomerID', $v->CustomerID)
         //         //                     ->whereIn('status', $pick_up_status_to_include)->value('date');
-                
+
         //         // $deliveryask_status_to_include = ['NEW','API','PMS','DONE', 'PMS-DONE', 'API-DONE','REC','REC-DONE','REC-NOK','PMS-NOK','API-NOK'];
         //         // $deliveryask_date = DB::table('deliveryask')
         //         //                     ->where('CustomerID', $v->CustomerID)

@@ -1061,7 +1061,7 @@ class OrderController extends Controller
             }
             */
 
-            $credit_remaining = $cust->credit - ($credit_to_deduct>0?$credit_to_deduct:0);
+            $credit_remaining = $cust->credit - $credit_to_deduct;
 
             $credit_remaining = number_format($credit_remaining,2);
 
@@ -1069,18 +1069,16 @@ class OrderController extends Controller
 
             $stamp = date('Y-m-d H:i:s');
 
-            if($credit_to_deduct > 0){
-                DB::table('payments')->insert([
-                    'type'=>'cust_credit',
-                    'order_id'=>$order_id,
-                    'datepayment'=>$stamp,
-                    'status'=>'succeeded',
-                    'montant'=>$credit_to_deduct,
-                    'CustomerID'=>$order->CustomerID,
-                    'created_at'=>$stamp,
-                    'info'=>'',
-                ]);
-            }
+            DB::table('payments')->insert([
+                'type'=>'cust_credit',
+                'order_id'=>$order_id,
+                'datepayment'=>$stamp,
+                'status'=>'succeeded',
+                'montant'=>$credit_to_deduct,
+                'CustomerID'=>$order->CustomerID,
+                'created_at'=>$stamp,
+                'info'=>'',
+            ]);
         }
 
         $order_res = OrderController::createOrderItems($order_id);

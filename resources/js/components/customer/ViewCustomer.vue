@@ -437,7 +437,8 @@
                                         <tr>
                                             <th>Order N°</th>
                                             <th>Destination</th>
-                                            <th>Items accepted</th>
+                                            <th>Created on</th>
+                                            <th>By</th>
                                             <th>Delivery date</th>
                                             <th>Items</th>
                                             <th>Order Status</th>
@@ -450,6 +451,7 @@
                                             <td valign="middle">{{ item.order_id }}</td>
                                             <td valign="middle">{{ item.destination }}</td>
                                             <td valign="middle">{{ item.items_received }}</td>
+                                            <td></td>
                                             <td valign="middle" class="fw-bold">{{ item.deliv }}</td>
                                             <td valign="middle">{{ item.items }}</td>
                                             <td valign="middle">

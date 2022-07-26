@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class User extends \TCG\Voyager\Models\User
 {
-    use HasFactory, Notifiable;
+    use Notifiable;
 
     /**
      * The attributes that are mass assignable.
