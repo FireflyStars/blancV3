@@ -208,6 +208,11 @@
                                             <div class="col-5 sub-total-desc"> <span v-if="discount > 0">{{discount_perc.toFixed()}}% (applied)</span></div>
                                             <div class="col-3 text-align-right"><span v-if="discount > 0">-</span>&#163;{{discount}}</div>
                                         </div>
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="discount_from_voucher > 0">
+                                            <div class="col-9">Voucher Discount</div>
+                                            <div class="col-3 text-align-right">-&#163;{{discount_from_voucher}}</div>
+                                        </div>
+
                                         <div class="row px-0 mt-3 pb-4 total-text">
                                             <div class="col-9">Total</div>
                                             <div class="col-3 text-align-right">&#163;{{total_inc_vat}}</div>
@@ -520,6 +525,22 @@
                                                                 <span class="sidebar_title text-white">Vouchers & Discount</span>
 
                                                                 <div class="col-12">
+                                                                    <div class="row pt-3" v-if="order_vouchers.length > 0">
+                                                                        <span class="order-discount-text d-block mb-2">Campaign code applied</span>
+                                                                        <div class="col-7" v-for="voucher in order_vouchers">
+                                                                            <button class="each-order-voucher w-100 d-flex align-items-center position-relative" @click="promptRemoveVoucher(voucher.vouchers_id,voucher.code)"><span>{{voucher.code}}</span><img src="/images/icon_check.svg" class="position-absolute"/></button>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div v-else class="row mt-3 align-items-end">
+                                                                        <div class="col-7">
+                                                                            <span class="order-discount-text">Apply campaign code</span>
+                                                                            <input type="text" id="voucher_discount" class="w-100 discount-input text-white" v-model="voucher_discount" placeholder="Coupon code"/>
+                                                                        </div>
+                                                                        <div class="col-3 pl-0">
+                                                                            <button class="discount-input discount-btn px-3" @click="addVoucher">Apply</button>
+                                                                        </div>
+                                                                    </div>
                                                                     <div class="row mt-3 align-items-end">
                                                                         <div class="col-7">
                                                                             <span class="order-discount-text">Apply order discount</span>
@@ -637,6 +658,23 @@
         </template>
     </modal>
 
+    <modal ref="remove_voucher_modal">
+         <template #closebtn>
+            <span class="close" id="rv_modal_close" @click="closeVoucherModal"></span>
+        </template>
+        <template #bheader>
+            <div class="bmodal-header py-5 text-center">Do you want to remove the voucher {{cur_voucher_to_remove}} ?</div>
+        </template>
+        <template #mbuttons>
+            <div class="row mx-0 justify-content-center my-5 py-3">
+                <div class="col-3"><button class="btn btn-outline-success w-100" @click="removeVoucher(cur_id_voucher_to_remove,cur_voucher_to_remove)">Yes</button></div>
+                <div class="col-2"></div>
+                <div class="col-3"><button class="btn btn-outline-danger w-100" @click="closeVoucherModal">No</button></div>
+            </div>
+        </template>
+
+    </modal>
+
 
 </template>
 <script>
@@ -705,6 +743,13 @@ export default {
         const amount_diff = ref(0);
         const addons = ref([]);
         const order_upcharges = ref([]);
+        const order_vouchers = ref([]);
+        const discount_from_voucher = ref(0);
+        const voucher_discount = ref('');
+
+        const remove_voucher_modal = ref();
+        const cur_voucher_to_remove = ref('');
+        const cur_id_voucher_to_remove = ref(0);
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
@@ -759,6 +804,8 @@ export default {
                 amount_diff.value = res.data.amount_diff;
                 addons.value = res.data.addons;
                 order_upcharges.value = res.data.order_upcharges;
+                order_vouchers.value = res.data.order_vouchers;
+                discount_from_voucher.value = res.data.discount_from_voucher;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -1011,6 +1058,64 @@ export default {
             });
         }
 
+        function promptRemoveVoucher(id,code){
+            cur_voucher_to_remove.value = code;
+            cur_id_voucher_to_remove.value = id;
+            remove_voucher_modal.value.showModal();
+        }
+
+        function removeVoucher(id,code){
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
+                true,
+                "Removing voucher....",
+            ]);
+
+            axios.post('/remove-order-voucher',{
+                code:code,
+                voucher_id:id,
+                order_id:order_id.value
+            }).then((res)=>{
+                closeVoucherModal();
+                if(res.data.deleted==1 || res.data.deleted==0){
+                    getCheckoutItems();
+                }
+
+            }).catch((err)=>{
+
+            }).finally(()=>{
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            });
+        }
+
+        function closeVoucherModal(){
+            cur_voucher_to_remove.value = '';
+            cur_id_voucher_to_remove.value = 0;
+            remove_voucher_modal.value.closeModal();
+        }
+
+        function addVoucher(){
+            axios.post('/add-order-voucher',{
+                voucher:voucher_discount.value,
+                order_id:order_id.value,
+            }).then((res)=>{
+                let output = res.data.output;
+
+                if(output.err !=''){
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                        message: output.err,
+                        ttl: 3,
+                        type: 'danger'
+                    });
+                }else{
+                    getCheckoutItems();
+                }
+            }).catch(err=>{
+
+            }).finally(()=>{
+
+            });
+        }
+
         return {
             order_id,
             paths,
@@ -1069,6 +1174,16 @@ export default {
             addons,
             setOrderUpcharge,
             order_upcharges,
+            order_vouchers,
+            discount_from_voucher,
+            voucher_discount,
+            promptRemoveVoucher,
+            removeVoucher,
+            remove_voucher_modal,
+            closeVoucherModal,
+            cur_voucher_to_remove,
+            cur_id_voucher_to_remove,
+            addVoucher,
         }
 
     },
@@ -1351,15 +1466,17 @@ export default {
     margin-top:0.25rem;
 }
 
-#discount_perc{
+#discount_perc,
+#voucher_discount{
     background:none;
     border:thin solid #fff;
     border-radius: 4px;
     text-indent:10px;
 }
 
-#discount_perc:focus{
-    box-shadow: none !important;
+#discount_perc:focus,
+#voucher_discount:focus{
+    outline: none;
 }
 
 #discount_perc:-moz-placeholder{
@@ -1521,6 +1638,20 @@ export default {
 .each-addon-btn.addon-selected{
     color:#47454B;
     background: #fff;
+}
+
+.each-order-voucher{
+    font:normal 16px "Gotham Rounded";
+    text-align: left;
+    padding-left:1rem;
+    height:40px;
+    background-color:#fff;
+    border-radius:5px;
+    border:none;
+}
+
+.each-order-voucher img{
+    right: 0.5rem;
 }
 
 </style>

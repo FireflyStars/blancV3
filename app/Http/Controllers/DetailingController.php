@@ -77,6 +77,8 @@ class DetailingController extends Controller
                     $count_has_invoices += 1;
                 }
             }
+
+            DetailingController::getVoucherAmount($order_id);
         }
 
         echo json_encode(
@@ -944,6 +946,8 @@ class DetailingController extends Controller
         $order_addons = 0;
         $order_without_upcharges = 0;
         $amount_without_credit = 0;
+        $discount_from_voucher = 0;
+        $order_vouchers = [];
 
         if($order){
 
@@ -1118,6 +1122,15 @@ class DetailingController extends Controller
 
                 $booking_details['recurring'] = $recurring;
             }
+
+            $order_vouchers = DB::table('vouchers_histories')->where('order_id',$order_id)->get();
+
+            if(count($order_vouchers) > 0){
+                foreach($order_vouchers as $k=>$v){
+                    $discount_from_voucher+= $v->amount;
+                }
+            }
+
         }
 
         $items = DB::table('detailingitem')
@@ -1428,6 +1441,10 @@ class DetailingController extends Controller
             $total_with_discount = $total_with_discount - $cust_discount;
         }
 
+        if($discount_from_voucher > 0){
+            $total_with_discount = $total_with_discount - $discount_from_voucher;
+        }
+
         $order_discount = ($order->DiscountPerc/100) * $total_price;
         $discount_perc = $order->DiscountPerc;
 
@@ -1573,6 +1590,8 @@ class DetailingController extends Controller
             'amount_diff'=>DetailingController::getAmountToPay($order_id),
             'addons'=>$grouped_addons,
             'order_upcharges'=>$order_upcharges,
+            'order_vouchers'=>$order_vouchers,
+            'discount_from_voucher'=>$discount_from_voucher,
         ]);
     }
 
@@ -1786,6 +1805,152 @@ class DetailingController extends Controller
         return response()->json([
             'post'=>$request->all(),
             'updated'=>$updated,
+        ]);
+    }
+
+    public static function getVoucherAmount($order_id,$input_code=false){
+        $user = Auth::user();
+        $code = "";
+        $voucher = false;
+        $voucher_valid = false;
+        $voucher_already_used = [];
+        $today = date('Y-m-d');
+        $err = "";
+        $montant = 0;
+        $inserted = 0;
+
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+
+        if($input_code){
+            $code = $input_code;
+        }else{
+            if($order->PickupID !=''){
+                $pickup = DB::table('pickup')->where('PickupID',$order->PickupID)->first();
+
+                if($pickup){
+                    $gi = $pickup->GarmentInstruction;
+
+                    if(@json_decode($gi) && is_object(@json_decode($gi))){
+                        $garment_instruction = @json_decode($gi);
+
+                        if(isset($garment_instruction->Voucher)){
+                            $code = $garment_instruction->Voucher;
+                        }
+                    }
+                }
+            }
+        }
+
+        if($code !=''){
+            $voucher = DB::table('vouchers')->where('Actif',1)->where('CodeCustomer',$code)->first();
+        }
+
+        if($voucher){
+            if($voucher->StartDate <= $today && $voucher->EndDate >= $today){
+
+                if($voucher->VoucherValidOnce==1){
+                    $voucher_already_used = DB::table('vouchers_histories')
+                        ->where('CustomerID',$order->CustomerID)
+                        ->where('code',$voucher->CodeCustomer)
+                        ->get();
+
+                    if(count($voucher_already_used) > 0){
+                        //Do nothing, Voucher already used
+                        $err = "Voucher already used";
+                    }else{
+                        //Can use voucher once
+                        $voucher_valid = true;
+                    }
+                }else{
+                    //Can use voucher many times
+                    $voucher_valid = true;
+                }
+            }else{
+                //Date range error
+                $err = "Voucher date not valid";
+            }
+
+            if($voucher_valid){
+                if(!is_null($voucher->typeitem) && is_array(@json_decode($voucher->typeitem))){
+                    $items = DB::table('detailingitem')
+                        ->where('order_id',$order_id)
+                        ->whereIn('typeitem',$voucher->typeitem)
+                        ->get();
+
+                    if(count($items) > 0){
+                        foreach($items as $k=>$v){
+                            $price = $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+                            $montant += ($voucher->typeitem/100)*$price;
+                        }
+                    }
+                }
+                else{
+                    $items = DB::table('detailingitem')
+                        ->where('order_id',$order_id)
+                        ->get();
+
+                    if(count($items) > 0){
+                        foreach($items as $k=>$v){
+                            $price = $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+                            $montant += ($voucher->pourcentrage/100)*$price;
+                        }
+                    }
+                }
+
+                if($user){
+                    if($montant > 0){
+                        $inserted = DB::table('vouchers_histories')->insertGetId([
+                            'vouchers_id'=>$voucher->id,
+                            'CustomerID'=>$order->CustomerID,
+                            'order_id'=>$order_id,
+                            'code'=>$code,
+                            'amount'=>number_format($montant,2),
+                            'user_id'=>$user->id,
+                            'created_at'=>date('Y-m-d H:i:s')
+                        ]);
+                    }else{
+                        $err = "Voucher not applicable for this order";
+                    }
+                }else{
+                    $err = "No user logged";
+                }
+
+            }
+
+        }else{
+            $err = "Invalid voucher code";
+        }
+
+        $arr = [
+            'err'=>$err,
+            'montant'=>number_format($montant,2),
+            'voucher_valid'=>$voucher_valid,
+            'code'=>$code,
+            'inserted'=>$inserted,
+        ];
+
+        return $arr;
+
+    }
+
+    public function removeCheckoutVoucher(Request $request){
+        $code = $request->code;
+        $order_id = $request->order_id;
+        $voucher_id = $request->voucher_id;
+
+        $deleted = DB::table('vouchers_histories')->where('order_id',$order_id)->where('vouchers_id',$voucher_id)->delete();
+
+        return response()->json([
+            'deleted'=>$deleted,
+        ]);
+    }
+
+    public function addCheckoutVoucher(Request $request){
+        $response = DetailingController::getVoucherAmount($request->order_id,$request->voucher);
+
+        return response()->json([
+            //'post'=>$request->all(),
+            'output'=>$response,
         ]);
     }
 
