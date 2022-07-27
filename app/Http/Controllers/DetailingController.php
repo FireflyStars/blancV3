@@ -210,6 +210,38 @@ class DetailingController extends Controller
             }
         }
 
+        $customer_instructions = [];
+        $detailingitem['voucher'] = "";
+
+        if(!empty($detailingitem)){
+            $order = DB::table('infoOrder')->where('id',$detailingitem['order_id'])->first();
+
+            if($order && $order->PickupID !=''){
+                $item = DetailingController::getInstructionsFromPickup($order->PickupID);
+
+                if(isset($item->instructions)){
+                    $customer_instructions = $item->instructions;
+                }
+
+                if(isset($item->voucher)){
+                    $detailingitem['voucher'] = $item->voucher;
+                }
+            }
+        }
+
+        $detailingitem['customer_instructions'] = $customer_instructions;
+
+        $categories = [
+            'Garment'=>'Garment Care',
+            'Tailor'=>'Tailoring',
+            'Home'=>'Home & Bedding',
+            'Wash'=>'Wash & Fold',
+            'Leather'=>'Leather, Suede & fur',
+            'DonateBags'=>'Donations',
+        ];
+
+        $detailingitem['instruction_categories'] = $categories;
+
         echo json_encode(
             [
                 'user' => $user,
@@ -1952,6 +1984,140 @@ class DetailingController extends Controller
             //'post'=>$request->all(),
             'output'=>$response,
         ]);
+    }
+
+    public static function getInstructionsFromPickup($pickupid){
+        $categories = [
+            'Garment'=>'Garment Care',
+            'Tailor'=>'Tailoring',
+            'Home'=>'Home & Bedding',
+            'Wash'=>'Wash & Fold',
+            'Leather'=>'Leather, Suede & fur',
+            'DonateBags'=>'Donations',
+        ];
+
+
+        $formatted_instructions = [];
+        $arranged_arr = [];
+        $flat_arr = [];
+
+        $item = false;
+
+        $item = DB::table('pickup')
+            ->select('GarmentInstruction as bag_instruction')
+            ->where('PickupID',$pickupid)
+            ->first();
+
+
+        if($item) {
+
+            $bag_instruction = mb_ereg_replace("\r?\n|\r", "", $item->bag_instruction);
+
+            if(is_object(@json_decode($bag_instruction))){
+
+            $instructions = (array)json_decode($bag_instruction);
+
+            $donate_bags = '';
+            $voucher = '';
+            foreach ($instructions as $k => $v) {
+                if ($k == 'DonateBags') {
+                    $donate_bags = $v;
+                }
+                if ($k == 'Voucher') {
+                    $voucher = $v;
+                }
+            }
+
+
+            foreach ($instructions as $k => $v) {
+                $key = trim($k);
+                $formatted_instructions[$key] = $v;
+
+                if($k!='Voucher') {
+                    $key = trim($k);
+                    $formatted_instructions[$key] = $v;
+
+                    if($k=='DonateBags'){
+                        $formatted_instructions[$key] = [];
+                        $obj = new stdClass();
+                        $obj->Item = $donate_bags;
+                        $obj->Brand = '';
+                        $obj->Instructions = [];
+                        $obj->Category = $key;
+                        $formatted_instructions[$key][0] = $obj;
+                    }else {
+                        foreach ($v as $i => $x) {
+                            $formatted_instructions[$key][$i]->Category = $key;
+
+                            if (!isset($formatted_instructions[$key][$i]->Item)) {
+                                $formatted_instructions[$key][$i]->Item = '';
+                            }
+
+                            if (!isset($formatted_instructions[$key][$i]->Instructions)) {
+                                $formatted_instructions[$key][$i]->Instructions = [];
+                            }
+
+                            if (!isset($formatted_instructions[$key][$i]->Brand)) {
+                                $formatted_instructions[$key][$i]->Brand = '';
+                            }
+
+                            if (!isset($formatted_instructions[$key][$i]->Comment)) {
+                                $formatted_instructions[$key][$i]->Comment = '';
+                            }
+
+
+                        }
+                    }
+                }
+            }
+
+            foreach($categories as $id=>$val){
+                if(isset($formatted_instructions[$id])){
+                    $arranged_arr[$id] = $formatted_instructions[$id];
+                }else{
+                    $obj = new stdClass();
+                    $obj->Item = "";
+                    $obj->Brand = "";
+                    $obj->Instructions = [];
+                    $obj->Comment = "";
+                    $obj->Category = $id;
+
+                    $arranged_arr[$id][] = $obj;
+                }
+            }
+
+            $already_logged_cat = [];
+
+            foreach($arranged_arr as $k=>$v){
+                foreach($v as $i=>$x){
+                    $x->Actions = "";
+                    if(is_array($x->Instructions)){
+                        if(!empty($x->Instructions)){
+                            $x->Actions = implode(', ',$x->Instructions);
+                        }
+                    }else{
+                        $x->Actions = $x->Instructions;
+                    }
+
+                    $flat_arr[] = $x;
+                }
+            }
+
+            foreach($flat_arr as $k=>$v){
+                if(!in_array($v->Category,$already_logged_cat)){
+                    array_push($already_logged_cat,$v->Category);
+                }else{
+                    $flat_arr[$k]->Category = "";
+                }
+            }
+
+            $item->instructions = $flat_arr;
+            $item->voucher = $voucher;
+            }
+
+        }
+
+        return $item;
     }
 
 }

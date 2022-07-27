@@ -541,6 +541,8 @@
                                                                             <button class="discount-input discount-btn px-3" @click="addVoucher">Apply</button>
                                                                         </div>
                                                                     </div>
+
+
                                                                     <div class="row mt-3 align-items-end">
                                                                         <div class="col-7">
                                                                             <span class="order-discount-text">Apply order discount</span>

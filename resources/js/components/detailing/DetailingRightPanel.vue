@@ -24,7 +24,35 @@
                             :class="{ show: instAcc === true }"
                         >
                             <div class="accordion-body">
+                                <!--
                                 <div class="accordion-body-title">Customer instructions</div>
+                                -->
+
+                                <div class="row justify-content-center mb-2 mx-0" v-if="showCustomerInstructions">
+                                    <div class="col-12 mb-3 px-0">Voucher: <span id="voucher_code" class="text-white">{{detailingitem.voucher}}</span></div>
+
+                                    <div class="col-12 mb-3" id="garment_instructions_table">
+                                        <div class="row py-2 text-white" id="item-table-heading">
+                                            <div class="col-2 px-0">Category</div>
+                                            <div class="col-2">Item</div>
+                                            <div class="col-2">Brand</div>
+                                            <div class="col-3">Action</div>
+                                            <div class="col-3">Comment</div>
+                                        </div>
+
+                                        <div class="row each-category-row" v-for="(a,i) in detailingitem.customer_instructions">
+                                            <div class="col-2 each-category-name">
+                                                <span v-if="a.Category !=''">{{detailingitem.instruction_categories[a.Category]}}</span>
+                                            </div>
+                                            <div class="col-2"><span v-if="a.Item !=''">{{a.Item}}</span><span v-else>-</span></div>
+                                            <div class="col-2"><span v-if="a.Brand !=''">{{a.Brand}}</span><span v-else>-</span></div>
+                                            <div class="col-3"><span v-if="a.Actions !=''">{{a.Actions}}</span><span v-else>-</span></div>
+                                            <div class="col-3"><span v-if="a.Comment !=''">{{a.Comment}}</span><span v-else>-</span></div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -271,6 +299,7 @@ export default {
         const all_tailoring_services = ref({});
         const sel_tailoring_services = ref({});
         const tailoring_price = ref(0);
+        const showCustomerInstructions = ref(false);
 
         //
 
@@ -507,9 +536,12 @@ export default {
                 }else{
                     final_price.value = props.detailingitem.pricecleaning.toFixed(2);
                 }
+            }
 
+            let instructions = props.detailingitem.customer_instructions;
 
-
+            if(instructions.length > 0){
+                showCustomerInstructions.value = true;
             }
         });
 
@@ -535,6 +567,7 @@ export default {
             refreshTailoringServices,
             sel_tailoring_services,
             tailoring_price,
+            showCustomerInstructions,
         };
     },
 }
@@ -745,4 +778,33 @@ export default {
     font-family: 'Gilroy';
     font-weight: bold;
 }
+
+#item-table-heading{
+    background:#333;
+}
+
+.each-category-row > div,
+#item-table-heading > div{
+    font-size:12px;
+    padding-left:0.25rem;
+}
+
+.each-category-row > div{
+    border-bottom:thin solid #dadada;
+    border-right:thin solid #dadada;
+}
+
+.each-category-row > div:first-child{
+    border-left:thin solid #dadada;
+}
+
+#item-table-heading > div{
+    text-indent: 0.25rem;
+}
+
+#voucher_code{
+    background:#333;
+    padding:0.25rem;
+}
+
 </style>

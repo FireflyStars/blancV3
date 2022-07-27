@@ -511,18 +511,6 @@ Route::get('test-stripe-terminal',function(Request $request){
 
 });
 
-Route::get('test-voucher',function(){
-    $order_id = 93423;
-
-    $voucher_added = DetailingController::getVoucherAmount($order_id,'WORN20');
-
-    echo "<pre>";
-    print_r($voucher_added);
-
-
-
-});
-
 
 /* END TEST ROUTES */
 
