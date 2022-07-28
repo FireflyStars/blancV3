@@ -53,8 +53,10 @@
               var reg =/[ ,-]/g;
          
               listItems.value = props.item_selected.map(String);
-              listItems.value = listItems.value[0].replace(reg , ', ').replace(regex, ' and ');
-
+              if(listItems.value.length > 0){
+                 listItems.value = listItems.value[0].replace(reg , ', ').replace(regex, ' and ');
+              }
+              
             const close=()=>{
                 context.emit('close');
                 show.value=false;

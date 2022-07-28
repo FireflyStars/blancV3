@@ -226,6 +226,7 @@ export default({
     padding: 20px 32px 40px 32px !important;
     margin: 0;
       top:-10px;
+      z-index: 100;
   }
   .input_search{
       padding:0 !important;

@@ -98,7 +98,7 @@
     <div class="order-item-footer mt-2" v-if="show">
         <div class="d-flex justify-content-between">
             <div class="col-6 d-flex">
-                <button class="border-btn">View Order</button>
+                <button class="border-btn" @click="redirectToCheckOut(Order.order_id)">View Order</button>
                 <button class="border-btn ms-2" @click="openModal">Print Ticket(s)</button>
             </div>
             <div class="col-6 text-end">
@@ -113,12 +113,14 @@
 <script>
 import { ref } from 'vue';
 import QzPrint from "../QzPrint";
+import { useRouter} from "vue-router";
 export default {
     name: 'OrderItem',
     components:{
         QzPrint
     },
     setup(props){
+        const router = useRouter();
         const show = ref(false);
         const Order = ref({});
         const selectedSubOrders = ref([]);
@@ -142,11 +144,15 @@ export default {
             else
                 selectedSubOrders.value = selectedSubOrders.value.filter(item=> { return item != subOrderId } );
         }
+        function redirectToCheckOut(order_id){
+         router.push('/checkout/'+order_id);
+       }
         return {
             show,
             Order,
             getSubOrder,
-            subOrderCheck
+            subOrderCheck,
+            redirectToCheckOut
         }
     },
     methods:{

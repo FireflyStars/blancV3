@@ -63,7 +63,7 @@
         </div>
         <div v-if="(typeof ORDER['detail']!='undefined')"  class="row section3">
             <div class="col-9">
-                <span class="body_medium">Promised date: {{ ORDER.detail.PromisedDate.toUpperCase() }}  <button type="button" class="btn-link-green body_regular"  @click='showDeliverySlots'>Edit</button></span>
+                <span class="body_medium">Delivery Date: {{ ORDER.detail.PromisedDate.toUpperCase() }}  <button type="button" class="btn-link-green body_regular"  @click='showDeliverySlots'>Edit</button></span>
                 <!--featureunavailable("Edit promised date")-->
             </div>
             <div class="col-3 text-center body_bold">
