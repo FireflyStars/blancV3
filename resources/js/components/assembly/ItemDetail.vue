@@ -1,5 +1,6 @@
 <template>
-    <div class="odv container item-detail-panel" v-if="showItemDetail">
+    <div class="odv container item-detail-panel"  :style="{'right': (itemIdFromRoute > 0 ?
+          0:684)+'px'}" v-if="showItemDetail">
         <div class="item-detail-progressbar" :class="loaderclass"></div>
         <header class="item-detail-header d-flex justify-content-between" v-if="ITEM.breif_info.id !=''">
             <h3 class="m-0 item-detail-header-title">Item {{ ITEM.breif_info.item_key }}</h3>
@@ -207,7 +208,10 @@ import {
     ORDERLIST_MODULE,
     ORDERLIST_LOADERMSG,
     ORDERLIST_MARK_AS_LATE,
-    ORDERDETAIL_UPDATE
+    ORDERDETAIL_UPDATE,
+    ORDERDETAIL_MODULE,
+    ORDERDETAIL_SET_CURRENT_SELECTED,
+    ORDERDETAIL_GET_CURRENT_SELECTED
     } from '../../store/types/types';
 import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -216,10 +220,11 @@ import QzPrint from "../QzPrint";
 
 export default {
     name: "ItemDetail",
+    props:['item_id'],
     components:{
         QzPrint
     },
-    setup(){
+    setup(props, context){
         const route =useRoute();
         const qz_printer = ref(null);
         const router=useRouter();
@@ -229,25 +234,40 @@ export default {
         const issues_panel = ref(false);
         const services_panel = ref(false);
         const item_history_panel = ref(false);
+        const itemId = ref('');
+        const itemIdFromRoute = route.params.item_id;
+        
+        if(itemIdFromRoute> 0){ 
+           itemId.value = itemIdFromRoute;
+        }else {
+            itemId.value = props.item_id;
+        }
         onMounted(()=>{
         })
         const showItemDetail = computed(()=>{
+            
             if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
-                return (store.getters[`${ASSEMBLY_HOME_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`])&&route.params.item_id>0;
-            else
-                return (store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`])&&route.params.item_id>0;
+                return (store.getters[`${ASSEMBLY_HOME_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`])&&itemId.value>0;
+            else if (store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'OrderDetails')
+                return (store.getters[`${ORDERDETAIL_MODULE}${ORDERDETAIL_GET_CURRENT_SELECTED}`])&&itemId.value>0;
+            else 
+                return (store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`])&&itemId.value>0;
         })
         const CURRENT_SELECTED = computed(()=>{
             if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
                 return store.getters[`${ASSEMBLY_HOME_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`];
+            else if (store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'OrderDetails')
+                return itemId.value;
             else 
                 return store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`];
         });       
-        if(CURRENT_SELECTED.value=='' && route.params.item_id >0){
+        if(CURRENT_SELECTED.value=='' && itemId.value >0){
             if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
-                store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`,route.params.item_id)
+                store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`, itemId.value)
+            else if (store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'OrderDetails')
+                store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_SET_CURRENT_SELECTED}`, itemId.value)
             else 
-                store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`,route.params.item_id)
+                store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`, itemId.value)
         }         
         if(showItemDetail) {
             // store.commit(`${ORDERDETAIL_MODULE}${ORDERDETAIL_SET_LOADER}`,'');
@@ -284,11 +304,13 @@ export default {
             issues_panel,
             services_panel,
             item_history_panel,
+            itemIdFromRoute,
             markaslate,
             close: ()=>{
-                if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
+                if(itemIdFromRoute > 0){
+                  if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
                     store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`,'');
-                else 
+                  else 
                     store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`, '');
                     store.commit(`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_SET_DETAIL}`, { 
                         breif_info: {
@@ -296,7 +318,11 @@ export default {
                         },
                         location_history: []
                     });
-                    router.back();                
+                    router.back();   
+                } else if(props.item_id > 0){
+                    context.emit('close');
+                }
+                             
             },
             // openModal
         }
@@ -316,7 +342,6 @@ export default {
         position: fixed;
         top: var(--mainlogoheight);
         overflow-y: auto;
-        right: 0;
         z-index: 10001;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
         padding: 0;

@@ -30,7 +30,7 @@
                                 <tag v-else-if="col.type=='tag'" :name="ITEM[index]" :style="{backgroundColor:'transparent',border:'1px solid #000000',color:'#000000'}"></tag>
                                 <color-tag :style="col.css" v-else-if="col.type=='color'" :colors="ITEM[index].toLowerCase()"></color-tag>
                                 <span v-else :style="col.css" class="tool-tip"  :class="{body_small_medium:col.name=='',body_small:col.name!=''}" :data-tooltip="preprocess(col,ITEM[index])">{{preprocess(col,ITEM[index])}}</span>
-                            </div>
+                            </div>                         
                         </template>
                     </div>
                 </transition-group>
@@ -45,6 +45,7 @@
         </transition>
          <FulfillConfirmation  :invoice_id= "invoiceId" :show_conf="show_model_Fulfil" @close="show_model_Fulfil=false"></FulfillConfirmation>
     </div>
+    <ItemDetail @close="OpenitemDetails = false" class="modal-item" v-if = "OpenitemDetails" :item_id = ItemId ></ItemDetail>
 </template>
 
 <script>
@@ -66,19 +67,24 @@
         ORDERDETAIL_MODULE,
         ORDERDETAIL_GET_DETAILS,
         ORDERDETAIL_MULTI_ITEMS_CHECKED,
-        ORDERDETAIL_MULTI_ITEMS_UNCHECKED, ORDERDETAIL_GET_ALL_ITEMS_MULITCHECKED
+        ORDERDETAIL_MULTI_ITEMS_UNCHECKED, ORDERDETAIL_GET_ALL_ITEMS_MULITCHECKED,
+        DISPLAY_LOADER,
+        HIDE_LOADER,
+        ASSEMBLY_HOME_MODULE,
+        SET_SELECTED_NAV
     } from '../../store/types/types';
     import Tag from  '../miscellaneous/Tag'
     import CheckBox from '../miscellaneous/CheckBox'
     import ColorTag from "../miscellaneous/ColorTag";
     import SubOrderOptions from "../miscellaneous/SubOrderOptions";
     import FulfillConfirmation from "../miscellaneous/FulfillConfirmation";
+    import ItemDetail from "../assembly/ItemDetail";
     import QzPrint from "../QzPrint";
 
     export default {
         name: "OrderDetailSubOrderItemsTable",
         props:['tabledef',"tab","id" , "status"],
-        components:{ColorTag, Tag,CheckBox, SubOrderOptions, QzPrint , FulfillConfirmation},
+        components:{ColorTag, Tag,CheckBox, SubOrderOptions, QzPrint , FulfillConfirmation , ItemDetail},
         setup(props,context){
             const router = useRouter();
             const store=useStore();
@@ -89,6 +95,8 @@
             const show_model_Fulfil = ref(false);
             const qz_printer = ref(null);
             const invoiceId = ref('');
+            const ItemId = ref('');
+            const OpenitemDetails = ref(false);
             const ITEM_LIST=computed(()=>{
                 return store.getters[`${ORDERDETAIL_MODULE}${ORDERDETAIL_GET_DETAILS}`].items;
             });
@@ -108,10 +116,16 @@
             }
 
             function selectrow(id,colname){
+                OpenitemDetails.value = false
+                store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_SELECTED_NAV}`, "OrderDetails")
                 if(colname=='line_select') return;
-                close()
-
+                  setTimeout(function(){  
+                   ItemId.value = id
+                   OpenitemDetails.value = true
+               }  
+              , 5)   
             }
+
             function checkboxclicked(check,id,name) {
                 if(check===true){
                     store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_MULTI_ITEMS_CHECKED}`,{infoitems_id:id,suborder:name});
@@ -146,6 +160,7 @@
             const close=()=>{
                 context.emit('close');
                 open_options.value=false;
+                OpenitemDetails.value = false;
             }
             const featureunavailable=((feature)=>{
                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:feature+' feature not yet implemented.',ttl:5,type:'success'});
@@ -213,7 +228,9 @@
                 show,
                 show_model_Fulfil,
                 invoiceId,
-                close
+                close,
+                OpenitemDetails,
+                ItemId
 
 
 

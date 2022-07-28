@@ -13,6 +13,8 @@ import {
     ORDERDETAIL_SPLIT,
     ORDERDETAIL_NEW_DELIVERY_DATE,
     ORDERDETAIL_UPDATE, ORDERDETAIL_SET_ITEMS,
+    ORDERDETAIL_SET_CURRENT_SELECTED,
+    ORDERDETAIL_GET_CURRENT_SELECTED
 
 } from "../types/types";
 import axios from "axios";
@@ -28,7 +30,8 @@ export const orderdetail= {
         },
         selected_items:{
 
-        }
+        },
+        current_selected: 'OrderDetails',
     },
     mutations: {
         [ORDERDETAIL_SET_LOADER]: (state, payload) => state.loader = payload,
@@ -58,7 +61,16 @@ export const orderdetail= {
         },
         [ORDERDETAIL_SET_ITEMS]:(state,payload)=>{
             state.orderdetail.items=payload;
-        }
+        },
+        [ORDERDETAIL_SET_CURRENT_SELECTED]:(state, payload) =>{
+            state.current_selected  =   payload;
+            let bodytag=document.getElementsByTagName( 'body' )[0]
+            if(payload==''){
+                bodytag.className='';
+            }else{
+                bodytag.classList.add('hide-overflowY');
+            }
+        },
     }
     ,
     actions:{
@@ -151,12 +163,16 @@ export const orderdetail= {
                 }).finally(()=>{
 
                 });
-        }
+        },
+        [ORDERDETAIL_SET_CURRENT_SELECTED]:({commit}, payload)=>{
+            commit(ORDERDETAIL_SET_CURRENT_SELECTED,payload);
+        },
 
     },
     getters:{
         [ORDERDETAIL_GET_LOADER]:state=>state.loader,
         [ORDERDETAIL_GET_DETAILS]:state=>state.orderdetail,
         [ORDERDETAIL_GET_ALL_ITEMS_MULITCHECKED]:state=>state.selected_items,
+        [ORDERDETAIL_GET_CURRENT_SELECTED]:state=> state.current_selected,
     }
 }
