@@ -32,6 +32,7 @@ use App\Http\Controllers\CustomerPreferenceController;
 use App\Http\Controllers\Voyager\VoyagerPostcodesController;
 use App\Http\Controllers\InvoiceEmailVerificationController;
 use App\Http\Controllers\SupervisionController;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -510,66 +511,6 @@ Route::get('test-stripe-terminal',function(Request $request){
 
 });
 
-Route::get('test-cam-orders',function(){
-    $customer = DB::table('infoCustomer')->where('id',3428)->first();
-
-
-
-
-    $current_orders = DB::table('infoOrder')
-    ->select(
-        'infoOrder.id as order_id',
-        DB::raw('if(infoOrder.Paid=0,"unpaid","paid") as paid'), 'infoOrder.Total as total',
-        DB::raw('DATE_FORMAT(infoOrder.created_at, "%d/%m/%Y") as items_received'),
-        'infoOrder.underquote', 'infoOrder.TypeDelivery as destination', 'infoOrder.Status as status',
-        DB::raw('IF(
-            infoitems.PromisedDate > CURRENT_DATE(),
-            IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")),
-            DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y")) as deliv'),
-            DB::raw('count(distinct(infoitems.id)) as items'),
-            'TypePost.bg_color as location_color', 'postes.nom as location',
-            'TypePost.process', 'TypePost.circle_color','infoOrder.deliverymethod'
-    )
-    ->leftJoin('pickup', 'pickup.PickupID', '=', 'infoOrder.PickupID')
-    ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
-    ->join('postes', 'infoOrder.Status', '=', 'postes.nominterface')
-    ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
-    ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
-    ->join('infoitems',function($join){
-        $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
-            ->where('infoitems.InvoiceID','!=','')
-            ->whereNotIn('infoitems.Status',['DELETE','VOID']);
-    })
-    ->where('infoOrder.OrderID','!=','')
-    ->where('infoOrder.CustomerID', $customer->CustomerID)
-    ->whereNotIn('infoOrder.Status', ['FULFILLED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
-    ->groupBy('infoOrder.id')
-    ->get();
-
-    foreach($current_orders as $k=>$v){
-        if($v->deliverymethod !=''){
-            $current_orders[$k]->created_by = [];
-
-
-            if($v->deliverymethod!=''){
-                $booking_user = DB::table('booking_histories')
-                    ->select('users.*')
-                    ->join('users','booking_histories.user_id','users.id')
-                    ->orderBy('booking_histories.id')->first();
-
-                if($booking_user){
-                    $current_orders[$k]->created_by = $booking_user->name;
-                }
-            }
-
-        }
-    }
-
-    echo "<pre>";
-    print_r($current_orders);
-
-});
-
 
 /* END TEST ROUTES */
 
@@ -647,6 +588,8 @@ Route::post('/get-stripe-terminal',[DetailingController::class,'getStripeTermina
 Route::post('/get-terminal-token',[DetailingController::class,'getTerminalToken'])->name('get-terminal-token')->middleware('auth');
 Route::post('/pay-from-credit',[OrderController::class,'payFromCredit'])->name('pay-from-credit')->middleware('auth');
 Route::post('/set-checkout-addon',[DetailingController::class,'setCheckoutAddon'])->name('set-checkout-addon')->middleware('auth');
+Route::post('/remove-order-voucher',[DetailingController::class,'removeCheckoutVoucher'])->name('remove-order-voucher')->middleware('auth');
+Route::post('/add-order-voucher',[DetailingController::class,'addCheckoutVoucher'])->name('add-order-voucher')->middleware('auth');
 
 /**
  * Routes for stripe terminal - DO NOT REMOVE

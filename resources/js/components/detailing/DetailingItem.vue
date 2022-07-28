@@ -225,13 +225,15 @@ export default {
                     cust_cleaning_services.value = response.data.cust_cleaning_services;
                     tailoring_services.value = response.data.tailoring_services;
 
-                    right_panel_cmp.value.setBaseCleaningPrice(response.data.detailingitem.pricecleaning);
-                    right_panel_cmp.value.initCleaningServices(response.data.cust_cleaning_services,response.data.detailingitem.cleaning_price_type);
-                    right_panel_cmp.value.initTailoringServices(response.data.tailoring_services);
+                    //if(response.data.detailingitem.etape == 11){
+                        right_panel_cmp.value.setBaseCleaningPrice(response.data.detailingitem.pricecleaning);
+                        right_panel_cmp.value.initCleaningServices(response.data.cust_cleaning_services,response.data.detailingitem.cleaning_price_type);
+                        right_panel_cmp.value.initTailoringServices(response.data.tailoring_services);
 
-                    if(response.data.detailingitem.tailoring_services != null && response.data.detailingitem.tailoring_services != ''){
-                        right_panel_cmp.value.refreshTailoringServices(JSON.parse(response.data.detailingitem.tailoring_services),response.data.detailingitem.tailoring_price_type,response.data.detailingitem.tailoring_price);
-                    }
+                        if(response.data.detailingitem.tailoring_services != null && response.data.detailingitem.tailoring_services != ''){
+                            right_panel_cmp.value.refreshTailoringServices(JSON.parse(response.data.detailingitem.tailoring_services),response.data.detailingitem.tailoring_price_type,response.data.detailingitem.tailoring_price);
+                        }
+                    //}
                 } else {
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
                         message: response.data.message ? response.data.message : 'An error has occured',
