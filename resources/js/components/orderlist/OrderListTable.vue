@@ -35,7 +35,15 @@
                 <p v-if="!loader_running">No orders available.</p>
         </section>
         <transition name="trans-batch-actions">
-            <div class=" batch-actions" v-if="MULTI_CHECKED.length>0&&CURRENT_SELECTED==''"><button class="btn btn-outline-dark disabled body_medium"  @click="featureunavailable('Batch invoice')">Batch Invoice</button><button class="btn btn-outline-dark disabled body_medium"  @click="featureunavailable('Batch payment')">Batch Payment</button><button class="btn btn-outline-dark body_medium"  @click="markaslate">Mark as late</button><button class="btn btn-outline-dark body_medium" @click="cancelorders">Cancel order(s)</button></div>
+            <div class=" batch-actions" v-if="MULTI_CHECKED.length>0&&CURRENT_SELECTED==''">
+            <!-- <button class="btn btn-outline-dark disabled body_medium"  @click="featureunavailable('Batch invoice')">Batch Invoice</button> -->
+            <button class="btn btn-outline-dark disabled body_medium"  @click="featureunavailable('Batch payment')">Batch Payment</button>
+            <button class="btn btn-outline-dark body_medium"  @click="markaslate">Mark as late</button>
+            <button class="btn btn-outline-dark body_medium" @click="cancelorders">Void order(s)</button>
+            <button class="btn btn-outline-dark body_medium" @click="featureunavailable('Print Ticket(s)')">Print Ticket(s)</button>
+            <button class="btn btn-outline-dark body_medium" @click="featureunavailable('Fulfill')">Fulfill</button>
+            <button class="btn btn-outline-dark body_medium" @click="featureunavailable('Offload All')">Offload All</button>
+            </div>
         </transition>
     </div>
 </template>

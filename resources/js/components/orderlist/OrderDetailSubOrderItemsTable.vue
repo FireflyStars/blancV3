@@ -17,7 +17,7 @@
                    
                   
                     <SubOrderOptions  v-if="show === suborder && open_options" :suborder=suborder :items="Object.entries(ITEMS)" :item_selected="Object.entries(MULTI_CHECKED)" :invoice_id="ITEMS[0].InvoiceID" ></SubOrderOptions>
-                    <!-- <qz-print ref="qz_printer"></qz-print> -->
+                    
                         <header v-if="Object.entries(ITEM_LIST).length !== 0">
                             <div class="tcol noselect"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}" >{{col.name}}
                                 <check-box v-if="col.type=='checkbox'&& ITEMS.length>0" :checked_checkbox="typeof MULTI_CHECKED[suborder]!=='undefined'&&ITEMS.length==MULTI_CHECKED[suborder].length"  @checkbox-clicked="checkboxallclicked" :name="suborder"></check-box>
@@ -46,12 +46,14 @@
          <FulfillConfirmation  :invoice_id= "invoiceId" :show_conf="show_model_Fulfil" @close="show_model_Fulfil=false"></FulfillConfirmation>
     </div>
     <ItemDetail @close="OpenitemDetails = false" class="modal-item" v-if = "OpenitemDetails" :item_id = ItemId ></ItemDetail>
+    <qz-print ref="qz_printer"></qz-print>
 </template>
 
 <script>
     import {useRouter,useRoute} from 'vue-router'
     import {ref,computed } from 'vue';
     import {useStore} from 'vuex';
+    import QzPrint from "../QzPrint";
 
     import {
         ORDERLIST_MODULE,
@@ -79,7 +81,6 @@
     import SubOrderOptions from "../miscellaneous/SubOrderOptions";
     import FulfillConfirmation from "../miscellaneous/FulfillConfirmation";
     import ItemDetail from "../assembly/ItemDetail";
-    import QzPrint from "../QzPrint";
 
     export default {
         name: "OrderDetailSubOrderItemsTable",
@@ -239,8 +240,8 @@
         },
 
         methods:{
-        openModal(SubOrdersId){
-            this.$refs.qz_printer.loadPrinterModal(SubOrdersId)
+        openModal(InvoiceID){
+            this.$refs.qz_printer.loadPrinterModal(InvoiceID)
         }
     },   
  
