@@ -114,9 +114,9 @@
                         <button class="detail-btn detail-btn-new-order text-center" @click="newOrder">
                             New Order
                         </button>
-                        <button class="detail-btn detail-btn-app-sms text-center" @click="appSMS">
+                        <!-- <button class="detail-btn detail-btn-app-sms text-center" @click="appSMS">
                             App SMS
-                        </button>
+                        </button> -->
                     </div>
                     <div class="col-6 p-0 text-end">
                         <button class="detail-btn detail-btn-manage-order text-center" @click="manageOrders">
@@ -206,7 +206,9 @@ export default {
             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'App SMS is not implemented yet.',ttl:5,type:'success'});
         }
         const newOrder =()=>{
-            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'New Order is not implemented yet.',ttl:5,type:'success'});
+            router.push({
+                name: 'NewOrder'
+            });
         }
         if(showCustomerDetail) {
             nextTick(() => {
