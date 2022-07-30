@@ -14,8 +14,8 @@
                                 <img class="img-arrow" @click="OpenSubOrderOptions(suborder)"  src="/images/menu.png"   :class="{ active: show === suborder }"/>   
                             </div>
                     </div>
-                   
-                  
+
+                    
                     <SubOrderOptions  v-if="show === suborder && open_options" :suborder=suborder :items="Object.entries(ITEMS)" :item_selected="Object.entries(MULTI_CHECKED)" :invoice_id="ITEMS[0].InvoiceID" ></SubOrderOptions>
                     
                         <header v-if="Object.entries(ITEM_LIST).length !== 0">
@@ -40,9 +40,9 @@
            <button v-if="status == 'RECURRING' || status == 'SCHEDULED' " class="detail-btn detail-btn-detail-order text-center" @click="EditOrder()"> Detail order </button>
            <p v-if="status != 'RECURRING' && status != 'SCHEDULED' ">No items available.</p>
         </section>
-        <transition name="trans-batch-actions">
+        <!-- <transition name="trans-batch-actions">
             <div class=" batch-actions" v-if="Object.entries(MULTI_CHECKED).length !== 0"><button class="btn btn-outline-dark body_medium"  @click="show_split_conf">Split</button><button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Delete items')">Delete</button></div>
-        </transition>
+        </transition> -->
          <FulfillConfirmation  :invoice_id= "invoiceId" :show_conf="show_model_Fulfil" @close="show_model_Fulfil=false"></FulfillConfirmation>
     </div>
     <ItemDetail @close="OpenitemDetails = false" class="modal-item" v-if = "OpenitemDetails" :item_id = ItemId ></ItemDetail>

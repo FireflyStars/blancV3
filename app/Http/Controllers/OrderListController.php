@@ -1047,7 +1047,7 @@ class OrderListController extends Controller
 
     public function SplitSubOrder(Request $request){
 
-        $invoice_id = $request->post('suborderid');
+        $invoice_id = $request->post('invoice_id');
         $items = $request->post('items');
         $arr = $items[0]; 
         $array_item = http_build_query($arr,"item[");
