@@ -9,14 +9,13 @@
                             </span>
                             <div class="col-3">
                                 <img class="img-arrow" src="/images/flesh.png" />
-                                <img class="img-arrow" @click="setSubOrderFulfilled(ITEMS[0].InvoiceID)" src="/images/check.png" />
-                                <img class="img-arrow" src="/images/download.png" @click="openModal(ITEMS[0].InvoiceID)" />
+                                <img class="img-arrow" @click="setSubOrderFulfilled(ITEMS[0].InvoiceID , ITEMS[0].Invoice_Status)" src="/images/check.png" />
+                                <img class="img-arrow" src="/images/download.png" @click="openModal(ITEMS[0].InvoiceID )" />
                                 <img class="img-arrow" @click="OpenSubOrderOptions(suborder)"  src="/images/menu.png"   :class="{ active: show === suborder }"/>   
                             </div>
                     </div>
 
-                    
-                    <SubOrderOptions  v-if="show === suborder && open_options" :suborder=suborder :items="Object.entries(ITEMS)" :item_selected="Object.entries(MULTI_CHECKED)" :invoice_id="ITEMS[0].InvoiceID" ></SubOrderOptions>
+                    <SubOrderOptions  v-if="show === suborder && open_options" :suborder=suborder :items="Object.entries(ITEMS)" :item_selected="Object.entries(MULTI_CHECKED)" :invoice_id="ITEMS[0].InvoiceID" :invoice_Status="ITEMS[0].Invoice_Status" ></SubOrderOptions>
                     
                         <header v-if="Object.entries(ITEM_LIST).length !== 0">
                             <div class="tcol noselect"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}" >{{col.name}}
@@ -189,8 +188,13 @@
                 context.emit("show_conf");
             }
         
-            function setSubOrderFulfilled(suborderid){
-                  show_model_Fulfil.value = true
+            function setSubOrderFulfilled(suborderid , Invoice_Status){
+                if(Invoice_Status == "FULFILLED"){
+                    show_model_Fulfil.value = false
+                }else {
+                    show_model_Fulfil.value = true
+                }
+                  
                   invoiceId.value = suborderid
             }
 
