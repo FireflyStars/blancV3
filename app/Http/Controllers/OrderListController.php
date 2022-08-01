@@ -1100,7 +1100,7 @@ class OrderListController extends Controller
                                     // DB::raw('DATE_FORMAT(production.date_add,"%H:%i") as time'),
                                     'users.name'
                                 )
-                              ->where('production.item_id', $request->item_id)
+                              ->where('production.ID_item', $request->item_id)
                               ->orderByDesc('production.date_add')
                               ->get();
         return response()->json([
