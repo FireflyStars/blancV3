@@ -9,15 +9,14 @@
                             </span>
                             <div class="col-3">
                                 <img class="img-arrow" src="/images/flesh.png" />
-                                <img class="img-arrow" @click="setSubOrderFulfilled(ITEMS[0].InvoiceID)" src="/images/check.png" />
-                                <img class="img-arrow" src="/images/download.png" @click="openModal(ITEMS[0].InvoiceID)" />
+                                <img class="img-arrow" @click="setSubOrderFulfilled(ITEMS[0].InvoiceID , ITEMS[0].Invoice_Status)" src="/images/check.png" />
+                                <img class="img-arrow" src="/images/download.png" @click="openModal(ITEMS[0].InvoiceID )" />
                                 <img class="img-arrow" @click="OpenSubOrderOptions(suborder)"  src="/images/menu.png"   :class="{ active: show === suborder }"/>   
                             </div>
                     </div>
-                   
-                  
-                    <SubOrderOptions  v-if="show === suborder && open_options" :suborder=suborder :items="Object.entries(ITEMS)" :item_selected="Object.entries(MULTI_CHECKED)" :invoice_id="ITEMS[0].InvoiceID" ></SubOrderOptions>
-                    <!-- <qz-print ref="qz_printer"></qz-print> -->
+
+                    <SubOrderOptions  v-if="show === suborder && open_options" :suborder=suborder :items="Object.entries(ITEMS)" :item_selected="Object.entries(MULTI_CHECKED)" :invoice_id="ITEMS[0].InvoiceID" :invoice_Status="ITEMS[0].Invoice_Status" ></SubOrderOptions>
+                    
                         <header v-if="Object.entries(ITEM_LIST).length !== 0">
                             <div class="tcol noselect"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}" >{{col.name}}
                                 <check-box v-if="col.type=='checkbox'&& ITEMS.length>0" :checked_checkbox="typeof MULTI_CHECKED[suborder]!=='undefined'&&ITEMS.length==MULTI_CHECKED[suborder].length"  @checkbox-clicked="checkboxallclicked" :name="suborder"></check-box>
@@ -40,18 +39,20 @@
            <button v-if="status == 'RECURRING' || status == 'SCHEDULED' " class="detail-btn detail-btn-detail-order text-center" @click="EditOrder()"> Detail order </button>
            <p v-if="status != 'RECURRING' && status != 'SCHEDULED' ">No items available.</p>
         </section>
-        <transition name="trans-batch-actions">
+        <!-- <transition name="trans-batch-actions">
             <div class=" batch-actions" v-if="Object.entries(MULTI_CHECKED).length !== 0"><button class="btn btn-outline-dark body_medium"  @click="show_split_conf">Split</button><button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Delete items')">Delete</button></div>
-        </transition>
+        </transition> -->
          <FulfillConfirmation  :invoice_id= "invoiceId" :show_conf="show_model_Fulfil" @close="show_model_Fulfil=false"></FulfillConfirmation>
     </div>
     <ItemDetail @close="OpenitemDetails = false" class="modal-item" v-if = "OpenitemDetails" :item_id = ItemId ></ItemDetail>
+    <qz-print ref="qz_printer"></qz-print>
 </template>
 
 <script>
     import {useRouter,useRoute} from 'vue-router'
     import {ref,computed } from 'vue';
     import {useStore} from 'vuex';
+    import QzPrint from "../QzPrint";
 
     import {
         ORDERLIST_MODULE,
@@ -79,7 +80,6 @@
     import SubOrderOptions from "../miscellaneous/SubOrderOptions";
     import FulfillConfirmation from "../miscellaneous/FulfillConfirmation";
     import ItemDetail from "../assembly/ItemDetail";
-    import QzPrint from "../QzPrint";
 
     export default {
         name: "OrderDetailSubOrderItemsTable",
@@ -188,8 +188,13 @@
                 context.emit("show_conf");
             }
         
-            function setSubOrderFulfilled(suborderid){
-                  show_model_Fulfil.value = true
+            function setSubOrderFulfilled(suborderid , Invoice_Status){
+                if(Invoice_Status == "FULFILLED"){
+                    show_model_Fulfil.value = false
+                }else {
+                    show_model_Fulfil.value = true
+                }
+                  
                   invoiceId.value = suborderid
             }
 
@@ -239,8 +244,8 @@
         },
 
         methods:{
-        openModal(SubOrdersId){
-            this.$refs.qz_printer.loadPrinterModal(SubOrdersId)
+        openModal(InvoiceID){
+            this.$refs.qz_printer.loadPrinterModal(InvoiceID)
         }
     },   
  

@@ -475,7 +475,7 @@
                                     <a href="javascript:void(0)" id="cancel_new_order">Cancel</a>
                                 </div>
                                 <div class="col-2 px-0">
-                                    <button class="btn btn-grey w-100" @click="validateDetails" :disabled="proceedtodetailing_disabled">Proceed to detailing</button>
+                                    <button class="btn btn-grey w-100" @click="validateDetails" :disabled="proceedtodetailing_disabled">Create Order</button>
                                 </div>
                             </div>
 

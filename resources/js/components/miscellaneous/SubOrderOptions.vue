@@ -40,14 +40,14 @@
      import NewSplitConfirmation from '../miscellaneous/NewSplitConfirmation'
     export default {
         name: "SubOrderOptions",
-        props:['items' ,'invoice_id','item_selected','suborder'],
+        props:['items' ,'invoice_id','item_selected','suborder','invoice_Status'],
         components:{ NewSplitConfirmation},
         setup(props){
 
            const btn_split_show = ref(false)
            const show_split_conf=ref(false);
            const listItems =ref([]);
-         
+           
            
             props.item_selected.forEach(item => {
                 if (item[0] == props.suborder){
@@ -55,7 +55,7 @@
                 }
             });  
 
-            if(listItems.value.length > 0 && props.items.length > 1 ){
+            if(listItems.value.length > 0 && props.items.length > 1 && props.invoice_Status != "FULFILLED" ){
               btn_split_show.value = true
             } else {
               btn_split_show.value = false

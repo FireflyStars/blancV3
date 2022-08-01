@@ -627,4 +627,25 @@ export default {
             opacity: 1;
         }
     }
+    .invoice-location.rounded-pill {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 0 16px 0 8px;
+    width: -webkit-max-content;
+    width: -moz-max-content;
+    width: max-content;
+    min-width: 135px;
+}
+.invoice-location span {
+    font-size: 12px;
+    font-family: 'Gotham Rounded';
+    font-style: normal;
+    font-weight: normal;
+    font-size: 12px;
+    line-height: 14px;
+    color: #000000;
+}
+
 </style>

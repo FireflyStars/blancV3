@@ -102,28 +102,32 @@
                 <button class="border-btn ms-2" @click="openModal">Print Ticket(s)</button>
             </div>
             <div class="col-6 text-end">
-                <button class="fullfil-btn">
+                <button class="fullfil-btn" @click="FulfillSubOrder">
                     Fulfill Sub-order(s)
                 </button>
             </div>
         </div>
     </div>
+    <FulfillConfirmation  :show_conf="show_model_Fulfil" @close="show_model_Fulfil=false"></FulfillConfirmation>
     <!-- <qz-print ref="qz_printer"></qz-print> -->
 </template>
 <script>
 import { ref } from 'vue';
 import QzPrint from "../QzPrint";
 import { useRouter} from "vue-router";
+import FulfillConfirmation from "../miscellaneous/FulfillConfirmation";
 export default {
     name: 'OrderItem',
     components:{
-        QzPrint
+        QzPrint,
+        FulfillConfirmation
     },
     setup(props){
         const router = useRouter();
         const show = ref(false);
         const Order = ref({});
         const selectedSubOrders = ref([]);
+        const show_model_Fulfil = ref(false)
         show.value = props.show;
         Order.value = Object.values(Object.values(props.subOrders)[0])[0];
 
@@ -147,12 +151,18 @@ export default {
         function redirectToCheckOut(order_id){
          router.push('/checkout/'+order_id);
        }
+       function FulfillSubOrder(){
+        //show_model_Fulfil.value = true
+        //console.log("selectedSubOrders." , selectedSubOrders.value , show_model_Fulfil.value)
+       }
         return {
             show,
             Order,
             getSubOrder,
             subOrderCheck,
-            redirectToCheckOut
+            redirectToCheckOut,
+            FulfillSubOrder,
+            show_model_Fulfil
         }
     },
     methods:{

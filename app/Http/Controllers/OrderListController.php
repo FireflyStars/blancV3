@@ -226,7 +226,7 @@ class OrderListController extends Controller
                                        
                     $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                     //dateProd
-                    $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+                    $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
 
                 } else {
   
@@ -239,10 +239,10 @@ class OrderListController extends Controller
                                 if($pickupDate <  $DeliveryDate){
 
                                     $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                                    $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+                                    $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                 } else if ($pickupDate >  $DeliveryDate){
                                     $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));;
-                                    $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
+                                    $order->Prod  = date('d/m/Y',strtotime($order->DatePickup));
                                 }
                         } else {
 
@@ -276,7 +276,7 @@ class OrderListController extends Controller
                                     $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
                                 } else if ($pickupDate >  $DeliveryDate){
-                                    $order->Deliv = $order->DatePickup;
+                                    $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
                                 }
                         } else {
@@ -311,7 +311,7 @@ class OrderListController extends Controller
                                     $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
                                 } else if ($pickupDate >  $DeliveryDate){
-                                    $order->Deliv = $order->DatePickup;
+                                    $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
                                 }
                         } else {
@@ -330,14 +330,14 @@ class OrderListController extends Controller
                 if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
                    
                             $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                            $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+                            $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
 
                 } else {
                     if(!is_null($order->PromisedDate)){
 
                         $promisedDate = date('Y-m-d',strtotime($order->PromisedDate));
                         $order->Deliv = date('d/m/Y',strtotime($order->PromisedDate));
-                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($promisedDate)));
+                        $order->Prod  = date('d/m/Y',strtotime($promisedDate));
 
                     } else {
 
@@ -386,7 +386,7 @@ class OrderListController extends Controller
             }
 
             //Fulfiled
-            else if($order->Status == "FULFILLED " ){
+            else if($order->Status == "FULFILLED" ){
 
                 if($order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
                             
@@ -406,7 +406,7 @@ class OrderListController extends Controller
                     }
             }
             //VOID && DELETE
-            else if( $order->Status == "VOID " || $order->Status == "DELETE"){
+            else if( $order->Status == "VOID " || $order->Status == "DELETE" || $order->Status == "Cancel"){
 
                 $order->Deliv = '--';
                 $order->Prod  = '--';
@@ -417,21 +417,26 @@ class OrderListController extends Controller
                 $order->Deliv = '--';
                 $order->Prod  = '--';
             }
-            if( $order->Deliv == null || $order->Deliv == "01/01/2020"){
+   
+            if( ($order->Deliv == null || $order->Deliv == "01/01/2020") ){
                 $order->Deliv = '--';
             }
-            if( $order->Prod == null || $order->Prod == "01/01/2020"){
+            if( ($order->Prod == null || $order->Prod == "01/01/2020")){
                 $order->Prod = '--';
             }
-
-           
-            // if($order->Prod != "--" && !is_null($order->Prod)){
-            //     $date = str_replace('/', '-', $order->Prod);
-            //     $order->Production = date('Y-m-d H:i:s',strtotime($date));
-                
-            // }else {
-            //     $order->Production = '';
-            // }
+            
+            if($order->Deliv != "--" && !is_null($order->Deliv) && $order->Status != "FULFILLED"){
+                $date = str_replace('/', '-', $order->Deliv);
+                if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
+                    $order->Deliv = '--';
+                }      
+            }
+            if($order->Prod != "--" && !is_null($order->Prod) && $order->Status != "FULFILLED"){
+                $date = str_replace('/', '-', $order->Prod);
+                if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
+                    $order->Prod = '--';
+                }      
+            }
     }
 
         return response()->json($orderlist);
@@ -642,7 +647,7 @@ class OrderListController extends Controller
                                            
                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                         //dateProd
-                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+                        $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
     
                     } else {
       
@@ -655,10 +660,10 @@ class OrderListController extends Controller
                                     if($pickupDate <  $DeliveryDate){
     
                                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-                                    } else if($pickupDate >  $DeliveryDate) {
+                                        $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                                    } else if ($pickupDate >  $DeliveryDate){
                                         $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));;
-                                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
+                                        $order->Prod  = date('d/m/Y',strtotime($order->DatePickup));
                                     }
                             } else {
     
@@ -691,8 +696,8 @@ class OrderListController extends Controller
     
                                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-                                    } else if($pickupDate >  $DeliveryDate){
-                                        $order->Deliv = $order->DatePickup;
+                                    } else if ($pickupDate >  $DeliveryDate){
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
                                     }
                             } else {
@@ -726,8 +731,8 @@ class OrderListController extends Controller
     
                                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-                                    } else if ($pickupDate >  $DeliveryDate) {
-                                        $order->Deliv = $order->DatePickup;
+                                    } else if ($pickupDate >  $DeliveryDate){
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
                                     }
                             } else {
@@ -746,14 +751,14 @@ class OrderListController extends Controller
                     if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
                        
                                 $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                                $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+                                $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
     
                     } else {
                         if(!is_null($order->PromisedDate)){
     
                             $promisedDate = date('Y-m-d',strtotime($order->PromisedDate));
                             $order->Deliv = date('d/m/Y',strtotime($order->PromisedDate));
-                            $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($promisedDate)));
+                            $order->Prod  = date('d/m/Y',strtotime($promisedDate));
     
                         } else {
     
@@ -786,7 +791,7 @@ class OrderListController extends Controller
                                     if($pickupDate <  $DeliveryDate){
                                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-                                    } else if ($pickupDate >  $DeliveryDate) {
+                                    } else if ($pickupDate >  $DeliveryDate){
                                         $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
                                     }
@@ -802,7 +807,7 @@ class OrderListController extends Controller
                 }
     
                 //Fulfiled
-                else if($order->Status == "FULFILLED " ){
+                else if($order->Status == "FULFILLED" ){
     
                     if($order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
                                 
@@ -811,7 +816,7 @@ class OrderListController extends Controller
     
                         } else {
                             if($order->PromisedDate != null){
-                                $order->Deliv = date('d/m/Y',strtotime($order->PromisedDate)) ;
+                                $order->Deliv =  date('d/m/Y',strtotime($order->PromisedDate)) ;
                                 $order->Prod  = date('d/m/Y',strtotime($order->PromisedDate)) ;
                             }else {
                                 $order->Deliv = '--' ;
@@ -822,7 +827,7 @@ class OrderListController extends Controller
                         }
                 }
                 //VOID && DELETE
-                else if( $order->Status == "VOID " || $order->Status == "DELETE"){
+                else if( $order->Status == "VOID " || $order->Status == "DELETE" || $order->Status == "Cancel"){
     
                     $order->Deliv = '--';
                     $order->Prod  = '--';
@@ -833,20 +838,26 @@ class OrderListController extends Controller
                     $order->Deliv = '--';
                     $order->Prod  = '--';
                 }
-                if( $order->Deliv == null || $order->Deliv == "01/01/2020"){
+       
+                if( ($order->Deliv == null || $order->Deliv == "01/01/2020") ){
                     $order->Deliv = '--';
                 }
-                if( $order->Prod == null || $order->Prod == "01/01/2020"){
+                if( ($order->Prod == null || $order->Prod == "01/01/2020")){
                     $order->Prod = '--';
                 }
-
-                // if($order->Prod != "--" && !is_null($order->Prod)){
-                //     $date = str_replace('/', '-', $order->Prod);
-                //     $order->Production = date('Y-m-d H:i:s',strtotime($date));
-                    
-                // }else {
-                //     $order->Production = '';
-                // }
+                
+                if($order->Deliv != "--" && !is_null($order->Deliv) && $order->Status != "FULFILLED"){
+                    $date = str_replace('/', '-', $order->Deliv);
+                    if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
+                        $order->Deliv = '--';
+                    }      
+                }
+                if($order->Prod != "--" && !is_null($order->Prod) && $order->Status != "FULFILLED"){
+                    $date = str_replace('/', '-', $order->Prod);
+                    if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
+                        $order->Prod = '--';
+                    }      
+                }
         }
         return response()->json($orderlist);
     }
@@ -917,7 +928,7 @@ class OrderListController extends Controller
             $billing_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=','BILLING')->first();
             $delivery_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=',$order->TypeDelivery)->first();
 
-            $infoitems=DB::table('infoitems')->select(['infoInvoice.NumInvoice','infoInvoice.InvoiceID' , 'infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status','postes.nominterface as station',])->join('infoInvoice',function($join) use($order){
+            $infoitems=DB::table('infoitems')->select(['infoInvoice.NumInvoice','infoInvoice.InvoiceID' ,"infoInvoice.Status as Invoice_Status", 'infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status','postes.nominterface as station',])->join('infoInvoice',function($join) use($order){
                $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
                ->where('infoInvoice.OrderID','=',$order->OrderID);
             })->leftJoin('postes','postes.id','=','infoitems.nextpost')
@@ -1036,7 +1047,7 @@ class OrderListController extends Controller
 
     public function SplitSubOrder(Request $request){
 
-        $invoice_id = $request->post('suborderid');
+        $invoice_id = $request->post('invoice_id');
         $items = $request->post('items');
         $arr = $items[0]; 
         $array_item = http_build_query($arr,"item[");
@@ -1063,7 +1074,7 @@ class OrderListController extends Controller
         $statusCode = $response->getStatusCode();
         $statusText = $response->getReasonPhrase();
       
-    
+
         return \response()->json([
             'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=.$invoice_id&".$array_item,
             'status_code'=>$statusCode,
@@ -1559,7 +1570,7 @@ class OrderListController extends Controller
                                            
                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                         //dateProd
-                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+                        $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
     
                     } else {
       
@@ -1572,10 +1583,10 @@ class OrderListController extends Controller
                                     if($pickupDate <  $DeliveryDate){
     
                                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-                                    } else if($pickupDate >  $DeliveryDate) {
+                                        $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                                    } else if ($pickupDate >  $DeliveryDate){
                                         $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));;
-                                        $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
+                                        $order->Prod  = date('d/m/Y',strtotime($order->DatePickup));
                                     }
                             } else {
     
@@ -1608,8 +1619,8 @@ class OrderListController extends Controller
     
                                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-                                    } else if($pickupDate >  $DeliveryDate){
-                                        $order->Deliv = $order->DatePickup;
+                                    } else if ($pickupDate >  $DeliveryDate){
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
                                     }
                             } else {
@@ -1643,8 +1654,8 @@ class OrderListController extends Controller
     
                                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-                                    } else if ($pickupDate >  $DeliveryDate) {
-                                        $order->Deliv = $order->DatePickup;
+                                    } else if ($pickupDate >  $DeliveryDate){
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
                                     }
                             } else {
@@ -1663,14 +1674,14 @@ class OrderListController extends Controller
                     if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
                        
                                 $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                                $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
+                                $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
     
                     } else {
                         if(!is_null($order->PromisedDate)){
     
                             $promisedDate = date('Y-m-d',strtotime($order->PromisedDate));
                             $order->Deliv = date('d/m/Y',strtotime($order->PromisedDate));
-                            $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($promisedDate)));
+                            $order->Prod  = date('d/m/Y',strtotime($promisedDate));
     
                         } else {
     
@@ -1703,7 +1714,7 @@ class OrderListController extends Controller
                                     if($pickupDate <  $DeliveryDate){
                                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
-                                    } else if ($pickupDate >  $DeliveryDate) {
+                                    } else if ($pickupDate >  $DeliveryDate){
                                         $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
                                     }
@@ -1719,7 +1730,7 @@ class OrderListController extends Controller
                 }
     
                 //Fulfiled
-                else if($order->Status == "FULFILLED " ){
+                else if($order->Status == "FULFILLED" ){
     
                     if($order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
                                 
@@ -1728,7 +1739,7 @@ class OrderListController extends Controller
     
                         } else {
                             if($order->PromisedDate != null){
-                                $order->Deliv = date('d/m/Y',strtotime($order->PromisedDate)) ;
+                                $order->Deliv =  date('d/m/Y',strtotime($order->PromisedDate)) ;
                                 $order->Prod  = date('d/m/Y',strtotime($order->PromisedDate)) ;
                             }else {
                                 $order->Deliv = '--' ;
@@ -1739,7 +1750,7 @@ class OrderListController extends Controller
                         }
                 }
                 //VOID && DELETE
-                else if( $order->Status == "VOID " || $order->Status == "DELETE"){
+                else if( $order->Status == "VOID " || $order->Status == "DELETE" || $order->Status == "Cancel"){
     
                     $order->Deliv = '--';
                     $order->Prod  = '--';
@@ -1750,20 +1761,26 @@ class OrderListController extends Controller
                     $order->Deliv = '--';
                     $order->Prod  = '--';
                 }
-                if( $order->Deliv == null || $order->Deliv == "01/01/2020"){
+       
+                if( ($order->Deliv == null || $order->Deliv == "01/01/2020") ){
                     $order->Deliv = '--';
                 }
-                if( $order->Prod == null || $order->Prod == "01/01/2020"){
+                if( ($order->Prod == null || $order->Prod == "01/01/2020")){
                     $order->Prod = '--';
                 }
-
-                // if($order->Prod != "--" && !is_null($order->Prod)){
-                //     $date = str_replace('/', '-', $order->Prod);
-                //     $order->Production = date('Y-m-d H:i:s',strtotime($date));
-                    
-                // }else {
-                //     $order->Production = '';
-                // }
+                
+                if($order->Deliv != "--" && !is_null($order->Deliv) && $order->Status != "FULFILLED"){
+                    $date = str_replace('/', '-', $order->Deliv);
+                    if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
+                        $order->Deliv = '--';
+                    }      
+                }
+                if($order->Prod != "--" && !is_null($order->Prod) && $order->Status != "FULFILLED"){
+                    $date = str_replace('/', '-', $order->Prod);
+                    if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
+                        $order->Prod = '--';
+                    }      
+                }
         }
         return response()->json($orderlist);
     }
