@@ -219,6 +219,16 @@ class OrderListController extends Controller
 
             }
 
+            //Pickup Only
+
+            else if($order->DateDeliveryAsk == "2020-01-01" && $order->Status == "SCHEDULED"  && $order->DatePickup != "2020-01-01" ){
+                $order->Deliv = '--'; 
+                if(!is_null($order->DatePickup)){
+
+                    $order->Prod  = date('d/m/Y',strtotime($order->DatePickup));
+                }     
+            }
+
             //Store New
             else if($order->deliverymethod == 'in_store_collection' ){
 
@@ -638,6 +648,16 @@ class OrderListController extends Controller
                                 $order->Prod = '--'; 
                     }
     
+                }
+
+                //Pickup Only
+
+                else if($order->DateDeliveryAsk == "2020-01-01" && $order->Status == "SCHEDULED"  && $order->DatePickup != "2020-01-01" ){
+                    $order->Deliv = '--'; 
+                    if(!is_null($order->DatePickup)){
+
+                        $order->Prod  = date('d/m/Y',strtotime($order->DatePickup));
+                    }     
                 }
     
                 //Store New
@@ -1561,6 +1581,15 @@ class OrderListController extends Controller
                                 $order->Prod = '--'; 
                     }
     
+                }
+                //Pickup Only
+
+                else if($order->DateDeliveryAsk == "2020-01-01" && $order->Status == "SCHEDULED"  && $order->DatePickup != "2020-01-01" ){
+                    $order->Deliv = '--'; 
+                    if(!is_null($order->DatePickup)){
+
+                        $order->Prod  = date('d/m/Y',strtotime($order->DatePickup));
+                    }     
                 }
     
                 //Store New

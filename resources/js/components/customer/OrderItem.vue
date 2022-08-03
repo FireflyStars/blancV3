@@ -109,7 +109,7 @@
         </div>
     </div>
     <FulfillConfirmation  :show_conf="show_model_Fulfil" @close="show_model_Fulfil=false"></FulfillConfirmation>
-    <!-- <qz-print ref="qz_printer"></qz-print> -->
+    <qz-print ref="qz_printer"></qz-print>
 </template>
 <script>
 import { ref } from 'vue';
