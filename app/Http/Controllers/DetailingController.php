@@ -214,7 +214,7 @@ class DetailingController extends Controller
         $detailingitem['voucher'] = "";
 
         if(!empty($detailingitem)){
-            $order = DB::table('infoOrder')->where('id',$detailingitem['order_id'])->first();
+            $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
             if($order && $order->PickupID !=''){
                 $item = DetailingController::getInstructionsFromPickup($order->PickupID);
