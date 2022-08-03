@@ -387,42 +387,42 @@ class StatisticsController extends Controller
 
         // booking data
         $statistique['total_booking'] = DB::table('pickup')
-                                          ->whereBetween('date', $period)
+                                          ->whereBetween('created_at', $period)
                                           ->where('status', 'not LIKE', '%DEL%')
                                           ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
         $statistique['last_total_booking'] = DB::table('pickup')
-                                          ->whereBetween('date', $last_period)
+                                          ->whereBetween('created_at', $last_period)
                                           ->where('status', 'not LIKE', '%DEL%')
                                           ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
 
         $statistique['app_booking'] = DB::table('pickup')
-                                          ->whereBetween('date', $period)
+                                          ->whereBetween('created_at', $period)
                                           ->where('status', 'not LIKE', '%DEL%')
                                           ->where('status', 'LIKE', '%API%')
                                           ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
 
         $statistique['last_app_booking'] = DB::table('pickup')
-                                          ->whereBetween('date', $last_period)
+                                          ->whereBetween('created_at', $last_period)
                                           ->where('status', 'not LIKE', '%DEL%')
                                           ->where('status', 'LIKE', '%API%')
                                           ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
         $statistique['pos_booking'] = DB::table('pickup')
-                                          ->whereBetween('date', $period)
+                                          ->whereBetween('created_at', $period)
                                           ->where('status', 'not LIKE', '%DEL%')
                                           ->where('status', 'LIKE', '%PMS%')
                                           ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
         $statistique['last_pos_booking'] = DB::table('pickup')
-                                          ->whereBetween('date', $last_period)
+                                          ->whereBetween('created_at', $last_period)
                                           ->where('status', 'not LIKE', '%DEL%')
                                           ->where('status', 'LIKE', '%PMS%')
                                           ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
         $statistique['rec_booking'] = DB::table('pickup')
-                                          ->whereBetween('date', $period)
+                                          ->whereBetween('created_at', $period)
                                           ->where('status', 'not LIKE', '%DEL%')
                                           ->where('status', 'LIKE', '%REC%')
                                           ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
         $statistique['last_rec_booking'] = DB::table('pickup')
-                                          ->whereBetween('date', $last_period)
+                                          ->whereBetween('created_at', $last_period)
                                           ->where('status', 'not LIKE', '%DEL%')
                                           ->where('status', 'LIKE', '%REC%')
                                           ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
