@@ -948,18 +948,33 @@ class OrderListController extends Controller
             $billing_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=','BILLING')->first();
             $delivery_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=',$order->TypeDelivery)->first();
 
-            $infoitems=DB::table('infoitems')->select(['infoInvoice.NumInvoice','infoInvoice.InvoiceID' ,"infoInvoice.Status as Invoice_Status", 'infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status','postes.nominterface as station',])->join('infoInvoice',function($join) use($order){
-               $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
-               ->where('infoInvoice.OrderID','=',$order->OrderID);
-            })->leftJoin('postes','postes.id','=','infoitems.nextpost')
+            $infoitems=DB::table('itemhistorique')->select(['infoInvoice.NumInvoice','infoInvoice.InvoiceID' ,"infoInvoice.Status as Invoice_Status", 'infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','itemhistorique.ItemTrackingKey' , 'infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status', 'infoitems.id_items as itemproduction' , 'itemhistorique.ID_item as productionitem' , 'postes.nominterface as station'])
+            ->join('infoInvoice',function($join) use($order){
+                $join->on('infoInvoice.InvoiceID','=','itemhistorique.InvoiceID')
+                ->where('infoInvoice.OrderID','=',$order->OrderID);
+             })->leftJoin('infoitems','infoitems.ItemTrackingKey','=','itemhistorique.ItemTrackingKey')
+                ->leftJoin('postes','postes.id','=','infoitems.nextpost')
                 ->leftJoin('TypePost','TypePost.id','=','postes.TypePost')
+                ->distinct('infoitems.InvoiceID')
                 ->whereNotIn('infoitems.Status',['DELETE','VOID'])
                 ->orderBy('infoInvoice.NumInvoice')->get();
+
         $items=[];
         $infoitems->each(function ($item) use(&$items) {
-            $items[$item->NumInvoice][]=$item;//suborder grouping
+    
+            $Price = DB::table('detailingitem')->select(['detailingitem.dry_cleaning_price' , 'detailingitem.cleaning_addon_price' , 'detailingitem.tailoring_price' ])
+            ->where('detailingitem.InvoiceID','=',$item->InvoiceID)
+            ->where('detailingitem.tracking','=',$item->ItemTrackingKey)->first();
+            if(!empty($Price)){
+                $item->priceTotal = $Price->dry_cleaning_price + $Price->cleaning_addon_price + $Price->tailoring_price ;
+            } else {
+                $item->priceTotal = $item->priceTotal;
+            }
+            $items[$item->NumInvoice][]=$item;//suborder grouping   
+           
         });
 
+       
         if($order->Phone!=""){
             $order->Phone=json_decode($order->Phone);
 
@@ -1103,6 +1118,7 @@ class OrderListController extends Controller
     }
 
     public function getitemdetail(Request $request){
+
         $itemInfo = DB::table('infoitems')
                       ->join('infoInvoice', 'infoitems.SubOrderID', '=', 'infoInvoice.SubOrderID')
                       ->join('infoCustomer', 'infoInvoice.CustomerID', '=', 'infoCustomer.CustomerID')
