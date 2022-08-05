@@ -1120,14 +1120,14 @@ class OrderListController extends Controller
     public function getitemdetail(Request $request){
 
         $itemInfo = DB::table('infoitems')
-                      ->join('infoInvoice', 'infoitems.SubOrderID', '=', 'infoInvoice.SubOrderID')
+                      ->join('infoInvoice', 'infoitems.InvoiceID', '=', 'infoInvoice.InvoiceID')
                       ->join('infoCustomer', 'infoInvoice.CustomerID', '=', 'infoCustomer.CustomerID')
                       ->join('infoOrder','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                       ->join('postes', 'infoitems.nextpost', '=', 'postes.id')
                       ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
                       ->where('infoitems.id', $request->item_id)
                       ->select(
-                          'infoitems.id', 'infoitems.ItemTrackingKey as item_key', 'infoInvoice.id as sub_order_id', 'infoInvoice.NumInvoice as sub_order', 'infoitems.Colors as colors', 'infoInvoice.id as invoice_id',
+                          'infoitems.id', 'infoitems.ItemTrackingKey as item_key','infoInvoice.InvoiceID', 'infoInvoice.id as sub_order_id', 'infoInvoice.NumInvoice as sub_order', 'infoitems.Colors as colors', 'infoInvoice.id as invoice_id',
                           'infoitems.Fabrics as fabrics', 'infoitems.Patterns as patterns', 'infoitems.Size as size',
                           'infoitems.StoreName as store_name', 'infoitems.store', 'infoitems.damage', 'infoitems.id_items',
                           'infoitems.typeitem as item_name', 'TypePost.bg_color as location_color', 'postes.nom as location', 'TypePost.circle_color', 'TypePost.process',
@@ -1135,7 +1135,19 @@ class OrderListController extends Controller
                           'infoCustomer.IsMaster', 'infoCustomer.IsMasterAccount', 'postes.id as poste_id', 'infoOrder.id as order_id'
                           )->first();
 
-        $location_history = DB::table('production')
+        
+        $itemsList = DB::table('itemhistorique')->select([ 'infoitems.id_items as itemproduction' , 'itemhistorique.ID_item as productionitem'])
+            ->join('infoitems','infoitems.ItemTrackingKey','=','itemhistorique.ItemTrackingKey')
+            ->where('itemhistorique.InvoiceID', '=' , $itemInfo->InvoiceID)
+            ->where('infoitems.id', $request->item_id)
+            ->distinct('infoitems.id_items')
+            ->get();
+
+            $location_history = [];
+
+            foreach ($itemsList as $item) {
+                if($item->productionitem == 0 ){
+                    $history = DB::table('production')
                               ->join('postes', 'production.poste_id', '=', 'postes.id')
                               ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
                               ->join('users', 'production.user_id', '=', 'users.id')
@@ -1147,13 +1159,37 @@ class OrderListController extends Controller
                                     // DB::raw('DATE_FORMAT(production.date_add,"%H:%i") as time'),
                                     'users.name'
                                 )
-                              ->where('production.ID_item', $request->item_id)
+                              ->where('production.ID_item', $item->itemproduction)
                               ->orderByDesc('production.date_add')
                               ->get();
+
+                } else if($item->productionitem != 0 ){
+                    $history = DB::table('production')
+                              ->join('postes', 'production.poste_id', '=', 'postes.id')
+                              ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
+                              ->join('users', 'production.user_id', '=', 'users.id')
+                              ->select(
+                                    'TypePost.bg_color as location_color', 'postes.nom as location',
+                                    'TypePost.process', 'TypePost.circle_color',
+                                    // DB::raw('DATE_FORMAT(production.date_add,"%a") as day'),
+                                    DB::raw('DATE_FORMAT(production.date_add,"%a %m/%d/%Y %H:%i") as date'),
+                                    // DB::raw('DATE_FORMAT(production.date_add,"%H:%i") as time'),
+                                    'users.name'
+                                )
+                              ->where('production.ID_item', $item->productionitem)
+                              ->orderByDesc('production.date_add')
+                              ->get();
+
+                };    
+            $location_history = $history;    
+            }
+            
+
         return response()->json([
             'item_detail'=>[
                 'breif_info'        => $itemInfo,
-                'location_history'  => $location_history
+                'location_history'  => $location_history,
+                'item_list' => $itemsList
             ]
         ]);
     }
