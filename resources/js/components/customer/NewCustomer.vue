@@ -458,7 +458,7 @@
                                                 <p>Please pick number of days we will visit the customer, with matching slots.</p>
                                                 <div class="d-flex p-2">
                                                     <div class="pickup-day rounded-circle" 
-                                                        v-for="(pickupDay, index) in form.pickupDays" :key="index"
+                                                        v-for="(pickupDay, index) in pickupDays" :key="index"
                                                         :class="{ 'active': pickupDay.active }"
                                                         @click="addPickupDay(index)"
                                                         >
@@ -697,38 +697,6 @@ import axios from 'axios';
                 // preferences
                 preferences: [],
                 deliveryByday: '0',
-                pickupDays: [
-                    {
-                        name: 'M',
-                        key: 'delivery_mon',
-                        active: false
-                    },
-                    {
-                        name: 'T',
-                        key: 'delivery_tue',
-                        active: false
-                    },
-                    {
-                        name: 'W',
-                        key: 'delivery_wed',
-                        active: false
-                    },
-                    {
-                        name: 'T',
-                        key: 'delivery_thu',
-                        active: false
-                    },
-                    {
-                        name: 'F',
-                        key: 'delivery_fri',
-                        active: false
-                    },
-                    {
-                        name: 'S',
-                        key: 'delivery_sat',
-                        active: false
-                    },
-                ],
                 pickupSlots:[],
                 altTypeDelivery: '',
                 altName: '',
@@ -738,55 +706,78 @@ import axios from 'axios';
                 linkedAccounts: []
             })
             const router = useRouter();
-            const step = ref('account_details');
+            // const step = ref('account_details');
+            const step = ref('preferences');
+            const pickupDays = ref([
+                    {
+                        name: 'M',
+                        longName: 'Mon',
+                        key: 'DeliveryMon',
+                        active: false
+                    },
+                    {
+                        name: 'T',
+                        longName: 'Tue',
+                        key: 'DeliveryTu',
+                        active: false
+                    },
+                    {
+                        name: 'W',
+                        longName: 'Wed',
+                        key: 'DeliveryWed',
+                        active: false
+                    },
+                    {
+                        name: 'T',
+                        longName: 'Thu',
+                        key: 'DeliveryTh',
+                        active: false
+                    },
+                    {
+                        name: 'F',
+                        longName: 'Fri',
+                        key: 'DeliveryFri',
+                        active: false
+                    },
+                    {
+                        name: 'S',
+                        longName: 'Sat',
+                        key: 'DeliverySat',
+                        active: false
+                    },
+                ]);
             const timeslots = ref([
-                { value: 1, display: '8-10 am' },
-                { value: 2, display: '10-12 pm' },
-                { value: 3, display: '12-2 pm' },
-                { value: 4, display: '2-4 pm' },
-                { value: 5, display: '4-6 pm' },
-                { value: 6, display: '6-8 pm' }
+                { value: '[1]', display: '8-10 am' },
+                { value: '[2]', display: '10-12 pm' },
+                { value: '[3]', display: '12-2 pm' },
+                { value: '[4]', display: '2-4 pm' },
+                { value: '[5]', display: '4-6 pm' },
+                { value: '[6]', display: '6-8 pm' }
             ]);
             const addPickupDay = (index)=>{
-                let pickupDay = form.value.pickupDays[index];
+                let pickupDay = pickupDays.value[index];
                 if(pickupDay.active){
-                    form.value.pickupDays[index].active = false;
-                    form.value.pickupSlots.pop();
+                    pickupDays.value[index].active = false;
+                    form.value.pickupSlots = form.value.pickupSlots.filter((item)=>{
+                        return item.key != pickupDay.key;
+                    });
                 }else{
-                    form.value.pickupDays[index].active = true;
-                    if(form.value.pickupSlots.length == 0){
-                        form.value.pickupSlots.push({
-                            value: 0,
-                            label: 'Select 1st slot',
-                        });
-                    }else if(form.value.pickupSlots.length == 1){
-                        form.value.pickupSlots.push({
-                            value: 0,
-                            label: 'Select 2nd slot',
-                        });                        
-                    }else if(form.value.pickupSlots.length == 2){
-                        form.value.pickupSlots.push({
-                            value: 0,
-                            label: 'Select 3rd slot',
-                        });     
-                    }else if(form.value.pickupSlots.length == 3){
-                        form.value.pickupSlots.push({
-                            value: 0,
-                            label: 'Select 4th slot',
-                        });     
-                    }else if(form.value.pickupSlots.length == 4){
-                        form.value.pickupSlots.push({
-                            value: 0,
-                            label: 'Select 5th slot',
-                        });     
-                    }else if(form.value.pickupSlots.length == 5){
-                        form.value.pickupSlots.push({
-                            value: 0,
-                            label: 'Select 6th slot',
-                        });
-                    }
+                    pickupDays.value[index].active = true;
+                    form.value.pickupSlots.push({
+                        value: '',
+                        key: pickupDay.key,
+                        label: 'Select '+pickupDay.longName+' slot',
+                    });
                 }
             }
+            watch(()=>form.value.deliveryByday, (cur_val, pre_val)=>{
+                if(cur_val == '0'){
+                    pickupDays.value.forEach((item)=>{
+                        item.active = false;
+                    });
+                    form.value.pickupSlots = [];
+                }
+            })
             const searchpanel = ref(null);
             const postcode = ref(null);
             const companyPostCode = ref(null);
@@ -1294,6 +1285,7 @@ import axios from 'axios';
                 companyPostCode,
                 phoneCodesSorted,
                 cardErrors,
+                pickupDays,
                 timeslots,
                 // importModal,
                 searchpanel,

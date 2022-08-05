@@ -110,7 +110,6 @@ class StatisticsController extends Controller
                     $last_period = [Carbon::now()->subMonth()->startOfMonth()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
             }
         }
-        return response()->json($last_period);
         $total_sale_stores = InfoOrder::whereBetween('created_at', $period)
                                     ->select(DB::raw('CEIL(AVG(Total)) as avg'), DB::raw('CEIL(SUM(Total)) as total'), 'TypeDelivery')
                                     ->groupBy('TypeDelivery')
@@ -366,7 +365,7 @@ class StatisticsController extends Controller
         $last_app_new_signup = InfoCustomer::where(function($query) use ($last_period){
                                             $query->whereBetween('SignupDateOnline', $last_period);
                                         })
-                                        ->select(DB::raw('count(*) as count'))->toSql();/* ->value('count') */;
+                                        ->select(DB::raw('count(*) as count'))->value('count');
         
         $statistique['total_new_signup'] = $total_new_signup;
         $statistique['last_total_new_signup'] = $last_total_new_signup;
