@@ -384,16 +384,16 @@ export default({
           }
 
           function selectItem(item_id){
-            featureunavailable('item details');
-            // store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
-            // store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`, item_id);
-            // router.push({
-            //     name:'ItemDetails',
-            //     params: {
-            //         item_id:item_id,
-            //     },
-            // })
-            // store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
+            router.push({
+                name:'ItemDetails',
+                params: {
+                    item_id:item_id,
+                },
+            })
+            store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+
+            
 
           }
             return {

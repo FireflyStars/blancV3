@@ -540,7 +540,7 @@ export default {
 
             let instructions = props.detailingitem.customer_instructions;
 
-            if(instructions.length > 0){
+            if(typeof(instructions) !='undefined' && instructions.length > 0){
                 showCustomerInstructions.value = true;
             }
         });
