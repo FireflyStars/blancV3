@@ -278,8 +278,7 @@ export default {
         pattern_id.value = props.detailingitem.pattern_id != null ? props.detailingitem.pattern_id : (props.detailingData.patterns.length > 0 ? 0 : -1);
         condition_id.value = props.detailingitem.condition_id != null ? props.detailingitem.condition_id : (props.detailingData.conditions.length > 0 ? 0 : -1);
         valid.value = brand_id.value != 0
-            && ((color_id.value.length > 0 && props.detailingData.colours.length > 0) || (color_id.value.length == 0 && props.detailingData.colours.length == 0))
-            && pattern_id.value != 0;
+            && ((color_id.value.length > 0 && props.detailingData.colours.length > 0) || (color_id.value.length == 0 && props.detailingData.colours.length == 0));
         switch (props.detailingitem.etape) {
             case 3:
                 desc_type.value = 'brand';
@@ -304,8 +303,7 @@ export default {
         }
         watch(() => [size_id.value, brand_id.value, fabric_id.value, color_id.value, pattern_id.value, condition_id.value], ([current_size, current_brand, current_fabric, current_color, current_pattern, current_condition], [previous_size, previous_brand, previous_fabric, previous_color]) => {
             valid.value = current_brand != 0
-                && ((current_color.length > 0 && props.detailingData.colours.length > 0) || (current_color.length == 0 && props.detailingData.colours.length == 0))
-                && current_pattern != 0 ;
+                && ((current_color.length > 0 && props.detailingData.colours.length > 0) || (current_color.length == 0 && props.detailingData.colours.length == 0));
         });
         watch(() => props.detailingitem, (current_val, previous_val) => {
             size_id.value = current_val.size_id != null ? current_val.size_id : (props.detailingData.sizes.length > 0 ? 0 : -1);

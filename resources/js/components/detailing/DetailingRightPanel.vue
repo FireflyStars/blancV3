@@ -107,7 +107,7 @@
                                             <div
                                                 class="col fabric-coefcleaning"
                                                 v-if="fab.coefcleaning != 0"
-                                            >£{{ fab.coefcleaning * item_description.base_price }}</div>
+                                            >£{{ (fab.coefcleaning * item_description.base_price).toFixed(2) }}</div>
                                         </div>
                                     </div>
                                     <div class="col-6">
