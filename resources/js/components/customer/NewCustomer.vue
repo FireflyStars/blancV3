@@ -994,7 +994,8 @@ import axios from 'axios';
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter city for company', ttl:5, type:'danger' });
                             return;
                         }
-                    }else{
+                    }
+                    if(form.value.paymentMethod == 'Credit Card'){
                         if(form.value.cardHolderName == ''){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Cardholder name', ttl:5, type:'danger' });
                             return;
@@ -1108,7 +1109,8 @@ import axios from 'axios';
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter city for company', ttl:5, type:'danger' });
                             return;
                         }
-                    }else{
+                    }
+                    if(form.value.paymentMethod == 'Credit Card'){
                         if(form.value.cardHolderName == ''){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Cardholder name', ttl:5, type:'danger' });
                             return;
