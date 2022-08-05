@@ -430,7 +430,7 @@ export default {
                 context.emit("save-item-description", {
                     detailingitem_id: props.detailingitem.id,
                     color_id: JSON.stringify(color_id.value),
-                    step: steps.value[index + 1].id
+                    step: steps.value[index].id
                 });
             }
             if (desc_type.value == 'pattern') {
