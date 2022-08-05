@@ -444,6 +444,8 @@ Route::get('create-invoice-test',function(){
 
 })->middleware('auth');
 
+
+
 Route::get('test-validate-order',function(Request $request){
     $order_id = $request->order_id;
 
@@ -511,6 +513,140 @@ Route::get('test-stripe-terminal',function(Request $request){
 
 });
 
+
+Route::get('ar-test',function(){
+    $customers = DB::table('infoCustomer')->where('bycard',0)->get();
+
+    $bacs_cust_id = [];
+    $list = [];
+
+    if(count($customers) > 0){
+        foreach($customers as $k=>$v){
+            $bacs_cust_id[] = $v->CustomerID;
+        }
+    }
+
+    $grouped_by_cust_id = [];
+    $grouped_by_cust_order_date = [];
+    $custid_with_orders = [];
+    $master_cust = [];
+
+    $orders = DB::table('infoOrder')
+        ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID','NewInvoice.*')
+        ->join('detailingitem','infoOrder.id','detailingitem.order_id')
+        ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
+        ->where('infoOrder.orderinvoiced',0)
+        ->whereIn('infoOrder.CustomerID',$bacs_cust_id)
+        ->get();
+
+
+    foreach($orders as $k=>$v){
+        $grouped_by_cust_id[$v->CustomerID][] = $v->Total;
+        $grouped_by_cust_order_date[$v->CustomerID][] = $v->created_at;
+
+        if(!in_array($v->CustomerID,$custid_with_orders)){
+            array_push($custid_with_orders,$v->CustomerID);
+        }
+    }
+
+
+    foreach($grouped_by_cust_order_date as $k=>$v){
+        usort($grouped_by_cust_order_date[$k],function($a, $b) {
+            return strtotime($b) - strtotime($a);
+        });
+    }
+
+    $cust_with_orders = DB::table('infoCustomer')->whereIn('CustomerID',$custid_with_orders)->get();
+
+
+    if(count($cust_with_orders) > 0){
+        foreach($cust_with_orders as $k=>$v){
+            if($v->CustomerIDMaster !=''){
+                $master_cust[$v->CustomerID] = $v->CustomerIDMaster;
+            }
+        }
+    }
+
+
+    foreach($grouped_by_cust_id as $k=>$v){
+        if(isset($master_cust[$k])){
+            $list[$master_cust[$k]]['order_total'][] = array_sum($v);
+        }else{
+            $list[$k]['order_total'][] = array_sum($v);
+        }
+    }
+
+    foreach($grouped_by_cust_order_date as $k=>$v){
+        if(isset($master_cust[$k])){
+            $list[$master_cust[$k]]['order_date'][] = (isset($v[0])?$v[0]:"");
+        }else{
+            $list[$k]['order_date'][] = (isset($v[0])?$v[0]:"");
+        }
+    }
+
+    $final_cust_id = [];
+    foreach($list as $k=>$v){
+        $final_cust_id[] = $k;
+    }
+
+    $final_cust = DB::table('infoCustomer')->whereIn('CustomerID',$final_cust_id)->get();
+    $final_cust_addr = DB::table('address')->whereIn('CustomerID',$final_cust_id)->where('status','DELIVERY')->get();
+    $final_customers = [];
+
+
+    if(count($final_cust) > 0){
+        foreach($final_cust as $k=>$v){
+            $phones = [];
+            if(isset($list[$v->CustomerID])){
+                $list[$v->CustomerID]['btob'] = $v->btob;
+                $list[$v->CustomerID]['TypeDelivery'] = $v->TypeDelivery;
+                $list[$v->CustomerID]['Name'] = $v->Name;
+                $list[$v->CustomerID]['Email'] = $v->EmailAddress;
+
+                if(is_array(@json_decode($v->Phone)) && !empty(@json_decode($v->Phone))){
+                    $phones = @json_decode($v->Phone);
+
+                    foreach($phones as $id=>$phone){
+                        $phones[$id] = str_replace("|","",$phone);
+                    }
+                }
+
+                $list[$v->CustomerID]['Phone'] = $phones;
+            }
+        }
+    }
+
+    if(count($final_cust_addr) > 0){
+        foreach($final_cust_addr as $k=>$v){
+            if(isset($list[$v->CustomerID])){
+                $list[$v->CustomerID]['address1'] = $v->address1;
+                $list[$v->CustomerID]['postcode'] = $v->postcode;
+            }
+        }
+    }
+
+
+    foreach($list as $k=>$v){
+       $order_total = $list[$k]['order_total'];
+       $list[$k]['order_total'] = array_sum($order_total);
+
+       usort($list[$k]['order_date'],function($a, $b) {
+            return strtotime($b) - strtotime($a);
+        });
+    }
+
+    foreach($list as $k=>$v){
+        $list[$k]['latest_date'] = "";
+
+        if(isset($list[$k]['order_date'][0])){
+            $list[$k]['latest_order_date'] = $list[$k]['order_date'][0];
+        }
+    }
+
+    echo "<pre>";
+    print_r($list);
+
+});
 
 /* END TEST ROUTES */
 
@@ -590,6 +726,12 @@ Route::post('/pay-from-credit',[OrderController::class,'payFromCredit'])->name('
 Route::post('/set-checkout-addon',[DetailingController::class,'setCheckoutAddon'])->name('set-checkout-addon')->middleware('auth');
 Route::post('/remove-order-voucher',[DetailingController::class,'removeCheckoutVoucher'])->name('remove-order-voucher')->middleware('auth');
 Route::post('/add-order-voucher',[DetailingController::class,'addCheckoutVoucher'])->name('add-order-voucher')->middleware('auth');
+
+/*
+* AR List
+*/
+Route::post('/get-ar-customers',[CustomerController::class,'getArCustomers'])->name('get-ar-customers')->middleware('auth');
+
 
 /**
  * Routes for stripe terminal - DO NOT REMOVE

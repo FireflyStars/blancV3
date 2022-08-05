@@ -13,11 +13,11 @@
                     </div>
                     <div class="form-group " v-if="filterItem.type == 'datepicker'">
                         <KeepAlive>
-                            <date-range-picker 
-                                v-model="filterItem.value" 
+                            <date-range-picker
+                                v-model="filterItem.value"
                                 :name="key"
                                 :placeholder="filterItem.label"
-                                :droppos="{ top:'auto', right: 0, bottom:'auto', left:'auto', transformOrigin:'top right'}" 
+                                :droppos="{ top:'auto', right: 0, bottom:'auto', left:'auto', transformOrigin:'top right'}"
                                 :disabled-from-date="startDisabledtodate">
                             </date-range-picker>
                         </KeepAlive>
@@ -35,7 +35,7 @@
 <script>
     import { ref, computed } from 'vue';
     import {
-        CUSTOMER_MODULE, 
+        CUSTOMER_MODULE,
         SET_CUSTOMER_FILTER,
         FILTER_CUSTOMER_LIST,
         REMOVE_CUSTOMER_FILTER
@@ -45,9 +45,9 @@
     import DateRangePicker from '../miscellaneous/DateRangePicker';
     export default {
         name: "CustomerFilter",
-        props:['filterDef'],
+        props:['filterDef','nav'],
         emits: ['update:filterDef'],
-        components:{ 
+        components:{
             DateRangePicker,
             SelectOptions
         },
@@ -60,8 +60,13 @@
             const showfilter=ref(false);
             const applyFilter = ()=>{
                 toggleShow();
-                store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_FILTER}`, props.filterDef);
-                store.dispatch(`${CUSTOMER_MODULE}${FILTER_CUSTOMER_LIST}`);
+
+                if(props.nav=='AR'){
+
+                }else{
+                    store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_FILTER}`, props.filterDef);
+                    store.dispatch(`${CUSTOMER_MODULE}${FILTER_CUSTOMER_LIST}`);
+                }
             }
             const cancel = ()=>{
                 toggleShow();
@@ -70,9 +75,12 @@
                 showfilter.value =! showfilter.value;
             }
             function removefilter(){
+                 if(props.nav=='AR'){
 
-                store.dispatch(`${CUSTOMER_MODULE}${REMOVE_CUSTOMER_FILTER}`);
-                store.dispatch(`${CUSTOMER_MODULE}${FILTER_CUSTOMER_LIST}`);
+                }else{
+                    store.dispatch(`${CUSTOMER_MODULE}${REMOVE_CUSTOMER_FILTER}`);
+                    store.dispatch(`${CUSTOMER_MODULE}${FILTER_CUSTOMER_LIST}`);
+                }
                 toggleShow();
             }
             return {
@@ -83,8 +91,8 @@
                 cancel,
                 toggleShow,
                 removefilter
-                
-                
+
+
             }
         },
         methods:{
