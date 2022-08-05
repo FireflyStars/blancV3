@@ -8,6 +8,7 @@
                     <h2 class="mx-0 font-22">Customer List</h2>
                     <div class="nav-panel d-flex justify-content-between mb-1">
                         <ul class="tab-nav list-inline mb-0">
+                            <li class="tab-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'AR' ? 'active' : ''" @click="setNav('AR')">A/R</li>
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'CustomerList' ? 'active' : ''" @click="setNav('CustomerList')">All Customers</li>
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'B2B' ? 'active' : ''" @click="setNav('B2B')">B2B</li>
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'B2C' ? 'active' : ''" @click="setNav('B2C')">B2C</li>
@@ -15,7 +16,7 @@
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'RecurringBookings' ? 'active' : ''" @click="setNav('RecurringBookings')">RecurringBookings</li>
                         </ul>
                         <div class="filter-section position-relative">
-                            <CustomerFilter :filterDef="filterDef"></CustomerFilter>
+                            <CustomerFilter :filterDef="filterDef" :nav="selected_nav"></CustomerFilter>
                         </div>
                     </div>
                     <component :is="component"></component>
@@ -31,6 +32,8 @@ import SideBar from "../layout/SideBar";
 import MainHeader from "../layout/MainHeader";
 import CustomerFilter from '../test/CustomerFilter';
 import CustomerList from './CustomerList';
+import ArList from './ArList';
+
 import { CUSTOMER_MODULE, SET_CUSTOMER_SELECTED_TAB, SET_CUSTOMER_LIST } from '../../store/types/types';
 export default {
     name: 'CustomerPage',
@@ -38,7 +41,8 @@ export default {
         CustomerFilter,
         SideBar,
         MainHeader,
-        CustomerList
+        CustomerList,
+        ArList,
     },
     setup(){
         const store = useStore();
@@ -49,6 +53,8 @@ export default {
             if(nav == 'B2B' || nav == 'B2C' || nav == 'CustomerList'){
                 store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_LIST}`);
                 component.value = 'CustomerList';
+            }else if(nav=='AR'){
+                component.value = 'ArList';
             }else{
                 component.value = nav;
             }
@@ -60,7 +66,7 @@ export default {
                 type: 'select',
                 value: '',
                 options: [
-                    { display:'B2B', value: 'B2B' }, 
+                    { display:'B2B', value: 'B2B' },
                     { display:'B2C', value: 'B2C' }
                 ]
             },
@@ -69,7 +75,7 @@ export default {
                 type: 'select',
                 value: '',
                 options:[
-                    { display: 'Delivery', value: 'DELIVERY'}, 
+                    { display: 'Delivery', value: 'DELIVERY'},
                     { display: 'Marylebone', value: 'MARYLEBONE'},
                     { display: 'Nothing Hill', value: 'NOTHING HILL'},
                     { display: 'Chelsea', value: 'CHELSEA'},

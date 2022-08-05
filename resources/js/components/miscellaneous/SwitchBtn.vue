@@ -15,7 +15,7 @@
     export default {
         name: "Switch",
         props:{
-            modelValue: Number,
+            modelValue: Boolean | Number,
             labelLeft: String,
             disabled: Boolean,
             labelRight: String

@@ -32,9 +32,9 @@ class StatisticsController extends Controller
             else
                 $last_period    = [ Carbon::parse($startDate)->subMonth(1)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->subMonth(1)->endOfDay()->toDateTimeString() ];
         }else{
-            $last_period = [ Carbon::parse($compareStartDate)->subMonth(1)->startOfDay()->toDateTimeString(), Carbon::parse($compareEndDate)->subMonth(1)->endOfDay()->toDateTimeString() ];
+            $last_period = [ Carbon::parse($compareStartDate)->startOfDay()->toDateTimeString(), Carbon::parse($compareEndDate)->endOfDay()->toDateTimeString() ];
         }
-
+        
         // new code added by YH
         if( !$customFilter ){
             $start_first_quarter_day = Carbon::now()->startOfYear();
@@ -110,6 +110,7 @@ class StatisticsController extends Controller
                     $last_period = [Carbon::now()->subMonth()->startOfMonth()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
             }
         }
+        return response()->json($last_period);
         $total_sale_stores = InfoOrder::whereBetween('created_at', $period)
                                     ->select(DB::raw('CEIL(AVG(Total)) as avg'), DB::raw('CEIL(SUM(Total)) as total'), 'TypeDelivery')
                                     ->groupBy('TypeDelivery')
@@ -365,7 +366,8 @@ class StatisticsController extends Controller
         $last_app_new_signup = InfoCustomer::where(function($query) use ($last_period){
                                             $query->whereBetween('SignupDateOnline', $last_period);
                                         })
-                                        ->select(DB::raw('count(*) as count'))->value('count');
+                                        ->select(DB::raw('count(*) as count'))->toSql();/* ->value('count') */;
+        
         $statistique['total_new_signup'] = $total_new_signup;
         $statistique['last_total_new_signup'] = $last_total_new_signup;
 
