@@ -963,7 +963,7 @@ import axios from 'axios';
                             return;
                         }
                     }
-                    step.value = 'payment';
+                    step.value = nav;
                 }else if( step.value == 'payment' ){
                     if(form.value.paymentMethod == 'BACS'){
                         if(form.value.companyLegalName == ''){
@@ -1013,7 +1013,7 @@ import axios from 'axios';
                             return;
                         }
                     }
-                    step.value = 'preferences';
+                    step.value = nav;
                 }else if( step.value == 'preferences' ){
                     let error = false;
                     if(form.value.pickupSlots.length){
