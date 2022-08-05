@@ -84,6 +84,7 @@
                                     v-if="detailingitem.etape === 9"
                                     :detailingData="detailingData"
                                     :detailingitem="detailingitem"
+                                    :item_description="item_description"
                                     @save-item-complexities="saveItemDetails"
                                     @go-to-step="backPreviousStep"
                                 ></detailing-item-complexities>

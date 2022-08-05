@@ -9,6 +9,7 @@
                 :class="{ selected: complexities_id.includes(comp.id) }"
             >
                 <div class="complexity-name">{{ comp.name }}</div>
+                <div>(£{{ (comp.coefcleaning * item_description.base_price).toFixed(2) }})</div>
             </div>
             <div class="box complexity complexity-name"
                 @click="select(0)"
@@ -32,7 +33,8 @@ export default {
     components: {},
     props: {
         detailingData: {},
-        detailingitem: {}
+        detailingitem: {},
+        item_description: {},
     },
     emits: ['save-item-complexities', 'go-to-step'],
     setup(props, context) {
