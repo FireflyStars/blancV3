@@ -63,13 +63,9 @@ class CustomerController extends Controller
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
         ];
         if($request->deliveryByday == '1'){
-            $pickupDayIndex = 0;
-            $info_customer['delivery_by_day'] = 1;
-            foreach ($request->pickupDays as $day) {
-                if($day['active']){
-                    $info_customer[$day['key']] = $request->pickupSlot[$pickupDayIndex]['value'];
-                    $pickupDayIndex++;
-                }
+            $info_customer['DeliverybyDay'] = 1;
+            foreach ($request->pickupSlots as $slot) {
+                $info_customer[$slot['key']] = $slot['value'];
             }
         }
 
