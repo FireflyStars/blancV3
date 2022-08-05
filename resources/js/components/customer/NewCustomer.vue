@@ -837,18 +837,28 @@ import axios from 'axios';
                         { id: 0, name: '', accountType: 'Main', phone: '', email: '', date: '', spent: 0 }
                     ];
                     setTimeout(() => {
-                        const customerAddress = new google.maps.places.Autocomplete(postcode.value);
+                        const customerAddress = new google.maps.places.Autocomplete(postcode.value,
+                            { 
+                                componentRestrictions: { country: "uk" },
+                                fields: ["address_components", "geometry"],
+                            }                        
+                        );
                         customerAddress.addListener("place_changed", () => {
                             const place = customerAddress.getPlace();
                             form.value.customerLat = place.geometry.location.lat();
                             form.value.customerLon = place.geometry.location.lng();
                             setCustomerAddress(place.address_components);
                         });
-                    }, 1);
+                    }, 1);   
                 }
             });
             // google address autocomplete for delivery address
             const setCustomerAddress = ( address_components )=>{
+                form.value.deliveryAddress1 = [
+                    ( address_components[0] && address_components[0].short_name ) || "",
+                    ( address_components[1] && address_components[1].short_name) || "",
+                    ( address_components[2] && address_components[2].short_name) || "",
+                ].join(" ");                        
                 address_components.forEach(component => {
                     const type = component.types[0];
                     if(type == "postal_code"){
@@ -860,12 +870,17 @@ import axios from 'axios';
                     }else if(type == "administrative_area_level_1"){
                         form.value.state = component.long_name
                     }else if(type == "street_number"){
-                        // form.value.deliveryAddress1 = component.long_name
+                    
                     }
                 });
             }
             // google address autocomplete for company address
             const setCompanyAddress = ( address_components )=>{
+                form.value.companyAddress1 = [
+                    ( address_components[0] && address_components[0].short_name ) || "",
+                    ( address_components[1] && address_components[1].short_name) || "",
+                    ( address_components[2] && address_components[2].short_name) || "",
+                ].join(" ");                      
                 address_components.forEach(component => {
                     const type = component.types[0];
                     if( type == "postal_code" ){
@@ -877,7 +892,7 @@ import axios from 'axios';
                     }else if(type == "administrative_area_level_1"){
                         form.value.companyState = component.long_name
                     }else if(type == "street_number"){
-                        // form.value.companyAddress1 = component.long_name
+                          
                     }
                 });
             }
@@ -907,6 +922,20 @@ import axios from 'axios';
             // set nav when you click tabs
             const selectNav = (nav)=>{
                 if(step.value == 'account_details'){
+                    setTimeout(() => {
+                        const customerAddress = new google.maps.places.Autocomplete(postcode.value,
+                            { 
+                                componentRestrictions: { country: "uk" },
+                                fields: ["address_components", "geometry"],
+                            }                        
+                        );
+                        customerAddress.addListener("place_changed", () => {
+                            const place = customerAddress.getPlace();
+                            form.value.customerLat = place.geometry.location.lat();
+                            form.value.customerLon = place.geometry.location.lng();
+                            setCustomerAddress(place.address_components);
+                        });
+                    }, 1);                       
                     if(form.value.customerType == 'B2B' && form.value.accountType == 'Main' && form.value.alreadyLinkedToAccount){
                         form.value.paymentMethod = 'BACS';
                     }
@@ -1008,7 +1037,12 @@ import axios from 'axios';
             const next = ()=>{
                 if(step.value == 'account_details'){
                     setTimeout(() => {
-                        const customerAddress = new google.maps.places.Autocomplete(postcode.value);
+                        const customerAddress = new google.maps.places.Autocomplete(postcode.value,
+                            { 
+                                componentRestrictions: { country: "uk" },
+                                fields: ["address_components", "geometry"],
+                            }                        
+                        );
                         customerAddress.addListener("place_changed", () => {
                             const place = customerAddress.getPlace();
                             form.value.customerLat = place.geometry.location.lat();
