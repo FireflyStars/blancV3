@@ -160,7 +160,7 @@
                                     <div class="d-flex mt-3">
                                         <div class="customer-contact w-55 d-flex justify-content-between">
                                             <div class="form-group m-0">
-                                                <label class="form-label d-block m-0" for="first_name">{{ form.customerType == 'B2C' ? 'Contact' : 'Company representative' }}</label>
+                                                <label class="form-label d-block m-0" for="first_name">{{ form.customerType == 'B2C' ? 'Contact *' : 'Company representative *' }}</label>
                                                 <input type="text" v-model="form.firstName" class="form-control custom-input" placeholder="First name">
                                             </div>
                                             <div class="form-group m-0">
@@ -198,7 +198,7 @@
                                     <h3 class="title m-0">Address</h3>
                                     <div class="d-flex mt-3 justify-content-between">
                                         <div class="form-group m-0 col-5">
-                                            <label for="post_code">Search postcode</label>
+                                            <label for="post_code">{{ form.typeDelivery == 'DELIVERY' ? 'Search postcode *' : 'Search postcode' }}</label>
                                             <div class="input-group">
                                                 <span class="input-group-text">
                                                     <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -216,7 +216,7 @@
                                             </div>
                                         </div>
                                         <div class="form-group col-3 m-0">
-                                            <label for="customer_city">City</label>
+                                            <label for="customer_city">{{ form.typeDelivery == 'DELIVERY' ? 'City *' : 'City' }}</label>
                                             <input type="text" v-model="form.city" class="form-control custom-input">
                                         </div>
                                         <div class="form-group col-3 m-0">
@@ -226,7 +226,7 @@
                                     </div>
                                     <div class="w-55 mt-3">
                                         <div class="form-group mb-0">
-                                            <label for="customer_address1">Delivery address</label>
+                                            <label for="customer_address1">{{ form.typeDelivery == 'DELIVERY' ? 'Delivery address *' : 'Delivery address' }}</label>
                                             <input type="text" v-model="form.deliveryAddress1" placeholder="Address line 1" class="form-control custom-input">
                                             <input type="text" v-model="form.deliveryAddress2" placeholder="Address line 2" class="form-control custom-input mt-3">
                                         </div>
@@ -260,11 +260,11 @@
                                         <transition name="list" appear >
                                             <div class="credit-card mt-5 d-flex justify-content-between" v-if="form.paymentMethod == 'Credit Card'">
                                                 <div class="form-group col-3 cardholder mb-0">
-                                                    <label for="">Cardholder name</label>
+                                                    <label for="">Cardholder name *</label>
                                                     <input type="text" placeholder="Name" v-model="form.cardHolderName" required class="form-control">
                                                 </div>
                                                 <div class="form-group col-4 carddetails mb-0">
-                                                    <label for="">Card details</label>
+                                                    <label for="">Card details *</label>
                                                     <div class="input-group mb-0" :class="{ 'error': cardErrors.cardNumber}">
                                                         <span class="input-group-text">
                                                             <i class="credit-card-icon" :class="cardBrandClass"></i>
@@ -276,14 +276,14 @@
                                                     </div>
                                                 </div>
                                                 <div class="form-group col-2 cardexpdate mb-0">
-                                                    <label for="">Expiration date</label>
+                                                    <label for="">Expiration date *</label>
                                                     <input type="text" ref="cardExpInput" placeholder="mm/yy" :class="{ 'error': cardErrors.cardExpiry}" v-model="form.cardExpDate" maxlength="10" class="form-control" v-cardformat:formatCardExpiry>
                                                     <div v-if="cardErrors.cardExpiry" class="error">
                                                         <small>{{ cardErrors.cardExpiry }}</small>
                                                     </div>
                                                 </div>
                                                 <div class="form-group col-2 cardexpdate mb-0">
-                                                    <label for="">CVC</label>
+                                                    <label for="">CVC *</label>
                                                     <input type="text" ref="cardCvcInput" :class="{ 'error': cardErrors.cardCvc}" placeholder="CVC" v-model="form.cardCVV" class="form-control" v-cardformat:formatCardCVC>
                                                     <div v-if="cardErrors.cardCvc" class="error">
                                                         <small>{{ cardErrors.cardCvc }}</small>
@@ -296,7 +296,7 @@
                                         </transition>
                                     </div>
                                 </div>
-                                <AccountImportModal ref="importModal"/>
+                                <!-- <AccountImportModal ref="importModal"/> -->
                                 <transition name="list" appear v-if="form.paymentMethod == 'BACS' || (form.alreadyLinkedToAccount && form.customerType == 'B2B')">
                                     <div class="invoice-details-panel">
                                         <h3 class="title d-flex">
@@ -305,13 +305,13 @@
                                         </h3>
                                         <div class="page-section bacs">
                                             <div class="form-group mb-0 company-legal-name">
-                                                <label for="company_legal_name">Company legal name</label>
+                                                <label for="company_legal_name">Company legal name *</label>
                                                 <input type="text" v-model="form.companyLegalName" class="form-control">
                                             </div>
                                             <div class="d-flex mt-3">
                                                 <div class="customer-contact w-55 d-flex justify-content-between">
                                                     <div class="form-group m-0">
-                                                        <label class="form-label d-block m-0" for="first_name">Company representative</label>
+                                                        <label class="form-label d-block m-0" for="first_name">Company representative *</label>
                                                         <input type="text" v-model="form.companyRepFirstName" class="form-control custom-input" placeholder="First name">
                                                     </div>
                                                     <div class="form-group m-0">
@@ -352,14 +352,14 @@
                                                 </KeepAlive> -->
                                             </div>
                                             <div class="w-55 mt-4">
-                                                <label for="">Billing address</label>
+                                                <label for="">Billing address *</label>
                                                 <input type="text" v-model="form.companyAddress1" placeholder="Address line 1" class="form-control custom-input">
                                                 <input type="text" v-model="form.companyAddress2" placeholder="Address line 2" class="form-control custom-input mt-3">
                                             </div>
                                             <div class="d-flex mt-3">
                                                 <div class="w-55 d-flex justify-content-between">
                                                     <div class="form-group m-0">
-                                                        <label for="post_code">Search postcode</label>
+                                                        <label for="post_code">Search postcode *</label>
                                                         <div class="input-group">
                                                             <span class="input-group-text">
                                                                 <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -377,7 +377,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="form-group m-0">
-                                                        <label for="customer_city">City</label>
+                                                        <label for="customer_city">City *</label>
                                                         <input type="text" v-model="form.companyCity" class="form-control custom-input">
                                                     </div>
                                                 </div>
@@ -439,6 +439,49 @@
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                    <div class="blocks">
+                                        <h3 class="title mb-3">Recurring Booking</h3>
+                                        <div class="page-section">
+                                            <div class="item-block py-3 border-bottom">
+                                                <div class="d-flex justify-content-between">
+                                                    <div class="col-8">
+                                                        <h4 class="sub-title col-12">Recurring</h4>
+                                                    </div>
+                                                    <div class="col-3">
+                                                        <switch-btn class="ms-auto" v-model="form.deliveryByday"></switch-btn>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="item-block p-3 border-bottom" v-if="form.deliveryByday == '1'">
+                                                <h4 class="sub-title col-12">Pickup & delivery days</h4>
+                                                <p>Please pick number of days we will visit the customer, with matching slots.</p>
+                                                <div class="d-flex p-2">
+                                                    <div class="pickup-day rounded-circle" 
+                                                        v-for="(pickupDay, index) in form.pickupDays" :key="index"
+                                                        :class="{ 'active': pickupDay.active }"
+                                                        @click="addPickupDay(index)"
+                                                        >
+                                                        {{ pickupDay.name }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="item-block p-3 border-bottom" v-if="form.deliveryByday == '1'">
+                                                <h4 class="sub-title col-12">Pickup & delivery slots </h4>
+                                                <div class="d-flex flex-wrap">
+                                                    <div class="col-4 px-1 mt-2" v-for="(slot, index) in form.pickupSlots" :key="index">
+                                                        <select-options
+                                                            v-model="slot.value"
+                                                            :options="timeslots"
+                                                            :placeholder="'Select'"
+                                                            :label="slot.label"
+                                                            :name="slot.label">
+                                                        </select-options>                                                        
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                     </div>
                                     <div class="blocks">
                                         <h3 class="title mb-3">Delivery instructions</h3>
@@ -573,7 +616,7 @@
     import MultipleEmail from '../test/MultipleEmail';
     import CheckBox from '../miscellaneous/CheckBox';
     import { phoneCountryCode as phoneCodes } from '../../static/PhoneCountryCodes';
-    import SwitchBtn from '../miscellaneous/SwitchNumberBtn.vue';
+    import SwitchBtn from '../miscellaneous/SwitchNumberBtn';
     import Search from './Search';
     import AccountImportModal from './AccountImportModal';
     import {
@@ -638,7 +681,6 @@ import axios from 'axios';
                 companyPhoneNumber: '',
                 invoiceEmail1: '',
                 invoiceEmail2: '',
-                // invoiceEmails: [],
                 companyPostCode: '',
                 companyCity: '',
                 companyCounty: '',
@@ -652,21 +694,42 @@ import axios from 'axios';
                 applyDiscountToSub: false,
                 creditAmount: 0,
                 addCredit: 0,
-                // preferences tab
+                // preferences
                 preferences: [],
-                // premiumFinish: false,
-                // shirtsFolded: false,
-                // debobbling: false,
-                // minorRepairs: true,
-                // transactionalSMS: true,
-                // transactionalEmail: true,
-                // marketingSMS: false,
-                // marketingEmail: false,
-                // VATEmail: false,
-                // cleaningPartner: true,
-                // noCareLabel: true,
-                // tailoringApproval: false,
-
+                deliveryByday: '0',
+                pickupDays: [
+                    {
+                        name: 'M',
+                        key: 'delivery_mon',
+                        active: false
+                    },
+                    {
+                        name: 'T',
+                        key: 'delivery_tue',
+                        active: false
+                    },
+                    {
+                        name: 'W',
+                        key: 'delivery_wed',
+                        active: false
+                    },
+                    {
+                        name: 'T',
+                        key: 'delivery_thu',
+                        active: false
+                    },
+                    {
+                        name: 'F',
+                        key: 'delivery_fri',
+                        active: false
+                    },
+                    {
+                        name: 'S',
+                        key: 'delivery_sat',
+                        active: false
+                    },
+                ],
+                pickupSlots:[],
                 altTypeDelivery: '',
                 altName: '',
                 altPhoneCountryCode: '+44',
@@ -676,13 +739,61 @@ import axios from 'axios';
             })
             const router = useRouter();
             const step = ref('account_details');
+            const timeslots = ref([
+                { value: 1, display: '8-10 am' },
+                { value: 2, display: '10-12 pm' },
+                { value: 3, display: '12-2 pm' },
+                { value: 4, display: '2-4 pm' },
+                { value: 5, display: '4-6 pm' },
+                { value: 6, display: '6-8 pm' }
+            ]);
+            const addPickupDay = (index)=>{
+                let pickupDay = form.value.pickupDays[index];
+                if(pickupDay.active){
+                    form.value.pickupDays[index].active = false;
+                    form.value.pickupSlots.pop();
+                }else{
+                    form.value.pickupDays[index].active = true;
+                    if(form.value.pickupSlots.length == 0){
+                        form.value.pickupSlots.push({
+                            value: 0,
+                            label: 'Select 1st slot',
+                        });
+                    }else if(form.value.pickupSlots.length == 1){
+                        form.value.pickupSlots.push({
+                            value: 0,
+                            label: 'Select 2nd slot',
+                        });                        
+                    }else if(form.value.pickupSlots.length == 2){
+                        form.value.pickupSlots.push({
+                            value: 0,
+                            label: 'Select 3rd slot',
+                        });     
+                    }else if(form.value.pickupSlots.length == 3){
+                        form.value.pickupSlots.push({
+                            value: 0,
+                            label: 'Select 4th slot',
+                        });     
+                    }else if(form.value.pickupSlots.length == 4){
+                        form.value.pickupSlots.push({
+                            value: 0,
+                            label: 'Select 5th slot',
+                        });     
+                    }else if(form.value.pickupSlots.length == 5){
+                        form.value.pickupSlots.push({
+                            value: 0,
+                            label: 'Select 6th slot',
+                        });
+                    }
+                }
+            }
             const searchpanel = ref(null);
             const postcode = ref(null);
             const companyPostCode = ref(null);
             const showcontainer=ref(false);
             const searchCustomer=ref(false);
             const cardFormat = inject('cardFormat');
-            const importModal = ref(null);
+            // const importModal = ref(null);
             const paths=ref([
                 { name:'Customer', route:'Customer'},
                 { name:'New Customer', route:'NewCustomer'}
@@ -770,10 +881,6 @@ import axios from 'axios';
                     }
                 });
             }
-            // set nav when you click tabs
-            const selectNav = (nav)=>{
-                step.value = nav;
-            }
             // cancel to create account
             const cancel = ()=>{
                 router.push({
@@ -797,39 +904,109 @@ import axios from 'axios';
                     return '';
                 }
             }
-            // move on to next step when you click next button
-            const next = ()=>{
+            // set nav when you click tabs
+            const selectNav = (nav)=>{
                 if(step.value == 'account_details'){
                     if(form.value.customerType == 'B2B' && form.value.accountType == 'Main' && form.value.alreadyLinkedToAccount){
                         form.value.paymentMethod = 'BACS';
                     }
-                    // if(form.value.firstName == ''){
-                    //     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter email address', ttl:5, type:'danger' });
-                    //     return;
-                    // }
-                    // if(form.value.lastName == ''){
-                    //     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter email address', ttl:5, type:'danger' });
-                    //     return;
-                    // }
-                    // if(form.value.email == ''){
-                    //     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter email address', ttl:5, type:'danger' });
-                    //     return;
-                    // }
-                    // if(form.value.typeDelivery == 'DELIVERY'){
-                    //     if(form.value.postCode == ''){
-                    //         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Post Code', ttl:5, type:'danger' });
-                    //         return;
-                    //     }
-                    //     if(form.value.deliveryAddress1 == ''){
-                    //         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter delivery Address', ttl:5, type:'danger' });
-                    //         return;
-                    //     }
-                    //     if(form.value.phoneNumber == ''){
-                    //         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter phone number', ttl:5, type:'danger' });
-                    //         return;
-                    //     }
-                    // }
+                    if(form.value.firstName == ''){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please Enter FirstName', ttl:5, type:'danger' });
+                        return;
+                    }
+                    if(form.value.email != ''){
+                        if( !emailValidation(form.value.email) ){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email address', ttl:5, type:'danger' });
+                            return;
+                        }
+                    }
+                    if(form.value.typeDelivery == 'DELIVERY'){
+                        if(form.value.postCode == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Post Code', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.deliveryAddress1 == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter delivery Address', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.city == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter city', ttl:5, type:'danger' });
+                            return;
+                        }
+                    }
                     step.value = 'payment';
+                }else if( step.value == 'payment' ){
+                    if(form.value.paymentMethod == 'BACS'){
+                        if(form.value.companyLegalName == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Company Legal Name', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.invoiceEmail1 != ''){
+                            if( !emailValidation(form.value.invoiceEmail1) ){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 1', ttl:5, type:'danger' });
+                                return;
+                            }
+                        }
+                        if(form.value.invoiceEmail2 != ''){
+                            if( !emailValidation(form.value.invoiceEmail2) ){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 1', ttl:5, type:'danger' });
+                                return;
+                            }
+                        }
+                        if(form.value.companyAddress1 == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter address for company', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.companyPostCode == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter post code for company', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.companyCity == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter city for company', ttl:5, type:'danger' });
+                            return;
+                        }
+                    }else{
+                        if(form.value.cardHolderName == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Cardholder name', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.cardDetails == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter card number', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.cardExpDate == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter exp date', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.cardCvc == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter CVC', ttl:5, type:'danger' });
+                            return;
+                        }
+                    }
+                    step.value = 'preferences';
+                }else if( step.value == 'preferences' ){
+                    let error = false;
+                    if(form.value.pickupSlots.length){
+                        form.value.pickupSlots.forEach((item, index)=>{
+                            if(item.value == 0){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item.label, ttl:5, type:'danger' });
+                                error = true;
+                            }
+                        })
+                    }
+                    if(!error)
+                        step.value = nav;
+                }else{
+                    step.value = nav;
+                }                
+            }
+            watch(()=>form.value.firstName, (cur_val, pre_val)=>{
+                form.value.companyRepFirstName = cur_val;
+            })
+            
+            // move on to next step when you click next button
+            const next = ()=>{
+                if(step.value == 'account_details'){
                     setTimeout(() => {
                         const customerAddress = new google.maps.places.Autocomplete(postcode.value);
                         customerAddress.addListener("place_changed", () => {
@@ -838,17 +1015,102 @@ import axios from 'axios';
                             form.value.customerLon = place.geometry.location.lng();
                             setCustomerAddress(place.address_components);
                         });
-                    }, 1);
+                    }, 1);                    
+                    if(form.value.customerType == 'B2B' && form.value.accountType == 'Main' && form.value.alreadyLinkedToAccount){
+                        form.value.paymentMethod = 'BACS';
+                    }
+                    if(form.value.firstName == ''){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please Enter FirstName', ttl:5, type:'danger' });
+                        return;
+                    }
+                    if(form.value.email != ''){
+                        if( !emailValidation(form.value.email) ){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email address', ttl:5, type:'danger' });
+                            return;
+                        }
+                    }
+                    if(form.value.typeDelivery == 'DELIVERY'){
+                        if(form.value.postCode == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Post Code', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.deliveryAddress1 == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter delivery Address', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.city == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter city', ttl:5, type:'danger' });
+                            return;
+                        }
+                    }
+                    step.value = 'payment';
                 }else if( step.value == 'payment' ){
-                    // if(form.value.paymentMethod == 'BACS'){
-
-                    // }
+                    if(form.value.paymentMethod == 'BACS'){
+                        if(form.value.companyLegalName == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Company Legal Name', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.invoiceEmail1 != ''){
+                            if( !emailValidation(form.value.invoiceEmail1) ){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 1', ttl:5, type:'danger' });
+                                return;
+                            }
+                        }
+                        if(form.value.invoiceEmail2 != ''){
+                            if( !emailValidation(form.value.invoiceEmail2) ){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 1', ttl:5, type:'danger' });
+                                return;
+                            }
+                        }
+                        if(form.value.companyAddress1 == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter address for company', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.companyPostCode == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter post code for company', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.companyCity == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter city for company', ttl:5, type:'danger' });
+                            return;
+                        }
+                    }else{
+                        if(form.value.cardHolderName == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Cardholder name', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.cardDetails == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter card number', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.cardExpDate == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter exp date', ttl:5, type:'danger' });
+                            return;
+                        }
+                        if(form.value.cardCvc == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter CVC', ttl:5, type:'danger' });
+                            return;
+                        }
+                    }
                     step.value = 'preferences';
                 }else if( step.value == 'preferences' ){
-                    step.value = 'linked_account';
+                    let error = false;
+                    if(form.value.pickupSlots.length){
+                        form.value.pickupSlots.forEach((item, index)=>{
+                            if(item.value == 0){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item.label, ttl:5, type:'danger' });
+                                error = true;
+                            }
+                        })
+                    }
+                    if(!error)
+                        step.value = 'linked_account';
                 }else if(step.value == 'linked_account'){
                     createCustomer();
                 }
+            }
+            const emailValidation = (email)=>{
+                return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
             }
             // validation when the card detail changes
             watch(()=>form.value.cardDetails,(current_value, previous_value)=>{
@@ -878,7 +1140,7 @@ import axios from 'axios';
             watch(()=>form.value.paymentMethod,(current_value, previous_value)=>{
                 if(current_value == 'BACS'){
                     nextTick(() => {
-                        importModal.value.openModal();
+                        // importModal.value.openModal();
                         const companyAddress = new google.maps.places.Autocomplete(companyPostCode.value);
                         companyAddress.addListener("place_changed", () => {
                             const place = companyAddress.getPlace();
@@ -992,18 +1254,20 @@ import axios from 'axios';
                 showcontainer,
                 searchCustomer,
                 paths,
-                selectNav,
-                next,
-                cancel,
-                removeLinkedAccount,
                 postcode,
                 companyPostCode,
                 phoneCodesSorted,
                 cardErrors,
-                importModal,
+                timeslots,
+                // importModal,
+                searchpanel,
                 createSubAccount,
                 createCustomer,
-                searchpanel,
+                selectNav,
+                addPickupDay,
+                next,
+                cancel,
+                removeLinkedAccount,
                 showSearchPanel,
                 selectedSubAccount,
                 checkCard,
@@ -1404,5 +1668,23 @@ import axios from 'axios';
 input.error:focus{
     outline: none;
     border-color: #EB5757;
+}
+.pickup-day{
+    display: flex;
+    align-items: center;
+    justify-content: center;    
+    font-weight: bold;
+    margin-right: 15px;
+    width: 38px;
+    height: 38px;
+    background: #E0E0E0;
+    font-size: 14px;
+    line-height: 17px;
+    color: #47454B;
+    cursor: pointer;
+}
+.pickup-day.active{
+    color: white;
+    background: #42A71E;
 }
 </style>

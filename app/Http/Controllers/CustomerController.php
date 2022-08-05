@@ -22,22 +22,20 @@ class CustomerController extends Controller
     public function createCustomer(Request $request){
 
        if($request->typeDelivery == "DELIVERY"){
-
             $validator = Validator::make($request->all(), [
-
                 'firstName' => 'required',
-                'lastName' => 'required',
+                'lastName'  => 'required',
                 'phoneNumber' => 'required',
-                'postCode' => 'required',
+                'postCode'  => 'required',
+                'email'     => $request->email !='' ? 'required|email|unique:infoCustomer,EmailAddress': '',
                 'deliveryAddress1' => 'required',
                 'city' => 'required',
-
             ]);
         } else {
-
             $validator = Validator::make($request->all(), [
                 'firstName' => 'required',
                 'lastName' => 'required',
+                'email'     => $request->email !='' ? 'required|email|unique:infoCustomer,EmailAddress': '',
             ]);
 
 
@@ -64,6 +62,16 @@ class CustomerController extends Controller
             'credit'        => 0,
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
         ];
+        if($request->deliveryByday == '1'){
+            $pickupDayIndex = 0;
+            $info_customer['delivery_by_day'] = 1;
+            foreach ($request->pickupDays as $day) {
+                if($day['active']){
+                    $info_customer[$day['key']] = $request->pickupSlot[$pickupDayIndex]['value'];
+                    $pickupDayIndex++;
+                }
+            }
+        }
 
         if($request->CustomerID !=''){
             try {
@@ -1050,7 +1058,7 @@ class CustomerController extends Controller
         $customer->pastOrders = false;
 
         //TO UNCOMMENT AFTER SAVE
-/*
+        /*
         $customer->currentOrders = DB::table('infoOrder')
                     ->select(
                         'infoOrder.id as order_id',
