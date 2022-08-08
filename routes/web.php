@@ -650,7 +650,6 @@ Route::get('ar-test',function(){
 
 /* END TEST ROUTES */
 
-// added by yonghuan to search customers to be linked
 Route::post('/search-customer', [SearchController::class, 'SearchCustomersToLink'])->name('SearchCustomersToLink');
 
 Route::post('/SearchCustomer', [SearchController::class, 'SearchCustomer'])->name('SearchCustomer');

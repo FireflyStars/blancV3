@@ -570,15 +570,15 @@
                                         </tbody>
                                     </table>
 
-                                    <div class="d-flex">
+                                    <div class="d-flex" v-if="form.accountType == 'Main' && form.customerType == 'B2B'">
                                         <button @click="createSubAccount" class="border-btn add-new-account d-flex justify-content-between align-items-center me-3">
                                             <svg class="me-3" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <circle cx="12" cy="12" r="12" fill="black"/>
                                                 <path d="M11.0897 14.472C11.0897 14.984 11.4897 15.384 12.0017 15.384C12.4977 15.384 12.9137 14.984 12.9137 14.472V12.248H15.1857C15.6657 12.248 16.0657 11.864 16.0657 11.368C16.0657 10.888 15.6657 10.488 15.1857 10.488H12.9137V8.264C12.9137 7.752 12.4977 7.352 12.0017 7.352C11.4897 7.352 11.0897 7.752 11.0897 8.264V10.488H8.81769C8.33769 10.488 7.93769 10.888 7.93769 11.368C7.93769 11.864 8.33769 12.248 8.81769 12.248H11.0897V14.472Z" fill="white"/>
                                             </svg>
-                                            Create new account
+                                            Create a SubAccount
                                         </button>
-                                        <button @click="showSearchPanel" class="border-btn add-existing-account d-flex justify-content-between align-items-center">
+                                        <button @click="showSearchPanel(0)" class="border-btn add-existing-account d-flex justify-content-between align-items-center">
                                             <svg class="me-3" width="24" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <g clip-path="url(#clip0_550_21813)">
                                             <path fill-rule="evenodd" clip-rule="evenodd" d="M16.8257 14.8987L22.2057 20.2787C22.3948 20.468 22.501 20.7246 22.5009 20.9921C22.5008 21.2596 22.3945 21.5161 22.2052 21.7052C22.016 21.8943 21.7594 22.0005 21.4919 22.0004C21.2244 22.0003 20.9678 21.894 20.7787 21.7047L15.3987 16.3247C13.7905 17.5704 11.768 18.1566 9.74287 17.9641C7.71772 17.7716 5.84198 16.8148 4.49723 15.2884C3.15248 13.7619 2.43973 11.7806 2.504 9.74729C2.56826 7.71402 3.4047 5.7816 4.84315 4.34315C6.2816 2.9047 8.21402 2.06826 10.2473 2.004C12.2806 1.93973 14.2619 2.65248 15.7884 3.99723C17.3148 5.34198 18.2716 7.21772 18.4641 9.24287C18.6566 11.268 18.0704 13.2905 16.8247 14.8987H16.8257ZM10.5007 15.9997C12.092 15.9997 13.6182 15.3676 14.7434 14.2424C15.8686 13.1172 16.5007 11.591 16.5007 9.99974C16.5007 8.40845 15.8686 6.88232 14.7434 5.7571C13.6182 4.63189 12.092 3.99974 10.5007 3.99974C8.90944 3.99974 7.38332 4.63189 6.2581 5.7571C5.13289 6.88232 4.50074 8.40845 4.50074 9.99974C4.50074 11.591 5.13289 13.1172 6.2581 14.2424C7.38332 15.3676 8.90944 15.9997 10.5007 15.9997Z" fill="#47454B"/>
@@ -589,7 +589,23 @@
                                             </clipPath>
                                             </defs>
                                             </svg>
-                                            Add existing account
+                                            Add Existing SubAccount
+                                        </button>
+                                        <Search ref="searchpanel" @selectedSubAccount="selectedSubAccount"/>
+                                    </div>
+                                    <div class="d-flex" v-else>
+                                        <button @click="showSearchPanel(1)" class="border-btn add-existing-account d-flex justify-content-between align-items-center">
+                                            <svg class="me-3" width="24" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <g clip-path="url(#clip0_550_21813)">
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M16.8257 14.8987L22.2057 20.2787C22.3948 20.468 22.501 20.7246 22.5009 20.9921C22.5008 21.2596 22.3945 21.5161 22.2052 21.7052C22.016 21.8943 21.7594 22.0005 21.4919 22.0004C21.2244 22.0003 20.9678 21.894 20.7787 21.7047L15.3987 16.3247C13.7905 17.5704 11.768 18.1566 9.74287 17.9641C7.71772 17.7716 5.84198 16.8148 4.49723 15.2884C3.15248 13.7619 2.43973 11.7806 2.504 9.74729C2.56826 7.71402 3.4047 5.7816 4.84315 4.34315C6.2816 2.9047 8.21402 2.06826 10.2473 2.004C12.2806 1.93973 14.2619 2.65248 15.7884 3.99723C17.3148 5.34198 18.2716 7.21772 18.4641 9.24287C18.6566 11.268 18.0704 13.2905 16.8247 14.8987H16.8257ZM10.5007 15.9997C12.092 15.9997 13.6182 15.3676 14.7434 14.2424C15.8686 13.1172 16.5007 11.591 16.5007 9.99974C16.5007 8.40845 15.8686 6.88232 14.7434 5.7571C13.6182 4.63189 12.092 3.99974 10.5007 3.99974C8.90944 3.99974 7.38332 4.63189 6.2581 5.7571C5.13289 6.88232 4.50074 8.40845 4.50074 9.99974C4.50074 11.591 5.13289 13.1172 6.2581 14.2424C7.38332 15.3676 8.90944 15.9997 10.5007 15.9997Z" fill="#47454B"/>
+                                            </g>
+                                            <defs>
+                                            <clipPath id="clip0_550_21813">
+                                            <rect width="20.0009" height="20.0004" fill="white" transform="translate(2.5 2)"/>
+                                            </clipPath>
+                                            </defs>
+                                            </svg>
+                                            Link to Master
                                         </button>
                                         <Search ref="searchpanel" @selectedSubAccount="selectedSubAccount"/>
                                     </div>
@@ -706,8 +722,8 @@ import axios from 'axios';
                 linkedAccounts: []
             })
             const router = useRouter();
-            // const step = ref('account_details');
-            const step = ref('preferences');
+            const step = ref('account_details');
+            // const step = ref('preferences');
             const pickupDays = ref([
                     {
                         name: 'M',
@@ -818,7 +834,7 @@ import axios from 'axios';
                         form.value.linkedAccounts = [...form.value.linkedAccounts, JSON.parse(localStorage.getItem('subCustomerInfo'))]
                         if(form.value.linkedAccounts.length == 0){
                             form.value.linkedAccounts = [
-                                { id: 0, name: form.value.firstName+', '+ form.value.lastName, accountType: 'Main', phone: '', email: '', date: '', spent: '' }
+                                { id: 0, name: form.value.firstName + ', '+ form.value.lastName, accountType: 'Main', phone: '', email: '', date: '', spent: '' }
                             ];
                         }
                         localStorage.removeItem('subCustomerInfo');
@@ -1018,8 +1034,13 @@ import axios from 'axios';
                     if(!error)
                         step.value = nav;
                 }else{
+                    if(form.value.accountType == 'Main' && form.value.customerType == 'B2B'){
+                        form.value.linkedAccounts[0].accountType = 'Main';
+                    }else{
+                        form.value.linkedAccounts[0].accountType = 'Sub';
+                    }
                     step.value = nav;
-                }                
+                }
             }
             watch(()=>form.value.firstName, (cur_val, pre_val)=>{
                 form.value.companyRepFirstName = cur_val;
@@ -1121,7 +1142,7 @@ import axios from 'axios';
                     }
                     step.value = 'preferences';
                 }else if( step.value == 'preferences' ){
-                    let error = false;
+                    let error = false;                   
                     if(form.value.pickupSlots.length){
                         form.value.pickupSlots.forEach((item, index)=>{
                             if(item.value == 0){
@@ -1130,9 +1151,14 @@ import axios from 'axios';
                             }
                         })
                     }
+                    if(form.value.accountType == 'Main' && form.value.customerType == 'B2B'){
+                        form.value.linkedAccounts[0].accountType = 'Main';
+                    }else{
+                        form.value.linkedAccounts[0].accountType = 'Sub';
+                    }
                     if(!error)
                         step.value = 'linked_account';
-                }else if(step.value == 'linked_account'){
+                }else{
                     createCustomer();
                 }
             }
@@ -1168,7 +1194,12 @@ import axios from 'axios';
                 if(current_value == 'BACS'){
                     nextTick(() => {
                         // importModal.value.openModal();
-                        const companyAddress = new google.maps.places.Autocomplete(companyPostCode.value);
+                        const companyAddress = new google.maps.places.Autocomplete(companyPostCode.value,
+                            { 
+                                componentRestrictions: { country: "uk" },
+                                fields: ["address_components", "geometry"],
+                            }                            
+                        );
                         companyAddress.addListener("place_changed", () => {
                             const place = companyAddress.getPlace();
                             form.value.companyLat = place.geometry.location.lat();
@@ -1242,22 +1273,38 @@ import axios from 'axios';
                 })
             }
             // handler when you click search customer button
-            const showSearchPanel = ()=>{
-                searchpanel.value.openSearchPanel();
+            const showSearchPanel = (type)=>{
+                searchpanel.value.openSearchPanel(type);
             }
             // handler when the customer selected in search result
             const selectedSubAccount = (data)=>{
-                form.value.linkedAccounts = [...form.value.linkedAccounts,
-                    {
-                        id:     data.id,
-                        name:   data.name,
-                        accountType: 'Sub',
-                        phone:  data.phone,
-                        email:  data.email,
-                        date:   data.date,
-                        spent:  data.spent
-                    }
-                ]
+                if(form.value.accountType == 'Main' && form.value.customerType == 'B2B'){
+                    form.value.linkedAccounts = [...form.value.linkedAccounts,
+                        {
+                            id:     data.id,
+                            name:   data.name,
+                            accountType: data.accountType,
+                            phone:  data.phone,
+                            email:  data.email,
+                            date:   data.date,
+                            spent:  data.spent,
+                            customerId:  data.customerId,
+                        }
+                    ]
+                }else{
+                    form.value.linkedAccounts = [
+                        {
+                            id:     data.id,
+                            name:   data.name,
+                            accountType: data.accountType,
+                            phone:  data.phone,
+                            email:  data.email,
+                            date:   data.date,
+                            spent:  data.spent,
+                            customerId:  data.customerId,
+                        },...form.value.linkedAccounts
+                    ]                    
+                }
             };
             // handler when you unlink sub account from linked accounts
             const removeLinkedAccount = (id)=>{
