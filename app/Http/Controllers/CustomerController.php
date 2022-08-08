@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Tranche;
 use App\Models\Delivery;
+use App\Models\InfoCustomer;
 
 class CustomerController extends Controller
 {
@@ -34,8 +35,6 @@ class CustomerController extends Controller
                 'firstName' => 'required',
                 'email'     => $request->email !='' ? 'required|email|unique:infoCustomer,EmailAddress': '',
             ]);
-
-
         }
 
         if ($validator->fails()) {
@@ -44,13 +43,14 @@ class CustomerController extends Controller
 
 
         // add a new record to infoCustomer table
+        $emailAddress = $request->email !='' ? $request->email : (Str::random(10).'@noemail.com');
         $info_customer = [
             'isMaster'      => $request->accountType == 'Main' ? ($request->customerType == 'B2B' ? 1: 0) : 0,
             'TypeDelivery'  => $request->typeDelivery,
             'btob'          => $request->customerType == 'B2B' ? 1 : 0,
             'FirstName'     => $request->firstName,
             'LastName'      => $request->lastName,
-            'EmailAddress'  => $request->email !='' ? $request->email : (Str::random(10).'@noemail.com'),
+            'EmailAddress'  => $emailAddress,
             'Name'          => $request->firstName.", ".$request->lastName,
             'Phone'         => $request->phoneNumber != '' ? '["'.$request->phoneCountryCode.'|'.$request->phoneNumber.']"' : '',
             'bycard'        => $request->paymentMethod == 'Credit Card' ? 1 : 0,
@@ -127,7 +127,7 @@ class CustomerController extends Controller
         $new_address = [
             'CustomerID'    => $CustomerUUID,
             'AddressID'     => $addressUUID,
-            'NewEmail'      => $request->email !='' ? $request->email : (Str::random(10).'@noemail.com'),
+            'NewEmail'      => $emailAddress,
             'City'          => $request->city,
             'State'         => $request->state,
             'postcode'      => $request->postCode,
@@ -270,18 +270,18 @@ class CustomerController extends Controller
 
         }
 
-            foreach ($request->preferences as $group) {
-                foreach ($group['data'] as $item) {
-                    $customer_preferences[] = [
-                        'CustomerID' => $CustomerUUID,
-                        'Titre' => $item['title'],
-                        'Value' => $item['value'],
-                        'id_preference' => $item['id'],
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
-                }
+        foreach ($request->preferences as $group) {
+            foreach ($group['data'] as $item) {
+                $customer_preferences[] = [
+                    'CustomerID' => $CustomerUUID,
+                    'Titre' => $item['title'],
+                    'Value' => $item['value'],
+                    'id_preference' => $item['id'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
             }
+        }
         $customer_preferences[] = [
             'CustomerID' => $CustomerUUID,
             'Titre' => 'Type Customer',
@@ -310,7 +310,20 @@ class CustomerController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error'=> $e->getMessage()]);
         }
-        return response()->json($CustomerUUID);
+        return response()->json($custId);
+    }
+
+    public function checkCustomerUnique(Request $request){
+        $validator = Validator::make($request->all(), [
+            'firstName' => 'unique:infoCustomer,firstName',
+            'email'     => $request->email !='' ? 'unique:infoCustomer,EmailAddress': '',
+            'phoneNumber' => 'unique:infoCustomer,Phone',
+        ]);
+        if($validator->fails()){
+            return response()->json(['unique'=> false]);
+        }else{
+            return response()->json(['unique'=> true]);
+        }
     }
     /**
      * Get customer preferences
@@ -678,7 +691,7 @@ class CustomerController extends Controller
                 });
             }
 
-            $customers = $customers->groupBy('infoCustomer.CustomerID');
+            $customers = $customers->groupBy('infoCustomer.CustomerID')->orderBy('infoCustomer.id', 'DESC');
 
         }else {
                   $customers = DB::table('infoCustomer')
@@ -705,7 +718,7 @@ class CustomerController extends Controller
                             'infoCustomer.TotalSpend as total_spent',
                         )
                         ->groupBy('infoCustomer.CustomerID')
-                        ->orderBy('infoCustomer.id');
+                        ->orderBy('infoCustomer.id', 'DESC');
         }
         if($request->selected_nav == 'B2B' || $request->customer_type == 'B2B'){
             $customers = $customers->where( function( $query ) {

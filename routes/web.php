@@ -71,6 +71,7 @@ Route::get('/preload-order-form-info',[OrderController::class, 'preloadOrderForm
 
 
 Route::post('/create-customer',[CustomerController::class, 'createCustomer'])->middleware('auth')->name('create-customer');
+Route::post('/check-customer-unique',[CustomerController::class, 'checkCustomerUnique'])->middleware('auth')->name('check.customer.unique');
 Route::post('/check-stripe',[CustomerController::class, 'checkStripe'])->middleware('auth')->name('check-stripe');
 Route::post('/create-sub-account',[CustomerController::class, 'createSubAccount'])->middleware('auth')->name('create-sub-account');
 Route::post('/generate-customer-id',[CustomerController::class, 'generateCustomerID'])->middleware('auth')->name('generate-customer-id');

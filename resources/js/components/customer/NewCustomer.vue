@@ -1255,23 +1255,75 @@ import axios from 'axios';
 
             // handler for when you click a create customer
             const createCustomer =()=>{
-                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Creating Customer...']);
-                axios.post('/create-customer', form.value).then((response)=>{
-                    if(response.data.error){
-                        Object.values(response.data.error).forEach((item)=>{
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item[0], ttl:5, type:'danger' });
+                axios.post('/check-customer-unique', form.value).then((res)=>{
+                    if(res.data.unique){
+                        store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Creating Customer...']);
+                        axios.post('/create-customer', form.value).then((response)=>{
+                            if(response.data.error){
+                                if(typeof response.data.error.isArray){
+                                    Object.values(response.data.error).forEach((item)=>{
+                                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item[0], ttl:5, type:'danger' });
+                                    })
+                                }else{
+                                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: response.data.error, ttl:5, type:'danger' });
+                                }
+                            }else{
+                                router.push({
+                                    name: 'CustomerDetail',
+                                    params:{
+                                        customer_id: response.data
+                                    }
+                                });
+                            }
+                        }).catch((errors)=>{
+                            console.log(errors);
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: errors.response.data.message, ttl:5, type:'danger' });
+                        }).finally(()=>{
+                            store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                         })
                     }else{
-                        router.push({
-                            name: 'Customer'
-                        });
+                        Swal.fire({
+                            title: 'Duplicated Info',
+                            text: "We find the same name on customer",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#42A71E',
+                            cancelButtonColor: '#E8581B',
+                            cancelButtonText: 'No',        
+                            confirmButtonText: 'Yes'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Creating Customer...']);
+                                axios.post('/create-customer', form.value).then((response)=>{
+                                    if(response.data.error){
+                                        if(typeof response.data.error.isArray){
+                                            Object.values(response.data.error).forEach((item)=>{
+                                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item[0], ttl:5, type:'danger' });
+                                            })
+                                        }else{
+                                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: response.data.error, ttl:5, type:'danger' });
+                                        }
+                                    }else{
+                                        router.push({
+                                            name: 'CustomerDetail',
+                                            params:{
+                                                customer_id: response.data
+                                            }
+                                        });
+                                    }
+                                }).catch((errors)=>{
+                                    console.log(errors);
+                                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: errors.response.data.message, ttl:5, type:'danger' });
+                                }).finally(()=>{
+                                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                                })                                
+                            }
+                        })    
                     }
-                }).catch((errors)=>{
-                    console.log(errors);
-                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: errors.response.data.message, ttl:5, type:'danger' });
-                }).finally(()=>{
-                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                }).catch((error)=>{
+
                 })
+
             }
             // handler when you click search customer button
             const showSearchPanel = (type)=>{
