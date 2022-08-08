@@ -84,12 +84,21 @@ class CustomerController extends Controller
         }
         // set CustomerIdMaster of sub account as Main customer's CustomerID
         if(count($request->linkedAccounts) > 1){
-            foreach ($request->linkedAccounts as $account) {
-                try {
-                    DB::table('infoCustomer')->where('id', $account['id'])->update(['CustomerIDMaster' => $CustomerUUID]);
-                } catch (\Exception $e) {
-                    return response()->json(['error'=> $e->getMessage()]);
+            if($request->accountType == 'Main' && $request->customerType == 'B2B'){
+                foreach ($request->linkedAccounts as $index => $account) {
+                    if($index != 0){
+                        try {
+                            DB::table('infoCustomer')->where('id', $account['id'])->update(['CustomerIDMaster' => $CustomerUUID]);
+                        } catch (\Exception $e) {
+                            return response()->json(['error'=> $e->getMessage()]);
+                        }
+                    }else{
+
+                    }
                 }
+            }else{
+                $masterUUID = $request->linkedAccounts[0]['customerId'];
+                DB::table('infoCustomer')->where('CustomerID', $CustomerUUID)->update(['CustomerIDMaster' => $masterUUID]);
             }
         }
         // add a new record to address table
