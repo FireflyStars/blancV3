@@ -381,4 +381,7 @@
         width: 100%;
         z-index: 9999;
     }
+    .orderlist-tab{
+        font-family : 'Gotham Rounded Book'
+    }
 </style>
