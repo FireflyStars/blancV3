@@ -164,7 +164,7 @@
         <!-- <hr v-if="(typeof ORDER['detail']!='undefined')"/> -->
         <div class="row">
             <div class="col">
-                <order-detail-sub-order-items-table @show_conf="show_split_conf=true" :tabledef="itemsfields" :id="'items_table'" :status="ORDER['detail'].Status" v-if="(typeof ORDER['detail']!='undefined')">
+                <order-detail-sub-order-items-table @close="show_split_conf=false" @show_conf="show_split_conf=true" :tabledef="itemsfields" :id="'items_table'" :status="ORDER['detail'].Status" v-if="(typeof ORDER['detail']!='undefined')">
                 </order-detail-sub-order-items-table>
             </div>
         </div>
@@ -175,8 +175,8 @@
              <div class="col-4" v-if="ORDER['items'].length === 0">
                 <button class="btn btn-outline-dark body_medium">Print ticket(s)</button>
             </div>
-             <div class="col-4" v-if="ORDER['items'].length === 0 && ORDER['detail'].Status!='RECURRING'">
-                <button class="btn btn-outline-danger body_medium">Cancel booking</button>
+             <div class="col-4" v-if="ORDER['items'].length === 0 && (ORDER['detail'].Status =='RECURRING' || ORDER['detail'].Status =='SCHEDULED' )">
+                <button class="btn btn-outline-danger body_medium" @click="CancelBooking">Cancel booking</button>
             </div>
              <div class="col-1 options_btn"  v-if="ORDER['items'].length === 0">
                 <button @click="openOptions()" class="btn btn-outline-dark body_medium menu"><span>...</span></button>
@@ -185,6 +185,7 @@
             </div>
 
         <split-confirmation :show_conf="show_split_conf" @close="show_split_conf=false"></split-confirmation>
+        <CancelBookingConfirmation v-if= "showModelCancelBooking" :show_modal="showModelCancelBooking" @close="showModelCancelBooking=false" :order = ORDER.detail></CancelBookingConfirmation>
 
     </div>
 </template>
@@ -200,6 +201,7 @@
     import OrderDetailSubOrderItemsTable from './OrderDetailSubOrderItemsTable'
     import {formatPrice,hasRoles,formatDate} from "../helpers/helpers";
     import SplitConfirmation from '../miscellaneous/SplitConfirmation';
+    import CancelBookingConfirmation from '../miscellaneous/CancelBookingConfirmation';
      import OrderOptions from '../miscellaneous/OrderOptions'
     import {
         ORDERLIST_MODULE,
@@ -227,7 +229,7 @@
 
     export default {
         name: "OrderDetail",
-        components:{Tag,AddressFormat,OrderDetailSubOrderItemsTable,DatePicker,TimeSlotPicker,SplitConfirmation ,OrderOptions},
+        components:{Tag,AddressFormat,OrderDetailSubOrderItemsTable,DatePicker,TimeSlotPicker,SplitConfirmation ,OrderOptions , CancelBookingConfirmation},
         setup(){
             const route =useRoute();
             const router=useRouter();
@@ -304,6 +306,7 @@
             const disabledtodate=ref('');
             const orderId = ref(0);
             const instAcc = ref(false);
+            const showModelCancelBooking = ref(false);
 
 
 
@@ -477,6 +480,9 @@
                 showslots.value = true;
                 setDeliveryDate.value = true;
             }
+            function CancelBooking(){
+                showModelCancelBooking.value = true
+            }
 
             return {
                 showorderdetail,
@@ -523,6 +529,8 @@
                 openOptions,
                 setDeliveryDate,
                 showDeliverySlots,
+                showModelCancelBooking,
+                CancelBooking
             }
         }
     }

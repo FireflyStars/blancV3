@@ -55,7 +55,10 @@ Route::post('/auth/login',function () {
 Route::post('/getorderlist',[OrderListController::class, 'getorderlist'])->middleware('auth')->name('orderlist');
 Route::post('/getorderlistbysearch',[OrderListController::class, 'getorderlistbysearch'])->middleware('auth')->name('orderlistbysearch');
 Route::post('/getOrdersByCustomerId',[OrderListController::class, 'getOrdersByCustomerId'])->middleware('auth')->name('ordersByCustomerId');
-Route::post('/cancelorders',[OrderListController::class, 'cancelorders'])->middleware('auth')->name('cancelorders');
+Route::post('/cancelorders',[OrderController::class, 'cancelorders'])->middleware('auth')->name('cancelorders');
+Route::post('/voidSuborder',[OrderController::class, 'voidSuborder'])->middleware('auth')->name('voidSuborder');
+Route::post('/cancelBooking',[OrderController::class, 'cancelBooking'])->middleware('auth')->name('cancelBooking');
+Route::post('/create-new-order',[OrderController::class,'createNewOrder'])->name('create-new-order')->middleware('auth');
 Route::post('/markaslate',[OrderListController::class, 'markaslate'])->middleware('auth')->name('markaslate');
 Route::post('/getorderdetail',[OrderListController::class,'getorderdetail'])->middleware('auth')->name('getorderdetail');
 Route::post('/setInvoiceFulfilled',[OrderListController::class,'setInvoiceFulfilled'])->middleware('auth')->name('setInvoiceFulfilled');
