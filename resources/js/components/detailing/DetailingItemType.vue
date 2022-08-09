@@ -10,8 +10,8 @@
                         data-bs-target="#flush-collapseOne"
                         aria-expanded="false"
                         aria-controls="flush-collapseOne"
-                        @click="categoryClick(cat.id)"
-                        :class="{ opened: category_id === cat.id }"
+                        @click="categoryClick(cat.id , i)"
+                        :class="{ opened: (listAcc[i] === true && category_id === cat.id) }"
                     >{{ cat.name }}</button>
                 </h2>
                 <div
@@ -19,7 +19,7 @@
                     class="accordion-collapse collapse"
                     aria-labelledby="flush-headingOne"
                     data-bs-parent="#accordionFlushExample"
-                    :class="{ show: category_id === cat.id }"
+                    :class="{ show: (listAcc[i] === true && category_id === cat.id) }"
                 >
                     <div class="row accordion-body">
                         <div
@@ -84,6 +84,11 @@ export default {
         const category_id = ref(0);
         const typeitem_id = ref(0);
         const valid = ref(false);
+        const listAcc = ref([]);
+
+        props.categories.map(function(value, key) {
+            listAcc.value.push(false);
+        })
         category_id.value = props.detailingitem.category_id != null ? props.detailingitem.category_id : 0;
         typeitem_id.value = props.detailingitem.typeitem_id != null ? props.detailingitem.typeitem_id : 0;
         valid.value = category_id.value != 0 && typeitem_id.value != 0;
@@ -98,9 +103,11 @@ export default {
         function filteredTypeItem(cat_id) {
             return props.typeitems.filter(item => item.category_id == cat_id);
         }
-        function categoryClick(id) {
+        function categoryClick(id , index) {
             category_id.value = id;
+             listAcc.value[index] = ! listAcc.value[index]
         }
+        
         function typeItemClick(id) {
             if (typeitem_id.value != id) {
                 typeitem_id.value = id;
@@ -134,7 +141,8 @@ export default {
             typeItemClick,
             save,
             back,
-            scrollToNext
+            scrollToNext,
+            listAcc
         };
     },
 }
