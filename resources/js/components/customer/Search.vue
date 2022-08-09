@@ -4,7 +4,7 @@
             <transition name="list" appear>
                 <div class="search-panel m-auto bg-white">
                     <div class="search-header text-center position-relative">
-                        Search Customer
+                        Search {{ accountType == 1 ? 'Master' : '' }} Customer
                         <svg @click="closeSearchPanel" class="close-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path fill-rule="evenodd" clip-rule="evenodd" d="M6.78812 5.2973C6.3976 4.90481 5.76444 4.90481 5.37392 5.2973C4.98339 5.6898 4.98339 6.32616 5.37392 6.71865L10.5883 11.9594L5.29289 17.2816C4.90237 17.6741 4.90237 18.3105 5.29289 18.703C5.68341 19.0955 6.31657 19.0955 6.7071 18.703L12.0025 13.3808L17.293 18.6979C17.6835 19.0904 18.3166 19.0904 18.7072 18.6979C19.0977 18.3054 19.0977 17.6691 18.7072 17.2766L13.4167 11.9594L18.6261 6.7237C19.0167 6.33121 19.0167 5.69485 18.6261 5.30235C18.2356 4.90986 17.6025 4.90986 17.2119 5.30235L12.0025 10.5381L6.78812 5.2973Z" fill="black"/>
                         </svg>
@@ -24,10 +24,10 @@
                             <input type="text" v-model="query" ref="queryElement" placeholder="Enter to search"  @keyup.enter="searchCustomer" class="w-100 search-control">
                         </div>
                         <div class="w-100 m-0 p-0 search-result mt-3">
-                            <div class="customer-item" v-for="(customer, index) in customers" :key="index" @click="selectCustomer(index)">
+                            <div class="customer-item" v-for="(customer, index) in customers" :key="index" @click="selectCustomer(customer)">
                                 <div class="d-flex justify-content-between">
                                     <p class="customer-name mb-0 text-black text-capitalize">{{ customer.name }}</p>
-                                    <span class="cust-type-icon rounded-pill" :class="customer.type">{{ customer.type }}</span>
+                                    <span class="cust-type-icon rounded-pill" :class="customer.customerType">{{ customer.customerType }}</span>
                                 </div>
                                 <div class="d-flex">
                                     <p class="mb-0">{{ formatPhone(customer.phone) }}</p><p class="ms-3 mb-0 text-lowercase">{{ customer.email }}</p>
@@ -65,13 +65,14 @@ export default {
         ]);
         const query = ref('');
         const queryElement = ref(null);
+        const accountType = ref(0); // sub account
         const closeSearchPanel = ()=>{
             showSearchPanel.value = !showSearchPanel.value;
         }
         const searchCustomer = async ()=>{
-            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Search customers...']);
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Search '+ (accountType.value == 1 ? 'Master' : '') +' customers...']);
             await axios.post('/search-customer', {
-                query: query.value
+                query: query.value, accountType: accountType.value
             }).then((response)=>{
                 customers.value = response.data;
             }).catch((error)=>{
@@ -94,21 +95,24 @@ export default {
             }
         }  
         const showSearchPanel = ref(false);
-        const openSearchPanel = ()=>{
+        const openSearchPanel = (type)=>{
+            query.value = "";
+            accountType.value = type;
             showSearchPanel.value = !showSearchPanel.value;
             nextTick(()=>{
                 queryElement.value.focus();
             })
         }  
-        const selectCustomer = (index)=>{
+        const selectCustomer = (customer)=>{
             showSearchPanel.value = false;
-            emit('selectedSubAccount', customers.value[index]);
+            emit('selectedSubAccount', customer);
         }
         return {
             query,
             customers,
             showSearchPanel,
             queryElement,
+            accountType,
             searchCustomer,
             closeSearchPanel,
             openSearchPanel,

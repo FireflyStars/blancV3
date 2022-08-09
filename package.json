@@ -25,6 +25,7 @@
         "webpack-cli": "^4.7.2"
     },
     "dependencies": {
+        "@amcharts/amcharts5": "^5.2.15",
         "@vue/compiler-sfc": "^3.1.4",
         "@vueform/multiselect": "^2.3.3",
         "animate.css": "^4.1.1",
@@ -33,6 +34,7 @@
         "jsbarcode": "^3.11.5",
         "jsrsasign": "^10.5.8",
         "path": "^0.12.7",
+        "sweetalert2": "^11.4.26",
         "vee-validate": "^4.5.10",
         "vue": "^3.1.4",
         "vue-credit-card-validation": "^1.0.3",

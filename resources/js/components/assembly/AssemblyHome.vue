@@ -646,12 +646,12 @@
             const checkboxclicked = ( check, id, name )=>{
                 if(CURRENT_SELECTED.value == id && check == false){
                     store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`,'');
-                    store.commit(`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_SET_DETAIL}`, {
+                    store.commit(`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_SET_DETAIL}`, { 
                         breif_info: {
                             id: ''
                         },
                         location_history: []
-                    });
+                    });                           
                     router.back();
                 }
                 if(check == true){

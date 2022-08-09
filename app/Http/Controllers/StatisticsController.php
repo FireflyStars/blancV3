@@ -2093,6 +2093,8 @@ class StatisticsController extends Controller
                 'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as prod'), 'infoitems.id AS item_id',
                 'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
                 'infoitems.idPartner', 'TypePost.bg_color as location_color', 'TypePost.process','TypePost.circle_color',
+                DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),                    
+                'infoitems.idPartner', 'TypePost.bg_color as location_color', 'TypePost.process','TypePost.circle_color',
                 DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),
                 // DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as deliv')
                 )
@@ -2187,7 +2189,10 @@ class StatisticsController extends Controller
                             'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
                             'infoitems.idPartner', 'TypePost.bg_color as location_color',  'TypePost.process', 'TypePost.circle_color',
                             // DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),
-                            DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as deliv')
+                            DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as deliv'),
+                            /* 'infoitems.idPartner', 'TypePost.bg_color as location_color',  'TypePost.process', 'TypePost.circle_color',
+                            DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'), */
+
                             /* DB::raw('DATE_FORMAT(pickup.date,"%m/%d") as pickup_date'), */
                             /* DB::raw('DATE_FORMAT(deliveryask.date, "%m/%d") as deliveryask_date') */
                         );

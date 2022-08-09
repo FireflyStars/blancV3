@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Tranche;
 use App\Models\Delivery;
+use App\Models\InfoCustomer;
 
 class CustomerController extends Controller
 {
@@ -24,8 +25,6 @@ class CustomerController extends Controller
        if($request->typeDelivery == "DELIVERY"){
             $validator = Validator::make($request->all(), [
                 'firstName' => 'required',
-                'lastName'  => 'required',
-                'phoneNumber' => 'required',
                 'postCode'  => 'required',
                 'email'     => $request->email !='' ? 'required|email|unique:infoCustomer,EmailAddress': '',
                 'deliveryAddress1' => 'required',
@@ -34,11 +33,8 @@ class CustomerController extends Controller
         } else {
             $validator = Validator::make($request->all(), [
                 'firstName' => 'required',
-                'lastName' => 'required',
                 'email'     => $request->email !='' ? 'required|email|unique:infoCustomer,EmailAddress': '',
             ]);
-
-
         }
 
         if ($validator->fails()) {
@@ -47,13 +43,14 @@ class CustomerController extends Controller
 
 
         // add a new record to infoCustomer table
+        $emailAddress = $request->email !='' ? $request->email : (Str::random(10).'@noemail.com');
         $info_customer = [
-            'isMaster'      => $request->accountType == 'Main' ? 1 : 0,
+            'isMaster'      => $request->accountType == 'Main' ? ($request->customerType == 'B2B' ? 1: 0) : 0,
             'TypeDelivery'  => $request->typeDelivery,
             'btob'          => $request->customerType == 'B2B' ? 1 : 0,
             'FirstName'     => $request->firstName,
             'LastName'      => $request->lastName,
-            'EmailAddress'  => $request->email !='' ? $request->email : (Str::random(10).'@noemail.com'),
+            'EmailAddress'  => $emailAddress,
             'Name'          => $request->firstName.", ".$request->lastName,
             'Phone'         => $request->phoneNumber != '' ? '["'.$request->phoneCountryCode.'|'.$request->phoneNumber.']"' : '',
             'bycard'        => $request->paymentMethod == 'Credit Card' ? 1 : 0,
@@ -74,7 +71,7 @@ class CustomerController extends Controller
                 DB::table('infoCustomer')->where('CustomerID', $request->CustomerID)->update($info_customer);
                 $CustomerUUID = $request->CustomerID;
             }catch (\Exception $e) {
-                return response()->json($e->getMessage(), 500);
+                return response()->json(['error'=> $e->getMessage()]);
             }
         }else{
             try {
@@ -82,17 +79,26 @@ class CustomerController extends Controller
                 $custId = DB::table('infoCustomer')->insertGetId($info_customer);
                 $CustomerUUID = DB::table('infoCustomer')->where('id', $custId)->value('CustomerID');
             } catch (\Exception $e) {
-                return response()->json($e->getMessage(), 500);
+                return response()->json(['error'=> $e->getMessage()]);
             }
         }
         // set CustomerIdMaster of sub account as Main customer's CustomerID
         if(count($request->linkedAccounts) > 1){
-            foreach ($request->linkedAccounts as $account) {
-                try {
-                    DB::table('infoCustomer')->where('id', $account['id'])->update(['CustomerIDMaster' => $CustomerUUID]);
-                } catch (\Exception $e) {
-                    return response()->json($e->getMessage(), 500);
+            if($request->accountType == 'Main' && $request->customerType == 'B2B'){
+                foreach ($request->linkedAccounts as $index => $account) {
+                    if($index != 0){
+                        try {
+                            DB::table('infoCustomer')->where('id', $account['id'])->update(['CustomerIDMaster' => $CustomerUUID]);
+                        } catch (\Exception $e) {
+                            return response()->json(['error'=> $e->getMessage()]);
+                        }
+                    }else{
+
+                    }
                 }
+            }else{
+                $masterUUID = $request->linkedAccounts[0]['customerId'];
+                DB::table('infoCustomer')->where('CustomerID', $CustomerUUID)->update(['CustomerIDMaster' => $masterUUID]);
             }
         }
         // add a new record to address table
@@ -115,13 +121,13 @@ class CustomerController extends Controller
             $addressId = DB::table('address')->insertGetId($address);
             $addressUUID = DB::table('address')->where('id', $addressId)->value('AddressID');
         } catch (\Exception $e) {
-            return response()->json($e->getMessage(), 500);
+            return response()->json(['error'=> $e->getMessage()]);
         }
         // add a new record to NewAddress table
         $new_address = [
             'CustomerID'    => $CustomerUUID,
             'AddressID'     => $addressUUID,
-            'NewEmail'      => $request->email !='' ? $request->email : (Str::random(10).'@noemail.com'),
+            'NewEmail'      => $emailAddress,
             'City'          => $request->city,
             'State'         => $request->state,
             'postcode'      => $request->postCode,
@@ -134,7 +140,7 @@ class CustomerController extends Controller
         try {
             DB::table('NewAddress')->insert($new_address);
         } catch (\Exception $e) {
-            return response()->json($e->getMessage(), 500);
+            return response()->json(['error'=> $e->getMessage()]);
         }
         // add a new record to NewCustomer table
         $new_customer = [
@@ -156,7 +162,7 @@ class CustomerController extends Controller
         try {
             DB::table('NewCustomer')->insert($new_customer);
         } catch (\Exception $e) {
-            return response()->json($e->getMessage(), 500);
+            return response()->json(['error'=> $e->getMessage()]);
         }
         // payment
         if($request->paymentMethod == 'Credit Card'){ // payment is credit card
@@ -219,7 +225,7 @@ class CustomerController extends Controller
                         DB::table('infoCustomer')->where('CustomerID', $CustomerUUID)->update(['credit'=> $request->addCredit]);
                 }
             } catch (\Exception $e) {
-                return response()->json($e->getMessage(), 500);
+                return response()->json(['error'=> $e->getMessage()]);
             }
         }
         if($request->paymentMethod == 'BACS'){ // paymentMethod is BACS, we add extra records to several table.
@@ -241,7 +247,7 @@ class CustomerController extends Controller
             try {
                 $billing_address_id = DB::table('address')->insertGetId($billing_address);
             } catch (\Exception $e) {
-                return response()->json($e->getMessage(), 500);
+                return response()->json(['error'=> $e->getMessage()]);
             }
 
             $contact = [
@@ -259,23 +265,23 @@ class CustomerController extends Controller
             try {
                 DB::table('contacts')->insert($contact);
             } catch (\Exception $e) {
-                return response()->json($e->getMessage(), 500);
+                return response()->json(['error'=> $e->getMessage()]);
             }
 
         }
 
-            foreach ($request->preferences as $group) {
-                foreach ($group['data'] as $item) {
-                    $customer_preferences[] = [
-                        'CustomerID' => $CustomerUUID,
-                        'Titre' => $item['title'],
-                        'Value' => $item['value'],
-                        'id_preference' => $item['id'],
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
-                }
+        foreach ($request->preferences as $group) {
+            foreach ($group['data'] as $item) {
+                $customer_preferences[] = [
+                    'CustomerID' => $CustomerUUID,
+                    'Titre' => $item['title'],
+                    'Value' => $item['value'],
+                    'id_preference' => $item['id'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
             }
+        }
         $customer_preferences[] = [
             'CustomerID' => $CustomerUUID,
             'Titre' => 'Type Customer',
@@ -287,7 +293,7 @@ class CustomerController extends Controller
         try {
             DB::table('InfoCustomerPreference')->insert($customer_preferences);
         } catch (\Throwable $e) {
-            throw $e;
+            return response()->json(['error'=> $e->getMessage()]);
         }
         $delivery_preference = [
             'CustomerId'    => $CustomerUUID,
@@ -302,9 +308,22 @@ class CustomerController extends Controller
         try {
             DB::table('DeliveryPreference')->insert($delivery_preference);
         } catch (\Exception $e) {
-            return response()->json($e->getMessage(), 500);
+            return response()->json(['error'=> $e->getMessage()]);
         }
-        return response()->json($CustomerUUID);
+        return response()->json($custId);
+    }
+
+    public function checkCustomerUnique(Request $request){
+        $validator = Validator::make($request->all(), [
+            'firstName' => 'unique:infoCustomer,firstName',
+            'email'     => $request->email !='' ? 'unique:infoCustomer,EmailAddress': '',
+            'phoneNumber' => 'unique:infoCustomer,Phone',
+        ]);
+        if($validator->fails()){
+            return response()->json(['unique'=> false]);
+        }else{
+            return response()->json(['unique'=> true]);
+        }
     }
     /**
      * Get customer preferences
@@ -672,7 +691,7 @@ class CustomerController extends Controller
                 });
             }
 
-            $customers = $customers->groupBy('infoCustomer.CustomerID');
+            $customers = $customers->groupBy('infoCustomer.CustomerID')->orderBy('infoCustomer.id', 'DESC');
 
         }else {
                   $customers = DB::table('infoCustomer')
@@ -699,7 +718,7 @@ class CustomerController extends Controller
                             'infoCustomer.TotalSpend as total_spent',
                         )
                         ->groupBy('infoCustomer.CustomerID')
-                        ->orderBy('infoCustomer.id');
+                        ->orderBy('infoCustomer.id', 'DESC');
         }
         if($request->selected_nav == 'B2B' || $request->customer_type == 'B2B'){
             $customers = $customers->where( function( $query ) {
