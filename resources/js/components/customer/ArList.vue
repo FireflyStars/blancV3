@@ -12,12 +12,11 @@
             <tbody>
             <transition-group name="list" appear>
                 <tr v-for="(customer, index) in customerList" :key="index" class="trow" :id="'row_'+customer.id"
-                    :class="{current_sel:customer.id == CURRENT_SELECTED}"
-                    @click="selectrow($event,customer.id)"
+                    @click="selectrow(customer.id)"
                 >
                     <!-- checkbox column -->
                     <td valign="middle" align="center">
-                        <check-box :checked_checkbox="(customer.id == CURRENT_SELECTED && route.params.customer_id > 0)" :id="customer.id" @checkbox-clicked="checkboxclicked"></check-box>
+                        <check-box :id="customer.id" @checkbox-clicked="checkboxclicked"></check-box>
                     </td>
                     <!-- Customer Type -->
                     <!--  -->
@@ -238,8 +237,15 @@ export default {
             }
             return phoneString;
         }
-        const checkboxclicked = ( check, id, name )=>{
-            console.log(name);
+        const checkboxclicked = ( check, id)=>{
+            let row = document.getElementById('row_'+id);
+
+            if(check){
+                row.classList.add('current_sel');
+            }else{
+                row.classList.remove('current_sel');
+            }
+
             /*
             if(CURRENT_SELECTED.value == id && check == false){
                 store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`,'');
@@ -251,29 +257,40 @@ export default {
             */
         }
         const selectrow = (customerID)=>{
-            //console.log(customerID);
-            /*
-            if(CURRENT_SELECTED.value == customerID){
-                store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`,'');
-                store.commit(`${CUSTOMER_MODULE}${SET_CUSTOMER_DETAIL}`, {
-                    name: ''
-                });
-                router.back();
+            let el = document.getElementById('row_'+customerID);
+            el.classList.toggle('current_sel');
+
+            let classes = Object.values(el.classList);
+
+            let checkbox = document.querySelector('#row_'+customerID+' .chkbox');
+
+            if(classes.includes('current_sel')){
+                checkbox.classList.add('checked');
             }else{
-                store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`, customerID);
-                router.push({
-                    name:'CustomerDetail',
-                    params: {
-                        customer_id: customerID,
-                    },
-                })
+                checkbox.classList.remove('checked');
             }
-            */
+
         }
 
         function batchInvoice(){
-            let els = document.querySelectorAll('.current_sel');
-            console.log(els);
+            let els = Object.values(document.querySelectorAll('.current_sel'));
+            let customer_ids = [];
+
+            if(els.length==0){
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                    message:"No customer selected",
+                    ttl:5,
+                    type:'danger'
+                });
+            }else{
+                els.forEach((v,i)=>{
+                    let id = v.getAttribute('id').replace('row_','');
+                    customer_ids.push(id);
+                });
+
+                console.log(customer_ids);
+            }
+
         }
 
         return {
