@@ -32,7 +32,10 @@ use App\Http\Controllers\CustomerPreferenceController;
 use App\Http\Controllers\Voyager\VoyagerPostcodesController;
 use App\Http\Controllers\InvoiceEmailVerificationController;
 use App\Http\Controllers\SupervisionController;
+use App\Models\Delivery;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -519,142 +522,95 @@ Route::get('test-stripe-terminal',function(Request $request){
 });
 
 
-Route::get('ar-test',function(){
-    $customers = DB::table('infoCustomer')->where('bycard',0)->get();
+Route::get('ar-pdf',function(){
+    $customer_ids = [ "3428", "22253" ];
 
-    $bacs_cust_id = [];
-    $list = [];
+    $all_customer_ids = [];
+    $cust_master_ids = [];
+    $map_master_id = [];
+    $map_sub_id = [];
+
+    $customers = DB::table('infoCustomer')->whereIn('id',$customer_ids)->get();
 
     if(count($customers) > 0){
         foreach($customers as $k=>$v){
-            $bacs_cust_id[] = $v->CustomerID;
+            if($v->IsMaster==0){
+                $all_customer_ids[] = $v->CustomerID;
+            }else{
+                $cust_master_ids[] = $v->CustomerID;
+            }
         }
     }
 
-    $grouped_by_cust_id = [];
-    $grouped_by_cust_order_date = [];
-    $custid_with_orders = [];
-    $master_cust = [];
+    if(!empty($cust_master_ids)){
+        $sub_customers = DB::table('infoCustomer')->WhereIn('CustomerIDMaster',$cust_master_ids)->get();
+
+        if(count($sub_customers) > 0){
+            foreach($sub_customers as $k=>$v){
+                $all_customer_ids[] = $v->CustomerID;
+                $map_master_id[$v->CustomerIDMaster][] = $v->CustomerID;
+                $map_sub_id[$v->CustomerID] = $v->CustomerIDMaster;
+            }
+        }
+    }
 
     $orders = DB::table('infoOrder')
-        ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID','NewInvoice.*')
-        ->join('detailingitem','infoOrder.id','detailingitem.order_id')
-        ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
-        ->where('infoOrder.orderinvoiced',0)
-        ->whereIn('infoOrder.CustomerID',$bacs_cust_id)
-        ->get();
+            ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','NewInvoice.*','infoitems.*')
+            ->join('detailingitem','infoOrder.id','detailingitem.order_id')
+            ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
+            ->join('infoitems','infoitems.InvoiceID','NewInvoice.InvoiceID')
+            ->where('infoOrder.orderinvoiced',0)
+            ->whereIn('infoOrder.CustomerID',$all_customer_ids)
+            ->get();
+
+    $invoices_per_order = [];
 
 
     foreach($orders as $k=>$v){
-        $grouped_by_cust_id[$v->CustomerID][] = $v->Total;
-        $grouped_by_cust_order_date[$v->CustomerID][] = $v->created_at;
+        $invoices_per_order[$v->order_id]['total'] = $v->Total;
 
-        if(!in_array($v->CustomerID,$custid_with_orders)){
-            array_push($custid_with_orders,$v->CustomerID);
-        }
-    }
+       $invoices_per_order[$v->order_id]['invoices'][$v->InvoiceID][$v->ItemID] = [
+                                                                            'NumInvoice'=>$v->NumInvoice,
+                                                                            'PromisedDate'=>$v->PromisedDate,
+                                                                            'Department'=>$v->DepartmentName,
+                                                                            'Description'=>$v->typeitem,
+                                                                            'brand'=>$v->brand,
+                                                                            'priceTotal'=>$v->priceTotal,
+                                                                        ];
 
-
-    foreach($grouped_by_cust_order_date as $k=>$v){
-        usort($grouped_by_cust_order_date[$k],function($a, $b) {
-            return strtotime($b) - strtotime($a);
-        });
-    }
-
-    $cust_with_orders = DB::table('infoCustomer')->whereIn('CustomerID',$custid_with_orders)->get();
-
-
-    if(count($cust_with_orders) > 0){
-        foreach($cust_with_orders as $k=>$v){
-            if($v->CustomerIDMaster !=''){
-                $master_cust[$v->CustomerID] = $v->CustomerIDMaster;
-            }
-        }
-    }
-
-
-    foreach($grouped_by_cust_id as $k=>$v){
-        if(isset($master_cust[$k])){
-            $list[$master_cust[$k]]['order_total'][] = array_sum($v);
-        }else{
-            $list[$k]['order_total'][] = array_sum($v);
-        }
-    }
-
-    foreach($grouped_by_cust_order_date as $k=>$v){
-        if(isset($master_cust[$k])){
-            $list[$master_cust[$k]]['order_date'][] = (isset($v[0])?$v[0]:"");
-        }else{
-            $list[$k]['order_date'][] = (isset($v[0])?$v[0]:"");
-        }
-    }
-
-    $final_cust_id = [];
-    foreach($list as $k=>$v){
-        $final_cust_id[] = $k;
-    }
-
-    $final_cust = DB::table('infoCustomer')->whereIn('CustomerID',$final_cust_id)->get();
-    $final_cust_addr = DB::table('address')->whereIn('CustomerID',$final_cust_id)->where('status','DELIVERY')->get();
-    $final_customers = [];
-
-
-    if(count($final_cust) > 0){
-        foreach($final_cust as $k=>$v){
-            $phones = [];
-            if(isset($list[$v->CustomerID])){
-                $list[$v->CustomerID]['btob'] = $v->btob;
-                $list[$v->CustomerID]['TypeDelivery'] = $v->TypeDelivery;
-                $list[$v->CustomerID]['Name'] = $v->Name;
-                $list[$v->CustomerID]['Email'] = $v->EmailAddress;
-
-                if(is_array(@json_decode($v->Phone)) && !empty(@json_decode($v->Phone))){
-                    $phones = @json_decode($v->Phone);
-
-                    foreach($phones as $id=>$phone){
-                        $phones[$id] = str_replace("|","",$phone);
-                    }
-                }
-
-                $list[$v->CustomerID]['Phone'] = $phones;
-            }
-        }
-    }
-
-    if(count($final_cust_addr) > 0){
-        foreach($final_cust_addr as $k=>$v){
-            if(isset($list[$v->CustomerID])){
-                $list[$v->CustomerID]['address1'] = $v->address1;
-                $list[$v->CustomerID]['postcode'] = $v->postcode;
-            }
-        }
-    }
-
-
-    foreach($list as $k=>$v){
-       $order_total = $list[$k]['order_total'];
-       $list[$k]['order_total'] = array_sum($order_total);
-
-       usort($list[$k]['order_date'],function($a, $b) {
-            return strtotime($b) - strtotime($a);
-        });
-    }
-
-    foreach($list as $k=>$v){
-        $list[$k]['latest_date'] = "";
-
-        if(isset($list[$k]['order_date'][0])){
-            $list[$k]['latest_order_date'] = $list[$k]['order_date'][0];
-        }
     }
 
     echo "<pre>";
-    print_r($list);
+    print_r($invoices_per_order);
+
+});
+
+Route::get('inv-pdf',function(Request $request){
+    $customer_id = $request->customer_id;
+
+    if(!isset($customer_id) || $customer_id ==''){
+        die('customer id not set');
+    }
+
+    $customer = DB::table('infoCustomer')->where('id',$customer_id)->first();
+    $addr = Delivery::getAddressByCustomerUUID($customer->CustomerID);
+
+
+    $data = [
+        'customer'=>$customer,
+        'address'=>$addr,
+    ];
+
+    Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
+    $pdf = Pdf::loadView('pdf/ar_pdf', $data);
+
+    return $pdf->download('invoice'.$customer_id.'.pdf');
 
 });
 
 /* END TEST ROUTES */
 
+// added by yonghuan to search customers to be linked
 Route::post('/search-customer', [SearchController::class, 'SearchCustomersToLink'])->name('SearchCustomersToLink');
 
 Route::post('/SearchCustomer', [SearchController::class, 'SearchCustomer'])->name('SearchCustomer');
@@ -662,7 +618,6 @@ Route::post('/SearchByCustomer', [SearchController::class, 'SearchByCustomer'])-
 Route::post('/ScanItemAndBag', [ScanController::class, 'ScanItemAndBag'])->name('ScanItemAndBag');
 
 Route::post('/get-statistics',[StatisticsController::class, 'getStatistics'])->name('get-statistics')->middleware('auth');
-Route::post('/get-prod-statistics',[StatisticsController::class, 'getProdStatistics'])->name('get.prod.statistics')->middleware('auth');
 
 Route::post('/assembly-home-stats',[StatisticsController::class, 'getAssemblyHomeStats'])->name('get-assembly-home-stats')->middleware('auth');
 Route::post('/partner-details',[StatisticsController::class, 'getPartnerDetails'])->name('partner-details')->middleware('auth');
