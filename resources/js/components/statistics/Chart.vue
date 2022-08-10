@@ -1,0 +1,805 @@
+<template>
+    <ProductionFilter :filterVal="filterVal" @update:filterVal="newValue => filterVal = newValue"></ProductionFilter>
+    <div class="p-3 bg-black">
+        <div class="d-flex">
+            <div class="col-4 p-2 d-flex">
+                <div class="rounded-3 bg-white w-100 p-2">
+                    <h3 class="font-20 gotham-rounded-medium">Sales by channel</h3>
+                    <div class="d-flex">
+                        <div class="col-7">
+                            <div class="d-flex" v-for="(channel, index) in salesByChannelChartData" :key="index">
+                                <div class="col-1 d-flex align-items-center">
+                                    <div class="origin-dot bg-danger rounded-circle" :class="{ 'bg-danger': index == 0, 'bg-success': index == 1, 'bg-primary': index==2, 'bg-secondary': index == 3 }"></div>
+                                </div>
+                                <div class="col-6">{{ channel.channel }}</div>
+                                <div class="col-5">£{{ channel.amount }}</div>
+                            </div>
+                        </div>
+                        <div class="col-5" id="saleByOrigin" style="height: 150px">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4 p-2 d-flex">
+                <div class="rounded-3 bg-white w-100 p-2">
+                    <h3 class="font-20 gotham-rounded-medium">Pieces by item type</h3>
+                    <div class="d-flex">
+                        <div class="col-7">
+                            <div class="d-flex" v-for="(client, index) in piecesByItemChartData" :key="index">
+                                <div class="col-1 d-flex align-items-center">
+                                    <div class="origin-dot rounded-circle" v-if="index==0" :style="{'background-color': '#EB5757'}"></div>
+                                    <div class="origin-dot rounded-circle" v-else-if="index==1" :style="{'background-color': '#5200FF'}"></div>
+                                    <div class="origin-dot rounded-circle" v-else-if="index==2" :style="{'background-color': '#8ADFDF'}"></div>
+                                    <div class="origin-dot rounded-circle" v-else-if="index==3" :style="{'background-color': '#80A2EC'}"></div>
+                                    <div class="origin-dot rounded-circle" v-else-if="index==4" :style="{'background-color': '#EEE516'}"></div>
+                                    <div class="origin-dot rounded-circle" v-else :style="{'background-color': '#1F78B4'}"></div>
+                                </div>
+                                <div class="col-6">{{ client.client }}</div>
+                                <div class="col-5">{{ client.amount }} €</div>
+                            </div>
+                        </div>
+                        <div class="col-5" id="saleByClient" style="height: 150px">
+                        </div>                                                    
+                    </div>
+                </div>
+            </div>
+            <div class="col-4 p-2 d-flex">
+                <div class="rounded-3 bg-white w-100 p-2">
+                    <div class="d-flex">
+                        <h3 class="font-20 gotham-rounded-medium m-0">Average Order Value</h3>
+                        <TotalPercent class="ms-5" :amount="avgOrder" :pastAmount="avgOrderToCompare"></TotalPercent>
+                    </div>
+                    <div class="d-flex mt-2">
+                        <div class="col-5">
+                            <h4 class="font-16 gotham-rounded-medium">by customer type</h4>
+                            <div class="d-flex flex-wrap">
+                                <div class="avg-sale-block py-3 px-2 mt-2 me-2 d-flex flex-wrap" v-for="(cate, index) in salesByCustType" :key="index">
+                                    <p class="w-100 text-center font-12 gotham-rounded-book">{{cate.name}}</p>
+                                    <p class="w-100 text-center font-16 gotham-rounded-medium align-self-end">{{ cate.amount }}€</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-7">
+                            <h4 class="font-16 gotham-rounded-medium">by channel</h4>
+                            <div class="d-flex flex-wrap">
+                                <div class="avg-sale-block py-3 px-2 mt-2 me-2 d-flex flex-wrap">
+                                    <p class="w-100 text-center font-12 gotham-rounded-book">Corp Del</p>
+                                    <p class="w-100 text-center font-16 gotham-rounded-medium align-self-end">{{ paiement }}%</p>
+                                </div>
+                                <div class="avg-sale-block py-3 px-2 me-2 mt-2 d-flex flex-wrap">
+                                    <p class="w-100 text-center font-12 gotham-rounded-book">Home Del</p>
+                                    <p class="w-100 text-center font-16 gotham-rounded-medium align-self-end">{{ facture }}%</p>
+                                </div>
+                                <div class="avg-sale-block py-3 px-2 mt-2 d-flex flex-wrap">
+                                    <p class="w-100 text-center font-12 gotham-rounded-book">Stores</p>
+                                    <p class="w-100 text-center font-16 gotham-rounded-medium align-self-end">5.3 K€</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="p-3 bg-white">
+        <div class="d-flex">
+            <div class="col-7">
+                <div class="bg-gray p-3 rounded-3">
+                    <div class="d-flex align-items-center p-2">
+                        <h3 class="font-20 gotham-rounded-medium m-0">Total sales over time</h3>
+                        <TotalPercent class="ms-5" :amount="salesByChannelTotal" :pastAmount="salesByChannelTotalToCompare"></TotalPercent>
+                        <TotalPercent class="ms-5" :amount="salesByItemTotal" :symbol="'h'" :pastAmount="salesByItemTotalToCompare"></TotalPercent>
+                        <h4 class="mb-0 ms-auto font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View report</em></h4>
+                    </div>
+                    <div class="legends bg-white p-2">
+                        <div class="d-flex">
+                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="legend1" :checked_checkbox="true">All sales</CheckBox></div>
+                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="legend2" :checked_checkbox="false">Corp Del</CheckBox></div>
+                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="legend3" :checked_checkbox="false">Home Del</CheckBox></div>
+                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="legend4" :checked_checkbox="false">MB</CheckBox></div>
+                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="legend5" :checked_checkbox="false">NH</CheckBox></div>
+                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="legend6" :checked_checkbox="false">CH</CheckBox></div>
+                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="legend7" :checked_checkbox="false">SK</CheckBox></div>
+                        </div>
+                    </div>
+                    <div class="total-chart bg-white" id="totalChart">
+
+                    </div>
+                </div>
+                <div class="bg-gray p-3 rounded-3 mt-3">
+                    <div class="d-flex">
+                        <div class="col-6">
+                            <h3 class="font-20 gotham-rounded-medium">Ratios</h3>
+                            <h4 class="font-16 gotham-rounded-medium mt-3">Sales</h4>
+                            <div class="d-flex align-items-center" v-for="(saleByUser, index) in salesByUser" :key="index">
+                                <div class="col-3">{{ saleByUser.name }}</div>
+                                <TotalPercent class="col-4" :fontSize="14" :amount="saleByUser.amount" :pastAmount="saleByUser.pastAmount"></TotalPercent>
+                                <TotalPercent class="ms-3" :fontSize="14" :amount="saleByUser.hour" :symbol="'h'" :pastAmount="saleByUser.pastHour"></TotalPercent>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex justify-content-between">
+                                <h3 class="font-20 gotham-rounded-medium m-0">&nbsp;</h3>
+                                <h4 class="mb-0 ms-auto font-14 text-custom-success text-decoration-underline gotham-rounded-medium cursor-pointer"><em>View report</em></h4>
+                            </div>
+                            <h4 class="font-16 gotham-rounded-medium mt-3">Operations</h4>
+                            <div class="d-flex" v-for="(saleByCommande, index) in salesByCommande" :key="index">
+                                <div class="col-3">{{ saleByCommande.id }}</div>
+                                <div class="col-3">{{ saleByCommande.name }}</div>
+                                <div class="col-3">{{ saleByCommande.amount }}€</div>
+                                <div class="col-3">{{ saleByCommande.hour }}h</div>
+                            </div>                                                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-5 ps-3">
+                <div class="bg-gray rounded-3 p-3">
+                    <div class="d-flex align-items-center">
+                        <h3 class="font-20 gotham-rounded-medium m-0">Sign ups</h3>
+                        <TotalPercent class="ms-5" :amount="totalSignUpCount" :symbol="''" :pastAmount="totalSignUpCountPast"></TotalPercent>
+                        <h4 class="mb-0 ms-auto font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View report</em></h4>
+                    </div>
+                    <div class="d-flex">
+                        <div class="col-6">
+                            <h4 class="font-16 gotham-rounded-medium mt-3">by channel</h4>
+                            <div class="d-flex" v-for="(signup, index) in signupByChannel" :key="index">
+                                <div class="col-4">{{ signup.status }}</div>
+                                <div class="col-8 d-flex align-items-center">
+                                    <TotalPercent :fontSize="14" :amount="signup.countOfSignup" :symbol="''" :pastAmount="signup.pastCountOfSignup"></TotalPercent>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="font-16 gotham-rounded-medium mt-3">by customer type</h4>
+                            <div class="d-flex" v-for="(signup, index) in singupByCustType" :key="index">
+                                <div class="col-4">{{signup.type}}</div>
+                                <div class="col-8 d-flex align-items-center">
+                                    <TotalPercent :fontSize="14" :amount="signup.countOfSignup" :symbol="''" :pastAmount="signup.pastCountOfSignup"></TotalPercent>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray rounded-3 p-3 mt-3">
+                    <div class="d-flex align-items-center">
+                        <h3 class="font-20 gotham-rounded-medium m-0">Bookings</h3>
+                        <TotalPercent class="ms-5" :amount="totalBookingCount" :symbol="''" :pastAmount="totalBookingCountPast"></TotalPercent>
+                        <h4 class="mb-0 ms-auto font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View report</em></h4>
+                    </div>
+                    <div class="d-flex mt-3">
+                        <div class="col-6">
+                            <h4 class="font-16 gotham-rounded-medium mt-3">by channel</h4>
+                            <div class="d-flex align-items-center" v-for="(booking, index) in bookingByChannel" :key="index">
+                                <div class="col-4">{{ booking.status }}</div>
+                                <TotalPercent :fontSize="14" class="ms-5" :amount="booking.countOfBooking" :symbol="''" :pastAmount="booking.pastCountOfBooking"></TotalPercent>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="font-16 gotham-rounded-medium mt-3">by customer type</h4>
+                            <div class="d-flex align-items-center" v-for="(booking, index) in bookingByCustType" :key="index">
+                                <div class="col-4">{{ booking.name }}</div>
+                                <TotalPercent :fontSize="14" class="ms-5" :amount="booking.countOfBooking" :symbol="''" :pastAmount="booking.pastCountOfBooking"></TotalPercent>
+                            </div>
+                        </div>
+                    </div>                                                    
+                </div>                                                
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+import { useStore } from 'vuex'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
+import TotalPercent from './TotalPercent';
+import ProductionFilter from "./ProductionFilter";
+import {
+    LOADER_MODULE,
+    DISPLAY_LOADER,
+    HIDE_LOADER,
+}
+from '../../store/types/types'
+import CheckBox from '../miscellaneous/CheckBox';
+import * as am5 from "@amcharts/amcharts5";
+import * as am5percent from "@amcharts/amcharts5/percent";
+import * as am5xy from "@amcharts/amcharts5/xy";
+import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
+import axios from 'axios';
+
+export default {
+    components:{
+        CheckBox,
+        TotalPercent,
+        ProductionFilter,
+    },
+    setup(){
+        const store = useStore();
+        const legend1 = ref(true);
+        const legend2 = ref(false);
+        const legend3 = ref(false);
+        const legend4 = ref(false);
+        const legend5 = ref(false);
+        const legend6 = ref(false);
+        const legend7 = ref(false);
+        const salesByChannelTotal = ref(0);
+        const salesByChannelTotalToCompare = ref(0);        
+        const salesByItemTotal = ref(0);
+        const salesByItemTotalToCompare = ref(0);    
+
+        const salesByCustType = ref(0);
+        const avgOrder = ref(0);
+        const avgOrderToCompare = ref(0);
+        const facture = ref(0);
+        const paiement = ref(0);
+        const salesByCommande = ref([]);
+        const salesByUser = ref([]);
+
+        const bookingByChannel = ref([]);
+        const bookingByCustType = ref([]);
+        const totalBookingCount = ref(0);
+        const totalBookingCountPast = ref(0);
+
+        const signupByChannel = ref([]);
+        const singupByCustType = ref([]);
+        const totalSignUpCount = ref(0);
+        const totalSignUpCountPast = ref(0);
+
+        const today = new Date();
+        const filterVal = ref({
+            customFilter: 0,
+            startDate: `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`,
+            endDate:`${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`,
+            dateRangeType:'Today',
+            compareMode: 'year',
+            compareCustomFilter: false,
+            compareStartDate: `${today.getFullYear()-1}-${today.getMonth()+1}-${today.getDate()}`,
+            compareEndDate: `${today.getFullYear()-1}-${today.getMonth()+1}-${today.getDate()}`,
+        });        
+        onMounted(()=>{
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
+            axios.post('/get-prod-statistics', filterVal.value)
+                .then((res) => {
+                    salesByChannelChartData.value = res.data.salesByChannel;
+                    salesByChannelTotal.value = res.data.salesByChannelTotal;
+                    salesByChannelTotalToCompare.value = res.data.salesByChannelTotalToCompare;
+
+                    piecesByItemChartData.value = res.data.salesByClient;
+                    salesByItemTotal.value = res.data.salesByItemTotal;
+                    salesByItemTotalToCompare.value = res.data.salesByItemTotalToCompare;
+
+                    series1Data.value = res.data.series1Data;
+                    series2Data.value = res.data.series2Data;
+                    series3Data.value = res.data.series3Data;
+                    series4Data.value = res.data.series4Data;
+                    series5Data.value = res.data.series5Data;
+                    series6Data.value = res.data.series6Data;
+                    series7Data.value = res.data.series7Data;
+
+                    salesByCustType.value = res.data.salesByCustType;
+                    avgOrder.value = res.data.avgOrder;
+                    avgOrderToCompare.value = res.data.avgOrderToCompare;
+                    facture.value = res.data.facture;
+                    paiement.value = res.data.paiement;
+                    salesByCommande.value = res.data.salesByCommande;
+                    salesByUser.value = res.data.salesByUser;
+
+                    bookingByChannel.value = res.data.bookingByChannel;
+                    bookingByCustType.value = res.data.bookingByCustType;
+                    totalBookingCount.value = res.data.totalBookingCount;
+                    totalBookingCountPast.value = res.data.totalBookingCountPast;
+
+                    signupByChannel.value = res.data.signupByChannel;
+                    singupByCustType.value = res.data.singupByCustType;
+                    totalSignUpCount.value = res.data.totalSignUpCount;
+                    totalSignUpCountPast.value = res.data.totalSignUpCountPast;
+                    initSalesByChannelChart();
+                    initPiecesByItemChart();
+                    initTotalChart();
+                }).finally(()=>{
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            });
+        })
+        onUnmounted(()=>{
+            destroyChart();
+        })
+        const destroyChart = ()=>{
+            if(salesByChannelChartRoot)
+                salesByChannelChartRoot.dispose();
+            if(piecesByItemChartRoot)
+                piecesByItemChartRoot.dispose();
+            if(totalRoot)            
+                totalRoot.dispose();
+        }
+        watch(() => filterVal.value, (current_val, previous_val) => {
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
+            axios.post('/statistique', current_val).then((res) => {
+                salesByChannelChartData.value = res.data.salesByOrigin;
+                salesByChannelTotal.value = res.data.salesByChannelTotal;
+                salesByChannelTotalToCompare.value = res.data.salesByChannelTotalToCompare;
+
+                piecesByItemChartData.value = res.data.salesByClient;
+                salesByItemTotal.value = res.data.salesByItemTotal;
+                salesByItemTotalToCompare.value = res.data.salesByItemTotalToCompare;
+
+                series1Data.value = res.data.series1Data;
+                series2Data.value = res.data.series2Data;
+                series3Data.value = res.data.series3Data;
+                series4Data.value = res.data.series4Data;
+                series5Data.value = res.data.series5Data;
+                series6Data.value = res.data.series6Data;
+                series7Data.value = res.data.series7Data;
+
+                salesByCustType.value = res.data.salesByCustType;
+                avgOrder.value = res.data.avgOrder;
+                avgOrderToCompare.value = res.data.avgOrderToCompare;
+                facture.value = res.data.facture;
+                paiement.value = res.data.paiement;
+                salesByCommande.value = res.data.salesByCommande;
+                salesByUser.value = res.data.salesByUser;
+
+                bookingByChannel.value = res.data.bookingByChannel;
+                bookingByCustType.value = res.data.bookingByCustType;
+                totalBookingCount.value = res.data.totalBookingCount;
+                totalBookingCountPast.value = res.data.totalBookingCountPast;
+
+                signupByChannel.value = res.data.signupByChannel;
+                singupByCustType.value = res.data.singupByCustType;
+                totalSignUpCount.value = res.data.totalSignUpCount;
+                totalSignUpCountPast.value = res.data.totalSignUpCountPast;
+                initSalesByChannelChart();
+                initPiecesByItemChart();
+                initTotalChart();                    
+            }).finally(()=>{
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            });
+        });        
+        let salesByChannelChartRoot = null;
+        let salesByChannelChart = null;
+        let salesByChannelChartSeries= null;
+        const salesByChannelChartData = ref([
+            { origin: "Fichier initial", amount: 0 },
+            { origin: "Client affiliate", amount: 0 } 
+        ]);
+        const initSalesByChannelChart = ()=>{
+            // Define data for sales by origin
+            // Create root element
+            if(salesByChannelChartRoot == null){
+                salesByChannelChartRoot = am5.Root.new("saleByOrigin");
+                // Set themes
+                salesByChannelChartRoot.setThemes([
+                    am5themes_Animated.new(salesByChannelChartRoot)
+                ]);
+                // Create chart
+                salesByChannelChart = salesByChannelChartRoot.container.children.push(am5percent.PieChart.new(salesByChannelChartRoot, {
+                    radius: am5.percent(70),
+                    innerRadius: 70,
+                    layout: salesByChannelChartRoot.verticalLayout
+                }));
+                // hide logo
+                salesByChannelChart._root._logo._childrenDisplay.visible  = false;
+                // salesByChannelChart._root._logo._display.visible  = false;
+                // salesByChannelChart._root._logo._display.scale  = 0;
+                // Create series
+                salesByChannelChartSeries = salesByChannelChart.series.push(am5percent.PieSeries.new(salesByChannelChartRoot, {
+                    name: "Series",
+                    valueField: "amount",
+                    categoryField: "origin",
+                }));
+                salesByChannelChartSeries.get("colors").set("colors", [
+                    am5.color(0xEB5757),
+                    am5.color(0x5200FF),
+                ]);                
+                salesByChannelChartSeries.labels.template.set("forceHidden", true);
+                salesByChannelChartSeries.ticks.template.set("visible", false);
+            }
+            // Add label
+            let percent = '';
+            if(salesByChannelTotal.value == salesByChannelTotalToCompare.value){
+                percent = `[#0f0][fontStyle: italic]0%[/][/]`;
+            }
+            if(salesByChannelTotal.value > salesByChannelTotalToCompare.value && salesByChannelTotalToCompare.value != 0){
+                percent = `[#0f0][fontStyle: italic]${((salesByChannelTotal.value / salesByChannelTotalToCompare.value -1)* 100).toFixed(0)}%[/][/]`;
+            }
+            if(salesByChannelTotal.value < salesByChannelTotalToCompare.value && salesByChannelTotalToCompare.value != 0){
+                percent = `[#f00][fontStyle: italic]${((1 - salesByChannelTotal.value / salesByChannelTotalToCompare.value)* 100).toFixed(0)}%[/][/]`;
+            }
+            if(salesByChannelTotal.value > salesByChannelTotalToCompare.value && salesByChannelTotalToCompare.value == 0){
+                percent = "--";
+            }
+            let originLabel = salesByChannelChartSeries.children.push(am5.Label.new(salesByChannelChartRoot, {
+                text: "${valueSum.formatNumber('#,###.')}\n   "+ percent,
+                centerX: am5.percent(50),
+                centerY: am5.percent(50),
+                fontSize: 20,
+                populateText: true
+            }));
+            // Set data
+            salesByChannelChartSeries.data.setAll(salesByChannelChartData.value);
+            salesByChannelChartSeries.onPrivate("valueSum", function(){
+                originLabel.text.markDirtyText();
+            })
+            salesByChannelChartSeries.appear(1000, 100);
+        }
+
+        let piecesByItemChartRoot = null;
+        let piecesByItemChart = null;
+        let piecesByItemChartSeries = null;
+        // Define data for sales by customer
+        const piecesByItemChartData = ref([
+            { client: "client", amount: 0 }
+        ]);
+        const initPiecesByItemChart = ()=>{
+            // Create root element
+            if(piecesByItemChartRoot ==  null){
+                piecesByItemChartRoot = am5.Root.new("saleByClient");
+                // Set themes
+                piecesByItemChartRoot.setThemes([
+                    am5themes_Animated.new(piecesByItemChartRoot)
+                ]);
+                // Create chart
+                piecesByItemChart = piecesByItemChartRoot.container.children.push(am5percent.PieChart.new(piecesByItemChartRoot, {
+                    radius: am5.percent(70),
+                    innerRadius: 70,
+                    layout: piecesByItemChartRoot.verticalLayout
+                }));
+                // hide logo
+                piecesByItemChart._root._logo._childrenDisplay.visible  = false;
+                // piecesByItemChart._root._logo._display.visible  = false;
+                // piecesByItemChart._root._logo._display.scale  = 0;
+                // Create series
+                piecesByItemChartSeries = piecesByItemChart.series.push(am5percent.PieSeries.new(piecesByItemChartRoot, {
+                    name: "Series",
+                    valueField: "amount",
+                    categoryField: "client",
+                }));
+                piecesByItemChartSeries.get("colors").set("colors", [
+                    am5.color(0xEB5757),
+                    am5.color(0x5200FF),
+                    am5.color(0x8ADFDF),
+                    am5.color(0x80A2EC),
+                    am5.color(0xEEE516),
+                    am5.color(0x1F78B4)
+                ]);            
+                piecesByItemChartSeries.labels.template.set("forceHidden", true);
+                piecesByItemChartSeries.ticks.template.set("visible", false);
+            }
+            // Add label
+            let percent = '';
+            if(salesByItemTotal.value == salesByItemTotalToCompare.value){
+                percent = `[#0f0][fontStyle: italic]0%[/][/]`;
+            }
+            if(salesByItemTotal.value > salesByItemTotalToCompare.value && salesByItemTotalToCompare.value != 0){
+                percent = `[#0f0][fontStyle: italic]${((salesByItemTotal.value / salesByItemTotalToCompare.value-1)* 100).toFixed(0)}%[/][/]`;
+            }
+            if(salesByItemTotal.value < salesByItemTotalToCompare.value && salesByItemTotalToCompare.value != 0){
+                percent = `[#f00][fontStyle: italic]${((1 - salesByItemTotal.value / salesByItemTotalToCompare.value)* 100).toFixed(0)}%[/][/]`;
+            }
+            if(salesByItemTotal.value > salesByItemTotalToCompare.value && salesByItemTotalToCompare.value == 0){
+                percent = "--";
+            }            
+            let clientLabel = piecesByItemChartSeries.children.push(am5.Label.new(piecesByItemChartRoot, {
+                text: "${valueSum.formatNumber('#,###.')}\n   " + percent,
+                centerX: am5.percent(50),
+                centerY: am5.percent(50),
+                fontSize: 20,
+                populateText: true
+            }));
+            // Set data
+            piecesByItemChartSeries.data.setAll(piecesByItemChartData.value);
+            piecesByItemChartSeries.onPrivate("valueSum", function(){
+                clientLabel.text.markDirtyText();
+            })
+            piecesByItemChartSeries.appear(1000, 100);
+        }
+        let totalRoot = null;
+        let totalChart = null;
+        let xAxis = null;
+        let yAxis = null;
+        let series1 = null;
+        const series1Data = ref([]);
+        let series2 = null;
+        const series2Data = ref([]);
+        let series3 = null;
+        const series3Data = ref([]);
+        let series4 = null;        
+        const series4Data = ref([]);
+        let series5 = null;
+        const series5Data = ref([]);
+        let series6 = null;
+        const series6Data = ref([]);
+        let series7 = null;
+        const series7Data = ref([]);
+        const initTotalChart = ()=>{
+            if(totalRoot == null){
+
+                totalRoot = am5.Root.new("totalChart");
+                totalRoot.setThemes([
+                    am5themes_Animated.new(totalRoot)
+                ]);
+    
+                // Create chart
+                totalChart = totalRoot.container.children.push(am5xy.XYChart.new(totalRoot, {
+                    panX: true,
+                    panY: true,
+                    wheelX: "panX",
+                    wheelY: "zoomX",
+                    pinchZoomX: true
+                }));
+                // hide logo
+                totalChart._root._logo._childrenDisplay.visible  = false;
+                // totalChart._root._logo._display.visible  = false;
+                // totalChart._root._logo._display.scale  = 0;
+                // Add cursor
+                let cursor = totalChart.set("cursor", am5xy.XYCursor.new(totalRoot, {
+                    behavior: "none"
+                }));
+                cursor.lineY.set("visible", false);
+    
+                
+                // Create axes
+                xAxis = totalChart.xAxes.push(am5xy.DateAxis.new(totalRoot, {
+                    maxDeviation: 0.2,
+                    baseInterval: {
+                        timeUnit: "day",
+                        count: 1
+                    },
+                    renderer: am5xy.AxisRendererX.new(totalRoot, {}),
+                    tooltip: am5.Tooltip.new(totalRoot, {})
+                }));
+                yAxis = totalChart.yAxes.push(am5xy.ValueAxis.new(totalRoot, {
+                    renderer: am5xy.AxisRendererY.new(totalRoot, {})
+                }));
+                // Add scrollbar
+                totalChart.set("scrollbarX", am5.Scrollbar.new(totalRoot, {
+                    orientation: "horizontal"
+                }));
+            }
+
+            addSeries(1);
+            totalChart.appear(1000, 100);
+        }
+
+        const addSeries = (seriesIndex)=>{
+            // Add series
+            if(seriesIndex == 1){
+                series1 = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
+                    name: name,
+                    xAxis: xAxis,
+                    yAxis: yAxis,
+                    valueYField: "amount",
+                    valueXField: "date",
+                    tooltip: am5.Tooltip.new(totalRoot, {
+                        labelText: "{valueY}"
+                    })
+                }));
+                series1.data.processor = am5.DataProcessor.new(totalRoot, {
+                    dateFields: ["date"], dateFormat: "yyyy-MM-dd"
+                });                
+                series1.data.setAll(series1Data.value);
+                // Make stuff animate on load
+                series1.appear(1000);
+            }else if(seriesIndex == 2){
+                series2 = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
+                    name: name,
+                    xAxis: xAxis,
+                    yAxis: yAxis,
+                    valueYField: "amount",
+                    valueXField: "date",
+                    tooltip: am5.Tooltip.new(totalRoot, {
+                        labelText: "{valueY}"
+                    })
+                }));
+                // Generate random data
+                series2.data.processor = am5.DataProcessor.new(totalRoot, {
+                    dateFields: ["date"], dateFormat: "yyyy-MM-dd"
+                });                                
+                series2.data.setAll(series2Data.value);
+                // Make stuff animate on load
+                series2.appear(1000);                
+            }else if(seriesIndex == 3){
+                series3 = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
+                    name: name,
+                    xAxis: xAxis,
+                    yAxis: yAxis,
+                    valueYField: "amount",
+                    valueXField: "date",
+                    tooltip: am5.Tooltip.new(totalRoot, {
+                        labelText: "{valueY}"
+                    })
+                }));
+                // Generate random data
+                series3.data.processor = am5.DataProcessor.new(totalRoot, {
+                    dateFields: ["date"], dateFormat: "yyyy-MM-dd"
+                });                    
+                series3.data.setAll(series3Data.value);
+                // Make stuff animate on load
+                series3.appear(1000);                
+            }else if(seriesIndex == 4){
+                series4 = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
+                    name: name,
+                    xAxis: xAxis,
+                    yAxis: yAxis,
+                    valueYField: "amount",
+                    valueXField: "date",
+                    tooltip: am5.Tooltip.new(totalRoot, {
+                        labelText: "{valueY}"
+                    })
+                }));
+                // Generate random data
+                series4.data.processor = am5.DataProcessor.new(totalRoot, {
+                    dateFields: ["date"], dateFormat: "yyyy-MM-dd"
+                });    
+                series4.data.setAll(series4Data.value);
+                // Make stuff animate on load
+                series4.appear(1000);                
+            }else if(seriesIndex == 5){
+                series5 = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
+                    name: name,
+                    xAxis: xAxis,
+                    yAxis: yAxis,
+                    valueYField: "amount",
+                    valueXField: "date",
+                    tooltip: am5.Tooltip.new(totalRoot, {
+                        labelText: "{valueY}"
+                    })
+                }));
+                series5.data.processor = am5.DataProcessor.new(totalRoot, {
+                    dateFields: ["date"], dateFormat: "yyyy-MM-dd"
+                });    
+                series5.data.setAll(series5Data.value);
+                // Make stuff animate on load
+                series5.appear(1000);                
+            }else if(seriesIndex == 6){
+                series6 = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
+                    name: name,
+                    xAxis: xAxis,
+                    yAxis: yAxis,
+                    valueYField: "amount",
+                    valueXField: "date",
+                    tooltip: am5.Tooltip.new(totalRoot, {
+                        labelText: "{valueY}"
+                    })
+                }));
+                series6.data.processor = am5.DataProcessor.new(totalRoot, {
+                    dateFields: ["date"], dateFormat: "yyyy-MM-dd"
+                });    
+                series6.data.setAll(series6Data.value);
+                // Make stuff animate on load
+                series6.appear(1000);                
+            }else{
+                series7 = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
+                    name: name,
+                    xAxis: xAxis,
+                    yAxis: yAxis,
+                    valueYField: "amount",
+                    valueXField: "date",
+                    tooltip: am5.Tooltip.new(totalRoot, {
+                        labelText: "{valueY}"
+                    })
+                }));
+                series7.data.processor = am5.DataProcessor.new(totalRoot, {
+                    dateFields: ["date"], dateFormat: "yyyy-MM-dd"
+                });    
+                series7.data.setAll(series7Data.value);
+                // Make stuff animate on load
+                series7.appear(1000);                
+            }
+        }
+        const removeSeries = (series)=>{
+            totalChart.series.removeIndex(
+                totalChart.series.indexOf(series)
+            );
+        }
+        // watch( ()=> legend1.value, (cur_val, pre_val)=>{
+        //     if(cur_val){
+        //         addSeries(1);
+        //     }else{
+        //         removeSeries(series1);
+        //     }
+        // });
+        // watch( ()=> legend2.value, (cur_val, pre_val)=>{
+        //     if(cur_val){
+        //         addSeries(2);
+        //     }else{
+        //         removeSeries(series2);
+        //     }
+        // });
+        // watch( ()=> legend3.value, (cur_val, pre_val)=>{
+        //     if(cur_val){
+        //         addSeries(3);
+        //     }else{
+        //         removeSeries(series3);
+        //     }
+        // });
+        // watch( ()=> legend4.value, (cur_val, pre_val)=>{
+        //     if(cur_val){
+        //         addSeries(4);
+        //     }else{
+        //         removeSeries(series4);
+        //     }
+        // });
+        // watch( ()=> legend5.value, (cur_val, pre_val)=>{
+        //     if(cur_val){
+        //         addSeries(5);
+        //     }else{
+        //         removeSeries(series5);
+        //     }
+        // });
+        // watch( ()=> legend6.value, (cur_val, pre_val)=>{
+        //     if(cur_val){
+        //         addSeries(6);
+        //     }else{
+        //         removeSeries(series6);
+        //     }
+        // });
+        // watch( ()=> legend7.value, (cur_val, pre_val)=>{
+        //     if(cur_val){
+        //         addSeries(7);
+        //     }else{
+        //         removeSeries(series7);
+        //     }
+        // });
+        return {
+            legend1,
+            legend2,
+            legend3,
+            legend4,
+            legend5,
+            legend6,
+            legend7,
+            filterVal,
+            salesByChannelChartData,
+            piecesByItemChartData,
+            series1Data,
+            series2Data,
+            series3Data,
+            series4Data,
+            series5Data,
+            series6Data,
+            series7Data,
+            salesByChannelTotal,
+            salesByChannelTotalToCompare,
+            salesByItemTotal,
+            salesByItemTotalToCompare,
+            salesByCustType,
+            avgOrder,
+            avgOrderToCompare,
+            facture,
+            paiement,
+            salesByCommande,
+            salesByUser,
+            bookingByChannel,
+            bookingByCustType,
+            totalBookingCount,
+            totalBookingCountPast,
+            signupByChannel,
+            singupByCustType,
+            totalSignUpCount,
+            totalSignUpCountPast,
+        }
+    }
+}
+</script>
+
+<style lang="scss" scoped>
+.origin-dot{
+    width: 14px;
+    height: 14px;
+}
+.avg-sale-block{
+    min-width: 75px;
+    max-width: 95px;
+    height: 95px;
+    background: #E0E0E0;
+    border-radius: 10px;
+}
+.total-chart{
+    min-height: 400px;
+}
+.text-custom-success{
+    color: #42A71E;
+}
+.bg-gray{
+    background: #F8F8F8;
+}
+</style>

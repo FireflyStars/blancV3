@@ -1,5 +1,5 @@
 <template>
-    <div @click.stop="togglechkbox" class="chkbox_wrap d-flex align-items-center"><span class="chkbox" :class="{checked:check}" ></span><label class="noselect body_regular ms-2"><slot></slot></label></div>
+    <div @click="togglechkbox" class="chkbox_wrap d-flex align-items-center"><span class="chkbox" :class="{checked:check}" ></span><label class="noselect body_regular ms-2 text-nowrap"><slot></slot></label></div>
 </template>
 
 <script>
@@ -64,21 +64,27 @@
         -webkit-transition: opacity 0.3s ease-out;
         -moz-transition:  opacity 0.3s ease-out;
     }
-    .filters span.chkbox,thead span.chkbox,header span.chkbox{
+    span.chkbox,thead span.chkbox,header span.chkbox{
         border:#868686 2px solid;
     }
-    .filters span.chkbox.checked,header span.chkbox.checked{
+    span.chkbox.checked,header span.chkbox.checked{
         background: #47454B;
         border:none;
     }
     .chkbox_wrap{
         cursor: pointer;
     }
+    span.chkbox{
+        margin: 0;
+    }
     .filters span.chkbox{
         margin: 14px 22px 14px 22px;
     }
     .filters .chkbox_wrap{
-    display: flex;
+        display: flex;
+    }
+    .chkbox_wrap label{
+        margin: 0 10px;
     }
     .filters .chkbox_wrap label{
         margin: 14px 22px 14px 0;

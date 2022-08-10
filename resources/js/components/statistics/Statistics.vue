@@ -7,9 +7,10 @@
                 <div class="col main-view p-0">
                     <h2 class="ms-0">Statistics</h2>
                     <div class="container-fluid orderlist-tabs d-flex align-items-center">
-                        <div class="orderlist-tab body_bold active">Sales</div>
+                        <div class="orderlist-tab body_bold" :class="{ 'active': tab == 'sales' }" @click="setTab('sales')">Sales</div>
+                        <div class="orderlist-tab body_bold" :class="{ 'active': tab == 'production' }" @click="setTab('production')">Production</div>
                     </div>
-                    <div class="container-stat position-relative mb-10">
+                    <div class="container-stat position-relative mb-10" v-if="tab == 'sales'">
                         <div class="row">
                             <div class="col-10 mb-10">
                                 <statisticsFilters :filterVal="filterVal" @update:filterVal="newValue => filterVal = newValue"></statisticsFilters>
@@ -522,6 +523,9 @@
                             </div>
                         </div>
                     </div>
+                    <div class="container-stat position-relative mb-10 p-0" v-else>
+                        <chart></chart>
+                    </div>
                 </div>
             </div>
         </div>
@@ -543,10 +547,11 @@ import {
     STATISTICS_LOAD_LIST,
 } from "../../store/types/types";
 import StatisticsFilters from "../miscellaneous/StatisticsFilters";
+import Chart from "./Chart.vue";
 
 export default {
     name: "Statistics", 
-    components: { SideBar, MainHeader, StatisticsFilters },
+    components: { SideBar, MainHeader, StatisticsFilters, Chart },
     setup(props,context){
         const store = useStore();
         const stats = ref({});
@@ -554,6 +559,7 @@ export default {
         const top_3_today = ref({});
         const width_scale = ref(0);
         const selectedValue = ref("");
+        const tab = ref('production');
         const filterVal = ref({});
         const today = new Date();
         filterVal.value = {
@@ -583,15 +589,15 @@ export default {
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
         });
-        store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
-        store
-            .dispatch(`${STATISTICS_MODULE}${STATISTICS_LOAD_LIST}`, filterVal.value)
-            .then((response) => {
-                console.log(response.data);
-                stats.value = response.data.stats;
-            }).finally(()=>{
-                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-            });
+        // store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
+        // store.dispatch(`${STATISTICS_MODULE}${STATISTICS_LOAD_LIST}`, filterVal.value).then((response) => {
+        //     stats.value = response.data.stats;
+        // }).finally(()=>{
+        //     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+        // });
+        const setTab = (tabValue)=>{
+            tab.value = tabValue;
+        }
         return {
             statistics : computed(() => store.getters[`${STATISTICS_MODULE}${GET_STATISTICS}`]),
             selectedValue,
@@ -601,7 +607,9 @@ export default {
             width_scale,
             route_name,
             router,
-            stats
+            stats,
+            tab,
+            setTab
         };
     },
 
@@ -613,4 +621,8 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style>
+.main-view {
+  margin: 63px 10px 0;
+}
+</style>
