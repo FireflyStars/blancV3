@@ -12,7 +12,7 @@
      </div>
 
 </transition>
-<transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
+<transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut" v-if="show_modal">
     <div class="modal d-block" id="modal" role="dialog" aria-labelledby="modal-header" aria-describedby="modal-body">
         <div class="modal-dialog">
             <div class="modal-content">
