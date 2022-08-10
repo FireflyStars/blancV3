@@ -1,7 +1,7 @@
 <template>
     <div class="switch-wrapper" :class="{disabled:disabled}">
         <label class="body_small" v-if="labelLeft" @click="toggle">{{labelLeft}}</label>
-        <div class="switch" :class="{on:switchval=='1'}" @click="toggle">
+        <div class="switch" :class="{on:switchval== 1 }" @click="toggle">
             <span class="body_medium noselect">Yes</span>
 
             <span class="body_medium noselect">No</span>
@@ -15,7 +15,7 @@
     export default {
         name: "SwitchNumber",
         props:{
-            modelValue: String,
+            modelValue: Number,
             labelLeft: String,
             disabled: Boolean,
             labelRight: String
@@ -29,10 +29,10 @@
 
             });
             const toggle=()=>{
-                if(switchval.value == "0")
-                    switchval.value = "1";
+                if(switchval.value == 0)
+                    switchval.value = 1;
                 else    
-                    switchval.value = "0";
+                    switchval.value = 0;
                     
                 context.emit("update:modelValue", switchval.value);
             }

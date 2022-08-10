@@ -509,7 +509,7 @@ class StatisticsController extends Controller
      * Get Prodution statistic information
      * 
      */
-    public function getProdStatistic(Request $request){
+    public function getProdStatistics(Request $request){
         $customFilter   =   $request->post('customFilter');
         $startDate      =   $request->post('startDate');
         $endDate        =   $request->post('endDate');
@@ -523,11 +523,11 @@ class StatisticsController extends Controller
         $period         = [ Carbon::parse($startDate)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->endOfDay()->toDateTimeString() ];
         if(!$compareCustomFilter){
             if($compareMode == 'year')
-                $last_period    = [ Carbon::parse($startDate)->subYear(1)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->subYear(1)->endOfDay()->toDateTimeString() ];
+                $past_period    = [ Carbon::parse($startDate)->subYear(1)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->subYear(1)->endOfDay()->toDateTimeString() ];
             else
-                $last_period    = [ Carbon::parse($startDate)->subMonth(1)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->subMonth(1)->endOfDay()->toDateTimeString() ];
+                $past_period    = [ Carbon::parse($startDate)->subMonth(1)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->subMonth(1)->endOfDay()->toDateTimeString() ];
         }else{
-            $last_period = [ Carbon::parse($compareStartDate)->startOfDay()->toDateTimeString(), Carbon::parse($compareEndDate)->endOfDay()->toDateTimeString() ];
+            $past_period = [ Carbon::parse($compareStartDate)->startOfDay()->toDateTimeString(), Carbon::parse($compareEndDate)->endOfDay()->toDateTimeString() ];
         }
         
         // new code added by YH
@@ -608,11 +608,380 @@ class StatisticsController extends Controller
         $salesByChannel = InfoOrder::whereBetween('created_at', $period)
                                 ->where('deliverymethod', '!=','')
                                 ->select(
-                                    DB::raw('FLOOR(SUM(total)) as amount'), 'TypeDelivery as channel'
-                                )->groupBy('TypeDelivery')->get();
+                                    DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount'), 'TypeDelivery as channel'
+                                )->groupBy('TypeDelivery')->orderBy('amount', 'DESC')->get();
+        $salesByChannelTotal = $salesByChannel->sum('amount');
+        $salesByChannelTotalToCompare =  InfoOrder::whereBetween('created_at', $past_period)
+                                            ->where('deliverymethod', '!=','')
+                                            ->select(
+                                                DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount'))->value('amount');
+        $piecesByItem = DB::table('detailingitem')->join('categories', 'categories.id', '=', 'detailingitem.category_id')
+                        ->whereBetween('detailingitem.created_at', $period)
+                        ->where('detailingitem.status', 'Completed')
+                        ->select(
+                            'categories.name', 
+                            DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
+                        )
+                        ->groupBy('categories.name')->orderBy('amount', 'DESC')->get();
+        $salesByItemTotal = $piecesByItem->sum('amount');
+        $salesByItemTotalToCompare = DB::table('detailingitem')->join('categories', 'categories.id', '=', 'detailingitem.category_id')
+                                    ->whereBetween('detailingitem.created_at', $past_period)
+                                    ->where('detailingitem.status', 'Completed')
+                                    ->select(
+                                        DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
+                                    )
+                                    ->value('amount');
+        $b2bAVGSale = InfoOrder::whereBetween('created_at', $period)
+                        ->join('infoCustomer', function($join){
+                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
+                        })
+                        ->where('infoOrder.deliverymethod', '!=', '')
+                        ->where('infoOrder.total', '!=', 0)
+                        ->where('infoCustomer.btob', '=', 1)
+                        ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
+        $b2cAVGSale = InfoOrder::whereBetween('created_at', $period)
+                        ->join('infoCustomer', function($join){
+                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
+                        })
+                        ->where('infoOrder.deliverymethod', '!=', '')
+                        ->where('infoOrder.total', '!=', 0)
+                        ->where('infoCustomer.btob', '=', 0)
+                        ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
+        $corpDel = InfoOrder::whereBetween('created_at', $period)
+                        ->join('infoCustomer', function($join){
+                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
+                        })
+                        ->where('infoOrder.deliverymethod', 'home_delivery')
+                        ->where('infoOrder.total', '!=', 0)
+                        ->where('infoCustomer.btob', '=', 1)
+                        ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
+        $homeDel = InfoOrder::whereBetween('created_at', $period)
+                        ->join('infoCustomer', function($join){
+                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
+                        })
+                        ->where('infoOrder.deliverymethod', 'home_delivery')
+                        ->where('infoOrder.total', '!=', 0)
+                        ->where('infoCustomer.btob', 0)
+                        ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
+        $storeDel = InfoOrder::whereBetween('created_at', $period)
+                        ->where('infoOrder.deliverymethod', 'in_store_collection')
+                        ->where('infoOrder.total', '!=', 0)
+                        ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
+
+        $avgOrder = InfoOrder::whereBetween('created_at', $period)
+                        ->where('infoOrder.deliverymethod', '!=','')
+                        ->where('infoOrder.total', '!=', 0)
+                        ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
+
+        $avgOrderToCompare = InfoOrder::whereBetween('created_at', $period)
+                        ->where('infoOrder.deliverymethod', '!=','')
+                        ->where('infoOrder.total', '!=', 0)
+                        ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
+
+        $allSaleData = InfoOrder::whereBetween('created_at', $period)
+                        ->where('deliverymethod', '!=','')
+                        ->where('total', '!=', 0)
+                        ->select(
+                            DB::raw('ROUND(SUM(total), 2) as amount'),
+                            DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d") as date')
+                        )
+                        ->groupBy('date')->get();
+        $corpDelSaleData = InfoOrder::whereBetween('created_at', $period)
+                        ->join('infoCustomer', function($join){
+                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
+                                ->where('infoOrder.CustomerID', '!=', '')
+                                ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
+                        })            
+                        ->where('infoOrder.deliverymethod', 'home_delivery')
+                        ->where('infoOrder.total', '!=', 0)
+                        ->where('infoCustomer.btob', 1)
+                        ->select(
+                            DB::raw('ROUND(SUM(infoOrder.total), 2) as amount'),
+                            DB::raw('DATE_FORMAT(infoOrder.created_at, "%Y-%m-%d") as date')
+                        )
+                        ->groupBy('date')->get();
+        $homeDelSaleData = InfoOrder::whereBetween('created_at', $period)
+                        ->join('infoCustomer', function($join){
+                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
+                                ->where('infoOrder.CustomerID', '!=', '')
+                                ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
+                        })             
+                        ->where('infoOrder.deliverymethod', 'home_delivery')
+                        ->where('infoOrder.total', '!=', 0)
+                        ->where('infoCustomer.btob', 0)
+                        ->select(
+                            DB::raw('ROUND(SUM(infoOrder.total), 2) as amount'),
+                            DB::raw('DATE_FORMAT(infoOrder.created_at, "%Y-%m-%d") as date')
+                        )
+                        ->groupBy('date')->get();
+        $MBSaleData = InfoOrder::whereBetween('created_at', $period)
+                        ->join('infoCustomer', function($join){
+                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
+                                ->where('infoOrder.CustomerID', '!=', '')
+                                ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
+                        })        
+                        ->where('infoOrder.deliverymethod', 'in_store_collection')
+                        ->where('infoOrder.TypeDelivery', 'MARYLEBONE')
+                        ->where('infoOrder.total', '!=', 0)
+                        ->select(
+                            DB::raw('ROUND(SUM(infoOrder.total), 2) as amount'),
+                            DB::raw('DATE_FORMAT(infoOrder.created_at, "%Y-%m-%d") as date')
+                        )
+                        ->groupBy('date')->get();
+
+        $NHSaleData = InfoOrder::whereBetween('created_at', $period)
+                        ->join('infoCustomer', function($join){
+                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
+                                ->where('infoOrder.CustomerID', '!=', '')
+                                ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
+                        })        
+                        ->where('infoOrder.deliverymethod', 'in_store_collection')
+                        ->where('infoOrder.TypeDelivery', 'NOTTING HILL')
+                        ->where('infoOrder.total', '!=', 0)
+                        ->select(
+                            DB::raw('ROUND(SUM(infoOrder.total), 2) as amount'),
+                            DB::raw('DATE_FORMAT(infoOrder.created_at, "%Y-%m-%d") as date')
+                        )
+                        ->groupBy('date')->get();
+
+        $CHSaleData = InfoOrder::whereBetween('created_at', $period)
+                        ->join('infoCustomer', function($join){
+                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
+                                ->where('infoOrder.CustomerID', '!=', '')
+                                ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
+                        })        
+                        ->where('infoOrder.deliverymethod', 'in_store_collection')
+                        ->where('infoOrder.TypeDelivery', 'CHELSEA')
+                        ->where('infoOrder.total', '!=', 0)
+                        ->select(
+                            DB::raw('ROUND(SUM(infoOrder.total), 2) as amount'),
+                            DB::raw('DATE_FORMAT(infoOrder.created_at, "%Y-%m-%d") as date')
+                        )
+                        ->groupBy('date')->get();
+        $SKSaleData = InfoOrder::whereBetween('created_at', $period)
+                        ->join('infoCustomer', function($join){
+                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
+                                ->where('infoOrder.CustomerID', '!=', '')
+                                ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
+                        })        
+                        ->where('infoOrder.deliverymethod', 'in_store_collection')
+                        ->where('infoOrder.TypeDelivery', 'SOUTH KEN')
+                        ->where('infoOrder.total', '!=', 0)
+                        ->select(
+                            DB::raw('ROUND(SUM(infoOrder.total), 2) as amount'),
+                            DB::raw('DATE_FORMAT(infoOrder.created_at, "%Y-%m-%d") as date')
+                        )
+                        ->groupBy('date')->get();
+        $signupByChannel = InfoCustomer::where(function($query) use ($period){
+                                $query->whereBetween('SignupDate', $period)
+                                    ->orWhereBetween('SignupDateOnline', $period);
+                            })
+                            ->where('btob', 0)
+                            ->select(DB::raw('count(*) as count'), 'TypeDelivery')->groupBy('TypeDelivery')->get();
+        $totalSignUpCount = $signupByChannel->sum('count');
+        foreach ($signupByChannel as $signup) {
+            $signup->pastCount = InfoCustomer::where(function($query) use ($past_period){
+                                    $query->whereBetween('SignupDate', $past_period)
+                                        ->orWhereBetween('SignupDateOnline', $past_period);
+                                })
+                                ->where('btob', 0)
+                                ->where('TypeDelivery', $signup->TypeDelivery)
+                                ->select(DB::raw('count(*) as count'))->value('count');
+        }
+        $totalSignUpCountPast = $signupByChannel->sum('pastCount');
+        $signupB2B = InfoCustomer::where(function($query) use ($period){
+                                        $query->whereBetween('SignupDate', $period)
+                                            ->orWhereBetween('SignupDateOnline', $period);
+                                    })
+                                    ->where('btob', 1)
+                                    ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
+        $signupB2BPast = InfoCustomer::where(function($query) use ($past_period){
+                                        $query->whereBetween('SignupDate', $past_period)
+                                            ->orWhereBetween('SignupDateOnline', $past_period);
+                                    })
+                                    ->where('btob', 1)
+                                    ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
+        $signupB2C = InfoCustomer::where(function($query) use ($period){
+                                        $query->whereBetween('SignupDate', $period)
+                                            ->orWhereBetween('SignupDateOnline', $period);
+                                    })
+                                    ->where('btob', 0)
+                                    ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
+        $signupB2CPast = InfoCustomer::where(function($query) use ($past_period){
+                                        $query->whereBetween('SignupDate', $past_period)
+                                            ->orWhereBetween('SignupDateOnline', $past_period);
+                                    })
+                                    ->where('btob', 0)
+                                    ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
+        $signupAPP = InfoCustomer::where(function($query) use ($period){
+                                        $query->WhereBetween('SignupDateOnline', $period);
+                                    })
+                                    ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
+        $signupAPPPast = InfoCustomer::where(function($query) use ($past_period){
+                                        $query->WhereBetween('SignupDateOnline', $past_period);
+                                    })
+                                    ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
+        $signupPOS = InfoCustomer::where(function($query) use ($period){
+                                        $query->WhereBetween('SignupDate', $period);
+                                    })
+                                    ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
+        $signupPOSPast = InfoCustomer::where(function($query) use ($past_period){
+                                        $query->WhereBetween('SignupDate', $past_period);
+                                    })
+                                    ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
+
+        $bookingByChannel = DB::table('pickup')
+                            ->join('infoCustomer', function($join){
+                                $join->on('infoCustomer.CustomerID', '=', 'pickup.CustomerID')
+                                ->whereNotNull('pickup.CustomerID')
+                                ->where('pickup.CustomerID', '!=', '');
+                            })
+                            ->whereBetween('pickup.created_at', $period)
+                            ->where('pickup.STATUS', 'NOT LIKE', '%DEL%')
+                            ->select(DB::raw('count(*) as count'), 'infoCustomer.TypeDelivery')->groupBy('TypeDelivery')->get();
+        foreach ($bookingByChannel as $booking) {
+            $booking->pastCount = DB::table('pickup')
+                                    ->join('infoCustomer', function($join){
+                                        $join->on('infoCustomer.CustomerID', '=', 'pickup.CustomerID')
+                                        ->whereNotNull('pickup.CustomerID')
+                                        ->where('pickup.CustomerID', '!=', '');
+                                    })
+                                    ->whereBetween('pickup.created_at', $past_period)
+                                    ->where('pickup.STATUS', 'NOT LIKE', '%DEL%')
+                                    ->where('infoCustomer.TypeDelivery', $booking->TypeDelivery)
+                                    ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
+        }
+        $totalBookingCount = $bookingByChannel->sum('count');
+        $totalBookingCountPast = $bookingByChannel->sum('pastCount');
+
+        $bookingB2B = DB::table('pickup')
+                            ->join('infoCustomer', function($join){
+                                $join->on('infoCustomer.CustomerID', '=', 'pickup.CustomerID')
+                                ->whereNotNull('pickup.CustomerID')
+                                ->where('pickup.CustomerID', '!=', '');
+                            })
+                            ->whereBetween('pickup.created_at', $period)
+                            ->where('pickup.STATUS', 'NOT LIKE', '%DEL%')
+                            ->where('infoCustomer.btob', 1)
+                            ->select(DB::raw('count(*) as count'))->value('count');
+        $bookingB2BPast = DB::table('pickup')
+                            ->join('infoCustomer', function($join){
+                                $join->on('infoCustomer.CustomerID', '=', 'pickup.CustomerID')
+                                ->whereNotNull('pickup.CustomerID')
+                                ->where('pickup.CustomerID', '!=', '');
+                            })
+                            ->whereBetween('pickup.created_at', $past_period)
+                            ->where('pickup.STATUS', 'NOT LIKE', '%DEL%')
+                            ->where('infoCustomer.btob', 1)
+                            ->select(DB::raw('count(*) as count'))->value('count');
+        $bookingB2C = DB::table('pickup')
+                            ->join('infoCustomer', function($join){
+                                $join->on('infoCustomer.CustomerID', '=', 'pickup.CustomerID')
+                                ->whereNotNull('pickup.CustomerID')
+                                ->where('pickup.CustomerID', '!=', '');
+                            })
+                            ->whereBetween('pickup.created_at', $period)
+                            ->where('pickup.STATUS', 'NOT LIKE', '%DEL%')
+                            ->where('infoCustomer.btob', 0)
+                            ->select(DB::raw('count(*) as count'))->value('count');
+        $bookingB2CPast = DB::table('pickup')
+                            ->join('infoCustomer', function($join){
+                                $join->on('infoCustomer.CustomerID', '=', 'pickup.CustomerID')
+                                ->whereNotNull('pickup.CustomerID')
+                                ->where('pickup.CustomerID', '!=', '');
+                            })
+                            ->whereBetween('pickup.created_at', $past_period)
+                            ->where('pickup.STATUS', 'NOT LIKE', '%DEL%')
+                            ->where('infoCustomer.btob', 0)
+                            ->select(DB::raw('count(*) as count'))->value('count');
+        $bookingAPP = DB::table('pickup')
+                            ->join('infoCustomer', function($join){
+                                $join->on('infoCustomer.CustomerID', '=', 'pickup.CustomerID')
+                                ->whereNotNull('pickup.CustomerID')
+                                ->where('pickup.CustomerID', '!=', '');
+                            })
+                            ->whereBetween('pickup.created_at', $period)
+                            ->where('pickup.STATUS', 'NOT LIKE', '%DEL%')
+                            ->where('pickup.STATUS', 'LIKE', '%API%')
+                            ->select(DB::raw('count(*) as count'))->value('count');
+        $bookingAPPPast = DB::table('pickup')
+                            ->join('infoCustomer', function($join){
+                                $join->on('infoCustomer.CustomerID', '=', 'pickup.CustomerID')
+                                ->whereNotNull('pickup.CustomerID')
+                                ->where('pickup.CustomerID', '!=', '');
+                            })
+                            ->whereBetween('pickup.created_at', $past_period)
+                            ->where('pickup.STATUS', 'NOT LIKE', '%DEL%')
+                            ->where('pickup.STATUS', 'LIKE', '%API%')
+                            ->select(DB::raw('count(*) as count'))->value('count');
+        $bookingPOS = DB::table('pickup')
+                            ->join('infoCustomer', function($join){
+                                $join->on('infoCustomer.CustomerID', '=', 'pickup.CustomerID')
+                                ->whereNotNull('pickup.CustomerID')
+                                ->where('pickup.CustomerID', '!=', '');
+                            })
+                            ->whereBetween('pickup.created_at', $period)
+                            ->where('pickup.STATUS', 'NOT LIKE', '%DEL%')
+                            ->where('pickup.STATUS', 'LIKE', '%PMS%')
+                            ->select(DB::raw('count(*) as count'))->value('count');
+        $bookingPOSPast = DB::table('pickup')
+                            ->join('infoCustomer', function($join){
+                                $join->on('infoCustomer.CustomerID', '=', 'pickup.CustomerID')
+                                ->whereNotNull('pickup.CustomerID')
+                                ->where('pickup.CustomerID', '!=', '');
+                            })
+                            ->whereBetween('pickup.created_at', $past_period)
+                            ->where('pickup.STATUS', 'NOT LIKE', '%DEL%')
+                            ->where('pickup.STATUS', 'LIKE', '%PMS%')
+                            ->select(DB::raw('count(*) as count'))->value('count');
         return response()->json([
-            'salesByChannel'=> $salesByChannel,
-            'salesByChannel'=> $salesByChannel,
+            'salesByChannel'        => $salesByChannel,
+            'salesByChannelTotal'   => $salesByChannelTotal,
+            'salesByChannelTotalToCompare'=> $salesByChannelTotalToCompare,
+            
+            'piecesByItem'          => $piecesByItem,
+            'salesByItemTotal'      => $salesByItemTotal,
+            'salesByItemTotalToCompare'=> $salesByItemTotalToCompare,
+
+            'avgOrder'          => $avgOrder,
+            'avgOrderToCompare' => $avgOrderToCompare,
+            'b2bAVGSale'        => $b2bAVGSale,
+            'b2cAVGSale'        => $b2cAVGSale,
+            'corpDel'           => $corpDel,
+            'homeDel'           => $homeDel,
+            'storeDel'          => $storeDel,
+
+            'allSaleData'       => $allSaleData,
+            'corpDelSaleData'   => $corpDelSaleData,
+            'homeDelSaleData'   => $homeDelSaleData,
+            'MBSaleData'        => $MBSaleData,
+            'NHSaleData'        => $NHSaleData,
+            'CHSaleData'        => $CHSaleData,
+            'SKSaleData'        => $SKSaleData,
+
+            'signupByChannel'       => $signupByChannel,
+            'totalSignUpCount'      => $totalSignUpCount,
+            'totalSignUpCountPast'  => $totalSignUpCountPast,
+            'signupB2B'             => $signupB2B,
+            'signupB2BPast'         => $signupB2BPast,
+            'signupB2C'             => $signupB2C,
+            'signupB2CPast'         => $signupB2CPast,
+            'signupAPP'             => $signupAPP,
+            'signupAPPPast'         => $signupAPPPast,
+            'signupPOS'             => $signupPOS,
+            'signupPOSPast'         => $signupPOSPast,
+
+            'bookingByChannel'       => $bookingByChannel,
+            'totalBookingCount'      => $totalBookingCount,
+            'totalBookingCountPast'  => $totalBookingCountPast,
+            'bookingB2B'             => $bookingB2B,
+            'bookingB2BPast'         => $bookingB2BPast,
+            'bookingB2C'             => $bookingB2C,
+            'bookingB2CPast'         => $bookingB2CPast,
+            'bookingAPP'             => $bookingAPP,
+            'bookingAPPPast'         => $bookingAPPPast,
+            'bookingPOS'             => $bookingPOS,
+            'bookingPOSPast'         => $bookingPOSPast,
         ]);
     }
     public static function getAssemblyHomeStats(Request $request){

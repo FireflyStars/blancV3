@@ -9,7 +9,12 @@
                         <div class="col-7">
                             <div class="d-flex" v-for="(channel, index) in salesByChannelChartData" :key="index">
                                 <div class="col-1 d-flex align-items-center">
-                                    <div class="origin-dot bg-danger rounded-circle" :class="{ 'bg-danger': index == 0, 'bg-success': index == 1, 'bg-primary': index==2, 'bg-secondary': index == 3 }"></div>
+                                    <div class="origin-dot rounded-circle" v-if="index==0" :style="{'background-color': '#EB5757'}"></div>
+                                    <div class="origin-dot rounded-circle" v-if="index==1" :style="{'background-color': '#5200FF'}"></div>
+                                    <div class="origin-dot rounded-circle" v-if="index==2" :style="{'background-color': '#8ADFDF'}"></div>
+                                    <div class="origin-dot rounded-circle" v-if="index==3" :style="{'background-color': '#80A2EC'}"></div>
+                                    <div class="origin-dot rounded-circle" v-if="index==4" :style="{'background-color': '#EEE516'}"></div>
+                                    <div class="origin-dot rounded-circle" v-if="index==5" :style="{'background-color': '#1F78B4'}"></div>
                                 </div>
                                 <div class="col-6">{{ channel.channel }}</div>
                                 <div class="col-5">£{{ channel.amount }}</div>
@@ -25,7 +30,7 @@
                     <h3 class="font-20 gotham-rounded-medium">Pieces by item type</h3>
                     <div class="d-flex">
                         <div class="col-7">
-                            <div class="d-flex" v-for="(client, index) in piecesByItemChartData" :key="index">
+                            <div class="d-flex" v-for="(item, index) in piecesByItemChartData" :key="index">
                                 <div class="col-1 d-flex align-items-center">
                                     <div class="origin-dot rounded-circle" v-if="index==0" :style="{'background-color': '#EB5757'}"></div>
                                     <div class="origin-dot rounded-circle" v-else-if="index==1" :style="{'background-color': '#5200FF'}"></div>
@@ -34,8 +39,8 @@
                                     <div class="origin-dot rounded-circle" v-else-if="index==4" :style="{'background-color': '#EEE516'}"></div>
                                     <div class="origin-dot rounded-circle" v-else :style="{'background-color': '#1F78B4'}"></div>
                                 </div>
-                                <div class="col-6">{{ client.client }}</div>
-                                <div class="col-5">{{ client.amount }} €</div>
+                                <div class="col-6">{{ item.name }}</div>
+                                <div class="col-5">£{{ item.amount }}</div>
                             </div>
                         </div>
                         <div class="col-5" id="saleByClient" style="height: 150px">
@@ -53,9 +58,13 @@
                         <div class="col-5">
                             <h4 class="font-16 gotham-rounded-medium">by customer type</h4>
                             <div class="d-flex flex-wrap">
-                                <div class="avg-sale-block py-3 px-2 mt-2 me-2 d-flex flex-wrap" v-for="(cate, index) in salesByCustType" :key="index">
-                                    <p class="w-100 text-center font-12 gotham-rounded-book">{{cate.name}}</p>
-                                    <p class="w-100 text-center font-16 gotham-rounded-medium align-self-end">{{ cate.amount }}€</p>
+                                <div class="avg-sale-block py-3 px-2 mt-2 me-2 d-flex flex-wrap">
+                                    <p class="w-100 text-center font-12 gotham-rounded-book">B2B</p>
+                                    <p class="w-100 text-center font-16 gotham-rounded-medium align-self-end">£{{ b2bAVGSale }}</p>
+                                </div>
+                                <div class="avg-sale-block py-3 px-2 mt-2 me-2 d-flex flex-wrap">
+                                    <p class="w-100 text-center font-12 gotham-rounded-book">B2C</p>
+                                    <p class="w-100 text-center font-16 gotham-rounded-medium align-self-end">£{{ b2cAVGSale }}</p>
                                 </div>
                             </div>
                         </div>
@@ -64,15 +73,15 @@
                             <div class="d-flex flex-wrap">
                                 <div class="avg-sale-block py-3 px-2 mt-2 me-2 d-flex flex-wrap">
                                     <p class="w-100 text-center font-12 gotham-rounded-book">Corp Del</p>
-                                    <p class="w-100 text-center font-16 gotham-rounded-medium align-self-end">{{ paiement }}%</p>
+                                    <p class="w-100 text-center font-16 gotham-rounded-medium align-self-end">£{{ corpDel }}</p>
                                 </div>
                                 <div class="avg-sale-block py-3 px-2 me-2 mt-2 d-flex flex-wrap">
                                     <p class="w-100 text-center font-12 gotham-rounded-book">Home Del</p>
-                                    <p class="w-100 text-center font-16 gotham-rounded-medium align-self-end">{{ facture }}%</p>
+                                    <p class="w-100 text-center font-16 gotham-rounded-medium align-self-end">£{{ homeDel }}</p>
                                 </div>
                                 <div class="avg-sale-block py-3 px-2 mt-2 d-flex flex-wrap">
                                     <p class="w-100 text-center font-12 gotham-rounded-book">Stores</p>
-                                    <p class="w-100 text-center font-16 gotham-rounded-medium align-self-end">5.3 K€</p>
+                                    <p class="w-100 text-center font-16 gotham-rounded-medium align-self-end">£{{ storeDel }}</p>
                                 </div>
                             </div>
                         </div>
@@ -88,18 +97,17 @@
                     <div class="d-flex align-items-center p-2">
                         <h3 class="font-20 gotham-rounded-medium m-0">Total sales over time</h3>
                         <TotalPercent class="ms-5" :amount="salesByChannelTotal" :pastAmount="salesByChannelTotalToCompare"></TotalPercent>
-                        <TotalPercent class="ms-5" :amount="salesByItemTotal" :symbol="'h'" :pastAmount="salesByItemTotalToCompare"></TotalPercent>
                         <h4 class="mb-0 ms-auto font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View report</em></h4>
                     </div>
                     <div class="legends bg-white p-2">
                         <div class="d-flex">
-                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="legend1" :checked_checkbox="true">All sales</CheckBox></div>
-                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="legend2" :checked_checkbox="false">Corp Del</CheckBox></div>
-                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="legend3" :checked_checkbox="false">Home Del</CheckBox></div>
-                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="legend4" :checked_checkbox="false">MB</CheckBox></div>
-                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="legend5" :checked_checkbox="false">NH</CheckBox></div>
-                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="legend6" :checked_checkbox="false">CH</CheckBox></div>
-                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="legend7" :checked_checkbox="false">SK</CheckBox></div>
+                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="allSaleByDateLegend" :checked_checkbox="true">All sales</CheckBox></div>
+                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="corpDelByDateLegend" :checked_checkbox="false">Corp Del</CheckBox></div>
+                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="homeDelByDateLegend" :checked_checkbox="false">Home Del</CheckBox></div>
+                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="MBByDateLegend" :checked_checkbox="false">MB</CheckBox></div>
+                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="NHByDateLegend" :checked_checkbox="false">NH</CheckBox></div>
+                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="CHByDateLegend" :checked_checkbox="false">CH</CheckBox></div>
+                            <div class="d-flex justify-content-center mx-2"><CheckBox v-model="SKByDateLegend" :checked_checkbox="false">SK</CheckBox></div>
                         </div>
                     </div>
                     <div class="total-chart bg-white" id="totalChart">
@@ -126,7 +134,7 @@
                             <div class="d-flex" v-for="(saleByCommande, index) in salesByCommande" :key="index">
                                 <div class="col-3">{{ saleByCommande.id }}</div>
                                 <div class="col-3">{{ saleByCommande.name }}</div>
-                                <div class="col-3">{{ saleByCommande.amount }}€</div>
+                                <div class="col-3">{{ saleByCommande.amount }}£</div>
                                 <div class="col-3">{{ saleByCommande.hour }}h</div>
                             </div>                                                            
                         </div>
@@ -144,18 +152,37 @@
                         <div class="col-6">
                             <h4 class="font-16 gotham-rounded-medium mt-3">by channel</h4>
                             <div class="d-flex" v-for="(signup, index) in signupByChannel" :key="index">
-                                <div class="col-4">{{ signup.status }}</div>
-                                <div class="col-8 d-flex align-items-center">
-                                    <TotalPercent :fontSize="14" :amount="signup.countOfSignup" :symbol="''" :pastAmount="signup.pastCountOfSignup"></TotalPercent>
+                                <div class="col-6">{{ signup.TypeDelivery }}</div>
+                                <div class="col-6 d-flex align-items-center">
+                                    <TotalPercent :fontSize="14" :amount="signup.count" :symbol="''" :pastAmount="signup.pastCount"></TotalPercent>
                                 </div>
                             </div>
                         </div>
                         <div class="col-6">
                             <h4 class="font-16 gotham-rounded-medium mt-3">by customer type</h4>
-                            <div class="d-flex" v-for="(signup, index) in singupByCustType" :key="index">
-                                <div class="col-4">{{signup.type}}</div>
-                                <div class="col-8 d-flex align-items-center">
-                                    <TotalPercent :fontSize="14" :amount="signup.countOfSignup" :symbol="''" :pastAmount="signup.pastCountOfSignup"></TotalPercent>
+                            <div class="d-flex">
+                                <div class="col-6">B2B</div>
+                                <div class="col-6 d-flex align-items-center">
+                                    <TotalPercent :fontSize="14" :amount="signupB2B" :symbol="''" :pastAmount="signupB2BPast"></TotalPercent>
+                                </div>
+                            </div>
+                            <div class="d-flex">
+                                <div class="col-6">B2C</div>
+                                <div class="col-6 d-flex align-items-center">
+                                    <TotalPercent :fontSize="14" :amount="signupB2C" :symbol="''" :pastAmount="signupB2CPast"></TotalPercent>
+                                </div>
+                            </div>
+                            <h4 class="font-16 gotham-rounded-medium mt-3">by sign up origin</h4>
+                            <div class="d-flex">
+                                <div class="col-6">APP</div>
+                                <div class="col-6 d-flex align-items-center">
+                                    <TotalPercent :fontSize="14" :amount="signupAPP" :symbol="''" :pastAmount="signupAPPPast"></TotalPercent>
+                                </div>
+                            </div>
+                            <div class="d-flex">
+                                <div class="col-6">POS</div>
+                                <div class="col-6 d-flex align-items-center">
+                                    <TotalPercent :fontSize="14" :amount="signupPOS" :symbol="''" :pastAmount="signupPOSPast"></TotalPercent>
                                 </div>
                             </div>
                         </div>
@@ -171,15 +198,28 @@
                         <div class="col-6">
                             <h4 class="font-16 gotham-rounded-medium mt-3">by channel</h4>
                             <div class="d-flex align-items-center" v-for="(booking, index) in bookingByChannel" :key="index">
-                                <div class="col-4">{{ booking.status }}</div>
-                                <TotalPercent :fontSize="14" class="ms-5" :amount="booking.countOfBooking" :symbol="''" :pastAmount="booking.pastCountOfBooking"></TotalPercent>
+                                <div class="col-4">{{ booking.TypeDelivery }}</div>
+                                <TotalPercent :fontSize="14" class="ms-5" :amount="booking.count" :symbol="''" :pastAmount="booking.pastCount"></TotalPercent>
                             </div>
                         </div>
                         <div class="col-6">
                             <h4 class="font-16 gotham-rounded-medium mt-3">by customer type</h4>
-                            <div class="d-flex align-items-center" v-for="(booking, index) in bookingByCustType" :key="index">
-                                <div class="col-4">{{ booking.name }}</div>
-                                <TotalPercent :fontSize="14" class="ms-5" :amount="booking.countOfBooking" :symbol="''" :pastAmount="booking.pastCountOfBooking"></TotalPercent>
+                            <div class="d-flex align-items-center">
+                                <div class="col-4">B2B</div>
+                                <TotalPercent :fontSize="14" class="ms-5" :amount="bookingB2B" :symbol="''" :pastAmount="bookingB2BPast"></TotalPercent>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="col-4">B2C</div>
+                                <TotalPercent :fontSize="14" class="ms-5" :amount="bookingB2C" :symbol="''" :pastAmount="bookingB2CPast"></TotalPercent>
+                            </div>
+                            <h4 class="font-16 gotham-rounded-medium mt-3">by booking origin</h4>
+                            <div class="d-flex align-items-center">
+                                <div class="col-4">APP</div>
+                                <TotalPercent :fontSize="14" class="ms-5" :amount="bookingAPP" :symbol="''" :pastAmount="bookingAPPPast"></TotalPercent>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="col-4">POS</div>
+                                <TotalPercent :fontSize="14" class="ms-5" :amount="bookingPOS" :symbol="''" :pastAmount="bookingPOSPast"></TotalPercent>
                             </div>
                         </div>
                     </div>                                                    
@@ -214,33 +254,50 @@ export default {
     },
     setup(){
         const store = useStore();
-        const legend1 = ref(true);
-        const legend2 = ref(false);
-        const legend3 = ref(false);
-        const legend4 = ref(false);
-        const legend5 = ref(false);
-        const legend6 = ref(false);
-        const legend7 = ref(false);
+        const allSaleByDateLegend = ref(true);
+        const corpDelByDateLegend = ref(false);
+        const homeDelByDateLegend = ref(false);
+        const MBByDateLegend = ref(false);
+        const NHByDateLegend = ref(false);
+        const CHByDateLegend = ref(false);
+        const SKByDateLegend = ref(false);
         const salesByChannelTotal = ref(0);
         const salesByChannelTotalToCompare = ref(0);        
         const salesByItemTotal = ref(0);
         const salesByItemTotalToCompare = ref(0);    
 
+        const b2bAVGSale = ref(0);
+        const b2cAVGSale = ref(0);
         const salesByCustType = ref(0);
         const avgOrder = ref(0);
         const avgOrderToCompare = ref(0);
-        const facture = ref(0);
-        const paiement = ref(0);
+        const homeDel = ref(0);
+        const corpDel = ref(0);
+        const storeDel = ref(0);
         const salesByCommande = ref([]);
         const salesByUser = ref([]);
 
         const bookingByChannel = ref([]);
-        const bookingByCustType = ref([]);
+        const bookingB2B = ref(0);
+        const bookingB2BPast = ref(0);
+        const bookingB2C = ref(0);
+        const bookingB2CPast = ref(0);
+        const bookingAPP = ref(0);
+        const bookingAPPPast = ref(0);
+        const bookingPOS = ref(0);
+        const bookingPOSPast = ref(0);
         const totalBookingCount = ref(0);
         const totalBookingCountPast = ref(0);
 
         const signupByChannel = ref([]);
-        const singupByCustType = ref([]);
+        const signupB2B = ref(0);
+        const signupB2BPast = ref(0);
+        const signupB2C = ref(0);
+        const signupB2CPast = ref(0);
+        const signupAPP = ref(0);
+        const signupAPPPast = ref(0);
+        const signupPOS = ref(0);
+        const signupPOSPast = ref(0);
         const totalSignUpCount = ref(0);
         const totalSignUpCountPast = ref(0);
 
@@ -249,8 +306,8 @@ export default {
             customFilter: 0,
             startDate: `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`,
             endDate:`${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`,
-            dateRangeType:'Today',
-            compareMode: 'year',
+            dateRangeType:'Last Month',
+            compareMode: 'month',
             compareCustomFilter: false,
             compareStartDate: `${today.getFullYear()-1}-${today.getMonth()+1}-${today.getDate()}`,
             compareEndDate: `${today.getFullYear()-1}-${today.getMonth()+1}-${today.getDate()}`,
@@ -263,35 +320,53 @@ export default {
                     salesByChannelTotal.value = res.data.salesByChannelTotal;
                     salesByChannelTotalToCompare.value = res.data.salesByChannelTotalToCompare;
 
-                    piecesByItemChartData.value = res.data.salesByClient;
+                    piecesByItemChartData.value = res.data.piecesByItem;
                     salesByItemTotal.value = res.data.salesByItemTotal;
                     salesByItemTotalToCompare.value = res.data.salesByItemTotalToCompare;
 
-                    series1Data.value = res.data.series1Data;
-                    series2Data.value = res.data.series2Data;
-                    series3Data.value = res.data.series3Data;
-                    series4Data.value = res.data.series4Data;
-                    series5Data.value = res.data.series5Data;
-                    series6Data.value = res.data.series6Data;
-                    series7Data.value = res.data.series7Data;
-
-                    salesByCustType.value = res.data.salesByCustType;
                     avgOrder.value = res.data.avgOrder;
                     avgOrderToCompare.value = res.data.avgOrderToCompare;
-                    facture.value = res.data.facture;
-                    paiement.value = res.data.paiement;
+                    b2bAVGSale.value = res.data.b2bAVGSale;
+                    b2cAVGSale.value = res.data.b2cAVGSale;
+                    homeDel.value = res.data.homeDel;
+                    corpDel.value = res.data.corpDel;
+                    storeDel.value = res.data.storeDel;
+
+                    allSaleData.value = res.data.allSaleData;
+                    corpDelSaleData.value = res.data.corpDelSaleData;
+                    homeDelSaleData.value = res.data.homeDelSaleData;
+                    MBSaleData.value = res.data.MBSaleData;
+                    NHSaleData.value = res.data.NHSaleData;
+                    CHSaleData.value = res.data.CHSaleData;
+                    SKSaleData.value = res.data.SKSaleData;
+
                     salesByCommande.value = res.data.salesByCommande;
                     salesByUser.value = res.data.salesByUser;
 
                     bookingByChannel.value = res.data.bookingByChannel;
-                    bookingByCustType.value = res.data.bookingByCustType;
+                    bookingB2B.value = res.data.bookingB2B;
+                    bookingB2BPast.value = res.data.bookingB2BPast;
+                    bookingB2C.value = res.data.bookingB2C;
+                    bookingB2CPast.value = res.data.bookingB2CPast;
+                    bookingAPP.value = res.data.bookingAPP;
+                    bookingAPPPast.value = res.data.bookingAPPPast;
+                    bookingPOS.value = res.data.bookingPOS;
+                    bookingPOSPast.value = res.data.bookingPOSPast;
                     totalBookingCount.value = res.data.totalBookingCount;
                     totalBookingCountPast.value = res.data.totalBookingCountPast;
 
                     signupByChannel.value = res.data.signupByChannel;
-                    singupByCustType.value = res.data.singupByCustType;
+                    signupB2B.value = res.data.signupB2B;
+                    signupB2BPast.value = res.data.signupB2BPast;
+                    signupB2C.value = res.data.signupB2C;
+                    signupB2CPast.value = res.data.signupB2CPast;
+                    signupAPP.value = res.data.signupAPP;
+                    signupAPPPast.value = res.data.signupAPPPast
+                    signupPOS.value = res.data.signupAPP;
+                    signupPOSPast.value = res.data.signupAPPPast
                     totalSignUpCount.value = res.data.totalSignUpCount;
                     totalSignUpCountPast.value = res.data.totalSignUpCountPast;
+                    
                     initSalesByChannelChart();
                     initPiecesByItemChart();
                     initTotalChart();
@@ -312,43 +387,61 @@ export default {
         }
         watch(() => filterVal.value, (current_val, previous_val) => {
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
-            axios.post('/statistique', current_val).then((res) => {
-                salesByChannelChartData.value = res.data.salesByOrigin;
+            axios.post('/get-prod-statistics', current_val).then((res) => {
+                salesByChannelChartData.value = res.data.salesByChannel;
                 salesByChannelTotal.value = res.data.salesByChannelTotal;
                 salesByChannelTotalToCompare.value = res.data.salesByChannelTotalToCompare;
 
-                piecesByItemChartData.value = res.data.salesByClient;
+                piecesByItemChartData.value = res.data.piecesByItem;
                 salesByItemTotal.value = res.data.salesByItemTotal;
                 salesByItemTotalToCompare.value = res.data.salesByItemTotalToCompare;
 
-                series1Data.value = res.data.series1Data;
-                series2Data.value = res.data.series2Data;
-                series3Data.value = res.data.series3Data;
-                series4Data.value = res.data.series4Data;
-                series5Data.value = res.data.series5Data;
-                series6Data.value = res.data.series6Data;
-                series7Data.value = res.data.series7Data;
-
-                salesByCustType.value = res.data.salesByCustType;
                 avgOrder.value = res.data.avgOrder;
                 avgOrderToCompare.value = res.data.avgOrderToCompare;
-                facture.value = res.data.facture;
-                paiement.value = res.data.paiement;
+                b2bAVGSale.value = res.data.b2bAVGSale;
+                b2cAVGSale.value = res.data.b2cAVGSale;
+                homeDel.value = res.data.homeDel;
+                corpDel.value = res.data.corpDel;
+                storeDel.value = res.data.storeDel;
+
+                allSaleData.value = res.data.allSaleData;
+                corpDelSaleData.value = res.data.corpDelSaleData;
+                homeDelSaleData.value = res.data.homeDelSaleData;
+                MBSaleData.value = res.data.MBSaleData;
+                NHSaleData.value = res.data.NHSaleData;
+                CHSaleData.value = res.data.CHSaleData;
+                SKSaleData.value = res.data.SKSaleData;
+
                 salesByCommande.value = res.data.salesByCommande;
                 salesByUser.value = res.data.salesByUser;
 
                 bookingByChannel.value = res.data.bookingByChannel;
-                bookingByCustType.value = res.data.bookingByCustType;
+                bookingB2B.value = res.data.bookingB2B;
+                bookingB2BPast.value = res.data.bookingB2BPast;
+                bookingB2C.value = res.data.bookingB2C;
+                bookingB2CPast.value = res.data.bookingB2CPast;
+                bookingAPP.value = res.data.bookingAPP;
+                bookingAPPPast.value = res.data.bookingAPPPast;
+                bookingPOS.value = res.data.bookingPOS;
+                bookingPOSPast.value = res.data.bookingPOSPast;
                 totalBookingCount.value = res.data.totalBookingCount;
                 totalBookingCountPast.value = res.data.totalBookingCountPast;
 
                 signupByChannel.value = res.data.signupByChannel;
-                singupByCustType.value = res.data.singupByCustType;
+                signupB2B.value = res.data.signupB2B;
+                signupB2BPast.value = res.data.signupB2BPast;
+                signupB2C.value = res.data.signupB2C;
+                signupB2CPast.value = res.data.signupB2CPast;
+                signupAPP.value = res.data.signupAPP;
+                signupAPPPast.value = res.data.signupAPPPast
+                signupPOS.value = res.data.signupAPP;
+                signupPOSPast.value = res.data.signupAPPPast
                 totalSignUpCount.value = res.data.totalSignUpCount;
                 totalSignUpCountPast.value = res.data.totalSignUpCountPast;
+                
                 initSalesByChannelChart();
                 initPiecesByItemChart();
-                initTotalChart();                    
+                initTotalChart();                   
             }).finally(()=>{
                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
             });
@@ -383,7 +476,7 @@ export default {
                 salesByChannelChartSeries = salesByChannelChart.series.push(am5percent.PieSeries.new(salesByChannelChartRoot, {
                     name: "Series",
                     valueField: "amount",
-                    categoryField: "origin",
+                    categoryField: "channel",
                 }));
                 salesByChannelChartSeries.get("colors").set("colors", [
                     am5.color(0xEB5757),
@@ -407,7 +500,7 @@ export default {
                 percent = "--";
             }
             let originLabel = salesByChannelChartSeries.children.push(am5.Label.new(salesByChannelChartRoot, {
-                text: "${valueSum.formatNumber('#,###.')}\n   "+ percent,
+                text: "£{valueSum.formatNumber('#,###.')}\n   "+ percent,
                 centerX: am5.percent(50),
                 centerY: am5.percent(50),
                 fontSize: 20,
@@ -450,7 +543,7 @@ export default {
                 piecesByItemChartSeries = piecesByItemChart.series.push(am5percent.PieSeries.new(piecesByItemChartRoot, {
                     name: "Series",
                     valueField: "amount",
-                    categoryField: "client",
+                    categoryField: "name",
                 }));
                 piecesByItemChartSeries.get("colors").set("colors", [
                     am5.color(0xEB5757),
@@ -478,7 +571,7 @@ export default {
                 percent = "--";
             }            
             let clientLabel = piecesByItemChartSeries.children.push(am5.Label.new(piecesByItemChartRoot, {
-                text: "${valueSum.formatNumber('#,###.')}\n   " + percent,
+                text: "£{valueSum.formatNumber('#,###.')}\n   " + percent,
                 centerX: am5.percent(50),
                 centerY: am5.percent(50),
                 fontSize: 20,
@@ -495,20 +588,20 @@ export default {
         let totalChart = null;
         let xAxis = null;
         let yAxis = null;
-        let series1 = null;
-        const series1Data = ref([]);
-        let series2 = null;
-        const series2Data = ref([]);
-        let series3 = null;
-        const series3Data = ref([]);
-        let series4 = null;        
-        const series4Data = ref([]);
-        let series5 = null;
-        const series5Data = ref([]);
-        let series6 = null;
-        const series6Data = ref([]);
-        let series7 = null;
-        const series7Data = ref([]);
+        let allSale = null;
+        const allSaleData = ref([]);
+        let corpDelSale = null;
+        const corpDelSaleData = ref([]);
+        let homeDelSale = null;
+        const homeDelSaleData = ref([]);
+        let MBSale = null;        
+        const MBSaleData = ref([]);
+        let NHSale = null;
+        const NHSaleData = ref([]);
+        let CHSale = null;
+        const CHSaleData = ref([]);
+        let SKSale = null;
+        const SKSaleData = ref([]);
         const initTotalChart = ()=>{
             if(totalRoot == null){
 
@@ -562,7 +655,7 @@ export default {
         const addSeries = (seriesIndex)=>{
             // Add series
             if(seriesIndex == 1){
-                series1 = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
+                allSale = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
                     name: name,
                     xAxis: xAxis,
                     yAxis: yAxis,
@@ -572,14 +665,14 @@ export default {
                         labelText: "{valueY}"
                     })
                 }));
-                series1.data.processor = am5.DataProcessor.new(totalRoot, {
+                allSale.data.processor = am5.DataProcessor.new(totalRoot, {
                     dateFields: ["date"], dateFormat: "yyyy-MM-dd"
                 });                
-                series1.data.setAll(series1Data.value);
+                allSale.data.setAll(allSaleData.value);
                 // Make stuff animate on load
-                series1.appear(1000);
+                allSale.appear(1000);
             }else if(seriesIndex == 2){
-                series2 = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
+                corpDelSale = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
                     name: name,
                     xAxis: xAxis,
                     yAxis: yAxis,
@@ -590,14 +683,14 @@ export default {
                     })
                 }));
                 // Generate random data
-                series2.data.processor = am5.DataProcessor.new(totalRoot, {
+                corpDelSale.data.processor = am5.DataProcessor.new(totalRoot, {
                     dateFields: ["date"], dateFormat: "yyyy-MM-dd"
                 });                                
-                series2.data.setAll(series2Data.value);
+                corpDelSale.data.setAll(corpDelSaleData.value);
                 // Make stuff animate on load
-                series2.appear(1000);                
+                corpDelSale.appear(1000);                
             }else if(seriesIndex == 3){
-                series3 = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
+                homeDelSale = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
                     name: name,
                     xAxis: xAxis,
                     yAxis: yAxis,
@@ -608,14 +701,14 @@ export default {
                     })
                 }));
                 // Generate random data
-                series3.data.processor = am5.DataProcessor.new(totalRoot, {
+                homeDelSale.data.processor = am5.DataProcessor.new(totalRoot, {
                     dateFields: ["date"], dateFormat: "yyyy-MM-dd"
                 });                    
-                series3.data.setAll(series3Data.value);
+                homeDelSale.data.setAll(homeDelSaleData.value);
                 // Make stuff animate on load
-                series3.appear(1000);                
+                homeDelSale.appear(1000);                
             }else if(seriesIndex == 4){
-                series4 = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
+                MBSale = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
                     name: name,
                     xAxis: xAxis,
                     yAxis: yAxis,
@@ -626,14 +719,14 @@ export default {
                     })
                 }));
                 // Generate random data
-                series4.data.processor = am5.DataProcessor.new(totalRoot, {
+                MBSale.data.processor = am5.DataProcessor.new(totalRoot, {
                     dateFields: ["date"], dateFormat: "yyyy-MM-dd"
                 });    
-                series4.data.setAll(series4Data.value);
+                MBSale.data.setAll(MBSaleData.value);
                 // Make stuff animate on load
-                series4.appear(1000);                
+                MBSale.appear(1000);                
             }else if(seriesIndex == 5){
-                series5 = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
+                NHSale = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
                     name: name,
                     xAxis: xAxis,
                     yAxis: yAxis,
@@ -643,14 +736,14 @@ export default {
                         labelText: "{valueY}"
                     })
                 }));
-                series5.data.processor = am5.DataProcessor.new(totalRoot, {
+                NHSale.data.processor = am5.DataProcessor.new(totalRoot, {
                     dateFields: ["date"], dateFormat: "yyyy-MM-dd"
                 });    
-                series5.data.setAll(series5Data.value);
+                NHSale.data.setAll(NHSaleData.value);
                 // Make stuff animate on load
-                series5.appear(1000);                
+                NHSale.appear(1000);                
             }else if(seriesIndex == 6){
-                series6 = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
+                CHSale = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
                     name: name,
                     xAxis: xAxis,
                     yAxis: yAxis,
@@ -660,14 +753,14 @@ export default {
                         labelText: "{valueY}"
                     })
                 }));
-                series6.data.processor = am5.DataProcessor.new(totalRoot, {
+                CHSale.data.processor = am5.DataProcessor.new(totalRoot, {
                     dateFields: ["date"], dateFormat: "yyyy-MM-dd"
                 });    
-                series6.data.setAll(series6Data.value);
+                CHSale.data.setAll(CHSaleData.value);
                 // Make stuff animate on load
-                series6.appear(1000);                
+                CHSale.appear(1000);                
             }else{
-                series7 = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
+                SKSale = totalChart.series.push(am5xy.LineSeries.new(totalRoot, {
                     name: name,
                     xAxis: xAxis,
                     yAxis: yAxis,
@@ -677,12 +770,12 @@ export default {
                         labelText: "{valueY}"
                     })
                 }));
-                series7.data.processor = am5.DataProcessor.new(totalRoot, {
+                SKSale.data.processor = am5.DataProcessor.new(totalRoot, {
                     dateFields: ["date"], dateFormat: "yyyy-MM-dd"
                 });    
-                series7.data.setAll(series7Data.value);
+                SKSale.data.setAll(SKSaleData.value);
                 // Make stuff animate on load
-                series7.appear(1000);                
+                SKSale.appear(1000);                
             }
         }
         const removeSeries = (series)=>{
@@ -690,90 +783,112 @@ export default {
                 totalChart.series.indexOf(series)
             );
         }
-        // watch( ()=> legend1.value, (cur_val, pre_val)=>{
-        //     if(cur_val){
-        //         addSeries(1);
-        //     }else{
-        //         removeSeries(series1);
-        //     }
-        // });
-        // watch( ()=> legend2.value, (cur_val, pre_val)=>{
-        //     if(cur_val){
-        //         addSeries(2);
-        //     }else{
-        //         removeSeries(series2);
-        //     }
-        // });
-        // watch( ()=> legend3.value, (cur_val, pre_val)=>{
-        //     if(cur_val){
-        //         addSeries(3);
-        //     }else{
-        //         removeSeries(series3);
-        //     }
-        // });
-        // watch( ()=> legend4.value, (cur_val, pre_val)=>{
-        //     if(cur_val){
-        //         addSeries(4);
-        //     }else{
-        //         removeSeries(series4);
-        //     }
-        // });
-        // watch( ()=> legend5.value, (cur_val, pre_val)=>{
-        //     if(cur_val){
-        //         addSeries(5);
-        //     }else{
-        //         removeSeries(series5);
-        //     }
-        // });
-        // watch( ()=> legend6.value, (cur_val, pre_val)=>{
-        //     if(cur_val){
-        //         addSeries(6);
-        //     }else{
-        //         removeSeries(series6);
-        //     }
-        // });
-        // watch( ()=> legend7.value, (cur_val, pre_val)=>{
-        //     if(cur_val){
-        //         addSeries(7);
-        //     }else{
-        //         removeSeries(series7);
-        //     }
-        // });
+        watch( ()=> allSaleByDateLegend.value, (cur_val, pre_val)=>{
+            if(cur_val){
+                addSeries(1);
+            }else{
+                removeSeries(allSale);
+            }
+        });
+        watch( ()=> corpDelByDateLegend.value, (cur_val, pre_val)=>{
+            if(cur_val){
+                addSeries(2);
+            }else{
+                removeSeries(corpDelSale);
+            }
+        });
+        watch( ()=> homeDelByDateLegend.value, (cur_val, pre_val)=>{
+            if(cur_val){
+                addSeries(3);
+            }else{
+                removeSeries(homeDelSale);
+            }
+        });
+        watch( ()=> MBByDateLegend.value, (cur_val, pre_val)=>{
+            if(cur_val){
+                addSeries(4);
+            }else{
+                removeSeries(MBSale);
+            }
+        });
+        watch( ()=> NHByDateLegend.value, (cur_val, pre_val)=>{
+            if(cur_val){
+                addSeries(5);
+            }else{
+                removeSeries(NHSale);
+            }
+        });
+        watch( ()=> CHByDateLegend.value, (cur_val, pre_val)=>{
+            if(cur_val){
+                addSeries(6);
+            }else{
+                removeSeries(CHSale);
+            }
+        });
+        watch( ()=> SKByDateLegend.value, (cur_val, pre_val)=>{
+            if(cur_val){
+                addSeries(7);
+            }else{
+                removeSeries(SKSale);
+            }
+        });
         return {
-            legend1,
-            legend2,
-            legend3,
-            legend4,
-            legend5,
-            legend6,
-            legend7,
+            allSaleByDateLegend,
+            corpDelByDateLegend,
+            homeDelByDateLegend,
+            MBByDateLegend,
+            NHByDateLegend,
+            CHByDateLegend,
+            SKByDateLegend,
             filterVal,
             salesByChannelChartData,
             piecesByItemChartData,
-            series1Data,
-            series2Data,
-            series3Data,
-            series4Data,
-            series5Data,
-            series6Data,
-            series7Data,
+
+            allSaleData,
+            corpDelSaleData,
+            homeDelSaleData,
+            MBSaleData,
+            NHSaleData,
+            CHSaleData,
+            SKSaleData,
+            
             salesByChannelTotal,
             salesByChannelTotalToCompare,
             salesByItemTotal,
             salesByItemTotalToCompare,
+            
+            b2bAVGSale,
+            b2cAVGSale,
             salesByCustType,
             avgOrder,
             avgOrderToCompare,
-            facture,
-            paiement,
+            homeDel,
+            corpDel,
+            storeDel,
             salesByCommande,
             salesByUser,
+            
             bookingByChannel,
-            bookingByCustType,
+            bookingB2B,
+            bookingB2BPast,
+            bookingB2C,
+            bookingB2CPast,
+            bookingAPP,
+            bookingAPPPast,
+            bookingPOS,
+            bookingPOSPast,
             totalBookingCount,
             totalBookingCountPast,
+            
             signupByChannel,
-            singupByCustType,
+            signupB2B,
+            signupB2BPast,
+            signupB2C,
+            signupB2CPast,
+            signupAPP,
+            signupAPPPast,
+            signupPOS,
+            signupPOSPast,
             totalSignUpCount,
             totalSignUpCountPast,
         }
@@ -788,7 +903,7 @@ export default {
 }
 .avg-sale-block{
     min-width: 75px;
-    max-width: 95px;
+    max-width: 75px;
     height: 95px;
     background: #E0E0E0;
     border-radius: 10px;

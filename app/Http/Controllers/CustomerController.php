@@ -1433,6 +1433,18 @@ class CustomerController extends Controller
         ]);
     }
 
+    public function saveCustomerCommunication(Request $request){
+
+        $success = DB::table('infoCustomer')->where('id',$request->customerId)->update([
+            'AcceptMarketing' => $request->acceptMarketing,
+            'AcceptSMSMarketing' => $request->acceptSMSMarketing
+        ]);
+
+        return response()->json([
+            'success'   =>  $success
+        ]);
+    }
+
     public function getCustomerOrderDetails(Request $request){
         $customer_id = $request->customer_id;
 

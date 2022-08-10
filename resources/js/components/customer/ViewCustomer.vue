@@ -555,6 +555,32 @@
                                     </div>
 
                                     <div class="blocks">
+                                        <h3 class="title mb-3">Communication</h3>
+                                        <div class="page-section p-4">
+                                            <div class="d-flex">
+                                                <div class="col-9">
+                                                    <h4 class="sub-title col-12">Marketing</h4>
+                                                    <p class="m-0 col-12">Customer agrees to receiving Marketing emails from us</p>
+                                                </div>
+                                                <div class="col-3">
+                                                    <switch-btn class="ms-auto each-cust-pref" v-model="form.acceptSMSMarketing"></switch-btn>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex">
+                                                <div class="col-9">
+                                                    <h4 class="sub-title col-12">Bi-Monthly VAT Invoices</h4>
+                                                    <p class="m-0 col-12">Customer wishes to receive monthly email VAT receipts</p>
+                                                </div>
+                                                <div class="col-3">
+                                                    <switch-btn class="ms-auto each-cust-pref" v-model="form.acceptMarketing"></switch-btn>
+                                                </div>
+                                            </div>
+                                            <div class="w-100 pt-4">
+                                                <button class="btn btn-success each-save-btn" @click="saveCommunication">Save</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="blocks">
                                         <h3 class="title mb-3">Delivery instructions <span class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="delivery_instructions_edit = !delivery_instructions_edit">Edit</span></h3>
                                         <div class="page-section p-4">
                                             <div class="d-flex justify-content-between">
@@ -750,6 +776,9 @@
                 deliveryAddress1: '',
                 deliveryAddress2: '',
                 customerNote: '',
+                customerNote: '',
+                acceptSMSMarketing: 1,
+                acceptMarketing: 0,
                 // payment tab
                 alreadyLinkedToAccount: true,
                 paymentMethod: '',
@@ -866,8 +895,6 @@
                     form.value.firstName = res.data.firstName;
                     form.value.lastName = res.data.lastName;
                     var phone = getPhone(res.data.phone);
-
-                    console.log(phone);
 
                     form.value.phoneCountryCode = phone.code;
                     form.value.phoneNumber = phone.number;
@@ -1450,7 +1477,25 @@
                     });
                 }
             }
+            const saveCommunication = ()=>{
+            axios.post('/save-customer-communication',{
+                    customerId: route.params.customer_id,
+                    acceptSMSMarketing: form.value.acceptSMSMarketing,
+                    acceptMarketing: form.value.acceptMarketing,
+                }).then((res)=>{
+                    if(res.data.success){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                            message: 'Customer Communication updated',
+                            ttl: 5,
+                            type: 'success'
+                        });
+                    }
+                }).catch((err)=>{
+                    console.log(err);
+                }).finally(()=>{
 
+                });
+            }
             return {
                 form,
                 step,
@@ -1487,6 +1532,7 @@
                 saveCustomerPreferences,
                 saveDeliveryInstructions,
                 delivery_instructions_edit,
+                saveCommunication
             }
 
         },

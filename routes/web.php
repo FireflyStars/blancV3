@@ -92,6 +92,7 @@ Route::post('/update-customer-address',[CustomerController::class,'updateCustome
 Route::post('/update-customer-note',[CustomerController::class,'updateCustomerNote'])->name('update-customer-note')->middleware('auth');
 Route::post('/save-customer-preferences',[CustomerController::class,'saveCustomerPreferences'])->name('save-customer-preferences')->middleware('auth');
 Route::post('/save-customer-delivery-instructions',[CustomerController::class,'saveCustomerDeliveryInstructions'])->name('save-customer-delivery-instructions')->middleware('auth');
+Route::post('/save-customer-communication',[CustomerController::class,'saveCustomerCommunication'])->name('save.customer.communication')->middleware('auth');
 
 Route::post('/get-customer-order-details',[CustomerController::class,'getCustomerOrderDetails'])->name('get-customer-order-details')->middleware('auth');
 Route::post('/update-detailing-issues-text',[DetailingController::class,'updateIssuesText'])->name('update-detailing-issues-text')->middleware('auth');

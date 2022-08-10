@@ -8,7 +8,7 @@
                     <h2 class="ms-0">Statistics</h2>
                     <div class="container-fluid orderlist-tabs d-flex align-items-center">
                         <div class="orderlist-tab body_bold" :class="{ 'active': tab == 'sales' }" @click="setTab('sales')">Sales</div>
-                        <div class="orderlist-tab body_bold" :class="{ 'active': tab == 'production' }" @click="setTab('production')">Production</div>
+                        <div class="orderlist-tab body_bold" :class="{ 'active': tab == 'production' }" @click="setTab('production')">Sales V3</div>
                     </div>
                     <div class="container-stat position-relative mb-10" v-if="tab == 'sales'">
                         <div class="row">
@@ -566,8 +566,8 @@ export default {
             customFilter: 0,
             startDate: `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`,
             endDate:`${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`,
-            dateRangeType:'Today',
-            compareMode: 'year',
+            dateRangeType:'Last Month',
+            compareMode: 'month',
             compareCustomFilter: false,
             compareStartDate: `${today.getFullYear()-1}-${today.getMonth()+1}-${today.getDate()}`,
             compareEndDate: `${today.getFullYear()-1}-${today.getMonth()+1}-${today.getDate()}`,
@@ -589,12 +589,12 @@ export default {
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
         });
-        // store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
-        // store.dispatch(`${STATISTICS_MODULE}${STATISTICS_LOAD_LIST}`, filterVal.value).then((response) => {
-        //     stats.value = response.data.stats;
-        // }).finally(()=>{
-        //     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-        // });
+        store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
+        store.dispatch(`${STATISTICS_MODULE}${STATISTICS_LOAD_LIST}`, filterVal.value).then((response) => {
+            stats.value = response.data.stats;
+        }).finally(()=>{
+            store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+        });
         const setTab = (tabValue)=>{
             tab.value = tabValue;
         }
