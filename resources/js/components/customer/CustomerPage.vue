@@ -77,7 +77,7 @@ export default {
                 options:[
                     { display: 'Delivery', value: 'DELIVERY'},
                     { display: 'Marylebone', value: 'MARYLEBONE'},
-                    { display: 'Nothing Hill', value: 'NOTHING HILL'},
+                    { display: 'Notting Hill', value: 'NOTTING HILL'},
                     { display: 'Chelsea', value: 'CHELSEA'},
                     { display: 'South ken', value: 'SOUTH KEN'}
                 ]

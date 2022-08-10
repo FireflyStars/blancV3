@@ -9,13 +9,13 @@
                                 class="accordion-button collapsed"
                                 type="button"
                                 @click="descTypeClick('brand')"
-                                :class="{ opened: desc_type === 'brand' }"
+                                :class="{ opened: instAccBrand === true , desc_type : 'brand' }"
                             >Brand</button>
                         </h2>
                         <div
                             id="flush-collapseOne"
                             class="accordion-collapse collapse"
-                            :class="{ show: desc_type === 'brand' }"
+                            :class="{ show:  instAccBrand === true , desc_type : 'brand'}"
                         >
                             <div class="accordion-body">
                                 <div class="row position-relative">
@@ -63,13 +63,13 @@
                                 class="accordion-button collapsed"
                                 type="button"
                                 @click="descTypeClick('colour')"
-                                :class="{ opened: desc_type === 'colour' }"
+                                :class="{ opened: instAccColor === true , desc_type : 'colour' }"
                             >Colours</button>
                         </h2>
                         <div
                             id="flush-colour"
                             class="accordion-collapse collapse"
-                            :class="{ show: desc_type === 'colour' }"
+                            :class="{ show:  instAccColor === true , desc_type : 'colour' }"
                         >
                             <div class="row accordion-body">
                                 <div
@@ -94,13 +94,13 @@
                                 class="accordion-button collapsed"
                                 type="button"
                                 @click="descTypeClick('fabric')"
-                                :class="{ opened: desc_type === 'fabric' }"
+                                :class="{ opened:  instAccFabric === true , desc_type : 'fabric' }"
                             >Fabrics</button>
                         </h2>
                         <div
                             id="flush-collapseOne"
                             class="accordion-collapse collapse"
-                            :class="{ show: desc_type === 'fabric' }"
+                            :class="{  show:  instAccFabric === true , desc_type : 'fabric' }"
                         >
                             <div class="row accordion-body">
                                 <div
@@ -124,13 +124,13 @@
                                 class="accordion-button collapsed"
                                 type="button"
                                 @click="descTypeClick('size')"
-                                :class="{ opened: desc_type === 'size' }"
+                                :class="{ opened:  instAccSize === true , desc_type : 'size' }"
                             >Size</button>
                         </h2>
                         <div
                             id="flush-collapseOne"
                             class="accordion-collapse collapse"
-                            :class="{ show: desc_type === 'size' }"
+                            :class="{ show:  instAccSize === true , desc_type : 'size' }"
                         >
                             <div class="row accordion-body">
                                 <div
@@ -151,13 +151,13 @@
                                 class="accordion-button collapsed"
                                 type="button"
                                 @click="descTypeClick('pattern')"
-                                :class="{ opened: desc_type === 'pattern' }"
+                                :class="{ opened:  instAccPattern === true , desc_type : 'pattern' }"
                             >Patterns</button>
                         </h2>
                         <div
                             id="flush-collapseOne"
                             class="accordion-collapse collapse"
-                            :class="{ show: desc_type === 'pattern' }"
+                            :class="{   show:  instAccPattern === true , desc_type : 'pattern' }"
                         >
                             <div class="row accordion-body">
                                 <div
@@ -176,13 +176,13 @@
                                 class="accordion-button collapsed"
                                 type="button"
                                 @click="descTypeClick('condition')"
-                                :class="{ opened: desc_type === 'condition' }"
+                                :class="{ opened:  instAccCondition === true , desc_type : 'condition' }"
                             >Condition</button>
                         </h2>
                         <div
                             id="flush-condition"
                             class="accordion-collapse collapse"
-                            :class="{ show: desc_type === 'condition' }"
+                            :class="{   show:  instAccCondition === true , desc_type : 'condition' }"
                         >
                             <div class="row accordion-body">
                                 <div
@@ -267,6 +267,12 @@ export default {
         const show_popup = ref(false);
         const brand_suggested_name = ref("");
         const steps = ref({});
+        const instAccColor = ref(false)
+        const instAccBrand = ref(false)
+        const instAccFabric = ref(false)
+        const instAccPattern = ref(false)
+        const instAccCondition = ref(false)
+        const instAccSize = ref(false)
         steps.value = props.detailingData.steps;
         for (let i = "A".charCodeAt(0); i <= "Z".charCodeAt(0); i++) {
             letters.value.push(String.fromCharCode([i]));
@@ -337,26 +343,33 @@ export default {
         });
 
         function descTypeClick(type) {
+            
             desc_type.value = type;
             let step = props.detailingitem.etape;
             switch (desc_type.value) {
                 case 'brand':
                     step = 3;
+                    instAccBrand.value = !instAccBrand.value;
                     break;
                 case 'colour':
                     step = 4;
+                     instAccColor.value = !instAccColor.value;
                     break;
                 case 'fabric':
                     step = 5;
+                     instAccFabric.value = !instAccFabric.value;
                     break;
                 case 'size':
                     step = 6;
+                    instAccSize.value = !instAccSize.value;
                     break;
                 case 'pattern':
                     step = 7;
+                    instAccPattern.value = !instAccPattern.value;
                     break;
                 case 'condition':
                     step = 8;
+                    instAccCondition.value = !instAccCondition.value;
                     break;
                 case 'complexities':
                     step = 9;
@@ -491,7 +504,13 @@ export default {
             select,
             next,
             back,
-            saveBrand
+            saveBrand,
+            instAccBrand,
+            instAccColor,
+            instAccFabric,
+            instAccPattern,
+            instAccCondition,
+            instAccSize
         };
     },
 }

@@ -23,7 +23,7 @@
                 <img class="img-arrow" src="/images/garbage.png" />
                 <span>Delete</span>
             </div>
-            <div class="col-12 row-option" >
+            <div class="col-12 row-option"  @click="VoidSubOrder()">
                 <img class="img-arrow" src="/images/erase.png" />
                 <span>Void</span>
             </div>
@@ -42,11 +42,12 @@
         name: "SubOrderOptions",
         props:['items' ,'invoice_id','item_selected','suborder','invoice_Status'],
         components:{ NewSplitConfirmation},
-        setup(props){
-
+        setup(props , context){
+           const store=useStore();
            const btn_split_show = ref(false)
            const show_split_conf=ref(false);
            const listItems =ref([]);
+           
            
            
             props.item_selected.forEach(item => {
@@ -63,16 +64,33 @@
 
             function selectSplit(){
              show_split_conf.value = true
-            }       
-
-
-
+            }
+               
+            const close=()=>{
+                context.emit('close');
+            }  
+            
+            function VoidSubOrder(){
+              axios.post('/voidSuborder',{
+                   invoiceId: props.invoice_id 
+               }).then((res)=>{
+                          if( res.data.done == "ok"){
+                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
+                             location.reload();
+                             close()
+                        }
+                    }).catch((error)=>{
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
+                    })
+            }
 
             return {
                selectSplit,
                show_split_conf,
                btn_split_show,
-               listItems
+               listItems,
+               VoidSubOrder,
+               close
 
             }
         }

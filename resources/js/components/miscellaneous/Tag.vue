@@ -63,10 +63,10 @@
         color:rgba(235, 87, 87, 1);
         background: rgba(245, 171, 171, 0.7);
     }
-    .tag.inprocess,.tag.partpending,.tag.partonhold{
+    .tag.inprocess,.tag.partpending,.tag.partonhold,.tag.indetailing{
         background: rgba(241, 210, 164, 0.7);
     }
-    .tag.inprocess:before,.tag.partpending:before,.tag.partonhold:before,.tag.partiallydetailed:before{
+    .tag.inprocess:before,.tag.partpending:before,.tag.partonhold:before,.tag.partiallydetailed:before,.tag.indetailing:before{
         content: " ";
         background: #EF8F00;
         width: 12px;
@@ -80,7 +80,7 @@
         border-bottom-right-radius: 8px;
         border-top: 0;
     }
-    .tag.inprocess:after,.tag.partpending:after,.tag.partonhold:after,.tag.partiallydetailed:after{
+    .tag.inprocess:after,.tag.partpending:after,.tag.partonhold:after,.tag.partiallydetailed:after,.tag.indetailing:after{
         content: " ";
         width: 12px;
         height: 6px;

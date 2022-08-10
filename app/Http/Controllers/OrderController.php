@@ -622,6 +622,65 @@ class OrderController extends Controller
         ]);
     }
 
+    public function cancelBooking(Request $request){
+
+        $orderid=$request->post('OrderID');
+
+        if(!empty($orderid)){
+
+            $infoOrder=DB::table('infoOrder')->where('infoOrder.OrderID',$orderid)->first();
+
+            DB::table('infoOrder')->where('infoOrder.OrderID',$orderid)->update([
+                'Status'=>'DELETE'
+            ]);
+
+            DB::table('deliveryask')->where( 'deliveryask.DeliveryaskID', $infoOrder->DeliveryaskID )->update([
+                'Status'=>'DEL'
+            ]);
+
+            DB::table('pickup')->where( 'pickup.PickupID', $infoOrder->PickupID)->update([
+                'Status'=>'DEL'
+            ]);        
+        }
+        return response()->json(['done'=>'ok']);
+    }
+
+    public function voidSuborder(Request $request){
+
+        $invoiceid=$request->post('invoiceId');
+
+        if(!empty($invoiceid)){
+    
+            $invoice = DB::table('infoInvoice')->where('infoInvoice.InvoiceID','=' ,$invoiceid )->first();
+            
+            DB::table('infoInvoice')->where('infoInvoice.id',$invoice->id)->update([
+                'Status'=>'VOID'
+            ]);
+
+            $infoitems=DB::table('infoitems')->select('infoitems.id')
+             ->where('infoitems.InvoiceID', '=' , $invoiceid)->get();
+
+            $infoitemsIds=[];
+            $infoitems->each(function ($item, $key) use(&$infoitemsIds){
+                $infoitemsIds[]=$item->id;
+            });
+
+            foreach ($infoitemsIds as $item) {
+
+                $affected = DB::table('infoitems')
+                  ->where('id', $item)
+                  ->update([
+                    'Status' => 'VOID',
+                    'Actif' => '0',
+                    'nextpost' => '34'
+                ]);
+
+            }
+      }
+
+      return response()->json(['done'=>'ok']);
+    }
+
     public static function createOrderItems($order_id){
         $delivery_ask_status_to_include = Delivery::getDeliveryAskStatusToInclude();
         $pickup_status_to_include = Delivery::getPickupStatutToInclude();
