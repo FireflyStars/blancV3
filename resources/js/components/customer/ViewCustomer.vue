@@ -1580,6 +1580,7 @@
                 }
             }
             const saveCommunication = ()=>{
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Updating Customer Communication...']);
                 axios.post('/save-customer-communication',{
                     customerId: route.params.customer_id,
                     acceptSMSMarketing: form.value.acceptSMSMarketing,
@@ -1595,7 +1596,7 @@
                 }).catch((err)=>{
                     console.log(err);
                 }).finally(()=>{
-
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
             }
             const pickupDays = ref([
@@ -1669,6 +1670,7 @@
                 }
             })         
             const saveRecurring = ()=>{
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Updating Customer Recurring...']);
                 axios.post('/save-customer-recurring',{
                     customerId: route.params.customer_id,
                     deliveryByday: parseInt(form.value.deliveryByday),
@@ -1684,7 +1686,7 @@
                 }).catch((err)=>{
                     console.log(err);
                 }).finally(()=>{
-
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });                
             }     
             return {
