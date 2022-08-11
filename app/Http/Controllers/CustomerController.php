@@ -1052,6 +1052,8 @@ class CustomerController extends Controller
                         DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'), 'infoCustomer.TypeDelivery as typeDelivery',
                         'infoCustomer.CustomerNotes', 'infoCustomer.id', 'infoCustomer.CustomerID',
                         DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recuring", "Normal") as booking'), 'discount', 'credit',
+                        'infoCustomer.DeliverybyDay as deliveryByDay', 'DeliveryMon', 'DeliveryTu', 'DeliveryWed', 'DeliveryTh', 'DeliveryFri', 'DeliverySat',
+                        'AcceptSMSMarketing as acceptSMSMarketing', 'AcceptMarketing as acceptMarketing'
                     )
                     ->where('infoCustomer.id', $request->customer_id)
                     ->first();
@@ -1439,6 +1441,24 @@ class CustomerController extends Controller
             'AcceptMarketing' => $request->acceptMarketing,
             'AcceptSMSMarketing' => $request->acceptSMSMarketing
         ]);
+
+        return response()->json([
+            'success'   =>  $success
+        ]);
+    }
+
+    public function saveCustomerRecurring(Request $request){
+        $info_customer['DeliverybyDay'] = $request->deliveryByday;
+        $info_customer['DeliveryMon'] = '';
+        $info_customer['DeliveryTu'] = '';
+        $info_customer['DeliveryWed'] = '';
+        $info_customer['DeliveryTh'] = '';
+        $info_customer['DeliveryFri'] = '';
+        $info_customer['DeliverySat'] = '';
+        foreach ($request->pickupSlots as $slot) {
+            $info_customer[$slot['key']] = $slot['value'];
+        }
+        $success = DB::table('infoCustomer')->where('id',$request->customerId)->update($info_customer);
 
         return response()->json([
             'success'   =>  $success
