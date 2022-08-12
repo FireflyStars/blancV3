@@ -9,13 +9,13 @@
                                 class="accordion-button collapsed"
                                 type="button"
                                 @click="descTypeClick('brand')"
-                                :class="{ opened: instAccBrand === true , desc_type : 'brand' }"
+                                :class="{ opened: (instAccBrand === true && desc_type === 'brand') }"
                             >Brand</button>
                         </h2>
                         <div
                             id="flush-collapseOne"
                             class="accordion-collapse collapse"
-                            :class="{ show:  instAccBrand === true , desc_type : 'brand'}"
+                            :class="{ show:   (desc_type === 'brand' && instAccBrand === true) }"
                         >
                             <div class="accordion-body">
                                 <div class="row position-relative">
@@ -63,13 +63,13 @@
                                 class="accordion-button collapsed"
                                 type="button"
                                 @click="descTypeClick('colour')"
-                                :class="{ opened: instAccColor === true , desc_type : 'colour' }"
+                                :class="{ opened: (desc_type === 'colour' && instAccColor === true )}"
                             >Colours</button>
                         </h2>
                         <div
                             id="flush-colour"
                             class="accordion-collapse collapse"
-                            :class="{ show:  instAccColor === true , desc_type : 'colour' }"
+                            :class="{ show:   desc_type === 'colour' && instAccColor === true }"
                         >
                             <div class="row accordion-body">
                                 <div
@@ -85,6 +85,7 @@
                                     ></span>
                                     {{ colour.name }}
                                 </div>
+                                <span class="button-next"  @click="NextStep('fabric')">Next</span>
                             </div>
                         </div>
                     </div>
@@ -94,13 +95,13 @@
                                 class="accordion-button collapsed"
                                 type="button"
                                 @click="descTypeClick('fabric')"
-                                :class="{ opened:  instAccFabric === true , desc_type : 'fabric' }"
+                                :class="{ opened:  (instAccFabric === true && desc_type === 'fabric') }"
                             >Fabrics</button>
                         </h2>
                         <div
                             id="flush-collapseOne"
                             class="accordion-collapse collapse"
-                            :class="{  show:  instAccFabric === true , desc_type : 'fabric' }"
+                            :class="{  show:  (desc_type === 'fabric' && instAccFabric === true)}"
                         >
                             <div class="row accordion-body">
                                 <div
@@ -124,13 +125,13 @@
                                 class="accordion-button collapsed"
                                 type="button"
                                 @click="descTypeClick('size')"
-                                :class="{ opened:  instAccSize === true , desc_type : 'size' }"
+                                :class="{ opened:  (instAccSize === true && desc_type === 'size') }"
                             >Size</button>
                         </h2>
                         <div
                             id="flush-collapseOne"
                             class="accordion-collapse collapse"
-                            :class="{ show:  instAccSize === true , desc_type : 'size' }"
+                            :class="{ show: (instAccSize === true && desc_type === 'size') }"
                         >
                             <div class="row accordion-body">
                                 <div
@@ -151,13 +152,13 @@
                                 class="accordion-button collapsed"
                                 type="button"
                                 @click="descTypeClick('pattern')"
-                                :class="{ opened:  instAccPattern === true , desc_type : 'pattern' }"
+                                :class="{ opened:  (instAccPattern === true && desc_type === 'pattern' )}"
                             >Patterns</button>
                         </h2>
                         <div
                             id="flush-collapseOne"
                             class="accordion-collapse collapse"
-                            :class="{   show:  instAccPattern === true , desc_type : 'pattern' }"
+                            :class="{   show:  (instAccPattern === true && desc_type === 'pattern' ) }"
                         >
                             <div class="row accordion-body">
                                 <div
@@ -176,13 +177,13 @@
                                 class="accordion-button collapsed"
                                 type="button"
                                 @click="descTypeClick('condition')"
-                                :class="{ opened:  instAccCondition === true , desc_type : 'condition' }"
+                                :class="{ opened:  (instAccCondition === true && desc_type === 'condition') }"
                             >Condition</button>
                         </h2>
                         <div
                             id="flush-condition"
                             class="accordion-collapse collapse"
-                            :class="{   show:  instAccCondition === true , desc_type : 'condition' }"
+                            :class="{   show:  (instAccCondition === true && desc_type === 'condition') }"
                         >
                             <div class="row accordion-body">
                                 <div
@@ -288,6 +289,7 @@ export default {
         switch (props.detailingitem.etape) {
             case 3:
                 desc_type.value = 'brand';
+                instAccBrand.value = true;
                 break;
             case 4:
                 desc_type.value = 'colour';
@@ -318,6 +320,7 @@ export default {
             color_id.value = current_val.color_id != null ? JSON.parse(current_val.color_id) : [];
             pattern_id.value = current_val.pattern_id != null ? current_val.pattern_id : (props.detailingData.patterns.length > 0 ? 0 : -1);
             condition_id.value = current_val.condition_id != null ? current_val.condition_id : (props.detailingData.conditions.length > 0 ? 0 : -1);
+            console.log("this is etape is : ",current_val.etape)
             switch (current_val.etape) {
                 case 3:
                     desc_type.value = 'brand';
@@ -419,8 +422,10 @@ export default {
                     brand_id: brand_id.value,
                     step: steps.value[index + 1].id
                 });
+                NextStep('colour');
             }
             if (desc_type.value == 'fabric') {
+                 
                 if (!fabric_id.value.includes(id)) {
                     fabric_id.value.push(id);
                 } else {
@@ -431,8 +436,7 @@ export default {
                     fabrics_id: JSON.stringify(fabric_id.value),
                     step: steps.value[index + 1].id
                 });
-
-
+                NextStep('pattern');
             }
             if (desc_type.value == 'colour') {
                 if (!color_id.value.includes(id)) {
@@ -441,18 +445,23 @@ export default {
                     color_id.value.splice(color_id.value.indexOf(id), 1);
                 }
                 context.emit("save-item-description", {
-                    detailingitem_id: props.detailingitem.id,
-                    color_id: JSON.stringify(color_id.value),
-                    step: steps.value[index].id
-                });
+                        detailingitem_id: props.detailingitem.id,
+                        color_id: JSON.stringify(color_id.value),
+                        step: steps.value[index].id
+                    });
+               
+                
             }
             if (desc_type.value == 'pattern') {
+                
                 pattern_id.value = id;
                 context.emit("save-item-description", {
                     detailingitem_id: props.detailingitem.id,
                     pattern_id: pattern_id.value,
                     step: steps.value[index + 1].id
                 });
+
+                NextStep('condition');
             }
             if (desc_type.value == 'condition') {
                 condition_id.value = id;
@@ -480,6 +489,9 @@ export default {
             });
             show_popup.value = false;
             brand_suggested_name.value = "";
+        }
+        function NextStep(type){
+            descTypeClick(type);
         }
         return {
             desc_type,
@@ -510,7 +522,8 @@ export default {
             instAccFabric,
             instAccPattern,
             instAccCondition,
-            instAccSize
+            instAccSize,
+            NextStep
         };
     },
 }
@@ -798,5 +811,12 @@ input:focus-visible {
 .popup-close {
     position: relative;
     left: 115px;
+}
+.button-next{
+        display: flex;
+    flex-direction: row-reverse;
+    color: #42a71e;
+    text-decoration: underline;
+    cursor: pointer;
 }
 </style>

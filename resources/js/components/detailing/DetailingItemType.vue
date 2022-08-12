@@ -86,18 +86,35 @@ export default {
         const valid = ref(false);
         const listAcc = ref([]);
 
-        props.categories.map(function(value, key) {
-            listAcc.value.push(false);
-        })
         category_id.value = props.detailingitem.category_id != null ? props.detailingitem.category_id : 0;
         typeitem_id.value = props.detailingitem.typeitem_id != null ? props.detailingitem.typeitem_id : 0;
         valid.value = category_id.value != 0 && typeitem_id.value != 0;
+           
+          props.categories.map(function(value, key) {
+                if(category_id.value == value.id){
+                   listAcc.value[key] = true;
+                }else {
+                  listAcc.value[key] = false;
+                }
+            });
+
+
         watch(() => props.detailingitem, (current_val, previous_val) => {
             category_id.value = current_val.category_id != null ? current_val.category_id : 0;
             typeitem_id.value = current_val.typeitem_id != null ? current_val.typeitem_id : 0;
+           
         });
         watch(() => [category_id.value, typeitem_id.value], ([current_category, current_typeitem], [previous_category, previous_typeitem]) => {
+            console.log(category_id.value, typeitem_id.value , current_category , current_typeitem )
+            props.categories.map(function(value, key) {
+                if(category_id.value == value.id){
+                   listAcc.value[key] = true;
+                }else {
+                  listAcc.value[key] = false;
+                }
+            });
             valid.value = current_category != 0 && current_typeitem != 0;
+           
         });
 
         function filteredTypeItem(cat_id) {

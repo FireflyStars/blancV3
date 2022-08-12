@@ -65,6 +65,15 @@
                         </div>
                     </div>
                 </div>
+                <!-- <div class="toggle-panel" :class="{ active: selected_panel =='scheduled_orders' }" >
+                    <div class="toggle-panel-header" @click="selectPanel('scheduled_orders')">
+                        <h4 class="m-0">Scheduled ( {{ CUSTOMER.scheduled_orders.length }} )</h4>
+                    </div>
+                    <div class="toggle-panel-content" :class="{ 'd-none': selected_panel != 'scheduled_orders' }">
+                    <p>{{CUSTOMER.scheduled_orders}}</p>
+                        <OrderItem :show="index == 0" :key="index" v-for="(subOrders, index) in CUSTOMER.scheduled_orders" :subOrders="subOrders" :type ="'scheduledOrders'"/>
+                    </div>
+                </div> -->
                 <div class="toggle-panel" :class="{ active: selected_panel =='current_orders' }" >
                     <div class="toggle-panel-header" @click="selectPanel('current_orders')">
                         <h4 class="m-0">Current Orders ( {{ CUSTOMER.current_orders.length }} )</h4>

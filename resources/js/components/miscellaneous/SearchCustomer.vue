@@ -134,7 +134,7 @@
                 <span class="subtitle col-6">ITEM</span>
 
                  <div class="d-flex justify-content-end col-6 ">
-                <!-- <a class="d-flex justify-content-end col-3 display-all"  @click="displayAll('search_item')" >Display all</a> -->
+                <a class="d-flex justify-content-end col-3 display-all"  @click="displayAll('search_item')" >Display all</a>
                 <a class="d-flex justify-content-end col-3 show-more"    @click="loadMore('search_items')" >Show more</a>
                 </div>
              </div>
@@ -200,7 +200,11 @@
         SET_CUSTOMER_FILTER,
         FILTER_CUSTOMER_LIST,
         CUSTOMERITEMS_GET_LIST,
-        ORDERLIST_LOAD_LIST
+        ORDERLIST_LOAD_LIST,
+        ASSEMBLY_HOME_MODULE,
+        INVOICE_MODULE,
+        SET_INVOICE_LIST,
+        SET_SELECTED_NAV 
     } from "../../store/types/types";
     import {formatDate} from "../helpers/helpers";
     import {useStore} from 'vuex';
@@ -340,19 +344,6 @@ export default({
 
               } else if (tab == "search_order") {
                this.clearSearch()
-              //  if(route.name == "LandingPage"){
-              //      route.params = {
-              //              'name':"search",
-              //              'value': search_value.value
-              //      },     
-              //      console.log("routtttttte" ,route.params );
-              //      store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
-              //      store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`, {search:search_value.value} , _.cloneDeep(preselection.value)).finally(()=>{
-              //      store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-
-              //   });   
-              //  } else {
-    
                     router.push({
                     name:'LandingPage',
                     params: {
@@ -362,6 +353,29 @@ export default({
                 })
 
               //  }
+             } else if (tab == 'search_item'){
+
+                this.clearSearch()
+                if(route.name == "Assembly"){
+                  const searchvalue = {
+                                            'name':"searchitem",
+                                            'value': search_value.value
+                                        };
+                  store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
+                  store.dispatch(`${INVOICE_MODULE}${SET_INVOICE_LIST}`, searchvalue).finally(()=>{
+                  store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    });
+                } else {
+                   router.push({
+                        name: 'Assembly',
+                        params: {
+                           'name':"searchitem",
+                           'value': search_value.value
+                    },
+                    });
+                }   
+               store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_SELECTED_NAV}`, "InvoiceList")
+
              }
                 
           }
