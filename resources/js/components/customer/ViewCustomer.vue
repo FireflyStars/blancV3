@@ -553,7 +553,51 @@
                                         </div>
 
                                     </div>
-
+                                    <div class="blocks">
+                                        <h3 class="title mb-3">Recurring Booking</h3>
+                                        <div class="page-section">
+                                            <div class="item-block py-3 border-bottom">
+                                                <div class="d-flex justify-content-between">
+                                                    <div class="col-8">
+                                                        <h4 class="sub-title col-12">Recurring</h4>
+                                                    </div>
+                                                    <div class="col-3">
+                                                        <switch-btn class="ms-auto" v-model="form.deliveryByday"></switch-btn>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="item-block p-3 border-bottom" v-if="form.deliveryByday == '1'">
+                                                <h4 class="sub-title col-12">Pickup & delivery days</h4>
+                                                <p>Please pick number of days we will visit the customer, with matching slots.</p>
+                                                <div class="d-flex p-2">
+                                                    <div class="pickup-day rounded-circle" 
+                                                        v-for="(pickupDay, index) in pickupDays" :key="index"
+                                                        :class="{ 'active': pickupDay.active }"
+                                                        @click="addPickupDay(index)"
+                                                        >
+                                                        {{ pickupDay.name }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="item-block p-3 border-bottom" v-if="form.deliveryByday == '1'">
+                                                <h4 class="sub-title col-12">Pickup & delivery slots </h4>
+                                                <div class="d-flex flex-wrap">
+                                                    <div class="col-4 px-1 mt-2" v-for="(slot, index) in form.pickupSlots" :key="index">
+                                                        <select-options
+                                                            v-model="slot.value"
+                                                            :options="timeslots"
+                                                            :placeholder="'Select'"
+                                                            :label="slot.label"
+                                                            :name="slot.label">
+                                                        </select-options>                                                        
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="w-100 p-3">
+                                                <button class="btn btn-success each-save-btn" @click="saveRecurring">Save Recurring</button>
+                                            </div>                                            
+                                        </div>
+                                    </div>
                                     <div class="blocks">
                                         <h3 class="title mb-3">Delivery instructions <span class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="delivery_instructions_edit = !delivery_instructions_edit">Edit</span></h3>
                                         <div class="page-section p-4">
@@ -616,6 +660,37 @@
                                             </div>
                                             <div class="w-100 pt-4" v-if="delivery_instructions_edit">
                                                 <button class="btn btn-success each-save-btn" @click="saveDeliveryInstructions">Save</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="blocks"></div>
+                                    <div class="blocks">
+                                        <h3 class="title mb-3">Communication</h3>
+                                        <div class="page-section">
+                                            <div class="item-block py-3 border-bottom">
+                                                <div class="d-flex">
+                                                    <div class="col-9">
+                                                        <h4 class="sub-title col-12">Marketing</h4>
+                                                        <p class="m-0 col-12">Customer agrees to receiving Marketing emails from us</p>
+                                                    </div>
+                                                    <div class="col-3 d-flex align-items-center">
+                                                        <switch-btn class="ms-auto each-cust-pref" v-model="form.acceptSMSMarketing"></switch-btn>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="item-block py-3">
+                                                <div class="d-flex mt-3">
+                                                    <div class="col-9">
+                                                        <h4 class="sub-title col-12">Bi-Monthly VAT Invoices</h4>
+                                                        <p class="m-0 col-12">Customer wishes to receive monthly email VAT receipts</p>
+                                                    </div>
+                                                    <div class="col-3 d-flex align-items-center">
+                                                        <switch-btn class="ms-auto each-cust-pref" v-model="form.acceptMarketing"></switch-btn>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="w-100 p-4">
+                                                <button class="btn btn-success each-save-btn" @click="saveCommunication">Save Communication</button>
                                             </div>
                                         </div>
                                     </div>
@@ -750,6 +825,9 @@
                 deliveryAddress1: '',
                 deliveryAddress2: '',
                 customerNote: '',
+                customerNote: '',
+                acceptSMSMarketing: 1,
+                acceptMarketing: 0,
                 // payment tab
                 alreadyLinkedToAccount: true,
                 paymentMethod: '',
@@ -783,6 +861,8 @@
                 addCredit: 0,
                 // preferences tab
                 preferences: [],
+                deliveryByday: '0',
+                pickupSlots:[],
 
                 altTypeDelivery: '',
                 altName: '',
@@ -867,8 +947,6 @@
                     form.value.lastName = res.data.lastName;
                     var phone = getPhone(res.data.phone);
 
-                    console.log(phone);
-
                     form.value.phoneCountryCode = phone.code;
                     form.value.phoneNumber = phone.number;
                     form.value.email = res.data.email;
@@ -942,6 +1020,57 @@
                         form.value.altPhoneCountryCode = res.data.deliveryPreferences.altPhoneCountryCode;
                         form.value.altPhoneNumber = res.data.deliveryPreferences.altPhoneNumber;
                         form.value.altDriverInstruction = res.data.deliveryPreferences.altDriverInstruction;
+                    }
+                    form.value.acceptMarketing = res.data.acceptMarketing.toString();
+                    form.value.acceptSMSMarketing = res.data.acceptSMSMarketing.toString();
+                    form.value.deliveryByday = res.data.deliveryByDay.toString();
+                    if(res.data.DeliveryMon){
+                        form.value.pickupSlots.push({
+                            value: res.data.DeliveryMon,
+                            key: 'DeliveryMon',
+                            label: 'Select Mon slot',
+                        })
+                        pickupDays.value[0].active = true
+                    }
+                    if(res.data.DeliveryTu){
+                        form.value.pickupSlots.push({
+                            value: res.data.DeliveryTu,
+                            key: 'DeliveryTu',
+                            label: 'Select Tue slot',
+                        })
+                        pickupDays.value[1].active = true
+                    }
+                    if(res.data.DeliveryWed){
+                        form.value.pickupSlots.push({
+                            value: res.data.DeliveryWed,
+                            key: 'DeliveryWed',
+                            label: 'Select Wed slot',
+                        })
+                        pickupDays.value[2].active = true
+                    }
+                    if(res.data.DeliveryTh){
+                        form.value.pickupSlots.push({
+                            value: res.data.DeliveryTh,
+                            key: 'DeliveryTh',
+                            label: 'Select Thu slot',
+                        })
+                        pickupDays.value[3].active = true
+                    }
+                    if(res.data.DeliveryFri){
+                        form.value.pickupSlots.push({
+                            value: res.data.DeliveryFri,
+                            key: 'DeliveryFri',
+                            label: 'Select Fri slot',
+                        })
+                        pickupDays.value[4].active = true
+                    }
+                    if(res.data.DeliverySat){
+                        form.value.pickupSlots.push({
+                            value: res.data.DeliverySat,
+                            key: 'DeliverySat',
+                            label: 'Select Sat slot',
+                        })
+                        pickupDays.value[5].active = true
                     }
                     // linked accounts
                     form.value.linkedAccounts = res.data.linkedAccounts;
@@ -1450,7 +1579,116 @@
                     });
                 }
             }
-
+            const saveCommunication = ()=>{
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Updating Customer Communication...']);
+                axios.post('/save-customer-communication',{
+                    customerId: route.params.customer_id,
+                    acceptSMSMarketing: form.value.acceptSMSMarketing,
+                    acceptMarketing: form.value.acceptMarketing,
+                }).then((res)=>{
+                    if(res.data.success){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                            message: 'Customer Communication updated',
+                            ttl: 5,
+                            type: 'success'
+                        });
+                    }
+                }).catch((err)=>{
+                    console.log(err);
+                }).finally(()=>{
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                });
+            }
+            const pickupDays = ref([
+                    {
+                        name: 'M',
+                        longName: 'Mon',
+                        key: 'DeliveryMon',
+                        active: false
+                    },
+                    {
+                        name: 'T',
+                        longName: 'Tue',
+                        key: 'DeliveryTu',
+                        active: false
+                    },
+                    {
+                        name: 'W',
+                        longName: 'Wed',
+                        key: 'DeliveryWed',
+                        active: false
+                    },
+                    {
+                        name: 'T',
+                        longName: 'Thu',
+                        key: 'DeliveryTh',
+                        active: false
+                    },
+                    {
+                        name: 'F',
+                        longName: 'Fri',
+                        key: 'DeliveryFri',
+                        active: false
+                    },
+                    {
+                        name: 'S',
+                        longName: 'Sat',
+                        key: 'DeliverySat',
+                        active: false
+                    },
+                ]);
+            const timeslots = ref([
+                { value: '[1]', display: '8-10 am' },
+                { value: '[2]', display: '10-12 pm' },
+                { value: '[3]', display: '12-2 pm' },
+                { value: '[4]', display: '2-4 pm' },
+                { value: '[5]', display: '4-6 pm' },
+                { value: '[6]', display: '6-8 pm' }
+            ]);            
+            const addPickupDay = (index)=>{
+                let pickupDay = pickupDays.value[index];
+                if(pickupDay.active){
+                    pickupDays.value[index].active = false;
+                    form.value.pickupSlots = form.value.pickupSlots.filter((item)=>{
+                        return item.key != pickupDay.key;
+                    });
+                }else{
+                    pickupDays.value[index].active = true;
+                    form.value.pickupSlots.push({
+                        value: '',
+                        key: pickupDay.key,
+                        label: 'Select '+pickupDay.longName+' slot',
+                    });
+                }
+            }          
+            watch(()=>form.value.deliveryByday, (cur_val, pre_val)=>{
+                if(cur_val == '0'){
+                    pickupDays.value.forEach((item)=>{
+                        item.active = false;
+                    });
+                    form.value.pickupSlots = [];
+                }
+            })         
+            const saveRecurring = ()=>{
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Updating Customer Recurring...']);
+                axios.post('/save-customer-recurring',{
+                    customerId: route.params.customer_id,
+                    deliveryByday: parseInt(form.value.deliveryByday),
+                    pickupSlots: form.value.pickupSlots,
+                }).then((res)=>{
+                    if(res.data.success){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                            message: 'Customer Recurring updated',
+                            ttl: 5,
+                            type: 'success'
+                        });
+                    }
+                }).catch((err)=>{
+                    console.log(err);
+                }).finally(()=>{
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                });                
+            }     
             return {
                 form,
                 step,
@@ -1487,6 +1725,11 @@
                 saveCustomerPreferences,
                 saveDeliveryInstructions,
                 delivery_instructions_edit,
+                saveCommunication,
+                addPickupDay,
+                pickupDays,
+                timeslots,
+                saveRecurring
             }
 
         },
@@ -1896,5 +2139,23 @@ input.error:focus{
 .each-save-btn:hover{
     background:#333;
     color:#fff;
+}
+.pickup-day{
+    display: flex;
+    align-items: center;
+    justify-content: center;    
+    font-weight: bold;
+    margin-right: 15px;
+    width: 38px;
+    height: 38px;
+    background: #E0E0E0;
+    font-size: 14px;
+    line-height: 17px;
+    color: #47454B;
+    cursor: pointer;
+}
+.pickup-day.active{
+    color: white;
+    background: #42A71E;
 }
 </style>

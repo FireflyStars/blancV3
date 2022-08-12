@@ -95,6 +95,8 @@ Route::post('/update-customer-address',[CustomerController::class,'updateCustome
 Route::post('/update-customer-note',[CustomerController::class,'updateCustomerNote'])->name('update-customer-note')->middleware('auth');
 Route::post('/save-customer-preferences',[CustomerController::class,'saveCustomerPreferences'])->name('save-customer-preferences')->middleware('auth');
 Route::post('/save-customer-delivery-instructions',[CustomerController::class,'saveCustomerDeliveryInstructions'])->name('save-customer-delivery-instructions')->middleware('auth');
+Route::post('/save-customer-communication',[CustomerController::class,'saveCustomerCommunication'])->name('save.customer.communication')->middleware('auth');
+Route::post('/save-customer-recurring',[CustomerController::class,'saveCustomerRecurring'])->name('save.customer.recurring')->middleware('auth');
 
 Route::post('/get-customer-order-details',[CustomerController::class,'getCustomerOrderDetails'])->name('get-customer-order-details')->middleware('auth');
 Route::post('/update-detailing-issues-text',[DetailingController::class,'updateIssuesText'])->name('update-detailing-issues-text')->middleware('auth');
@@ -528,6 +530,7 @@ Route::get('ar-pdf',function(){
     $cust_master_ids = [];
     $map_master_id = [];
     $map_sub_id = [];
+    $order_per_customer = [];
 
     $customers = DB::table('infoCustomer')->whereIn('id',$customer_ids)->get();
 
@@ -554,50 +557,124 @@ Route::get('ar-pdf',function(){
     }
 
     $orders = DB::table('infoOrder')
-            ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','NewInvoice.*','infoitems.*')
+            ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*')
             ->join('detailingitem','infoOrder.id','detailingitem.order_id')
             ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
-            ->join('infoitems','infoitems.InvoiceID','NewInvoice.InvoiceID')
+            ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+            ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
             ->where('infoOrder.orderinvoiced',0)
             ->whereIn('infoOrder.CustomerID',$all_customer_ids)
             ->get();
 
     $invoices_per_order = [];
+    $grouped_by_customer = [];
+    $total_per_order = [];
+    $simplified_invoices_per_order = [];
 
 
     foreach($orders as $k=>$v){
-        $invoices_per_order[$v->order_id]['total'] = $v->Total;
+        $total_per_order[$v->order_id] = $v->Total;
 
-       $invoices_per_order[$v->order_id]['invoices'][$v->InvoiceID][$v->ItemID] = [
+       $invoices_per_order[$v->order_id][$v->InvoiceID][$v->ItemID] = [
                                                                             'NumInvoice'=>$v->NumInvoice,
+                                                                            'Tracking'=>$v->ItemTrackingKey,
                                                                             'PromisedDate'=>$v->PromisedDate,
                                                                             'Department'=>$v->DepartmentName,
                                                                             'Description'=>$v->typeitem,
                                                                             'brand'=>$v->brand,
                                                                             'priceTotal'=>$v->priceTotal,
+                                                                            'CustomerID'=>$v->CustomerID,
+                                                                            'order_id'=>$v->order_id,
                                                                         ];
-
+        $order_per_customer[$v->CustomerID][] = $v->order_id;
     }
 
-    echo "<pre>";
-    print_r($invoices_per_order);
+
+    foreach($invoices_per_order as $orderid=>$invoice){
+        foreach($invoice as $itemid=>$item){
+            foreach($item as $id=>$val){
+                $simplified_invoices_per_order[$orderid][] = $val;
+            }
+        }
+    }
+
+    foreach($order_per_customer as $k=>$v){
+        $order_per_customer[$k] = array_unique($v);
+    }
+
+    foreach($order_per_customer as $k=>$v){
+        if(isset($map_sub_id[$k])){
+           $grouped_by_customer[$map_sub_id[$k]][] = $v;
+        }else{
+            $grouped_by_customer[$k][] = $v;
+        }
+    }
+
+    $simplified_grouped_by_customer = [];
+
+    foreach($grouped_by_customer as $k=>$v){
+        foreach($v as $id=>$val){
+            foreach($val as $index=>$orderid){
+                $simplified_grouped_by_customer[$k][] = $orderid;
+            }
+        }
+    }
+
+    $to_insert = [];
+
+
+    foreach($simplified_grouped_by_customer as $k=>$v){
+        $total = 0;
+        $info = [];
+        $orders = [];
+        foreach($v as $index=>$orderid){
+            $total += $total_per_order[$orderid];
+            $info[$orderid] = $simplified_invoices_per_order[$orderid];
+            $orders[] = $orderid;
+        }
+
+        $to_insert = [
+            'FactureID'=>'',
+            'CustomerID'=>$k,
+            'infoOrder_id'=>json_encode($orders),
+            'montant'=>$total,
+            'info'=>json_encode($info),
+            'created_at'=>date('Y-m-d H:i:s'),
+        ];
+
+        $row_id = DB::table('infoOrderPrint')->insertGetId($to_insert);
+        $num_facture = 'INV'.date('Ymd').'-'.sprintf('%04d', $row_id);
+
+        //To add notification
+
+        DB::table('infoOrderPrint')->where('id',$row_id)->update(['NumFact'=>$num_facture]);
+    }
+
 
 });
 
 Route::get('inv-pdf',function(Request $request){
-    $customer_id = $request->customer_id;
+    //$facture_id = $request->facture;
+    $facture_id = '29037859-1a03-11ed-87e3-080027d0ed3e';
 
-    if(!isset($customer_id) || $customer_id ==''){
-        die('customer id not set');
+    if(!isset($facture_id) || $facture_id ==''){
+        die('Facture not set');
     }
 
-    $customer = DB::table('infoCustomer')->where('id',$customer_id)->first();
-    $addr = Delivery::getAddressByCustomerUUID($customer->CustomerID);
+    //$customer = DB::table('infoCustomer')->where('id',$customer_id)->first();
+    //$addr = Delivery::getAddressByCustomerUUID($customer->CustomerID);
+
+    $details = DB::table('infoOrderPrint')->where('FactureID',$facture_id)->first();
+
+    echo "<pre>";
+    print_r($details);
+    die();
 
 
     $data = [
-        'customer'=>$customer,
-        'address'=>$addr,
+        //'customer'=>$customer,
+       // 'address'=>$addr,
+        'invoice_date'=>date('d/m/Y'),
     ];
 
     Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
@@ -606,6 +683,8 @@ Route::get('inv-pdf',function(Request $request){
     return $pdf->download('invoice'.$customer_id.'.pdf');
 
 });
+
+
 
 /* END TEST ROUTES */
 

@@ -20,11 +20,11 @@
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M7.67709 14.632C7.67556 14.4018 7.87281 14.214 8.11766 14.2126L9.8711 14.2023C10.1159 14.2009 10.3157 14.3863 10.3172 14.6165C10.3187 14.8466 10.1215 15.0344 9.87663 15.0358L8.1232 15.0461C7.87835 15.0476 7.67862 14.8621 7.67709 14.632Z" fill="black"/>
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M2.66748 14.6143C2.66748 14.3841 2.86598 14.1975 3.11083 14.1975H4.9419C5.18676 14.1975 5.38526 14.3841 5.38526 14.6143C5.38526 14.8444 5.18676 15.031 4.9419 15.031H3.11083C2.86598 15.031 2.66748 14.8444 2.66748 14.6143Z" fill="black"/>
                 </svg>
-                {{customFilter ? 'Personnalisé' : selectedValue}}
+                {{customFilter ? 'Custom' : selectedValue}}
             </button>
         </div>
         <div class="d-flex align-items-center custom-filter-text" v-if="customFilter">
-            <p :class="{ 'ps-3': customFilterText != ''}">{{customFilterText}}</p>
+            <p :class="{ 'ps-3 m-0': customFilterText != ''}">{{customFilterText}}</p>
         </div>
     </div>
     <transition name="trans-filter" >
@@ -110,12 +110,12 @@
             const compareDate = `${current.getFullYear()-1}-${current.getMonth()+1}-${current.getDate()}`;
             const showfilter=ref(false);
             const customFilter=ref(false);
-            const selectedValue =ref('Today');
+            const selectedValue =ref('Last Month');
             const startDate=ref(currentDate);
             const endDate=ref(currentDate);
             
             const compareCustomFilter=ref(false);
-            const selectedCompareMode =ref('year');
+            const selectedCompareMode =ref('month');
             
             const compareStartDate=ref(compareDate);
             const compareEndDate=ref(compareDate);
