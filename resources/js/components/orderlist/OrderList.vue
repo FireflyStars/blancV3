@@ -344,6 +344,11 @@
             function hideOrderDetail(event){
                 router.push({
                     name:'LandingPage',
+                    params: {
+                        customerId:route.params.customerId,
+                        value:route.params.value,
+                    },
+                    
                 });
             }
 
