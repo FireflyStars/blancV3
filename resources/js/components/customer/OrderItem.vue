@@ -2,7 +2,7 @@
     <div class="order-item-header d-flex justify-content-between cursor-pointer mt-2" @click="show = !show">
         <div class="order-num d-flex align-items-center">
             <span class="order-pay" :class="Order.paid"></span>
-            <span class="ms-3">Order {{ Order.order_id }}</span>
+            <span class="ms-3">Order {{ Order.order_id }} ({{Order.Status.toLowerCase()}})</span>
         </div>
         <div class="order-date-panel d-flex align-items-center">
             <span class="order-status">{{ Order.order_text }}:</span>
@@ -36,14 +36,15 @@
                 </div>
             </div>
         </div>
-        <div class="sub-order-section mt-2" v-for="(subOrder, index) in subOrders" :key="index">
+        <div v-if="show && type_order != 'scheduledOrders'">
+        <div  class="sub-order-section mt-2" v-for="(subOrder, index) in subOrders" :key="index">
             <div class="sub-order-header">
                 <label class="custom-checkbox">Sub order {{ getSubOrder(subOrder).key }}
                     <input type="checkbox" @change="subOrderCheck($event, getSubOrder(subOrder).id)">
                     <span class="checkmark"></span>
                 </label>
             </div>
-            <div class="sub-order-body">
+            <div v-if="type_order != 'scheduledOrders'" class="sub-order-body">
                 <table class="table border-none">
                     <thead>
                         <tr>
@@ -57,8 +58,8 @@
                     <tbody>
                         <tr v-for="(item, index) in subOrder" :key="index">
                             <td valign=middle>
-                                <div class="d-flex align-items-center">
-                                    <span class="d-block color-icon me-2" v-for="(color, index) in item.colors.split(',')" :key="index" :style="{ 'background': color.toLowerCase().trim() }"></span>
+                                <div class="d-flex align-items-center" v-if="item.colors != ''">
+                                    <span class="d-block color-icon me-2"    v-for="(color, index) in item.colors.split(',')" :key="index" :style="{ 'background': color.toLowerCase().trim() }"></span>
                                     {{ item.item_name }}
                                 </div>
                             </td>
@@ -94,8 +95,9 @@
                 </table>
             </div>
         </div>
+        </div>
     </div>
-    <div class="order-item-footer mt-2" v-if="show">
+    <div class="order-item-footer mt-2" v-if="show && type_order != 'scheduledOrders'">
         <div class="d-flex justify-content-between">
             <div class="col-6 d-flex">
                 <button class="border-btn" @click="redirectToCheckOut(Order.order_id)">View Order</button>
@@ -129,7 +131,14 @@ export default {
         const selectedSubOrders = ref([]);
         const show_model_Fulfil = ref(false)
         show.value = props.show;
-        Order.value = Object.values(Object.values(props.subOrders)[0])[0];
+        const type_order = ref('');
+        type_order.value = props.type_order
+        if(props.type_order == 'scheduledOrders'){
+           Order.value = Object.values(Object.values(props.subOrders)[0])[0];
+        }else {
+          Order.value = Object.values(Object.values(props.subOrders)[0])[0];
+        }
+        
 
         const getSubOrder = (subOrder)=>{
             var subOrderValue = {
@@ -162,7 +171,8 @@ export default {
             subOrderCheck,
             redirectToCheckOut,
             FulfillSubOrder,
-            show_model_Fulfil
+            show_model_Fulfil,
+            type_order
         }
     },
     methods:{
@@ -175,7 +185,9 @@ export default {
             type: Boolean,
             default: false,
         },
-        subOrders: Object
+        subOrders: Object,
+        type_order : String
+
     }
 }
 </script>
@@ -201,6 +213,7 @@ export default {
                 font-size: 14px;
                 line-height: 140%;
                 color: #F8F8F8;
+                text-transform: capitalize;
             }
         }
         .order-status,

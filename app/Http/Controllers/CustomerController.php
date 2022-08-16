@@ -810,7 +810,7 @@ class CustomerController extends Controller
 
         $current_orders = DB::table('infoOrder')
                                         ->select(
-                                            'infoOrder.id as order_id', 'infoInvoice.NumInvoice as sub_order', 'infoInvoice.id as sub_order_id',
+                                            'infoOrder.id as order_id', 'infoInvoice.NumInvoice as sub_order', 'infoInvoice.id as sub_order_id', 'infoOrder.Status',
                                             DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
                                             // DB::raw('DATE_FORMAT(infoOrder.created_at, "%d %b %Y") as order_date'),
                                             'infoitems.priceTotal as price', 'infoitems.id as item_id',
@@ -877,7 +877,7 @@ class CustomerController extends Controller
                                                 'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN 0
                                                       WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN IF(CURRENT_DATE() < pickup.date, 1, 0 )
                                                       WHEN infoOrder.deliverymethod = "delivery_only" THEN 0
-                                                      WHEN infoOrder.deliverymethod = "recurring" THEN 0
+                                                      WHEN infoOrder.deliverymethod = "recurring" THEN 00
                                                 END as left_edit'
                                             ),
                                             DB::raw(
@@ -925,7 +925,7 @@ class CustomerController extends Controller
 
         $past_orders = DB::table('infoOrder')
                                         ->select(
-                                            'infoOrder.id as order_id', 'infoInvoice.NumInvoice as sub_order', 'infoInvoice.id as sub_order_id',
+                                            'infoOrder.id as order_id', 'infoInvoice.NumInvoice as sub_order', 'infoInvoice.id as sub_order_id','infoOrder.Status',
                                             DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
                                             // DB::raw('DATE_FORMAT(infoOrder.created_at, "%d %b %Y") as order_date'),
                                             'infoitems.priceTotal as price', 'infoitems.id as item_id',
@@ -1040,9 +1040,10 @@ class CustomerController extends Controller
 
         $customer->past_orders = $past_orders;
 
+
         $scheduled_orders = DB::table('infoOrder')
                     ->select(
-                        'infoOrder.id as order_id',
+                        'infoOrder.id as order_id','infoOrder.Status',
                         DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'), 'infoOrder.underquote','infoOrder.deliverymethod',
                     DB::raw(
                         'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN "Store Drop Off"
@@ -1119,10 +1120,29 @@ class CustomerController extends Controller
                 ->leftJoin('pickup', 'pickup.PickupID', '=', 'infoOrder.PickupID')
                 ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
                 ->where('infoOrder.CustomerID', $customer->CustomerID)
-                ->whereIn('infoOrder.Status', ['SCHEDULED'])
-                ->get()->groupBy('order_id');    
+                ->whereIn('infoOrder.Status', ['SCHEDULED' ,'RECURRING' ])
+                ->get()->groupBy(['order_id', 'sub_order_id'])->reverse()->values();
 
-        $customer->scheduled_orders[] = $scheduled_orders;
+
+                                        foreach($scheduled_orders as $k=>$v){
+                                            foreach($v as $i=>$x){
+                                                 foreach($x as $key=>$item){
+                                                     $delivery_method = $item->deliverymethod;
+                                                     //if(in_array($delivery_method,['home_delivery','delivery_only'])){
+                                                         $tranche = $item->order_right_time;
+                                                         $tranche_arr = explode("_",$tranche);
+                                                         if(isset($tranche_arr[0]) && isset($tranche_arr[1])){
+                                                             $slot = Tranche::getSlotFromTranche($tranche_arr[0],$tranche_arr[1]);
+                                                             $timeslot = $tranches_slots[$slot];
+                                                             $scheduled_orders[$k][$i][$key]->order_right_time = $timeslot;
+                                                         }
+                                                     //}
+                                                 }
+
+                                            }
+                                         }  
+
+        $customer->scheduled_orders = $scheduled_orders;
 
 
         return response()->json( $customer );

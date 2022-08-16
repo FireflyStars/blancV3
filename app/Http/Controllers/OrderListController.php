@@ -972,7 +972,7 @@ class OrderListController extends Controller
              })->leftJoin('infoitems','infoitems.ItemTrackingKey','=','itemhistorique.ItemTrackingKey')
                 ->leftJoin('postes','postes.id','=','infoitems.nextpost')
                 ->leftJoin('TypePost','TypePost.id','=','postes.TypePost')
-                ->distinct('infoitems.InvoiceID')
+                ->distinct('infoitems.InvoiceID' )
                 ->whereNotIn('infoitems.Status',['DELETE','VOID'])
                 ->orderBy('infoInvoice.NumInvoice')->get();
 
@@ -1166,7 +1166,7 @@ class OrderListController extends Controller
             ->join('infoInvoice', 'itemhistorique.InvoiceID', '=', 'infoInvoice.InvoiceID')
             ->join('infoitems','infoitems.ItemTrackingKey','=','itemhistorique.ItemTrackingKey')
             ->where('itemhistorique.InvoiceID', $InvoiceId)
-            ->get();
+            ->first();
         }
         
         $itemsList = DB::table('itemhistorique')->select([ 'infoitems.id_items as itemproduction' , 'itemhistorique.ID_item as productionitem'])
