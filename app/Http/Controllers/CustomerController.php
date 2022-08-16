@@ -58,6 +58,8 @@ class CustomerController extends Controller
             'discount'      => (intval($request->discountLevel) / 100),
             'credit'        => 0,
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
+            'AcceptMarketing'        => $request->acceptMarketing,
+            'AcceptSMSMarketing'        => $request->acceptSMSMarketing,
         ];
         if($request->deliveryByday == '1'){
             $info_customer['DeliverybyDay'] = 1;

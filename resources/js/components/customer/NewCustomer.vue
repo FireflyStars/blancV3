@@ -484,6 +484,33 @@
 
                                     </div>
                                     <div class="blocks">
+                                        <h3 class="title mb-3">Communication</h3>
+                                        <div class="page-section">
+                                            <div class="item-block py-3 border-bottom">
+                                                <div class="d-flex">
+                                                    <div class="col-9">
+                                                        <h4 class="sub-title col-12">Marketing</h4>
+                                                        <p class="m-0 col-12">Customer agrees to receiving Marketing emails from us</p>
+                                                    </div>
+                                                    <div class="col-3 d-flex align-items-center">
+                                                        <switch-btn class="ms-auto each-cust-pref" v-model="form.acceptSMSMarketing"></switch-btn>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="item-block py-3">
+                                                <div class="d-flex mt-3">
+                                                    <div class="col-9">
+                                                        <h4 class="sub-title col-12">Bi-Monthly VAT Invoices</h4>
+                                                        <p class="m-0 col-12">Customer wishes to receive monthly email VAT receipts</p>
+                                                    </div>
+                                                    <div class="col-3 d-flex align-items-center">
+                                                        <switch-btn class="ms-auto each-cust-pref" v-model="form.acceptMarketing"></switch-btn>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>                                    
+                                    <div class="blocks">
                                         <h3 class="title mb-3">Delivery instructions</h3>
                                         <div class="page-section p-4">
                                             <div class="d-flex justify-content-between">
@@ -683,6 +710,8 @@ import axios from 'axios';
                 deliveryAddress1: '',
                 deliveryAddress2: '',
                 customerNote: '',
+                acceptSMSMarketing: 1,
+                acceptMarketing: 0,                
                 // payment tab
                 alreadyLinkedToAccount: true,
                 paymentMethod: '',

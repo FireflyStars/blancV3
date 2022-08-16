@@ -825,7 +825,6 @@
                 deliveryAddress1: '',
                 deliveryAddress2: '',
                 customerNote: '',
-                customerNote: '',
                 acceptSMSMarketing: 1,
                 acceptMarketing: 0,
                 // payment tab
