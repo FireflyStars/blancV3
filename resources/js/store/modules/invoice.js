@@ -137,6 +137,7 @@ export const invoicelist= {
             deliv_date_from: '',
             deliv_date_to: '',
             skip: 0,
+            search:'',
         }
     },
     mutations: {
@@ -190,7 +191,12 @@ export const invoicelist= {
         },        
     },
     actions: {
-        [SET_INVOICE_LIST]: async({ commit, dispatch, state } )=>{
+        [SET_INVOICE_LIST]: async({ commit, dispatch, state }, payload )=>{
+            if(typeof payload!="undefined"){
+                state.filter.search = payload.value
+                state.filter.skip = 0
+            }
+
             dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...'], {root: true});
             await axios.post('/get-all-invoices', state.filter).then(function (response) {
                 commit(SET_INVOICE_LIST, response.data);

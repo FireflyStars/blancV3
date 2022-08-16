@@ -2676,7 +2676,26 @@ class StatisticsController extends Controller
                             /* DB::raw('DATE_FORMAT(deliveryask.date, "%m/%d") as deliveryask_date') */
                         );
         $arr = [0, 1, 2, 3, 4, 5, 6];
-        $invoices   =  $invoices->where('infoitems.Actif',1)
+        
+        if($request->search != ''){
+            $invoices   =  $invoices->Join('infoInvoice','infoitems.InvoiceID','infoInvoice.InvoiceID')
+            ->join('infoOrder','infoInvoice.OrderID','infoOrder.OrderID')
+            ->leftJoin('infoCustomer', 'infoInvoice.CustomerID', '=', 'infoCustomer.CustomerID')
+            ->leftJoin('postes', 'infoitems.nextpost', '=', 'postes.id')
+            ->leftJoin('pickup', 'infoOrder.PickupID', '=', 'pickup.PickupID')
+            ->leftJoin('deliveryask', 'infoOrder.DeliveryaskID', '=', 'deliveryask.DeliveryaskID')
+            ->leftJoin('TypePost', 'TypePost.id', '=', 'postes.TypePost');
+
+            if(str_contains($request->search , "-")){
+                $invoices = $invoices->Where('infoInvoice.NumInvoice', '=', $request->search);
+             } else {
+                $invoices = $invoices ->Where('infoitems.ItemTrackingKey', 'LIKE', $request->search)
+                ->orWhere('infoitems.id', 'LIKE', $request->search)
+                ->orWhere('infoitems.id_items', 'LIKE', $request->search)
+                ->orWhere('infoOrder.id', 'LIKE', $request->search);
+             }
+        } else {
+            $invoices   =  $invoices->where('infoitems.Actif',1)
                                 ->whereIn('infoitems.express', $arr)
                                 ->join('infoInvoice', 'infoitems.SubOrderID', '=', 'infoInvoice.SubOrderID')
                                 ->join('infoOrder', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID')
@@ -2690,6 +2709,7 @@ class StatisticsController extends Controller
                                 ->whereIN('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP'])
                                 ->whereNotIn('infoOrder.Status',['VOID', 'DELETE'])
                                 ->orderBy('item_id');
+        } 
         if($request->status != ''){
             $invoices   = $invoices->where('infoitems.Status', $request->status);
         }

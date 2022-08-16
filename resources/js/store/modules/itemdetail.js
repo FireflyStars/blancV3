@@ -28,10 +28,11 @@ export const itemDetail= {
         [ITEM_DETAIL_SET_DETAIL]: (state, payload) => state.itemdetail = payload,
     },
     actions:{
-        [ITEM_DETAIL_LOAD_DETAIL]: async ({commit},item_id)=>{
+        [ITEM_DETAIL_LOAD_DETAIL]: async ({commit}, payload)=>{
             commit(ITEM_DETAIL_SET_LOADER,'animate40');
             return await axios.post('/getitemdetail', {
-                item_id: item_id
+                item_id: payload.itemId,
+                invoice_Id: payload.invoiceId
             }).then( (response)=>{
                 commit(ITEM_DETAIL_SET_DETAIL, response.data.item_detail);
                 return Promise.resolve(response);

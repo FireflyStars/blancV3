@@ -12,7 +12,7 @@
             <div class="item-detail-info-section d-flex flex-wrap">
                 <div class="item-detail-name-panel">
                     <p class="m-0 item-detail-name">{{ ITEM.breif_info.item_name }}</p>
-                    <p class="m-0 item-detail-suborder">Sub order {{ ITEM.breif_info.sub_order }}</p>
+                    <p class="m-0 item-detail-suborder" v-if="ITEM.suborder !=''" >Sub order {{ ITEM.suborder.NumInvoice}}</p>
                 </div>
                 <div class="item-detail-location-panel">
                     <div class="item-detail-location-type d-flex justify-content-between">
@@ -220,7 +220,7 @@ import QzPrint from "../QzPrint";
 
 export default {
     name: "ItemDetail",
-    props:['item_id'],
+    props:['item_id' , 'invoiceId'],
     components:{
         QzPrint
     },
@@ -235,12 +235,15 @@ export default {
         const services_panel = ref(false);
         const item_history_panel = ref(false);
         const itemId = ref('');
+        const invoiceId = ref('');
         const itemIdFromRoute = route.params.item_id;
-        
+
         if(itemIdFromRoute> 0){ 
            itemId.value = itemIdFromRoute;
+           invoiceId.value = props.invoiceId;
         }else {
             itemId.value = props.item_id;
+            invoiceId.value = props.invoiceId;
         }
         onMounted(()=>{
         })
@@ -265,14 +268,14 @@ export default {
             if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
                 store.dispatch(`${ASSEMBLY_HOME_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`, itemId.value)
             else if (store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'OrderDetails')
-                store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_SET_CURRENT_SELECTED}`, itemId.value)
+                store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_SET_CURRENT_SELECTED}`, itemId.value  )
             else 
                 store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`, itemId.value)
         }         
         if(showItemDetail) {
             // store.commit(`${ORDERDETAIL_MODULE}${ORDERDETAIL_SET_LOADER}`,'');
             nextTick(() => {
-                store.dispatch(`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_LOAD_DETAIL}`, CURRENT_SELECTED.value).catch((error)=>{
+                store.dispatch(`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_LOAD_DETAIL}`, {itemId :CURRENT_SELECTED.value , invoiceId :invoiceId.value} ).catch((error)=>{
                     if(typeof error.response!="undefined")
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
                 });;

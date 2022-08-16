@@ -91,7 +91,7 @@ class OrderController extends Controller
                 'OrderID'=>'',
                 'firstorder'=>(count($previous_orders)>0?0:1),
                 'express'=>$new_order['express'],
-                'Status'=>'PENDING',//($new_order['deliverymethod']=='recurring'?'RECURRING':'PENDING'),
+                'Status'=>'SCHEDULED',//($new_order['deliverymethod']=='recurring'?'RECURRING':'PENDING'),
                 'created_at'=>$created_stamp,
             ];
 
@@ -640,7 +640,7 @@ class OrderController extends Controller
 
             DB::table('pickup')->where( 'pickup.PickupID', $infoOrder->PickupID)->update([
                 'Status'=>'DEL'
-            ]);        
+            ]);
         }
         return response()->json(['done'=>'ok']);
     }
@@ -650,9 +650,9 @@ class OrderController extends Controller
         $invoiceid=$request->post('invoiceId');
 
         if(!empty($invoiceid)){
-    
+
             $invoice = DB::table('infoInvoice')->where('infoInvoice.InvoiceID','=' ,$invoiceid )->first();
-            
+
             DB::table('infoInvoice')->where('infoInvoice.id',$invoice->id)->update([
                 'Status'=>'VOID'
             ]);
