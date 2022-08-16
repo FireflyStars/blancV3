@@ -378,9 +378,9 @@ export default {
                     step = 9;
                     break;
                 default:
-                    step = props.detailingitem.etape;
+                   step = props.detailingitem.etape;
             }
-            // context.emit("go-to-step", step);
+            //context.emit("go-to-step", step);
         }
         function brandFilterClick(letter) {
             brand_filter.value = letter;
@@ -414,6 +414,7 @@ export default {
                     size_id: size_id.value,
                     step: steps.value[index + 1].id
                 });
+                instAccPattern.value = true ;
             }
             if (desc_type.value == 'brand') {
                 brand_id.value = id;
@@ -422,7 +423,7 @@ export default {
                     brand_id: brand_id.value,
                     step: steps.value[index + 1].id
                 });
-                NextStep('colour');
+              instAccColor.value = true ;
             }
             if (desc_type.value == 'fabric') {
                  
@@ -436,8 +437,12 @@ export default {
                     fabrics_id: JSON.stringify(fabric_id.value),
                     step: steps.value[index + 1].id
                 });
-
-                NextStep('pattern');
+                if(props.detailingData.sizes.length > 0){
+                    instAccSize.value = true 
+                }else {
+                    instAccPattern.value = true ;
+                }
+                
             }
             if (desc_type.value == 'colour') {
                 if (!color_id.value.includes(id)) {
@@ -456,12 +461,13 @@ export default {
             if (desc_type.value == 'pattern') {
                 
                 pattern_id.value = id;
-                context.emit("save-item-description", {
+                 context.emit("save-item-description", {
                     detailingitem_id: props.detailingitem.id,
                     pattern_id: pattern_id.value,
                     step: steps.value[index + 1].id
                 });
-                NextStep('condition');
+                instAccCondition.value = true
+               // NextStep('condition');
             }
             if (desc_type.value == 'condition') {
                 condition_id.value = id;
