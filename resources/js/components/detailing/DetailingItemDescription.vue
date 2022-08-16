@@ -380,7 +380,7 @@ export default {
                 default:
                     step = props.detailingitem.etape;
             }
-            context.emit("go-to-step", step);
+            // context.emit("go-to-step", step);
         }
         function brandFilterClick(letter) {
             brand_filter.value = letter;
@@ -436,6 +436,7 @@ export default {
                     fabrics_id: JSON.stringify(fabric_id.value),
                     step: steps.value[index + 1].id
                 });
+
                 NextStep('pattern');
             }
             if (desc_type.value == 'colour') {
@@ -460,7 +461,6 @@ export default {
                     pattern_id: pattern_id.value,
                     step: steps.value[index + 1].id
                 });
-
                 NextStep('condition');
             }
             if (desc_type.value == 'condition') {

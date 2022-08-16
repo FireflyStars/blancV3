@@ -24,7 +24,7 @@
                         </header>
                     <div class="trow" v-for="ITEM in ITEMS" :key="ITEM.infoitems_id">
                         <template v-for="(col,index) in tabledef" :key="index">
-                            <div class="tcol"   :style="{flex:col.flex}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(ITEM.infoitems_id,index)"  >
+                            <div class="tcol"   :style="{flex:col.flex}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(ITEM.infoitems_id,index ,ITEMS[0].InvoiceID)"  >
                                 <check-box v-if="col.type=='checkbox'" :checked_checkbox="typeof MULTI_CHECKED[suborder]!=='undefined'&&MULTI_CHECKED[suborder].includes(ITEM.infoitems_id)" :id="ITEM.infoitems_id" @checkbox-clicked="checkboxclicked" :name="suborder"></check-box>
                                 <tag v-else-if="col.type=='tag'" :name="ITEM[index]" :style="{backgroundColor:'transparent',border:'1px solid #000000',color:'#000000'}"></tag>
                                 <color-tag :style="col.css" v-else-if="col.type=='color'" :colors="ITEM[index].toLowerCase()"></color-tag>
@@ -44,7 +44,7 @@
         </transition> -->
          <FulfillConfirmation  :invoice_id= "invoiceId" :show_conf="show_model_Fulfil" @close="show_model_Fulfil=false"></FulfillConfirmation>
     </div>
-    <ItemDetail @close="OpenitemDetails = false" class="modal-item" v-if = "OpenitemDetails" :item_id = ItemId ></ItemDetail>
+    <ItemDetail @close="OpenitemDetails = false" class="modal-item" v-if = "OpenitemDetails" :item_id = ItemId :invoiceId = invoiceId ></ItemDetail>
     <qz-print ref="qz_printer"></qz-print>
 </template>
 
@@ -115,13 +115,14 @@
                 return val;
             }
 
-            function selectrow(id,colname){
+            function selectrow(id,colname,invoice_ID){
                 OpenitemDetails.value = false
                 store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_SELECTED_NAV}`, "OrderDetails")
                 if(colname=='line_select') return;
                   setTimeout(function(){  
                    ItemId.value = id
                    OpenitemDetails.value = true
+                   invoiceId.value = invoice_ID
                }  
               , 5)   
             }
