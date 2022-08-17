@@ -940,7 +940,7 @@ class OrderListController extends Controller
     public function getorderdetail(Request $request){
         $infoOrder_id=$request->post('infoOrder_id');
         $order=DB::table('infoOrder')
-            ->select(['infoOrder.id AS order_id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CompanyName','infoCustomer.id' , 'infoCustomer.Phone','infoCustomer.CustomerID','booking_histories.user_id',
+            ->select(['infoOrder.id AS order_id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CompanyName','infoCustomer.id' ,'infoOrder.DateDeliveryAsk','infoOrder.DatePickup' , 'infoCustomer.Phone','infoCustomer.CustomerID','booking_histories.user_id',
             'booking_histories.status',
             DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),
             DB::raw('IF(infoOrder.DatePickup ="2020-01-01" OR infoOrder.DatePickup ="2000-01-01" OR infoOrder.DatePickup ="","--",DATE_FORMAT(infoOrder.DatePickup , " %W %d %M %Y")) as DatePickup '),
@@ -953,14 +953,18 @@ class OrderListController extends Controller
             ->leftJoin('booking_histories', 'booking_histories.order_id', '=', 'infoOrder.id')
             ->where('infoOrder.id','=',$infoOrder_id)->first();
 
-            $Booking_histories=DB::table('booking_histories')->select(['booking_histories.user_id' , 'users.name' ,
-            DB::raw('IF(users.created_at="2020-01-01" OR users.created_at="2000-01-01" OR users.created_at="","--",DATE_FORMAT(users.created_at, "%a %d/%m/%Y")) as CreatedDate'),
-            DB::raw('DATE_FORMAT(users.created_at,"%H:%i") as time'),
+            $Booking_histories=DB::table('booking_histories')->select(['booking_histories.user_id' , 'users.name' ,'booking_histories.created_at',
+            DB::raw('IF(booking_histories.created_at="2020-01-01" OR booking_histories.created_at="2000-01-01" OR booking_histories.created_at="","--",DATE_FORMAT(booking_histories.created_at, "%a %d/%m/%Y")) as CreatedDate'),
+            DB::raw('DATE_FORMAT(booking_histories.created_at,"%H:%i") as time'),
             ]) 
             ->join('users','users.id','=','booking_histories.user_id')
             ->where('booking_histories.order_id','=',$order->order_id)
             ->where('booking_histories.user_id','!=',0)
             ->first();
+
+
+            $order->TimePickup = date('h:i A', strtotime($order->DatePickup));
+            $order->TimeDelivery = date('h:i A', strtotime($order->DateDeliveryAsk));
 
             $billing_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=','BILLING')->first();
             $delivery_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=',$order->TypeDelivery)->first();
@@ -972,7 +976,7 @@ class OrderListController extends Controller
              })->leftJoin('infoitems','infoitems.ItemTrackingKey','=','itemhistorique.ItemTrackingKey')
                 ->leftJoin('postes','postes.id','=','infoitems.nextpost')
                 ->leftJoin('TypePost','TypePost.id','=','postes.TypePost')
-                ->distinct('infoitems.InvoiceID' )
+                ->distinct('infoitems.id')
                 ->whereNotIn('infoitems.Status',['DELETE','VOID'])
                 ->orderBy('infoInvoice.NumInvoice')->get();
 
