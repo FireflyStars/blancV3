@@ -386,6 +386,7 @@ export default {
                 totalRoot.dispose();
         }
         watch(() => filterVal.value, (current_val, previous_val) => {
+            destroyChart();
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
             axios.post('/get-prod-statistics', current_val).then((res) => {
                 salesByChannelChartData.value = res.data.salesByChannel;
@@ -450,41 +451,40 @@ export default {
         let salesByChannelChart = null;
         let salesByChannelChartSeries= null;
         const salesByChannelChartData = ref([
-            { origin: "Fichier initial", amount: 0 },
-            { origin: "Client affiliate", amount: 0 } 
         ]);
         const initSalesByChannelChart = ()=>{
             // Define data for sales by origin
             // Create root element
-            if(salesByChannelChartRoot == null){
-                salesByChannelChartRoot = am5.Root.new("saleByOrigin");
-                // Set themes
-                salesByChannelChartRoot.setThemes([
-                    am5themes_Animated.new(salesByChannelChartRoot)
-                ]);
-                // Create chart
-                salesByChannelChart = salesByChannelChartRoot.container.children.push(am5percent.PieChart.new(salesByChannelChartRoot, {
-                    radius: am5.percent(70),
-                    innerRadius: 70,
-                    layout: salesByChannelChartRoot.verticalLayout
-                }));
-                // hide logo
-                salesByChannelChart._root._logo._childrenDisplay.visible  = false;
-                // salesByChannelChart._root._logo._display.visible  = false;
-                // salesByChannelChart._root._logo._display.scale  = 0;
-                // Create series
-                salesByChannelChartSeries = salesByChannelChart.series.push(am5percent.PieSeries.new(salesByChannelChartRoot, {
-                    name: "Series",
-                    valueField: "amount",
-                    categoryField: "channel",
-                }));
-                salesByChannelChartSeries.get("colors").set("colors", [
-                    am5.color(0xEB5757),
-                    am5.color(0x5200FF),
-                ]);                
-                salesByChannelChartSeries.labels.template.set("forceHidden", true);
-                salesByChannelChartSeries.ticks.template.set("visible", false);
-            }
+            // if(salesByChannelChartRoot == null){
+            //     }
+            salesByChannelChartRoot = am5.Root.new("saleByOrigin");
+            // Set themes
+            salesByChannelChartRoot.setThemes([
+                am5themes_Animated.new(salesByChannelChartRoot)
+            ]);
+            // Create chart
+            salesByChannelChart = salesByChannelChartRoot.container.children.push(am5percent.PieChart.new(salesByChannelChartRoot, {
+                radius: am5.percent(70),
+                innerRadius: 70,
+                layout: salesByChannelChartRoot.verticalLayout
+            }));
+            // hide logo
+            salesByChannelChart._root._logo._childrenDisplay.visible  = false;
+            // salesByChannelChart._root._logo._display.visible  = false;
+            // salesByChannelChart._root._logo._display.scale  = 0;
+            // Create series
+            salesByChannelChartSeries = null;
+            salesByChannelChartSeries = salesByChannelChart.series.push(am5percent.PieSeries.new(salesByChannelChartRoot, {
+                name: "Series",
+                valueField: "amount",
+                categoryField: "channel",
+            }));
+            salesByChannelChartSeries.get("colors").set("colors", [
+                am5.color(0xEB5757),
+                am5.color(0x5200FF),
+            ]);                
+            salesByChannelChartSeries.labels.template.set("forceHidden", true);
+            salesByChannelChartSeries.ticks.template.set("visible", false);
             // Add label
             let percent = '';
             if(salesByChannelTotal.value == salesByChannelTotalToCompare.value){
@@ -519,43 +519,42 @@ export default {
         let piecesByItemChartSeries = null;
         // Define data for sales by customer
         const piecesByItemChartData = ref([
-            { client: "client", amount: 0 }
         ]);
         const initPiecesByItemChart = ()=>{
             // Create root element
             if(piecesByItemChartRoot ==  null){
-                piecesByItemChartRoot = am5.Root.new("saleByClient");
-                // Set themes
-                piecesByItemChartRoot.setThemes([
-                    am5themes_Animated.new(piecesByItemChartRoot)
-                ]);
-                // Create chart
-                piecesByItemChart = piecesByItemChartRoot.container.children.push(am5percent.PieChart.new(piecesByItemChartRoot, {
-                    radius: am5.percent(70),
-                    innerRadius: 70,
-                    layout: piecesByItemChartRoot.verticalLayout
-                }));
-                // hide logo
-                piecesByItemChart._root._logo._childrenDisplay.visible  = false;
-                // piecesByItemChart._root._logo._display.visible  = false;
-                // piecesByItemChart._root._logo._display.scale  = 0;
-                // Create series
-                piecesByItemChartSeries = piecesByItemChart.series.push(am5percent.PieSeries.new(piecesByItemChartRoot, {
-                    name: "Series",
-                    valueField: "amount",
-                    categoryField: "name",
-                }));
-                piecesByItemChartSeries.get("colors").set("colors", [
-                    am5.color(0xEB5757),
-                    am5.color(0x5200FF),
-                    am5.color(0x8ADFDF),
-                    am5.color(0x80A2EC),
-                    am5.color(0xEEE516),
-                    am5.color(0x1F78B4)
-                ]);            
-                piecesByItemChartSeries.labels.template.set("forceHidden", true);
-                piecesByItemChartSeries.ticks.template.set("visible", false);
-            }
+                }
+            piecesByItemChartRoot = am5.Root.new("saleByClient");
+            // Set themes
+            piecesByItemChartRoot.setThemes([
+                am5themes_Animated.new(piecesByItemChartRoot)
+            ]);
+            // Create chart
+            piecesByItemChart = piecesByItemChartRoot.container.children.push(am5percent.PieChart.new(piecesByItemChartRoot, {
+                radius: am5.percent(70),
+                innerRadius: 70,
+                layout: piecesByItemChartRoot.verticalLayout
+            }));
+            // hide logo
+            piecesByItemChart._root._logo._childrenDisplay.visible  = false;
+            // piecesByItemChart._root._logo._display.visible  = false;
+            // piecesByItemChart._root._logo._display.scale  = 0;
+            // Create series
+            piecesByItemChartSeries = piecesByItemChart.series.push(am5percent.PieSeries.new(piecesByItemChartRoot, {
+                name: "Series",
+                valueField: "amount",
+                categoryField: "name",
+            }));
+            piecesByItemChartSeries.get("colors").set("colors", [
+                am5.color(0xEB5757),
+                am5.color(0x5200FF),
+                am5.color(0x8ADFDF),
+                am5.color(0x80A2EC),
+                am5.color(0xEEE516),
+                am5.color(0x1F78B4)
+            ]);            
+            piecesByItemChartSeries.labels.template.set("forceHidden", true);
+            piecesByItemChartSeries.ticks.template.set("visible", false);
             // Add label
             let percent = '';
             if(salesByItemTotal.value == salesByItemTotalToCompare.value){
@@ -569,7 +568,7 @@ export default {
             }
             if(salesByItemTotal.value > salesByItemTotalToCompare.value && salesByItemTotalToCompare.value == 0){
                 percent = "--";
-            }            
+            }
             let clientLabel = piecesByItemChartSeries.children.push(am5.Label.new(piecesByItemChartRoot, {
                 text: "£{valueSum.formatNumber('#,###.')}\n   " + percent,
                 centerX: am5.percent(50),
@@ -603,50 +602,48 @@ export default {
         let SKSale = null;
         const SKSaleData = ref([]);
         const initTotalChart = ()=>{
-            if(totalRoot == null){
+            // if(totalRoot == null){
+            // }
+            totalRoot = am5.Root.new("totalChart");
+            totalRoot.setThemes([
+                am5themes_Animated.new(totalRoot)
+            ]);
+            // Create chart
+            totalChart = totalRoot.container.children.push(am5xy.XYChart.new(totalRoot, {
+                panX: true,
+                panY: true,
+                wheelX: "panX",
+                wheelY: "zoomX",
+                pinchZoomX: true
+            }));
+            // hide logo
+            totalChart._root._logo._childrenDisplay.visible  = false;
+            // totalChart._root._logo._display.visible  = false;
+            // totalChart._root._logo._display.scale  = 0;
+            // Add cursor
+            let cursor = totalChart.set("cursor", am5xy.XYCursor.new(totalRoot, {
+                behavior: "none"
+            }));
+            cursor.lineY.set("visible", false);
 
-                totalRoot = am5.Root.new("totalChart");
-                totalRoot.setThemes([
-                    am5themes_Animated.new(totalRoot)
-                ]);
-    
-                // Create chart
-                totalChart = totalRoot.container.children.push(am5xy.XYChart.new(totalRoot, {
-                    panX: true,
-                    panY: true,
-                    wheelX: "panX",
-                    wheelY: "zoomX",
-                    pinchZoomX: true
-                }));
-                // hide logo
-                totalChart._root._logo._childrenDisplay.visible  = false;
-                // totalChart._root._logo._display.visible  = false;
-                // totalChart._root._logo._display.scale  = 0;
-                // Add cursor
-                let cursor = totalChart.set("cursor", am5xy.XYCursor.new(totalRoot, {
-                    behavior: "none"
-                }));
-                cursor.lineY.set("visible", false);
-    
-                
-                // Create axes
-                xAxis = totalChart.xAxes.push(am5xy.DateAxis.new(totalRoot, {
-                    maxDeviation: 0.2,
-                    baseInterval: {
-                        timeUnit: "day",
-                        count: 1
-                    },
-                    renderer: am5xy.AxisRendererX.new(totalRoot, {}),
-                    tooltip: am5.Tooltip.new(totalRoot, {})
-                }));
-                yAxis = totalChart.yAxes.push(am5xy.ValueAxis.new(totalRoot, {
-                    renderer: am5xy.AxisRendererY.new(totalRoot, {})
-                }));
-                // Add scrollbar
-                totalChart.set("scrollbarX", am5.Scrollbar.new(totalRoot, {
-                    orientation: "horizontal"
-                }));
-            }
+            
+            // Create axes
+            xAxis = totalChart.xAxes.push(am5xy.DateAxis.new(totalRoot, {
+                maxDeviation: 0.2,
+                baseInterval: {
+                    timeUnit: "day",
+                    count: 1
+                },
+                renderer: am5xy.AxisRendererX.new(totalRoot, {}),
+                tooltip: am5.Tooltip.new(totalRoot, {})
+            }));
+            yAxis = totalChart.yAxes.push(am5xy.ValueAxis.new(totalRoot, {
+                renderer: am5xy.AxisRendererY.new(totalRoot, {})
+            }));
+            // Add scrollbar
+            totalChart.set("scrollbarX", am5.Scrollbar.new(totalRoot, {
+                orientation: "horizontal"
+            }));
 
             addSeries(1);
             totalChart.appear(1000, 100);
