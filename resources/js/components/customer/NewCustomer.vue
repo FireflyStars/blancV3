@@ -340,7 +340,7 @@
                                             </div>
                                             <div class="w-55 mt-3">
                                                 <div class="form-group">
-                                                    <label>Email address 1</label>
+                                                    <label>Email address 1 *</label>
                                                     <input type="email" v-model="form.invoiceEmail1" placeholder="Email" class="form-control">
                                                 </div>
                                                 <div class="form-group">
@@ -710,8 +710,8 @@ import axios from 'axios';
                 deliveryAddress1: '',
                 deliveryAddress2: '',
                 customerNote: '',
-                acceptSMSMarketing: 1,
-                acceptMarketing: 0,                
+                acceptSMSMarketing: '1',
+                acceptMarketing: '0',                
                 // payment tab
                 alreadyLinkedToAccount: true,
                 paymentMethod: '',
@@ -1007,6 +1007,9 @@ import axios from 'axios';
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Company Legal Name', ttl:5, type:'danger' });
                             return;
                         }
+                        if(form.value.invoiceEmail1 == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Email Address 1', ttl:5, type:'danger' });
+                        }
                         if(form.value.invoiceEmail1 != ''){
                             if( !emailValidation(form.value.invoiceEmail1) ){
                                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 1', ttl:5, type:'danger' });
@@ -1094,12 +1097,12 @@ import axios from 'axios';
                         });
                     }, 1);                    
                     if(form.value.customerType == 'B2B' && form.value.accountType == 'Main' && form.value.alreadyLinkedToAccount){
-                        form.value.paymentMethod = 'BACS';
+                        form.value.paymentMethod == 'BACS';
                     }
                     if(form.value.firstName == ''){
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please Enter FirstName', ttl:5, type:'danger' });
                         return;
-                    }
+                    }                    
                     if(form.value.email != ''){
                         if( !emailValidation(form.value.email) ){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email address', ttl:5, type:'danger' });
@@ -1127,6 +1130,9 @@ import axios from 'axios';
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Company Legal Name', ttl:5, type:'danger' });
                             return;
                         }
+                        if(form.value.invoiceEmail1 == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Email Address 1', ttl:5, type:'danger' });
+                        }                        
                         if(form.value.invoiceEmail1 != ''){
                             if( !emailValidation(form.value.invoiceEmail1) ){
                                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 1', ttl:5, type:'danger' });
@@ -1290,6 +1296,7 @@ import axios from 'axios';
                         axios.post('/create-customer', form.value).then((response)=>{
                             if(response.data.error){
                                 if(typeof response.data.error.isArray){
+                                    console.log(response.data.error);
                                     Object.values(response.data.error).forEach((item)=>{
                                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item[0], ttl:5, type:'danger' });
                                     })
