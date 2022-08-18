@@ -186,7 +186,6 @@ class BookingController extends Controller {
             }
         }
 
-
         return response()->json([
             'tranches'=>$formatted_tranche,
         ]);
