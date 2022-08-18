@@ -191,5 +191,18 @@ class BookingController extends Controller {
         ]);
     }
 
+    public function getHolidays(){
+        $holidays = DB::table('holidays')->get();
+
+        $dates = [];
+        foreach($holidays as $k=>$v){
+            $dates[] = $v->date;
+        }
+
+        return response()->json([
+            'dates'=>$dates,
+        ]);
+    }
+
 }
 

@@ -178,7 +178,7 @@
                                                 </div>
 
                                                 <div class="col-3">
-                                                    <date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Collection" :disabledToDate="getCurDateTime('datedb')" @loadtranche="checkStorePickup" :disabledSunday="true" :disabled="isc_pickup_disabled"></date-picker>
+                                                    <date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Collection" :disabledToDate="getCurDateTime('datedb')" @loadtranche="checkStorePickup" :disabledSunday="true" :disabled="isc_pickup_disabled" :disabledDates="holidays"></date-picker>
                                                 </div>
                                                 <div class="col-3">
                                                     <time-slot-picker v-model="isc_pickup_timeslot" :disabled="isc_pickup_timeslot_disabled"   name="isc_pickup_timeslot" :available-slots="[11]"  label="Collection Time" :isStore="true"></time-slot-picker>
@@ -205,7 +205,7 @@
                                                     </div>
 
                                                     <div class="col-3">
-                                                        <date-picker :disabled="do_delivery_disabled" v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="addRemoveDays('add',0,cur_date)" @loadtranche="loadtranche('do_delivery')" ref="do_delivery_datepicker" :disabled-sunday="true" :available-days="available_days"></date-picker>
+                                                        <date-picker :disabled="do_delivery_disabled" v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="addRemoveDays('add',0,cur_date)" @loadtranche="loadtranche('do_delivery')" ref="do_delivery_datepicker" :disabled-sunday="true" :available-days="available_days" :disabledDates="holidays"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="do_delivery_timeslot"   name="do_delivery_timeslot" :available-slots="do_delivery_tranche"  label=" "></time-slot-picker>
@@ -216,14 +216,14 @@
                                             <transition name="popinout">
                                                 <div class="row mt-3" v-if="deliverymethod=='home_delivery'&&!isRecurring">
                                                     <div class="col-3">
-                                                        <date-picker v-model="hd_pickup" name="hd_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pick up" :disabledToDate="yesterday" :disabledFromDate="hd_delivery"  @loadtranche="loadtranche('hd_pickup')" ref="hd_pickup_datepicker" :disabledSunday="true" :available-days="available_days"></date-picker>
+                                                        <date-picker v-model="hd_pickup" name="hd_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pick up" :disabledToDate="yesterday" :disabledFromDate="hd_delivery"  @loadtranche="loadtranche('hd_pickup')" ref="hd_pickup_datepicker" :disabledSunday="true" :available-days="available_days" :disabledDates="holidays"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="hd_pickup_timeslot"   name="hd_pickup_timeslot" :available-slots="hd_pickup_tranche"  label=" "></time-slot-picker>
                                                     </div>
 
                                                     <div class="col-3">
-                                                        <date-picker v-model="hd_delivery" name="hd_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="addRemoveDays('add',3,hd_pickup)"   @loadtranche="loadtranche('hd_delivery')" ref="hd_delivery_datepicker" :disabledSunday="true" :available-days="available_days"></date-picker>
+                                                        <date-picker v-model="hd_delivery" name="hd_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="addRemoveDays('add',3,hd_pickup)"   @loadtranche="loadtranche('hd_delivery')" ref="hd_delivery_datepicker" :disabledSunday="true" :available-days="available_days" :disabledDates="holidays"></date-picker>
                                                     </div>
                                                     <div class="col-3">
                                                         <time-slot-picker v-model="hd_delivery_timeslot"   name="hd_delivery_timeslot" :available-slots="hd_delivery_tranche"  label=" "></time-slot-picker>
@@ -840,6 +840,20 @@ import axios from 'axios';
 
                 return current_customer;
             });
+
+            const holidays = ref([]);
+            function getHolidays(){
+                axios.post('/get-holidays',{})
+                    .then((res)=>{
+                        holidays.value = res.data.dates;
+                    }).catch((err)=>{
+
+                    }).finally(()=>{
+
+                    });
+            }
+
+            getHolidays();
 
             watch(()=>no_main_booking.value,(current_val,previous_val)=>{
                 if(current_val==true){
@@ -1700,6 +1714,7 @@ import axios from 'axios';
                 updateOrderAndDetail,
                 available_days,
                 available_cust_slots,
+                holidays,
             }
         },
         data(){

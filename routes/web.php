@@ -566,6 +566,9 @@ Route::get('ar-pdf',function(){
             ->whereIn('infoOrder.CustomerID',$all_customer_ids)
             ->get();
 
+    echo "<pre>";
+    print_r($orders);
+
     $invoices_per_order = [];
     $grouped_by_customer = [];
     $total_per_order = [];
@@ -661,26 +664,51 @@ Route::get('inv-pdf',function(Request $request){
         die('Facture not set');
     }
 
-    //$customer = DB::table('infoCustomer')->where('id',$customer_id)->first();
-    //$addr = Delivery::getAddressByCustomerUUID($customer->CustomerID);
 
     $details = DB::table('infoOrderPrint')->where('FactureID',$facture_id)->first();
 
+    $customer = DB::table('infoCustomer')->where('CustomerID',$details->CustomerID)->first();
+    $addr = Delivery::getAddressByCustomerUUID($details->CustomerID);
+
+    $order_details = (array) @json_decode($details->info);
+
+    $customer_ids = [];
+    $grouped_by_customer = [];
+    $cust_names = [];
+    $cust_addresses = [];
+
+    foreach($order_details as $k=>$v){
+        foreach($v as $id=>$detail){
+            if(!in_array($detail->CustomerID,$customer_ids)){
+                array_push($customer_ids,$detail->CustomerID);
+                $grouped_by_customer[$detail->CustomerID][$detail->order_id][$detail->NumInvoice][] = $detail;
+            }
+        }
+    }
+
+    $customers = DB::table('infoCustomer')->whereIn('CustomerID',$customer_ids)->get();
+
+
+    foreach($customers as $k=>$v){
+        $cust_names[$v->CustomerID] = $v->Name;
+    }
+
     echo "<pre>";
-    print_r($details);
+    print_r($cust_names);
     die();
 
-
     $data = [
-        //'customer'=>$customer,
-       // 'address'=>$addr,
-        'invoice_date'=>date('d/m/Y'),
+       'customer'=>$customer,
+       'address'=>$addr,
+       'grouped_by_customer'=>$grouped_by_customer,
+       'customers'=>$customers,
+       'invoice_date'=>date('d/m/Y'),
     ];
 
     Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
     $pdf = Pdf::loadView('pdf/ar_pdf', $data);
 
-    return $pdf->download('invoice'.$customer_id.'.pdf');
+    return $pdf->download('invoice'.$details->CustomerID.'.pdf');
 
 });
 
@@ -720,6 +748,7 @@ Route::post('/create-new-order',[OrderController::class,'createNewOrder'])->name
 Route::post('/get-slots-by-day',[BookingController::class,'getSlotsByDay'])->name('get-slots-by-day')->middleware('auth');
 Route::post('/save-order-card-details',[OrderController::class,'saveCardDetails'])->name('save-order-card-details')->middleware('auth');
 Route::post('/update-order-to-detailing',[OrderController::class,'updateOrderToDetailing'])->name('updateOrderToDetailing')->middleware('auth');
+Route::post('/get-holidays',[BookingController::class,'getHolidays'])->name('get-holidays')->middleware('auth');
 
 /*
  * QZ Print

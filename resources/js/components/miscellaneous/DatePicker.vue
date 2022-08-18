@@ -84,6 +84,7 @@
                 },
             hint:String,
             availableDates:Array,
+            disabledDates:Array | null,
             disabledToDate:String,
             disabledFromDate:String,
             disabledSunday:Boolean,
@@ -332,6 +333,10 @@
                             //console.log(displayed_dates.value[i]);
                             displayed_dates.value[i].notavailable = true;
                         }
+                    }
+
+                    if(props.disabledDates && props.disabledDates.includes(datestr)){
+                        displayed_dates.value[i].notavailable = true;
                     }
 
 
