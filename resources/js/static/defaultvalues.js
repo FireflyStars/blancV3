@@ -46,7 +46,7 @@ export const _COLORS_={
         },
         khaki:{
             name:"Khaki",
-            color:"#f0e68c",
+            color:"#798A36",
             tooltip:"Khaki."
         },
         black:{
