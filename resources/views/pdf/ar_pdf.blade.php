@@ -47,7 +47,7 @@
     }
 
     #inv_no{
-        font-size:16px;
+        font-size:12px;
     }
 
     #blanc_addr{
@@ -71,6 +71,32 @@
     #cust_addr div{
         font-size:11px;
         margin-bottom:3px;
+    }
+
+    main{
+        margin-top:20px;
+    }
+
+    .items_table{
+        margin-top:10px;
+    }
+
+    .items_table th,
+    .items_table td{
+        font-size:12px;
+    }
+
+    .items_table td{
+        border-right:thin dashed #000;
+    }
+
+    .items_table th{
+        color:#42A71E;
+        border-bottom:2px solid blue;
+    }
+
+    .cust_name{
+        font-size:12px;
     }
 </style>
 </head>
@@ -107,11 +133,11 @@
                 <tr>
                     <td class="heading-cell">
                         <div class="heading-cell-title">Account No:</div>
-                        <div class="heading-cell-value">AT1393</div>
+                        <div class="heading-cell-value">{{$customer->id}}</div>
                     </td>
                     <td class="heading-cell">
                         <div class="heading-cell-title">No:</div>
-                        <div class="heading-cell-value" id="inv_no">9795</div>
+                        <div class="heading-cell-value" id="inv_no">{{$facture->NumFact}}</div>
                     </td>
                 </tr>
                 <tr>
@@ -128,6 +154,28 @@
         </div>
     </header>
     <main>
+        @foreach ($order_details as $customerid=>$invoices)
+            <span class="cust_name">{{$cust_names[$customerid]}}</span>
+            <table width="100%" class="items_table" cellspacing="0">
+                <tr>
+                    <th>Date</th><th>Order</th><th>Sub-order</th><th width="35%">Description</th><th>Net</th><th>VAT</th><th>Total</th>
+                </tr>
+                @foreach ($invoices as $invoiceid=>$invoice )
+                    <tr>
+                        <td></td>
+                        <td>{{$invoice['orderid']}}</td>
+                        <td>{{$invoiceid}}</td>
+                        <td>
+
+                        </td>
+                        <td class="amount">{{$invoice['net']}}</td>
+                        <td class="amount">{{$invoice['vat']}}</td>
+                        <td class="amount">{{$invoice['total']}}</td>
+                    </tr>
+                @endforeach
+
+            </table>
+        @endforeach
     </main>
 
 </body>
