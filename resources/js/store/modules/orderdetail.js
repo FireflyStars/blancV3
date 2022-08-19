@@ -12,6 +12,7 @@ import {
     ORDERDETAIL_UPDATE_SUGGESTED_DELIVERY_DATE,
     ORDERDETAIL_SPLIT,
     ORDERDETAIL_NEW_DELIVERY_DATE,
+    ORDERDETAIL_NEW_PICKUP_DATE,
     ORDERDETAIL_UPDATE, ORDERDETAIL_SET_ITEMS,
     ORDERDETAIL_SET_CURRENT_SELECTED,
     ORDERDETAIL_GET_CURRENT_SELECTED
@@ -149,6 +150,30 @@ export const orderdetail= {
                 infoOrder_id:state.orderdetail.detail.order_id,
                 PromisedDate:payload.PromisedDate,
                 timeslot:payload.timeslot
+
+            }).then( (response)=>{
+                if(response.data.updated!==false){
+
+                    commit(ORDERDETAIL_UPDATE,{suggestedDeliveryDate:null});
+
+                }
+                return Promise.resolve(response);
+            })
+                .catch((error)=>{
+                    return Promise.reject(error);
+                }).finally(()=>{
+
+                });
+        },
+       
+        [ORDERDETAIL_NEW_PICKUP_DATE]:async({commit,state},payload)=>{
+            return axios.post('/newPickupdate', {
+                infoOrder_id:state.orderdetail.detail.order_id,
+                PickupDate:payload.PickupDate,
+                deliveryDate:payload.deliveryDate,
+                timeslotPickup:payload.timeslotPickup,
+                timeslotDelivery:payload.timeslotDelivery,
+                
 
             }).then( (response)=>{
                 if(response.data.updated!==false){

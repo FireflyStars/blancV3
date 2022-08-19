@@ -940,13 +940,15 @@ class OrderListController extends Controller
     public function getorderdetail(Request $request){
         $infoOrder_id=$request->post('infoOrder_id');
         $order=DB::table('infoOrder')
-            ->select(['infoOrder.id AS order_id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CompanyName','infoCustomer.id' ,'infoOrder.DateDeliveryAsk','infoOrder.DatePickup' , 'infoCustomer.Phone','infoCustomer.CustomerID','booking_histories.user_id',
+            ->select(['infoOrder.id AS order_id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CompanyName','infoCustomer.id' , 'infoOrder.DeliveryaskID' , 'infoOrder.PickupID' , 'infoOrder.DateDeliveryAsk','infoOrder.DatePickup' , 'infoCustomer.Phone','infoCustomer.CustomerID','booking_histories.user_id',
             'booking_histories.status',
             DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),
             DB::raw('IF(infoOrder.DatePickup ="2020-01-01" OR infoOrder.DatePickup ="2000-01-01" OR infoOrder.DatePickup ="","--",DATE_FORMAT(infoOrder.DatePickup , " %W %d %M %Y")) as DatePickup '),
+            DB::raw('IF(pickup.date ="2020-01-01" OR pickup.date ="2000-01-01" OR pickup.date ="","--",DATE_FORMAT(pickup.date , " %W %d %M %Y")) as PickupDateNew '),
             DB::raw('IF(infoOrder.DateDeliveryAsk ="2020-01-01" OR infoOrder.DateDeliveryAsk ="2000-01-01" OR infoOrder.DateDeliveryAsk ="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk , "%W %d %M %Y")) as DateDelivery '),
             DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate',
-            DB::raw('IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as cust_type')])
+            DB::raw('IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as cust_type')
+            ])
             ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
             ->leftJoin('pickup', 'infoOrder.id', '=', 'pickup.order_id')
             ->leftJoin('deliveryask','infoOrder.id', '=', 'deliveryask.order_id')
@@ -962,9 +964,26 @@ class OrderListController extends Controller
             ->where('booking_histories.user_id','!=',0)
             ->first();
 
+           if($order->PickupID != ''){
+            
+             $pickup=DB::table('pickup')->select(['pickup.tranchefrom','pickup.trancheto'])
+                    ->where('pickup.PickupID','=',$order->PickupID)->first(); 
+                    $slotPickup = date('h',strtotime($pickup->tranchefrom)).' - '.date('h a',strtotime($pickup->trancheto));
+                    $from_pickup=date('g',strtotime($pickup->tranchefrom));
+                    $to_pickup=date('g a',strtotime($pickup->trancheto));  
+                    $order->TimePickup = "$from_pickup - $to_pickup";      
+           }
 
-            $order->TimePickup = date('h:i A', strtotime($order->DatePickup));
-            $order->TimeDelivery = date('h:i A', strtotime($order->DateDeliveryAsk));
+           if($order->DeliveryaskID != ''){
+
+            $delivery=DB::table('deliveryask')->select(['deliveryask.DeliveryaskID','deliveryask.trancheto','deliveryask.trancheFrom'])
+                    ->where('deliveryask.DeliveryaskID','=',$order->DeliveryaskID)->first(); 
+                    $slotDelivery = date('h',strtotime($delivery->trancheFrom)).' - '.date('h a',strtotime($delivery->trancheto));    
+                    $from_delivery=date('g',strtotime($delivery->trancheFrom));
+                    $to_delivery=date('g a',strtotime($delivery->trancheto));        
+                    $order->TimeDelivery = "$from_delivery - $to_delivery";
+ 
+          }
 
             $billing_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=','BILLING')->first();
             $delivery_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=',$order->TypeDelivery)->first();
@@ -1049,7 +1068,7 @@ class OrderListController extends Controller
         ->orderBy('detailingitem.id','ASC')
         ->get();
 
-        return response()->json(['order'=>['detail'=>$order,'billing'=>$billing_add,'delivery'=>$delivery_add,'items'=>$items,'available_slots'=>$available_slots ,'detailingitemlist' => $detailingitemlist,'postcode'=>$sel_postcode , 'booking' => $Booking_histories]] );
+        return response()->json(['order'=>['detail'=>$order,'billing'=>$billing_add,'delivery'=>$delivery_add,'items'=>$items,'available_slots'=>$available_slots ,'detailingitemlist' => $detailingitemlist,'postcode'=>$sel_postcode , 'booking' => $Booking_histories , 'totalitems' => count($infoitems)]] );
     }
 
      public function setInvoiceFulfilled(Request $request){
@@ -1192,7 +1211,7 @@ class OrderListController extends Controller
                                     'TypePost.bg_color as location_color', 'postes.nom as location',
                                     'TypePost.process', 'TypePost.circle_color',
                                     // DB::raw('DATE_FORMAT(production.date_add,"%a") as day'),
-                                    DB::raw('DATE_FORMAT(production.date_add,"%a %m/%d/%Y %H:%i") as date'),
+                                    DB::raw('DATE_FORMAT(production.date_add,"%a %d/%m/%Y %H:%i") as date'),
                                     // DB::raw('DATE_FORMAT(production.date_add,"%H:%i") as time'),
                                     'users.name'
                                 )
@@ -1209,7 +1228,7 @@ class OrderListController extends Controller
                                     'TypePost.bg_color as location_color', 'postes.nom as location',
                                     'TypePost.process', 'TypePost.circle_color',
                                     // DB::raw('DATE_FORMAT(production.date_add,"%a") as day'),
-                                    DB::raw('DATE_FORMAT(production.date_add,"%a %m/%d/%Y %H:%i") as date'),
+                                    DB::raw('DATE_FORMAT(production.date_add,"%a %d/%m/%Y %H:%i") as date'),
                                     // DB::raw('DATE_FORMAT(production.date_add,"%H:%i") as time'),
                                     'users.name'
                                 )
@@ -1336,6 +1355,109 @@ class OrderListController extends Controller
                 }
         }
         return response()->json(['updated'=>$update,'message'=>'','post'=>$request->all()]);
+    }
+
+
+    public function newPickupdate(Request $request){
+        
+        $infoOrder_id=$request->post('infoOrder_id');
+        $PickupDate=$request->post('PickupDate');
+        $deliveryDate=$request->post('deliveryDate');
+        $timeslotPickup=$request->post('timeslotPickup');
+        $timeslotDelivery=$request->post('timeslotDelivery');
+
+        $pickupTimeTranche=Tranche::getFormattedTranche($timeslotPickup);
+        $deliveryTimeTranche=Tranche::getFormattedTranche($timeslotDelivery);
+
+
+
+        $infoOrder=DB::table('infoOrder')->select(['CustomerID','PickupID','DeliveryaskID'])->where('id','=',$infoOrder_id)->first();
+                if($infoOrder==null)
+                    return response()->json(['updated'=>$update,'message'=>'Order not found.']);
+        
+        $pickup=DB::table('pickup')->where('PickupID','=',$infoOrder->PickupID)->first();
+        
+        $deliveryask=null;
+        //Create new order
+        $order = DB::table('infoOrder')->where('id','=',$infoOrder_id)->first();
+        $new_order = (array)$order;
+        $pickup_deleted=DB::table('pickup')->where('CustomerID','=',$infoOrder->CustomerID)->where('PickupID','=',$infoOrder->PickupID)->update(["status"=>"DEL"]);
+        $infoOrder=Db::table('infoOrder')->where('PickupID',$infoOrder->PickupID)->first();
+        if($infoOrder!=null&&$infoOrder->Status=="SCHEDULED"){
+            if($infoOrder->DeliveryaskID!=''){
+                $deliveryask=DB::table('deliveryask')->where('CustomerID','=',$infoOrder->CustomerID)->where('DeliveryaskID','=',$infoOrder->DeliveryaskID)->first();
+                DB::table('deliveryask')->where('CustomerID','=',$infoOrder->CustomerID)->where('DeliveryaskID','=',$infoOrder->DeliveryaskID)->update(["status"=>"DEL"]);
+
+                DB::table('infoOrder')->where('id','=',$infoOrder->id)->update(['status'=>'DELETE']);
+            }
+        }
+                //retrieve comment on previous pickup
+                $previous_pickup=DB::table('pickup')->where('PickupID','=',$infoOrder->PickupID)->first();
+
+                if($PickupDate!='' && $timeslotPickup!= '') {
+     
+                    $pickup_id = DB::table('pickup')->insertGetId([
+                        'GarmentInstruction' => "",
+                        'PhoneNumber' => $previous_pickup->PhoneNumber,
+                        'CodeCountry' => $previous_pickup->CodeCountry,
+                        'TypeDelivery' => $previous_pickup->TypeDelivery,
+                        'CustomerID' => $previous_pickup->CustomerID,
+                        'AddressID' => $previous_pickup->AddressID,
+                        'id_customer' => $previous_pickup->id_customer,
+                        'comment' => $previous_pickup->comment,
+                        'trancheto' => $pickupTimeTranche['trancheto'],
+                        'trancheFrom' => $pickupTimeTranche['tranchefrom'],
+                        'address_id' => $previous_pickup->address_id,
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at'=> date('Y-m-d H:i:s'),
+                        'status' => $previous_pickup->status,
+                        'date' => $PickupDate,
+        
+                    ]);
+                    $newpickup = DB::table('pickup')->where('id', '=', $pickup_id)->first();
+                   
+                    //retrieve comment on delivery 
+                    $previous_delivery=DB::table('deliveryask')->where('DeliveryaskID','=', $infoOrder->DeliveryaskID)->first();
+
+                    $deliveryask_id = DB::table('deliveryask')->insertGetId([
+                        'PhoneNumber' => $previous_delivery->PhoneNumber,
+                        'CodeCountry' => $previous_delivery->CodeCountry,
+                        'TypeDelivery' => $previous_delivery->TypeDelivery,
+                        'CustomerID' => $previous_delivery->CustomerID,
+                        'AddressID' => $previous_delivery->AddressID,
+                        'id_customer' => $previous_delivery->id_customer,
+                        'comment' => $previous_delivery->comment,
+                        'trancheto' => ($timeslotDelivery != 0)?$deliveryTimeTranche['trancheto']:$previous_delivery->trancheto,
+                        'trancheFrom' => ($timeslotDelivery != 0)?$deliveryTimeTranche['trancheFrom']:$previous_delivery->trancheFrom,
+                        'address_id' => $previous_delivery->address_id,
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at'=> date('Y-m-d H:i:s'),
+                        'status' => $previous_delivery->status,
+                        'date' => $deliveryDate,
+                    ]);
+   
+                    $newdeliveryask = DB::table('deliveryask')->where('id', '=', $deliveryask_id)->first();
+
+                    foreach($new_order as $k=>$v){
+                        if(in_array($k,['id'])){
+                            unset($new_order[$k]);
+                        }
+                    }
+
+                    $new_order_uuid = Str::uuid()->toString();
+
+                   $new_order['created_at'] = date('Y-m-d H:i:s');
+                   $new_order['updated_at'] = date('Y-m-d H:i:s');
+                   $new_order['OrderID'] = $new_order_uuid;
+                   $new_order['PickupID'] = $newpickup->PickupID;
+                   $new_order['DatePickup'] = $PickupDate;
+                   $new_order['DateDeliveryAsk'] = $deliveryDate;
+
+                   $last_id_order_inserted = DB::table('infoOrder')->insertGetId($new_order);
+                     
+                   }
+
+        return response()->json(['message'=>'updated' , 'pickup'=> $newpickup , 'delivery' => $newdeliveryask , 'neworder' => $new_order , '$last_id_order_inserted' => $last_id_order_inserted ]);
     }
 
     public function splititems(Request $request){

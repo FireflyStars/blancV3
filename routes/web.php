@@ -70,6 +70,7 @@ Route::post('/getitemdetail',[OrderListController::class,'getitemdetail'])->midd
 Route::post('/splititems',[OrderListController::class,'splititems'])->middleware('auth')->name('splititems');
 Route::post('/suggestdate',[OrderListController::class,'suggestdate'])->middleware('auth')->name('suggestdate');
 Route::post('/newdeliverydate',[OrderListController::class,'newdeliverydate'])->middleware('auth')->name('newdeliverydate');
+Route::post('/newPickupdate',[OrderListController::class,'newPickupdate'])->middleware('auth')->name('newPickupdate');
 Route::get('/getpermissions',[PermissionController::class,'getPermissions'])->middleware('superadmin')->name('getpermissions');
 Route::post('/setpermission',[PermissionController::class,'setPermission'])->middleware('superadmin')->name('setpermission');
 Route::post('/setprofile',[PermissionController::class,'setProfile'])->middleware('superadmin')->name('setprofile');
