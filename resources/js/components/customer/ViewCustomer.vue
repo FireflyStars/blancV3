@@ -801,7 +801,7 @@
             <div class="row mx-0 justify-content-center my-5 py-3">
                 <div class="col-3"><button class="btn btn-outline-success w-100" @click="pauseRecurringFunc">Pause</button></div>
                 <div class="col-2"></div>
-                <div class="col-3"><button class="btn btn-outline-danger w-100" @click="closePauseRecurringModal">No, Cancel</button></div>
+                <div class="col-3"><button class="btn btn-outline-danger w-100" @click="closePauseRecurringModal">Cancel</button></div>
             </div>
         </template>
     </modal>    
