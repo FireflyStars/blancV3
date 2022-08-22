@@ -195,13 +195,13 @@
                         <h4 class="mb-0 ms-auto font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View report</em></h4>
                     </div>
                     <div class="d-flex mt-3">
-                        <div class="col-6">
+                        <!-- <div class="col-6">
                             <h4 class="font-16 gotham-rounded-medium mt-3">by channel</h4>
                             <div class="d-flex align-items-center" v-for="(booking, index) in bookingByChannel" :key="index">
                                 <div class="col-4">{{ booking.TypeDelivery }}</div>
                                 <TotalPercent :fontSize="14" class="ms-5" :amount="booking.count" :symbol="''" :pastAmount="booking.pastCount"></TotalPercent>
                             </div>
-                        </div>
+                        </div> -->
                         <div class="col-6">
                             <h4 class="font-16 gotham-rounded-medium mt-3">by customer type</h4>
                             <div class="d-flex align-items-center">
@@ -362,8 +362,8 @@ export default {
                     signupB2CPast.value = res.data.signupB2CPast;
                     signupAPP.value = res.data.signupAPP;
                     signupAPPPast.value = res.data.signupAPPPast
-                    signupPOS.value = res.data.signupAPP;
-                    signupPOSPast.value = res.data.signupAPPPast
+                    signupPOS.value = res.data.signupPOS;
+                    signupPOSPast.value = res.data.signupPOSPast
                     totalSignUpCount.value = res.data.totalSignUpCount;
                     totalSignUpCountPast.value = res.data.totalSignUpCountPast;
                     
