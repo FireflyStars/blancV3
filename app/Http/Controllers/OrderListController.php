@@ -1123,6 +1123,7 @@ class OrderListController extends Controller
 
         $invoice_id = $request->post('invoice_id');
         $items = $request->post('items');
+        $data = serialize($items);
         $arr = $items[0]; 
         $array_item = http_build_query($arr,"item[");
        // echo preg_replace('/\[\d/', '\\0]', array_item);
@@ -1140,17 +1141,15 @@ class OrderListController extends Controller
         $params = [
             'token'=>'GhtfvbbG44$hhGtyEfgARRGht3',
             'invoiceid'=>$invoice_id,
-            $array_item
-
+            'item' =>$data
         ];
-
+       
         $response = $client->request('GET', $endpoint, ['query' => $params]);
         $statusCode = $response->getStatusCode();
         $statusText = $response->getReasonPhrase();
       
-
         return \response()->json([
-            'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=.$invoice_id&".$array_item,
+            'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=.$invoice_id&item=".$data,
             'status_code'=>$statusCode,
             'status_message'=>$statusText
         ]);
