@@ -1084,7 +1084,10 @@ class OrderController extends Controller
 
             if($order && $amount_paid >= $order->Total){
                 DB::table('infoOrder')->where('id',$order_id)->update(['Paid'=>1]);
-                DB::table('infoInvoice')->whereIn('InvoiceID',$invoices_id)->update(['Paid'=>1]);
+
+                if(!empty($invoices_id)){
+                    DB::table('infoInvoice')->whereIn('InvoiceID',$invoices_id)->update(['Paid'=>1]);
+                }
             }
 
 
