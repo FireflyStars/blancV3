@@ -776,7 +776,7 @@ class StatisticsController extends Controller
                                 $query->whereBetween('SignupDate', $period)
                                     ->orWhereBetween('SignupDateOnline', $period);
                             })
-                            ->where('btob', 0)
+                            // ->where('btob', 0)
                             ->select(DB::raw('count(*) as count'), 'TypeDelivery')->groupBy('TypeDelivery')->get();
         $totalSignUpCount = $signupByChannel->sum('count');
         foreach ($signupByChannel as $signup) {
@@ -784,7 +784,7 @@ class StatisticsController extends Controller
                                     $query->whereBetween('SignupDate', $past_period)
                                         ->orWhereBetween('SignupDateOnline', $past_period);
                                 })
-                                ->where('btob', 0)
+                                // ->where('btob', 0)
                                 ->where('TypeDelivery', $signup->TypeDelivery)
                                 ->select(DB::raw('count(*) as count'))->value('count');
         }
@@ -814,21 +814,15 @@ class StatisticsController extends Controller
                                     ->where('btob', 0)
                                     ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
         $signupAPP = InfoCustomer::where(function($query) use ($period){
-                                        $query->WhereBetween('SignupDateOnline', $period);
+                                        $query->whereBetween('SignupDateOnline', $period);
                                     })
                                     ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
         $signupAPPPast = InfoCustomer::where(function($query) use ($past_period){
-                                        $query->WhereBetween('SignupDateOnline', $past_period);
+                                        $query->whereBetween('SignupDateOnline', $past_period);
                                     })
                                     ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
-        $signupPOS = InfoCustomer::where(function($query) use ($period){
-                                        $query->WhereBetween('SignupDate', $period);
-                                    })
-                                    ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
-        $signupPOSPast = InfoCustomer::where(function($query) use ($past_period){
-                                        $query->WhereBetween('SignupDate', $past_period);
-                                    })
-                                    ->select(DB::raw('count(*) as count'))->value('count') ?? 0;
+        $signupPOS = $totalSignUpCount - $signupAPP;
+        $signupPOSPast = $totalSignUpCountPast - $signupAPPPast;
 
         $bookingByChannel = DB::table('pickup')
                             ->join('infoCustomer', function($join){

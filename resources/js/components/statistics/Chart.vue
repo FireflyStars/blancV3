@@ -435,8 +435,8 @@ export default {
                 signupB2CPast.value = res.data.signupB2CPast;
                 signupAPP.value = res.data.signupAPP;
                 signupAPPPast.value = res.data.signupAPPPast
-                signupPOS.value = res.data.signupAPP;
-                signupPOSPast.value = res.data.signupAPPPast
+                signupPOS.value = res.data.signupPOS;
+                signupPOSPast.value = res.data.signupPOSPast
                 totalSignUpCount.value = res.data.totalSignUpCount;
                 totalSignUpCountPast.value = res.data.totalSignUpCountPast;
                 
