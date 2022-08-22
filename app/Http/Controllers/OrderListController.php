@@ -996,7 +996,6 @@ class OrderListController extends Controller
                 ->leftJoin('postes','postes.id','=','infoitems.nextpost')
                 ->leftJoin('TypePost','TypePost.id','=','postes.TypePost')
                 ->distinct('infoitems.id')
-                ->whereNotIn('infoitems.Status',['DELETE','VOID'])
                 ->orderBy('infoInvoice.NumInvoice')->get();
 
         $items=[];

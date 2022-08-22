@@ -14,7 +14,7 @@
                 <tr class="trow" v-for="order in ORDER_LIST" :key="order.id" :class="{current_sel:order.id==CURRENT_SELECTED&&route.params.order_id>0,late:order.Status=='LATE'&&order.suggestedDeliveryDate==null&&!hasRoles(['cc']),multi:MULTI_CHECKED.includes(order.id)&&order.id!=CURRENT_SELECTED}">
                     <template v-for="(col,index) in tabledef" :key="index">
                         <td class="tcol" :colspan="colspan(index,order)"  :style="{width:col.width}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(order.id,index)" v-if="hideOnLate(order.Status,index,order)" >
-                            <check-box v-if="col.type=='checkbox'" :checked_checkbox="(order.id==CURRENT_SELECTED&&route.params.order_id>0)||MULTI_CHECKED.includes(order.id)" :id="order.id" @checkbox-clicked="checkboxclicked"></check-box>
+                            <check-box v-if="col.type=='checkbox'" :checked_checkbox="(order.id==CURRENT_SELECTED&&route.params.order_id>0)||MULTI_CHECKED.includes(order)" :id="order.id"  @checkbox-clicked="checkboxclicked"></check-box>
                             <tag v-else-if="col.type=='tag'&&(order.Status!='LATE')||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate!=null)||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate==null&&hasRoles(['cc']))" :name="order[index]" >
                                 <span  v-if="order.Status=='LATE'&&order.suggestedDeliveryDate!=null&&index=='Status'" class="tool-tip" :data-tooltip="`New Delivery date suggested, waiting for approval`"><i class="icon-late"></i>Late</span>
                             </tag>
@@ -34,7 +34,7 @@
         <section class="nodata p-2" v-if="ORDER_LIST.length==0">
                 <p v-if="!loader_running">No orders available.</p>
         </section>
-        <transition name="trans-batch-actions">
+        <transition name="trans-batch-actions" v-if="tab.name!='Customer Care'">
             <div class=" batch-actions" v-if="MULTI_CHECKED.length>0&&CURRENT_SELECTED==''">
             <!-- <button class="btn btn-outline-dark disabled body_medium"  @click="featureunavailable('Batch invoice')">Batch Invoice</button> -->
             <button class="btn btn-outline-dark disabled body_medium"  @click="featureunavailable('Batch payment')">Batch Payment</button>
@@ -43,6 +43,11 @@
             <button class="btn btn-outline-dark body_medium" @click="featureunavailable('Print Ticket(s)')">Print Ticket(s)</button>
             <button class="btn btn-outline-dark body_medium" @click="featureunavailable('Fulfill')">Fulfill</button>
             <button class="btn btn-outline-dark body_medium" @click="featureunavailable('Offload All')">Offload All</button>
+            </div>
+        </transition>
+        <transition name="trans-batch-actions" v-if="tab.name=='Customer Care'">
+            <div class=" batch-actions" v-if="MULTI_CHECKED.length>0&&CURRENT_SELECTED==''">
+            <button class="btn btn-outline-dark body_medium" @click="featureunavailable('SMS DELIVERY')">SMS DELIVERY</button>
             </div>
         </transition>
     </div>
@@ -75,6 +80,7 @@
         ORDERLIST_LOAD_TAB,
         ORDERLIST_MARK_AS_LATE,
         ORDERLIST_CUSTOMER_ORDERS,
+        ORDERLIST_CUSTOMER_SMSDELIVERY,
     } from '../../store/types/types';
     import Tag from  '../miscellaneous/Tag'
     import CheckBox from '../miscellaneous/CheckBox'
@@ -171,7 +177,7 @@
                     },
                 })
             }
-            function checkboxclicked(check,id,name) {
+            function checkboxclicked(check,id,order) {  
                 if(CURRENT_SELECTED.value==id&&check==false){
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SELECT_CURRENT}`,'');
                         router.back();
@@ -511,6 +517,21 @@
                 });
 
             });
+
+            function SendSmsDelivery(){
+                console.log("MULTI_CHECKED", MULTI_CHECKED.value)
+                // store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,`Send SMS ${MULTI_CHECKED.value.length} order(s), please wait...`);
+                // console.log("teststtt" , MULTI_CHECKED.value)
+                //  store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_SMSDELIVERY}`,MULTI_CHECKED.value).then(()=>{
+                  
+                //     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Customer update successfully.',ttl:5,type:'success'});
+                   
+                // }).catch((error)=>{
+                //     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
+                // });
+
+            };
+
             const markaslate=(()=>{
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,`Marking ${MULTI_CHECKED.value.length} order(s) as late, please wait...`);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_MARK_AS_LATE}`,MULTI_CHECKED.value).then(()=>{
@@ -556,7 +577,8 @@
                 markaslate,
                 hasRoles,
                 colspan,
-                data
+                data,
+                SendSmsDelivery
             }
         }
     }

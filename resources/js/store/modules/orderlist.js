@@ -37,7 +37,8 @@ import {
     TOASTER_MESSAGE,
     ORDERLIST_MARK_AS_LATE,
     ORDERLIST_UPDATE_SUGGESTED_DELIVERY_DATE, ORDERLIST_NEW_DELIVERY_DATE,
-    ORDERLIST_CUSTOMER_ORDERS
+    ORDERLIST_CUSTOMER_ORDERS,
+    ORDERLIST_CUSTOMER_SMSDELIVERY
 } from "../types/types";
 import {PERMISSIONS} from "../types/permission_types";
 import {usePermission} from "../../components/helpers/helpers";
@@ -407,6 +408,25 @@ export const orderlist= {
                 }).finally(function(){
                 dispatch(`${LOADER_MODULE}${HIDE_LOADER}`,{},{ root: true });
             });
+
+        },
+
+        [ORDERLIST_CUSTOMER_SMSDELIVERY]:async({commit,dispatch,state},payload)=>{
+            console.log(payload)
+            
+        //    return axios.post('/setCustomerSmsDelivery', {
+
+        //     })
+        //         .then(function (response) {
+        //            console.log("response" , response)
+
+        //         })
+        //         .catch(function (error) {
+        //             if(typeof error.response !="undefined")
+        //             dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'},{ root: true });
+        //         }).finally(function(){
+        //         dispatch(`${LOADER_MODULE}${HIDE_LOADER}`,{},{ root: true });
+        //     });
 
         },
     },
