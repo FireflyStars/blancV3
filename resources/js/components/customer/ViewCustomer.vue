@@ -594,11 +594,11 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="w-100 p-3">
+                                                <div class="w-100 p-3"  v-if="form.deliveryByday == '1'">
                                                     <button class="btn btn-success each-save-btn" @click="saveRecurring">Save Recurring</button>
                                                 </div>  
                                             </div>
-                                            <div class="p-3" v-else>
+                                            <div class="p-3" v-if="viewRecurring == true && form.deliveryByday == '1'">
                                                 <h4 class="sub-title col-12">Recurring booking is <span class="primary-color">{{ form.pickupSlots.length }} a week</span></h4>
                                                 <div class="item-block d-flex py-3 px-5 border-bottom bg-color" :class="{ 'border-bottom': (index < form.pickupSlots.length-1) }" v-for="(slot, index) in form.pickupSlots" :key="index">
                                                     <div class="col-6 fw-bold"> {{ slot.day }} </div>
@@ -1711,6 +1711,25 @@
                     viewRecurring.value = false;
                     pickupDays.value = [];
                     form.value.pickupSlots = [];
+                    store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Cancel Customer Recurring...']);
+                    axios.post('/save-customer-recurring',{
+                        customerId: route.params.customer_id,
+                        deliveryByday: cur_val,
+                        pickupSlots: [],
+                    }).then((res)=>{
+                        if(res.data.success){
+                            viewRecurring.value = true;
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                message: 'Done',
+                                ttl: 5,
+                                type: 'success'
+                            });
+                        }
+                    }).catch((err)=>{
+                        console.log(err);
+                    }).finally(()=>{
+                        store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    });                    
                 }
                 if(pickupDays.value.length == 0 && cur_val == '1'){
                     if(form.value.postCode == ''){
@@ -1736,6 +1755,7 @@
                     pickupSlots: form.value.pickupSlots,
                 }).then((res)=>{
                     if(res.data.success){
+                        viewRecurring.value = true;
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
                             message: 'Customer Recurring updated',
                             ttl: 5,
