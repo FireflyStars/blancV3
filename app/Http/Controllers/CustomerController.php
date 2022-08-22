@@ -64,7 +64,7 @@ class CustomerController extends Controller
         if($request->deliveryByday == '1'){
             $info_customer['DeliverybyDay'] = 1;
             foreach ($request->pickupSlots as $slot) {
-                $info_customer[$slot['key']] = $slot['value'];
+                $info_customer[$slot['key']] = json_encode($slot['value']);
             }
         }
 
@@ -1159,10 +1159,16 @@ class CustomerController extends Controller
                         'infoCustomer.CustomerNotes', 'infoCustomer.id', 'infoCustomer.CustomerID',
                         DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recuring", "Normal") as booking'), 'discount', 'credit',
                         'infoCustomer.DeliverybyDay as deliveryByDay', 'DeliveryMon', 'DeliveryTu', 'DeliveryWed', 'DeliveryTh', 'DeliveryFri', 'DeliverySat',
-                        'AcceptSMSMarketing as acceptSMSMarketing', 'AcceptMarketing as acceptMarketing'
+                        'AcceptSMSMarketing as acceptSMSMarketing', 'AcceptMarketing as acceptMarketing', 'PauseDateTo as pauseDateTo', 'PauseDateFrom as pauseDateFrom'
                     )
                     ->where('infoCustomer.id', $request->customer_id)
                     ->first();
+        $customer->DeliveryMon = json_decode($customer->DeliveryMon);
+        $customer->DeliveryTu = json_decode($customer->DeliveryTu);
+        $customer->DeliveryWed = json_decode($customer->DeliveryWed);
+        $customer->DeliveryTh = json_decode($customer->DeliveryTh);
+        $customer->DeliveryFri = json_decode($customer->DeliveryFri);
+        $customer->DeliverySat = json_decode($customer->DeliverySat);
         $customer->programmeType = DB::table('InfoCustomerPreference')->where('Titre', 'Type Customer')->where('CustomerId', $customer->CustomerID)->value('Value');
         $customer->address = DB::table('address')
                                 ->select('Country as country', 'Town as city', 'postcode as postCode', 'address1', 'address2')
@@ -1274,10 +1280,108 @@ class CustomerController extends Controller
         if($user){
             $customer->current_user = $user;
         }
-        return response()->json($customer);
+        $available_days = [];
+        $available_slots = [];        
+        if($customer->address){
+            $postcode = $customer->address->postCode;
+            $postcode = str_replace(' ', '', $postcode);
+            $postcode = substr($postcode, 0, -3);
+    
+    
+            $tranche_details = [];
+            $tranche_details = DB::table('tranchepostcode')
+                ->where('Postcode', $postcode)
+                ->where('tranche', '!=', '[]')
+                ->get();
+    
+            $available_days = [];
+    
+            $days = ['MONDAY'=> 'DeliveryMon', 'TUESDAY'=>'DeliveryTu','WEDNESDAY'=>'DeliveryWed','THURSDAY'=>'DeliveryTh','FRIDAY'=>'DeliveryFri','SATURDAY'=>'DeliverySat'];
+    
+            $available_days = [];
+            $available_slots = [];
+            if(count($tranche_details) > 0){
+                foreach ($days as $key => $day) {
+                    $slot = $tranche_details->where('day', $key)->first();
+                    if( $slot ){
+                        $available_days[] = [
+                            'name'      => substr($key, 0, 1),
+                            'longName'  => ucfirst(strtolower(substr($key, 0, 3))),
+                            'key'       => $day,
+                            'active'    => false
+                        ];
+                        $available_slots[$day] = $this->formatTimeSlot(@json_decode($slot->tranche));
+                    }
+                }
+            }
+        }
+        return response()->json([
+            'customer'          => $customer,
+            'available_slots'   => $available_slots,
+            'available_days'    => $available_days,
+        ]);
     }
 
+    /**
+     * Get booking timeslot
+     * 
+     */
+    public function getRecurringBookingTimeSlot(Request $request){
+        $postcode = $request->postCode;
 
+        $postcode = str_replace(' ', '', $postcode);
+        $postcode = substr($postcode, 0, -3);
+
+
+        $tranche_details = [];
+        $tranche_details = DB::table('tranchepostcode')
+            ->where('Postcode', $postcode)
+            ->where('tranche', '!=', '[]')
+            ->get();
+
+        $available_days = [];
+
+        $days = ['MONDAY'=> 'DeliveryMon', 'TUESDAY'=>'DeliveryTu','WEDNESDAY'=>'DeliveryWed','THURSDAY'=>'DeliveryTh','FRIDAY'=>'DeliveryFri','SATURDAY'=>'DeliverySat'];
+
+        $available_days = [];
+        $available_slots = [];
+        if(count($tranche_details) > 0){
+            foreach ($days as $key => $day) {
+                $slot = $tranche_details->where('day', $key)->first();
+                if( $slot ){
+                    $available_days[] = [
+                        'name'      => substr($key, 0, 1),
+                        'longName'  => ucfirst(strtolower(substr($key, 0, 3))),
+                        'key'       => $day,
+                        'active'    => false
+                    ];
+                    $available_slots[$day] = $this->formatTimeSlot(@json_decode($slot->tranche));
+                }
+            }
+        }/* else{
+            foreach ($days as $key => $day) {
+                $available_slots[$day] = [];
+                $available_days = [];
+            }
+        } */
+        return response()->json([
+            'postcode'=> $postcode,
+            'available_days'=> $available_days,
+            'available_slots'=> $available_slots,
+        ]);
+    }
+
+    public function formatTimeSlot($slots){
+        $formated_slots = [];
+        foreach ($slots as $slot) {
+            $formated_slots[] = [
+                'display'=> Tranche::getDeliveryPlanningTranchesForApi()[$slot],
+                'value'=> $slot,
+            ];
+        }
+
+        return $formated_slots;
+    }
     public function AddCreditCustomer(Request $request){
         $user = Auth::user();
 
@@ -1561,8 +1665,11 @@ class CustomerController extends Controller
         $info_customer['DeliveryTh'] = '';
         $info_customer['DeliveryFri'] = '';
         $info_customer['DeliverySat'] = '';
+        $info_customer['DeliverySat'] = '';
+        $info_customer['PauseDateTo'] = null;
+        $info_customer['PauseDateFrom'] = null;
         foreach ($request->pickupSlots as $slot) {
-            $info_customer[$slot['key']] = $slot['value'];
+            $info_customer[$slot['key']] = json_encode($slot['value']);
         }
         $success = DB::table('infoCustomer')->where('id',$request->customerId)->update($info_customer);
 
@@ -1570,7 +1677,27 @@ class CustomerController extends Controller
             'success'   =>  $success
         ]);
     }
+    /**
+     * Pause Customer recurring
+     */
+    public function pauseCustomerRecurring(Request $request){
+        $success = DB::table('infoCustomer')->where('id', $request->customerId)->update([
+            'PauseDateTo'   => $request->pauseDateTo,
+            'PauseDateFrom' => $request->pauseDateFrom,
+        ]);
+        return response()->json($success);
+    }
 
+    /**
+     * Pause Customer recurring
+     */
+    public function unpauseCustomerRecurring(Request $request){
+        $success = DB::table('infoCustomer')->where('id',$request->customerId)->update([
+            'PauseDateTo'=> null,
+            'PauseDateFrom'=> null,
+        ]);
+        return response()->json($success);
+    }
     public function getCustomerOrderDetails(Request $request){
         $customer_id = $request->customer_id;
 

@@ -470,9 +470,9 @@
                                                 <h4 class="sub-title col-12">Pickup & delivery slots </h4>
                                                 <div class="d-flex flex-wrap">
                                                     <div class="col-4 px-1 mt-2" v-for="(slot, index) in form.pickupSlots" :key="index">
-                                                        <select-options
+                                                        <select-options class="text-capitalize"
                                                             v-model="slot.value"
-                                                            :options="timeslots"
+                                                            :options="timeslots[slot.key]"
                                                             :placeholder="'Select'"
                                                             :label="slot.label"
                                                             :name="slot.label">
@@ -752,54 +752,13 @@ import axios from 'axios';
                 linkedAccounts: []
             })
             const router = useRouter();
-            const step = ref('account_details');
+            const step = ref('preferences');
+            // const step = ref('account_details');
             // const step = ref('preferences');
-            const pickupDays = ref([
-                    {
-                        name: 'M',
-                        longName: 'Mon',
-                        key: 'DeliveryMon',
-                        active: false
-                    },
-                    {
-                        name: 'T',
-                        longName: 'Tue',
-                        key: 'DeliveryTu',
-                        active: false
-                    },
-                    {
-                        name: 'W',
-                        longName: 'Wed',
-                        key: 'DeliveryWed',
-                        active: false
-                    },
-                    {
-                        name: 'T',
-                        longName: 'Thu',
-                        key: 'DeliveryTh',
-                        active: false
-                    },
-                    {
-                        name: 'F',
-                        longName: 'Fri',
-                        key: 'DeliveryFri',
-                        active: false
-                    },
-                    {
-                        name: 'S',
-                        longName: 'Sat',
-                        key: 'DeliverySat',
-                        active: false
-                    },
-                ]);
-            const timeslots = ref([
-                { value: '[1]', display: '8-10 am' },
-                { value: '[2]', display: '10-12 pm' },
-                { value: '[3]', display: '12-2 pm' },
-                { value: '[4]', display: '2-4 pm' },
-                { value: '[5]', display: '4-6 pm' },
-                { value: '[6]', display: '6-8 pm' }
-            ]);
+            // const pickupAvailableDays = ref([]);
+            const pickupDays = ref([]);
+            const timeslots = ref([]);
+
             const addPickupDay = (index)=>{
                 let pickupDay = pickupDays.value[index];
                 if(pickupDay.active){
@@ -822,6 +781,22 @@ import axios from 'axios';
                         item.active = false;
                     });
                     form.value.pickupSlots = [];
+                }else{
+                    if(form.value.postCode == ''){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Post Code', ttl:5, type:'danger' });
+                        form.value.deliveryByday = '0';
+                    }else{
+                        store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Fetching timeslot...']);
+                        axios.post('/get-recurring-booking-timeslot', { postCode: form.value.postCode}).then((res)=>{
+                            console.log(res.data);
+                            timeslots.value = res.data.available_slots;
+                            pickupDays.value = res.data.available_days;
+                        }).catch((error)=>{
+                            console.log(error);
+                        }).finally(()=>{
+                            store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                        })
+                    }
                 }
             })
             const searchpanel = ref(null);

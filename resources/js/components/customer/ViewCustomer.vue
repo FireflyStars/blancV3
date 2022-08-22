@@ -566,36 +566,52 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="item-block p-3 border-bottom" v-if="form.deliveryByday == '1'">
-                                                <h4 class="sub-title col-12">Pickup & delivery days</h4>
-                                                <p>Please pick number of days we will visit the customer, with matching slots.</p>
-                                                <div class="d-flex p-2">
-                                                    <div class="pickup-day rounded-circle" 
-                                                        v-for="(pickupDay, index) in pickupDays" :key="index"
-                                                        :class="{ 'active': pickupDay.active }"
-                                                        @click="addPickupDay(index)"
-                                                        >
-                                                        {{ pickupDay.name }}
+                                            <div class="set-booking-pannel" v-if="viewRecurring == false">
+                                                <div class="item-block p-3 border-bottom" v-if="form.deliveryByday == '1'">
+                                                    <h4 class="sub-title col-12">Pickup & delivery days</h4>
+                                                    <p>Please pick number of days we will visit the customer, with matching slots.</p>
+                                                    <div class="d-flex p-2">
+                                                        <div class="pickup-day rounded-circle" 
+                                                            v-for="(pickupDay, index) in pickupDays" :key="index"
+                                                            :class="{ 'active': pickupDay.active }"
+                                                            @click="addPickupDay(index)"
+                                                            >
+                                                            {{ pickupDay.name }}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div class="item-block p-3 border-bottom" v-if="form.deliveryByday == '1'">
-                                                <h4 class="sub-title col-12">Pickup & delivery slots </h4>
-                                                <div class="d-flex flex-wrap">
-                                                    <div class="col-4 px-1 mt-2" v-for="(slot, index) in form.pickupSlots" :key="index">
-                                                        <select-options
-                                                            v-model="slot.value"
-                                                            :options="timeslots"
-                                                            :placeholder="'Select'"
-                                                            :label="slot.label"
-                                                            :name="slot.label">
-                                                        </select-options>                                                        
+                                                <div class="item-block p-3 border-bottom" v-if="form.deliveryByday == '1'">
+                                                    <h4 class="sub-title col-12">Pickup & delivery slots </h4>
+                                                    <div class="d-flex flex-wrap">
+                                                        <div class="col-4 px-1 mt-2" v-for="(slot, index) in form.pickupSlots" :key="index">
+                                                            <select-options
+                                                                v-model="slot.value"
+                                                                :options="timeslots[slot.key]"
+                                                                :placeholder="'Select'"
+                                                                :label="slot.label"
+                                                                :name="slot.label">
+                                                            </select-options>                                                        
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                <div class="w-100 p-3"  v-if="form.deliveryByday == '1'">
+                                                    <button class="btn btn-success each-save-btn" @click="saveRecurring">Save Recurring</button>
+                                                </div>  
                                             </div>
-                                            <div class="w-100 p-3">
-                                                <button class="btn btn-success each-save-btn" @click="saveRecurring">Save Recurring</button>
-                                            </div>                                            
+                                            <div class="p-3" v-if="viewRecurring == true && form.deliveryByday == '1'">
+                                                <h4 class="sub-title col-12">Recurring booking is <span class="primary-color">{{ form.pickupSlots.length }} a week</span></h4>
+                                                <div class="item-block d-flex py-3 px-5 border-bottom bg-color" :class="{ 'border-bottom': (index < form.pickupSlots.length-1) }" v-for="(slot, index) in form.pickupSlots" :key="index">
+                                                    <div class="col-6 fw-bold"> {{ slot.day }} </div>
+                                                    <div class="col-6 fw-bold text-end"> {{  getSlotDisplayByValue(slot.key, slot.value) }} </div>
+                                                </div>
+                                                <div class="w-100 mt-3" v-if="pauseRecurring">
+                                                    <p class="fw-bold">The RECURRING BOOKING IN PAUSE : {{ form.pauseDateFrom }} TO {{ form.pauseDateTo }}</p>
+                                                </div>
+                                                <div class="w-100 mt-3">
+                                                    <button class="btn btn-success each-save-btn me-3" v-if="!pauseRecurring" @click="openPauseRecurringModal">Pause</button>
+                                                    <button class="btn btn-success each-save-btn" v-else @click="unpauseRecurringFunc">Unpause</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="blocks">
@@ -763,6 +779,32 @@
             </div>
         </div>
     </transition>
+    <modal ref="pauseRecurringModal">
+        <template #bheader>
+            <div class="bmodal-header py-5 text-center">Pause this reccuring booking</div>
+        </template>
+        <template #bcontent>
+            <div class="bmodal-content p-4">
+                <p class="text-center">You can pause this reccuring booking anytime - please note the cut-off time to cancel a recurring booking is 4pm on the day before the scheduled date.</p>
+                <p class="fw-bold mt-3 text-center">Simply enter the dates when you'd like the recurring booking to be paused here below:</p>
+                <div class="d-flex mt-3">
+                    <div class="form-group col-6">
+                        <date-picker v-model="form.pauseDateFrom" name="start_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Pause Starts"></date-picker>
+                    </div>
+                    <div class="form-group col-6">
+                        <date-picker v-model="form.pauseDateTo" name="end_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Pause Ends"></date-picker>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template #mbuttons>
+            <div class="row mx-0 justify-content-center my-5 py-3">
+                <div class="col-3"><button class="btn btn-outline-success w-100" @click="pauseRecurringFunc">Pause</button></div>
+                <div class="col-2"></div>
+                <div class="col-3"><button class="btn btn-outline-danger w-100" @click="closePauseRecurringModal">Cancel</button></div>
+            </div>
+        </template>
+    </modal>    
 </template>
 
 <script>
@@ -776,7 +818,8 @@
     import { phoneCountryCode as phoneCodes } from '../../static/PhoneCountryCodes';
     import SwitchBtn from '../miscellaneous/SwitchNumberBtn.vue';
     import Search from './Search';
-
+    import Modal from '../miscellaneous/Modal.vue';
+    import DatePicker from '../miscellaneous/DatePicker.vue';
     import {
         TOASTER_MODULE,
         TOASTER_MESSAGE,
@@ -798,6 +841,8 @@
             SwitchBtn,
             MultipleEmail,
             Search,
+            Modal,
+            DatePicker
         },
         setup(props,context){
             const route = useRoute();
@@ -861,6 +906,8 @@
                 // preferences tab
                 preferences: [],
                 deliveryByday: '0',
+                pauseDateTo: '',
+                pauseDateFrom: '',
                 pickupSlots:[],
 
                 altTypeDelivery: '',
@@ -880,6 +927,7 @@
             const postcode = ref();
             const cardBrand = ref('cc-unknown');
             const contact_details_edit = ref(false);
+            const pauseRecurringModal = ref(null);
             const add_payement = ref(false);
             const address_edit = ref(false);
             const customer_note_edit = ref(false);
@@ -899,6 +947,8 @@
                 { name:'Customer', route:'Customer'},
             ]);
 
+            const viewRecurring = ref(true);
+            const pauseRecurring = ref(false);
             const current_user = ref(null);
             const credit_to_add = ref(0);
 
@@ -925,64 +975,64 @@
                     customer_id: route.params.customer_id
                 }).then((res)=>{
 
-                    if(res.data.card == null){
+                    if(res.data.customer.card == null){
                         creditCardCustomer.value = false ;
                     } else {
                         creditCardCustomer.value = true ;
                     }
 
-                    form.value.discountCredit = res.data.credit;
-                    form.value.creditAmount = res.data.credit;
-                    form.value.customerID = res.data.CustomerID;
-                    form.value.Name = res.data.Name;
-                    form.value.booking = res.data.booking;
-                    form.value.totalSpent = res.data.totalSpent;
+                    form.value.discountCredit = res.data.customer.credit;
+                    form.value.creditAmount = res.data.customer.credit;
+                    form.value.customerID = res.data.customer.CustomerID;
+                    form.value.Name = res.data.customer.Name;
+                    form.value.booking = res.data.customer.booking;
+                    form.value.totalSpent = res.data.customer.totalSpent;
                     form.value.accountType = '';
-                    form.value.customerType = res.data.customerType;
-                    form.value.typeDelivery = res.data.typeDelivery;
-                    form.value.programmeType = res.data.programmeType;
-                    form.value.kioskNumber = res.data.kioskNumber;
-                    form.value.firstName = res.data.firstName;
-                    form.value.lastName = res.data.lastName;
-                    var phone = getPhone(res.data.phone);
+                    form.value.customerType = res.data.customer.customerType;
+                    form.value.typeDelivery = res.data.customer.typeDelivery;
+                    form.value.programmeType = res.data.customer.programmeType;
+                    form.value.kioskNumber = res.data.customer.kioskNumber;
+                    form.value.firstName = res.data.customer.firstName;
+                    form.value.lastName = res.data.customer.lastName;
+                    var phone = getPhone(res.data.customer.phone);
 
                     form.value.phoneCountryCode = phone.code;
                     form.value.phoneNumber = phone.number;
-                    form.value.email = res.data.email;
+                    form.value.email = res.data.customer.email;
                     // address part in account details tab
-                    form.value.postCode = res.data.address.postCode;
-                    form.value.city = res.data.address.city;
-                    form.value.state = res.data.address.state;
-                    form.value.county = res.data.address.county;
-                    form.value.country = res.data.address.country;
-                    form.value.deliveryAddress1 = res.data.address.address1;
-                    form.value.deliveryAddress2 = res.data.address.address2;
-                    form.value.customerNote = res.data.CustomerNotes;
+                    form.value.postCode = res.data.customer.address.postCode;
+                    form.value.city = res.data.customer.address.city;
+                    form.value.state = res.data.customer.address.state;
+                    form.value.county = res.data.customer.address.county;
+                    form.value.country = res.data.customer.address.country;
+                    form.value.deliveryAddress1 = res.data.customer.address.address1;
+                    form.value.deliveryAddress2 = res.data.customer.address.address2;
+                    form.value.customerNote = res.data.customer.CustomerNotes;
                     // payment tab
 
-                    form.value.paymentMethod  = res.data.paymentMethod == 1 ? 'Credit Card' : 'BACS';
+                    form.value.paymentMethod  = res.data.customer.paymentMethod == 1 ? 'Credit Card' : 'BACS';
 
-                    if(res.data.paymentMethod == 1 && res.data.card){
+                    if(res.data.customer.paymentMethod == 1 && res.data.customer.card){
 
-                        form.value.cardHolderName =  res.data.card.cardHolderName;
-                        form.value.cardDetails = res.data.card.cardNumber;
-                        form.value.cardExpDate =  res.data.card.expDate;
-                        form.value.cardId = res.data.card.id;
+                        form.value.cardHolderName =  res.data.customer.card.cardHolderName;
+                        form.value.cardDetails = res.data.customer.card.cardNumber;
+                        form.value.cardExpDate =  res.data.customer.card.expDate;
+                        form.value.cardId = res.data.customer.card.id;
                         form.value.cardCVV = '***';
-                        if(res.data.card.type == 'Visa'){
+                        if(res.data.customer.card.type == 'Visa'){
                             cardBrand.value = 'cc-visa';
-                        }else if(res.data.card.type == 'Mastercard'){
+                        }else if(res.data.customer.card.type == 'Mastercard'){
                             cardBrand.value = 'cc-mastercard';
-                        }else if(res.data.card.type == 'Amex'){
+                        }else if(res.data.customer.card.type == 'Amex'){
                             cardBrand.value = 'cc-amex';
-                        }else if(res.data.card.type == 'discover'){
+                        }else if(res.data.customer.card.type == 'discover'){
                             cardBrand.value = 'cc-discover';
                         }else {
                              cardBrand.value = 'cc-unknown';
                         }
                     };
-                    currentOrders.value = res.data.currentOrders;
-                    pastOrders.value = res.data.pastOrders;
+                    currentOrders.value = res.data.customer.currentOrders;
+                    pastOrders.value = res.data.customer.pastOrders;
                     // companyLegalName: '',
                     // companyRepFirstName: '',
                     // companyRepLastName: '',
@@ -1000,90 +1050,115 @@
                     // companyLon: '',
                     // companyAddress1: '',
                     // companyAddress2: '',
-                    form.value.discountLevel = res.data.discount;
+                    form.value.discountLevel = res.data.customer.discount;
 
 
                     // applyDiscountToSub: false,
 
 
                     // // preferences tab
-                    Object.keys(res.data.preferences).forEach((item)=>{
+                    Object.keys(res.data.customer.preferences).forEach((item)=>{
                         form.value.preferences.push({
-                            data: res.data.preferences[item],
+                            data: res.data.customer.preferences[item],
                             key: item,
                         })
                     })
-                    if(res.data.deliveryPreferences){
-                        form.value.altTypeDelivery = res.data.deliveryPreferences.altTypeDelivery;
-                        form.value.altName = res.data.deliveryPreferences.altName;
-                        form.value.altPhoneCountryCode = res.data.deliveryPreferences.altPhoneCountryCode;
-                        form.value.altPhoneNumber = res.data.deliveryPreferences.altPhoneNumber;
-                        form.value.altDriverInstruction = res.data.deliveryPreferences.altDriverInstruction;
+                    if(res.data.customer.deliveryPreferences){
+                        form.value.altTypeDelivery = res.data.customer.deliveryPreferences.altTypeDelivery;
+                        form.value.altName = res.data.customer.deliveryPreferences.altName;
+                        form.value.altPhoneCountryCode = res.data.customer.deliveryPreferences.altPhoneCountryCode;
+                        form.value.altPhoneNumber = res.data.customer.deliveryPreferences.altPhoneNumber;
+                        form.value.altDriverInstruction = res.data.customer.deliveryPreferences.altDriverInstruction;
                     }
-                    form.value.acceptMarketing = res.data.acceptMarketing.toString();
-                    form.value.acceptSMSMarketing = res.data.acceptSMSMarketing.toString();
-                    form.value.deliveryByday = res.data.deliveryByDay.toString();
-                    if(res.data.DeliveryMon){
-                        form.value.pickupSlots.push({
-                            value: res.data.DeliveryMon,
-                            key: 'DeliveryMon',
-                            label: 'Select Mon slot',
-                        })
-                        pickupDays.value[0].active = true
-                    }
-                    if(res.data.DeliveryTu){
-                        form.value.pickupSlots.push({
-                            value: res.data.DeliveryTu,
-                            key: 'DeliveryTu',
-                            label: 'Select Tue slot',
-                        })
-                        pickupDays.value[1].active = true
-                    }
-                    if(res.data.DeliveryWed){
-                        form.value.pickupSlots.push({
-                            value: res.data.DeliveryWed,
-                            key: 'DeliveryWed',
-                            label: 'Select Wed slot',
-                        })
-                        pickupDays.value[2].active = true
-                    }
-                    if(res.data.DeliveryTh){
-                        form.value.pickupSlots.push({
-                            value: res.data.DeliveryTh,
-                            key: 'DeliveryTh',
-                            label: 'Select Thu slot',
-                        })
-                        pickupDays.value[3].active = true
-                    }
-                    if(res.data.DeliveryFri){
-                        form.value.pickupSlots.push({
-                            value: res.data.DeliveryFri,
-                            key: 'DeliveryFri',
-                            label: 'Select Fri slot',
-                        })
-                        pickupDays.value[4].active = true
-                    }
-                    if(res.data.DeliverySat){
-                        form.value.pickupSlots.push({
-                            value: res.data.DeliverySat,
-                            key: 'DeliverySat',
-                            label: 'Select Sat slot',
-                        })
-                        pickupDays.value[5].active = true
+                    form.value.acceptMarketing = res.data.customer.acceptMarketing.toString();
+                    form.value.acceptSMSMarketing = res.data.customer.acceptSMSMarketing.toString();
+                    form.value.deliveryByday = res.data.customer.deliveryByDay.toString();
+                    form.value.pauseDateTo = res.data.customer.pauseDateTo ?? "";
+                    form.value.pauseDateFrom = res.data.customer.pauseDateFrom ?? "";
+                    if(form.value.deliveryByday == '1'){
+                        if(form.value.pauseDateTo != ''){
+                            pauseRecurring.value = true;
+                        }
+                        pickupDays.value = res.data.available_days;
+                        timeslots.value = res.data.available_slots; 
+                        if(res.data.customer.DeliveryMon){
+                            form.value.pickupSlots.push({
+                                value: res.data.customer.DeliveryMon,
+                                day: 'Monday',
+                                key: 'DeliveryMon',
+                                label: 'Select Mon slot',
+                            })
+                            pickupDays.value[0].active = true
+                        }
+                        if(res.data.customer.DeliveryTu){
+                            form.value.pickupSlots.push({
+                                value: res.data.customer.DeliveryTu,
+                                day: 'Tuesday',
+                                key: 'DeliveryTu',
+                                label: 'Select Tue slot',
+                            })
+                            pickupDays.value[1].active = true
+                        }
+                        if(res.data.customer.DeliveryWed){
+                            form.value.pickupSlots.push({
+                                value: res.data.customer.DeliveryWed,
+                                day: 'Wednesday',
+                                key: 'DeliveryWed',
+                                label: 'Select Wed slot',
+                            })
+                            pickupDays.value[2].active = true
+                        }
+                        if(res.data.customer.DeliveryTh){
+                            form.value.pickupSlots.push({
+                                value: res.data.customer.DeliveryTh,
+                                day: 'Thursday',
+                                key: 'DeliveryTh',
+                                label: 'Select Thu slot',
+                            })
+                            pickupDays.value[3].active = true
+                        }
+                        if(res.data.customer.DeliveryFri){
+                            form.value.pickupSlots.push({
+                                value: res.data.customer.DeliveryFri,
+                                day: 'Friday',
+                                key: 'DeliveryFri',
+                                label: 'Select Fri slot',
+                            })
+                            pickupDays.value[4].active = true
+                        }
+                        if(res.data.customer.DeliverySat){
+                            form.value.pickupSlots.push({
+                                value: res.data.customer.DeliverySat,
+                                day: 'Saturday',
+                                key: 'DeliverySat',
+                                label: 'Select Sat slot',
+                            })
+                            pickupDays.value[5].active = true
+                        }
+                    }else{
+                        viewRecurring.value = false;
                     }
                     // linked accounts
-                    form.value.linkedAccounts = res.data.linkedAccounts;
+                    form.value.linkedAccounts = res.data.customer.linkedAccounts;
 
                     paths.value.push(
-                        { name: res.data.firstName +' ' + res.data.lastName , route:'ViewCustomer', params:{ customer_id: res.data.id }}
+                        { name: res.data.customer.firstName +' ' + res.data.customer.lastName , route:'ViewCustomer', params:{ customer_id: res.data.customer.id }}
                     );
 
-                    current_user.value = res.data.current_user;
+                    current_user.value = res.data.customer.current_user;
                 }).catch((error)=>{
                     //console.log(error);
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 })
+            }
+            const getSlotDisplayByValue = (key, value)=>{
+                const temp = timeslots.value[key].filter((item) => { return item.value == value })[0];
+                if( temp ){
+                    return temp.display;
+                }else{
+                    return '';
+                }
             }
             const setCustomerAddress = ( address_components )=>{
                 address_components.forEach(component => {
@@ -1598,52 +1673,8 @@
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
             }
-            const pickupDays = ref([
-                    {
-                        name: 'M',
-                        longName: 'Mon',
-                        key: 'DeliveryMon',
-                        active: false
-                    },
-                    {
-                        name: 'T',
-                        longName: 'Tue',
-                        key: 'DeliveryTu',
-                        active: false
-                    },
-                    {
-                        name: 'W',
-                        longName: 'Wed',
-                        key: 'DeliveryWed',
-                        active: false
-                    },
-                    {
-                        name: 'T',
-                        longName: 'Thu',
-                        key: 'DeliveryTh',
-                        active: false
-                    },
-                    {
-                        name: 'F',
-                        longName: 'Fri',
-                        key: 'DeliveryFri',
-                        active: false
-                    },
-                    {
-                        name: 'S',
-                        longName: 'Sat',
-                        key: 'DeliverySat',
-                        active: false
-                    },
-                ]);
-            const timeslots = ref([
-                { value: '[1]', display: '8-10 am' },
-                { value: '[2]', display: '10-12 pm' },
-                { value: '[3]', display: '12-2 pm' },
-                { value: '[4]', display: '2-4 pm' },
-                { value: '[5]', display: '4-6 pm' },
-                { value: '[6]', display: '6-8 pm' }
-            ]);            
+            const pickupDays = ref([]);
+            const timeslots = ref([]);            
             const addPickupDay = (index)=>{
                 let pickupDay = pickupDays.value[index];
                 if(pickupDay.active){
@@ -1653,8 +1684,23 @@
                     });
                 }else{
                     pickupDays.value[index].active = true;
+                    let day = '';
+                    if(pickupDay.key == 'DeliveryMon'){
+                        day = 'Monday';
+                    }else if(pickupDay.key == 'DeliveryTu'){
+                        day = 'Tuesday';
+                    }else if(pickupDay.key == 'DeliveryWed'){
+                        day = 'Wednesday';
+                    }else if(pickupDay.key == 'DeliveryTh'){
+                        day = 'Thursday';
+                    }else if(pickupDay.key == 'DeliveryFri'){
+                        day = 'Friday';
+                    }else if(pickupDay.key == 'DeliverySat'){
+                        day = 'Saturday';
+                    }
                     form.value.pickupSlots.push({
                         value: '',
+                        day: day,
                         key: pickupDay.key,
                         label: 'Select '+pickupDay.longName+' slot',
                     });
@@ -1662,10 +1708,43 @@
             }          
             watch(()=>form.value.deliveryByday, (cur_val, pre_val)=>{
                 if(cur_val == '0'){
-                    pickupDays.value.forEach((item)=>{
-                        item.active = false;
-                    });
+                    viewRecurring.value = false;
+                    pickupDays.value = [];
                     form.value.pickupSlots = [];
+                    store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Cancel Customer Recurring...']);
+                    axios.post('/save-customer-recurring',{
+                        customerId: route.params.customer_id,
+                        deliveryByday: cur_val,
+                        pickupSlots: [],
+                    }).then((res)=>{
+                        if(res.data.success){
+                            viewRecurring.value = true;
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                message: 'Done',
+                                ttl: 5,
+                                type: 'success'
+                            });
+                        }
+                    }).catch((err)=>{
+                        console.log(err);
+                    }).finally(()=>{
+                        store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    });                    
+                }
+                if(pickupDays.value.length == 0 && cur_val == '1'){
+                    if(form.value.postCode == ''){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Post Code', ttl:5, type:'danger' });
+                    }else{
+                        store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Fetching timeslot...']);
+                        axios.post('/get-recurring-booking-timeslot', { postCode: form.value.postCode}).then((res)=>{
+                            timeslots.value = res.data.available_slots;
+                            pickupDays.value = res.data.available_days;
+                        }).catch((error)=>{
+                            console.log(error);
+                        }).finally(()=>{
+                            store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                        })
+                    }                
                 }
             })         
             const saveRecurring = ()=>{
@@ -1676,6 +1755,7 @@
                     pickupSlots: form.value.pickupSlots,
                 }).then((res)=>{
                     if(res.data.success){
+                        viewRecurring.value = true;
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
                             message: 'Customer Recurring updated',
                             ttl: 5,
@@ -1686,8 +1766,57 @@
                     console.log(err);
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                });                
-            }     
+                });
+            }   
+            const openPauseRecurringModal = ()=>{
+                pauseRecurringModal.value.showModal();
+            }
+            const closePauseRecurringModal = ()=>{
+                pauseRecurringModal.value.closeModal();
+            }
+            const pauseRecurringFunc = ()=>{
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Pause Recurring...']);
+                axios.post('/pause-customer-recurring',{
+                    customerId: route.params.customer_id,
+                    pauseDateTo: form.value.pauseDateTo,
+                    pauseDateFrom: form.value.pauseDateFrom,
+                }).then((res)=>{
+                    if(res.data){
+                        pauseRecurring.value = true;
+                        pauseRecurringModal.value.closeModal();
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                            message: 'Done',
+                            ttl: 5,
+                            type: 'success'
+                        });
+                    }
+                }).catch((err)=>{
+                    console.log(err);
+                }).finally(()=>{
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                });
+            }  
+            const unpauseRecurringFunc = ()=>{
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Unpause Recurring...']);
+                axios.post('/unpause-customer-recurring',{
+                    customerId: route.params.customer_id,
+                }).then((res)=>{
+                    if(res.data){
+                        pauseRecurring.value = false;
+                        form.value.pauseDateTo = '';
+                        form.value.pauseDateFrom = '';
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                            message: 'Done',
+                            ttl: 5,
+                            type: 'success'
+                        });
+                    }
+                }).catch((err)=>{
+                    console.log(err);
+                }).finally(()=>{
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                });
+            }  
             return {
                 form,
                 step,
@@ -1725,10 +1854,18 @@
                 saveDeliveryInstructions,
                 delivery_instructions_edit,
                 saveCommunication,
+                viewRecurring,
+                pauseRecurring,
                 addPickupDay,
                 pickupDays,
                 timeslots,
-                saveRecurring
+                saveRecurring,
+                pauseRecurringModal,
+                getSlotDisplayByValue,
+                pauseRecurringFunc,
+                unpauseRecurringFunc,
+                closePauseRecurringModal,
+                openPauseRecurringModal
             }
 
         },
@@ -2156,5 +2293,10 @@ input.error:focus{
 .pickup-day.active{
     color: white;
     background: #42A71E;
+}
+.bmodal-header{
+    font:bold 22px "Gilroy";
+    color:#F4003D;
+    background:#FFEFED;
 }
 </style>

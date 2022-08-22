@@ -1023,7 +1023,8 @@ class OrderController extends Controller
 
         $response = $client->request('GET', $endpoint, ['query' => [
             'order_id'=>$order_id,
-            'token'=>$token
+            'token'=>$token,
+            'userid'=>Auth::user()->id,
         ]]);
 
         $statusCode = $response->getStatusCode();
@@ -1083,7 +1084,10 @@ class OrderController extends Controller
 
             if($order && $amount_paid >= $order->Total){
                 DB::table('infoOrder')->where('id',$order_id)->update(['Paid'=>1]);
-                DB::table('infoInvoice')->whereIn('InvoiceID',$invoices_id)->update(['Paid'=>1]);
+
+                if(!empty($invoices_id)){
+                    DB::table('infoInvoice')->whereIn('InvoiceID',$invoices_id)->update(['Paid'=>1]);
+                }
             }
 
 
@@ -1184,6 +1188,16 @@ class OrderController extends Controller
 
         return response()->json([
             'updated'=>$updated,
+        ]);
+    }
+
+    public function validateCheckOutOrder(Request $request){
+        $order_id = $request->order_id;
+
+        $order_res = OrderController::createOrderItems($order_id);
+
+        return response()->json([
+            'output'=>$order_res,
         ]);
     }
 
