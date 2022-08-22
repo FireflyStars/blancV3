@@ -689,10 +689,10 @@ class StatisticsController extends Controller
         $corpDelSaleData = InfoOrder::whereBetween('created_at', $period)
                         ->join('infoCustomer', function($join){
                             $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
-                                ->where('infoOrder.CustomerID', '!=', '')
-                                ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
+                                ->where('infoOrder.CustomerID', '!=', '');
+                                // ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
                         })            
-                        ->where('infoOrder.deliverymethod', 'home_delivery')
+                        ->where('infoOrder.deliverymethod', '!=', 'in_store_collection')
                         ->where('infoOrder.total', '!=', 0)
                         ->where('infoCustomer.btob', 1)
                         ->select(
@@ -703,10 +703,10 @@ class StatisticsController extends Controller
         $homeDelSaleData = InfoOrder::whereBetween('created_at', $period)
                         ->join('infoCustomer', function($join){
                             $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
-                                ->where('infoOrder.CustomerID', '!=', '')
-                                ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
+                                ->where('infoOrder.CustomerID', '!=', '');
+                                // ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
                         })             
-                        ->where('infoOrder.deliverymethod', 'home_delivery')
+                        ->where('infoOrder.deliverymethod', '!=','in_store_collection')
                         ->where('infoOrder.total', '!=', 0)
                         ->where('infoCustomer.btob', 0)
                         ->select(
