@@ -1010,7 +1010,20 @@ export default {
         }
 
         function redirectToOrderDetail(){
-            router.push('/order_details/'+order_id.value);
+            axios.post('/validate-checkout-order',{
+                order_id:order_id.value,
+            }).then((res)=>{
+                 if(res.data.output && res.data.output.result=='ok'){
+                    router.push('/order_details/'+order_id.value);
+                 }
+
+            }).catch((err)=>{
+
+            }).finally(()=>{
+
+            });
+
+
         }
 
         function setOrderUpcharge(id){

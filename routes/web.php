@@ -458,7 +458,6 @@ Route::get('create-invoice-test',function(){
 })->middleware('auth');
 
 
-
 Route::get('test-validate-order',function(Request $request){
     $order_id = $request->order_id;
 
@@ -528,7 +527,7 @@ Route::get('test-stripe-terminal',function(Request $request){
 
 
 Route::get('ar-pdf',function(){
-    $customer_ids = [ "22253" ]; //3428
+    $customer_ids = [ "3428","22253" ]; //3428
 
     $all_customer_ids = [];
     $cust_master_ids = [];
@@ -789,6 +788,7 @@ Route::post('/get-slots-by-day',[BookingController::class,'getSlotsByDay'])->nam
 Route::post('/save-order-card-details',[OrderController::class,'saveCardDetails'])->name('save-order-card-details')->middleware('auth');
 Route::post('/update-order-to-detailing',[OrderController::class,'updateOrderToDetailing'])->name('updateOrderToDetailing')->middleware('auth');
 Route::post('/get-holidays',[BookingController::class,'getHolidays'])->name('get-holidays')->middleware('auth');
+Route::post('/validate-checkout-order',[OrderController::class,'validateCheckOutOrder'])->name('validate-checkout-order')->middleware('auth');
 
 /*
  * QZ Print
