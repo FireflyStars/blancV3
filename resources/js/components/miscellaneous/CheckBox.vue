@@ -6,7 +6,7 @@
     import {ref,watch} from 'vue';
     export default {
         name: "CheckBox",
-        props:['modelValue','id','checked_checkbox','name'],
+        props:['modelValue','id','checked_checkbox','name','order'],
         setup(props,{ emit }){
             const check=ref(false);
 
@@ -14,7 +14,7 @@
 
             function togglechkbox(){
                 check.value=!check.value;
-                emit('checkbox-clicked', check.value,props.id,props.name)
+                emit('checkbox-clicked', check.value,props.id,props.name,props.order)
                 emit('update:modelValue', check.value);
             }
             watch(() => props.checked_checkbox, (current_val, previous_val) => {

@@ -412,21 +412,19 @@ export const orderlist= {
         },
 
         [ORDERLIST_CUSTOMER_SMSDELIVERY]:async({commit,dispatch,state},payload)=>{
-            console.log(payload)
-            
-        //    return axios.post('/setCustomerSmsDelivery', {
-
-        //     })
-        //         .then(function (response) {
-        //            console.log("response" , response)
-
-        //         })
-        //         .catch(function (error) {
-        //             if(typeof error.response !="undefined")
-        //             dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'},{ root: true });
-        //         }).finally(function(){
-        //         dispatch(`${LOADER_MODULE}${HIDE_LOADER}`,{},{ root: true });
-        //     });
+ 
+           return axios.post('/setCustomerSmsDelivery', {
+                 listCustomers : payload
+            })
+                .then(function (response) {
+                   console.log(response)
+                })
+                .catch(function (error) {
+                    if(typeof error.response !="undefined")
+                    dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'},{ root: true });
+                }).finally(function(){
+                dispatch(`${LOADER_MODULE}${HIDE_LOADER}`,{},{ root: true });
+            });
 
         },
     },

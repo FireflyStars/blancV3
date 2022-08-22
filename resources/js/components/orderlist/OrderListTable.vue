@@ -14,7 +14,7 @@
                 <tr class="trow" v-for="order in ORDER_LIST" :key="order.id" :class="{current_sel:order.id==CURRENT_SELECTED&&route.params.order_id>0,late:order.Status=='LATE'&&order.suggestedDeliveryDate==null&&!hasRoles(['cc']),multi:MULTI_CHECKED.includes(order.id)&&order.id!=CURRENT_SELECTED}">
                     <template v-for="(col,index) in tabledef" :key="index">
                         <td class="tcol" :colspan="colspan(index,order)"  :style="{width:col.width}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(order.id,index)" v-if="hideOnLate(order.Status,index,order)" >
-                            <check-box v-if="col.type=='checkbox'" :checked_checkbox="(order.id==CURRENT_SELECTED&&route.params.order_id>0)||MULTI_CHECKED.includes(order)" :id="order.id"  @checkbox-clicked="checkboxclicked"></check-box>
+                            <check-box v-if="col.type=='checkbox'" :checked_checkbox="(order.id==CURRENT_SELECTED&&route.params.order_id>0)||MULTI_CHECKED.includes(order)" :id="order.id" :order="order"  @checkbox-clicked="checkboxclicked"></check-box>
                             <tag v-else-if="col.type=='tag'&&(order.Status!='LATE')||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate!=null)||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate==null&&hasRoles(['cc']))" :name="order[index]" >
                                 <span  v-if="order.Status=='LATE'&&order.suggestedDeliveryDate!=null&&index=='Status'" class="tool-tip" :data-tooltip="`New Delivery date suggested, waiting for approval`"><i class="icon-late"></i>Late</span>
                             </tag>
@@ -46,8 +46,8 @@
             </div>
         </transition>
         <transition name="trans-batch-actions" v-if="tab.name=='Customer Care'">
-            <div class=" batch-actions" v-if="MULTI_CHECKED.length>0&&CURRENT_SELECTED==''">
-            <button class="btn btn-outline-dark body_medium" @click="featureunavailable('SMS DELIVERY')">SMS DELIVERY</button>
+            <div class=" batch-actions" v-if="MULTI_CHECKED.length>0&&CURRENT_SELECTED==''&&NoDeliveryDate==true">
+            <button class="btn btn-outline-dark body_medium" @click="SendSmsDelivery">SMS DELIVERY</button>
             </div>
         </transition>
     </div>
@@ -97,6 +97,9 @@
             const route = useRoute();
             const customerId = ref('');
             const data = ref('');
+            const listOrderSelected = ref([]);
+            const listCustomers = ref([]);
+            const NoDeliveryDate = ref(true)
             data.value = route.params.value;
             const ORDER_LIST=computed(()=>{
                 return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_LIST}`];
@@ -177,17 +180,29 @@
                     },
                 })
             }
-            function checkboxclicked(check,id,order) {  
+            function checkboxclicked(check,id,name ,order) {
                 if(CURRENT_SELECTED.value==id&&check==false){
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SELECT_CURRENT}`,'');
                         router.back();
                 }
                 if(check==true){
+                    listOrderSelected.value.push(order)
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_MULITCHECKED}`,id);
                 }
                 if(check==false){
+                    listOrderSelected.value.splice(listOrderSelected.value.findIndex((z) => { return z.id === id }), 1);
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_MULITUNCHECKED}`,id);
                 }
+
+                var valObj = listOrderSelected.value.filter(function(elem){
+                    if(elem.Action != "No Delivery Date") return elem;
+                });
+
+                if(valObj.length > 0){
+                    NoDeliveryDate.value = false
+                }else {
+                    NoDeliveryDate.value = true
+                }  
             }
             function checkboxallclicked(check,id,name) {
                 console.log('bangbang',check);
@@ -519,16 +534,18 @@
             });
 
             function SendSmsDelivery(){
-                console.log("MULTI_CHECKED", MULTI_CHECKED.value)
-                // store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,`Send SMS ${MULTI_CHECKED.value.length} order(s), please wait...`);
-                // console.log("teststtt" , MULTI_CHECKED.value)
-                //  store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_SMSDELIVERY}`,MULTI_CHECKED.value).then(()=>{
-                  
-                //     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Customer update successfully.',ttl:5,type:'success'});
-                   
-                // }).catch((error)=>{
-                //     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
-                // });
+                listCustomers.value = []
+
+                listOrderSelected.value.map(function(value, key) {
+                    listCustomers.value.push(value.CustomerID);
+                });
+
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,` please wait...`);
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_SMSDELIVERY}`, listCustomers.value).then(()=>{
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Customers update successfully.',ttl:5,type:'success'});   
+                }).catch((error)=>{
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
+                });
 
             };
 
@@ -578,7 +595,10 @@
                 hasRoles,
                 colspan,
                 data,
-                SendSmsDelivery
+                SendSmsDelivery,
+                listOrderSelected,
+                NoDeliveryDate,
+                listCustomers
             }
         }
     }

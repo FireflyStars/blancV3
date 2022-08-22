@@ -1914,4 +1914,16 @@ class CustomerController extends Controller
             'list'=>$list,
         ]);
     }
+    public function setCustomerSmsDelivery(Request $request){
+
+        foreach ($request->listCustomers as $customer) {
+            try { 
+                  DB::table('infoCustomer')->where('CustomerID', $customer)->update(['SMS6I' => 1]);
+            } catch (\Exception $e) {
+                return response()->json(['error'=> $e->getMessage()]);
+            }
+        }
+        return response()->json(['message'=>'OK']);
+
+    }
 }
