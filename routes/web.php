@@ -665,7 +665,7 @@ Route::get('ar-pdf',function(){
 
 Route::get('inv-pdf',function(Request $request){
     //$facture_id = $request->facture;
-    $facture_id = 'a0078a8e-1fab-11ed-b373-080027d0ed3e';
+    $facture_id = 'ece52ef4-21e2-11ed-978b-080027d0ed3e';
 
     if(!isset($facture_id) || $facture_id ==''){
         die('Facture not set');

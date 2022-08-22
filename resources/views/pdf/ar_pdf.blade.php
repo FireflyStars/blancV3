@@ -3,13 +3,38 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <style>
+
+    @page { size: 21cm 29.7cm portrait; }
     .page-break {
         page-break-after: always;
     }
 
-    /*
-    header { position: fixed; top: 0px; left: 0px; right: 0px;min-height: 100px;}
-    */
+    body{
+        margin-top:40%;
+        margin-bottom:20%;
+        page-break-inside: auto;
+    }
+
+    header { position: fixed; top: 0px; left: 0px; right: 0px; height: 25%;}
+
+
+    footer{
+        position:fixed;
+        bottom:100px;
+        right:0;
+    }
+
+    #footer_total{
+        border:2px solid #000;
+        width:250px;
+        float:right;
+        font-size:12px;
+    }
+
+    main{
+    }
+
+
 
     #inv_summary{
         position: fixed;
@@ -73,13 +98,12 @@
         margin-bottom:3px;
     }
 
-    main{
-        margin-top:20px;
-    }
-
-    .items_table{
+    .cust_name{
+        font-size:12px;
+        display: block;
         margin-top:10px;
     }
+
 
     .items_table th,
     .items_table td{
@@ -88,16 +112,20 @@
 
     .items_table td{
         border-right:thin dashed #000;
+        text-indent:5px;
+    }
+
+    .items_table .amount{
+        text-align: right;
+        padding-right:5px;
     }
 
     .items_table th{
         color:#42A71E;
-        border-bottom:2px solid blue;
+        border-bottom:2px solid #437b7b;
     }
 
-    .cust_name{
-        font-size:12px;
-    }
+
 </style>
 </head>
 <body style="font-family: Helvetica;">
@@ -153,19 +181,43 @@
             </table>
         </div>
     </header>
+
+    <footer>
+        <table border="0" id="footer_total">
+            <tr>
+                <td colspan="2">This period</td>
+            </tr>
+            <tr>
+                <td>Net Total:</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>VAT @ 20%:</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Total Due Inc VAT:</td>
+            </tr>
+
+        </table>
+    </footer>
+
+
     <main>
         @foreach ($order_details as $customerid=>$invoices)
             <span class="cust_name">{{$cust_names[$customerid]}}</span>
+
+
             <table width="100%" class="items_table" cellspacing="0">
                 <tr>
-                    <th>Date</th><th>Order</th><th>Sub-order</th><th width="35%">Description</th><th>Net</th><th>VAT</th><th>Total</th>
+                    <th>Date</th><th>Order</th><th>Sub-order</th><th>Description</th><th>Net</th><th>VAT</th><th>Total</th>
                 </tr>
                 @foreach ($invoices as $invoiceid=>$invoice )
                     <tr>
                         <td></td>
-                        <td>{{$invoice['orderid']}}</td>
-                        <td>{{$invoiceid}}</td>
-                        <td>
+                        <td width="10%">{{$invoice['orderid']}}</td>
+                        <td width="10%">{{$invoiceid}}</td>
+                        <td width="35%">
 
                         </td>
                         <td class="amount">{{$invoice['net']}}</td>
