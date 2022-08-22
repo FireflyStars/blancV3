@@ -207,7 +207,7 @@
             function renderPicker() {
 
                 if(typeof default_date.value[0]!="undefined"&&typeof default_date.value[1]!="undefined"&&typeof default_date.value[2]!="undefined")
-                formated_date.value=`${default_date.value[1]}/${default_date.value[2]}/${default_date.value[0]}`
+                formated_date.value=`${default_date.value[1].toString().padStart(2, "0")}/${default_date.value[2].toString().padStart(2, "0")}/${default_date.value[0].toString().padStart(2, "0")}`
                 displayed_dates_rows.value = {0: [], 1: [], 2: [], 3: [], 4: [], 5: []};
                 displayed_dates.value = [];
                 let firstDayofMonth = new Date(MonthYear.value.year, MonthYear.value.month, 1).getDay();
@@ -507,7 +507,7 @@
         border-radius: 5px;
         background: transparent url('../../../img/calendar.svg') no-repeat center right 10px;
         background-size: 12px;
-        width: 154px;
+        width: 164px;
         height: 40px;
         line-height: 40px;
         padding-left: 22px;
