@@ -70,6 +70,7 @@ Route::post('/getitemdetail',[OrderListController::class,'getitemdetail'])->midd
 Route::post('/splititems',[OrderListController::class,'splititems'])->middleware('auth')->name('splititems');
 Route::post('/suggestdate',[OrderListController::class,'suggestdate'])->middleware('auth')->name('suggestdate');
 Route::post('/newdeliverydate',[OrderListController::class,'newdeliverydate'])->middleware('auth')->name('newdeliverydate');
+Route::post('/newPickupdate',[OrderListController::class,'newPickupdate'])->middleware('auth')->name('newPickupdate');
 Route::get('/getpermissions',[PermissionController::class,'getPermissions'])->middleware('superadmin')->name('getpermissions');
 Route::post('/setpermission',[PermissionController::class,'setPermission'])->middleware('superadmin')->name('setpermission');
 Route::post('/setprofile',[PermissionController::class,'setProfile'])->middleware('superadmin')->name('setprofile');
@@ -527,7 +528,7 @@ Route::get('test-stripe-terminal',function(Request $request){
 
 
 Route::get('ar-pdf',function(){
-    $customer_ids = [ "3428", "22253" ];
+    $customer_ids = [ "22253" ]; //3428
 
     $all_customer_ids = [];
     $cust_master_ids = [];
@@ -569,6 +570,7 @@ Route::get('ar-pdf',function(){
             ->whereIn('infoOrder.CustomerID',$all_customer_ids)
             ->get();
 
+
     $invoices_per_order = [];
     $grouped_by_customer = [];
     $total_per_order = [];
@@ -601,9 +603,11 @@ Route::get('ar-pdf',function(){
         }
     }
 
+
     foreach($order_per_customer as $k=>$v){
         $order_per_customer[$k] = array_unique($v);
     }
+
 
     foreach($order_per_customer as $k=>$v){
         if(isset($map_sub_id[$k])){
@@ -625,6 +629,7 @@ Route::get('ar-pdf',function(){
 
     $to_insert = [];
 
+    echo "<pre>";
 
     foreach($simplified_grouped_by_customer as $k=>$v){
         $total = 0;
@@ -645,12 +650,14 @@ Route::get('ar-pdf',function(){
             'created_at'=>date('Y-m-d H:i:s'),
         ];
 
+
         $row_id = DB::table('infoOrderPrint')->insertGetId($to_insert);
         $num_facture = 'INV'.date('Ymd').'-'.sprintf('%04d', $row_id);
 
         //To add notification
 
         DB::table('infoOrderPrint')->where('id',$row_id)->update(['NumFact'=>$num_facture]);
+
     }
 
 
@@ -658,35 +665,93 @@ Route::get('ar-pdf',function(){
 
 Route::get('inv-pdf',function(Request $request){
     //$facture_id = $request->facture;
-    $facture_id = '29037859-1a03-11ed-87e3-080027d0ed3e';
+    $facture_id = 'a0078a8e-1fab-11ed-b373-080027d0ed3e';
 
     if(!isset($facture_id) || $facture_id ==''){
         die('Facture not set');
     }
 
-    //$customer = DB::table('infoCustomer')->where('id',$customer_id)->first();
-    //$addr = Delivery::getAddressByCustomerUUID($customer->CustomerID);
+
+    $customer_ids = [];
+    $grouped_by_customer = [];
+    $cust_names = [];
+    $cust_addresses = [];
+
 
     $details = DB::table('infoOrderPrint')->where('FactureID',$facture_id)->first();
 
-    echo "<pre>";
-    print_r($details);
-    die();
 
+    $customer = DB::table('infoCustomer')->where('CustomerID',$details->CustomerID)->first();
+    $addr = Delivery::getAddressByCustomerUUID($details->CustomerID);
+
+    $order_details = (array) @json_decode($details->info);
+
+
+    if(count($order_details) > 0){
+        foreach($order_details as $k=>$v){
+            foreach($v as $id=>$detail){
+                if(!in_array($detail->CustomerID,$customer_ids)){
+                    array_push($customer_ids,$detail->CustomerID);
+                }
+                $grouped_by_customer[$detail->CustomerID][$detail->order_id][$detail->NumInvoice][] = $detail;
+            }
+        }
+    }
+
+
+    $customers = DB::table('infoCustomer')->whereIn('CustomerID',$customer_ids)->get();
+
+
+    foreach($customers as $k=>$v){
+        $cust_names[$v->CustomerID] = $v->Name;
+    }
+
+
+    $order_details = [];
+
+    foreach($grouped_by_customer as $customerid=>$orders){
+       foreach($orders as $orderid=>$invoices){
+            foreach($invoices as $invoiceid=>$items){
+                $order_details[$customerid][$invoiceid] = [];
+
+                $dept = [];
+                $net = 0;
+                $vat = 0;
+                $total = 0;
+                foreach($items as $k=>$v){
+
+                    $dept[$v->Department][] = $v->brand." ".$v->Description;
+                    $net += $v->priceTotal;
+                }
+
+                $vat = 0.2*$net;
+                $total = 1.2*$net;
+
+                $order_details[$customerid][$invoiceid]['orderid'] = $orderid;
+                $order_details[$customerid][$invoiceid]['items'] = $dept;
+                $order_details[$customerid][$invoiceid]['net'] = number_format($net,2);
+                $order_details[$customerid][$invoiceid]['vat'] = number_format($vat,2);
+                $order_details[$customerid][$invoiceid]['total'] = number_format($total,2);
+            }
+       }
+    }
 
     $data = [
-        //'customer'=>$customer,
-       // 'address'=>$addr,
-        'invoice_date'=>date('d/m/Y'),
+       'customer'=>$customer,
+       'address'=>$addr,
+       'grouped_by_customer'=>$grouped_by_customer,
+       'cust_names'=>$cust_names,
+       'invoice_date'=>date('d/m/Y'),
+       'facture'=>$details,
+       'order_details'=>$order_details,
     ];
 
     Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
     $pdf = Pdf::loadView('pdf/ar_pdf', $data);
 
-    return $pdf->download('invoice'.$customer_id.'.pdf');
+    return $pdf->download('invoice'.$details->CustomerID.'.pdf');
 
 });
-
 
 
 /* END TEST ROUTES */
@@ -723,6 +788,7 @@ Route::post('/create-new-order',[OrderController::class,'createNewOrder'])->name
 Route::post('/get-slots-by-day',[BookingController::class,'getSlotsByDay'])->name('get-slots-by-day')->middleware('auth');
 Route::post('/save-order-card-details',[OrderController::class,'saveCardDetails'])->name('save-order-card-details')->middleware('auth');
 Route::post('/update-order-to-detailing',[OrderController::class,'updateOrderToDetailing'])->name('updateOrderToDetailing')->middleware('auth');
+Route::post('/get-holidays',[BookingController::class,'getHolidays'])->name('get-holidays')->middleware('auth');
 
 /*
  * QZ Print
