@@ -11,8 +11,7 @@
 
     body{
         margin-top:40%;
-        margin-bottom:20%;
-        page-break-inside: auto;
+        margin-bottom:15%;
     }
 
     header { position: fixed; top: 0px; left: 0px; right: 0px; height: 25%;}
@@ -20,7 +19,7 @@
 
     footer{
         position:fixed;
-        bottom:100px;
+        bottom:80px;
         right:0;
     }
 
@@ -33,8 +32,6 @@
 
     main{
     }
-
-
 
     #inv_summary{
         position: fixed;
@@ -99,20 +96,25 @@
     }
 
     .cust_name{
-        font-size:12px;
+        color:#42A71E;
+        font-size:13px;
         display: block;
-        margin-top:10px;
+        font-weight: bold;
     }
 
+    .items_table{
+        margin-top: 15px;
+    }
 
     .items_table th,
     .items_table td{
         font-size:12px;
     }
 
-    .items_table td{
+    .items_table td.main-cell{
         border-right:thin dashed #000;
         text-indent:5px;
+        vertical-align: top;
     }
 
     .items_table .amount{
@@ -123,6 +125,26 @@
     .items_table th{
         color:#42A71E;
         border-bottom:2px solid #437b7b;
+        font-weight: bold;
+    }
+
+    .items_table .desc-cell{
+        padding:0;
+        word-wrap: none;
+        line-height: 1rem;
+    }
+
+    .each-dept,
+    .each-item{
+        display: table;
+        width: 100%;
+
+    }
+
+    .item-text{
+        margin:0;
+        line-height: 1rem;
+        overflow-y: hidden;
     }
 
 
@@ -214,15 +236,17 @@
                 </tr>
                 @foreach ($invoices as $invoiceid=>$invoice )
                     <tr>
-                        <td></td>
-                        <td width="10%">{{$invoice['orderid']}}</td>
-                        <td width="10%">{{$invoiceid}}</td>
-                        <td width="35%">
-
+                        <td class="main-cell"></td>
+                        <td class="main-cell" width="10%">{{$invoice['orderid']}}</td>
+                        <td class="main-cell" width="10%">{{$invoiceid}}</td>
+                        <td class="main-cell desc-cell" width="35%">
+                            @foreach($invoice['items'] as $dept=>$items)
+                                <span class="each-dept">{{$dept}}</span>
+                            @endforeach
                         </td>
-                        <td class="amount">{{$invoice['net']}}</td>
-                        <td class="amount">{{$invoice['vat']}}</td>
-                        <td class="amount">{{$invoice['total']}}</td>
+                        <td class="amount main-cell">{{$invoice['net']}}</td>
+                        <td class="amount main-cell">{{$invoice['vat']}}</td>
+                        <td class="amount main-cell">{{$invoice['total']}}</td>
                     </tr>
                 @endforeach
 
@@ -232,5 +256,11 @@
 
 </body>
 </html>
-<!--    <div class="page-break"></div>-->
+<!--    <div class="page-break">
+
+                                    @foreach($items as $item=>$count)
+                                        <tr><td class="item-text">{{$count}} {{$item}}</td></tr>
+                                    @endforeach
+
+</div>-->
 
