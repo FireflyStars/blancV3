@@ -308,12 +308,12 @@
                                              <div class="row mx-0 form-group mb-2">
                                                  <textarea class="form-control" v-model="customer_instructions" rows="3" :readonly="isRecurring"></textarea>
                                             </div>
-                                            <div class="row mx-0 form-group mb-4 align-items-center" v-if="!showRecurring">
+                                            <div class="row mx-0 form-group mb-4 align-items-center">
                                                 <input type="checkbox" id="save_instruction_check" class="float-left mr-3" v-model="save_instruction_check"/>
                                                 <span class="col px-0">Save instructions for next time</span>
                                             </div>
 
-                                            <div class="row mx-0 form-group" v-if="!showRecurring">
+                                            <div class="row mx-0 form-group">
                                                 <h3 class="body_medium">Alternate contact</h3>
                                                  <input type="text" class="form-control" v-model="alternate_contact"/>
                                             </div>
