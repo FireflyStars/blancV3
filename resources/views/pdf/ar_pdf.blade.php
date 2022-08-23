@@ -147,6 +147,10 @@
         overflow-y: hidden;
     }
 
+    .each-item-desc{
+        background: red;
+    }
+
 
 </style>
 </head>
@@ -239,9 +243,13 @@
                         <td class="main-cell"></td>
                         <td class="main-cell" width="10%">{{$invoice['orderid']}}</td>
                         <td class="main-cell" width="10%">{{$invoiceid}}</td>
-                        <td class="main-cell desc-cell" width="35%">
+                        <td class="main-cell desc-cell" width="35%" style="vertical-align: top;">
                             @foreach($invoice['items'] as $dept=>$items)
-                                <span class="each-dept">{{$dept}}</span>
+                                {{$dept}}
+                                @foreach($items as $item=>$count)
+                                    <span class="each-dept">{{$count}} @php echo str_replace('\n','',$item); @endphp</span>
+                                </div>
+                            @endforeach
                             @endforeach
                         </td>
                         <td class="amount main-cell">{{$invoice['net']}}</td>
@@ -258,9 +266,7 @@
 </html>
 <!--    <div class="page-break">
 
-                                    @foreach($items as $item=>$count)
-                                        <tr><td class="item-text">{{$count}} {{$item}}</td></tr>
-                                    @endforeach
+
 
 </div>-->
 
