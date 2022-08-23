@@ -718,17 +718,28 @@ Route::get('inv-pdf',function(Request $request){
                 $net = 0;
                 $vat = 0;
                 $total = 0;
-                foreach($items as $k=>$v){
+                $items_text = [];
 
-                    $dept[$v->Department][] = $v->brand." ".$v->Description;
+                foreach($items as $k=>$v){
+                    $item_txt = $v->brand." ".str_replace(' ',' ',$v->Description);
+
+                    $dept[$v->Department][] = $item_txt;
                     $net += $v->priceTotal;
                 }
+                $items_per_dept[$v->Department] = array_count_values($dept[$v->Department]);
 
+                /*
+                foreach($items_per_dept as $dept=>$items){
+                    foreach($items as $item=>$count){
+                        $items_text[$dept][] = $count." ".$item;
+                    }
+                }
+                */
                 $vat = 0.2*$net;
                 $total = 1.2*$net;
 
                 $order_details[$customerid][$invoiceid]['orderid'] = $orderid;
-                $order_details[$customerid][$invoiceid]['items'] = $dept;
+                $order_details[$customerid][$invoiceid]['items'] = $items_per_dept;
                 $order_details[$customerid][$invoiceid]['net'] = number_format($net,2);
                 $order_details[$customerid][$invoiceid]['vat'] = number_format($vat,2);
                 $order_details[$customerid][$invoiceid]['total'] = number_format($total,2);
