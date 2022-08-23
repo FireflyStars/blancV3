@@ -129,15 +129,22 @@
     }
 
     .items_table .desc-cell{
-        padding:0;
-        word-wrap: none;
         line-height: 1rem;
+        vertical-align: top;
+        text-indent:0;
+        padding-left:5px;
+        padding-bottom: 10px;
+    }
+
+    .each-dept-div{
+        display:block;
+        margin-bottom:10px;
     }
 
     .each-dept,
     .each-item{
-        display: table;
-        width: 100%;
+        display:block;
+        white-space: nowrap;
 
     }
 
@@ -243,13 +250,14 @@
                         <td class="main-cell"></td>
                         <td class="main-cell" width="10%">{{$invoice['orderid']}}</td>
                         <td class="main-cell" width="10%">{{$invoiceid}}</td>
-                        <td class="main-cell desc-cell" width="35%" style="vertical-align: top;">
+                        <td class="main-cell desc-cell" width="35%">
                             @foreach($invoice['items'] as $dept=>$items)
-                                {{$dept}}
-                                @foreach($items as $item=>$count)
-                                    <span class="each-dept">{{$count}} @php echo str_replace('\n','',$item); @endphp</span>
-                                </div>
-                            @endforeach
+                                <span class="each-dept-div">
+                                    <span class="each-dept">{{$dept}}</span>
+                                    @foreach($items as $item=>$count)
+                                    <span class="each-dept">{{$count}} {{$item}}</span>
+                                    @endforeach
+                                </span>
                             @endforeach
                         </td>
                         <td class="amount main-cell">{{$invoice['net']}}</td>
