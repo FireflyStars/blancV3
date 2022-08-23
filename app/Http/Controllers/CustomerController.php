@@ -778,7 +778,7 @@ class CustomerController extends Controller
                     ->leftJoin('InfoCustomerPreference', 'InfoCustomerPreference.CustomerID', '=', 'infoCustomer.CustomerID')
                     ->select('Name as name', 'EmailAddress as email', 'Phone as phone',
                         DB::raw('IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as cust_type'),
-                        'infoCustomer.RevenueLocation as location', 'infoCustomer.CustomerNotes as notes', 'infoCustomer.id', 'infoCustomer.CustomerID',
+                        'infoCustomer.TypeDelivery as location', 'infoCustomer.CustomerNotes as notes', 'infoCustomer.id', 'infoCustomer.CustomerID',
                         DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recuring", "Normal") as booking'),
                         DB::raw(
                             'CASE WHEN infoCustomer.IsMaster = 1 THEN "MAIN"
@@ -861,7 +861,7 @@ class CustomerController extends Controller
                                             ),
                                             DB::raw(
                                                 'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN DATE_FORMAT(booking_store.dropoff, "%h:%i %p")
-                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN DATE_FORMAT(pickup.trancheFrom, "%h:%i %p")
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN CONCAT(pickup.trancheFrom,"_",pickup.trancheto)
                                                       WHEN infoOrder.deliverymethod = "delivery_only" THEN DATE_FORMAT(infoOrder.created_at, "%h:%i %p")
                                                       WHEN infoOrder.deliverymethod = "recurring" THEN "--"
                                                 END as order_left_time'
@@ -914,6 +914,14 @@ class CustomerController extends Controller
                                                              $slot = Tranche::getSlotFromTranche($tranche_arr[0],$tranche_arr[1]);
                                                              $timeslot = $tranches_slots[$slot];
                                                              $current_orders[$k][$i][$key]->order_right_time = $timeslot;
+                                                         }
+                                                     //leftTime
+                                                         $tranche_left = $item->order_left_time;
+                                                         $tranche_arr_left = explode("_",$tranche_left);
+                                                         if(isset($tranche_arr_left[0]) && isset($tranche_arr_left[1])){
+                                                             $slot = Tranche::getSlotFromTranche($tranche_arr_left[0],$tranche_arr_left[1]);
+                                                             $timeslot = $tranches_slots[$slot];
+                                                             $current_orders[$k][$i][$key]->order_left_time = $timeslot;
                                                          }
                                                      //}
                                                  }

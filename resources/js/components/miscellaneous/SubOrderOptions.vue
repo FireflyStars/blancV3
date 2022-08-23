@@ -23,7 +23,7 @@
                 <img class="img-arrow" src="/images/garbage.png" />
                 <span>Delete</span>
             </div>
-            <div class="col-12 row-option"  @click="VoidSubOrder()">
+            <div class="col-12 row-option" v-if="hasRoles(['admin' , 'Super Admin' , 'Blanc Admin'])"  @click="VoidSubOrder()">
                 <img class="img-arrow" src="/images/erase.png" />
                 <span>Void</span>
             </div>
@@ -37,7 +37,8 @@
     import {ref} from 'vue';
     import {TOASTER_MODULE, TOASTER_MESSAGE} from "../../store/types/types";
     import {useStore} from 'vuex';
-     import NewSplitConfirmation from '../miscellaneous/NewSplitConfirmation'
+    import NewSplitConfirmation from '../miscellaneous/NewSplitConfirmation';
+    import {hasRoles} from "../helpers/helpers";
     export default {
         name: "SubOrderOptions",
         props:['items' ,'invoice_id','item_selected','suborder','invoice_Status'],
@@ -47,7 +48,7 @@
            const btn_split_show = ref(false)
            const show_split_conf=ref(false);
            const listItems =ref([]);
-           
+
            
            
             props.item_selected.forEach(item => {
@@ -90,7 +91,8 @@
                btn_split_show,
                listItems,
                VoidSubOrder,
-               close
+               close,
+               hasRoles
 
             }
         }

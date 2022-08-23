@@ -156,18 +156,18 @@
                 <div class="d-flex">
                     <div class="col-6"  >
                         <p class="order-sub-title m-0">
-                            Pick-up <span v-if=" (ORDER['detail'].Status =='RECURRING' || ORDER['detail'].Status =='SCHEDULED') && ORDER['detail'].DatePickup != '--' " class="ms-2 cursor-pointer text-underline"  @click="featureunavailable('Edit Pickup')">Edit</span>
+                            {{ORDER.detail.order_left_text}} <span v-if=" (ORDER['detail'].Status =='RECURRING' || ORDER['detail'].Status =='SCHEDULED') && ORDER['detail'].DatePickup != '--' " class="ms-2 cursor-pointer text-underline"  @click="featureunavailable('Edit Pickup')">Edit</span>
                         </p>
-                        <p class="m-0">{{ORDER.detail.DatePickup }}</p>
-                        <p class="m-0">{{ORDER.detail.TimePickup}}</p>
+                        <p class="m-0">{{ORDER.detail.order_left_date }}</p>
+                        <p class="m-0">{{ORDER.detail.order_left_time}}</p>
                     </div>
                     <div class="col-6 ps-5 border-left">
                         <p class="order-sub-title m-0">
-                            Delivery <span  class="ms-2 cursor-pointer text-underline" @click="showDeliverySlots">Edit</span>
+                            {{ORDER.detail.order_right_text}} <span  class="ms-2 cursor-pointer text-underline" @click="showDeliverySlots">Edit</span>
                         </p>
-                         <p class="mb-0" v-if="!updatedelverydate">{{ORDER.detail.DateDelivery }}</p>
+                         <p class="mb-0" v-if="!updatedelverydate">{{ORDER.detail.order_right_date }}</p>
                          <p class="mb-0" v-if="updatedelverydate">{{formatOrderDate(cc_new_delivery_date)}}</p>
-                         <p class="mb-0" >{{ORDER.detail.TimeDelivery}}</p>
+                         <p class="mb-0" >{{ORDER.detail.order_right_time}}</p>
                     </div>
                 </div>
             </div>
