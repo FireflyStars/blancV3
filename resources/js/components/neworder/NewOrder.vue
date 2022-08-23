@@ -810,7 +810,7 @@ import axios from 'axios';
                         alternate_contact.value = current_customer.delivery_preference.PhoneNumber;
                     }
 
-                    console.log(current_customer.main_account.TypeDelivery);
+                    //console.log(current_customer.main_account.TypeDelivery);
 
                     if(typeof current_customer.main_account!="undefined"){
                         if(current_customer.main_account.TypeDelivery!="DELIVERY"){
