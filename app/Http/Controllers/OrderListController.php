@@ -200,7 +200,7 @@ class OrderListController extends Controller
                     ->join('infoInvoice', 'infoOrder.OrderID','=', 'infoInvoice.OrderID')
                     ->distinct('infoInvoice.InvoiceID')
                     ->where('infoOrder.id', $order->id)
-                    ->where('infoInvoice.Status', 'READY')->count();
+                    ->whereIn('infoInvoice.Status', ['READY','READY IN STORE','FULFILLED'])->count();
             }
 
            
@@ -631,7 +631,7 @@ class OrderListController extends Controller
                         ->join('infoInvoice', 'infoOrder.OrderID','=', 'infoInvoice.OrderID')
                         ->distinct('infoInvoice.InvoiceID')
                         ->where('infoOrder.id', $order->id)
-                        ->where('infoInvoice.Status', 'READY')->count();
+                        ->whereIn('infoInvoice.Status', ['READY','READY IN STORE','FULFILLED'])->count();
                 }
     
                
@@ -938,6 +938,7 @@ class OrderListController extends Controller
     }
 
     public function getorderdetail(Request $request){
+        $user=Auth::user();
         $infoOrder_id=$request->post('infoOrder_id');
         $order=DB::table('infoOrder')
             ->select(['infoOrder.id AS order_id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CompanyName','infoCustomer.id' , 'infoOrder.DeliveryaskID' , 'infoOrder.PickupID' , 'infoOrder.DateDeliveryAsk','infoOrder.DatePickup' , 'infoCustomer.Phone','infoCustomer.CustomerID','booking_histories.user_id',
@@ -1135,7 +1136,7 @@ class OrderListController extends Controller
         ->orderBy('detailingitem.id','ASC')
         ->get();
 
-        return response()->json(['order'=>['detail'=>$order,'billing'=>$billing_add,'delivery'=>$delivery_add,'items'=>$items,'available_slots'=>$available_slots ,'detailingitemlist' => $detailingitemlist,'postcode'=>$sel_postcode , 'booking' => $Booking_histories , 'totalitems' => count($infoitems)]] );
+        return response()->json(['order'=>['detail'=>$order,'billing'=>$billing_add,'delivery'=>$delivery_add,'items'=>$items,'available_slots'=>$available_slots ,'detailingitemlist' => $detailingitemlist,'postcode'=>$sel_postcode , 'booking' => $Booking_histories , 'totalitems' => count($infoitems) ,'user' => $user->id]] );
     }
 
      public function setInvoiceFulfilled(Request $request){
@@ -1842,7 +1843,7 @@ class OrderListController extends Controller
                         ->join('infoInvoice', 'infoOrder.OrderID','=', 'infoInvoice.OrderID')
                         ->distinct('infoInvoice.InvoiceID')
                         ->where('infoOrder.id', $order->id)
-                        ->where('infoInvoice.Status', 'READY')->count();
+                        ->whereIn('infoInvoice.Status', ['READY','READY IN STORE','FULFILLED'])->count();
                 }
     
                

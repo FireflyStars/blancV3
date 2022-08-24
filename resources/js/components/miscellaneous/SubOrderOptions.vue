@@ -23,7 +23,7 @@
                 <img class="img-arrow" src="/images/garbage.png" />
                 <span>Delete</span>
             </div>
-            <div class="col-12 row-option" v-if="hasRoles(['admin' , 'Super Admin' , 'Blanc Admin'])&&invoice_Status!='VOID'"  @click="VoidSubOrder()">
+            <div class="col-12 row-option" v-if="user==1 &&invoice_Status!='VOID'"  @click="VoidSubOrder()">
                 <img class="img-arrow" src="/images/erase.png" />
                 <span>Void</span>
             </div>
@@ -40,10 +40,9 @@
     import {useStore} from 'vuex';
     import NewSplitConfirmation from '../miscellaneous/NewSplitConfirmation';
     import VoidConfirmation from '../miscellaneous/VoidConfirmation';
-    import {hasRoles} from "../helpers/helpers";
     export default {
         name: "SubOrderOptions",
-        props:['items' ,'invoice_id','item_selected','suborder','invoice_Status'],
+        props:['items' ,'invoice_id','item_selected','suborder','invoice_Status','user'],
         components:{ NewSplitConfirmation , VoidConfirmation},
         setup(props , context){
            const store=useStore();
@@ -52,8 +51,7 @@
            const show_void_conf=ref(false);
            const listItems =ref([]);
 
-
-           
+           console.log("sauuuub" , props.suborder)
             props.item_selected.forEach(item => {
                 if (item[0] == props.suborder){
                    listItems.value.push(item[1])
@@ -85,7 +83,6 @@
                listItems,
                VoidSubOrder,
                close,
-               hasRoles,
                show_void_conf
 
             }

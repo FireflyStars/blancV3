@@ -15,7 +15,7 @@
                             </div>
                     </div>
 
-                    <SubOrderOptions  v-if="show === suborder && open_options" :suborder=suborder :items="Object.entries(ITEMS)" :item_selected="Object.entries(MULTI_CHECKED)" :invoice_id="ITEMS[0].InvoiceID" :invoice_Status="ITEMS[0].Invoice_Status" ></SubOrderOptions>
+                    <SubOrderOptions  v-if="show === suborder && open_options" :suborder=suborder :user=user :items="Object.entries(ITEMS)" :item_selected="Object.entries(MULTI_CHECKED)" :invoice_id="ITEMS[0].InvoiceID" :invoice_Status="ITEMS[0].Invoice_Status" ></SubOrderOptions>
                     
                         <header v-if="Object.entries(ITEM_LIST).length !== 0">
                             <div class="tcol noselect"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}" >{{col.name}}
@@ -83,7 +83,7 @@
 
     export default {
         name: "OrderDetailSubOrderItemsTable",
-        props:['tabledef',"tab","id" , "status"],
+        props:['tabledef',"tab","id" , "status" , "user"],
         components:{ColorTag, Tag,CheckBox, SubOrderOptions, QzPrint , FulfillConfirmation , ItemDetail},
         setup(props,context){
             const router = useRouter();
