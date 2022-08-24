@@ -629,8 +629,6 @@ Route::get('ar-pdf',function(){
 
     $to_insert = [];
 
-    echo "<pre>";
-
     foreach($simplified_grouped_by_customer as $k=>$v){
         $total = 0;
         $info = [];
@@ -686,7 +684,6 @@ Route::get('inv-pdf',function(Request $request){
 
     $order_details = (array) @json_decode($details->info);
 
-
     if(count($order_details) > 0){
         foreach($order_details as $k=>$v){
             foreach($v as $id=>$detail){
@@ -708,9 +705,20 @@ Route::get('inv-pdf',function(Request $request){
 
 
     $order_details = [];
+    $order_totals = [];
+
+    $facture_net = [];
+    $facture_amount_net = 0;
+
 
     foreach($grouped_by_customer as $customerid=>$orders){
+        $order_net = 0;
+        $order_vat = 0;
+        $order_total = 0;
+
        foreach($orders as $orderid=>$invoices){
+
+
             foreach($invoices as $invoiceid=>$items){
                 $order_details[$customerid][$invoiceid] = [];
 
@@ -719,8 +727,13 @@ Route::get('inv-pdf',function(Request $request){
                 $vat = 0;
                 $total = 0;
                 $items_text = [];
+                $promised_dates = [];
+
+
 
                 foreach($items as $k=>$v){
+                    $promised_dates[] = $v->PromisedDate;
+
                     $item_txt = $v->brand." ".str_replace(' ',' ',$v->Description);
 
                     $dept[$v->Department][] = $item_txt;
@@ -728,24 +741,43 @@ Route::get('inv-pdf',function(Request $request){
                 }
                 $items_per_dept[$v->Department] = array_count_values($dept[$v->Department]);
 
-                /*
-                foreach($items_per_dept as $dept=>$items){
-                    foreach($items as $item=>$count){
-                        $items_text[$dept][] = $count." ".$item;
-                    }
-                }
-                */
+                usort($promised_dates,function($a,$b){
+                    return strtotime($b) - strtotime($a);
+                });
+
+                $order_net += $net;
+
                 $vat = 0.2*$net;
                 $total = 1.2*$net;
 
                 $order_details[$customerid][$invoiceid]['orderid'] = $orderid;
+                $order_details[$customerid][$invoiceid]['date'] = (isset($promised_dates[0]) && $promised_dates[0]!='0000-00-00'?date('d/m/y',strtotime($promised_dates[0])):"--");
                 $order_details[$customerid][$invoiceid]['items'] = $items_per_dept;
                 $order_details[$customerid][$invoiceid]['net'] = number_format($net,2);
                 $order_details[$customerid][$invoiceid]['vat'] = number_format($vat,2);
                 $order_details[$customerid][$invoiceid]['total'] = number_format($total,2);
             }
+
+
        }
+
+       $facture_net[] = $order_net;
+
+       $order_vat = 0.2*$order_net;
+       $order_total = 1.2*$order_net;
+
+
+
+       $order_totals[$customerid]['order_net'] = number_format($order_net,2);
+       $order_totals[$customerid]['order_vat'] = number_format($order_vat,2);
+       $order_totals[$customerid]['order_total'] = number_format($order_total,2);
+
     }
+
+    $facture_amount_net = array_sum($facture_net);
+    $facture_amount_vat = 0.2*$facture_amount_net;
+    $facture_amount_total = 1.2*$facture_amount_net;
+
 
     $data = [
        'customer'=>$customer,
@@ -755,6 +787,10 @@ Route::get('inv-pdf',function(Request $request){
        'invoice_date'=>date('d/m/Y'),
        'facture'=>$details,
        'order_details'=>$order_details,
+       'order_totals'=>$order_totals,
+       'facture_net'=>number_format($facture_amount_net,2),
+       'facture_vat'=>number_format($facture_amount_vat,2),
+       'facture_total'=>number_format($facture_amount_total,2),
     ];
 
     Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);

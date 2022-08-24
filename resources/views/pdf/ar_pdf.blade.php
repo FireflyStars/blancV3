@@ -19,15 +19,17 @@
 
     footer{
         position:fixed;
-        bottom:80px;
+        bottom:100px;
         right:0;
+        left:0;
     }
 
     #footer_total{
         border:2px solid #000;
-        width:250px;
-        float:right;
+        width:210px;
         font-size:12px;
+        position:absolute;
+        right:0;
     }
 
     main{
@@ -100,10 +102,11 @@
         font-size:13px;
         display: block;
         font-weight: bold;
+        margin-top:5px;
     }
 
     .items_table{
-        margin-top: 15px;
+        margin-top: 10px;
     }
 
     .items_table th,
@@ -122,9 +125,14 @@
         padding-right:5px;
     }
 
-    .items_table th{
+    .items_table .header_row th{
         color:#42A71E;
         border-bottom:2px solid #437b7b;
+        font-weight: bold;
+    }
+
+    .items_table .total_row th.amount{
+        border-top:2px solid #437b7b;
         font-weight: bold;
     }
 
@@ -134,6 +142,7 @@
         text-indent:0;
         padding-left:5px;
         padding-bottom: 10px;
+        max-width:35%;
     }
 
     .each-dept-div{
@@ -145,7 +154,10 @@
     .each-item{
         display:block;
         white-space: nowrap;
+    }
 
+    .each-item{
+        font-size:10px;
     }
 
     .item-text{
@@ -156,6 +168,47 @@
 
     .each-item-desc{
         background: red;
+    }
+
+    #footer_total td{
+        padding:5px 5px 5px 0;
+    }
+
+    #period_text{
+        font-size:9px;
+    }
+
+    .total_text{
+        text-align: right;
+    }
+
+    .amount_total{
+        font-weight: bold;
+        text-align: right;
+    }
+
+    .vat_total{
+        border-bottom:2px solid #000;
+    }
+
+    .each-payment-detail,
+    .each-payment-detail2{
+        display:block;
+    }
+
+    .each-payment-detail2{
+        font-weight: bold;
+        font-size:11px;
+    }
+
+    #footer_left{
+        position:absolute;
+        left:0;
+        font-size:12px;
+    }
+
+    #second_payment_bloc{
+        margin-top:10px;
     }
 
 
@@ -216,20 +269,34 @@
     </header>
 
     <footer>
-        <table border="0" id="footer_total">
+        <div id="footer_left">
+            <span class="each-payment-detail">PAYMENT DETAILS</span>
+            <span class="each-payment-detail">Bank: HSBC Account No : 90706744 Sort Code: 40-11-60</span>
+            <span class="each-payment-detail">Payment terms: 14 days</span>
+
+            <span class="each-payment-detail2" id="second_payment_bloc">Please note that if payment is not received by the end</span>
+            <span class="each-payment-detail2">of the month, we will apply an interest fee of 5% to</span>
+            <span class="each-payment-detail2">your original total amount due.</span>
+        </div>
+        <table border="0" cellspacing="0" id="footer_total">
             <tr>
-                <td colspan="2">This period</td>
+                <td id="period_text">This period</td><td colspan="2"></td>
+            </tr>
+            <tr><td colspan="3">&nbsp;</td></tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td class="total_text">Net Total:</td>
+                <td class="amount_total">&#163;{{$facture_net}}</td>
             </tr>
             <tr>
-                <td>Net Total:</td>
-                <td></td>
+                <td>&nbsp;</td>
+                <td class="total_text vat_total">VAT @ 20%:</td>
+                <td class="amount_total vat_total">&#163;{{$facture_vat}}</td>
             </tr>
             <tr>
-                <td>VAT @ 20%:</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Total Due Inc VAT:</td>
+                <td>&nbsp;</td>
+                <td class="total_text">Total Due Inc VAT:</td>
+                <td class="amount_total">&#163;{{$facture_total}}</td>
             </tr>
 
         </table>
@@ -242,29 +309,33 @@
 
 
             <table width="100%" class="items_table" cellspacing="0">
-                <tr>
+                <tr class="header_row">
                     <th>Date</th><th>Order</th><th>Sub-order</th><th>Description</th><th>Net</th><th>VAT</th><th>Total</th>
                 </tr>
                 @foreach ($invoices as $invoiceid=>$invoice )
                     <tr>
-                        <td class="main-cell"></td>
+                        <td class="main-cell"  width="10%">{{$invoice['date']}}</td>
                         <td class="main-cell" width="10%">{{$invoice['orderid']}}</td>
                         <td class="main-cell" width="10%">{{$invoiceid}}</td>
-                        <td class="main-cell desc-cell" width="35%">
+                        <td class="main-cell desc-cell" width="40%">
                             @foreach($invoice['items'] as $dept=>$items)
                                 <span class="each-dept-div">
                                     <span class="each-dept">{{$dept}}</span>
                                     @foreach($items as $item=>$count)
-                                    <span class="each-dept">{{$count}} {{$item}}</span>
+                                    <span class="each-item">{{$count}} {{$item}}</span>
                                     @endforeach
                                 </span>
                             @endforeach
                         </td>
-                        <td class="amount main-cell">{{$invoice['net']}}</td>
-                        <td class="amount main-cell">{{$invoice['vat']}}</td>
-                        <td class="amount main-cell">{{$invoice['total']}}</td>
+                        <td class="amount main-cell" width="10%">{{$invoice['net']}}</td>
+                        <td class="amount main-cell"  width="10%">{{$invoice['vat']}}</td>
+                        <td class="amount main-cell"  width="10%">{{$invoice['total']}}</td>
                     </tr>
                 @endforeach
+                <tr class="total_row">
+                    <th colspan="4"></th><th class="amount">{{$order_totals[$customerid]['order_net']}}</th><th class="amount">{{$order_totals[$customerid]['order_vat']}}</th><th class="amount">{{$order_totals[$customerid]['order_total']}}</th>
+                </tr>
+
 
             </table>
         @endforeach
