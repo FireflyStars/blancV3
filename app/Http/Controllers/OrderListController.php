@@ -1192,6 +1192,7 @@ class OrderListController extends Controller
 
         $invoice_id = $request->post('invoice_id');
         $items = $request->post('items');
+        $datatest = $request->post('data');
         $data = serialize($items);
         $arr = $items[0]; 
         $array_item = http_build_query($arr,"item[");
@@ -1208,20 +1209,30 @@ class OrderListController extends Controller
         $user = Auth::user();
 
         $params = [
-            'token'=>'GhtfvbbG44$hhGtyEfgARRGht3',
+            'token'=>'GhtfvbbG4489hGtyEfgARRGht3',
             'invoiceid'=>$invoice_id,
             'item' =>$data
         ];
-       
-        $response = $client->request('GET', $endpoint, ['query' => $params]);
-        $statusCode = $response->getStatusCode();
-        $statusText = $response->getReasonPhrase();
+
+        $client->request('GET', $endpoint, ['query' => $params]);
+     
+        if($datatest == null){
+            $response = $client->request('GET', $endpoint, ['query' => $params]);
+            $statusCode = $response->getStatusCode();
+            $statusText = $response->getReasonPhrase();
+            return \response()->json([
+                'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=.$invoice_id&item=".$data,
+                'status_code'=>$statusCode,
+                'status_message'=>$statusText
+            ]);
+        }else {
+            return \response()->json([
+                'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=.$invoice_id&item=".$data,
+            ]);
+        }
+        
       
-        return \response()->json([
-            'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=.$invoice_id&item=".$data,
-            'status_code'=>$statusCode,
-            'status_message'=>$statusText
-        ]);
+       
     }
 
     public function getitemdetail(Request $request){

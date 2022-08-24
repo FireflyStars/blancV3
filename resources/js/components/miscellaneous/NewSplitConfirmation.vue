@@ -9,6 +9,7 @@
             <div class="confirmation-title">
                 <span class="subtitle">Split</span>
             </div>
+            <span>{{url}}</span>
             <div class="confirmation-msg body_regular">
                 <p>Do you want to split items
                 <br>
@@ -39,13 +40,14 @@
             suborder :String,
             items :Array,
             invoice_id: String,
-            item_selected:Array
+            item_selected:Array,
+            url: String,
         },
         setup(props,context){
             const show=ref(false);
             const store=useStore();
             const listItems = ref('');
-
+ 
             watch(() => props.show_conf, (toval, fromval) => {
                 show.value=toval;
             });
@@ -67,7 +69,7 @@
                    invoice_id: props.invoice_id ,
                    items:props.item_selected
                }).then((res)=>{
-             
+                        url.value = res.data.url 
                         if( res.data.status_message == "OK"){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
                              location.reload();
