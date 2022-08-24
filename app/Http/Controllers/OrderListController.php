@@ -1219,7 +1219,6 @@ class OrderListController extends Controller
      
         if($datatest == null){
             $response = $client->request('GET', $endpoint, ['query' => $params]);
-            dd($response->getBody()->getContents());
             $statusCode = $response->getStatusCode();
             $statusText = $response->getReasonPhrase();
             return \response()->json([
