@@ -1215,19 +1215,21 @@ class OrderListController extends Controller
         ];
 
         $client->request('GET', $endpoint, ['query' => $params]);
+        
      
         if($datatest == null){
             $response = $client->request('GET', $endpoint, ['query' => $params]);
+            dd($response->getBody()->getContents());
             $statusCode = $response->getStatusCode();
             $statusText = $response->getReasonPhrase();
             return \response()->json([
-                'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=.$invoice_id&item=".$data,
+                'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=$invoice_id&item=".$data,
                 'status_code'=>$statusCode,
                 'status_message'=>$statusText
             ]);
         }else {
             return \response()->json([
-                'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=.$invoice_id&item=".$data,
+                'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=$invoice_id&item=".$data,
             ]);
         }
         
