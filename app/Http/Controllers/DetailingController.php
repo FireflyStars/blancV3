@@ -1407,10 +1407,18 @@ class DetailingController extends Controller
                         $dc[] = $cs[$val];
                     }
 
+                    $c_price = number_format($v->dry_cleaning_price + $v->cleaning_addon_price,2);
+
+                    if($v->cleaning_price_type=='PriceNow'){
+                        $c_price = "Price now";
+                    }elseif($v->cleaning_price_type=='Quote'){
+                        $c_price = 'Quote';
+                    }
+
                     if(!empty($dc)){
                         $items[$k]->detailed_services[] = [
                             'name'=>"Dry cleaning (".implode(",",$dc).")",
-                            'price'=>number_format($v->dry_cleaning_price + $v->cleaning_addon_price,2),
+                            'price'=>$c_price,
                         ];
                     }
                 }
@@ -1432,9 +1440,17 @@ class DetailingController extends Controller
 
                     if(!empty($group_by_tailoring_service)){
                         foreach($group_by_tailoring_service as $group=>$prices){
+                            $t_price = number_format(array_sum($prices),2);
+                            if($v->tailoring_price_type=='PriceNow'){
+                                $t_price = 'Price now';
+                            }else if($v->tailoring_price_type=='Quote'){
+                                $t_price = 'Quote';
+                            }
+
+
                             $t_arr = [
                                 'name'=>$group,
-                                'price'=>($v->tailoring_price_type=='PriceNow'?'Price now':number_format(array_sum($prices),2)),
+                                'price'=>$t_price,
                             ];
 
                             $items[$k]->detailed_services[] = $t_arr;

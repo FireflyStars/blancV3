@@ -129,15 +129,22 @@
     }
 
     .items_table .desc-cell{
-        padding:0;
-        word-wrap: none;
         line-height: 1rem;
+        vertical-align: top;
+        text-indent:0;
+        padding-left:5px;
+        padding-bottom: 10px;
+    }
+
+    .each-dept-div{
+        display:block;
+        margin-bottom:10px;
     }
 
     .each-dept,
     .each-item{
-        display: table;
-        width: 100%;
+        display:block;
+        white-space: nowrap;
 
     }
 
@@ -145,6 +152,10 @@
         margin:0;
         line-height: 1rem;
         overflow-y: hidden;
+    }
+
+    .each-item-desc{
+        background: red;
     }
 
 
@@ -241,7 +252,12 @@
                         <td class="main-cell" width="10%">{{$invoiceid}}</td>
                         <td class="main-cell desc-cell" width="35%">
                             @foreach($invoice['items'] as $dept=>$items)
-                                <span class="each-dept">{{$dept}}</span>
+                                <span class="each-dept-div">
+                                    <span class="each-dept">{{$dept}}</span>
+                                    @foreach($items as $item=>$count)
+                                    <span class="each-dept">{{$count}} {{$item}}</span>
+                                    @endforeach
+                                </span>
                             @endforeach
                         </td>
                         <td class="amount main-cell">{{$invoice['net']}}</td>
@@ -258,9 +274,7 @@
 </html>
 <!--    <div class="page-break">
 
-                                    @foreach($items as $item=>$count)
-                                        <tr><td class="item-text">{{$count}} {{$item}}</td></tr>
-                                    @endforeach
+
 
 </div>-->
 
