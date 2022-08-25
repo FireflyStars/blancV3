@@ -9,6 +9,7 @@ import {
     ORDERDETAIL_MULTI_ITEMS_UNCHECKED,
     ORDERDETAIL_MULTI_ITEMS_REMOVE,
     ORDERDETAIL_GET_ALL_ITEMS_MULITCHECKED,
+    ORDERDETAIL_GET_ALL_HSL_MULITCHECKED,
     ORDERDETAIL_UPDATE_SUGGESTED_DELIVERY_DATE,
     ORDERDETAIL_SPLIT,
     ORDERDETAIL_NEW_DELIVERY_DATE,
@@ -32,22 +33,35 @@ export const orderdetail= {
         selected_items:{
 
         },
+        selected_Hsl:{
+
+        },
         current_selected: 'OrderDetails',
     },
     mutations: {
         [ORDERDETAIL_SET_LOADER]: (state, payload) => state.loader = payload,
         [ORDERDETAIL_SET_DETAILS]: (state,payload) =>state.orderdetail=payload,
         [ORDERDETAIL_MULTI_ITEMS_ADD]:(state, payload)=>{
+
             if(typeof state.selected_items[payload.suborder]==="undefined")
                 state.selected_items[payload.suborder]=[];
             if(state.selected_items[payload.suborder].includes(payload.infoitems_id)===false)
             state.selected_items[payload.suborder].push(payload.infoitems_id);
+
+            if(typeof state.selected_Hsl[payload.suborder]==="undefined")
+                state.selected_Hsl[payload.suborder]=[];
+            if(state.selected_Hsl[payload.suborder].includes(payload.trackingkey)===false)
+            state.selected_Hsl[payload.suborder].push(payload.trackingkey);
         },
         [ORDERDETAIL_MULTI_ITEMS_REMOVE]:(state, payload)=>{
 
             state.selected_items[payload.suborder]=state.selected_items[payload.suborder].filter(item=>item!==payload.infoitems_id);
             if(state.selected_items[payload.suborder].length==0){
                 delete state.selected_items[payload.suborder];
+            }   
+            state.selected_Hsl[payload.suborder]=state.selected_Hsl[payload.suborder].filter(item=>item!==payload.trackingkey);
+            if(state.selected_Hsl[payload.suborder].length==0){
+                delete state.selected_Hsl[payload.suborder];
             }
         },
 
@@ -198,6 +212,7 @@ export const orderdetail= {
         [ORDERDETAIL_GET_LOADER]:state=>state.loader,
         [ORDERDETAIL_GET_DETAILS]:state=>state.orderdetail,
         [ORDERDETAIL_GET_ALL_ITEMS_MULITCHECKED]:state=>state.selected_items,
+        [ORDERDETAIL_GET_ALL_HSL_MULITCHECKED]:state=>state.selected_Hsl,
         [ORDERDETAIL_GET_CURRENT_SELECTED]:state=> state.current_selected,
     }
 }

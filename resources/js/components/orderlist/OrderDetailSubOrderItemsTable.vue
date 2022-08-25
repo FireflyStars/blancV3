@@ -15,7 +15,7 @@
                             </div>
                     </div>
 
-                    <SubOrderOptions  v-if="show === suborder && open_options" :suborder=suborder :user=user :items="Object.entries(ITEMS)" :item_selected="Object.entries(MULTI_CHECKED)" :invoice_id="ITEMS[0].InvoiceID" :invoice_Status="ITEMS[0].Invoice_Status" :ListTrackingKey="ListTrackingKey" ></SubOrderOptions>
+                    <SubOrderOptions  v-if="show === suborder && open_options" :suborder=suborder :user=user :items="Object.entries(ITEMS)" :item_selected="Object.entries(MULTI_CHECKED)" :invoice_id="ITEMS[0].InvoiceID" :invoice_Status="ITEMS[0].Invoice_Status" :ListTrackingKey="Object.entries(MULTI_HSL_CHECKED)"></SubOrderOptions>
                     
                         <header v-if="Object.entries(ITEM_LIST).length !== 0">
                             <div class="tcol noselect"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}" >{{col.name}}
@@ -68,7 +68,9 @@
         ORDERDETAIL_MODULE,
         ORDERDETAIL_GET_DETAILS,
         ORDERDETAIL_MULTI_ITEMS_CHECKED,
-        ORDERDETAIL_MULTI_ITEMS_UNCHECKED, ORDERDETAIL_GET_ALL_ITEMS_MULITCHECKED,
+        ORDERDETAIL_MULTI_ITEMS_UNCHECKED, 
+        ORDERDETAIL_GET_ALL_ITEMS_MULITCHECKED,
+        ORDERDETAIL_GET_ALL_HSL_MULITCHECKED,
         DISPLAY_LOADER,
         HIDE_LOADER,
         ASSEMBLY_HOME_MODULE,
@@ -105,6 +107,9 @@
             const MULTI_CHECKED=computed(()=>{
                 return store.getters[`${ORDERDETAIL_MODULE}${ORDERDETAIL_GET_ALL_ITEMS_MULITCHECKED}`];
             });
+             const MULTI_HSL_CHECKED=computed(()=>{
+                return store.getters[`${ORDERDETAIL_MODULE}${ORDERDETAIL_GET_ALL_HSL_MULITCHECKED}`];
+            });
 
 
             function preprocess(def,val) {
@@ -130,33 +135,33 @@
 
             function checkboxclicked(check,id , name ,order ,trackingkey) {
                 if(check===true){
-                    store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_MULTI_ITEMS_CHECKED}`,{infoitems_id:id,suborder:name});
+                    store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_MULTI_ITEMS_CHECKED}`,{infoitems_id:id,suborder:name,trackingkey:trackingkey});
                     ListTrackingKey.value.push(trackingkey)
                 }
                 if(check===false){
-                    store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_MULTI_ITEMS_UNCHECKED}`,{infoitems_id:id,suborder:name});
+                    store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_MULTI_ITEMS_UNCHECKED}`,{infoitems_id:id,suborder:name,trackingkey:trackingkey});
                     ListTrackingKey.value.splice(ListTrackingKey.value.findIndex((z) => { return z === trackingkey }), 1);
                 }
                 close()
             }
-            function checkboxallclicked(check,id,suborder) {
-                ListTrackingKey.value = []
+            function checkboxallclicked(check,id,suborder,trackingkey) {
                 const   list=_.cloneDeep(ITEM_LIST.value[suborder]);
                         list.forEach((item) => {
                             if(check) {
                                 store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_MULTI_ITEMS_CHECKED}`, {
                                     infoitems_id: item.infoitems_id,
                                     suborder,
-                                    suborder
+                                    suborder,
+                                    trackingkey:item.ItemTrackingKey
                                 })
-                                ListTrackingKey.value.push(item.ItemTrackingKey)
                             }else{
                                 store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_MULTI_ITEMS_UNCHECKED}`, {
                                     infoitems_id: item.infoitems_id,
                                     suborder,
-                                    suborder
+                                    suborder,
+                                    trackingkey:item.ItemTrackingKey
                                 })
-                                ListTrackingKey.value = []
+                    
                             }
                         });
               
@@ -221,6 +226,7 @@
                 route,
 
                 MULTI_CHECKED,
+                MULTI_HSL_CHECKED,
                 ITEM_LIST,
 
                 preprocess,

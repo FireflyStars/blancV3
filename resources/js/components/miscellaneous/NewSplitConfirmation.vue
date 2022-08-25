@@ -55,9 +55,11 @@
               const regex = /\,(?=[^,]*$)/g;
               var reg =/[ ,-]/g;
          
-             listItems.value = props.ListTrackingKey.map(String).join();
-             listItems.value = listItems.value.replace(reg , ', ').replace(regex, ' and ');
-           
+              listItems.value = props.ListTrackingKey.map(String);
+              if(listItems.value.length > 0){
+                 listItems.value = listItems.value[0].replace(reg , ', ').replace(regex, ' and ');
+              }
+              
             const close=()=>{
                 context.emit('close');
                 show.value=false;

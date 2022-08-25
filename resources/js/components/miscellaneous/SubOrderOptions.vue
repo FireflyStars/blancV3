@@ -28,7 +28,7 @@
                 <span>Void</span>
             </div>
         </div>
-        <NewSplitConfirmation :url="url" :items="items" :item_selected="listItems" :invoice_id="invoice_id"  :suborder="suborder" :ListTrackingKey="ListTrackingKey" :show_conf="show_split_conf" @close="show_split_conf=false"></NewSplitConfirmation>
+        <NewSplitConfirmation :url="url" :items="items" :item_selected="listItems" :invoice_id="invoice_id"  :suborder="suborder" :ListTrackingKey="ListHSL" :show_conf="show_split_conf" @close="show_split_conf=false"></NewSplitConfirmation>
         <void-confirmation :invoice_id="invoice_id" :suborder="suborder" :show_conf="show_void_conf" @close="show_void_conf=false" ></void-confirmation>
 
     </div>
@@ -50,7 +50,10 @@
            const show_split_conf=ref(false);
            const show_void_conf=ref(false);
            const listItems =ref([]);
+           const ListHSL =ref([]);
            const url = ref('');
+
+           console.log(props.item_selected , props.ListTrackingKey)
 
 
             props.item_selected.forEach(item => {
@@ -58,6 +61,12 @@
                    listItems.value.push(item[1])
                 }
             });  
+
+             props.ListTrackingKey.forEach(item => {
+                if (item[0] == props.suborder){
+                   ListHSL.value.push(item[1])
+                }
+            });
 
             if(listItems.value.length > 0 && props.items.length > 1 && props.invoice_Status != "FULFILLED" ){
               btn_split_show.value = true
@@ -93,7 +102,8 @@
                VoidSubOrder,
                close,
                show_void_conf,
-               url
+               url,
+               ListHSL
 
             }
         }
