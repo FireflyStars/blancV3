@@ -11,7 +11,7 @@
 
     body{
         margin-top:40%;
-        margin-bottom:15%;
+        margin-bottom:20%;
     }
 
     header { position: fixed; top: 0px; left: 0px; right: 0px; height: 25%;}
@@ -19,7 +19,7 @@
 
     footer{
         position:fixed;
-        bottom:100px;
+        bottom:150px;
         right:0;
         left:0;
     }
@@ -176,6 +176,7 @@
 
     #period_text{
         font-size:9px;
+        padding-left:5px;
     }
 
     .total_text{
@@ -215,6 +216,7 @@
 </style>
 </head>
 <body style="font-family: Helvetica;">
+
     <header>
         <img src="{{public_path('/images/pdf_logo.jpg')}}"/>
 
@@ -300,6 +302,11 @@
             </tr>
 
         </table>
+
+
+        <span class="pagenum">
+        </span>
+
     </footer>
 
 
