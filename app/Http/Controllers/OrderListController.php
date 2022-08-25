@@ -1192,7 +1192,6 @@ class OrderListController extends Controller
 
         $invoice_id = $request->post('invoice_id');
         $items = $request->post('items');
-        $datatest = $request->post('data');
         $data = serialize($items);
         $arr = $items[0]; 
         $array_item = http_build_query($arr,"item[");
@@ -1213,11 +1212,6 @@ class OrderListController extends Controller
             'invoiceid'=>$invoice_id,
             'item' =>$data
         ];
-
-        $client->request('GET', $endpoint, ['query' => $params]);
-        
-     
-        if($datatest == null){
             $response = $client->request('GET', $endpoint, ['query' => $params]);
             $statusCode = $response->getStatusCode();
             $statusText = $response->getReasonPhrase();
@@ -1226,14 +1220,6 @@ class OrderListController extends Controller
                 'status_code'=>$statusCode,
                 'status_message'=>$statusText
             ]);
-        }else {
-            return \response()->json([
-                'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=$invoice_id&item=".$data,
-            ]);
-        }
-        
-      
-       
     }
 
     public function getitemdetail(Request $request){

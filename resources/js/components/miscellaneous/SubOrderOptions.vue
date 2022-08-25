@@ -28,7 +28,7 @@
                 <span>Void</span>
             </div>
         </div>
-        <NewSplitConfirmation :url="url" :items="items" :item_selected="listItems" :invoice_id="invoice_id"  :suborder="suborder" :ListTrackingKey="ListHSL" :show_conf="show_split_conf" @close="show_split_conf=false"></NewSplitConfirmation>
+        <NewSplitConfirmation :items="items" :item_selected="listItems" :invoice_id="invoice_id"  :suborder="suborder" :ListTrackingKey="ListHSL" :show_conf="show_split_conf" @close="show_split_conf=false"></NewSplitConfirmation>
         <void-confirmation :invoice_id="invoice_id" :suborder="suborder" :show_conf="show_void_conf" @close="show_void_conf=false" ></void-confirmation>
 
     </div>
@@ -51,9 +51,7 @@
            const show_void_conf=ref(false);
            const listItems =ref([]);
            const ListHSL =ref([]);
-           const url = ref('');
 
-           console.log(props.item_selected , props.ListTrackingKey)
 
 
             props.item_selected.forEach(item => {
@@ -76,14 +74,6 @@
 
             function selectSplit(){
              show_split_conf.value = true
-                 
-               axios.post('/SplitSubOrder',{
-                   invoice_id: props.invoice_id ,
-                   items:listItems.value,
-                   data:"test",
-               }).then((res)=>{
-                        url.value = res.data.url     
-                    })
             }
                
             const close=()=>{
@@ -102,7 +92,6 @@
                VoidSubOrder,
                close,
                show_void_conf,
-               url,
                ListHSL
 
             }
