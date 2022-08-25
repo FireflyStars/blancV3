@@ -9,7 +9,11 @@
             <div class="confirmation-title">
                 <span class="subtitle">Void</span>
             </div>
-            <div class="confirmation-msg body_regular"><p>Do you want to Void Sub Order </p></div>
+            <div class="confirmation-msg body_regular"><p>Do you want to Void Sub Order 
+            <br>
+            {{suborder}}
+            </p>
+            </div>
             <div class="confirmation-btn">
                 <button class="btn btn-outline-danger body_medium" style="margin-right: 59px" @click="close">No, cancel</button>
                 <button class="btn btn-dark body_medium" style="" @click="VoidSubOrder">Yes, void</button>
@@ -33,7 +37,10 @@
             },
             invoice_id :{
                type:String
-            }
+            },
+            suborder:{
+               type:String
+            },
         },
         setup(props,context){
             const show=ref(false);
