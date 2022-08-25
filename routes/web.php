@@ -35,7 +35,8 @@ use App\Http\Controllers\SupervisionController;
 use App\Models\Delivery;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
-
+use Dompdf\Dompdf;
+use Dompdf\FontMetrics;
 
 /*
 |--------------------------------------------------------------------------
@@ -778,7 +779,6 @@ Route::get('inv-pdf',function(Request $request){
     $facture_amount_vat = 0.2*$facture_amount_net;
     $facture_amount_total = 1.2*$facture_amount_net;
 
-
     $data = [
        'customer'=>$customer,
        'address'=>$addr,
@@ -793,10 +793,31 @@ Route::get('inv-pdf',function(Request $request){
        'facture_total'=>number_format($facture_amount_total,2),
     ];
 
+
     Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
+
+
     $pdf = Pdf::loadView('pdf/ar_pdf', $data);
 
+    $pdf->output();
+
+    $canvas = $pdf->getDomPDF()->getCanvas();
+
+    $fontMetrics = $pdf->getDomPDF()->getFontMetrics();
+    $font = $fontMetrics->getFont('Times-Roman');
+
+    $text = "Page {PAGE_NUM} of {PAGE_COUNT}";
+    $size = 10;
+
+    $width = $fontMetrics->getTextWidth($text, $font, $size) / 2;
+
+    $x = $canvas->get_width() - $width;
+    $y = $canvas->get_height() - 35;
+
+    $canvas->page_text($x, $y, $text , $font, 10, array(0, 0, 0));
+
     return $pdf->download('invoice'.$details->CustomerID.'.pdf');
+
 
 });
 
