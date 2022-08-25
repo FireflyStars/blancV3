@@ -754,6 +754,7 @@ class DetailingController extends Controller
                 }
             }
         }
+    $previous_detailed_item = false;
 
     if($err==''){
         $previous_detailed_item = DB::table('detailingitem')
@@ -806,7 +807,7 @@ class DetailingController extends Controller
             ->where('order_id',$order_id)
             ->first();
 
-        if($current_detailing_item){
+        if(!$previous_detailed_item && $current_detailing_item){
             $err = "HSL $tracking is already being detailed.";
         }
 
