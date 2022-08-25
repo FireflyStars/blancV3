@@ -786,7 +786,7 @@ class DetailingController extends Controller
             }
 
             $has_detailing_order = DB::table('detailingitem')->where('tracking',$tracking)
-                ->where('status','In Process')
+                ->where('order_id',$order_id)
                 ->latest('id')
                 ->first();
 
