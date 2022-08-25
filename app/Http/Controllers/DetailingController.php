@@ -786,13 +786,21 @@ class DetailingController extends Controller
             }
 
             $has_detailing_order = DB::table('detailingitem')->where('tracking',$tracking)
-                ->where('order_id',$order_id)
+                ->where('status','In Process')
                 ->latest('id')
                 ->first();
 
             if($has_detailing_order){
                 $err = "HSL $tracking is already being detailed.";
             }
+        }
+
+        $current_detailing_item = DB::table('detailingitem')->where('tracking',$tracking)
+            ->where('order_id',$order_id)
+            ->first();
+
+        if($current_detailing_item){
+            $err = "HSL $tracking is already being detailed.";
         }
 
         return response()->json([
