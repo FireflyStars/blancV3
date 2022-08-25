@@ -740,6 +740,22 @@ class DetailingController extends Controller
         $has_detailing_order = false;
         $err = '';
 
+        if($item){
+            $inv = DB::table('infoInvoice')
+                ->where('InvoiceID',$item->InvoiceID)
+                ->where('CustomerID',$customer_id)
+                ->get();
+
+            if(count($inv)==0){
+                $err = "HSL $tracking already linked with another customer.";
+            }else{
+                if(!in_array($item->nextpost,[28,34,39,47,43,44,46])){
+                    $err = "HSL $tracking is active. Please change its station";
+                }
+            }
+        }
+
+    if($err==''){
         $previous_detailed_item = DB::table('detailingitem')
             ->where('tracking',$tracking)
             ->where('customer_id',$cust->id)
@@ -774,16 +790,6 @@ class DetailingController extends Controller
             $detailingitem_id = DB::table('detailingitem')->insertGetId($duplicate_detailing_item);
 
         }else{
-            if($item){
-                $inv = DB::table('infoInvoice')
-                    ->where('InvoiceID',$item->InvoiceID)
-                    ->where('CustomerID',$customer_id)
-                    ->get();
-
-                if(count($inv)==0){
-                    $err = "HSL $tracking already linked with another customer.";
-                }
-            }
 
             $has_detailing_order = DB::table('detailingitem')->where('tracking',$tracking)
                 ->where('status','In Process')
@@ -793,6 +799,15 @@ class DetailingController extends Controller
             if($has_detailing_order){
                 $err = "HSL $tracking is already being detailed.";
             }
+        }
+    }
+
+        $current_detailing_item = DB::table('detailingitem')->where('tracking',$tracking)
+            ->where('order_id',$order_id)
+            ->first();
+
+        if($current_detailing_item){
+            $err = "HSL $tracking is already being detailed.";
         }
 
         return response()->json([
