@@ -28,7 +28,7 @@
                 <span>Void</span>
             </div>
         </div>
-        <NewSplitConfirmation :url="url" :items="items" :item_selected="listItems" :invoice_id="invoice_id"  :suborder="suborder" :show_conf="show_split_conf" @close="show_split_conf=false"></NewSplitConfirmation>
+        <NewSplitConfirmation :url="url" :items="items" :item_selected="listItems" :invoice_id="invoice_id"  :suborder="suborder" :ListTrackingKey="ListTrackingKey" :show_conf="show_split_conf" @close="show_split_conf=false"></NewSplitConfirmation>
         <void-confirmation :invoice_id="invoice_id" :suborder="suborder" :show_conf="show_void_conf" @close="show_void_conf=false" ></void-confirmation>
 
     </div>
@@ -42,7 +42,7 @@
     import VoidConfirmation from '../miscellaneous/VoidConfirmation';
     export default {
         name: "SubOrderOptions",
-        props:['items' ,'invoice_id','item_selected','suborder','invoice_Status','user'],
+        props:['items' ,'invoice_id','item_selected','suborder','invoice_Status','user' ,'ListTrackingKey'],
         components:{ NewSplitConfirmation , VoidConfirmation},
         setup(props , context){
            const store=useStore();

@@ -42,23 +42,22 @@
             invoice_id: String,
             item_selected:Array,
             url: String,
+            ListTrackingKey:Array,
         },
         setup(props,context){
             const show=ref(false);
             const store=useStore();
             const listItems = ref('');
- 
+
             watch(() => props.show_conf, (toval, fromval) => {
                 show.value=toval;
             });
               const regex = /\,(?=[^,]*$)/g;
               var reg =/[ ,-]/g;
          
-              listItems.value = props.item_selected.map(String);
-              if(listItems.value.length > 0){
-                 listItems.value = listItems.value[0].replace(reg , ', ').replace(regex, ' and ');
-              }
-              
+             listItems.value = props.ListTrackingKey.map(String).join();
+             listItems.value = listItems.value.replace(reg , ', ').replace(regex, ' and ');
+           
             const close=()=>{
                 context.emit('close');
                 show.value=false;
