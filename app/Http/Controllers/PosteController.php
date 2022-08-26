@@ -32,6 +32,7 @@ class PosteController extends Controller
         $route_name = $request->post('route_name');
         $poste_id = $request->post('poste_id');
 
+
         $date_less_six_month = date('Y-m-d',strtotime('-6month'));
 
         if($route_name=='item-qc'){
@@ -45,31 +46,28 @@ class PosteController extends Controller
             $inv = DB::table('infoInvoice')
                     ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
                     ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
-                    ->whereIn('infoInvoice.id',$invoice_id)
-                    ->get();
+                    ->where('infoInvoice.id',$invoice_id)
+                    ->first();
         }
-        // }else{
-        //     $inv = DB::table('infoInvoice')
-        //     ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.InvoiceID', 'infoInvoice.StoreName', 'infoInvoice.OrderID','infoInvoice.CustomerID')
-        //     ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
-        //     ->where('infoInvoice.NumInvoice',$invoice_id)
-        //     ->orderBy('infoInvoice.id','DESC')
-        //     ->first();
-        // }
-
+        if($route_name == 'OrderDetails'){
+            $inv = DB::table('infoInvoice')
+                    ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
+                    ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
+                    ->where('infoInvoice.InvoiceID',$invoice_id)
+                    ->first();
+        }
         if($inv){
             $user = Auth::user();
 
             $inv->user_initials = (!is_null($user->UserInitials)?$user->UserInitials:$user->name);
-
             //Customer preferences
             $preferences = [];
 
             $cust_pref = DB::table('InfoCustomerPreference')
                 ->select('InfoCustomerPreference.*','customerpreferences.preference_type')
                 ->join('customerpreferences','InfoCustomerPreference.id_preference','customerpreferences.id')
-                ->where('InfoCustomerPreference.CustomerID',$inv->CustomerID)
                 ->where('InfoCustomerPreference.Delete',0)
+                ->where('InfoCustomerPreference.CustomerID', "=" ,$inv->CustomerID)
                 ->get();
 
 

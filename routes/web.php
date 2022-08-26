@@ -35,8 +35,7 @@ use App\Http\Controllers\SupervisionController;
 use App\Models\Delivery;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Dompdf\Dompdf;
-use Dompdf\FontMetrics;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -106,7 +105,7 @@ Route::post('/get-recurring-booking-timeslot',[CustomerController::class, 'getRe
 Route::post('/get-customer-order-details',[CustomerController::class,'getCustomerOrderDetails'])->name('get-customer-order-details')->middleware('auth');
 Route::post('/update-detailing-issues-text',[DetailingController::class,'updateIssuesText'])->name('update-detailing-issues-text')->middleware('auth');
 Route::post('/setCustomerSmsDelivery',[CustomerController::class,'setCustomerSmsDelivery'])->name('setCustomerSmsDelivery')->middleware('auth');
-
+Route::post('/get-current-user',[CustomerController::class,'getCurrentUser'])->name('get-current-user')->middleware('auth');
 
 Route::get('/permissions-test',function(){
     $user=User::find(56);
@@ -711,6 +710,7 @@ Route::get('inv-pdf',function(Request $request){
     $facture_net = [];
     $facture_amount_net = 0;
 
+    $orderids = [];
 
     foreach($grouped_by_customer as $customerid=>$orders){
         $order_net = 0;
@@ -718,7 +718,7 @@ Route::get('inv-pdf',function(Request $request){
         $order_total = 0;
 
        foreach($orders as $orderid=>$invoices){
-
+            $orderids[] = $orderid;
 
             foreach($invoices as $invoiceid=>$items){
                 $order_details[$customerid][$invoiceid] = [];
@@ -775,9 +775,20 @@ Route::get('inv-pdf',function(Request $request){
 
     }
 
+    $orders = DB::table('infoOrder')->whereIn('id',$orderids)->get();
+    $discount = 0;
+    if(count($orders) > 0){
+        foreach($orders as $k=>$v){
+            $discount += $v->OrderDiscount;
+        }
+    }
+
+
     $facture_amount_net = array_sum($facture_net);
-    $facture_amount_vat = 0.2*$facture_amount_net;
-    $facture_amount_total = 1.2*$facture_amount_net;
+    $discounted_amount = $facture_amount_net - $discount;
+
+    $facture_amount_vat = 0.2*$discounted_amount;
+    $facture_amount_total = 1.2*$discounted_amount;
 
     $data = [
        'customer'=>$customer,
@@ -789,6 +800,7 @@ Route::get('inv-pdf',function(Request $request){
        'order_details'=>$order_details,
        'order_totals'=>$order_totals,
        'facture_net'=>number_format($facture_amount_net,2),
+       'facture_discount'=>number_format($discount,2),
        'facture_vat'=>number_format($facture_amount_vat,2),
        'facture_total'=>number_format($facture_amount_total,2),
     ];
@@ -820,6 +832,24 @@ Route::get('inv-pdf',function(Request $request){
 
 
 });
+
+Route::get('notify-test', function () {
+    $mail_vars = [
+        'FirstName' => 'Test',
+        'CreatedOn' => date('D d m Y H:i:s'),
+        'UserFullName' => 'Test at' . date('H:i'),
+        'UserAddress' => '10 test street<br>City<br>Country',
+        'PickupDate' => 'xx',
+        'PickupTime' => 'xx',
+        'DeliveryDate' => 'xx',
+        'DeliveryTime' => 'xx',
+        'DeliveryTo' => 'xx',
+        'AppTrackOrderLink' => 'xx',
+    ];
+
+    NotificationController::Notify('rushdi@vpc-direct-service.com', '+123456789', '3A_BOOKING_CONFIRM', '', $mail_vars, true, 0, '');
+});
+
 
 
 /* END TEST ROUTES */

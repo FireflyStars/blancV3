@@ -3,7 +3,7 @@
         <div class="d-none" id="barcode_div">
             <svg id="barcode"></svg>
         </div>
-        <teleport to=".item-detail-panel" :disabled="shouldClose" v-if="!shouldClose">
+        <teleport :to="Target" :disabled="shouldClose" v-if="!shouldClose">
             <Modal @close-modal="closeModal">
                 <template #header>
                     <div class="row mt-4 text-modal-red mb-3">
@@ -66,6 +66,7 @@
             const private_key = ref('');
             const available_printers = ref([]);
             const default_printers = ref([]);
+            const Target = ref('');
             onMounted(()=>{
                 axios.post('/get-site-keys', {})
                     .then((res) => {
@@ -125,14 +126,19 @@
             const closeModal = ()=>{
                 shouldClose.value = true;
             }
-            const loadPrinterModal = (invoice_id)=>{
+            const loadPrinterModal = (invoice_id, target)=>{
                 invoiceId.value = invoice_id;
                 shouldClose.value = false;
+                Target.value = target
+                if(Target.value == ".item-detail-panel"){
+                    shouldClose.value = true;
+                    printReceipt()
+                }
             }
             const printReceipt = ()=>{
                 let err =false;
                 let err_arr = [];
-                if(printer_name.value == ''){
+                if(printer_name.value == '' && (Target.value != ".item-detail-panel")){
                     err = true;
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message:`Please enter printer name`,ttl:5, type:'info'},{ root: true });
                 }
@@ -286,7 +292,8 @@
                 loadPrinterModal,
                 closeModal,
                 printReceipt,
-                printReceiptQz
+                printReceiptQz,
+                Target
             }
         }
     }

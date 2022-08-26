@@ -571,7 +571,7 @@
                                                     <h4 class="sub-title col-12">Pickup & delivery days</h4>
                                                     <p>Please pick number of days we will visit the customer, with matching slots.</p>
                                                     <div class="d-flex p-2">
-                                                        <div class="pickup-day rounded-circle" 
+                                                        <div class="pickup-day rounded-circle"
                                                             v-for="(pickupDay, index) in pickupDays" :key="index"
                                                             :class="{ 'active': pickupDay.active }"
                                                             @click="addPickupDay(index)"
@@ -590,13 +590,13 @@
                                                                 :placeholder="'Select'"
                                                                 :label="slot.label"
                                                                 :name="slot.label">
-                                                            </select-options>                                                        
+                                                            </select-options>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="w-100 p-3"  v-if="form.deliveryByday == '1'">
                                                     <button class="btn btn-success each-save-btn" @click="saveRecurring">Save Recurring</button>
-                                                </div>  
+                                                </div>
                                             </div>
                                             <div class="p-3" v-if="viewRecurring == true && form.deliveryByday == '1'">
                                                 <h4 class="sub-title col-12">Recurring booking is <span class="primary-color">{{ form.pickupSlots.length }} a week</span></h4>
@@ -804,7 +804,7 @@
                 <div class="col-3"><button class="btn btn-outline-danger w-100" @click="closePauseRecurringModal">Cancel</button></div>
             </div>
         </template>
-    </modal>    
+    </modal>
 </template>
 
 <script>
@@ -949,7 +949,7 @@
 
             const viewRecurring = ref(true);
             const pauseRecurring = ref(false);
-            const current_user = ref(null);
+            const current_user = ref({});
             const credit_to_add = ref(0);
 
 
@@ -957,7 +957,17 @@
                 nextTick(()=>{
                     showcontainer.value=true;
                 });
+
                 getCustomerFullDetail();
+
+                axios.post('/get-current-user',{})
+                    .then((res)=>{
+                        current_user.value = res.data.user;
+                    }).catch((err)=>{
+
+                    }).finally(()=>{
+
+                    });
 
                 setTimeout(() => {
                     /*
@@ -1080,7 +1090,7 @@
                             pauseRecurring.value = true;
                         }
                         pickupDays.value = res.data.available_days;
-                        timeslots.value = res.data.available_slots; 
+                        timeslots.value = res.data.available_slots;
                         if(res.data.customer.DeliveryMon){
                             form.value.pickupSlots.push({
                                 value: res.data.customer.DeliveryMon,
@@ -1145,13 +1155,14 @@
                         { name: res.data.customer.firstName +' ' + res.data.customer.lastName , route:'ViewCustomer', params:{ customer_id: res.data.customer.id }}
                     );
 
-                    current_user.value = res.data.customer.current_user;
+                    //current_user.value = res.data.customer.current_user;
                 }).catch((error)=>{
                     //console.log(error);
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 })
             }
+
             const getSlotDisplayByValue = (key, value)=>{
                 const temp = timeslots.value[key].filter((item) => { return item.value == value })[0];
                 if( temp ){
@@ -1674,7 +1685,7 @@
                 });
             }
             const pickupDays = ref([]);
-            const timeslots = ref([]);            
+            const timeslots = ref([]);
             const addPickupDay = (index)=>{
                 let pickupDay = pickupDays.value[index];
                 if(pickupDay.active){
@@ -1705,7 +1716,7 @@
                         label: 'Select '+pickupDay.longName+' slot',
                     });
                 }
-            }          
+            }
             watch(()=>form.value.deliveryByday, (cur_val, pre_val)=>{
                 if(cur_val == '0'){
                     viewRecurring.value = false;
@@ -1729,7 +1740,7 @@
                         console.log(err);
                     }).finally(()=>{
                         store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                    });                    
+                    });
                 }
                 if(pickupDays.value.length == 0 && cur_val == '1'){
                     if(form.value.postCode == ''){
@@ -1744,9 +1755,9 @@
                         }).finally(()=>{
                             store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                         })
-                    }                
+                    }
                 }
-            })         
+            })
             const saveRecurring = ()=>{
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Updating Customer Recurring...']);
                 axios.post('/save-customer-recurring',{
@@ -1767,7 +1778,7 @@
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
-            }   
+            }
             const openPauseRecurringModal = ()=>{
                 pauseRecurringModal.value.showModal();
             }
@@ -1795,7 +1806,7 @@
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
-            }  
+            }
             const unpauseRecurringFunc = ()=>{
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Unpause Recurring...']);
                 axios.post('/unpause-customer-recurring',{
@@ -1816,7 +1827,8 @@
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
-            }  
+            }
+
             return {
                 form,
                 step,
@@ -2279,7 +2291,7 @@ input.error:focus{
 .pickup-day{
     display: flex;
     align-items: center;
-    justify-content: center;    
+    justify-content: center;
     font-weight: bold;
     margin-right: 15px;
     width: 38px;

@@ -1148,7 +1148,7 @@ class CustomerController extends Controller
                                                  }
 
                                             }
-                                         }  
+                                         }
 
         $customer->scheduled_orders = $scheduled_orders;
 
@@ -1289,23 +1289,23 @@ class CustomerController extends Controller
             $customer->current_user = $user;
         }
         $available_days = [];
-        $available_slots = [];        
+        $available_slots = [];
         if($customer->address){
             $postcode = $customer->address->postCode;
             $postcode = str_replace(' ', '', $postcode);
             $postcode = substr($postcode, 0, -3);
-    
-    
+
+
             $tranche_details = [];
             $tranche_details = DB::table('tranchepostcode')
                 ->where('Postcode', $postcode)
                 ->where('tranche', '!=', '[]')
                 ->get();
-    
+
             $available_days = [];
-    
+
             $days = ['MONDAY'=> 'DeliveryMon', 'TUESDAY'=>'DeliveryTu','WEDNESDAY'=>'DeliveryWed','THURSDAY'=>'DeliveryTh','FRIDAY'=>'DeliveryFri','SATURDAY'=>'DeliverySat'];
-    
+
             $available_days = [];
             $available_slots = [];
             if(count($tranche_details) > 0){
@@ -1332,7 +1332,7 @@ class CustomerController extends Controller
 
     /**
      * Get booking timeslot
-     * 
+     *
      */
     public function getRecurringBookingTimeSlot(Request $request){
         $postcode = $request->postCode;
@@ -1925,7 +1925,7 @@ class CustomerController extends Controller
     public function setCustomerSmsDelivery(Request $request){
 
         foreach ($request->listCustomers as $customer) {
-            try { 
+            try {
                   DB::table('infoCustomer')->where('CustomerID', $customer)->update(['SMS6I' => 1]);
             } catch (\Exception $e) {
                 return response()->json(['error'=> $e->getMessage()]);
@@ -1933,5 +1933,11 @@ class CustomerController extends Controller
         }
         return response()->json(['message'=>'OK']);
 
+    }
+
+    public function getCurrentUser(Request $request){
+        return response()->json([
+            'user'=>Auth::user(),
+        ]);
     }
 }
