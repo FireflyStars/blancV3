@@ -19,7 +19,7 @@
 
     footer{
         position:fixed;
-        bottom:150px;
+        bottom:160px;
         right:0;
         left:0;
     }
@@ -176,7 +176,7 @@
 
     #period_text{
         font-size:9px;
-        padding-left:5px;
+        text-indent:10px;
     }
 
     .total_text{
@@ -186,6 +186,7 @@
     .amount_total{
         font-weight: bold;
         text-align: right;
+        width:30%;
     }
 
     .vat_total{
@@ -205,6 +206,7 @@
     #footer_left{
         position:absolute;
         left:0;
+        margin-top:20px;
         font-size:12px;
     }
 
@@ -259,7 +261,7 @@
                 <tr>
                     <td class="heading-cell">
                         <div class="heading-cell-title">Due Date:</div>
-                        <div class="heading-cell-value">15/06/2022</div>
+                        <div class="heading-cell-value">XX</div>
                     </td>
                     <td class="heading-cell">
                         <div class="heading-cell-title">Invoice Date:</div>
@@ -282,7 +284,7 @@
         </div>
         <table border="0" cellspacing="0" id="footer_total">
             <tr>
-                <td id="period_text">This period</td><td colspan="2"></td>
+                <td colspan="3" id="period_text">This period</td>
             </tr>
             <tr><td colspan="3">&nbsp;</td></tr>
             <tr>
@@ -292,12 +294,16 @@
             </tr>
             <tr>
                 <td>&nbsp;</td>
+                <td class="total_text">Discount:</td>
+                <td class="amount_total">@if($facture_discount > 0)-@endif &#163;{{$facture_discount}}</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
                 <td class="total_text vat_total">VAT @ 20%:</td>
                 <td class="amount_total vat_total">&#163;{{$facture_vat}}</td>
             </tr>
             <tr>
-                <td>&nbsp;</td>
-                <td class="total_text">Total Due Inc VAT:</td>
+                <td class="total_text" colspan="2">Total Due Inc VAT:</td>
                 <td class="amount_total">&#163;{{$facture_total}}</td>
             </tr>
 

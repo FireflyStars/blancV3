@@ -35,8 +35,7 @@ use App\Http\Controllers\SupervisionController;
 use App\Models\Delivery;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Dompdf\Dompdf;
-use Dompdf\FontMetrics;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -834,38 +833,23 @@ Route::get('inv-pdf',function(Request $request){
 
 });
 
-Route::get('ar-test',function(){
-    $customers = DB::table('infoCustomer')
-    ->where('bycard',0)
-    ->get();
+Route::get('notify-test', function () {
+    $mail_vars = [
+        'FirstName' => 'Test',
+        'CreatedOn' => date('D d m Y H:i:s'),
+        'UserFullName' => 'Test at' . date('H:i'),
+        'UserAddress' => '10 test street<br>City<br>Country',
+        'PickupDate' => 'xx',
+        'PickupTime' => 'xx',
+        'DeliveryDate' => 'xx',
+        'DeliveryTime' => 'xx',
+        'DeliveryTo' => 'xx',
+        'AppTrackOrderLink' => 'xx',
+    ];
 
-    $bacs_cust_id = [];
-    $list = [];
-
-    if(count($customers) > 0){
-        foreach($customers as $k=>$v){
-            $bacs_cust_id[] = $v->CustomerID;
-            echo $v->Name."<br/>";
-        }
-    }
-
-
-
-    $grouped_by_cust_id = [];
-    $grouped_by_cust_order_date = [];
-    $custid_with_orders = [];
-    $master_cust = [];
-
-    $orders = DB::table('infoOrder')
-        ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID')
-        ->join('detailingitem','infoOrder.id','detailingitem.order_id')
-        ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
-        ->where('infoOrder.orderinvoiced',0)
-        ->whereIn('infoOrder.CustomerID',$bacs_cust_id)
-        ->get();
-
-
+    NotificationController::Notify('rushdi@vpc-direct-service.com', '+123456789', '3A_BOOKING_CONFIRM', '', $mail_vars, true, 0, '');
 });
+
 
 
 /* END TEST ROUTES */
