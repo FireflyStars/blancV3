@@ -35,7 +35,8 @@ use App\Http\Controllers\SupervisionController;
 use App\Models\Delivery;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
-
+use Dompdf\Dompdf;
+use Dompdf\FontMetrics;
 
 /*
 |--------------------------------------------------------------------------
@@ -104,7 +105,7 @@ Route::post('/get-recurring-booking-timeslot',[CustomerController::class, 'getRe
 
 Route::post('/get-customer-order-details',[CustomerController::class,'getCustomerOrderDetails'])->name('get-customer-order-details')->middleware('auth');
 Route::post('/update-detailing-issues-text',[DetailingController::class,'updateIssuesText'])->name('update-detailing-issues-text')->middleware('auth');
-// Route::post('/setCustomerSmsDelivery',[CustomerController::class,'setCustomerSmsDelivery'])->name('setCustomerSmsDelivery')->middleware('auth');
+Route::post('/setCustomerSmsDelivery',[CustomerController::class,'setCustomerSmsDelivery'])->name('setCustomerSmsDelivery')->middleware('auth');
 
 
 Route::get('/permissions-test',function(){
@@ -629,8 +630,6 @@ Route::get('ar-pdf',function(){
 
     $to_insert = [];
 
-    echo "<pre>";
-
     foreach($simplified_grouped_by_customer as $k=>$v){
         $total = 0;
         $info = [];
@@ -665,7 +664,7 @@ Route::get('ar-pdf',function(){
 
 Route::get('inv-pdf',function(Request $request){
     //$facture_id = $request->facture;
-    $facture_id = 'a0078a8e-1fab-11ed-b373-080027d0ed3e';
+    $facture_id = 'ece52ef4-21e2-11ed-978b-080027d0ed3e';
 
     if(!isset($facture_id) || $facture_id ==''){
         die('Facture not set');
@@ -685,7 +684,6 @@ Route::get('inv-pdf',function(Request $request){
     $addr = Delivery::getAddressByCustomerUUID($details->CustomerID);
 
     $order_details = (array) @json_decode($details->info);
-
 
     if(count($order_details) > 0){
         foreach($order_details as $k=>$v){
@@ -708,9 +706,20 @@ Route::get('inv-pdf',function(Request $request){
 
 
     $order_details = [];
+    $order_totals = [];
+
+    $facture_net = [];
+    $facture_amount_net = 0;
+
 
     foreach($grouped_by_customer as $customerid=>$orders){
+        $order_net = 0;
+        $order_vat = 0;
+        $order_total = 0;
+
        foreach($orders as $orderid=>$invoices){
+
+
             foreach($invoices as $invoiceid=>$items){
                 $order_details[$customerid][$invoiceid] = [];
 
@@ -718,23 +727,57 @@ Route::get('inv-pdf',function(Request $request){
                 $net = 0;
                 $vat = 0;
                 $total = 0;
-                foreach($items as $k=>$v){
+                $items_text = [];
+                $promised_dates = [];
 
-                    $dept[$v->Department][] = $v->brand." ".$v->Description;
+
+
+                foreach($items as $k=>$v){
+                    $promised_dates[] = $v->PromisedDate;
+
+                    $item_txt = $v->brand." ".str_replace(' ',' ',$v->Description);
+
+                    $dept[$v->Department][] = $item_txt;
                     $net += $v->priceTotal;
                 }
+                $items_per_dept[$v->Department] = array_count_values($dept[$v->Department]);
+
+                usort($promised_dates,function($a,$b){
+                    return strtotime($b) - strtotime($a);
+                });
+
+                $order_net += $net;
 
                 $vat = 0.2*$net;
                 $total = 1.2*$net;
 
                 $order_details[$customerid][$invoiceid]['orderid'] = $orderid;
-                $order_details[$customerid][$invoiceid]['items'] = $dept;
+                $order_details[$customerid][$invoiceid]['date'] = (isset($promised_dates[0]) && $promised_dates[0]!='0000-00-00'?date('d/m/y',strtotime($promised_dates[0])):"--");
+                $order_details[$customerid][$invoiceid]['items'] = $items_per_dept;
                 $order_details[$customerid][$invoiceid]['net'] = number_format($net,2);
                 $order_details[$customerid][$invoiceid]['vat'] = number_format($vat,2);
                 $order_details[$customerid][$invoiceid]['total'] = number_format($total,2);
             }
+
+
        }
+
+       $facture_net[] = $order_net;
+
+       $order_vat = 0.2*$order_net;
+       $order_total = 1.2*$order_net;
+
+
+
+       $order_totals[$customerid]['order_net'] = number_format($order_net,2);
+       $order_totals[$customerid]['order_vat'] = number_format($order_vat,2);
+       $order_totals[$customerid]['order_total'] = number_format($order_total,2);
+
     }
+
+    $facture_amount_net = array_sum($facture_net);
+    $facture_amount_vat = 0.2*$facture_amount_net;
+    $facture_amount_total = 1.2*$facture_amount_net;
 
     $data = [
        'customer'=>$customer,
@@ -744,12 +787,37 @@ Route::get('inv-pdf',function(Request $request){
        'invoice_date'=>date('d/m/Y'),
        'facture'=>$details,
        'order_details'=>$order_details,
+       'order_totals'=>$order_totals,
+       'facture_net'=>number_format($facture_amount_net,2),
+       'facture_vat'=>number_format($facture_amount_vat,2),
+       'facture_total'=>number_format($facture_amount_total,2),
     ];
 
+
     Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
+
+
     $pdf = Pdf::loadView('pdf/ar_pdf', $data);
 
+    $pdf->output();
+
+    $canvas = $pdf->getDomPDF()->getCanvas();
+
+    $fontMetrics = $pdf->getDomPDF()->getFontMetrics();
+    $font = $fontMetrics->getFont('Times-Roman');
+
+    $text = "Page {PAGE_NUM} of {PAGE_COUNT}";
+    $size = 10;
+
+    $width = $fontMetrics->getTextWidth($text, $font, $size) / 2;
+
+    $x = $canvas->get_width() - $width;
+    $y = $canvas->get_height() - 35;
+
+    $canvas->page_text($x, $y, $text , $font, 10, array(0, 0, 0));
+
     return $pdf->download('invoice'.$details->CustomerID.'.pdf');
+
 
 });
 

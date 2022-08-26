@@ -740,6 +740,22 @@ class DetailingController extends Controller
         $has_detailing_order = false;
         $err = '';
 
+        if($item){
+            $inv = DB::table('infoInvoice')
+                ->where('InvoiceID',$item->InvoiceID)
+                ->where('CustomerID',$customer_id)
+                ->get();
+
+            if(count($inv)==0){
+                $err = "HSL $tracking already linked with another customer.";
+            }else{
+                if(!in_array($item->nextpost,[28,34,39,47,43,44,46])){
+                    $err = "HSL $tracking is active. Please change its station";
+                }
+            }
+        }
+
+    if($err==''){
         $previous_detailed_item = DB::table('detailingitem')
             ->where('tracking',$tracking)
             ->where('customer_id',$cust->id)
@@ -774,16 +790,6 @@ class DetailingController extends Controller
             $detailingitem_id = DB::table('detailingitem')->insertGetId($duplicate_detailing_item);
 
         }else{
-            if($item){
-                $inv = DB::table('infoInvoice')
-                    ->where('InvoiceID',$item->InvoiceID)
-                    ->where('CustomerID',$customer_id)
-                    ->get();
-
-                if(count($inv)==0){
-                    $err = "HSL $tracking already linked with another customer.";
-                }
-            }
 
             $has_detailing_order = DB::table('detailingitem')->where('tracking',$tracking)
                 ->where('status','In Process')
@@ -793,6 +799,15 @@ class DetailingController extends Controller
             if($has_detailing_order){
                 $err = "HSL $tracking is already being detailed.";
             }
+        }
+    }
+
+        $current_detailing_item = DB::table('detailingitem')->where('tracking',$tracking)
+            ->where('order_id',$order_id)
+            ->first();
+
+        if($current_detailing_item){
+            $err = "HSL $tracking is already being detailed.";
         }
 
         return response()->json([
@@ -1407,10 +1422,18 @@ class DetailingController extends Controller
                         $dc[] = $cs[$val];
                     }
 
+                    $c_price = number_format($v->dry_cleaning_price + $v->cleaning_addon_price,2);
+
+                    if($v->cleaning_price_type=='PriceNow'){
+                        $c_price = "Price now";
+                    }elseif($v->cleaning_price_type=='Quote'){
+                        $c_price = 'Quote';
+                    }
+
                     if(!empty($dc)){
                         $items[$k]->detailed_services[] = [
                             'name'=>"Dry cleaning (".implode(",",$dc).")",
-                            'price'=>number_format($v->dry_cleaning_price + $v->cleaning_addon_price,2),
+                            'price'=>$c_price,
                         ];
                     }
                 }
@@ -1432,9 +1455,17 @@ class DetailingController extends Controller
 
                     if(!empty($group_by_tailoring_service)){
                         foreach($group_by_tailoring_service as $group=>$prices){
+                            $t_price = number_format(array_sum($prices),2);
+                            if($v->tailoring_price_type=='PriceNow'){
+                                $t_price = 'Price now';
+                            }else if($v->tailoring_price_type=='Quote'){
+                                $t_price = 'Quote';
+                            }
+
+
                             $t_arr = [
                                 'name'=>$group,
-                                'price'=>($v->tailoring_price_type=='PriceNow'?'Price now':number_format(array_sum($prices),2)),
+                                'price'=>$t_price,
                             ];
 
                             $items[$k]->detailed_services[] = $t_arr;

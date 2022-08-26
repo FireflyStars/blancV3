@@ -7,17 +7,16 @@
         <div class="confirmation">
             <i class="icon-close" @click="close"></i>
             <div class="confirmation-title">
-                <span class="subtitle">Split</span>
+                <span class="subtitle">Void</span>
             </div>
-            <div class="confirmation-msg body_regular">
-                <p>Do you want to split items
-                <br>
-                {{listItems}}
-                <br>
-                OUT OF sub-order {{suborder}}</p></div>
+            <div class="confirmation-msg body_regular"><p>Do you want to Void Sub Order 
+            <br>
+            {{suborder}}
+            </p>
+            </div>
             <div class="confirmation-btn">
-                <button class="btn btn-outline-danger body_medium" style="margin-right: 59px" @click="close">No, Cancel</button>
-                <button class="btn btn-dark body_medium" style="" @click="split">Yes ,Split</button>
+                <button class="btn btn-outline-danger body_medium" style="margin-right: 59px" @click="close">No, cancel</button>
+                <button class="btn btn-dark body_medium" style="" @click="VoidSubOrder">Yes, void</button>
             </div>
         </div>
 
@@ -31,61 +30,48 @@
     import {useStore} from 'vuex';
     import {TOASTER_MODULE, TOASTER_MESSAGE} from "../../store/types/types";
     export default {
-        name: "NewSplitConfirmation",
+        name: "VoidConfirmation",
         props:{
             show_conf:{
                 type:Boolean
             },
-            suborder :String,
-            items :Array,
-            invoice_id: String,
-            item_selected:Array,
-            ListTrackingKey:Array,
+            invoice_id :{
+               type:String
+            },
+            suborder:{
+               type:String
+            },
         },
         setup(props,context){
             const show=ref(false);
             const store=useStore();
-            const listItems = ref('');
-
             watch(() => props.show_conf, (toval, fromval) => {
                 show.value=toval;
             });
-              const regex = /\,(?=[^,]*$)/g;
-              var reg =/[ ,-]/g;
-         
-              listItems.value = props.ListTrackingKey.map(String);
-              if(listItems.value.length > 0){
-                 listItems.value = listItems.value[0].replace(reg , ', ').replace(regex, ' and ');
-              }
-              
             const close=()=>{
                 context.emit('close');
                 show.value=false;
             }
-            
-           function split(){
-               axios.post('/SplitSubOrder',{
-                   invoice_id: props.invoice_id ,
-                   items:props.item_selected
+                 
+            function VoidSubOrder(){
+
+                axios.post('/voidSuborder',{
+                   invoiceId: props.invoice_id 
                }).then((res)=>{
-                        if( res.data.status_message == "OK"){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
+                          if( res.data.done == "ok"){
+                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
                              location.reload();
-                        }else {
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${res.data.status_message}`,ttl:5,type:'danger'});
+                             close()
                         }
-                       
-                     close();
                     }).catch((error)=>{
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
                     })
-                  close()
-           }
+                close()
+            }
             return {
                 show,
                 close,
-                split,
-                listItems
+                VoidSubOrder
             }
         }
     }

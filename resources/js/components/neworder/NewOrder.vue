@@ -150,7 +150,23 @@
                                         <div class="" :class="{'col-4':isRecurring,'col-12':!isRecurring}">
                                             <div class="row">
                                                 <div class="col">
-                                            <select-options classnames="deliverymethod" v-model="deliverymethod"  placeholder="Choose a method" :options="deliverymethods" name="delivery_method" hint=""  label="Delivery method" :disabled="deliverymethod_disabled"></select-options>
+                                                    <!--
+                                            <select-options classnames="deliverymethod" v-model="deliverymethod"  placeholder="Choose a method" :options="deliverymethods" name="delivery_method" hint=""  label="Delivery method"></select-options>
+                                            -->
+                                            <div id="select_div">
+                                                <label>
+                                                <select id="method_select" v-model="deliverymethod">
+                                                    <option selected style="font-family: Verdana">Choose a method</option>
+                                                    <option v-for="(method,index) in deliverymethods" :value="method.value" :disabled="method.disabled" style="font-family: Verdana;">
+                                                        {{method.display}}
+                                                    </option>
+                                                </select>
+                                                </label>
+                                            </div>
+
+                                            <!--
+                                                :disabled="deliverymethod_disabled"
+                                            -->
                                                 </div>
                                             </div>
                                             <transition name="popinout">
@@ -292,12 +308,12 @@
                                              <div class="row mx-0 form-group mb-2">
                                                  <textarea class="form-control" v-model="customer_instructions" rows="3" :readonly="isRecurring"></textarea>
                                             </div>
-                                            <div class="row mx-0 form-group mb-4 align-items-center" v-if="!showRecurring">
+                                            <div class="row mx-0 form-group mb-4 align-items-center">
                                                 <input type="checkbox" id="save_instruction_check" class="float-left mr-3" v-model="save_instruction_check"/>
                                                 <span class="col px-0">Save instructions for next time</span>
                                             </div>
 
-                                            <div class="row mx-0 form-group" v-if="!showRecurring">
+                                            <div class="row mx-0 form-group">
                                                 <h3 class="body_medium">Alternate contact</h3>
                                                  <input type="text" class="form-control" v-model="alternate_contact"/>
                                             </div>
@@ -676,19 +692,23 @@ import axios from 'axios';
             const deliverymethods=ref([
                 {
                     value:'in_store_collection',
-                    display:'In Store collection'
+                    display:'In Store collection',
+                    disabled: false
                 },
                 {
                     value:'home_delivery',
-                    display:'Home Delivery'
+                    display:'Home Delivery',
+                    disabled: deliverymethod_disabled,
                 },
                 {
                     value:'delivery_only',
-                    display:'Delivery Only'
+                    display:'Delivery Only',
+                    disabled: deliverymethod_disabled,
                 },
                 {
                     value:'shipping',
-                    display:'Shipping'
+                    display:'Shipping',
+                    disabled: deliverymethod_disabled,
                 },
             ]);
 
@@ -790,6 +810,8 @@ import axios from 'axios';
                         alternate_contact.value = current_customer.delivery_preference.PhoneNumber;
                     }
 
+                    //console.log(current_customer.main_account.TypeDelivery);
+
                     if(typeof current_customer.main_account!="undefined"){
                         if(current_customer.main_account.TypeDelivery!="DELIVERY"){
                             deliverymethod.value='in_store_collection';
@@ -797,6 +819,7 @@ import axios from 'axios';
                             isc_pickup_timeslot.value=11;
                             isc_pickup_timeslot_disabled.value=true;
                             store_name_disabled.value=true;
+
                             deliverymethod_disabled.value=true;
                             let Today = new Date();
                             let days=3;
@@ -826,7 +849,7 @@ import axios from 'axios';
                                 do_delivery_timeslot.value = current_customer.main_account.recent_deliveryask.slot;
 
                               }else{
-                                  no_main_booking.value=true;
+                                  //no_main_booking.value=true;
 
                               }
 
@@ -1887,4 +1910,59 @@ input.error:focus{
     outline: none;
     border-color: #EB5757;
 }
+
+#method_select{
+    background-color: #fff;
+    border: 0.5px solid #E0E0E0;
+    box-sizing: border-box;
+    border-radius: 5px;
+    padding: 0 36px 0 16px;
+    height: 40px;
+    cursor: pointer;
+    align-items: center;
+    position: relative;
+    font-size:16px;
+
+    -webkit-appearance: none;
+        -moz-appearance: none;
+        -o-appearance: none;
+        appearance: none;
+        font:normal 16px "Gotham Rounded Light";
+}
+
+#method_select option{
+    padding: 7px 0 11px 16px;
+    height: 40px;
+    font-family:  "Gotham Rounded Light";
+}
+
+
+#select_div{
+    display: table;
+    position:relative;
+    font:normal 16px "Gotham Rounded";
+}
+
+#select_div::before,
+#select_div::after{
+    content: " ";
+    height: 3px;
+    display: block;
+    width: 13px;
+    background: #868686;
+    border-radius: 10px;
+    transform: rotate(40deg);
+    top:18px;
+    right: 22px;
+    position: absolute;
+    z-index:2;
+}
+
+#select_div::after{
+    transform: rotate(-40deg);
+    right: 13px;
+}
+
+
+
 </style>

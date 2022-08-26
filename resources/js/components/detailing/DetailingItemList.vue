@@ -10,7 +10,7 @@
                 <div class="col main">
                     <bread-crumb :paths="paths"></bread-crumb>
                     <span class="order-no">Order n°{{ order_id }} - {{ customer_name }}</span>
-                    <h1 class="title">Order Content</h1>
+                    <h1 class="title">Basket Content</h1>
                     <div class="content">
                         <button class="btn-shopify">
                             <i class="bi bi-bag p-2"></i>Add from Shopify

@@ -172,7 +172,7 @@
                                                         {{ds.name}}
                                                     </div>
                                                     <div class="col-2 text-align-right">
-                                                        <span v-if="ds.price!='Price now'">&#163;</span>{{ds.price}}
+                                                        <span v-if="ds.price!='Price now' && ds.price!='Quote'">&#163;</span>{{ds.price}}
                                                     </div>
                                                 </div>
                                             </div>

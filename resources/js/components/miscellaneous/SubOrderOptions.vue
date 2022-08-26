@@ -23,12 +23,13 @@
                 <img class="img-arrow" src="/images/garbage.png" />
                 <span>Delete</span>
             </div>
-            <div class="col-12 row-option"  @click="VoidSubOrder()">
+            <div class="col-12 row-option" v-if="user==1 &&invoice_Status!='VOID'"  @click="VoidSubOrder()">
                 <img class="img-arrow" src="/images/erase.png" />
                 <span>Void</span>
             </div>
         </div>
-        <NewSplitConfirmation :items="items" :item_selected="listItems" :invoice_id="invoice_id"  :suborder="suborder" :show_conf="show_split_conf" @close="show_split_conf=false"></NewSplitConfirmation>
+        <NewSplitConfirmation :items="items" :item_selected="listItems" :invoice_id="invoice_id"  :suborder="suborder" :ListTrackingKey="ListHSL" :show_conf="show_split_conf" @close="show_split_conf=false"></NewSplitConfirmation>
+        <void-confirmation :invoice_id="invoice_id" :suborder="suborder" :show_conf="show_void_conf" @close="show_void_conf=false" ></void-confirmation>
 
     </div>
 </template>
@@ -37,24 +38,33 @@
     import {ref} from 'vue';
     import {TOASTER_MODULE, TOASTER_MESSAGE} from "../../store/types/types";
     import {useStore} from 'vuex';
-     import NewSplitConfirmation from '../miscellaneous/NewSplitConfirmation'
+    import NewSplitConfirmation from '../miscellaneous/NewSplitConfirmation';
+    import VoidConfirmation from '../miscellaneous/VoidConfirmation';
     export default {
         name: "SubOrderOptions",
-        props:['items' ,'invoice_id','item_selected','suborder','invoice_Status'],
-        components:{ NewSplitConfirmation},
+        props:['items' ,'invoice_id','item_selected','suborder','invoice_Status','user' ,'ListTrackingKey'],
+        components:{ NewSplitConfirmation , VoidConfirmation},
         setup(props , context){
            const store=useStore();
            const btn_split_show = ref(false)
            const show_split_conf=ref(false);
+           const show_void_conf=ref(false);
            const listItems =ref([]);
-           
-           
-           
+           const ListHSL =ref([]);
+
+
+
             props.item_selected.forEach(item => {
                 if (item[0] == props.suborder){
                    listItems.value.push(item[1])
                 }
             });  
+
+             props.ListTrackingKey.forEach(item => {
+                if (item[0] == props.suborder){
+                   ListHSL.value.push(item[1])
+                }
+            });
 
             if(listItems.value.length > 0 && props.items.length > 1 && props.invoice_Status != "FULFILLED" ){
               btn_split_show.value = true
@@ -71,17 +81,7 @@
             }  
             
             function VoidSubOrder(){
-              axios.post('/voidSuborder',{
-                   invoiceId: props.invoice_id 
-               }).then((res)=>{
-                          if( res.data.done == "ok"){
-                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
-                             location.reload();
-                             close()
-                        }
-                    }).catch((error)=>{
-                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
-                    })
+              show_void_conf.value = true
             }
 
             return {
@@ -90,7 +90,9 @@
                btn_split_show,
                listItems,
                VoidSubOrder,
-               close
+               close,
+               show_void_conf,
+               ListHSL
 
             }
         }
