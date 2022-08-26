@@ -415,7 +415,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-4" v-if="current_user && current_user.role_id==1">
+                                            <div class="col-4" v-if="current_user && (current_user.role_id == 1 || current_user.role_id == 4)">
                                                 <div class="form-group col-6">
                                                     <label for="add_credit">Add credit</label>
                                                     <div class="input-group">
