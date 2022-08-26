@@ -542,7 +542,8 @@ export default {
         }
 
         onMounted(()=>{
-
+            sel_cleaning_price_type.value = 'Standard';
+            sel_tailoring_price_type.value = 'Standard';
 
             checkSelectedCleaning(false);
             checkSelectedTailoring(false);
@@ -574,7 +575,7 @@ export default {
 
 
 
-            console.log('cleaning',sel_cleaning_service_id);
+            console.log('cleaning price_type',sel_cleaning_price_type.value);
 
             if(sel_cleaning_service_id.value.length==0 && sel_tailoring_service_id.value.length==0){
                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
@@ -603,7 +604,6 @@ export default {
 
                 is_err = true;
             }
-
             if(!is_err){
 
                axios.post('/complete-detailing-item',{
@@ -616,7 +616,6 @@ export default {
                     router.push('/order-content/'+props.detailingitem.order_id);
                });
             }
-
         }
 
         function closeAddOnModal(){
