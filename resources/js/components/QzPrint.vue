@@ -130,11 +130,15 @@
                 invoiceId.value = invoice_id;
                 shouldClose.value = false;
                 Target.value = target
+                if(Target.value == ".item-detail-panel"){
+                    shouldClose.value = true;
+                    printReceipt()
+                }
             }
             const printReceipt = ()=>{
                 let err =false;
                 let err_arr = [];
-                if(printer_name.value == ''){
+                if(printer_name.value == '' && (Target.value != ".item-detail-panel")){
                     err = true;
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message:`Please enter printer name`,ttl:5, type:'info'},{ root: true });
                 }

@@ -101,7 +101,7 @@
         <div class="d-flex justify-content-between">
             <div class="col-6 d-flex">
                 <button class="border-btn" @click="redirectToCheckOut(Order.order_id)">View Order</button>
-                <button class="border-btn ms-2" @click="openModal">Print Ticket(s)</button>
+                <button class="border-btn ms-2" @click="openModal(Order.sub_order_id)">Print Ticket(s)</button>
             </div>
             <div class="col-6 text-end">
                 <button class="fullfil-btn" @click="FulfillSubOrder">
@@ -176,8 +176,8 @@ export default {
         }
     },
     methods:{
-        openModal(){
-            this.$refs.qz_printer.loadPrinterModal(this.selectedSubOrders , "")
+        openModal(suborder){
+            this.$refs.qz_printer.loadPrinterModal(suborder , ".detail-panel")
         }
     },
     props:{
