@@ -3,7 +3,7 @@
         <div class="d-none" id="barcode_div">
             <svg id="barcode"></svg>
         </div>
-        <teleport to=".item-detail-panel" :disabled="shouldClose" v-if="!shouldClose">
+        <teleport :to="Target" :disabled="shouldClose" v-if="!shouldClose">
             <Modal @close-modal="closeModal">
                 <template #header>
                     <div class="row mt-4 text-modal-red mb-3">
@@ -66,6 +66,7 @@
             const private_key = ref('');
             const available_printers = ref([]);
             const default_printers = ref([]);
+            const Target = ref('');
             onMounted(()=>{
                 axios.post('/get-site-keys', {})
                     .then((res) => {
@@ -125,9 +126,10 @@
             const closeModal = ()=>{
                 shouldClose.value = true;
             }
-            const loadPrinterModal = (invoice_id)=>{
+            const loadPrinterModal = (invoice_id, target)=>{
                 invoiceId.value = invoice_id;
                 shouldClose.value = false;
+                Target.value = target
             }
             const printReceipt = ()=>{
                 let err =false;
@@ -286,7 +288,8 @@
                 loadPrinterModal,
                 closeModal,
                 printReceipt,
-                printReceiptQz
+                printReceiptQz,
+                Target
             }
         }
     }

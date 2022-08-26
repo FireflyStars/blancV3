@@ -177,7 +177,7 @@ export default {
     },
     methods:{
         openModal(){
-            this.$refs.qz_printer.loadPrinterModal(this.selectedSubOrders)
+            this.$refs.qz_printer.loadPrinterModal(this.selectedSubOrders , "")
         }
     },
     props:{

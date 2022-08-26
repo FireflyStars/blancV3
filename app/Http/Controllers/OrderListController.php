@@ -1210,13 +1210,14 @@ class OrderListController extends Controller
         $params = [
             'token'=>'GhtfvbbG4489hGtyEfgARRGht3',
             'invoiceid'=>$invoice_id,
-            'item' =>$data
+            'item' =>$data,
+            'userid'=>$user->id,
         ];
             $response = $client->request('GET', $endpoint, ['query' => $params]);
             $statusCode = $response->getStatusCode();
             $statusText = $response->getReasonPhrase();
             return \response()->json([
-                'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=$invoice_id&item=".$data,
+                'url'=>$endpoint."?token=GhtfvbbG4489hGtyEfgARRGht3&invoiceid=$invoice_id&item=$data&userid=$user->id",
                 'status_code'=>$statusCode,
                 'status_message'=>$statusText
             ]);

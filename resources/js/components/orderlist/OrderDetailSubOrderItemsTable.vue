@@ -10,7 +10,7 @@
                             <div class="col-3">
                                 <img class="img-arrow" src="/images/flesh.png" />
                                 <img class="img-arrow" @click="setSubOrderFulfilled(ITEMS[0].InvoiceID , ITEMS[0].Invoice_Status)" src="/images/check.png" />
-                                <img class="img-arrow" src="/images/download.png" @click="openModal(ITEMS[0].InvoiceID )" />
+                                <img class="img-arrow" src="/images/download.png" @click="openModal(ITEMS[0].InvoiceID)" />
                                 <img class="img-arrow" @click="OpenSubOrderOptions(suborder)"  src="/images/menu.png"   :class="{ active: show === suborder }"/>   
                             </div>
                     </div>
@@ -258,7 +258,8 @@
 
         methods:{
         openModal(InvoiceID){
-            this.$refs.qz_printer.loadPrinterModal(InvoiceID)
+            this.OpenitemDetails = false
+            this.$refs.qz_printer.loadPrinterModal(InvoiceID , ".odv")
         }
     },   
  
