@@ -106,7 +106,7 @@ Route::post('/get-recurring-booking-timeslot',[CustomerController::class, 'getRe
 Route::post('/get-customer-order-details',[CustomerController::class,'getCustomerOrderDetails'])->name('get-customer-order-details')->middleware('auth');
 Route::post('/update-detailing-issues-text',[DetailingController::class,'updateIssuesText'])->name('update-detailing-issues-text')->middleware('auth');
 Route::post('/setCustomerSmsDelivery',[CustomerController::class,'setCustomerSmsDelivery'])->name('setCustomerSmsDelivery')->middleware('auth');
-
+Route::post('/get-current-user',[CustomerController::class,'getCurrentUser'])->name('get-current-user')->middleware('auth');
 
 Route::get('/permissions-test',function(){
     $user=User::find(56);
@@ -711,6 +711,7 @@ Route::get('inv-pdf',function(Request $request){
     $facture_net = [];
     $facture_amount_net = 0;
 
+    $orderids = [];
 
     foreach($grouped_by_customer as $customerid=>$orders){
         $order_net = 0;
@@ -718,7 +719,7 @@ Route::get('inv-pdf',function(Request $request){
         $order_total = 0;
 
        foreach($orders as $orderid=>$invoices){
-
+            $orderids[] = $orderid;
 
             foreach($invoices as $invoiceid=>$items){
                 $order_details[$customerid][$invoiceid] = [];
@@ -775,9 +776,20 @@ Route::get('inv-pdf',function(Request $request){
 
     }
 
+    $orders = DB::table('infoOrder')->whereIn('id',$orderids)->get();
+    $discount = 0;
+    if(count($orders) > 0){
+        foreach($orders as $k=>$v){
+            $discount += $v->OrderDiscount;
+        }
+    }
+
+
     $facture_amount_net = array_sum($facture_net);
-    $facture_amount_vat = 0.2*$facture_amount_net;
-    $facture_amount_total = 1.2*$facture_amount_net;
+    $discounted_amount = $facture_amount_net - $discount;
+
+    $facture_amount_vat = 0.2*$discounted_amount;
+    $facture_amount_total = 1.2*$discounted_amount;
 
     $data = [
        'customer'=>$customer,
@@ -789,6 +801,7 @@ Route::get('inv-pdf',function(Request $request){
        'order_details'=>$order_details,
        'order_totals'=>$order_totals,
        'facture_net'=>number_format($facture_amount_net,2),
+       'facture_discount'=>number_format($discount,2),
        'facture_vat'=>number_format($facture_amount_vat,2),
        'facture_total'=>number_format($facture_amount_total,2),
     ];
@@ -817,6 +830,39 @@ Route::get('inv-pdf',function(Request $request){
     $canvas->page_text($x, $y, $text , $font, 10, array(0, 0, 0));
 
     return $pdf->download('invoice'.$details->CustomerID.'.pdf');
+
+
+});
+
+Route::get('ar-test',function(){
+    $customers = DB::table('infoCustomer')
+    ->where('bycard',0)
+    ->get();
+
+    $bacs_cust_id = [];
+    $list = [];
+
+    if(count($customers) > 0){
+        foreach($customers as $k=>$v){
+            $bacs_cust_id[] = $v->CustomerID;
+            echo $v->Name."<br/>";
+        }
+    }
+
+
+
+    $grouped_by_cust_id = [];
+    $grouped_by_cust_order_date = [];
+    $custid_with_orders = [];
+    $master_cust = [];
+
+    $orders = DB::table('infoOrder')
+        ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID')
+        ->join('detailingitem','infoOrder.id','detailingitem.order_id')
+        ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
+        ->where('infoOrder.orderinvoiced',0)
+        ->whereIn('infoOrder.CustomerID',$bacs_cust_id)
+        ->get();
 
 
 });
