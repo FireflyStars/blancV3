@@ -8,7 +8,7 @@
                     <h2 class="mx-0 font-22">Customer List</h2>
                     <div class="nav-panel d-flex justify-content-between mb-1">
                         <ul class="tab-nav list-inline mb-0">
-                            <li class="tab-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'AR' ? 'active' : ''" @click="setNav('AR')">A/R</li>
+                            <li class="tab-nav-item font-16 list-inline-item px-3 py-2" v-if="current_user && current_user.role_id==1" :class="selected_nav == 'AR' ? 'active' : ''" @click="setNav('AR')">A/R</li>
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'CustomerList' ? 'active' : ''" @click="setNav('CustomerList')">All Customers</li>
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'B2B' ? 'active' : ''" @click="setNav('B2B')">B2B</li>
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'B2C' ? 'active' : ''" @click="setNav('B2C')">B2C</li>
@@ -26,7 +26,7 @@
     </transition>
 </template>
 <script>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useStore } from 'vuex';
 import SideBar from "../layout/SideBar";
 import MainHeader from "../layout/MainHeader";
@@ -48,6 +48,9 @@ export default {
         const store = useStore();
         const component = ref('CustomerList');
         const selected_nav = ref('CustomerList');
+        const current_user = ref(null);
+
+
         const setNav = (nav)=>{
             store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_SELECTED_TAB}`, nav);
             if(nav == 'B2B' || nav == 'B2C' || nav == 'CustomerList'){
@@ -113,11 +116,25 @@ export default {
                 }
             },
         })
+
+        onMounted(()=>{
+             axios.post('/get-current-user',{})
+                    .then((res)=>{
+                        current_user.value = res.data.user;
+                    }).catch((err)=>{
+
+                    }).finally(()=>{
+
+                    });
+
+        });
+
         return{
             component,
             selected_nav,
             filterDef,
-            setNav
+            setNav,
+            current_user,
         }
     }
 }
