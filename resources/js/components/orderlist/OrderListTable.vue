@@ -38,10 +38,10 @@
             <div class=" batch-actions" v-if="MULTI_CHECKED.length>0&&CURRENT_SELECTED==''">
             <!-- <button class="btn btn-outline-dark disabled body_medium"  @click="featureunavailable('Batch invoice')">Batch Invoice</button> -->
             <button class="btn btn-outline-dark disabled body_medium"  @click="featureunavailable('Batch payment')">Batch Payment</button>
-            <button class="btn btn-outline-dark body_medium"  @click="markaslate">Mark as late</button>
+            <button class="btn btn-outline-danger body_medium"  @click="markaslate">Mark as late</button>
             <button class="btn btn-outline-dark body_medium" @click="cancelorders">Void order(s)</button>
             <button class="btn btn-outline-dark body_medium" @click="featureunavailable('Print Ticket(s)')">Print Ticket(s)</button>
-            <button class="btn btn-outline-dark body_medium" @click="featureunavailable('Fulfill')">Fulfill</button>
+            <button class="btn fullfil-btn" @click="featureunavailable('Fulfill')">Fulfill</button>
             <button class="btn btn-outline-dark body_medium" @click="featureunavailable('Offload All')">Offload All</button>
             </div>
         </transition>
@@ -713,4 +713,16 @@
     .tcol.Total span.unpaid::before{
         background: #F4003D;
     }
+    .fullfil-btn{
+            width: 160px;
+            font-family: 'Gotham Rounded';
+            color: #42A71E;
+            border: 1px solid #42A71E;
+            border-radius: 4px;
+        }
+        .fullfil-btn:hover{
+                background:  #42A71E;
+                color: #FFFFFF;
+                transition: all .3s ease-in;
+        }
 </style>

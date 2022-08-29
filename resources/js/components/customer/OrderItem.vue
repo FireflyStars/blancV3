@@ -161,8 +161,7 @@ export default {
          router.push('/checkout/'+order_id);
        }
        function FulfillSubOrder(){
-        //show_model_Fulfil.value = true
-        //console.log("selectedSubOrders." , selectedSubOrders.value , show_model_Fulfil.value)
+         //show_model_Fulfil.value = true
        }
         return {
             show,
@@ -172,7 +171,8 @@ export default {
             redirectToCheckOut,
             FulfillSubOrder,
             show_model_Fulfil,
-            type_order
+            type_order,
+            selectedSubOrders
         }
     },
     methods:{

@@ -56,6 +56,13 @@ class PosteController extends Controller
                     ->where('infoInvoice.InvoiceID',$invoice_id)
                     ->first();
         }
+        if($route_name == 'ItemDetails'){
+            $inv = DB::table('infoInvoice')
+                    ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
+                    ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
+                    ->where('infoInvoice.InvoiceID',$invoice_id)
+                    ->first();
+        }
         if($inv){
             $user = Auth::user();
 
