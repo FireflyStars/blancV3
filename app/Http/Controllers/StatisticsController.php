@@ -607,6 +607,7 @@ class StatisticsController extends Controller
         }
         $salesByChannel = InfoOrder::whereBetween('created_at', $period)
                                 ->where('deliverymethod', '!=','')
+                                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                                 ->select(
                                     DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount'), 'TypeDelivery as channel'
                                 )->groupBy('TypeDelivery')->orderBy('amount', 'DESC')->get();
@@ -635,6 +636,7 @@ class StatisticsController extends Controller
                         ->join('infoCustomer', function($join){
                             $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
                         })
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', '!=', '')
                         ->where('infoOrder.total', '!=', 0)
                         ->where('infoCustomer.btob', '=', 1)
@@ -643,6 +645,7 @@ class StatisticsController extends Controller
                         ->join('infoCustomer', function($join){
                             $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
                         })
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', '!=', '')
                         ->where('infoOrder.total', '!=', 0)
                         ->where('infoCustomer.btob', '=', 0)
@@ -651,6 +654,7 @@ class StatisticsController extends Controller
                         ->join('infoCustomer', function($join){
                             $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
                         })
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', 'home_delivery')
                         ->where('infoOrder.total', '!=', 0)
                         ->where('infoCustomer.btob', '=', 1)
@@ -659,28 +663,33 @@ class StatisticsController extends Controller
                         ->join('infoCustomer', function($join){
                             $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
                         })
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', 'home_delivery')
                         ->where('infoOrder.total', '!=', 0)
                         ->where('infoCustomer.btob', 0)
                         ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
         $storeDel = InfoOrder::whereBetween('created_at', $period)
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', 'in_store_collection')
                         ->where('infoOrder.total', '!=', 0)
                         ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
 
         $avgOrder = InfoOrder::whereBetween('created_at', $period)
                         ->where('infoOrder.deliverymethod', '!=','')
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.total', '!=', 0)
                         ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
 
-        $avgOrderToCompare = InfoOrder::whereBetween('created_at', $period)
+        $avgOrderToCompare = InfoOrder::whereBetween('created_at', $past_period)
                         ->where('infoOrder.deliverymethod', '!=','')
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.total', '!=', 0)
                         ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
 
         $allSaleData = InfoOrder::whereBetween('created_at', $period)
                         ->where('deliverymethod', '!=','')
                         ->where('total', '!=', 0)
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->select(
                             DB::raw('ROUND(SUM(total), 2) as amount'),
                             DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d") as date')
@@ -692,6 +701,7 @@ class StatisticsController extends Controller
                                 ->where('infoOrder.CustomerID', '!=', '');
                                 // ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
                         })            
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', '!=', 'in_store_collection')
                         ->where('infoOrder.total', '!=', 0)
                         ->where('infoCustomer.btob', 1)
@@ -706,6 +716,7 @@ class StatisticsController extends Controller
                                 ->where('infoOrder.CustomerID', '!=', '');
                                 // ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
                         })             
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', '!=','in_store_collection')
                         ->where('infoOrder.total', '!=', 0)
                         ->where('infoCustomer.btob', 0)
@@ -720,6 +731,7 @@ class StatisticsController extends Controller
                                 ->where('infoOrder.CustomerID', '!=', '')
                                 ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
                         })        
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', 'in_store_collection')
                         ->where('infoOrder.TypeDelivery', 'MARYLEBONE')
                         ->where('infoOrder.total', '!=', 0)
@@ -735,6 +747,7 @@ class StatisticsController extends Controller
                                 ->where('infoOrder.CustomerID', '!=', '')
                                 ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
                         })        
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', 'in_store_collection')
                         ->where('infoOrder.TypeDelivery', 'NOTTING HILL')
                         ->where('infoOrder.total', '!=', 0)
@@ -750,6 +763,7 @@ class StatisticsController extends Controller
                                 ->where('infoOrder.CustomerID', '!=', '')
                                 ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
                         })        
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', 'in_store_collection')
                         ->where('infoOrder.TypeDelivery', 'CHELSEA')
                         ->where('infoOrder.total', '!=', 0)
@@ -764,6 +778,7 @@ class StatisticsController extends Controller
                                 ->where('infoOrder.CustomerID', '!=', '')
                                 ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
                         })        
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', 'in_store_collection')
                         ->where('infoOrder.TypeDelivery', 'SOUTH KEN')
                         ->where('infoOrder.total', '!=', 0)

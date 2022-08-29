@@ -160,12 +160,12 @@
                                     <div class="d-flex mt-3">
                                         <div class="customer-contact w-55 d-flex justify-content-between">
                                             <div class="form-group m-0">
-                                                <label class="form-label d-block m-0" for="first_name">{{ form.customerType == 'B2C' ? 'Contact *' : 'Company representative *' }}</label>
-                                                <input type="text" v-model="form.firstName" class="form-control custom-input" placeholder="First name">
+                                                <label class="form-label d-block m-0" for="last_name">{{ form.customerType == 'B2C' ? 'Contact *' : 'Company representative *' }}</label>
+                                                <input type="text" v-model="form.lastName" class="form-control custom-input" placeholder="Last name">
                                             </div>
                                             <div class="form-group m-0">
                                                 <label class="form-label d-block m-0" for="first_name">&nbsp;</label>
-                                                <input type="text" v-model="form.lastName" class="form-control custom-input" placeholder="Last name">
+                                                <input type="text" v-model="form.firstName" class="form-control custom-input" placeholder="First name">
                                             </div>
                                         </div>
                                         <div class="customer-phone w-45">
@@ -312,11 +312,11 @@
                                                 <div class="customer-contact w-55 d-flex justify-content-between">
                                                     <div class="form-group m-0">
                                                         <label class="form-label d-block m-0" for="first_name">Company representative *</label>
-                                                        <input type="text" v-model="form.companyRepFirstName" class="form-control custom-input" placeholder="First name">
+                                                        <input type="text" v-model="form.companyRepLastName" class="form-control custom-input" placeholder="First name">
                                                     </div>
                                                     <div class="form-group m-0">
                                                         <label class="form-label d-block m-0" for="first_name">&nbsp;</label>
-                                                        <input type="text" v-model="form.companyRepLastName" class="form-control custom-input" placeholder="Last name">
+                                                        <input type="text" v-model="form.companyRepFirstName" class="form-control custom-input" placeholder="Last name">
                                                     </div>
                                                 </div>
                                                 <div class="customer-phone w-45">
@@ -752,9 +752,7 @@ import axios from 'axios';
                 linkedAccounts: []
             })
             const router = useRouter();
-            const step = ref('preferences');
-            // const step = ref('account_details');
-            // const step = ref('preferences');
+            const step = ref('account_details');
             // const pickupAvailableDays = ref([]);
             const pickupDays = ref([]);
             const timeslots = ref([]);
@@ -951,8 +949,8 @@ import axios from 'axios';
                     if(form.value.customerType == 'B2B' && form.value.accountType == 'Main' && form.value.alreadyLinkedToAccount){
                         form.value.paymentMethod = 'BACS';
                     }
-                    if(form.value.firstName == ''){
-                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please Enter FirstName', ttl:5, type:'danger' });
+                    if(form.value.lastName == ''){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please Enter Last Name', ttl:5, type:'danger' });
                         return;
                     }
                     if(form.value.email != ''){
@@ -978,6 +976,7 @@ import axios from 'axios';
                     step.value = nav;
                 }else if( step.value == 'payment' ){
                     if(form.value.paymentMethod == 'BACS'){
+                        form.value.companyRepLastName = form.value.lastName;
                         if(form.value.companyLegalName == ''){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Company Legal Name', ttl:5, type:'danger' });
                             return;
@@ -1042,16 +1041,18 @@ import axios from 'axios';
                     if(!error)
                         step.value = nav;
                 }else{
+                    step.value = nav;
+                }
+                if(nav == 'linked_account'){
                     if(form.value.accountType == 'Main' && form.value.customerType == 'B2B'){
                         form.value.linkedAccounts[0].accountType = 'Main';
                     }else{
                         form.value.linkedAccounts[0].accountType = 'Sub';
                     }
-                    step.value = nav;
                 }
             }
-            watch(()=>form.value.firstName, (cur_val, pre_val)=>{
-                form.value.companyRepFirstName = cur_val;
+            watch(()=>form.value.lastName, (cur_val, pre_val)=>{
+                form.value.companyRepLastName = cur_val;
             })
             
             // move on to next step when you click next button
@@ -1074,8 +1075,8 @@ import axios from 'axios';
                     if(form.value.customerType == 'B2B' && form.value.accountType == 'Main' && form.value.alreadyLinkedToAccount){
                         form.value.paymentMethod == 'BACS';
                     }
-                    if(form.value.firstName == ''){
-                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please Enter FirstName', ttl:5, type:'danger' });
+                    if(form.value.lastName == ''){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please Enter Last Name', ttl:5, type:'danger' });
                         return;
                     }                    
                     if(form.value.email != ''){
@@ -1101,6 +1102,7 @@ import axios from 'axios';
                     step.value = 'payment';
                 }else if( step.value == 'payment' ){
                     if(form.value.paymentMethod == 'BACS'){
+                        form.value.companyRepLastName = form.value.lastName;
                         if(form.value.companyLegalName == ''){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Company Legal Name', ttl:5, type:'danger' });
                             return;

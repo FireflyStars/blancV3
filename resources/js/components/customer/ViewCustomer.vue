@@ -857,7 +857,7 @@
                 kioskNumber: '',
                 firstName: '',
                 lastName: '',
-                phoneCountryCode: '',
+                phoneCountryCode: '+44',
                 phoneNumber: '',
                 email: '',
                 postCode: '',
@@ -1446,9 +1446,9 @@
                     err.push('Please enter contact name');
                 }
 
-                if(form.value.phoneNumber==''){
-                    err.push('Please enter phone number');
-                }
+                // if(form.value.phoneNumber==''){
+                //     err.push('Please enter phone number');
+                // }
 
                 if(form.value.email!='' && !email_regex.test(form.value.email.toLowerCase())){
                     err.push('Please enter a valid email address');
