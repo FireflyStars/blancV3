@@ -261,7 +261,7 @@
                 <tr>
                     <td class="heading-cell">
                         <div class="heading-cell-title">Due Date:</div>
-                        <div class="heading-cell-value">XX</div>
+                        <div class="heading-cell-value">{{$date_due}}</div>
                     </td>
                     <td class="heading-cell">
                         <div class="heading-cell-title">Invoice Date:</div>

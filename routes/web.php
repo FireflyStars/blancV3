@@ -803,6 +803,7 @@ Route::get('inv-pdf',function(Request $request){
        'facture_discount'=>number_format($discount,2),
        'facture_vat'=>number_format($facture_amount_vat,2),
        'facture_total'=>number_format($facture_amount_total,2),
+       'date_due'=>date('d/m/Y',strtotime('+15day')),
     ];
 
 
