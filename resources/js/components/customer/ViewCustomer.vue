@@ -1442,8 +1442,8 @@
 
                 const email_regex=/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/g;
 
-                if(form.value.firstName=='' || form.value.lastName==''){
-                    err.push('Please enter contact name');
+                if(form.value.lastName==''){
+                    err.push('Please enter contact lastName');
                 }
 
                 // if(form.value.phoneNumber==''){

@@ -24,7 +24,7 @@ class CustomerController extends Controller
 
        if($request->typeDelivery == "DELIVERY"){
             $validator = Validator::make($request->all(), [
-                'firstName' => 'required',
+                'lastName' => 'required',
                 'postCode'  => 'required',
                 'email'     => $request->email !='' ? 'required|email|unique:infoCustomer,EmailAddress': '',
                 'deliveryAddress1' => 'required',
@@ -32,7 +32,7 @@ class CustomerController extends Controller
             ]);
         } else {
             $validator = Validator::make($request->all(), [
-                'firstName' => 'required',
+                'lastName' => 'required',
                 'email'     => $request->email !='' ? 'required|email|unique:infoCustomer,EmailAddress': '',
             ]);
         }
@@ -40,7 +40,7 @@ class CustomerController extends Controller
         if ($validator->fails()) {
             return response()->json(['error'=> $validator->errors()]);
         }
-
+    
 
         // add a new record to infoCustomer table
         $emailAddress = $request->email !='' ? $request->email : (Str::random(10).'@noemail.com');
@@ -119,11 +119,35 @@ class CustomerController extends Controller
             'created_at'    => now(),
             'updated_at'    => now(),
         ];
-        try {
-            $addressId = DB::table('address')->insertGetId($address);
-            $addressUUID = DB::table('address')->where('id', $addressId)->value('AddressID');
-        } catch (\Exception $e) {
-            return response()->json(['error'=> $e->getMessage()]);
+
+        $addressUUID = '';
+        if($request->typeDelivery == "DELIVERY"){
+            try {
+                $addressId = DB::table('address')->insertGetId($address);
+                $addressUUID = DB::table('address')->where('id', $addressId)->value('AddressID');
+            } catch (\Exception $e) {
+                return response()->json(['error'=> $e->getMessage()]);
+            }
+        } else {
+            try {
+                if($request->postCode != null || $request->deliveryAddress1 != null || $request->city != null ){
+                    $validatorAddress = Validator::make($request->all(), [
+                        'postCode' => 'required',
+                        'deliveryAddress1' => 'required',
+                        'city' => 'required',
+                    ]);
+                    if ($validatorAddress->fails()) {
+                        return response()->json(['error'=> $validatorAddress->errors()]);
+                    }else{
+                        $addressId = DB::table('address')->insertGetId($address);
+                        $addressUUID = DB::table('address')->where('id', $addressId)->value('AddressID');
+                    }
+                   
+                } 
+            } catch (\Exception $e) {
+                dd( $e->getMessage());
+                return response()->json(['error'=> $e->getMessage()]);
+            }   
         }
         // add a new record to NewAddress table
         $new_address = [
@@ -139,10 +163,33 @@ class CustomerController extends Controller
             'updated_at'    => now(),
             'status'        => 'DONE',
         ];
-        try {
-            DB::table('NewAddress')->insert($new_address);
-        } catch (\Exception $e) {
-            return response()->json(['error'=> $e->getMessage()]);
+
+        if($request->typeDelivery == "DELIVERY"){
+            try {
+                DB::table('NewAddress')->insert($new_address);
+            } catch (\Exception $e) {
+                return response()->json(['error'=> $e->getMessage()]);
+            }
+        } else {
+
+            try {
+                if($request->postCode != null || $request->deliveryAddress1 != null || $request->city != null ){
+                    $validatorAddress = Validator::make($request->all(), [
+                        'postCode' => 'required',
+                        'deliveryAddress1' => 'required',
+                        'city' => 'required',
+                    ]);
+                    if ($validatorAddress->fails()) {
+                        return response()->json(['error'=> $validatorAddress->errors()]);
+                    }else{
+                        DB::table('NewAddress')->insert($new_address);
+                    }
+                   
+                } 
+            } catch (\Exception $e) {
+                dd( $e->getMessage());
+                return response()->json(['error'=> $e->getMessage()]);
+            }      
         }
         // add a new record to NewCustomer table
         $new_customer = [
@@ -317,7 +364,7 @@ class CustomerController extends Controller
 
     public function checkCustomerUnique(Request $request){
         $validator = Validator::make($request->all(), [
-            'firstName' => 'unique:infoCustomer,firstName',
+            'lastName' => 'unique:infoCustomer,lastName',
             'email'     => $request->email !='' ? 'unique:infoCustomer,EmailAddress': '',
             'phoneNumber' => 'unique:infoCustomer,Phone',
         ]);
