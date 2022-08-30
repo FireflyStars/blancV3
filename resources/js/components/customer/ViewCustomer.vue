@@ -335,6 +335,7 @@
                                                     <div class="phone-country-code">
                                                         <select-options
                                                             v-model="form.companyPhoneCountryCode"
+                                                            :modelValue="form.companyPhoneCountryCode"
                                                             :options="phoneCodesSorted"
                                                             :width = "'100px'"
                                                             :name="'phoneCountryCode'">
@@ -1006,7 +1007,7 @@
                     form.value.lastName = res.data.customer.lastName;
                     var phone = getPhone(res.data.customer.phone);
 
-                    form.value.phoneCountryCode = phone.code;
+                    form.value.phoneCountryCode = "+"+phone.code;
                     form.value.phoneNumber = phone.number;
                     form.value.email = res.data.customer.email;
                     // address part in account details tab
