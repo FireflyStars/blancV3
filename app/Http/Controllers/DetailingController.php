@@ -740,6 +740,8 @@ class DetailingController extends Controller
         $has_detailing_order = false;
         $err = '';
 
+        $detailingitem_id = 0;
+
         if($item){
             $inv = DB::table('infoInvoice')
                 ->where('InvoiceID',$item->InvoiceID)
@@ -764,13 +766,13 @@ class DetailingController extends Controller
             ->latest('id')
             ->first();
 
-        $detailingitem_id = 0;
+
 
         if($previous_detailed_item){
             $duplicate_detailing_item = (array) $previous_detailed_item;
 
             $duplicate_detailing_item['id'] = '';
-            $duplicate_detailing_item['etape'] = 9;
+            $duplicate_detailing_item['etape'] = 11;
             $duplicate_detailing_item['InvoiceID'] = '';
             $duplicate_detailing_item['order_id'] = $order_id;
             $duplicate_detailing_item['tailoring_services'] = '';
