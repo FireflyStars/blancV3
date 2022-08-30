@@ -12,6 +12,7 @@
      </div>
 
 </transition>
+<!--
 <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
     <div class="modal d-block" id="modal" role="dialog" aria-labelledby="modal-header" aria-describedby="modal-body">
         <div class="modal-dialog">
@@ -34,9 +35,11 @@
                     </slot>
                 </div>
             </div>
-        </div>        
+        </div>
     </div>
-</transition>    
+</transition>
+-->
+
 </template>
 
 <script>
