@@ -84,7 +84,7 @@
                 :id="'acdpanel_'+group.replace(' ','')"
             >
                 <div class="accordion-body row mt-3">
-                    <div class="col-3 mb-3 d-flex text-center each-sub-service justify-content-center tailoring-subservice align-items-center" v-for="(service,id) in services" :id="'sub_service_'+service.id" @click="toggleSubService(service.id)" :data-tailoring-service-id="service.id" :class="{'sel_service':service.cust_selected==1}">
+                    <div class="col-3 mb-3 d-flex text-center each-sub-service justify-content-center tailoring-subservice align-items-center" v-for="(service,id) in services" :id="'sub_service_tailoring_'+service.id" @click="toggleSubService('tailoring_'+service.id)" :data-tailoring-service-id="service.id" :class="{'sel_service':service.cust_selected==1}">
                         <div class="d-block w-100 text-center">
                             {{service.name}}
                             <span class="text-center d-block w-100">(&#163;{{service.price.toFixed(2)}})</span>
