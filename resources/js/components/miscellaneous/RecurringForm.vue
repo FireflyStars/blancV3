@@ -3,7 +3,7 @@
 
         <ul class="days-of-week">
             <li v-for="(day, index) in slotsByDay " :key="index">
-                <a @click="setSlots(index,day.value,$event)"  class="day" :class="{disabled:(!day.selected || !days_available.includes(index)), selected:day.selected}">
+                <a @click="setSlots(index,day.value,$event)"  class="day" :class="{disabled:(!day.selected || (cust && !days_available.includes(index))), selected:day.selected}">
                     <span>{{day.value.slice(8,9)}}</span>
                 </a>
             </li>
@@ -233,7 +233,17 @@ export default ({
             days['DeliveryFri'] = 'Friday';
             days['DeliverySat'] = 'Saturday';
 
-            if(days_available.value.includes(index)){
+            if(props.cust && !days_available.value.includes(index)){
+                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                {
+                    message: "Slot not available for "+days[day],
+                    ttl: 3,
+                    type: 'danger'
+                });
+
+                return false;
+
+            }
 
                 slotsByDay.value.forEach((slotDay,index)=>{
 
@@ -252,14 +262,7 @@ export default ({
                 reccuring.value =  slotsByDay.value.filter(function (el) {
                     return el.selected == true;
                 });
-            }else{
-                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
-                {
-                    message: "Slot not available for "+days[day],
-                    ttl: 3,
-                    type: 'danger'
-                });
-            }
+
         }
 
 
