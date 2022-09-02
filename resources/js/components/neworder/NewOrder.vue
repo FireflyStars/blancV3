@@ -153,7 +153,7 @@
                                                     <!--
                                             <select-options classnames="deliverymethod" v-model="deliverymethod"  placeholder="Choose a method" :options="deliverymethods" name="delivery_method" hint=""  label="Delivery method"></select-options>
                                             -->
-                                            <div id="select_div">
+                                            <div id="select_div" v-if="!isRecurring">
                                                 <label>
                                                 <select id="method_select" v-model="deliverymethod">
                                                     <option selected style="font-family: Verdana">Choose a method</option>

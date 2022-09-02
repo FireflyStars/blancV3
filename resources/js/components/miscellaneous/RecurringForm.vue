@@ -3,7 +3,7 @@
 
         <ul class="days-of-week">
             <li v-for="(day, index) in slotsByDay " :key="index">
-                <a @click="setSlots(day.value,$event)"  class="day" :class="{disabled:!day.selected, selected:day.selected}">
+                <a @click="setSlots(index,day.value,$event)"  class="day" :class="{disabled:(!day.selected || !days_available.includes(index)), selected:day.selected}">
                     <span>{{day.value.slice(8,9)}}</span>
                 </a>
             </li>
@@ -77,6 +77,8 @@ import {
     LOADER_MODULE,
     DISPLAY_LOADER,
     HIDE_LOADER,
+    TOASTER_MODULE,
+    TOASTER_MESSAGE,
 } from "../../store/types/types";
 
 export default ({
@@ -95,6 +97,7 @@ export default ({
         const reccuring= ref([]);
         const available_by_postcode = ref([]);
         const cust_slots = ref([]);
+        const days_available = ref([]);
 
         const slotsByDay=ref([
                 {
@@ -158,9 +161,13 @@ export default ({
                     for(let i in tranches){
                         let index = slotsByDay.value.findIndex((z) => { return z.value === i });
                         slotsByDay.value[index].available = tranches[i];
+
+                        if(tranches[i].length > 0){
+                            days_available.value.push(index);
+                        }
                     }
 
-                    console.log(props.cust);
+
 
 
                 }).catch((err)=>{
@@ -217,24 +224,42 @@ export default ({
     });
 
 
-        function setSlots(day){
-            slotsByDay.value.forEach((slotDay,index)=>{
+        function setSlots(index,day){
+            let days = [];
+            days['DeliveryMon'] = 'Monday';
+            days['DeliveryTu'] = 'Tuesday';
+            days['DeliveryWed'] = 'Wednesday';
+            days['DeliveryTh'] = 'Thursday';
+            days['DeliveryFri'] = 'Friday';
+            days['DeliverySat'] = 'Saturday';
 
-                if(slotDay.value == day){
-                    if(slotDay.selected == true){
-                        slotDay.selected = false;
-                        slotDay.slot = 0;
+            if(days_available.value.includes(index)){
+
+                slotsByDay.value.forEach((slotDay,index)=>{
+
+                    if(slotDay.value == day){
+                        if(slotDay.selected == true){
+                            slotDay.selected = false;
+                            slotDay.slot = 0;
+                        }
+                        else if(slotDay.selected == false){
+                            slotDay.selected = true;
+                        }
                     }
-                     else if(slotDay.selected == false){
-                        slotDay.selected = true;
-                    }
-                }
 
-            });
+                });
 
-            reccuring.value =  slotsByDay.value.filter(function (el) {
-                return el.selected == true;
-            });
+                reccuring.value =  slotsByDay.value.filter(function (el) {
+                    return el.selected == true;
+                });
+            }else{
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                {
+                    message: "Slot not available for "+days[day],
+                    ttl: 3,
+                    type: 'danger'
+                });
+            }
         }
 
 
@@ -257,6 +282,7 @@ export default ({
             reccuring,
             returnedData,
             cust_slots,
+            days_available,
         }
     },
 
