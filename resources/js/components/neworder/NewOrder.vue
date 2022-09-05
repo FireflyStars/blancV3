@@ -749,6 +749,42 @@ import axios from 'axios';
                 if(val=='shipping'){
                    shp_min_date.value = getCurDateTime('datedb');
                 }
+
+                if(val=='in_store_collection'){
+                    let today = new Date();
+
+                    let date_plus_3_stamp = today.setDate(today.getDate() + 3);
+
+                    let date_plus_3 = new Date(date_plus_3_stamp);
+
+                    let date_plus_3_day = date_plus_3.getDay();
+
+                    if(date_plus_3_day==0){
+                        date_plus_3_stamp =  date_plus_3.setDate(today.getDate() + 1);
+                        date_plus_3 = new Date(date_plus_3_stamp);
+                    }
+
+
+                    let collectionDate= date_plus_3.toISOString().slice(0, 10);
+
+                    let days = 0;
+
+                    let checkholiday=true;
+                    while(checkholiday){
+                        let holiday=holidays.value.filter(obj=>obj==collectionDate);
+
+                        if(holiday.length>0){
+                                let Today = new Date(collectionDate);
+                                days=days+1;
+                                collectionDate = Today.setDate(Today.getDate() + days);
+                                collectionDate=new Date(collectionDate).toISOString().slice(0, 10);
+                        }else{
+                            checkholiday=false;
+                        }
+                    }
+
+                    isc_pickup.value = collectionDate;
+                }
             });
 
 
