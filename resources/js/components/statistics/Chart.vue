@@ -4,7 +4,13 @@
         <div class="d-flex">
             <div class="col-4 p-2 d-flex">
                 <div class="rounded-3 bg-white w-100 p-2">
-                    <h3 class="font-20 gotham-rounded-medium">Sales by channel</h3>
+                    <h3 class="font-20 gotham-rounded-medium">
+                        Sales by 
+                        <select class="form-select form-select-sm d-flex" v-model="pieChart1">
+                            <option>channel</option>
+                            <option>item type</option>
+                        </select>
+                    </h3>
                     <div class="d-flex">
                         <div class="col-7">
                             <div class="d-flex" v-for="(channel, index) in salesByChannelChartData" :key="index">
@@ -27,7 +33,12 @@
             </div>
             <div class="col-4 p-2 d-flex">
                 <div class="rounded-3 bg-white w-100 p-2">
-                    <h3 class="font-20 gotham-rounded-medium">Pieces by item type</h3>
+                    <h3 class="font-20 gotham-rounded-medium d-flex">Pieces by
+                        <select class="form-select form-select-sm" v-model="pieChart1">
+                            <option>channel</option>
+                            <option>item type</option>
+                        </select>                        
+                    </h3>
                     <div class="d-flex">
                         <div class="col-7">
                             <div class="d-flex" v-for="(item, index) in piecesByItemChartData" :key="index">
@@ -261,6 +272,8 @@ export default {
         const NHByDateLegend = ref(false);
         const CHByDateLegend = ref(false);
         const SKByDateLegend = ref(false);
+        const pieChart1 = ref('channel');
+        const pieChart2 = ref('item type');
         const salesByChannelTotal = ref(0);
         const salesByChannelTotalToCompare = ref(0);        
         const salesByItemTotal = ref(0);
@@ -838,6 +851,8 @@ export default {
             CHByDateLegend,
             SKByDateLegend,
             filterVal,
+            pieChart1,
+            pieChart2,
             salesByChannelChartData,
             piecesByItemChartData,
 
