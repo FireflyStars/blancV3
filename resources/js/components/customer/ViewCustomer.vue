@@ -133,13 +133,13 @@
                                     <div class="d-flex mt-3">
                                         <div class="customer-contact w-55 d-flex justify-content-between">
                                             <div class="form-group m-0">
-                                                <label class="form-label d-block m-0" for="first_name">{{ form.customerType == 'B2C' ? 'Contact' : 'Company representative' }}</label>
+                                                <label class="form-label d-block m-0" for="first_name"> Last name </label>
                                                 <input v-if="contact_details_edit" type="text" v-model="form.lastName" class="form-control customer-type custom-input" placeholder="Last name">
                                                 <div v-else class="customer-type py-2 rounded-3 bg-color px-3" v-html="form.lastName == '' ? '&nbsp;' : form.lastName">
                                                 </div>
                                             </div>
                                             <div class="form-group m-0">
-                                                <label class="form-label d-block m-0" for="first_name">&nbsp;</label>
+                                                <label class="form-label d-block m-0" for="first_name"> First name </label>
                                                 <input v-if="contact_details_edit" type="text" v-model="form.firstName" class="form-control custom-input" placeholder="First name">
                                                 <div v-else style="min-height: 40px;" class="customer-type py-2 rounded-3 bg-color px-3" v-html="form.firstName == '' ? '&nbsp;' : form.firstName">
                                                 </div>
@@ -717,7 +717,7 @@
                         <transition name="list" appear v-if="step =='linked_account'">
                             <div class="cust-page-content m-auto pt-5">
                                 <h3 class="title mb-3">Linked account(s)</h3>
-                                <div class="account-list-section">
+                                <div class="account-list-section">    
                                     <table class="table linked-account-table bg-white">
                                         <thead>
                                             <tr>
@@ -749,7 +749,7 @@
                                         </tbody>
                                     </table>
 
-                                    <div class="d-flex">
+                                    <!-- <div class="d-flex">
                                         <button class="border-btn add-new-account d-flex justify-content-between align-items-center me-3">
                                             <svg class="me-3" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <circle cx="12" cy="12" r="12" fill="black"/>
@@ -771,7 +771,7 @@
                                             Add existing account
                                         </button>
                                         <Search ref="searchpanel"  @selectedSubAccount="selectedSubAccount"/>
-                                    </div>
+                                    </div> -->
                                 </div>
                             </div>
                         </transition>
@@ -855,6 +855,7 @@
                 customerType: '',
                 typeDelivery: '',
                 programmeType: '',
+                CustomerPayemenProfile: '',
                 kioskNumber: '',
                 firstName: '',
                 lastName: '',
@@ -985,6 +986,17 @@
                 axios.post('/get-customer-full-detail', {
                     customer_id: route.params.customer_id
                 }).then((res)=>{
+                    // linked accounts
+                    if(res.data.customer.accountType == "Main"){
+                           const filteredListSub = res.data.customer.linkedAccounts.filter((e) => e.accountType === "Sub");
+                           form.value.linkedAccounts = filteredListSub;
+                        }
+                    else if(res.data.customer.accountType == "Sub"){
+                           const filteredListMain = res.data.customer.linkedAccounts.filter((e) => e.accountType === "Main");
+                           form.value.linkedAccounts = filteredListMain;
+                    } 
+                    
+                    form.value.CustomerPayemenProfile = res.data.customer.OnAccount
 
                     if(res.data.customer.card == null){
                         creditCardCustomer.value = false ;
@@ -1007,7 +1019,12 @@
                     form.value.lastName = res.data.customer.lastName;
                     var phone = getPhone(res.data.customer.phone);
 
-                    form.value.phoneCountryCode = "+"+phone.code;
+                    if(phone.code.includes('+')){
+                        form.value.phoneCountryCode = phone.code;
+                    }else {
+                        form.value.phoneCountryCode = "+"+phone.code;
+                    }
+                    
                     form.value.phoneNumber = phone.number;
                     form.value.email = res.data.customer.email;
                     // address part in account details tab
@@ -1149,8 +1166,6 @@
                     }else{
                         viewRecurring.value = false;
                     }
-                    // linked accounts
-                    form.value.linkedAccounts = res.data.customer.linkedAccounts;
 
                     paths.value.push(
                         { name: res.data.customer.firstName +' ' + res.data.customer.lastName , route:'ViewCustomer', params:{ customer_id: res.data.customer.id }}
@@ -1269,9 +1284,20 @@
             };
             // handler when you unlink sub account from linked accounts
             const removeLinkedAccount = (id)=>{
-                form.value.linkedAccounts = form.value.linkedAccounts.filter((item)=>{
-                    return item.id != id;
-                });
+               axios.post('/unlink-Account', {
+                        customer_id: id,
+                    }).then((res)=>{
+                        console.log(res)
+                        if(res.data.message == "OK"){
+                            form.value.linkedAccounts = form.value.linkedAccounts.filter((item)=>{
+                            return item.id != id;
+                          });
+                        } else {
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: res.data.error , ttl:5, type:'danger' });
+                        }
+                    }).catch((errors)=>{
+                        console.log(errors)
+                    });        
             }
             const formatPhone = (phoneString)=>{
                 if(phoneString != ""){

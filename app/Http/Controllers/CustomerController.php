@@ -60,6 +60,7 @@ class CustomerController extends Controller
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
             'AcceptMarketing'        => $request->acceptMarketing,
             'AcceptSMSMarketing'        => $request->acceptSMSMarketing,
+            'OnAccount'      => $request->CustomerPayemenProfile,
         ];
         if($request->deliveryByday == '1'){
             $info_customer['DeliverybyDay'] = 1;
@@ -86,11 +87,60 @@ class CustomerController extends Controller
         }
         // set CustomerIdMaster of sub account as Main customer's CustomerID
         if(count($request->linkedAccounts) > 1){
-            if($request->accountType == 'Main' && $request->customerType == 'B2B'){
-                foreach ($request->linkedAccounts as $index => $account) {
-                    if($index != 0){
+            if($request->accountType == 'Main' && $request->customerType == 'B2B'){ 
+                foreach ($request->linkedAccounts as $index => $account) {     
+                    if($index != 0){       
                         try {
-                            DB::table('infoCustomer')->where('id', $account['id'])->update(['CustomerIDMaster' => $CustomerUUID]);
+                            if($account['id'] != 0){
+                                DB::table('infoCustomer')->where('id', $account['id'])->update(['CustomerIDMaster' => $CustomerUUID]);
+                            }else  {
+                                $info_customer = [
+                                    'CustomerID'    => '',
+                                    'CustomerIDMaster'=> $CustomerUUID,
+                                    'isMaster'      => 0,
+                                    'btob'          => 1,
+                                    'FirstName'     => $account['firstname'],
+                                    'LastName'      => $account['lastname'],
+                                    'Name'          => $account['name'],
+                                    'EmailAddress'  => $account['email'],
+                                    'Phone'        => $account['phone']!= '' ? '["'.$account['phoneCountryCode'].'|'.$account['phoneNumber'].']"' : '',
+                                    'SignupDate'    => Carbon::now()->format('Y-m-d'),
+                                ];
+                             
+                                try {
+                                    $cust_Id = DB::table('infoCustomer')->insertGetId($info_customer);
+                                    $customerUUID = DB::table('infoCustomer')->where('id', $cust_Id)->value('CustomerID');
+                                } catch (\Exception $e) {
+                                    return response()->json($e->getMessage(), 500);
+                                }
+                                $response = [
+                                    'id'        => $cust_Id,
+                                    'name'      => $info_customer['Name'],
+                                    'email'     => $info_customer['EmailAddress'],
+                                    'phone'     => $info_customer['Phone'],
+                                    'date'      => $info_customer['SignupDate'],
+                                    'spent'     => 0,
+                                ];
+                        
+                                $new_customer = [
+                                    'CustomerID'    => $customerUUID,
+                                    'Name'          => $info_customer['Name'],
+                                    'Phone'         => $info_customer['Phone'],
+                                    'EmailAddress'  => $info_customer['EmailAddress'],
+                                    'LastName'      => $info_customer['LastName'],
+                                    'FirstName'     => $info_customer['FirstName'],
+                                    'status'        => 'NEW',
+                                    'created_at'    => now(),
+                                    'updated_at'    => now(),
+                                ];
+                                try {
+                                    DB::table('NewCustomer')->insert($new_customer);
+                                } catch (\Exception $e) {
+                                    return response()->json($e->getMessage(), 500);
+                                }
+                                
+                            }
+                            
                         } catch (\Exception $e) {
                             return response()->json(['error'=> $e->getMessage()]);
                         }
@@ -98,7 +148,7 @@ class CustomerController extends Controller
 
                     }
                 }
-            }else{
+            }else{       
                 $masterUUID = $request->linkedAccounts[0]['customerId'];
                 DB::table('infoCustomer')->where('CustomerID', $CustomerUUID)->update(['CustomerIDMaster' => $masterUUID]);
             }
@@ -299,23 +349,23 @@ class CustomerController extends Controller
                 return response()->json(['error'=> $e->getMessage()]);
             }
 
-            $contact = [
-                'CustomerID'    => $CustomerUUID,
-                'address_id'    => $billing_address_id,
-                'name'          => $info_customer['Name'],
-                'firstname'     => $request->companyRepFirstName,
-                'company'       => $request->companyLegalName,
-                'email'         => $request->invoiceEmail1,
-                'Phone'         => $request->companyPhoneNumber != '' ? '["'.$request->companyPhoneCountryCode.'|'.$request->companyPhoneNumber.']"' : '',
-                'created_at'    => now(),
-                'updated_at'    => now(),
-                'type'          => 'BILLING',
-            ];
-            try {
-                DB::table('contacts')->insert($contact);
-            } catch (\Exception $e) {
-                return response()->json(['error'=> $e->getMessage()]);
-            }
+                $contact = [
+                    'CustomerID'    => $CustomerUUID,
+                    'address_id'    => $billing_address_id,
+                    'name'          => $info_customer['Name'],
+                    'firstname'     => $request->companyRepFirstName,
+                    'company'       => $request->companyLegalName,
+                    'email'         => $request->invoiceEmail1,
+                    'Phone'         => $request->companyPhoneNumber != '' ? '["'.$request->companyPhoneCountryCode.'|'.$request->companyPhoneNumber.']"' : '',
+                    'created_at'    => now(),
+                    'updated_at'    => now(),
+                    'type'          => 'BILLING',
+                ];
+                try {
+                    DB::table('contacts')->insert($contact);
+                } catch (\Exception $e) {
+                    return response()->json(['error'=> $e->getMessage()]);
+             }
 
         }
 
@@ -559,6 +609,23 @@ class CustomerController extends Controller
         );
 
         return response()->json(DB::table('infoCustomer')->where('id', $custId)->value('CustomerID'));
+    }
+
+    /**
+     * Unlink Account
+     */
+    public function unlinkAccount(Request $request){
+
+        try {
+            DB::table('infoCustomer')->where('id',$request->customer_id)
+            ->update([
+                'CustomerIDMaster'=> "",
+                'IsMaster'=> 1,
+            ]);
+      } catch (\Exception $e) {
+          return response()->json(['error'=> $e->getMessage()]);
+      }
+      return response()->json(['message'=>'OK']);
     }
     /**
      * Get customer detail
@@ -1031,7 +1098,7 @@ class CustomerController extends Controller
                                             ),
                                             DB::raw(
                                                 'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN DATE_FORMAT(booking_store.dropoff, "%h:%i %p")
-                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN DATE_FORMAT(pickup.trancheFrom, "%h:%i %p")
+                                                      WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN CONCAT(pickup.trancheFrom,"_",pickup.trancheto)
                                                       WHEN infoOrder.deliverymethod = "delivery_only" THEN DATE_FORMAT(infoOrder.created_at, "%h:%i %p")
                                                       WHEN infoOrder.deliverymethod = "recurring" THEN "--"
                                                 END as order_left_time'
@@ -1086,6 +1153,15 @@ class CustomerController extends Controller
                                                              $timeslot = $tranches_slots[$slot];
                                                              $past_orders[$k][$i][$key]->order_right_time = $timeslot;
                                                          }
+                                                         //leftTime
+                                                         $tranche_left = $item->order_left_time;
+                                                         $tranche_arr_left = explode("_",$tranche_left);
+                                                         if(isset($tranche_arr_left[0]) && isset($tranche_arr_left[1])){
+                                                             $slot = Tranche::getSlotFromTranche($tranche_arr_left[0],$tranche_arr_left[1]);
+                                                             $timeslot = $tranches_slots[$slot];
+                                                             $past_orders[$k][$i][$key]->order_left_time = $timeslot;
+                                                         }
+                                                     //}
                                                      //}
                                                  }
 
@@ -1144,9 +1220,9 @@ class CustomerController extends Controller
                     ),
                     DB::raw(
                         'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN DATE_FORMAT(booking_store.dropoff, "%h:%i %p")
-                            WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN DATE_FORMAT(pickup.trancheFrom, "%h:%i %p")
-                            WHEN infoOrder.deliverymethod = "delivery_only" THEN DATE_FORMAT(infoOrder.created_at, "%h:%i %p")
-                            WHEN infoOrder.deliverymethod = "recurring" THEN "--"
+                              WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN CONCAT(pickup.trancheFrom,"_",pickup.trancheto)
+                              WHEN infoOrder.deliverymethod = "delivery_only" THEN DATE_FORMAT(infoOrder.created_at, "%h:%i %p")
+                              WHEN infoOrder.deliverymethod = "recurring" THEN "--"
                         END as order_left_time'
                     ),
                     DB::raw(
@@ -1191,6 +1267,14 @@ class CustomerController extends Controller
                                                              $timeslot = $tranches_slots[$slot];
                                                              $scheduled_orders[$k][$i][$key]->order_right_time = $timeslot;
                                                          }
+                                                         //leftTime
+                                                         $tranche_left = $item->order_left_time;
+                                                         $tranche_arr_left = explode("_",$tranche_left);
+                                                         if(isset($tranche_arr_left[0]) && isset($tranche_arr_left[1])){
+                                                             $slot = Tranche::getSlotFromTranche($tranche_arr_left[0],$tranche_arr_left[1]);
+                                                             $timeslot = $tranches_slots[$slot];
+                                                             $past_orders[$k][$i][$key]->order_left_time = $timeslot;
+                                                         }
                                                      //}
                                                  }
 
@@ -1209,8 +1293,9 @@ class CustomerController extends Controller
     public function getCustomerFullDetail(Request $request){
         $customer = DB::table('infoCustomer')
                     ->select('infoCustomer.FirstName as firstName', 'infoCustomer.LastName as lastName', 'infoCustomer.Name as Name' ,  'infoCustomer.EmailAddress as email', 'infoCustomer.Phone as phone',
-                        'infoCustomer.TotalSpend as totalSpent', 'infoCustomer.cardvip as kioskNumber', 'bycard as paymentMethod',
-                        DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'), 'infoCustomer.TypeDelivery as typeDelivery',
+                        'infoCustomer.TotalSpend as totalSpent', 'infoCustomer.cardvip as kioskNumber', 'bycard as paymentMethod', 'infoCustomer.OnAccount' ,
+                        DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'), DB::raw('IF(infoCustomer.CustomerIDMaster = "", "Main", "Sub") as accountType'),
+                         'infoCustomer.TypeDelivery as typeDelivery','infoCustomer.CustomerIDMaster','infoCustomer.OnAccount',
                         'infoCustomer.CustomerNotes', 'infoCustomer.id', 'infoCustomer.CustomerID',
                         DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recuring", "Normal") as booking'), 'discount', 'credit',
                         'infoCustomer.DeliverybyDay as deliveryByDay', 'DeliveryMon', 'DeliveryTu', 'DeliveryWed', 'DeliveryTh', 'DeliveryFri', 'DeliverySat',
@@ -1324,12 +1409,13 @@ class CustomerController extends Controller
         $customer->linkedAccounts = DB::table('infoCustomer')
                                     ->where('CustomerID', $customer->CustomerID)
                                     ->orWhere('CustomerIDMaster', $customer->CustomerID)
+                                    ->orWhere('CustomerID', $customer->CustomerIDMaster)
                                     ->select(
                                         DB::raw('IF(isMaster = 1, "Main", "Sub") as accountType'),
                                         'Name as name', 'Phone as phone', 'EmailAddress as email',
                                         DB::raw('IF(SignupDateOnline = "2000-01-01", DATE_FORMAT(SignupDate, "%d/%m/%Y"), DATE_FORMAT(SignupDateOnline, "%d/%m/%Y")) as date'),
                                         'TotalSpend as spent', 'id'
-                                    )->get();
+                                    )->get();               
         $user = Auth::user();
         $customer->current_user = null;
         if($user){
