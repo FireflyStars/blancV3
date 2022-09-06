@@ -121,11 +121,22 @@
                                             </div>
                                         </div>
                                         <div class="w-45">
-                                            <div class="form-group m-0 customer-type" >
-                                                <label class="form-label d-block m-0">Kiosk number</label>
-                                                <input v-if="contact_details_edit" type="text" v-model="form.kioskNumber" class="form-control custom-input" placeholder="Enter kiosk card number">
-                                                <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
-                                                    {{ form.kioskNumber }} &nbsp;
+                                            <div class="form-group m-0 customer-type" v-if="contact_details_edit">
+                                             <select-options
+                                                v-model="form.CustomerPayemenProfile"
+                                                :options="[
+                                                    { display:'Pay As You Go', value: 0 },
+                                                    { display:'On Account', value: 1 },
+                                                ]"
+                                                :label="'Customer payement profile'"
+                                                :name="'CustomerPayemenProfile'">
+                                             </select-options>
+                                           </div> 
+                                           <div class="from-group" v-else>
+                                                <label for="">Customer payement profile</label>
+                                                <div class="customer-type py-2 bg-color rounded-3">
+                                                    <span class="d-flex align-items-center justify-content-center rounded-pill  ms-3" v-html="form.CustomerPayemenProfile == '0' ? 'Pay As You Go' : 'On Account'">
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -171,19 +182,29 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="d-flex mt-3 align-items-end">
-                                        <div class="customer-email w-55">
-                                            <div class="form-group m-0">
+                                    <div>
+                                        <div class="mt-3 d-flex">
+                                            <div class="customer-email w-55 justify-content-between">
                                                 <label class="form-label d-block m-0" for="email">{{ form.customerType == 'B2C' ? "Email" : form.accountType == 'Main' ? 'Representative email address' : 'Business email address' }}</label>
                                                 <input v-if="contact_details_edit" type="text" v-model="form.email" class="form-control custom-input" placeholder="Email">
                                                 <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
                                                     {{ form.email }} &nbsp;
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="w-45 d-flex justify-content-end" v-if="contact_details_edit">
+                                            <div  class="customer-type w-45">
+                                                <div class="form-group m-0 customer-type" >
+                                                    <label class="form-label d-block m-0">Kiosk number</label>
+                                                    <input v-if="contact_details_edit" type="text" v-model="form.kioskNumber" class="form-control custom-input" placeholder="Enter kiosk card number">
+                                                    <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
+                                                        {{ form.kioskNumber }} &nbsp;
+                                                    </div>
+                                                </div>
+                                            </div> 
+                                        
+                                        <div class="mt-3" v-if="contact_details_edit">
                                             <button class="btn btn btn-success each-save-btn" @click="validateAndSaveContactDetails">Save</button>
                                         </div>
+                                    </div>
                                     </div>
                                 </div>
                                 <div class="page-section">
@@ -1501,6 +1522,7 @@
                         phone_country_code:form.value.phoneCountryCode,
                         phone_num:form.value.phoneNumber,
                         email:form.value.email,
+                        CustomerPayemenProfile:form.value.CustomerPayemenProfile,
                     }).then((res)=>{
                         if(res.data.updated){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{

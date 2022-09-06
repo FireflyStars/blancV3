@@ -349,6 +349,7 @@ class CustomerController extends Controller
                 return response()->json(['error'=> $e->getMessage()]);
             }
 
+            if($request->firstname != null){
                 $contact = [
                     'CustomerID'    => $CustomerUUID,
                     'address_id'    => $billing_address_id,
@@ -366,7 +367,7 @@ class CustomerController extends Controller
                 } catch (\Exception $e) {
                     return response()->json(['error'=> $e->getMessage()]);
              }
-
+            }
         }
 
         foreach ($request->preferences as $group) {
@@ -1668,6 +1669,7 @@ class CustomerController extends Controller
                     'Name'=>$request->lastname.($request->firstname!=''?", ":"").$request->firstname,
                     'EmailAddress'=>$request->email,
                     'Phone'=>(!empty($phone_arr)?json_encode($phone_arr):""),
+                    'OnAccount'=>$request->CustomerPayemenProfile,
                 ]);
 
 
