@@ -93,8 +93,8 @@ class CustomerController extends Controller
                         try {
                             if($account['id'] != 0){
                                 DB::table('infoCustomer')->where('id', $account['id'])->update(['CustomerIDMaster' => $CustomerUUID]);
-                            }else  {
-                                $info_customer = [
+                            }else if($account['id'] == 0 && $account['accountType'] == 'Sub' ){
+                                $info_customer_sub = [
                                     'CustomerID'    => '',
                                     'CustomerIDMaster'=> $CustomerUUID,
                                     'isMaster'      => 0,
@@ -106,35 +106,34 @@ class CustomerController extends Controller
                                     'Phone'        => $account['phone']!= '' ? '["'.$account['phoneCountryCode'].'|'.$account['phoneNumber'].']"' : '',
                                     'SignupDate'    => Carbon::now()->format('Y-m-d'),
                                 ];
-                             
                                 try {
-                                    $cust_Id = DB::table('infoCustomer')->insertGetId($info_customer);
-                                    $customerUUID = DB::table('infoCustomer')->where('id', $cust_Id)->value('CustomerID');
+                                    $cust_Id = DB::table('infoCustomer')->insertGetId($info_customer_sub);
+                                    $customerUUID_sub = DB::table('infoCustomer')->where('id', $cust_Id)->value('CustomerID');
                                 } catch (\Exception $e) {
                                     return response()->json($e->getMessage(), 500);
                                 }
                                 $response = [
                                     'id'        => $cust_Id,
-                                    'name'      => $info_customer['Name'],
-                                    'email'     => $info_customer['EmailAddress'],
-                                    'phone'     => $info_customer['Phone'],
-                                    'date'      => $info_customer['SignupDate'],
+                                    'name'      => $info_customer_sub['Name'],
+                                    'email'     => $info_customer_sub['EmailAddress'],
+                                    'phone'     => $info_customer_sub['Phone'],
+                                    'date'      => $info_customer_sub['SignupDate'],
                                     'spent'     => 0,
                                 ];
                         
-                                $new_customer = [
-                                    'CustomerID'    => $customerUUID,
-                                    'Name'          => $info_customer['Name'],
-                                    'Phone'         => $info_customer['Phone'],
-                                    'EmailAddress'  => $info_customer['EmailAddress'],
-                                    'LastName'      => $info_customer['LastName'],
-                                    'FirstName'     => $info_customer['FirstName'],
+                                $new_customer_sub = [
+                                    'CustomerID'    => $customerUUID_sub,
+                                    'Name'          => $info_customer_sub['Name'],
+                                    'Phone'         => $info_customer_sub['Phone'],
+                                    'EmailAddress'  => $info_customer_sub['EmailAddress'],
+                                    'LastName'      => $info_customer_sub['LastName'],
+                                    'FirstName'     => $info_customer_sub['FirstName'],
                                     'status'        => 'NEW',
                                     'created_at'    => now(),
                                     'updated_at'    => now(),
                                 ];
                                 try {
-                                    DB::table('NewCustomer')->insert($new_customer);
+                                    DB::table('NewCustomer')->insert($new_customer_sub);
                                 } catch (\Exception $e) {
                                     return response()->json($e->getMessage(), 500);
                                 }
