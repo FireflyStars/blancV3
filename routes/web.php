@@ -662,23 +662,36 @@ Route::get('ar-pdf',function(){
 
 });
 
+
+Route::get('all-ar-pdf',function(Request $request){
+    $row_ids = [31,32];
+
+    $all_details = DB::table('infoOrderPrint')->whereIn('id',$row_ids)->get();
+
+    $data = [];
+
+    foreach($all_details as $key=>$details){
+        $data[] = CustomerController::getArPDFData($details);
+    }
+
+    echo "<pre>";
+    print_r($data);
+});
+
 Route::get('inv-pdf',function(Request $request){
-    //$facture_id = $request->facture;
-    $facture_id = 'ece52ef4-21e2-11ed-978b-080027d0ed3e';
+    $facture_id = $request->facture;
 
     if(!isset($facture_id) || $facture_id ==''){
         die('Facture not set');
     }
+
+    $details = DB::table('infoOrderPrint')->where('FactureID',$facture_id)->first();
 
 
     $customer_ids = [];
     $grouped_by_customer = [];
     $cust_names = [];
     $cust_addresses = [];
-
-
-    $details = DB::table('infoOrderPrint')->where('FactureID',$facture_id)->first();
-
 
     $customer = DB::table('infoCustomer')->where('CustomerID',$details->CustomerID)->first();
     $addr = Delivery::getAddressByCustomerUUID($details->CustomerID);
@@ -940,6 +953,8 @@ Route::post('/add-order-voucher',[DetailingController::class,'addCheckoutVoucher
 * AR List
 */
 Route::post('/get-ar-customers',[CustomerController::class,'getArCustomers'])->name('get-ar-customers')->middleware('auth');
+Route::post('/mail-invoice-customer',[CustomerController::class,'mailInvoiceCustomer'])->name('mail-invoice-customer')->middleware('auth');
+Route::post('/generate-ar-invoice',[CustomerController::class,'generateArInvoice'])->name('generate-ar-invoice')->middleware('auth');
 
 /**
  * Route for Electron Pos printer - DO NOT REMOVE
