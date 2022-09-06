@@ -121,11 +121,22 @@
                                             </div>
                                         </div>
                                         <div class="w-45">
-                                            <div class="form-group m-0 customer-type" >
-                                                <label class="form-label d-block m-0">Kiosk number</label>
-                                                <input v-if="contact_details_edit" type="text" v-model="form.kioskNumber" class="form-control custom-input" placeholder="Enter kiosk card number">
-                                                <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
-                                                    {{ form.kioskNumber }} &nbsp;
+                                            <div class="form-group m-0 customer-type" v-if="contact_details_edit">
+                                             <select-options
+                                                v-model="form.CustomerPayemenProfile"
+                                                :options="[
+                                                    { display:'Pay As You Go', value: 0 },
+                                                    { display:'On Account', value: 1 },
+                                                ]"
+                                                :label="'Customer payement profile'"
+                                                :name="'CustomerPayemenProfile'">
+                                             </select-options>
+                                           </div> 
+                                           <div class="from-group" v-else>
+                                                <label for="">Customer payement profile</label>
+                                                <div class="customer-type py-2 bg-color rounded-3">
+                                                    <span class="d-flex align-items-center justify-content-center rounded-pill  ms-3" v-html="form.CustomerPayemenProfile == '0' ? 'Pay As You Go' : 'On Account'">
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -133,13 +144,13 @@
                                     <div class="d-flex mt-3">
                                         <div class="customer-contact w-55 d-flex justify-content-between">
                                             <div class="form-group m-0">
-                                                <label class="form-label d-block m-0" for="first_name">{{ form.customerType == 'B2C' ? 'Contact' : 'Company representative' }}</label>
+                                                <label class="form-label d-block m-0" for="first_name"> Last name </label>
                                                 <input v-if="contact_details_edit" type="text" v-model="form.lastName" class="form-control customer-type custom-input" placeholder="Last name">
                                                 <div v-else class="customer-type py-2 rounded-3 bg-color px-3" v-html="form.lastName == '' ? '&nbsp;' : form.lastName">
                                                 </div>
                                             </div>
                                             <div class="form-group m-0">
-                                                <label class="form-label d-block m-0" for="first_name">&nbsp;</label>
+                                                <label class="form-label d-block m-0" for="first_name"> First name </label>
                                                 <input v-if="contact_details_edit" type="text" v-model="form.firstName" class="form-control custom-input" placeholder="First name">
                                                 <div v-else style="min-height: 40px;" class="customer-type py-2 rounded-3 bg-color px-3" v-html="form.firstName == '' ? '&nbsp;' : form.firstName">
                                                 </div>
@@ -171,19 +182,29 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="d-flex mt-3 align-items-end">
-                                        <div class="customer-email w-55">
-                                            <div class="form-group m-0">
+                                    <div>
+                                        <div class="mt-3 d-flex">
+                                            <div class="customer-email w-55 justify-content-between">
                                                 <label class="form-label d-block m-0" for="email">{{ form.customerType == 'B2C' ? "Email" : form.accountType == 'Main' ? 'Representative email address' : 'Business email address' }}</label>
                                                 <input v-if="contact_details_edit" type="text" v-model="form.email" class="form-control custom-input" placeholder="Email">
                                                 <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
                                                     {{ form.email }} &nbsp;
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="w-45 d-flex justify-content-end" v-if="contact_details_edit">
+                                            <div  class="customer-type w-45">
+                                                <div class="form-group m-0 customer-type" >
+                                                    <label class="form-label d-block m-0">Kiosk number</label>
+                                                    <input v-if="contact_details_edit" type="text" v-model="form.kioskNumber" class="form-control custom-input" placeholder="Enter kiosk card number">
+                                                    <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
+                                                        {{ form.kioskNumber }} &nbsp;
+                                                    </div>
+                                                </div>
+                                            </div> 
+                                        
+                                        <div class="mt-3" v-if="contact_details_edit">
                                             <button class="btn btn btn-success each-save-btn" @click="validateAndSaveContactDetails">Save</button>
                                         </div>
+                                    </div>
                                     </div>
                                 </div>
                                 <div class="page-section">
@@ -717,7 +738,7 @@
                         <transition name="list" appear v-if="step =='linked_account'">
                             <div class="cust-page-content m-auto pt-5">
                                 <h3 class="title mb-3">Linked account(s)</h3>
-                                <div class="account-list-section">
+                                <div class="account-list-section">    
                                     <table class="table linked-account-table bg-white">
                                         <thead>
                                             <tr>
@@ -749,7 +770,7 @@
                                         </tbody>
                                     </table>
 
-                                    <div class="d-flex">
+                                    <!-- <div class="d-flex">
                                         <button class="border-btn add-new-account d-flex justify-content-between align-items-center me-3">
                                             <svg class="me-3" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <circle cx="12" cy="12" r="12" fill="black"/>
@@ -771,7 +792,7 @@
                                             Add existing account
                                         </button>
                                         <Search ref="searchpanel"  @selectedSubAccount="selectedSubAccount"/>
-                                    </div>
+                                    </div> -->
                                 </div>
                             </div>
                         </transition>
@@ -855,6 +876,7 @@
                 customerType: '',
                 typeDelivery: '',
                 programmeType: '',
+                CustomerPayemenProfile: '',
                 kioskNumber: '',
                 firstName: '',
                 lastName: '',
@@ -985,6 +1007,17 @@
                 axios.post('/get-customer-full-detail', {
                     customer_id: route.params.customer_id
                 }).then((res)=>{
+                    // linked accounts
+                    if(res.data.customer.accountType == "Main"){
+                           const filteredListSub = res.data.customer.linkedAccounts.filter((e) => e.accountType === "Sub");
+                           form.value.linkedAccounts = filteredListSub;
+                        }
+                    else if(res.data.customer.accountType == "Sub"){
+                           const filteredListMain = res.data.customer.linkedAccounts.filter((e) => e.accountType === "Main");
+                           form.value.linkedAccounts = filteredListMain;
+                    } 
+                    
+                    form.value.CustomerPayemenProfile = res.data.customer.OnAccount
 
                     if(res.data.customer.card == null){
                         creditCardCustomer.value = false ;
@@ -1007,7 +1040,12 @@
                     form.value.lastName = res.data.customer.lastName;
                     var phone = getPhone(res.data.customer.phone);
 
-                    form.value.phoneCountryCode = "+"+phone.code;
+                    if(phone.code.includes('+')){
+                        form.value.phoneCountryCode = phone.code;
+                    }else {
+                        form.value.phoneCountryCode = "+"+phone.code;
+                    }
+                    
                     form.value.phoneNumber = phone.number;
                     form.value.email = res.data.customer.email;
                     // address part in account details tab
@@ -1149,8 +1187,6 @@
                     }else{
                         viewRecurring.value = false;
                     }
-                    // linked accounts
-                    form.value.linkedAccounts = res.data.customer.linkedAccounts;
 
                     paths.value.push(
                         { name: res.data.customer.firstName +' ' + res.data.customer.lastName , route:'ViewCustomer', params:{ customer_id: res.data.customer.id }}
@@ -1269,9 +1305,20 @@
             };
             // handler when you unlink sub account from linked accounts
             const removeLinkedAccount = (id)=>{
-                form.value.linkedAccounts = form.value.linkedAccounts.filter((item)=>{
-                    return item.id != id;
-                });
+               axios.post('/unlink-Account', {
+                        customer_id: id,
+                    }).then((res)=>{
+                        console.log(res)
+                        if(res.data.message == "OK"){
+                            form.value.linkedAccounts = form.value.linkedAccounts.filter((item)=>{
+                            return item.id != id;
+                          });
+                        } else {
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: res.data.error , ttl:5, type:'danger' });
+                        }
+                    }).catch((errors)=>{
+                        console.log(errors)
+                    });        
             }
             const formatPhone = (phoneString)=>{
                 if(phoneString != ""){
@@ -1475,6 +1522,7 @@
                         phone_country_code:form.value.phoneCountryCode,
                         phone_num:form.value.phoneNumber,
                         email:form.value.email,
+                        CustomerPayemenProfile:form.value.CustomerPayemenProfile,
                     }).then((res)=>{
                         if(res.data.updated){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{

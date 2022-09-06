@@ -150,12 +150,17 @@
                                                 </select-options>
                                             </div>
                                         </div>
-                                        <div class="w-45">
-                                            <div class="form-group m-0 customer-type">
-                                                <label class="form-label d-block m-0">Kiosk number</label>
-                                                <input type="text" v-model="form.kioskNumber" class="form-control custom-input" placeholder="Enter kiosk card number">
-                                            </div>
-                                        </div>
+                                        <div class="customer-type w-45">
+                                            <select-options
+                                                v-model="form.CustomerPayemenProfile"
+                                                :options="[
+                                                    { display:'Pay As You Go', value: 0 },
+                                                    { display:'On Account', value: 1 },
+                                                ]"
+                                                :label="'Customer payement profile'"
+                                                :name="'CustomerPayemenProfile'">
+                                            </select-options>
+                                        </div>                                          
                                     </div>
                                     <div class="d-flex mt-3">
                                         <div class="customer-contact w-55 d-flex justify-content-between">
@@ -187,10 +192,16 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="customer-email w-55 mt-3">
-                                        <div class="form-group m-0">
+                                    <div class="mt-3 d-flex">
+                                        <div class="customer-email w-55 justify-content-between">
                                             <label class="form-label d-block m-0" for="email">{{ form.customerType == 'B2C' ? "Email" : form.accountType == 'Main' ? 'Representative email address' : 'Business email address' }}</label>
                                             <input type="text" v-model="form.email" class="form-control custom-input" placeholder="Email">
+                                        </div>
+                                        <div  class="customer-type w-45">
+                                            <div class="form-group m-0 customer-type">
+                                                <label class="form-label d-block m-0">Kiosk number</label>
+                                                <input type="text" v-model="form.kioskNumber" class="form-control custom-input" placeholder="Enter kiosk card number">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -648,6 +659,7 @@
             </div>
         </div>
     </transition>
+    <new-sub-account-form :phoneCodesSorted="phoneCodesSorted" :form="form" :show_conf="show_model_SubAccount" @close="show_model_SubAccount=false"></new-sub-account-form>
 </template>
 
 <script>
@@ -663,6 +675,7 @@
     import Search from './Search';
     import AccountImportModal from './AccountImportModal';
     import Swal from 'sweetalert2';
+    import NewSubAccountForm from '../miscellaneous/NewSubAccountForm.vue';
     import {
         TOASTER_MODULE,
         TOASTER_MESSAGE,
@@ -684,10 +697,12 @@ import axios from 'axios';
             SwitchBtn,
             MultipleEmail,
             Search,
-            AccountImportModal
+            AccountImportModal,
+            NewSubAccountForm   
         },
         setup(){
-            const store = useStore();
+            const store = useStore(); 
+            const show_model_SubAccount = ref(false);
             const form = ref({
                 customerID: '',
                 accountType: 'Main',
@@ -695,6 +710,7 @@ import axios from 'axios';
                 typeDelivery: 'DELIVERY',
                 programmeType: 'Standard',
                 kioskNumber: '',
+                CustomerPayemenProfile: 0,
                 firstName: '',
                 lastName: '',
                 phoneCountryCode: '+44',
@@ -913,7 +929,7 @@ import axios from 'axios';
                 });
             }
             const formatPhone = (phoneString)=>{
-                if(phoneString != ""){
+                if(phoneString != "" && phoneString != undefined ){
                     if(phoneString.split('"').length == 1){
                         return phoneString;
                     }else{
@@ -1229,40 +1245,13 @@ import axios from 'axios';
             watch(()=>form.value.lastName, (cur_val, pre_val)=>{
                 form.value.linkedAccounts[0].name = form.value.firstName + ', '+ cur_val;
             });
+            watch(()=>form.value.email, (cur_val, pre_val)=>{
+                form.value.linkedAccounts[0].email = cur_val;
+            });
             // handler when you click a create sub account button
             const createSubAccount = ()=>{
-                if(form.value.customerID == ''){
-                    axios.post('/generate-customer-id', {
-                        firstName: form.value.firstName,
-                        lastName: form.value.lastName,
-                        email: form.value.email,
-                    }).then((res)=>{
-                        if(res.data.error){
-                            response.data.error.forEach((item)=>{
-                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item[0], ttl:5, type:'danger' });
-                            })
-                        }else{
-                            form.value.customerID = res.data
-                            localStorage.setItem('CustomerID', res.data);
-                            localStorage.setItem('stepActived', 'linked_account');
-                            localStorage.setItem('formData', JSON.stringify(form.value));
-                            localStorage.setItem('linkedAccounts', JSON.stringify(form.value.linkedAccounts));
-                            router.push({
-                                name: 'SubCustomer'
-                            });
-                        }
-                    }).catch((errors)=>{
-                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: errors.response.data.message, ttl:5, type:'danger' });
-                    });
-                }else{
-                    localStorage.setItem('CustomerID', form.value.customerID);
-                    localStorage.setItem('stepActived', 'linked_account');
-                    localStorage.setItem('formData', JSON.stringify(form.value));
-                    localStorage.setItem('linkedAccounts', JSON.stringify(form.value.linkedAccounts));
-                    router.push({
-                        name: 'SubCustomer'
-                    });
-                }
+                show_model_SubAccount.value = true;
+                
             }
 
             // handler for when you click a create customer
@@ -1420,7 +1409,8 @@ import axios from 'axios';
                 showSearchPanel,
                 selectedSubAccount,
                 checkCard,
-                formatPhone
+                formatPhone,
+                show_model_SubAccount
             }
         },
         data(){
