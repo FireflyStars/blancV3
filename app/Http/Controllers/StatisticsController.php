@@ -519,6 +519,8 @@ class StatisticsController extends Controller
         $compareStartDate       =   $request->post('compareStartDate');
         $compareEndDate         =   $request->post('compareEndDate');
         $compareMode            =   $request->post('compareMode');
+        $salesType            =   $request->post('salesType');
+        $pieceType            =   $request->post('pieceType');
 
         $period         = [ Carbon::parse($startDate)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->endOfDay()->toDateTimeString() ];
         if(!$compareCustomFilter){
@@ -605,33 +607,69 @@ class StatisticsController extends Controller
                     $past_period = [Carbon::now()->subMonth()->startOfMonth()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
             }
         }
-        $salesByChannel = InfoOrder::whereBetween('created_at', $period)
-                                ->where('deliverymethod', '!=','')
-                                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                                ->select(
-                                    DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount'), 'TypeDelivery as channel'
-                                )->groupBy('TypeDelivery')->orderBy('amount', 'DESC')->get();
-        $salesByChannelTotal = $salesByChannel->sum('amount');
-        $salesByChannelTotalToCompare =  InfoOrder::whereBetween('created_at', $past_period)
-                                            ->where('deliverymethod', '!=','')
-                                            ->select(
-                                                DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount'))->value('amount');
-        $piecesByItem = DB::table('detailingitem')->join('categories', 'categories.id', '=', 'detailingitem.category_id')
-                        ->whereBetween('detailingitem.created_at', $period)
-                        ->where('detailingitem.status', 'Completed')
-                        ->select(
-                            'categories.name', 
-                            DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
-                        )
-                        ->groupBy('categories.name')->orderBy('amount', 'DESC')->get();
-        $salesByItemTotal = $piecesByItem->sum('amount');
-        $salesByItemTotalToCompare = DB::table('detailingitem')->join('categories', 'categories.id', '=', 'detailingitem.category_id')
-                                    ->whereBetween('detailingitem.created_at', $past_period)
-                                    ->where('detailingitem.status', 'Completed')
+        
+        if($salesType == 'channel'){
+            $salesByChannel = InfoOrder::whereBetween('created_at', $period)
+                                    ->where('deliverymethod', '!=','')
                                     ->select(
-                                        DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
-                                    )
-                                    ->value('amount');
+                                        DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount'), 'TypeDelivery as channel'
+                                    )->groupBy('TypeDelivery')->orderBy('amount', 'DESC')->get();
+            $salesByChannelTotal = $salesByChannel->sum('amount');
+            $salesByChannelTotalToCompare =  InfoOrder::whereBetween('created_at', $past_period)
+                                                ->where('deliverymethod', '!=','')
+                                                ->select(
+                                                    DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
+                                                )->value('amount');
+        }else{
+            $salesByChannel = InfoOrder::whereBetween('created_at', $period)
+                                    ->where('deliverymethod', '!=','')
+                                    ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                                    ->select(
+                                        DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount'), 'TypeDelivery as channel'
+                                    )->groupBy('TypeDelivery')->orderBy('amount', 'DESC')->get();
+            $salesByChannelTotal = $salesByChannel->sum('amount');
+            $salesByChannelTotalToCompare =  InfoOrder::whereBetween('created_at', $past_period)
+                                                ->where('deliverymethod', '!=','')
+                                                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                                                ->select(
+                                                    DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
+                                                )->value('amount');
+        }
+        if($salesType == 'item type'){
+            $piecesByItem = DB::table('detailingitem')->join('categories', 'categories.id', '=', 'detailingitem.category_id')
+                            ->whereBetween('detailingitem.created_at', $period)
+                            ->where('detailingitem.status', 'Completed')
+                            ->select(
+                                'categories.name', 
+                                DB::raw('count(*) as amount')
+                            )
+                            ->groupBy('categories.name')->orderBy('amount', 'DESC')->get();
+            $salesByItemTotal = $piecesByItem->sum('amount');
+            $salesByItemTotalToCompare = DB::table('detailingitem')->join('categories', 'categories.id', '=', 'detailingitem.category_id')
+                                        ->whereBetween('detailingitem.created_at', $past_period)
+                                        ->where('detailingitem.status', 'Completed')
+                                        ->select(
+                                            DB::raw('count(*) as amount')
+                                        )
+                                        ->value('amount');            
+        }else{
+            $piecesByItem = DB::table('detailingitem')->join('categories', 'categories.id', '=', 'detailingitem.category_id')
+                            ->whereBetween('detailingitem.created_at', $period)
+                            ->where('detailingitem.status', 'Completed')
+                            ->select(
+                                'categories.name', 
+                                DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
+                            )
+                            ->groupBy('categories.name')->orderBy('amount', 'DESC')->get();
+            $salesByItemTotal = $piecesByItem->sum('amount');
+            $salesByItemTotalToCompare = DB::table('detailingitem')->join('categories', 'categories.id', '=', 'detailingitem.category_id')
+                                        ->whereBetween('detailingitem.created_at', $past_period)
+                                        ->where('detailingitem.status', 'Completed')
+                                        ->select(
+                                            DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
+                                        )
+                                        ->value('amount');
+        }
         $b2bAVGSale = InfoOrder::whereBetween('created_at', $period)
                         ->join('infoCustomer', function($join){
                             $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');

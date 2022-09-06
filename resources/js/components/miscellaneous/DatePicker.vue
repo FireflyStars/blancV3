@@ -178,6 +178,7 @@
             const formated_date=ref('');
 
             if(props.modelValue!==""){
+
                 default_date.value=props.modelValue.split('-');
                 MonthYear.value.month=(default_date.value[1]-1);
                 MonthYear.value.year=parseInt(default_date.value[0]);

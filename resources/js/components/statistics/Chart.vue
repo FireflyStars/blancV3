@@ -4,7 +4,15 @@
         <div class="d-flex">
             <div class="col-4 p-2 d-flex">
                 <div class="rounded-3 bg-white w-100 p-2">
-                    <h3 class="font-20 gotham-rounded-medium">Sales by channel</h3>
+                    <h3 class="font-20 gotham-rounded-medium d-flex">
+                        <div>Sales by</div>
+                        <div class="px-2">
+                            <select class="form-select form-select-sm d-flex" v-model="pieChart1">
+                                <option>channel</option>
+                                <option>item type</option>
+                            </select>
+                        </div>
+                    </h3>
                     <div class="d-flex">
                         <div class="col-7">
                             <div class="d-flex" v-for="(channel, index) in salesByChannelChartData" :key="index">
@@ -27,7 +35,15 @@
             </div>
             <div class="col-4 p-2 d-flex">
                 <div class="rounded-3 bg-white w-100 p-2">
-                    <h3 class="font-20 gotham-rounded-medium">Pieces by item type</h3>
+                    <h3 class="font-20 gotham-rounded-medium d-flex">
+                        <div class="">Pieces by</div>
+                        <div class="px-2">
+                            <select class="form-select form-select-sm d-flex" v-model="pieChart2">
+                                <option>channel</option>
+                                <option>item type</option>
+                            </select>
+                        </div>                       
+                    </h3>
                     <div class="d-flex">
                         <div class="col-7">
                             <div class="d-flex" v-for="(item, index) in piecesByItemChartData" :key="index">
@@ -261,6 +277,8 @@ export default {
         const NHByDateLegend = ref(false);
         const CHByDateLegend = ref(false);
         const SKByDateLegend = ref(false);
+        const pieChart1 = ref('channel');
+        const pieChart2 = ref('item type');
         const salesByChannelTotal = ref(0);
         const salesByChannelTotalToCompare = ref(0);        
         const salesByItemTotal = ref(0);
@@ -311,10 +329,16 @@ export default {
             compareCustomFilter: false,
             compareStartDate: `${today.getFullYear()-1}-${today.getMonth()+1}-${today.getDate()}`,
             compareEndDate: `${today.getFullYear()-1}-${today.getMonth()+1}-${today.getDate()}`,
+            salesType: 'channel',
+            pieceType: 'item type',
         });        
         onMounted(()=>{
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
-            axios.post('/get-prod-statistics', filterVal.value)
+            axios.post('/get-prod-statistics', {
+                'salesType': pieChart1.value,
+                'pieceType': pieChart2.value, 
+                ... filterVal.value
+            })
                 .then((res) => {
                     salesByChannelChartData.value = res.data.salesByChannel;
                     salesByChannelTotal.value = res.data.salesByChannelTotal;
@@ -388,7 +412,140 @@ export default {
         watch(() => filterVal.value, (current_val, previous_val) => {
             destroyChart();
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
-            axios.post('/get-prod-statistics', current_val).then((res) => {
+            axios.post('/get-prod-statistics', {
+                'salesType': pieChart1.value,
+                'pieceType': pieChart2.value, ... current_val                
+            }).then((res) => {
+                salesByChannelChartData.value = res.data.salesByChannel;
+                salesByChannelTotal.value = res.data.salesByChannelTotal;
+                salesByChannelTotalToCompare.value = res.data.salesByChannelTotalToCompare;
+
+                piecesByItemChartData.value = res.data.piecesByItem;
+                salesByItemTotal.value = res.data.salesByItemTotal;
+                salesByItemTotalToCompare.value = res.data.salesByItemTotalToCompare;
+
+                avgOrder.value = res.data.avgOrder;
+                avgOrderToCompare.value = res.data.avgOrderToCompare;
+                b2bAVGSale.value = res.data.b2bAVGSale;
+                b2cAVGSale.value = res.data.b2cAVGSale;
+                homeDel.value = res.data.homeDel;
+                corpDel.value = res.data.corpDel;
+                storeDel.value = res.data.storeDel;
+
+                allSaleData.value = res.data.allSaleData;
+                corpDelSaleData.value = res.data.corpDelSaleData;
+                homeDelSaleData.value = res.data.homeDelSaleData;
+                MBSaleData.value = res.data.MBSaleData;
+                NHSaleData.value = res.data.NHSaleData;
+                CHSaleData.value = res.data.CHSaleData;
+                SKSaleData.value = res.data.SKSaleData;
+
+                salesByCommande.value = res.data.salesByCommande;
+                salesByUser.value = res.data.salesByUser;
+
+                bookingByChannel.value = res.data.bookingByChannel;
+                bookingB2B.value = res.data.bookingB2B;
+                bookingB2BPast.value = res.data.bookingB2BPast;
+                bookingB2C.value = res.data.bookingB2C;
+                bookingB2CPast.value = res.data.bookingB2CPast;
+                bookingAPP.value = res.data.bookingAPP;
+                bookingAPPPast.value = res.data.bookingAPPPast;
+                bookingPOS.value = res.data.bookingPOS;
+                bookingPOSPast.value = res.data.bookingPOSPast;
+                totalBookingCount.value = res.data.totalBookingCount;
+                totalBookingCountPast.value = res.data.totalBookingCountPast;
+
+                signupByChannel.value = res.data.signupByChannel;
+                signupB2B.value = res.data.signupB2B;
+                signupB2BPast.value = res.data.signupB2BPast;
+                signupB2C.value = res.data.signupB2C;
+                signupB2CPast.value = res.data.signupB2CPast;
+                signupAPP.value = res.data.signupAPP;
+                signupAPPPast.value = res.data.signupAPPPast
+                signupPOS.value = res.data.signupPOS;
+                signupPOSPast.value = res.data.signupPOSPast
+                totalSignUpCount.value = res.data.totalSignUpCount;
+                totalSignUpCountPast.value = res.data.totalSignUpCountPast;
+                
+                initSalesByChannelChart();
+                initPiecesByItemChart();
+                initTotalChart();                   
+            }).finally(()=>{
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            });
+        });        
+        watch(() => pieChart1.value, (current_val, previous_val) => {
+            destroyChart();
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
+            axios.post('/get-prod-statistics', {
+                'salesType': pieChart1.value,
+                'pieceType': pieChart2.value, ... filterVal.value
+            }).then((res) => {
+                salesByChannelChartData.value = res.data.salesByChannel;
+                salesByChannelTotal.value = res.data.salesByChannelTotal;
+                salesByChannelTotalToCompare.value = res.data.salesByChannelTotalToCompare;
+
+                piecesByItemChartData.value = res.data.piecesByItem;
+                salesByItemTotal.value = res.data.salesByItemTotal;
+                salesByItemTotalToCompare.value = res.data.salesByItemTotalToCompare;
+
+                avgOrder.value = res.data.avgOrder;
+                avgOrderToCompare.value = res.data.avgOrderToCompare;
+                b2bAVGSale.value = res.data.b2bAVGSale;
+                b2cAVGSale.value = res.data.b2cAVGSale;
+                homeDel.value = res.data.homeDel;
+                corpDel.value = res.data.corpDel;
+                storeDel.value = res.data.storeDel;
+
+                allSaleData.value = res.data.allSaleData;
+                corpDelSaleData.value = res.data.corpDelSaleData;
+                homeDelSaleData.value = res.data.homeDelSaleData;
+                MBSaleData.value = res.data.MBSaleData;
+                NHSaleData.value = res.data.NHSaleData;
+                CHSaleData.value = res.data.CHSaleData;
+                SKSaleData.value = res.data.SKSaleData;
+
+                salesByCommande.value = res.data.salesByCommande;
+                salesByUser.value = res.data.salesByUser;
+
+                bookingByChannel.value = res.data.bookingByChannel;
+                bookingB2B.value = res.data.bookingB2B;
+                bookingB2BPast.value = res.data.bookingB2BPast;
+                bookingB2C.value = res.data.bookingB2C;
+                bookingB2CPast.value = res.data.bookingB2CPast;
+                bookingAPP.value = res.data.bookingAPP;
+                bookingAPPPast.value = res.data.bookingAPPPast;
+                bookingPOS.value = res.data.bookingPOS;
+                bookingPOSPast.value = res.data.bookingPOSPast;
+                totalBookingCount.value = res.data.totalBookingCount;
+                totalBookingCountPast.value = res.data.totalBookingCountPast;
+
+                signupByChannel.value = res.data.signupByChannel;
+                signupB2B.value = res.data.signupB2B;
+                signupB2BPast.value = res.data.signupB2BPast;
+                signupB2C.value = res.data.signupB2C;
+                signupB2CPast.value = res.data.signupB2CPast;
+                signupAPP.value = res.data.signupAPP;
+                signupAPPPast.value = res.data.signupAPPPast
+                signupPOS.value = res.data.signupPOS;
+                signupPOSPast.value = res.data.signupPOSPast
+                totalSignUpCount.value = res.data.totalSignUpCount;
+                totalSignUpCountPast.value = res.data.totalSignUpCountPast;
+                
+                initSalesByChannelChart();
+                initPiecesByItemChart();
+                initTotalChart();                   
+            }).finally(()=>{
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            });
+        });        
+        watch(() => pieChart2.value, (current_val, previous_val) => {
+            destroyChart();
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Loading data...']);
+            axios.post('/get-prod-statistics', {
+                'salesType': pieChart1.value,
+                'pieceType': pieChart2.value, ... filterVal.value
+            }).then((res) => {
                 salesByChannelChartData.value = res.data.salesByChannel;
                 salesByChannelTotal.value = res.data.salesByChannelTotal;
                 salesByChannelTotalToCompare.value = res.data.salesByChannelTotalToCompare;
@@ -499,13 +656,24 @@ export default {
             if(salesByChannelTotal.value > salesByChannelTotalToCompare.value && salesByChannelTotalToCompare.value == 0){
                 percent = "--";
             }
-            let originLabel = salesByChannelChartSeries.children.push(am5.Label.new(salesByChannelChartRoot, {
-                text: "£{valueSum.formatNumber('#,###.')}\n   "+ percent,
-                centerX: am5.percent(50),
-                centerY: am5.percent(50),
-                fontSize: 20,
-                populateText: true
-            }));
+            let originLabel;
+            if(pieChart1.value == 'channel'){
+                originLabel = salesByChannelChartSeries.children.push(am5.Label.new(salesByChannelChartRoot, {
+                    text: "£{valueSum.formatNumber('#,###.')}\n   "+ percent,
+                    centerX: am5.percent(50),
+                    centerY: am5.percent(50),
+                    fontSize: 20,
+                    populateText: true
+                }));
+            }else{
+                originLabel = salesByChannelChartSeries.children.push(am5.Label.new(salesByChannelChartRoot, {
+                    text: "{valueSum.formatNumber('#,###.')}\n   "+ percent,
+                    centerX: am5.percent(50),
+                    centerY: am5.percent(50),
+                    fontSize: 20,
+                    populateText: true
+                }));
+            }
             // Set data
             salesByChannelChartSeries.data.setAll(salesByChannelChartData.value);
             salesByChannelChartSeries.onPrivate("valueSum", function(){
@@ -569,13 +737,24 @@ export default {
             if(salesByItemTotal.value > salesByItemTotalToCompare.value && salesByItemTotalToCompare.value == 0){
                 percent = "--";
             }
-            let clientLabel = piecesByItemChartSeries.children.push(am5.Label.new(piecesByItemChartRoot, {
-                text: "£{valueSum.formatNumber('#,###.')}\n   " + percent,
-                centerX: am5.percent(50),
-                centerY: am5.percent(50),
-                fontSize: 20,
-                populateText: true
-            }));
+            let clientLabel;
+            if(pieChart2.value == 'item type'){
+                clientLabel = piecesByItemChartSeries.children.push(am5.Label.new(piecesByItemChartRoot, {
+                    text: "{valueSum.formatNumber('#,###.')}\n   " + percent,
+                    centerX: am5.percent(50),
+                    centerY: am5.percent(50),
+                    fontSize: 20,
+                    populateText: true
+                }));
+            }else{
+                clientLabel = piecesByItemChartSeries.children.push(am5.Label.new(piecesByItemChartRoot, {
+                    text: "£{valueSum.formatNumber('#,###.')}\n   " + percent,
+                    centerX: am5.percent(50),
+                    centerY: am5.percent(50),
+                    fontSize: 20,
+                    populateText: true
+                }));
+            }
             // Set data
             piecesByItemChartSeries.data.setAll(piecesByItemChartData.value);
             piecesByItemChartSeries.onPrivate("valueSum", function(){
@@ -838,6 +1017,8 @@ export default {
             CHByDateLegend,
             SKByDateLegend,
             filterVal,
+            pieChart1,
+            pieChart2,
             salesByChannelChartData,
             piecesByItemChartData,
 

@@ -941,6 +941,21 @@ Route::post('/add-order-voucher',[DetailingController::class,'addCheckoutVoucher
 */
 Route::post('/get-ar-customers',[CustomerController::class,'getArCustomers'])->name('get-ar-customers')->middleware('auth');
 
+/**
+ * Route for Electron Pos printer - DO NOT REMOVE
+ */
+
+Route::get('/electron-suborder-and-print',function(Request $request){
+	$invoice_id = $request->get('invoice_id');
+
+    $invoice = PosteController::electonGetSubOrderToPrint($invoice_id,'CustomerDetail');
+
+    return response()->json([
+        'post'=>$request->all(),
+        'invoice'=>$invoice,
+    ]);
+});
+
 
 /**
  * Routes for stripe terminal - DO NOT REMOVE
