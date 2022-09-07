@@ -325,15 +325,35 @@ export default {
                     customer_ids.push(id);
                 });
 
+                closeBatchInvoiceModal();
+
+                if(type=='pdf'){
+                    store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
+                        true,
+                        "Generating PDF....",
+                    ]);
+                }
+
+
                 axios.post('/generate-ar-invoice',{
                     customer_ids:JSON.stringify(customer_ids),
                     type:type,
                 }).then((res)=>{
-                    console.log(res);
+                    if(res.data.url){
+                        window.location = res.data.url;
+                    }else{
+                        if(type=='pdf' && res.data.details_per_cust.length==0){
+                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                message:"No valid invoices available",
+                                ttl:5,
+                                type:'danger'
+                            });
+                        }
+                    }
                 }).catch((err)=>{
 
                 }).finally(()=>{
-
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
 
             }

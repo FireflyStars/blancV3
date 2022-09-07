@@ -2314,6 +2314,18 @@ class CustomerController extends Controller
                 }
            }
 
+           foreach($order_details as $customerid=>$invoices){
+            foreach($invoices as $invoiceid=>$invoice){
+                if(empty($invoice)){
+                    unset($order_details[$customerid][$invoiceid]);
+                }
+            }
+
+            if(empty($order_details[$customerid])){
+                unset($order_details[$customerid]);
+            }
+           }
+
            $facture_net[] = $order_net;
 
            $order_vat = 0.2*$order_net;
@@ -2382,50 +2394,56 @@ class CustomerController extends Controller
             foreach($all_details as $key=>$details){
                 $details_per_cust[] = CustomerController::getArPDFData($details);
             }
-            /*
 
-            $data = [
-                'details_per_cust'=>$details_per_cust,
-            ];
-
-            Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
-
-
-            $pdf = Pdf::loadView('pdf/ar_all_pdf', $data);
-
-            $pdf->output();
-
-            $canvas = $pdf->getDomPDF()->getCanvas();
-
-            $fontMetrics = $pdf->getDomPDF()->getFontMetrics();
-            $font = $fontMetrics->getFont('Times-Roman');
-
-            $text = "Page {PAGE_NUM} of {PAGE_COUNT}";
-            $size = 10;
-
-            $width = $fontMetrics->getTextWidth($text, $font, $size) / 2;
-
-            $x = $canvas->get_width() - $width;
-            $y = $canvas->get_height() - 35;
-
-            $canvas->page_text($x, $y, $text , $font, 10, array(0, 0, 0));
-
-            //return $pdf->download('invoice'.$details->CustomerID.'.pdf');
-
-            $filename = 'invoices_'.strtotime('now').'.pdf';
-
-            if(count($row_ids)==1){
-                $filename = 'invoice_'.$row_ids[0].'_'.strtotime('now').'.pdf';
+            foreach($details_per_cust as $k=>$v){
+                if(empty($v['order_details'])){
+                    unset($details_per_cust[$k]);
+                }
             }
 
-            $pdfstr=$pdf->output();
-            Storage::disk('local')->put('pdf'.DIRECTORY_SEPARATOR.$filename, $pdfstr);
-            $url = 'pdf'.DIRECTORY_SEPARATOR.$filename;
+            if(!empty($details_per_cust)){
+                $data = [
+                    'details_per_cust'=>$details_per_cust,
+                ];
 
-            return response()->json(
-                ['url'=>route('download-ar-pdf',['filename'=>$url])]
-            );
-            */
+                Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
+
+
+                $pdf = Pdf::loadView('pdf/ar_all_pdf', $data);
+
+                $pdf->output();
+
+                $canvas = $pdf->getDomPDF()->getCanvas();
+
+                $fontMetrics = $pdf->getDomPDF()->getFontMetrics();
+                $font = $fontMetrics->getFont('Times-Roman');
+
+                $text = "Page {PAGE_NUM} of {PAGE_COUNT}";
+                $size = 10;
+
+                $width = $fontMetrics->getTextWidth($text, $font, $size) / 2;
+
+                $x = $canvas->get_width() - $width;
+                $y = $canvas->get_height() - 35;
+
+                $canvas->page_text($x, $y, $text , $font, 10, array(0, 0, 0));
+
+                //return $pdf->download('invoice'.$details->CustomerID.'.pdf');
+
+                $filename = 'invoices_'.strtotime('now').'.pdf';
+
+                if(count($row_ids)==1){
+                    $filename = 'invoice_'.$row_ids[0].'_'.strtotime('now').'.pdf';
+                }
+
+                $pdfstr=$pdf->output();
+                Storage::disk('local')->put('pdf'.DIRECTORY_SEPARATOR.$filename, $pdfstr);
+                $url = 'pdf'.DIRECTORY_SEPARATOR.$filename;
+
+                return response()->json(
+                    ['url'=>route('download-ar-pdf',['filename'=>$url])]
+                );
+            }
         }
 
         return response()->json([

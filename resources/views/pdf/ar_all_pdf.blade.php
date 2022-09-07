@@ -218,7 +218,8 @@
 </style>
 </head>
 <body style="font-family: Helvetica;">
-
+    @foreach($details_per_cust as $k=>$v)
+    <div class="@php if($k+1 < count($details_per_cust)){echo "page-break";} @endphp">
     <header>
         <img src="{{public_path('/images/pdf_logo.jpg')}}"/>
 
@@ -232,13 +233,13 @@
         </div>
 
         <div id="cust_addr">
-            <div>{{$customer->Name}}</div>
-            @if($address)
-                @if($address->address1 !='')<div>{{$address->address1}}</div>@endif
-                @if($address->address2 !='')<div>{{$address->address2}}</div>@endif
+            <div>{{$v['customer']->Name}}</div>
+            @if($v['address'])
+                @if($v['address']->address1 !='')<div>{{$v['address']->address1}}</div>@endif
+                @if($v['address']->address2 !='')<div>{{$v['address']->address2}}</div>@endif
                 <div>
-                    @if($address->Town!=''){{$address->Town}}@endif
-                    @if($address->County!=''), {{$address->County}}@endif, {{$address->postcode}}
+                    @if($v['address']->Town!=''){{$v['address']->Town}}@endif
+                    @if($v['address']->County!=''), {{$v['address']->County}}@endif, {{$v['address']->postcode}}
                 </div>
             @endif
         </div>
@@ -251,114 +252,110 @@
                 <tr>
                     <td class="heading-cell">
                         <div class="heading-cell-title">Account No:</div>
-                        <div class="heading-cell-value">{{$customer->id}}</div>
+                        <div class="heading-cell-value">{{$v['customer']->id}}</div>
                     </td>
                     <td class="heading-cell">
                         <div class="heading-cell-title">No:</div>
-                        <div class="heading-cell-value" id="inv_no">{{$facture->NumFact}}</div>
+                        <div class="heading-cell-value" id="inv_no">{{$v['facture']->NumFact}}</div>
                     </td>
                 </tr>
                 <tr>
                     <td class="heading-cell">
                         <div class="heading-cell-title">Due Date:</div>
-                        <div class="heading-cell-value">{{$date_due}}</div>
+                        <div class="heading-cell-value">{{$v['date_due']}}</div>
                     </td>
                     <td class="heading-cell">
                         <div class="heading-cell-title">Invoice Date:</div>
-                        <div class="heading-cell-value">{{$invoice_date}}</div>
+                        <div class="heading-cell-value">{{$v['invoice_date']}}</div>
                     </td>
                 </tr>
             </table>
         </div>
-    </header>
+        </header>
 
-    <footer>
-        <div id="footer_left">
-            <span class="each-payment-detail">PAYMENT DETAILS</span>
-            <span class="each-payment-detail">Bank: HSBC Account No : 90706744 Sort Code: 40-11-60</span>
-            <span class="each-payment-detail">Payment terms: 14 days</span>
+        <footer>
+            <div id="footer_left">
+                <span class="each-payment-detail">PAYMENT DETAILS</span>
+                <span class="each-payment-detail">Bank: HSBC Account No : 90706744 Sort Code: 40-11-60</span>
+                <span class="each-payment-detail">Payment terms: 14 days</span>
 
-            <span class="each-payment-detail2" id="second_payment_bloc">Please note that if payment is not received by the end</span>
-            <span class="each-payment-detail2">of the month, we will apply an interest fee of 5% to</span>
-            <span class="each-payment-detail2">your original total amount due.</span>
-        </div>
-        <table border="0" cellspacing="0" id="footer_total">
-            <tr>
-                <td colspan="3" id="period_text">This period</td>
-            </tr>
-            <tr><td colspan="3">&nbsp;</td></tr>
-            <tr>
-                <td>&nbsp;</td>
-                <td class="total_text">Net Total:</td>
-                <td class="amount_total">&#163;{{$facture_net}}</td>
-            </tr>
-            <tr>
-                <td>&nbsp;</td>
-                <td class="total_text">Discount:</td>
-                <td class="amount_total">@if($facture_discount > 0)-@endif &#163;{{$facture_discount}}</td>
-            </tr>
-            <tr>
-                <td>&nbsp;</td>
-                <td class="total_text vat_total">VAT @ 20%:</td>
-                <td class="amount_total vat_total">&#163;{{$facture_vat}}</td>
-            </tr>
-            <tr>
-                <td class="total_text" colspan="2">Total Due Inc VAT:</td>
-                <td class="amount_total">&#163;{{$facture_total}}</td>
-            </tr>
+                <span class="each-payment-detail2" id="second_payment_bloc">Please note that if payment is not received by the end</span>
+                <span class="each-payment-detail2">of the month, we will apply an interest fee of 5% to</span>
+                <span class="each-payment-detail2">your original total amount due.</span>
+            </div>
 
-        </table>
-
-
-        <span class="pagenum">
-        </span>
-
-    </footer>
-
-
-    <main>
-        @foreach ($order_details as $customerid=>$invoices)
-            <span class="cust_name">{{$cust_names[$customerid]}}</span>
-
-
-            <table width="100%" class="items_table" cellspacing="0">
-                <tr class="header_row">
-                    <th>Date</th><th>Order</th><th>Sub-order</th><th>Description</th><th>Net</th><th>VAT</th><th>Total</th>
+            <table border="0" cellspacing="0" id="footer_total">
+                <tr>
+                    <td colspan="3" id="period_text">This period</td>
                 </tr>
-                @foreach ($invoices as $invoiceid=>$invoice )
-                    <tr>
-                        <td class="main-cell"  width="10%">{{$invoice['date']}}</td>
-                        <td class="main-cell" width="10%">{{$invoice['orderid']}}</td>
-                        <td class="main-cell" width="10%">{{$invoice['numinvoice']}}</td>
-                        <td class="main-cell desc-cell" width="40%">
-                            @foreach($invoice['items'] as $dept=>$items)
-                                <span class="each-dept-div">
-                                    <span class="each-dept">{{$dept}}</span>
-                                    @foreach($items as $item=>$count)
-                                    <span class="each-item">{{$count}} {{$item}}</span>
-                                    @endforeach
-                                </span>
-                            @endforeach
-                        </td>
-                        <td class="amount main-cell" width="10%">{{$invoice['net']}}</td>
-                        <td class="amount main-cell"  width="10%">{{$invoice['vat']}}</td>
-                        <td class="amount main-cell"  width="10%">{{$invoice['total']}}</td>
-                    </tr>
-                @endforeach
-                <tr class="total_row">
-                    <th colspan="4"></th><th class="amount">{{$order_totals[$customerid]['order_net']}}</th><th class="amount">{{$order_totals[$customerid]['order_vat']}}</th><th class="amount">{{$order_totals[$customerid]['order_total']}}</th>
+                <tr><td colspan="3">&nbsp;</td></tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td class="total_text">Net Total:</td>
+                    <td class="amount_total">&#163;{{$v['facture_net']}}</td>
                 </tr>
-
+                <tr>
+                    <td>&nbsp;</td>
+                    <td class="total_text">Discount:</td>
+                    <td class="amount_total">@if($v['facture_discount'] > 0)-@endif &#163;{{$v['facture_discount']}}</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td class="total_text vat_total">VAT @ 20%:</td>
+                    <td class="amount_total vat_total">&#163;{{$v['facture_vat']}}</td>
+                </tr>
+                <tr>
+                    <td class="total_text" colspan="2">Total Due Inc VAT:</td>
+                    <td class="amount_total">&#163;{{$v['facture_total']}}</td>
+                </tr>
 
             </table>
-        @endforeach
-    </main>
+
+        </footer>
+
+        <main>
+            @foreach ($v['order_details'] as $customerid=>$invoices)
+                <span class="cust_name">{{$v['cust_names'][$customerid]}}</span>
+
+
+                <table width="100%" class="items_table" cellspacing="0">
+                    <tr class="header_row">
+                        <th>Date</th><th>Order</th><th>Sub-order</th><th>Description</th><th>Net</th><th>VAT</th><th>Total</th>
+                    </tr>
+                    @foreach ($invoices as $invoiceid=>$invoice )
+                        <tr>
+                            <td class="main-cell"  width="10%">{{$invoice['date']}}</td>
+                            <td class="main-cell" width="10%">{{$invoice['orderid']}}</td>
+                            <td class="main-cell" width="10%">{{$invoice['numinvoice']}}</td>
+                            <td class="main-cell desc-cell" width="40%">
+                                @foreach($invoice['items'] as $dept=>$items)
+                                    <span class="each-dept-div">
+                                        <span class="each-dept">{{$dept}}</span>
+                                        @foreach($items as $item=>$count)
+                                        <span class="each-item">{{$count}} {{$item}}</span>
+                                        @endforeach
+                                    </span>
+                                @endforeach
+                            </td>
+                            <td class="amount main-cell" width="10%">{{$invoice['net']}}</td>
+                            <td class="amount main-cell"  width="10%">{{$invoice['vat']}}</td>
+                            <td class="amount main-cell"  width="10%">{{$invoice['total']}}</td>
+                        </tr>
+                    @endforeach
+                    <tr class="total_row">
+                        <th colspan="4"></th><th class="amount">{{$v['order_totals'][$customerid]['order_net']}}</th><th class="amount">{{$v['order_totals'][$customerid]['order_vat']}}</th><th class="amount">{{$v['order_totals'][$customerid]['order_total']}}</th>
+                    </tr>
+
+
+                </table>
+            @endforeach
+        </main>
+
+
+    </div>
+
+
+    @endforeach
 
 </body>
 </html>
-<!--    <div class="page-break">
-
-
-
-</div>-->
-
