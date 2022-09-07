@@ -668,14 +668,45 @@ Route::get('all-ar-pdf',function(Request $request){
 
     $all_details = DB::table('infoOrderPrint')->whereIn('id',$row_ids)->get();
 
-    $data = [];
+    $details_per_cust = [];
 
     foreach($all_details as $key=>$details){
-        $data[] = CustomerController::getArPDFData($details);
+        $details_per_cust[] = CustomerController::getArPDFData($details);
     }
 
+    $data = [
+        'details_per_cust'=>$details_per_cust,
+    ];
+/*
     echo "<pre>";
     print_r($data);
+    die();
+*/
+    Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
+
+
+    $pdf = Pdf::loadView('pdf/ar_all_pdf', $data);
+
+    $pdf->output();
+
+    $canvas = $pdf->getDomPDF()->getCanvas();
+
+    $fontMetrics = $pdf->getDomPDF()->getFontMetrics();
+    $font = $fontMetrics->getFont('Times-Roman');
+
+    $text = "Page {PAGE_NUM} of {PAGE_COUNT}";
+    $size = 10;
+
+    $width = $fontMetrics->getTextWidth($text, $font, $size) / 2;
+
+    $x = $canvas->get_width() - $width;
+    $y = $canvas->get_height() - 35;
+
+    $canvas->page_text($x, $y, $text , $font, 10, array(0, 0, 0));
+
+    return $pdf->download('invoice'.$details->CustomerID.'.pdf');
+
+
 });
 
 Route::get('inv-pdf',function(Request $request){

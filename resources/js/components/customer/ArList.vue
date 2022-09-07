@@ -1,6 +1,7 @@
 <template>
     <router-view />
     <transition enter-active-class="animate__animated animate__fadeIn">
+
         <table class="table table-hover bg-white">
             <thead>
                 <tr>
@@ -52,11 +53,35 @@
 
     </transition>
 
-    <button id="batch_inv_btn" v-if="Object.values(customerList).length > 0" @click="batchInvoice">Batch invoice</button>
+
+    <button class="ar-btn" v-if="Object.values(customerList).length > 0" @click="loadInvoiceModal">Batch invoice</button>
 
     <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
         <div v-if="showlayer" class="back-layer"></div>
     </transition>
+
+    <modal ref="invoice_modal">
+    <template #closebtn>
+            <span class="close" id="addon_modal_close" @click="closeBatchInvoiceModal"></span>
+        </template>
+        <template #bheader>
+            <div class="bmodal-header py-4 text-center">Batch invoice</div>
+        </template>
+        <template #bcontent>
+
+        </template>
+        <template #mbuttons>
+            <div class="row mx-0 justify-content-center mt-3 mb-5">
+                <div class="col-5">
+                    <button class="btn btn-outline-dark w-100" @click="generateInvoice('mail')">Mail</button>
+                </div>
+                <div class="col-1"></div>
+                <div class="col-5">
+                    <button class="btn btn-outline-dark w-100" @click="generateInvoice('pdf')">Pdf</button>
+                </div>
+            </div>
+        </template>
+    </modal>
 
 
 </template>
@@ -85,10 +110,13 @@ import {
 } from "../../store/types/types";
 import { useStore } from 'vuex';
 import CheckBox from '../miscellaneous/CheckBox';
+import Modal from '../miscellaneous/Modal.vue';
+
 export default {
     name: 'ArList',
     components:{
-        CheckBox
+        CheckBox,
+        Modal
     },
     setup(){
         const store = useStore();
@@ -96,6 +124,7 @@ export default {
         const router = useRouter();
         const filterDef = ref({});
         const customerList = ref([]);
+        const invoice_modal = ref();
 
 
         const totalCustomerCount = ref(0);
@@ -272,6 +301,45 @@ export default {
 
         }
 
+        function loadInvoiceModal(){
+            invoice_modal.value.showModal();
+        }
+
+        function closeBatchInvoiceModal(){
+            invoice_modal.value.closeModal();
+        }
+
+        function generateInvoice(type){
+            let els = Object.values(document.querySelectorAll('.current_sel'));
+            let customer_ids = [];
+
+            if(els.length==0){
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                    message:"No customer selected",
+                    ttl:5,
+                    type:'danger'
+                });
+            }else{
+                els.forEach((v,i)=>{
+                    let id = v.getAttribute('id').replace('row_','');
+                    customer_ids.push(id);
+                });
+
+                axios.post('/generate-ar-invoice',{
+                    customer_ids:JSON.stringify(customer_ids),
+                    type:type,
+                }).then((res)=>{
+                    console.log(res);
+                }).catch((err)=>{
+
+                }).finally(()=>{
+
+                });
+
+            }
+        }
+
+
         function batchInvoice(){
             let els = Object.values(document.querySelectorAll('.current_sel'));
             let customer_ids = [];
@@ -288,7 +356,7 @@ export default {
                     customer_ids.push(id);
                 });
 
-                console.log(customer_ids);
+
             }
 
         }
@@ -310,6 +378,10 @@ export default {
                 // return false;
             }),
             batchInvoice,
+            invoice_modal,
+            loadInvoiceModal,
+            closeBatchInvoiceModal,
+            generateInvoice,
         }
     }
 }
@@ -333,7 +405,7 @@ export default {
     }
     .current_sel{
         position: relative;
-        z-index: 10000;
+        z-index: 100;
         background: rgb(247, 251, 246);
         box-shadow: inset 0px -1px 0px rgba(168, 168, 168, 0.25);
     }
@@ -407,6 +479,8 @@ export default {
     }
 </style>
 <style>
+
+
     .chkbox_wrap{
         margin-left:15px;
     }
@@ -421,16 +495,17 @@ export default {
         transition: border-color 300ms ease-out;
     }
 
-    #batch_inv_btn{
+    .ar-btn{
         padding:0.5rem 1rem;
         border-radius:4px;
         background:none;
         border:thin solid #000;
         font:normal 16px "Gotham Rounded";
         margin-left:1rem;
+        margin-right:2rem;
     }
 
-    #batch_inv_btn:hover{
+    .ar-btn:hover{
         background:#000;
         color:#fff;
     }
