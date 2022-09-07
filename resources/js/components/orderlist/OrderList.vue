@@ -110,23 +110,23 @@
                 },
                 id:{
                    name:"Order N°",
-                    width:"8%",
+                    width:"5%",
                    sortable:false
                },
                 express:{
                     name:" ",
-                    width:"3%",
+                    width:"2%",
                     sortable:false,
                     type:'express'
                 },
                 Name:{
                     name:"Customer",
-                    width:"26%",
+                    width:"28%",
                     sortable:false
                 },
                 TypeDelivery:{
                     name:"Destination",
-                    width:"12%",
+                    width:"14%",
                     css:"text-align:left",
                     sortable:false,
                     header_align:"left"

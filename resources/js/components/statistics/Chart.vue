@@ -56,11 +56,11 @@
                                     <div class="origin-dot rounded-circle" v-else :style="{'background-color': '#1F78B4'}"></div>
                                 </div>
                                 <div class="col-6">{{ item.name }}</div>
-                                <div class="col-5">£{{ item.amount }}</div>
+                                <div class="col-5">{{ item.amount }}</div>
                             </div>
                         </div>
                         <div class="col-5" id="saleByClient" style="height: 150px">
-                        </div>                                                    
+                        </div>
                     </div>
                 </div>
             </div>
@@ -667,7 +667,7 @@ export default {
                 }));
             }else{
                 originLabel = salesByChannelChartSeries.children.push(am5.Label.new(salesByChannelChartRoot, {
-                    text: "{valueSum.formatNumber('#,###.')}\n   "+ percent,
+                    text: "£{valueSum.formatNumber('#,###.')}\n   "+ percent,
                     centerX: am5.percent(50),
                     centerY: am5.percent(50),
                     fontSize: 20,
@@ -748,7 +748,7 @@ export default {
                 }));
             }else{
                 clientLabel = piecesByItemChartSeries.children.push(am5.Label.new(piecesByItemChartRoot, {
-                    text: "£{valueSum.formatNumber('#,###.')}\n   " + percent,
+                    text: "{valueSum.formatNumber('#,###.')}\n   " + percent,
                     centerX: am5.percent(50),
                     centerY: am5.percent(50),
                     fontSize: 20,

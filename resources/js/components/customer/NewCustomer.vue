@@ -526,7 +526,8 @@
                                         <div class="page-section p-4">
                                             <div class="d-flex justify-content-between">
                                                 <div class="payment-method">
-                                                    <select-options
+                                                    <select-options 
+                                                        :classnames="'bg-color'"
                                                         v-model="form.altTypeDelivery"
                                                         :options="[
                                                             { display:'Concierge', value: 'Concierge' },
@@ -541,7 +542,7 @@
                                                 </div>
                                                 <div class="form-group m-0 payment-method">
                                                     <label class="form-label d-block m-0" for="alt_name">Name</label>
-                                                    <input type="text" v-model="form.altName" class="form-control custom-input" placeholder="Last name">
+                                                    <input type="text" v-model="form.altName" class="form-control custom-input bg-color" placeholder="Last name">
                                                 </div>
                                             </div>
                                             <div class="w-100 mt-3">
@@ -551,6 +552,7 @@
                                                 <div class="d-flex">
                                                     <div class="phone-country-code">
                                                         <select-options
+                                                            :classnames="'bg-color'"
                                                             v-model="form.altPhoneCountryCode"
                                                             :options="phoneCodesSorted"
                                                             :width = "'100px'"
@@ -558,14 +560,14 @@
                                                         </select-options>
                                                     </div>
                                                     <div class="form-group ms-2">
-                                                        <input type="text" v-model="form.altPhoneNumber" class="form-control custom-input">
+                                                        <input type="text" v-model="form.altPhoneNumber" class="form-control custom-input bg-color h-100">
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="w-100 mt-3">
                                                 <div class="form-group m-0">
                                                     <label for="" class="form-label d-block m-0">Any customer instructions for our drivers</label>
-                                                    <textarea v-model="form.altDriverInstruction" name="customer_note" rows="4" class="form-control"></textarea>
+                                                    <textarea v-model="form.altDriverInstruction" name="customer_note" rows="4" class="form-control bg-color"></textarea>
                                                 </div>
                                             </div>
                                         </div>

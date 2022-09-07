@@ -15,7 +15,7 @@
                     @click="selectrow(invoiceRow.item_id)"
                     >
                     <!-- checkbox column -->
-                    <td>
+                    <td valign="middle" align="center">
                         <check-box :checked_checkbox="(invoiceRow.item_id == CURRENT_SELECTED&&route.params.item_id>0) || MULTI_SELECTED.includes(invoiceRow.item_id)" :id="invoiceRow.item_id" @checkbox-clicked="checkboxclicked"></check-box>
                     </td>
                     <!-- <td class="text-capitalize fw-16" v-if="invoiceRow.item_id == 'xxx'">
@@ -40,11 +40,11 @@
                         </svg>
                         &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>                                                            
                     </td>
-                    <td class="text-capitalize fw-16" v-else>
+                    <td class="text-capitalize fw-16 text-nowrap" v-else>
                         <svg width="11" height="11" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="6.5" cy="6.5" r="6.5" fill="#EF8F00"/>
                         </svg>
-                        &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>
+                        &nbsp;&nbsp;<span class="text-nowrap">{{ invoiceRow.sub_order }}</span>
                     </td>
                     
                     <!-- Item -->
@@ -53,7 +53,7 @@
                     <td class="text-capitalize fw-16"><a href="javascript:;" class="text-decoration-none text-primary">{{ invoiceRow.barcode }}</a></td>
                     <!-- Location -->
                     <td class="text-center">
-                        <div class="invoice-location assembling rounded-pill m-auto" :style="{'background-color': invoiceRow.location_color }">
+                        <div class="invoice-location assembling rounded-pill w-100" :style="{'background-color': invoiceRow.location_color }">
                             <svg v-if="invoiceRow.process != 0" width="12" height="12" viewBox="0 0 12 12" :fill="'#'+invoiceRow.circle_color" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" :fill="'#'+invoiceRow.circle_color"/>
                                 <circle cx="6" cy="6" r="5" :stroke="'#'+invoiceRow.circle_color" stroke-width="2"/>

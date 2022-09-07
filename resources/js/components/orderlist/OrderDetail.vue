@@ -178,7 +178,7 @@
                 </div>
             </div>
             <div  class = "booking mt-2" v-if="(typeof ORDER['booking']!='undefined') && ORDER.booking != null">
-                <span>Booked by <Strong>{{ORDER.booking.name}}</Strong>, on {{ORDER.booking.CreatedDate}} @ {{ORDER.booking.time}}</span>
+                <span>Booked by <b>{{ORDER.booking.name}}</b>, on {{ORDER.booking.CreatedDate}} @ {{ORDER.booking.time}}</span>
             </div>
 
         <hr v-if="(typeof ORDER['detail']!='undefined')" />

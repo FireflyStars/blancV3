@@ -620,8 +620,7 @@ export default {
     }
 };
 </script>
-
-<style>
+<style scoped>
 .main-view {
   margin: 63px 10px 0;
 }

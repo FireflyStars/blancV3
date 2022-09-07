@@ -613,20 +613,9 @@ class StatisticsController extends Controller
                                     ->where('deliverymethod', '!=','')
                                     ->select(
                                         DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount'), 'TypeDelivery as channel'
-                                    )->groupBy('TypeDelivery')->orderBy('amount', 'DESC')->get();
-            $salesByChannelTotal = $salesByChannel->sum('amount');
-            $salesByChannelTotalToCompare =  InfoOrder::whereBetween('created_at', $past_period)
-                                                ->where('deliverymethod', '!=','')
-                                                ->select(
-                                                    DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
-                                                )->value('amount');
-        }else{
-            $salesByChannel = InfoOrder::whereBetween('created_at', $period)
-                                    ->where('deliverymethod', '!=','')
+                                    )
                                     ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                                    ->select(
-                                        DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount'), 'TypeDelivery as channel'
-                                    )->groupBy('TypeDelivery')->orderBy('amount', 'DESC')->get();
+                                    ->groupBy('TypeDelivery')->orderBy('amount', 'DESC')->get();
             $salesByChannelTotal = $salesByChannel->sum('amount');
             $salesByChannelTotalToCompare =  InfoOrder::whereBetween('created_at', $past_period)
                                                 ->where('deliverymethod', '!=','')
@@ -634,8 +623,25 @@ class StatisticsController extends Controller
                                                 ->select(
                                                     DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
                                                 )->value('amount');
+        }else{
+            $salesByChannel = DB::table('detailingitem')->join('categories', 'categories.id', '=', 'detailingitem.category_id')
+                            ->whereBetween('detailingitem.created_at', $period)
+                            ->where('detailingitem.status', 'Completed')
+                            ->select(
+                                'categories.name as channel', 
+                                DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
+                            )
+                            ->groupBy('categories.name')->orderBy('amount', 'DESC')->get();
+            $salesByChannelTotal = $salesByChannel->sum('amount');
+            $salesByChannelTotalToCompare =  DB::table('detailingitem')->join('categories', 'categories.id', '=', 'detailingitem.category_id')
+                            ->whereBetween('detailingitem.created_at', $past_period)
+                            ->where('detailingitem.status', 'Completed')
+                            ->select(
+                                DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
+                            )
+                            ->value('amount');
         }
-        if($salesType == 'item type'){
+        if($pieceType == 'item type'){
             $piecesByItem = DB::table('detailingitem')->join('categories', 'categories.id', '=', 'detailingitem.category_id')
                             ->whereBetween('detailingitem.created_at', $period)
                             ->where('detailingitem.status', 'Completed')
@@ -653,22 +659,21 @@ class StatisticsController extends Controller
                                         )
                                         ->value('amount');            
         }else{
-            $piecesByItem = DB::table('detailingitem')->join('categories', 'categories.id', '=', 'detailingitem.category_id')
-                            ->whereBetween('detailingitem.created_at', $period)
-                            ->where('detailingitem.status', 'Completed')
-                            ->select(
-                                'categories.name', 
-                                DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
-                            )
-                            ->groupBy('categories.name')->orderBy('amount', 'DESC')->get();
-            $salesByItemTotal = $piecesByItem->sum('amount');
-            $salesByItemTotalToCompare = DB::table('detailingitem')->join('categories', 'categories.id', '=', 'detailingitem.category_id')
-                                        ->whereBetween('detailingitem.created_at', $past_period)
-                                        ->where('detailingitem.status', 'Completed')
-                                        ->select(
-                                            DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
-                                        )
-                                        ->value('amount');
+            $piecesByItem = InfoOrder::whereBetween('created_at', $period)
+                                    ->where('deliverymethod', '!=','')
+                                    ->select(
+                                        DB::raw('count(*) as amount'), 'TypeDelivery as name'
+                                    )
+                                    ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                                    ->groupBy('TypeDelivery')->orderBy('amount', 'DESC')->get();
+            $salesByItemTotal = $piecesByItem->sum('amount');                                    
+            $salesByItemTotalToCompare = InfoOrder::whereBetween('created_at', $past_period)
+                                    ->where('deliverymethod', '!=','')
+                                    ->select(
+                                        DB::raw('count(*) as amount')
+                                    )
+                                    ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                                    ->value('amount');
         }
         $b2bAVGSale = InfoOrder::whereBetween('created_at', $period)
                         ->join('infoCustomer', function($join){
@@ -693,15 +698,17 @@ class StatisticsController extends Controller
                             $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
                         })
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                        ->where('infoOrder.deliverymethod', 'home_delivery')
+                        ->where('infoOrder.deliverymethod', '!=','')
+                        ->where('infoOrder.deliverymethod', '!=','in_store_collection')
                         ->where('infoOrder.total', '!=', 0)
-                        ->where('infoCustomer.btob', '=', 1)
+                        ->where('infoCustomer.btob', 1)
                         ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
         $homeDel = InfoOrder::whereBetween('created_at', $period)
                         ->join('infoCustomer', function($join){
                             $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
                         })
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->where('infoOrder.deliverymethod', '!=','')
                         ->where('infoOrder.deliverymethod', 'home_delivery')
                         ->where('infoOrder.total', '!=', 0)
                         ->where('infoCustomer.btob', 0)
@@ -2616,7 +2623,7 @@ class StatisticsController extends Controller
         $invoices = Db::table('infoitems')
             ->select(
                 'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode',
-                'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as prod'), 'infoitems.id AS item_id',
+                'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%d/%m") as prod'), 'infoitems.id AS item_id',
                 'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
                 'infoitems.idPartner', 'TypePost.bg_color as location_color', 'TypePost.process','TypePost.circle_color',
                 DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),                    
@@ -2711,7 +2718,7 @@ class StatisticsController extends Controller
         $invoices = Db::table('infoitems')
                         ->select(
                             'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode',
-                            'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as prod'), 'infoitems.id AS item_id',
+                            'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%d/%m") as prod'), 'infoitems.id AS item_id',
                             'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
                             'infoitems.idPartner', 'TypePost.bg_color as location_color',  'TypePost.process', 'TypePost.circle_color',
                             // DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),

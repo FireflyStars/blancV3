@@ -5,14 +5,16 @@
             <main-header></main-header>
             <div class="row d-flex align-content-stretch align-items-stretch flex-row hmax" style="z-index: 100">
                 <side-bar></side-bar>
-                <div class="col main-view mx-5 py-5" id="assembly-home">
+                <div class="col main-view p-5" id="assembly-home">
                     <h2 class="mx-0 font-22">Production Track</h2>
                     <div class="nav-panel d-flex justify-content-between mb-1">
                         <ul class="tab-nav list-inline mb-0">
                             <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'AssemblyHome' ? 'active' : ''" @click="setNav('AssemblyHome')">Stations</li>
-                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'Commitment' ? 'active' : ''" @click="setNav('Commitment')">Commitment</li>
                             <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'InvoiceList' ? 'active' : ''" @click="setNav('InvoiceList')">All items</li>
+                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'DueToday' ? 'active' : ''" @click="setNav('DueToday')">Due today</li>
+                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'DueTomorrow' ? 'active' : ''" @click="setNav('DueTomorrow')">Due tomorrow</li>
                             <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'Overdue' ? 'active' : ''" @click="setNav('Overdue')">Overdue</li>
+                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'Pending' ? 'active' : ''" @click="setNav('Pending')">Pending</li>
                         </ul>
                         <div class="filter-section position-relative" v-if="selected_nav == 'InvoiceList'">
                             <filters :filterDef="filterDef"></filters>
@@ -119,6 +121,11 @@
     }
 </script>
 
+<style scoped>
+.main-view{
+  margin: 0 1.375rem;
+}
+</style>
 <style>
 .hmax{
     height: calc(100% - var(--mainlogoheight));
@@ -136,7 +143,7 @@
 }
 .main-view .h2,
 .main-view h2{
-    margin: 48px 0 32px -24px;
+    margin: 3rem 0 2rem -1.5rem;
 }
 .is-delivery-stores{
     font:normal 16px/1.3em "Gotham Rounded Book"!important;
