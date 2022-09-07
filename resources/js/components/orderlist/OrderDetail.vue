@@ -28,10 +28,16 @@
                     <div class="cust-type-icon rounded-pill">
                             {{ORDER.detail.cust_type }}
                     </div>
+                    <div class="cust-account-icon rounded-pill">
+                            {{ ORDER.detail.OnAccount == '1' ? "On Account" : "PAY AS YOU GO" }}
+                    </div>
+                </div> 
+                <div class = "mt-1 d-flex align-items-center">
+                    <img v-if="ORDER.detail.account_type == 'Sub'" src="/images/link.png"/>
                     <div class="text-type">
                         {{ORDER.detail.CompanyName}}
                     </div>
-                </div> 
+                </div>
             </div>
 
         <div v-if="(typeof ORDER['detail']!='undefined')"  class="row section2 align-items-center">
@@ -990,7 +996,7 @@
     }
     .detail-header{
         padding: 20px 30px 15px 30px;
-        height: 82px;
+        height: 99px;
         background: #47454B;
         width: 684px;
         z-index: 2;
@@ -1044,6 +1050,16 @@
                 margin-right: 10px;
                 
             }
+            .cust-account-icon{
+                padding: 2px 18px;
+                font-size: 12px;
+                line-height: 140%;
+                width: auto;
+                height: 20px;
+                background: linear-gradient(0deg, rgba(251, 248, 185, 0.5), rgba(251, 248, 185, 0.5)), rgba(251, 248, 185, 0.5);
+                color: #47454B;
+                margin-right: 10px; 
+            }
             .cust-location-name{
                 font-size: 16px;
                 line-height: 140%;
@@ -1075,6 +1091,7 @@
                 max-width: 400px;
                 overflow: hidden;
                 white-space: nowrap;
+                padding-left: 3px;
             }
             .total div:first-child{
                     font-size: 20px;
@@ -1105,5 +1122,8 @@
                     color: #42A71E;
                     text-decoration: underline;
                     font-family: 'Gotham Rounded';
+                }
+                .unlink:hover{
+                    fill: #42A71E;
                 }
 </style>
