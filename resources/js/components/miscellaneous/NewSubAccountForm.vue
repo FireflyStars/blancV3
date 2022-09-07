@@ -13,11 +13,11 @@
                     <div class="row mt-3">
                         <div class="d-flex justify-content-between">
                             <div class="form-group col-6 m-0" style="padding-right: 10px;">
-                                <label class="form-label d-block m-0" for="last_name"> Last name</label>
+                                <label class="form-label d-block m-0" for="last_name"> Last name *</label>
                                 <input type="text" v-model="formModal.lastName" class="form-control custom-input" placeholder="Last name">
                             </div>
                             <div class="form-group col-6 m-0">
-                                <label class="form-label d-block m-0" for="first_name"> First name</label>
+                                <label class="form-label d-block m-0" for="first_name"> First name *</label>
                                 <input type="text" v-model="formModal.firstName" class="form-control custom-input" placeholder="First name">
                             </div>
                         </div>   
@@ -99,6 +99,12 @@
             const show=ref(false);
             watch(() => props.show_conf, (toval, fromval) => {
                 show.value=toval;
+                formModal.value.lastName =  '',
+                formModal.value.firstName = '',
+                formModal.value.email= '',
+                formModal.value.phoneCountryCode= '+44',
+                formModal.value.phoneNumber= '',
+                formModal.value.customerId= ''
             });
 
             const close=()=>{

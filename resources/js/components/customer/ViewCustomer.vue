@@ -760,7 +760,7 @@
                                                 <td valign=middle class="text-nowrap">{{ item.date }}</td>
                                                 <td valign=middle class="fw-bold text-nowrap">£ {{ item.spent }}</td>
                                                 <td valign=middle>
-                                                    <svg width="30" height="30" fill="#47454B" @click="removeLinkedAccount(item.id)" class="unlink cursor-pointer" version="1.1" viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                                    <svg v-if="item.accountType == 'Sub'" width="30" height="30" fill="#47454B" @click="removeLinkedAccount(item.id)" class="unlink cursor-pointer" version="1.1" viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                                                         <g>
                                                         <path d="m452.2 362.38 56.953 56.953-19.824 19.824-74.871-74.871h-47.656v-32.312h15.68l-35.727-35.168h-63.676v-33.039h30.574l-35.449-35.449h-12.203c-13.785-0.042969-27.016 5.4102-36.77 15.148-9.75 9.7422-15.219 22.969-15.191 36.754 0.027344 13.781 5.5469 26.988 15.336 36.688 9.6133 9.8555 22.863 15.305 36.625 15.066h67.762v32.312h-67.762c-22.273 0.33203-43.676-8.6641-59.023-24.809-15.648-15.84-24.426-37.207-24.426-59.473s8.7773-43.633 24.426-59.473c11.098-11.586 25.414-19.586 41.102-22.961l-57.23-56.895 19.824-19.824 74.871 75.152h0.39062l32.312 32.312h-0.44922l35.449 35.449 33.32 33.039 35.449 35.449 30.465 30.07zm41.105-22.902c15.648-15.84 24.426-37.207 24.426-59.473s-8.7773-43.633-24.426-59.473c-15.398-16.043-36.793-24.934-59.023-24.527h-67.48v32.312h67.762-0.003906c13.785-0.042969 27.016 5.4102 36.77 15.148 9.75 9.7422 15.219 22.969 15.191 36.754-0.027343 13.781-5.5469 26.988-15.336 36.688-3.5586 3.5781-7.5898 6.6484-11.984 9.1289l23.297 23.238v0.003907c3.8672-2.9609 7.4844-6.2383 10.809-9.8008z"/>
                                                         </g>
@@ -769,14 +769,13 @@
                                             </tr>
                                         </tbody>
                                     </table>
-
-                                    <!-- <div class="d-flex">
-                                        <button class="border-btn add-new-account d-flex justify-content-between align-items-center me-3">
+                                    <div class="d-flex " v-if="form.accountType == 'Main'">
+                                        <button @click="createSubAccount" class="border-btn add-new-account d-flex justify-content-between align-items-center me-3">
                                             <svg class="me-3" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <circle cx="12" cy="12" r="12" fill="black"/>
                                                 <path d="M11.0897 14.472C11.0897 14.984 11.4897 15.384 12.0017 15.384C12.4977 15.384 12.9137 14.984 12.9137 14.472V12.248H15.1857C15.6657 12.248 16.0657 11.864 16.0657 11.368C16.0657 10.888 15.6657 10.488 15.1857 10.488H12.9137V8.264C12.9137 7.752 12.4977 7.352 12.0017 7.352C11.4897 7.352 11.0897 7.752 11.0897 8.264V10.488H8.81769C8.33769 10.488 7.93769 10.888 7.93769 11.368C7.93769 11.864 8.33769 12.248 8.81769 12.248H11.0897V14.472Z" fill="white"/>
                                             </svg>
-                                            Create new account
+                                            Create a SubAccount
                                         </button>
                                         <button @click="showSearchPanel" class="border-btn add-existing-account d-flex justify-content-between align-items-center">
                                             <svg class="me-3" width="24" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -789,10 +788,10 @@
                                             </clipPath>
                                             </defs>
                                             </svg>
-                                            Add existing account
+                                            Add existing SubAccount
                                         </button>
                                         <Search ref="searchpanel"  @selectedSubAccount="selectedSubAccount"/>
-                                    </div> -->
+                                    </div>
                                 </div>
                             </div>
                         </transition>
@@ -827,6 +826,7 @@
             </div>
         </template>
     </modal>
+    <new-sub-account-form :phoneCodesSorted="phoneCodesSorted" :form="form" :show_conf="show_model_SubAccount" @close="show_model_SubAccount=false"></new-sub-account-form>
 </template>
 
 <script>
@@ -842,6 +842,7 @@
     import Search from './Search';
     import Modal from '../miscellaneous/Modal.vue';
     import DatePicker from '../miscellaneous/DatePicker.vue';
+    import NewSubAccountForm from '../miscellaneous/NewSubAccountForm.vue';
     import {
         TOASTER_MODULE,
         TOASTER_MESSAGE,
@@ -864,11 +865,13 @@
             MultipleEmail,
             Search,
             Modal,
-            DatePicker
+            DatePicker,
+            NewSubAccountForm
         },
         setup(props,context){
             const route = useRoute();
             const store = useStore();
+            const show_model_SubAccount = ref(false);
             const form = ref({
                 customerID: '',
                 Name: '',
@@ -1031,7 +1034,7 @@
                     form.value.Name = res.data.customer.Name;
                     form.value.booking = res.data.customer.booking;
                     form.value.totalSpent = res.data.customer.totalSpent;
-                    form.value.accountType = '';
+                    form.value.accountType = res.data.customer.accountType;
                     form.value.customerType = res.data.customer.customerType;
                     form.value.typeDelivery = res.data.customer.typeDelivery;
                     form.value.programmeType = res.data.customer.programmeType;
@@ -1404,6 +1407,16 @@
                     cardErrors.value.cardCvc = "Invalid CVV.";
                 }
             })
+
+            watch(()=>form.value.accountType,(current_value, previous_value)=>{
+                form.value.accountType = current_value
+            })
+
+            // handler when you click a create sub account button
+            const createSubAccount = ()=>{
+                show_model_SubAccount.value = true;
+                
+            }
 
 
             function AddCreditCardCustomer(){
@@ -1926,7 +1939,9 @@
                 pauseRecurringFunc,
                 unpauseRecurringFunc,
                 closePauseRecurringModal,
-                openPauseRecurringModal
+                openPauseRecurringModal,
+                show_model_SubAccount,
+                createSubAccount
             }
 
         },

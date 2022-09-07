@@ -45,7 +45,7 @@ class CustomerController extends Controller
         // add a new record to infoCustomer table
         $emailAddress = $request->email !='' ? $request->email : (Str::random(10).'@noemail.com');
         $info_customer = [
-            'isMaster'      => $request->accountType == 'Main' ? ($request->customerType == 'B2B' ? 1: 0) : 0,
+            'isMaster'      => $request->accountType == 'Main' ? 1 : 0,
             'TypeDelivery'  => $request->typeDelivery,
             'btob'          => $request->customerType == 'B2B' ? 1 : 0,
             'FirstName'     => $request->firstName,
@@ -87,9 +87,9 @@ class CustomerController extends Controller
         }
         // set CustomerIdMaster of sub account as Main customer's CustomerID
         if(count($request->linkedAccounts) > 1){
-            if($request->accountType == 'Main' && $request->customerType == 'B2B'){ 
+            if($request->accountType == 'Main'){ 
                 foreach ($request->linkedAccounts as $index => $account) {     
-                    if($index != 0){       
+                    if($index != 0){     
                         try {
                             if($account['id'] != 0){
                                 DB::table('infoCustomer')->where('id', $account['id'])->update(['CustomerIDMaster' => $CustomerUUID]);
@@ -891,7 +891,7 @@ class CustomerController extends Controller
         $customer = DB::table('infoCustomer')
                     ->leftJoin('InfoCustomerPreference', 'InfoCustomerPreference.CustomerID', '=', 'infoCustomer.CustomerID')
                     ->select('Name as name', 'EmailAddress as email', 'Phone as phone',
-                        DB::raw('IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as cust_type'),
+                        DB::raw('IF(btob = 0, "B2C", "B2B") as cust_type'),
                         'infoCustomer.TypeDelivery as location', 'infoCustomer.CustomerNotes as notes', 'infoCustomer.id', 'infoCustomer.CustomerID',
                         DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recuring", "Normal") as booking'),
                         DB::raw(
@@ -1409,13 +1409,16 @@ class CustomerController extends Controller
         $customer->linkedAccounts = DB::table('infoCustomer')
                                     ->where('CustomerID', $customer->CustomerID)
                                     ->orWhere('CustomerIDMaster', $customer->CustomerID)
-                                    ->orWhere('CustomerID', $customer->CustomerIDMaster)
+                                    ->orWhere(function($query) use ($customer) {
+                                        $query->Where('CustomerID','=',$customer->CustomerIDMaster)
+                                              ->Where('CustomerID','!=',"");      
+                                    })
                                     ->select(
                                         DB::raw('IF(isMaster = 1, "Main", "Sub") as accountType'),
                                         'Name as name', 'Phone as phone', 'EmailAddress as email',
                                         DB::raw('IF(SignupDateOnline = "2000-01-01", DATE_FORMAT(SignupDate, "%d/%m/%Y"), DATE_FORMAT(SignupDateOnline, "%d/%m/%Y")) as date'),
                                         'TotalSpend as spent', 'id'
-                                    )->get();               
+                                    )->get();                                
         $user = Auth::user();
         $customer->current_user = null;
         if($user){

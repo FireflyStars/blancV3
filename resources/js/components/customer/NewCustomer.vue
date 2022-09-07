@@ -99,8 +99,8 @@
                                     <select-options
                                         v-model="form.accountType"
                                         :options="[
-                                            { display:'Main Account', value: 'Main' },
-                                            { display:'Sub Account', value: 'Sub' }
+                                            { display:'Main Account', value: 'Main' }
+                                            // { display:'Sub Account', value: 'Sub' }
                                         ]"
                                         :classnames ="'bg-transparent border-none font-gilroy font-22 ps-0'"
                                         :name="'accountType'">
@@ -608,7 +608,7 @@
                                         </tbody>
                                     </table>
 
-                                    <div class="d-flex" v-if="form.accountType == 'Main' && form.customerType == 'B2B'">
+                                    <div class="d-flex" v-if="form.accountType == 'Main'">
                                         <button @click="createSubAccount" class="border-btn add-new-account d-flex justify-content-between align-items-center me-3">
                                             <svg class="me-3" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <circle cx="12" cy="12" r="12" fill="black"/>
@@ -1059,11 +1059,9 @@ import axios from 'axios';
                 }else{
                     step.value = nav;
                 }
-                if(nav == 'linked_account'){
-                    if(form.value.accountType == 'Main' && form.value.customerType == 'B2B'){
+                if(nav == 'linked_account'){     
+                    if(form.value.accountType == 'Main'){
                         form.value.linkedAccounts[0].accountType = 'Main';
-                    }else{
-                        form.value.linkedAccounts[0].accountType = 'Sub';
                     }
                 }
             }
@@ -1180,10 +1178,8 @@ import axios from 'axios';
                             }
                         })
                     }
-                    if(form.value.accountType == 'Main' && form.value.customerType == 'B2B'){
+                    if(form.value.accountType == 'Main'){
                         form.value.linkedAccounts[0].accountType = 'Main';
-                    }else{
-                        form.value.linkedAccounts[0].accountType = 'Sub';
                     }
                     if(!error)
                         step.value = 'linked_account';
@@ -1341,7 +1337,7 @@ import axios from 'axios';
             }
             // handler when the customer selected in search result
             const selectedSubAccount = (data)=>{
-                if(form.value.accountType == 'Main' && form.value.customerType == 'B2B'){
+                if(form.value.accountType == 'Main'){
                     form.value.linkedAccounts = [...form.value.linkedAccounts,
                         {
                             id:     data.id,
@@ -1354,19 +1350,6 @@ import axios from 'axios';
                             customerId:  data.customerId,
                         }
                     ]
-                }else{
-                    form.value.linkedAccounts = [
-                        {
-                            id:     data.id,
-                            name:   data.name,
-                            accountType: data.accountType,
-                            phone:  data.phone,
-                            email:  data.email,
-                            date:   data.date,
-                            spent:  data.spent,
-                            customerId:  data.customerId,
-                        },...form.value.linkedAccounts
-                    ]                    
                 }
             };
             // handler when you unlink sub account from linked accounts
