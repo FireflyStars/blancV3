@@ -1327,14 +1327,8 @@ import axios from 'axios';
             }
             // handler when you click search customer button
             const showSearchPanel = (type)=>{
-                if(form.value.accountType == 'Main' && form.value.customerType == 'B2B'){
+                if(form.value.accountType == 'Main'){
                     searchpanel.value.openSearchPanel(type);
-                }else{
-                    if(form.value.linkedAccounts.length == 2){
-                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'You can only select one Master', ttl:5, type:'danger' });
-                    }else{
-                        searchpanel.value.openSearchPanel(type);
-                    }
                 }
             }
             // handler when the customer selected in search result
