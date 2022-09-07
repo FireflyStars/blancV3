@@ -2386,10 +2386,12 @@ class CustomerController extends Controller
         $row_ids = CustomerController::logInfoOrderPrint($customer_ids);
 
 
-        if($type=='pdf'){
-            $all_details = DB::table('infoOrderPrint')->whereIn('id',$row_ids)->get();
+        $all_details = DB::table('infoOrderPrint')->whereIn('id',$row_ids)->get();
+        $details_per_cust = [];
 
-            $details_per_cust = [];
+        if($type=='pdf'){
+
+
 
             foreach($all_details as $key=>$details){
                 $details_per_cust[] = CustomerController::getArPDFData($details);
@@ -2443,6 +2445,12 @@ class CustomerController extends Controller
                 return response()->json(
                     ['url'=>route('download-ar-pdf',['filename'=>$url])]
                 );
+            }
+        }
+
+        if($type=='mail'){
+            foreach($all_details as $k=>$v){
+
             }
         }
 
