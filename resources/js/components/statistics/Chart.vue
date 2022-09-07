@@ -667,7 +667,7 @@ export default {
                 }));
             }else{
                 originLabel = salesByChannelChartSeries.children.push(am5.Label.new(salesByChannelChartRoot, {
-                    text: "f{valueSum.formatNumber('#,###.')}\n   "+ percent,
+                    text: "£{valueSum.formatNumber('#,###.')}\n   "+ percent,
                     centerX: am5.percent(50),
                     centerY: am5.percent(50),
                     fontSize: 20,
