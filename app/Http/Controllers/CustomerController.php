@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Tranche;
 use App\Models\Delivery;
 use App\Models\InfoCustomer;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class CustomerController extends Controller
 {
@@ -2055,6 +2057,7 @@ class CustomerController extends Controller
 
            $invoices_per_order[$v->order_id][$v->InvoiceID][$v->ItemID] = [
                                                                                 'NumInvoice'=>$v->NumInvoice,
+                                                                                'InvoiceID'=>$v->InvoiceID,
                                                                                 'Tracking'=>$v->ItemTrackingKey,
                                                                                 'PromisedDate'=>$v->PromisedDate,
                                                                                 'Department'=>$v->DepartmentName,
@@ -2156,7 +2159,7 @@ class CustomerController extends Controller
                     if(!in_array($detail->CustomerID,$customer_ids)){
                         array_push($customer_ids,$detail->CustomerID);
                     }
-                    $grouped_by_customer[$detail->CustomerID][$detail->order_id][$detail->NumInvoice][] = $detail;
+                    $grouped_by_customer[$detail->CustomerID][$detail->order_id][$detail->InvoiceID][] = $detail;
                 }
             }
         }
@@ -2187,45 +2190,49 @@ class CustomerController extends Controller
                 $orderids[] = $orderid;
 
                 foreach($invoices as $invoiceid=>$items){
+                    $inv = DB::table('infoInvoice')->where('InvoiceID',$invoiceid)->first();
                     $order_details[$customerid][$invoiceid] = [];
 
-                    $dept = [];
-                    $net = 0;
-                    $vat = 0;
-                    $total = 0;
-                    $items_text = [];
-                    $promised_dates = [];
+                    if($inv && in_array($inv->Status,['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])){
+
+
+                        $dept = [];
+                        $net = 0;
+                        $vat = 0;
+                        $total = 0;
+                        $items_text = [];
+                        $promised_dates = [];
 
 
 
-                    foreach($items as $k=>$v){
-                        $promised_dates[] = $v->PromisedDate;
+                        foreach($items as $k=>$v){
+                            $promised_dates[] = $v->PromisedDate;
 
-                        $item_txt = $v->brand." ".str_replace(' ',' ',$v->Description);
+                            $item_txt = $v->brand." ".str_replace(' ',' ',$v->Description);
 
-                        $dept[$v->Department][] = $item_txt;
-                        $net += $v->priceTotal;
+                            $dept[$v->Department][] = $item_txt;
+                            $net += $v->priceTotal;
+                        }
+                        $items_per_dept[$v->Department] = array_count_values($dept[$v->Department]);
+
+                        usort($promised_dates,function($a,$b){
+                            return strtotime($b) - strtotime($a);
+                        });
+
+                        $order_net += $net;
+
+                        $vat = 0.2*$net;
+                        $total = 1.2*$net;
+
+                        $order_details[$customerid][$invoiceid]['orderid'] = $orderid;
+                        $order_details[$customerid][$invoiceid]['date'] = (isset($promised_dates[0]) && $promised_dates[0]!='0000-00-00'?date('d/m/y',strtotime($promised_dates[0])):"--");
+                        $order_details[$customerid][$invoiceid]['items'] = $items_per_dept;
+                        $order_details[$customerid][$invoiceid]['net'] = number_format($net,2);
+                        $order_details[$customerid][$invoiceid]['vat'] = number_format($vat,2);
+                        $order_details[$customerid][$invoiceid]['total'] = number_format($total,2);
+                        $order_details[$customerid][$invoiceid]['numinvoice'] = $inv->NumInvoice;
                     }
-                    $items_per_dept[$v->Department] = array_count_values($dept[$v->Department]);
-
-                    usort($promised_dates,function($a,$b){
-                        return strtotime($b) - strtotime($a);
-                    });
-
-                    $order_net += $net;
-
-                    $vat = 0.2*$net;
-                    $total = 1.2*$net;
-
-                    $order_details[$customerid][$invoiceid]['orderid'] = $orderid;
-                    $order_details[$customerid][$invoiceid]['date'] = (isset($promised_dates[0]) && $promised_dates[0]!='0000-00-00'?date('d/m/y',strtotime($promised_dates[0])):"--");
-                    $order_details[$customerid][$invoiceid]['items'] = $items_per_dept;
-                    $order_details[$customerid][$invoiceid]['net'] = number_format($net,2);
-                    $order_details[$customerid][$invoiceid]['vat'] = number_format($vat,2);
-                    $order_details[$customerid][$invoiceid]['total'] = number_format($total,2);
                 }
-
-
            }
 
            $facture_net[] = $order_net;
@@ -2278,14 +2285,80 @@ class CustomerController extends Controller
 
 
     public function generateArInvoice(Request $request){
+        if(!is_dir(storage_path('app/pdf'))){
+            mkdir(storage_path('app/pdf'),0777);
+        }
+
+
         $customer_ids = @json_decode($request->customer_ids);
         $type = $request->type;
         $row_ids = CustomerController::logInfoOrderPrint($customer_ids);
+
+
+        if($type=='pdf'){
+            $all_details = DB::table('infoOrderPrint')->whereIn('id',$row_ids)->get();
+
+            $details_per_cust = [];
+
+            foreach($all_details as $key=>$details){
+                $details_per_cust[] = CustomerController::getArPDFData($details);
+            }
+            /*
+
+            $data = [
+                'details_per_cust'=>$details_per_cust,
+            ];
+
+            Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
+
+
+            $pdf = Pdf::loadView('pdf/ar_all_pdf', $data);
+
+            $pdf->output();
+
+            $canvas = $pdf->getDomPDF()->getCanvas();
+
+            $fontMetrics = $pdf->getDomPDF()->getFontMetrics();
+            $font = $fontMetrics->getFont('Times-Roman');
+
+            $text = "Page {PAGE_NUM} of {PAGE_COUNT}";
+            $size = 10;
+
+            $width = $fontMetrics->getTextWidth($text, $font, $size) / 2;
+
+            $x = $canvas->get_width() - $width;
+            $y = $canvas->get_height() - 35;
+
+            $canvas->page_text($x, $y, $text , $font, 10, array(0, 0, 0));
+
+            //return $pdf->download('invoice'.$details->CustomerID.'.pdf');
+
+            $filename = 'invoices_'.strtotime('now').'.pdf';
+
+            if(count($row_ids)==1){
+                $filename = 'invoice_'.$row_ids[0].'_'.strtotime('now').'.pdf';
+            }
+
+            $pdfstr=$pdf->output();
+            Storage::disk('local')->put('pdf'.DIRECTORY_SEPARATOR.$filename, $pdfstr);
+            $url = 'pdf'.DIRECTORY_SEPARATOR.$filename;
+
+            return response()->json(
+                ['url'=>route('download-ar-pdf',['filename'=>$url])]
+            );
+            */
+        }
 
         return response()->json([
             'row_ids'=>$row_ids,
             'customer_ids'=>$customer_ids,
             'type'=>$type,
+            'details_per_cust'=>$details_per_cust,
         ]);
+    }
+
+    public function downloadArPdf(Request $request){
+        $filename=$request->get('filename');
+        return Storage::download($filename);
     }
 }
