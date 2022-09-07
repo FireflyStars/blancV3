@@ -42,7 +42,7 @@ class CustomerController extends Controller
         if ($validator->fails()) {
             return response()->json(['error'=> $validator->errors()]);
         }
-    
+
 
         // add a new record to infoCustomer table
         $emailAddress = $request->email !='' ? $request->email : (Str::random(10).'@noemail.com');
@@ -89,9 +89,9 @@ class CustomerController extends Controller
         }
         // set CustomerIdMaster of sub account as Main customer's CustomerID
         if(count($request->linkedAccounts) > 1){
-            if($request->accountType == 'Main'){ 
-                foreach ($request->linkedAccounts as $index => $account) {     
-                    if($index != 0){     
+            if($request->accountType == 'Main'){
+                foreach ($request->linkedAccounts as $index => $account) {
+                    if($index != 0){
                         try {
                             if($account['id'] != 0){
                                 DB::table('infoCustomer')->where('id', $account['id'])->update(['CustomerIDMaster' => $CustomerUUID]);
@@ -122,7 +122,7 @@ class CustomerController extends Controller
                                     'date'      => $info_customer_sub['SignupDate'],
                                     'spent'     => 0,
                                 ];
-                        
+
                                 $new_customer_sub = [
                                     'CustomerID'    => $customerUUID_sub,
                                     'Name'          => $info_customer_sub['Name'],
@@ -139,9 +139,9 @@ class CustomerController extends Controller
                                 } catch (\Exception $e) {
                                     return response()->json($e->getMessage(), 500);
                                 }
-                                
+
                             }
-                            
+
                         } catch (\Exception $e) {
                             return response()->json(['error'=> $e->getMessage()]);
                         }
@@ -149,7 +149,7 @@ class CustomerController extends Controller
 
                     }
                 }
-            }else{       
+            }else{
                 $masterUUID = $request->linkedAccounts[0]['customerId'];
                 DB::table('infoCustomer')->where('CustomerID', $CustomerUUID)->update(['CustomerIDMaster' => $masterUUID]);
             }
@@ -193,12 +193,12 @@ class CustomerController extends Controller
                         $addressId = DB::table('address')->insertGetId($address);
                         $addressUUID = DB::table('address')->where('id', $addressId)->value('AddressID');
                     }
-                   
-                } 
+
+                }
             } catch (\Exception $e) {
                 dd( $e->getMessage());
                 return response()->json(['error'=> $e->getMessage()]);
-            }   
+            }
         }
         // add a new record to NewAddress table
         $new_address = [
@@ -235,12 +235,12 @@ class CustomerController extends Controller
                     }else{
                         DB::table('NewAddress')->insert($new_address);
                     }
-                   
-                } 
+
+                }
             } catch (\Exception $e) {
                 dd( $e->getMessage());
                 return response()->json(['error'=> $e->getMessage()]);
-            }      
+            }
         }
         // add a new record to NewCustomer table
         $new_customer = [
@@ -1415,14 +1415,14 @@ class CustomerController extends Controller
                                     ->orWhere('CustomerIDMaster', $customer->CustomerID)
                                     ->orWhere(function($query) use ($customer) {
                                         $query->Where('CustomerID','=',$customer->CustomerIDMaster)
-                                              ->Where('CustomerID','!=',"");      
+                                              ->Where('CustomerID','!=',"");
                                     })
                                     ->select(
                                         DB::raw('IF(isMaster = 1, "Main", "Sub") as accountType'),
                                         'Name as name', 'Phone as phone', 'EmailAddress as email',
                                         DB::raw('IF(SignupDateOnline = "2000-01-01", DATE_FORMAT(SignupDate, "%d/%m/%Y"), DATE_FORMAT(SignupDateOnline, "%d/%m/%Y")) as date'),
                                         'TotalSpend as spent', 'id'
-                                    )->get();               
+                                    )->get();
         $user = Auth::user();
         $customer->current_user = null;
         if($user){
@@ -2272,7 +2272,7 @@ class CustomerController extends Controller
                     $inv = DB::table('infoInvoice')->where('InvoiceID',$invoiceid)->first();
                     $order_details[$customerid][$invoiceid] = [];
 
-                    if($inv && in_array($inv->Status,['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])){
+                    if($inv && !in_array($inv->Status,['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])){
 
 
                         $dept = [];
