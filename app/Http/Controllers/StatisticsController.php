@@ -698,9 +698,9 @@ class StatisticsController extends Controller
                             $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
                         })
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                        ->where('infoOrder.deliverymethod', 'home_delivery')
+                        ->where('infoOrder.deliverymethod', '!=','in_store_collection')
                         ->where('infoOrder.total', '!=', 0)
-                        ->where('infoCustomer.btob', '=', 1)
+                        ->where('infoCustomer.btob', 0)
                         ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
         $homeDel = InfoOrder::whereBetween('created_at', $period)
                         ->join('infoCustomer', function($join){
