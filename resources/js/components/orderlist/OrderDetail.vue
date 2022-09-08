@@ -33,7 +33,7 @@
                     </div>
                 </div> 
                 <div class = "mt-1 d-flex align-items-center">
-                    <img v-if="ORDER.detail.account_type == 'Sub'" src="/images/link.png"/>
+                    <img  @click="removeLinkedAccount(ORDER.detail.id)" v-if="ORDER.detail.account_type == 'Sub'" src="/images/link.png"/>
                     <div class="text-type">
                         {{ORDER.detail.CompanyName}}
                     </div>
@@ -333,7 +333,10 @@
         ORDERLIST_NEW_DELIVERY_DATE,
         ORDERDETAIL_NEW_DELIVERY_DATE,
         ORDERDETAIL_NEW_PICKUP_DATE,
-        ORDERDETAIL_UPDATE, ORDERLIST_REMOVE_ORDERS
+        ORDERDETAIL_UPDATE, ORDERLIST_REMOVE_ORDERS,
+        LOADER_MODULE,
+        DISPLAY_LOADER,
+        HIDE_LOADER
     } from "../../store/types/types";
 
 
@@ -712,6 +715,22 @@
                 return weekdays[day_num]+" "+dt_dd+" "+dt_mm+" "+dt_yy;
             }
 
+             // handler when you unlink sub account from linked accounts
+             const removeLinkedAccount = (id)=>{
+               
+               axios.post('/unlink-Account', {
+                        customer_id: id,
+                    }).then((res)=>{
+                        if(res.data.message == "OK"){    
+                            location.reload();
+                        } else {
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: res.data.error , ttl:5, type:'danger' });
+                        }
+                    }).catch((errors)=>{
+                        console.log(errors)
+                    });  
+                    
+            }
             return {
                 showorderdetail,
                 loaderclass:computed(()=>{
@@ -767,7 +786,8 @@
                 suggest_timeslot_pickup,
                 newtimeslotdelivery,
                 updatedelverydate,
-                formatOrderDate
+                formatOrderDate,
+                removeLinkedAccount
             }
         }
     }
