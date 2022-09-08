@@ -941,7 +941,7 @@ class OrderListController extends Controller
         $user=Auth::user();
         $infoOrder_id=$request->post('infoOrder_id');
         $order=DB::table('infoOrder')
-            ->select(['infoOrder.id AS order_id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CompanyName','infoCustomer.id' , 'infoOrder.DeliveryaskID' , 'infoOrder.PickupID' , 
+            ->select(['infoOrder.id AS order_id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoOrder.TypeDelivery','infoCustomer.CompanyName','infoCustomer.id' , 'infoOrder.DeliveryaskID' , 'infoOrder.PickupID' , 
             'infoOrder.DateDeliveryAsk','infoOrder.DatePickup' , 'infoCustomer.Phone','infoCustomer.CustomerID','booking_histories.user_id',
             'booking_histories.status','infoCustomer.OnAccount',
             DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),

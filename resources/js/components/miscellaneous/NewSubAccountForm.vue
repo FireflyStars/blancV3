@@ -67,6 +67,7 @@
     import {watch ,ref} from 'vue';
     import SelectOptions from '../test/SelectOptions';
     import { phoneCountryCode as phoneCodes } from '../../static/PhoneCountryCodes';
+    import { useRoute } from 'vue-router';
     import {
         TOASTER_MODULE,
         TOASTER_MESSAGE
@@ -96,6 +97,7 @@
                 customerId: '',
             })
             const store = useStore(); 
+            const route = useRoute();
             const show=ref(false);
             watch(() => props.show_conf, (toval, fromval) => {
                 show.value=toval;
@@ -137,10 +139,7 @@
                             return;
                         }
                     }
-                
-                    close();   
-                    props.form.linkedAccounts.push(
-                        { id: 0,
+                    const data = { id: 0,
                           lastname : formModal.value.lastName,
                           firstname : formModal.value.firstName,
                           name: formModal.value.lastName +','+ formModal.value.firstName, 
@@ -152,10 +151,25 @@
                           date: '', 
                           spent: 0,
                           customerId:''
-                         }
-                    );
+                         }  
+                    
+                    props.form.linkedAccounts.push(data);
+                    // add function create sub account in edit customer
+                    if(route.name = "ViewCustomer"){
+            
+                        axios.post('/create-customer-sub-account',{
+                                customer_data: data,
+                                customer_id : props.form.customerID
+                            }).then((res)=>{
+                            close();
+                            }).catch((error)=>{
+                            console.log(error);
+                        })
+                    }
+                    close();   
             }
             return {
+                route,
                 show,
                 close,
                 CreateSubAccount,

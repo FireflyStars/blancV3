@@ -760,7 +760,12 @@
                                                 <td valign=middle class="text-nowrap">{{ item.date }}</td>
                                                 <td valign=middle class="fw-bold text-nowrap">£ {{ item.spent }}</td>
                                                 <td valign=middle>
-                                                    <svg v-if="item.accountType == 'Sub'" width="30" height="30" fill="#47454B" @click="removeLinkedAccount(item.id)" class="unlink cursor-pointer" version="1.1" viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                                    <svg v-if="form.accountType == 'Main'" width="30" height="30" fill="#47454B" @click="removeLinkedAccount(item.id)" class="unlink cursor-pointer" version="1.1" viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                                        <g>
+                                                        <path d="m452.2 362.38 56.953 56.953-19.824 19.824-74.871-74.871h-47.656v-32.312h15.68l-35.727-35.168h-63.676v-33.039h30.574l-35.449-35.449h-12.203c-13.785-0.042969-27.016 5.4102-36.77 15.148-9.75 9.7422-15.219 22.969-15.191 36.754 0.027344 13.781 5.5469 26.988 15.336 36.688 9.6133 9.8555 22.863 15.305 36.625 15.066h67.762v32.312h-67.762c-22.273 0.33203-43.676-8.6641-59.023-24.809-15.648-15.84-24.426-37.207-24.426-59.473s8.7773-43.633 24.426-59.473c11.098-11.586 25.414-19.586 41.102-22.961l-57.23-56.895 19.824-19.824 74.871 75.152h0.39062l32.312 32.312h-0.44922l35.449 35.449 33.32 33.039 35.449 35.449 30.465 30.07zm41.105-22.902c15.648-15.84 24.426-37.207 24.426-59.473s-8.7773-43.633-24.426-59.473c-15.398-16.043-36.793-24.934-59.023-24.527h-67.48v32.312h67.762-0.003906c13.785-0.042969 27.016 5.4102 36.77 15.148 9.75 9.7422 15.219 22.969 15.191 36.754-0.027343 13.781-5.5469 26.988-15.336 36.688-3.5586 3.5781-7.5898 6.6484-11.984 9.1289l23.297 23.238v0.003907c3.8672-2.9609 7.4844-6.2383 10.809-9.8008z"/>
+                                                        </g>
+                                                    </svg>
+                                                    <svg v-if="form.accountType == 'Sub'" width="30" height="30" fill="#47454B" @click="removeLinkedAccount(form.id_customer)" class="unlink cursor-pointer" version="1.1" viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                                                         <g>
                                                         <path d="m452.2 362.38 56.953 56.953-19.824 19.824-74.871-74.871h-47.656v-32.312h15.68l-35.727-35.168h-63.676v-33.039h30.574l-35.449-35.449h-12.203c-13.785-0.042969-27.016 5.4102-36.77 15.148-9.75 9.7422-15.219 22.969-15.191 36.754 0.027344 13.781 5.5469 26.988 15.336 36.688 9.6133 9.8555 22.863 15.305 36.625 15.066h67.762v32.312h-67.762c-22.273 0.33203-43.676-8.6641-59.023-24.809-15.648-15.84-24.426-37.207-24.426-59.473s8.7773-43.633 24.426-59.473c11.098-11.586 25.414-19.586 41.102-22.961l-57.23-56.895 19.824-19.824 74.871 75.152h0.39062l32.312 32.312h-0.44922l35.449 35.449 33.32 33.039 35.449 35.449 30.465 30.07zm41.105-22.902c15.648-15.84 24.426-37.207 24.426-59.473s-8.7773-43.633-24.426-59.473c-15.398-16.043-36.793-24.934-59.023-24.527h-67.48v32.312h67.762-0.003906c13.785-0.042969 27.016 5.4102 36.77 15.148 9.75 9.7422 15.219 22.969 15.191 36.754-0.027343 13.781-5.5469 26.988-15.336 36.688-3.5586 3.5781-7.5898 6.6484-11.984 9.1289l23.297 23.238v0.003907c3.8672-2.9609 7.4844-6.2383 10.809-9.8008z"/>
                                                         </g>
@@ -777,7 +782,7 @@
                                             </svg>
                                             Create a SubAccount
                                         </button>
-                                        <button @click="showSearchPanel" class="border-btn add-existing-account d-flex justify-content-between align-items-center">
+                                        <button @click="showSearchPanel(0)" class="border-btn add-existing-account d-flex justify-content-between align-items-center">
                                             <svg class="me-3" width="24" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <g clip-path="url(#clip0_550_21813)">
                                             <path fill-rule="evenodd" clip-rule="evenodd" d="M16.8257 14.8987L22.2057 20.2787C22.3948 20.468 22.501 20.7246 22.5009 20.9921C22.5008 21.2596 22.3945 21.5161 22.2052 21.7052C22.016 21.8943 21.7594 22.0005 21.4919 22.0004C21.2244 22.0003 20.9678 21.894 20.7787 21.7047L15.3987 16.3247C13.7905 17.5704 11.768 18.1566 9.74287 17.9641C7.71772 17.7716 5.84198 16.8148 4.49723 15.2884C3.15248 13.7619 2.43973 11.7806 2.504 9.74729C2.56826 7.71402 3.4047 5.7816 4.84315 4.34315C6.2816 2.9047 8.21402 2.06826 10.2473 2.004C12.2806 1.93973 14.2619 2.65248 15.7884 3.99723C17.3148 5.34198 18.2716 7.21772 18.4641 9.24287C18.6566 11.268 18.0704 13.2905 16.8247 14.8987H16.8257ZM10.5007 15.9997C12.092 15.9997 13.6182 15.3676 14.7434 14.2424C15.8686 13.1172 16.5007 11.591 16.5007 9.99974C16.5007 8.40845 15.8686 6.88232 14.7434 5.7571C13.6182 4.63189 12.092 3.99974 10.5007 3.99974C8.90944 3.99974 7.38332 4.63189 6.2581 5.7571C5.13289 6.88232 4.50074 8.40845 4.50074 9.99974C4.50074 11.591 5.13289 13.1172 6.2581 14.2424C7.38332 15.3676 8.90944 15.9997 10.5007 15.9997Z" fill="#47454B"/>
@@ -874,6 +879,7 @@
             const show_model_SubAccount = ref(false);
             const form = ref({
                 customerID: '',
+                id_customer:'',
                 Name: '',
                 accountType: 'Main',
                 customerType: '',
@@ -1021,6 +1027,7 @@
                     } 
                     
                     form.value.CustomerPayemenProfile = res.data.customer.OnAccount
+                    form.value.id_customer = res.data.customer.id
 
                     if(res.data.customer.card == null){
                         creditCardCustomer.value = false ;
@@ -1289,8 +1296,8 @@
                 }
             })
             // handler when you click search customer button
-            const showSearchPanel = ()=>{
-                searchpanel.value.openSearchPanel();
+            const showSearchPanel = (type)=>{
+                searchpanel.value.openSearchPanel(type);
             }
             // handler when the customer selected in search result
             const selectedSubAccount = (data)=>{
@@ -1305,13 +1312,20 @@
                         spent:  data.spent
                     }
                 ]
-            };
+                // add function create sub account 
+                axios.post('/create-customer-sub-account',{
+                         customer_data: data,
+                         customer_id : form.value.customerID
+                    }).then((res)=>{
+                    }).catch((error)=>{
+                        console.log(error);
+                    })
+            };   
             // handler when you unlink sub account from linked accounts
             const removeLinkedAccount = (id)=>{
                axios.post('/unlink-Account', {
                         customer_id: id,
                     }).then((res)=>{
-                        console.log(res)
                         if(res.data.message == "OK"){
                             form.value.linkedAccounts = form.value.linkedAccounts.filter((item)=>{
                             return item.id != id;

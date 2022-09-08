@@ -414,6 +414,62 @@ class CustomerController extends Controller
         return response()->json($custId);
     }
 
+    public function createCustomerSubAccount(Request $request){
+        dump($request->customer_id);
+        $emailAddress = $request->customer_data['email'] !='' ? $request->customer_data['email'] : (Str::random(10).'@noemail.com');
+
+        if($request->customer_data['customerId'] != "" && $request->customer_data['id'] != 0 ){
+            DB::table('infoCustomer')->where('id', $request->customer_data['id'])->update(['CustomerIDMaster' => $request->customer_id]);
+        }else {
+
+            $info_customer_sub = [
+                'CustomerID'    => '',
+                'CustomerIDMaster'=> $request->customer_id,
+                'isMaster'      => 0,
+                'btob'          => 1,
+                'FirstName'     => $request->customer_data['firstname'],
+                'LastName'      => $request->customer_data['lastname'],
+                'Name'          => $request->customer_data['name'],
+                'EmailAddress'  => $request->customer_data['email'],
+                'Phone'         =>  $request->customer_data['phone']!= '' ? '["'.$request->customer_data['phoneCountryCode'].'|'.$request->customer_data['phoneNumber'].']"' : '',
+                'SignupDate'    => Carbon::now()->format('Y-m-d'),
+            ];
+            try {
+                $cust_Id = DB::table('infoCustomer')->insertGetId($info_customer_sub);
+                $customerUUID_sub = DB::table('infoCustomer')->where('id', $cust_Id)->value('CustomerID');
+            } catch (\Exception $e) {
+                return response()->json($e->getMessage(), 500);
+            }
+            $response = [
+                'id'        => $cust_Id,
+                'name'      => $info_customer_sub['Name'],
+                'email'     => $info_customer_sub['EmailAddress'],
+                'phone'     => $info_customer_sub['Phone'],
+                'date'      => $info_customer_sub['SignupDate'],
+                'spent'     => 0,
+            ];
+
+            $new_customer_sub = [
+                'CustomerID'    => $customerUUID_sub,
+                'Name'          => $info_customer_sub['Name'],
+                'Phone'         => $info_customer_sub['Phone'],
+                'EmailAddress'  => $info_customer_sub['EmailAddress'],
+                'LastName'      => $info_customer_sub['LastName'],
+                'FirstName'     => $info_customer_sub['FirstName'],
+                'status'        => 'NEW',
+                'created_at'    => now(),
+                'updated_at'    => now(),
+            ];
+            try {
+                DB::table('NewCustomer')->insert($new_customer_sub);
+            } catch (\Exception $e) {
+                return response()->json($e->getMessage(), 500);
+            }
+            return response()->json($response );
+        }
+
+    }
+
     public function checkCustomerUnique(Request $request){
         $validator = Validator::make($request->all(), [
             'lastName' => 'unique:infoCustomer,lastName',
