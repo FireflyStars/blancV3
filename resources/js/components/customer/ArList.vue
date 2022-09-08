@@ -326,28 +326,44 @@ export default {
                 });
 
                 closeBatchInvoiceModal();
+                let load_text = "";
 
                 if(type=='pdf'){
-                    store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
-                        true,
-                        "Generating PDF....",
-                    ]);
+                   load_text = "Generating PDF....";
+                }
+                if(type=='mail'){
+                    load_text = 'Sending mail....';
                 }
 
+                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
+                        true,
+                        load_text,
+                    ]);
 
                 axios.post('/generate-ar-invoice',{
                     customer_ids:JSON.stringify(customer_ids),
                     type:type,
                 }).then((res)=>{
-                    if(res.data.url){
-                        window.location = res.data.url;
-                    }else{
-                        if(type=='pdf' && res.data.details_per_cust.length==0){
-                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
-                                message:"No valid invoices available",
-                                ttl:5,
-                                type:'danger'
-                            });
+                    if(type=='pdf'){
+                        if(res.data.url){
+                            window.location = res.data.url;
+                        }else{
+                            if(type=='pdf' && res.data.details_per_cust.length==0){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                    message:"No valid invoices available",
+                                    ttl:5,
+                                    type:'danger'
+                                });
+                            }
+                        }
+                    }
+                    if(type=='mail'){
+                        if(res.data.sent){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                    message:"Mail sent",
+                                    ttl:5,
+                                    type:'success'
+                                });
                         }
                     }
                 }).catch((err)=>{

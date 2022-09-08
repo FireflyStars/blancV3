@@ -20,7 +20,7 @@ class NotificationController extends Controller
          * @param null int $infoOrder_id
          */
         public static function Notify($email,$phone,$email_template='',$sms_template='',$params=[],$send_now=false,$infoOrder_id=0,$customeruuid=false){
-
+                $sent = false;
                 if(trim($email_template)==''&&trim($sms_template)==''){
                     throw new \Exception('At least one template should be provided');
                 }
@@ -36,8 +36,10 @@ class NotificationController extends Controller
                     $notification->InfoOrder_id = $infoOrder_id;
                     $notification->CustomerID = ($customeruuid?$customeruuid:"");
                     $notification->save();
+                    $sent = true;
                     if($send_now){
                         $notification->send();
+                        $sent = true;
                     }
                 }
             if($sms_template!='') {
@@ -55,6 +57,7 @@ class NotificationController extends Controller
                 }
             }
 
+            return $sent;
         }
 
         public static function sendAll(){

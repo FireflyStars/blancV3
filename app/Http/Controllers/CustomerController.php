@@ -2446,9 +2446,6 @@ class CustomerController extends Controller
         $details_per_cust = [];
 
         if($type=='pdf'){
-
-
-
             foreach($all_details as $key=>$details){
                 $details_per_cust[] = CustomerController::getArPDFData($details);
             }
@@ -2504,9 +2501,35 @@ class CustomerController extends Controller
             }
         }
 
-        if($type=='mail'){
-            foreach($all_details as $k=>$v){
+        $sent = false;
 
+        if($type=='mail'){
+
+            foreach($all_details as $k=>$v){
+                $cust = DB::table('infoCustomer')->where('CustomerID',$v->CustomerID)->first();
+                $info = @json_decode($v->info);
+
+                $orderid = 0;
+                $i = 0;
+                foreach($info as $order_id=>$invoices){
+                    if($i==0){
+                        $orderid = $order_id;
+                    }
+                    $i++;
+                }
+
+
+                $order_url = "http://app.blancliving.co/order-store?email=".$cust->EmailAddress."&Id=".$cust->CustomerID."&orderId=".$orderid;
+
+                if($cust){
+                    $mail_vars = [
+                        'FirstName'=>$cust->FirstName,
+                        'url_invoice'=>\Illuminate\Support\Facades\URL::to("/inv-pdf")."?id=".$v->FactureID,
+                        'url_order'=>$order_url,
+                    ];
+                }
+
+                $sent = NotificationController::Notify('admin@vpc-direct-service.com', '+123456789', '5K_EMAIL_B2B_INVOICE', '', $mail_vars, true, 0, '');
             }
         }
 
@@ -2515,6 +2538,7 @@ class CustomerController extends Controller
             'customer_ids'=>$customer_ids,
             'type'=>$type,
             'details_per_cust'=>$details_per_cust,
+            'sent'=>$sent,
         ]);
     }
 
