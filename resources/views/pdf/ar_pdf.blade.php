@@ -75,7 +75,7 @@
     }
 
     #blanc_addr{
-        margin-top:20px;
+        margin-top:10px;
         margin-bottom:10px;
     }
 
@@ -89,6 +89,7 @@
     }
 
     #cust_addr{
+        margin-top:10px;
         margin-left:20px;
     }
 
@@ -222,14 +223,7 @@
     <header>
         <img src="{{public_path('/images/pdf_logo.jpg')}}"/>
 
-        <div id="blanc_addr">
-            <div>BLANC</div>
-            <div>BLANC Atelier 16 Gorst Road, London NW10 6LE</div>
-            <div id="vat_reg">VAT Reg.No: 124 0369 45</div>
-            <div>Telephone: 0203 865 4062</div>
-            <div>Email: <a href="mailto:office@blancliving.co">office@blancliving.co</a></div>
-            <div>Web: <a href="www.blancliving.co">www.blancliving.co</a></div>
-        </div>
+        @include('pdf.pdf_header')
 
         <div id="cust_addr">
             <div>{{$customer->Name}}</div>
@@ -276,10 +270,10 @@
         <div id="footer_left">
             <span class="each-payment-detail">PAYMENT DETAILS</span>
             <span class="each-payment-detail">Bank: HSBC Account No : 90706744 Sort Code: 40-11-60</span>
-            <span class="each-payment-detail">Payment terms: 14 days</span>
+            <span class="each-payment-detail">Payment terms: 14 days from invoice date</span>
 
-            <span class="each-payment-detail2" id="second_payment_bloc">Please note that if payment is not received by the end</span>
-            <span class="each-payment-detail2">of the month, we will apply an interest fee of 5% to</span>
+            <span class="each-payment-detail2" id="second_payment_bloc">Please note that if payment is not received as per our</span>
+            <span class="each-payment-detail2">payment terms, we will apply an interest fee of 5% to</span>
             <span class="each-payment-detail2">your original total amount due.</span>
         </div>
         <table border="0" cellspacing="0" id="footer_total">
