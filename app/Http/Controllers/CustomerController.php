@@ -2138,7 +2138,7 @@ class CustomerController extends Controller
                                                                                 'NumInvoice'=>$v->NumInvoice,
                                                                                 'InvoiceID'=>$v->InvoiceID,
                                                                                 'Tracking'=>$v->ItemTrackingKey,
-                                                                                'PromisedDate'=>$v->PromisedDate,
+                                                                                'PromisedDate'=>$v->created_at,
                                                                                 'Department'=>$v->DepartmentName,
                                                                                 'Description'=>$v->typeitem,
                                                                                 'brand'=>$v->brand,
