@@ -3,8 +3,10 @@
         <div class="d-none" id="barcode_div">
             <svg id="barcode"></svg>
         </div>
+        <!--
         <teleport :to="Target" :disabled="shouldClose" v-if="!shouldClose">
-            <Modal @close-modal="closeModal">
+
+            <Modal  @close-modal="closeModal">
                 <template #header>
                     <div class="row mt-4 text-modal-red mb-3">
                         <div class="col-12 text-center"><h3>Print receipt</h3></div>
@@ -30,6 +32,38 @@
                 </template>
             </Modal>
         </teleport>
+        -->
+
+    <modal ref="print_modal">
+        <template #closebtn>
+            <span class="close" id="pricenow_modal_close" @click="closeModal"></span>
+        </template>
+        <template #bheader>
+            <div class="row mt-4 text-modal-red mb-3">
+                <div class="col-12 text-center"><h3>Print receipt</h3></div>
+            </div>
+        </template>
+        <template #bcontent>
+            <div class="row justify-content-center mb-4">
+                <div class="col-10">
+                    <div class="row align-items-center">
+                        <div class="col-2">Printer</div>
+                        <div class="col-9 form-group mb-0">
+                            <select class="form-control" v-model="printer_name">
+                                <option v-for="( a, index ) in available_printers" :value="a" :key="index">{{ a }}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template #mbuttons>
+            <div class="row justify-content-around pb-3">
+                <div class="col-3"><button @click="printReceipt"  class="btn btn-success w-100">Print</button></div>
+                <div class="col-3"><button type="button" class="btn btn-primary w-100" @click="closeModal">Cancel</button></div>
+            </div>
+        </template>
+    </modal>
     </div>
 </template>
 <script>
@@ -52,7 +86,7 @@
     export default {
         name: "QzPrint",
         components:{
-           Modal 
+           Modal
         },
         setup(){
             const store = useStore();
@@ -67,6 +101,7 @@
             const available_printers = ref([]);
             const default_printers = ref([]);
             const Target = ref('');
+            const print_modal = ref();
             onMounted(()=>{
                 axios.post('/get-site-keys', {})
                     .then((res) => {
@@ -124,12 +159,14 @@
             } )
             const shouldClose = ref(true);
             const closeModal = ()=>{
-                shouldClose.value = true;
+                //shouldClose.value = true;
+                print_modal.value.closeModal();
             }
             const loadPrinterModal = (invoice_id, target)=>{
                 invoiceId.value = invoice_id;
                 shouldClose.value = false;
                 Target.value = target
+                print_modal.value.showModal();
                 if(Target.value == ".item-detail-panel"){
                     shouldClose.value = true;
                     printReceipt()
@@ -216,7 +253,7 @@
                     toPrint += '</p><hr/>';
                 }
 
-                //end customer preferences                
+                //end customer preferences
                 toPrint += '<p style="font-size:10pt; margin-bottom: 20px;">'+inv.poste_details+'</p>';
 
                 let nb_pieces = 0;
@@ -293,7 +330,8 @@
                 closeModal,
                 printReceipt,
                 printReceiptQz,
-                Target
+                Target,
+                print_modal,
             }
         }
     }
