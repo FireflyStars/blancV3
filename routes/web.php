@@ -821,8 +821,10 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
         $payment_id = DB::table('payments')->insertGetId($to_insert);
 
-        if($status=='succeeded'){
-            //$updated = DB::table("infoOrder")->where('id',$order_id)->update(['Paid'=>1]);
+        $amount_to_pay = DetailingController::getAmountToPay($order_id);
+
+        if($status=='succeeded' && $amount_to_pay <=0){
+            $updated = DB::table("infoOrder")->where('id',$order_id)->update(['Paid'=>1]);
         }
 
         echo json_encode(['payment_id'=>$payment_id]);
