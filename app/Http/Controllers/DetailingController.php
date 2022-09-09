@@ -1787,7 +1787,7 @@ class DetailingController extends Controller
 
         $amount_to_pay = $order->Total - $amount_paid;
 
-        return $amount_to_pay;
+        return number_format($amount_to_pay,2);
     }
 
     public function setCheckoutAddon(Request $request){
