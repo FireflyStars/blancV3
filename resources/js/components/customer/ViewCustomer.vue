@@ -1370,7 +1370,7 @@
                     }
 
                     paths.value.push(
-                        { name: res.data.customer.firstName +' ' + res.data.customer.lastName , route:'ViewCustomer', params:{ customer_id: res.data.customer.id }}
+                        { name: (res.data.customer.firstName==null?'':res.data.customer.firstName) +' ' + res.data.customer.lastName , route:'ViewCustomer', params:{ customer_id: res.data.customer.id }}
                     );
 
                     //current_user.value = res.data.customer.current_user;
