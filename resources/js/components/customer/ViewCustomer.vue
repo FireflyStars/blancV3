@@ -2055,6 +2055,7 @@
                     });
                 }
                 if(pickupDays.value.length == 0 && cur_val == '1'){
+                    viewRecurring.value = false;
                     if(form.value.postCode == ''){
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Post Code', ttl:5, type:'danger' });
                     }else{

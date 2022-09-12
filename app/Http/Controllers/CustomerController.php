@@ -1952,7 +1952,7 @@ class CustomerController extends Controller
         $info_customer['PauseDateTo'] = null;
         $info_customer['PauseDateFrom'] = null;
         foreach ($request->pickupSlots as $slot) {
-            $info_customer[$slot['key']] = json_encode($slot['value']);
+            $info_customer[$slot['key']] = [json_decode($slot['value'])];
         }
         $success = DB::table('infoCustomer')->where('id',$request->customerId)->update($info_customer);
 
