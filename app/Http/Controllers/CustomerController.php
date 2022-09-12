@@ -734,6 +734,7 @@ class CustomerController extends Controller
     public function customerDetails(Request $request){
         $CustomerID=$request->post('CustomerID');
         $infoCustomer = null;
+        $sel_postcode = null;
 
         $delivery_ask_status_to_include = Delivery::getDeliveryAskStatusToInclude();
         $pickup_status_to_include = Delivery::getPickupStatutToInclude();
