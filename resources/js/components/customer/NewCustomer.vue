@@ -162,6 +162,12 @@
                                             </select-options>
                                         </div>                                          
                                     </div>
+                                    <div class="d-flex mt-3" v-if="form.customerType == 'B2B'">
+                                        <div class="customer-company w-45 p-0 justify-content-between">
+                                                <label class="form-label d-block m-0" for="email">Company legal name</label>
+                                                <input  type="text" v-model="form.CompanyName" class="form-control custom-input" placeholder="Branch / Company name">
+                                        </div>
+                                    </div>
                                     <div class="d-flex mt-3">
                                         <div class="customer-contact w-55 d-flex justify-content-between">
                                             <div class="form-group m-0">
@@ -814,6 +820,7 @@ import axios from 'axios';
                 programmeType: 'Standard',
                 kioskNumber: '',
                 CustomerPayemenProfile: 0,
+                CompanyName: '',
                 firstName: '',
                 lastName: '',
                 phoneCountryCode: '+44',
