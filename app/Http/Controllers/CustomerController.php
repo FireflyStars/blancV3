@@ -1415,6 +1415,13 @@ class CustomerController extends Controller
                                 ->select('Country as country', 'Town as city', 'postcode as postCode', 'address1', 'address2')
                                 ->where('CustomerID', $customer->CustomerID)
                                 ->whereNotIn('status', ['DEL', 'BILLING'])->first();
+        if($customer->address == null){
+            $customer->address = DB::table('NewAddress')
+                                            ->select( 'City as city', 'postcode as postCode', 'address1', 'address2')
+                                            ->where('CustomerID', $customer->CustomerID)
+                                            ->whereNotIn('status', ['DEL', 'BILLING'])->first();
+        }                      
+
         if($customer->paymentMethod == 1){
             $customer->card = DB::table('cards')->select('cardNumber', 'type', 'dateexpiration as expDate', 'cardHolderName', 'id' , 'Actif')
                                 ->where('Actif' , 1)
@@ -1800,34 +1807,54 @@ class CustomerController extends Controller
         $updated = false;
         $cust = DB::table('infoCustomer')->where('id',$customer_id)->first();
         $new_address_id = 0;
-
+      
         if($cust){
             $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->first();
 
-            $updated = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->update([
-                'address1'=>$request->address1,
-                'address2'=>$request->address2,
-                'postcode'=>$request->postcode,
-                //'County'=>$request->county,
-                'Town'=>$request->city,
-            ]);
+            if($addr){
+                $updated = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->update([
+                    'status'=>'DEL'
+                ]);
+            }
+            
+             // add a new record to address table
+            $address = [
+                'CustomerID'    => $cust->CustomerID,
+                'AddressID'     => '',
+                'Town'          => $request->city,
+                'County'        => $request->county,
+                'Country'       => 'GB',
+                'postcode'      => $request->postcode,
+                'address1'      => $request->address1,
+                'address2'      => $request->address2,
+                'status'        => $request->typedelivery,
+                'created_at'    => now(),
+                'updated_at'    => now(),
+            ];
+                try {
+                    $addressId = DB::table('address')->insertGetId($address);
+                } catch (\Exception $e) {
+                    return response()->json(['error'=> $e->getMessage()]);
+                }
 
-            $new_address_id = DB::table('NewAddress')->insertGetId([
+            // add a new record to new address table  
+           $new_address_id = [
                 'AddressID'=>'',
                 'CustomerID'=>$cust->CustomerID,
-                'created_at'=>date('Y-m-d H:i:s'),
                 'address1'=>$request->address1,
                 'address2'=>$request->address2,
                 'postcode'=>$request->postcode,
-                //'State'=>$request->county,
                 'City'=>$request->city,
-                'Status'=>($addr?'EXIST':'NEW'),
-
-
-            ]);
-
+                'Status'=>'NEW',
+                'created_at'    => now(),
+                'updated_at'    => now(),
+            ];
+                try {
+                    $addressId = DB::table('NewAddress')->insertGetId($new_address_id);
+                } catch (\Exception $e) {
+                    return response()->json(['error'=> $e->getMessage()]);
+                }
         }
-
         return response()->json([
             'post'=>$request->all(),
             'new_address_id'=>$new_address_id,

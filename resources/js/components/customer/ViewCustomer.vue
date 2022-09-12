@@ -1769,6 +1769,7 @@
                         city:form.value.city,
                         address1:form.value.deliveryAddress1,
                         address2:form.value.deliveryAddress2,
+                        typedelivery:form.value.typeDelivery
                     }).then((res)=>{
                         if(res.data.new_address_id){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
