@@ -539,15 +539,30 @@ Route::get('inv-pdf',function(Request $request){
         die('Facture not set');
     }
 
-    $details = DB::table('infoOrderPrint')->where('FactureID',$facture_id)->first();
+    $details = DB::table('infoOrderPrint')->where('FactureID',$facture_id)->get();
+    $details_per_cust = [];
 
-    $data = CustomerController::getArPDFData($details);
+    foreach($details as $key=>$details){
+        $details_per_cust[] = CustomerController::getArPDFData($details);
+    }
 
-   if(!empty($data['order_details'])){
+    foreach($details_per_cust as $k=>$v){
+        if(empty($v['order_details'])){
+            unset($details_per_cust[$k]);
+        }
+    }
+
+
+   if(!empty($details_per_cust)){
+        $data = [
+            'details_per_cust'=>$details_per_cust,
+        ];
+
+
         Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
 
 
-        $pdf = Pdf::loadView('pdf/ar_pdf', $data);
+        $pdf = Pdf::loadView('pdf/ar_all_pdf', $data);
 
         $pdf->output();
 
@@ -823,8 +838,10 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
         $payment_id = DB::table('payments')->insertGetId($to_insert);
 
-        if($status=='succeeded'){
-            //$updated = DB::table("infoOrder")->where('id',$order_id)->update(['Paid'=>1]);
+        $amount_to_pay = DetailingController::getAmountToPay($order_id);
+
+        if($status=='succeeded' && $amount_to_pay <=0){
+            $updated = DB::table("infoOrder")->where('id',$order_id)->update(['Paid'=>1]);
         }
 
         echo json_encode(['payment_id'=>$payment_id]);
