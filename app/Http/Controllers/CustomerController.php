@@ -1986,7 +1986,7 @@ class CustomerController extends Controller
 
     public function getArCustomers(Request $request){
         $customers = DB::table('infoCustomer')
-            ->where('bycard',0)
+            ->where('OnAccount',1)
             ->get();
 
         $bacs_cust_id = [];
@@ -2062,7 +2062,8 @@ class CustomerController extends Controller
         }
 
         $final_cust = DB::table('infoCustomer')->whereIn('CustomerID',$final_cust_id)->get();
-        $final_cust_addr = DB::table('address')->whereIn('CustomerID',$final_cust_id)->where('status','DELIVERY')->get();
+
+        $final_cust_addr = DB::table('address')->whereIn('CustomerID',$final_cust_id)->where('status','BILLING')->get();
         $final_customers = [];
 
 
@@ -2284,7 +2285,13 @@ class CustomerController extends Controller
         $cust_addresses = [];
 
         $customer = DB::table('infoCustomer')->where('CustomerID',$details->CustomerID)->first();
-        $addr = Delivery::getAddressByCustomerUUID($details->CustomerID);
+        $addr = Delivery::getAddressByCustomerUUID($details->CustomerID,true);
+
+        $contact = false;
+
+        if($addr){
+            $contact = DB::table('contacts')->where('address_id',$addr->id)->first();
+        }
 
         $order_details = (array) @json_decode($details->info);
 
@@ -2413,6 +2420,7 @@ class CustomerController extends Controller
         $data = [
            'customer'=>$customer,
            'address'=>$addr,
+           'contact'=>$contact,
            'grouped_by_customer'=>$grouped_by_customer,
            'cust_names'=>$cust_names,
            'invoice_date'=>date('d/m/Y'),

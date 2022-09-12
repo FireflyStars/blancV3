@@ -537,15 +537,30 @@ Route::get('inv-pdf',function(Request $request){
         die('Facture not set');
     }
 
-    $details = DB::table('infoOrderPrint')->where('FactureID',$facture_id)->first();
+    $details = DB::table('infoOrderPrint')->where('FactureID',$facture_id)->get();
+    $details_per_cust = [];
 
-    $data = CustomerController::getArPDFData($details);
+    foreach($details as $key=>$details){
+        $details_per_cust[] = CustomerController::getArPDFData($details);
+    }
 
-   if(!empty($data['order_details'])){
+    foreach($details_per_cust as $k=>$v){
+        if(empty($v['order_details'])){
+            unset($details_per_cust[$k]);
+        }
+    }
+
+
+   if(!empty($details_per_cust)){
+        $data = [
+            'details_per_cust'=>$details_per_cust,
+        ];
+
+
         Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
 
 
-        $pdf = Pdf::loadView('pdf/ar_pdf', $data);
+        $pdf = Pdf::loadView('pdf/ar_all_pdf', $data);
 
         $pdf->output();
 

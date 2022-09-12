@@ -10,7 +10,7 @@ class Delivery extends Model
 {
     use HasFactory;
 
-    public static function getAddressByCustomerUUID($uuid){
+    public static function getAddressByCustomerUUID($uuid,$billing=false){
         $addr = false;
 
         $cust = DB::table('infoCustomer')->where('CustomerID',$uuid)->first();
@@ -24,13 +24,13 @@ class Delivery extends Model
                 if($master_cust->TypeDelivery !='DELIVERY'){
                     $addr = DB::table('address')->where('status',$master_cust->TypeDelivery)->first();
                 }else {
-                    $addr = DB::table('address')->where('CustomerID', $cust->CustomerIDMaster)->where('status', 'DELIVERY')->first();
+                    $addr = DB::table('address')->where('CustomerID', $cust->CustomerIDMaster)->where('status', ($billing?'BILLING':'DELIVERY'))->first();
                 }
             }else{ //Si Master ou autre
                 if($cust->TypeDelivery !='DELIVERY'){
                     $addr = DB::table('address')->where('status',$cust->TypeDelivery)->first();
                 }else{
-                    $addr = DB::table('address')->where('status','DELIVERY')->where('CustomerID',$uuid)->first();
+                    $addr = DB::table('address')->where('status',($billing?'BILLING':'DELIVERY'))->where('CustomerID',$uuid)->first();
                 }
             }
 
