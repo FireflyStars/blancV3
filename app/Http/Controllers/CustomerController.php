@@ -370,7 +370,7 @@ class CustomerController extends Controller
             }
 
             if($request->CustomerPayemenProfile == "1" && $request->accountType != "Sub" ){
-              
+
                 $billing_address = [
                     'CustomerID'    => $CustomerUUID,
                     'AddressID'     => '',
@@ -776,7 +776,7 @@ class CustomerController extends Controller
                     }
 
                     if(!is_null($booking)){
-                        $booking->slot = Tranche::getSlotFromTranche($booking->trancheFrom,$deliveryask->trancheto);
+                        $booking->slot = Tranche::getSlotFromTranche($booking->trancheFrom,$booking->trancheto);
                         if(isset($booking->DeliveryaskID)){
                             $booking->type = 'deliveryask';
                         }elseif(isset($booking->PickupID)){
@@ -1438,7 +1438,7 @@ class CustomerController extends Controller
 
         $customer->invoice = DB::table('contacts')
         ->where('CustomerID', $customer->CustomerID)
-        ->first();                        
+        ->first();
         $customer->currentOrders = false;
         $customer->pastOrders = false;
 
@@ -2686,7 +2686,7 @@ class CustomerController extends Controller
 
         $updated = false;
         $cust = DB::table('infoCustomer')->where('id',$customer_id)->first();
-        
+
         if($cust){
             $contact = DB::table('contacts')->where('CustomerID',$cust->CustomerID)->first();
             if($contact ){
