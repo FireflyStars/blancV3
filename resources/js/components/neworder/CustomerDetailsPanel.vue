@@ -75,7 +75,12 @@ import { useRouter } from 'vue-router';
             }
 
             function redirectToNewCustomer(){
-                router.push('/newcustomer');
+                router.push({
+                    name:'NewCustomer',
+                    params: {
+                        name:"NewOrder",
+                    }, 
+                });
             }
 
             return{

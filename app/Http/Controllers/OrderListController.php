@@ -65,7 +65,7 @@ class OrderListController extends Controller
 
                 ->select( [
                     'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id',
-                    'infoCustomer.Name','infoCustomer.TypeDelivery', 'infoitems.PromisedDate',
+                    'infoCustomer.Name','infoOrder.TypeDelivery', 'infoitems.PromisedDate',
                     'infoOrder.DateDeliveryAsk','infoInvoice.datesold','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold', 'infoOrder.deliverymethod','pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask',
                 DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
                 DB::raw('GROUP_CONCAT(infoitems.express) as express'),
@@ -469,7 +469,7 @@ class OrderListController extends Controller
             $orderlist=DB::table('infoOrder')
             ->select( [
                 'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id',
-                'infoCustomer.Name','infoCustomer.TypeDelivery', 'infoitems.PromisedDate',
+                'infoCustomer.Name','infoOrder.TypeDelivery', 'infoitems.PromisedDate',
                 'infoOrder.DateDeliveryAsk','infoInvoice.datesold','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold', 'infoOrder.deliverymethod','pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask',
                 DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
                 DB::raw('GROUP_CONCAT(infoitems.express) as express'),
@@ -1708,7 +1708,7 @@ class OrderListController extends Controller
             $orderlist=DB::table('infoOrder')
             ->select( [
                 'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id',
-                'infoCustomer.Name','infoCustomer.TypeDelivery', 'infoitems.PromisedDate',
+                'infoCustomer.Name','infoOrder.TypeDelivery', 'infoitems.PromisedDate',
                 'infoOrder.DateDeliveryAsk','infoInvoice.datesold','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold', 'infoOrder.deliverymethod','pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask',
                 DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
                 DB::raw('GROUP_CONCAT(infoitems.express) as express'),

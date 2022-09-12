@@ -95,6 +95,8 @@ Route::post('/delete-credit-card',[CustomerController::class, 'DeleteCreditCard'
 Route::post('/set-customer-discount',[CustomerController::class,'setCustomerDiscount'])->middleware('auth')->name('set-customer-discount');
 Route::post('/update-customer-contact',[CustomerController::class,'updateCustomerContact'])->name('update-customer-contact')->middleware('auth');
 Route::post('/update-customer-address',[CustomerController::class,'updateCustomerAddress'])->name('update-customer-address')->middleware('auth');
+Route::post('/update-customer-billing-address',[CustomerController::class,'updateCustomerBillingAddress'])->name('update-customer-billing-address')->middleware('auth');
+Route::post('/update-invoice-details',[CustomerController::class,'updateInvoiceDetails'])->name('update-invoice-details')->middleware('auth');
 Route::post('/update-customer-note',[CustomerController::class,'updateCustomerNote'])->name('update-customer-note')->middleware('auth');
 Route::post('/save-customer-preferences',[CustomerController::class,'saveCustomerPreferences'])->name('save-customer-preferences')->middleware('auth');
 Route::post('/save-customer-delivery-instructions',[CustomerController::class,'saveCustomerDeliveryInstructions'])->name('save-customer-delivery-instructions')->middleware('auth');

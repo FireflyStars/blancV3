@@ -141,16 +141,25 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="d-flex mt-3" v-if="form.customerType == 'B2B'">
+                                        <div class="customer-company w-45 p-0 justify-content-between">
+                                                <label class="form-label d-block m-0" for="email">Company legal name</label>
+                                                <input v-if="contact_details_edit" type="text" v-model="form.CompanyName" class="form-control custom-input" placeholder="Branch / Company name">
+                                                <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
+                                                    {{ form.CompanyName }} &nbsp;
+                                                </div>
+                                        </div>
+                                    </div>
                                     <div class="d-flex mt-3">
                                         <div class="customer-contact w-55 d-flex justify-content-between">
                                             <div class="form-group m-0">
-                                                <label class="form-label d-block m-0" for="first_name"> Last name </label>
+                                                <label class="form-label d-block m-0" for="first_name">Representative last name</label>
                                                 <input v-if="contact_details_edit" type="text" v-model="form.lastName" class="form-control customer-type custom-input" placeholder="Last name">
                                                 <div v-else class="customer-type py-2 rounded-3 bg-color px-3" v-html="form.lastName == '' ? '&nbsp;' : form.lastName">
                                                 </div>
                                             </div>
                                             <div class="form-group m-0">
-                                                <label class="form-label d-block m-0" for="first_name"> First name </label>
+                                                <label class="form-label d-block m-0" for="first_name"> Representative first name </label>
                                                 <input v-if="contact_details_edit" type="text" v-model="form.firstName" class="form-control custom-input" placeholder="First name">
                                                 <div v-else style="min-height: 40px;" class="customer-type py-2 rounded-3 bg-color px-3" v-html="form.firstName == '' ? '&nbsp;' : form.firstName">
                                                 </div>
@@ -287,7 +296,26 @@
 
                                     <div class="page-section">
                                           <img v-if="creditCardCustomer" src="/images/trash.svg" style="float: right;" @click="DeleteCreditCardCustomer()"/>
-                                        <div class="credit-card mt-5 d-flex justify-content-between">
+                                          <div class="credit-card d-flex justify-content-between">
+                                            <div class="form-group col-3 cardholder mb-0">
+                                                <label for="">Payment method</label>
+                                                <div class="w-100 py-2 rounded-2 bg-color px-3">
+                                                    <span v-if="!add_payement">{{ form.paymentMethod }}&nbsp;</span>
+                                                    <div  v-if="add_payement">
+                                                        <select-options
+                                                            v-model="form.paymentMethod"
+                                                            :options="[
+                                                                { display:'Credit Card', value: 'Credit Card' },
+                                                                { display:'BACS', value: 'BACS' },
+                                                            ]"
+                                                            :placeholder="'Select'"
+                                                            :name="'paymentMethod'">
+                                                        </select-options>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                           </div>
+                                        <div class="credit-card mt-3 d-flex justify-content-between">
                                             <div class="form-group col-3 cardholder mb-0">
                                                 <label for="">Cardholder name</label>
                                                 <div class="w-100 py-2 rounded-2 bg-color px-3">
@@ -445,6 +473,123 @@
                                                         <input type="text" v-model="credit_to_add"  class="form-control" id="add_credit" placeholder="0.00" @keyup="addCustomerCredit">
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="new-invoice-details-panel" v-if="form.accountType !='Sub' && form.CustomerPayemenProfile == 1">
+                                <!-- <div class="invoice-details-panel" v-if="form.accountType !='Main' && form.CustomerPayemenProfile == 1 "> -->
+                                    <h3 class="title d-flex">
+                                        Invoice details
+                                        <CheckBox  v-model="form.receiptToVatInvoice" class="ms-5"><slot>Attach e-Receipts to VAT Invoice</slot></CheckBox>
+                                    </h3>
+                                    <div class="page-section bacs">
+                                        <div class="form-group mb-0 company-legal-name">
+                                            <label for="company_legal_name">Company legal name</label>
+                                            <input type="text" v-model="form.companyName" class="form-control">
+                                        </div>
+                                        <div class="d-flex mt-3">
+                                            <div class="customer-contact w-55 d-flex justify-content-between">
+                                                <div class="form-group m-0">
+                                                    <label class="form-label d-block m-0" for="first_name">Invoice recipient*</label>
+                                                    <input type="text" v-model="form.invoiceName " class="form-control custom-input" placeholder="First name">
+                                                </div>
+                                                <div class="form-group m-0">
+                                                    <label class="form-label d-block m-0" for="first_name">&nbsp;</label>
+                                                    <input type="text" v-model="form.invoiceFirstName " class="form-control custom-input" placeholder="Last name">
+                                                </div>
+                                            </div>
+                                            <div class="customer-phone w-45">
+                                                <div>
+                                                    <label>Phone Number</label>
+                                                </div>
+                                                <div class="d-flex">
+                                                    <div class="phone-country-code">
+                                                        <select-options
+                                                            v-model="form.companyPhoneCountryCode"
+                                                            :modelValue="form.companyPhoneCountryCode"
+                                                            :options="phoneCodesSorted"
+                                                            :width = "'100px'"
+                                                            :name="'phoneCountryCode'">
+                                                        </select-options>
+                                                    </div>
+                                                    <div class="form-group ms-2">
+                                                        <input type="text" v-model="form.companyPhoneNumber" class="form-control custom-input">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- ////// -->
+                                        <div class="d-flex mt-3">
+                                            <div class="customer-contact w-55 justify-content-between">
+                                                    <label class="form-label d-block m-0" for="first_name">Invoice Email address 1*</label>
+                                                    <input type="text" v-model="form.invoiceAddressEmail1 " class="form-control custom-input" placeholder="Invoice Email address 1">
+                                            </div>
+                                        </div>
+                                        <div class="d-flex mt-3">
+                                            <div class="customer-contact w-55 justify-content-between">
+                                                    <label class="form-label d-block m-0" for="first_name">Invoice Email address 2</label>
+                                                    <input type="text" v-model="form.invoiceAddressEmail2" class="form-control custom-input" placeholder="Invoice Email address 2">
+                                            </div>
+                                      
+                                        </div>
+                                        <!-- /////// -->
+                                    </div>
+                                </div>
+                                <div class="billing-address-panel" v-if="form.accountType !='Sub' && form.CustomerPayemenProfile == 1">
+                                <!-- <div class="invoice-details-panel" v-if="form.accountType !='Main' && form.CustomerPayemenProfile == 1 "> -->
+                                    <h3 class="title d-flex">
+                                        Billing address 
+                                        <span class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="billing_address_edit = !billing_address_edit">Edit</span>
+                                    </h3>
+                                    <div class="page-section bacs">
+                                        <div class="form-group mb-0 company-legal-name">
+                                            <label for="company_legal_name" >Billing address *</label>
+                                            <input type="text" v-model="form.billingAddress1" class="form-control" placeholder="Address 1" v-if="billing_address_edit" >
+                                            <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
+                                                    {{ form.billingAddress1 }} &nbsp;
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-0 mt-3 company-legal-name">
+                                            <input type="text" v-model="form.billingAddress2" class="form-control" placeholder="Address 2" v-if="billing_address_edit">
+                                            <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
+                                                    {{ form.billingAddress2 }} &nbsp;
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex mt-3">
+                                            <div class="w-55 d-flex justify-content-between">
+                                                <div class="form-group m-0">
+                                                    <label for="post_code">Search postcode *</label>
+                                                    <div class="input-group" v-if="billing_address_edit">
+                                                        <span class="input-group-text">
+                                                            <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <g clip-path="url(#clip0_1034_1828)">
+                                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M17.1605 14.8985L22.5405 20.2785C22.7296 20.4677 22.8357 20.7243 22.8356 20.9919C22.8356 21.2594 22.7292 21.5159 22.54 21.705C22.3507 21.8941 22.0941 22.0003 21.8266 22.0002C21.5591 22.0001 21.3026 21.8937 21.1135 21.7045L15.7335 16.3245C14.1252 17.5702 12.1027 18.1564 10.0776 17.9639C8.05244 17.7713 6.17669 16.8145 4.83194 15.2881C3.48719 13.7617 2.77445 11.7803 2.83871 9.74705C2.90297 7.71378 3.73941 5.78136 5.17787 4.34291C6.61632 2.90445 8.54874 2.06801 10.582 2.00375C12.6153 1.93949 14.5967 2.65223 16.1231 3.99698C17.6495 5.34173 18.6063 7.21748 18.7988 9.24263C18.9913 11.2678 18.4051 13.2902 17.1595 14.8985H17.1605ZM10.8355 15.9995C12.4268 15.9995 13.9529 15.3674 15.0781 14.2421C16.2033 13.1169 16.8355 11.5908 16.8355 9.9995C16.8355 8.4082 16.2033 6.88208 15.0781 5.75686C13.9529 4.63164 12.4268 3.9995 10.8355 3.9995C9.24416 3.9995 7.71804 4.63164 6.59282 5.75686C5.4676 6.88208 4.83546 8.4082 4.83546 9.9995C4.83546 11.5908 5.4676 13.1169 6.59282 14.2421C7.71804 15.3674 9.24416 15.9995 10.8355 15.9995V15.9995Z" fill="#C3C3C3"/>
+                                                            </g>
+                                                            <defs>
+                                                            <clipPath id="clip0_1034_1828">
+                                                            <rect width="20.0009" height="20.0004" fill="white" transform="translate(2.83472 1.99976)"/>
+                                                            </clipPath>
+                                                            </defs>
+                                                            </svg>
+                                                        </span>
+                                                        <input v-if="billing_address_edit" type="text" ref="companyPostCode" class="form-control custom-input" v-model="form.billingPostcode">
+                                                    </div>
+                                                    <div v-else class="customer-type py-2 bg-color rounded-3">
+                                                    {{ form.billingPostcode }} &nbsp;
+                                                   </div>
+                                                </div>
+                                                <div class="form-group m-0">
+                                                    <label for="customer_city">City *</label>
+                                                    <input v-if="billing_address_edit" type="text" v-model="form.billingCity" class="form-control custom-input">
+                                                    <div v-else class="customer-type py-2 bg-color rounded-3">
+                                                        {{ form.billingCity }} &nbsp;
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="w-45 d-flex justify-content-end mt-3" v-if="billing_address_edit">
+                                                <button style="height:46px" class="btn btn btn-success each-save-btn" @click="validateAndSaveBillingAddress">Save</button>
                                             </div>
                                         </div>
                                     </div>
@@ -886,6 +1031,7 @@
                 typeDelivery: '',
                 programmeType: '',
                 CustomerPayemenProfile: '',
+                CompanyName: '',
                 kioskNumber: '',
                 firstName: '',
                 lastName: '',
@@ -935,6 +1081,17 @@
                 applyDiscountToSub: false,
                 creditAmount: 0,
                 addCredit: 0,
+                //billing address
+                billingAddress1:'',
+                billingAddress2:'',
+                billingPostcode:'',
+                billingCity:'',
+                //invoice details
+                companyNme:'',
+                invoiceAddressEmail1:'',
+                invoiceAddressEmail2:'',
+                invoiceFirstName:'',
+                invoiceName:'',
                 // preferences tab
                 preferences: [],
                 deliveryByday: '0',
@@ -971,7 +1128,7 @@
             const creditCardCustomer=ref(false);
             const currentOrders=ref([]);
             const pastOrders=ref([]);
-            const timeout =ref('');
+            const timeout =ref('');        
             let name_regex = /^[a-zA-Z ]*$/;
             const cardErrors = ref({});
             const cardFormat = inject('cardFormat');
@@ -983,6 +1140,7 @@
             const pauseRecurring = ref(false);
             const current_user = ref({});
             const credit_to_add = ref(0);
+            const billing_address_edit = ref(false);
 
 
             onMounted(()=>{
@@ -1027,6 +1185,7 @@
                     } 
                     
                     form.value.CustomerPayemenProfile = res.data.customer.OnAccount
+                    form.value.CompanyName = res.data.customer.CompanyName
                     form.value.id_customer = res.data.customer.id
 
                     if(res.data.customer.card == null){
@@ -1034,6 +1193,20 @@
                     } else {
                         creditCardCustomer.value = true ;
                     }
+
+                    if( res.data.customer.billing){
+                            form.value.billingAddress1 =  res.data.customer.billing.address1;
+                            form.value.billingAddress2 = res.data.customer.billing.address2;
+                            form.value.billingCity =  res.data.customer.billing.Town;
+                            form.value.billingPostcode = res.data.customer.billing.postcode;
+                    };
+                    if( res.data.customer.invoice){
+                            form.value.companyNme =  res.data.customer.invoice.company;
+                            form.value.invoiceName = res.data.customer.invoice.name;
+                            form.value.invoiceFirstName = res.data.customer.invoice.firstname;
+                            form.value.invoiceAddressEmail1 =  res.data.customer.invoice.email;
+                            form.value.invoiceAddressEmail2 = res.data.customer.invoice.email;
+                    };
 
                     form.value.discountCredit = res.data.customer.credit;
                     form.value.creditAmount = res.data.customer.credit;
@@ -1110,8 +1283,6 @@
                     // companyAddress1: '',
                     // companyAddress2: '',
                     form.value.discountLevel = res.data.customer.discount;
-
-
                     // applyDiscountToSub: false,
 
 
@@ -1436,7 +1607,7 @@
             function AddCreditCardCustomer(){
                this.add_payement = !this.add_payement
 
-                if(form.value.cardHolderName != "" && form.value.cardDetails != ""  && form.value.cardExpDate != "" &&  form.value.cardCVV != ""){
+                if(form.value.cardHolderName != "" && form.value.cardDetails != ""  && form.value.cardExpDate != "" &&  form.value.cardCVV != "" && form.value.paymentMethod != ""){
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Add Card Customer...']);
                 axios.post('/add-credit-card', form.value ).then((res)=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
@@ -1550,6 +1721,7 @@
                         phone_num:form.value.phoneNumber,
                         email:form.value.email,
                         CustomerPayemenProfile:form.value.CustomerPayemenProfile,
+                        CompanyName:form.value.CompanyName,
                     }).then((res)=>{
                         if(res.data.updated){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
@@ -1605,6 +1777,69 @@
                                 type: 'success'
                             });
                             address_edit.value = false;
+                        }
+                    }).catch((err)=>{
+                        console.log(err);
+                    }).finally(()=>{
+
+                    });
+
+                }
+            }
+            setTimeout(() => {
+                        const customerAddress = new google.maps.places.Autocomplete(postcode.value,
+                            { 
+                                componentRestrictions: { country: "uk" },
+                                fields: ["address_components", "geometry"],
+                            }                        
+                        );
+                        customerAddress.addListener("place_changed", () => {
+                            const place = customerAddress.getPlace();
+                            form.value.customerLat = place.geometry.location.lat();
+                            form.value.customerLon = place.geometry.location.lng();
+                            setCustomerAddress(place.address_components);
+                        });
+            }, 1);   
+
+            function validateAndSaveBillingAddress(){
+                let err = [];
+
+                if(form.value.billingAddress1 ==''){
+                    err.push("Please enter Address 1");
+                }
+                if(form.value.billingCity ==''){
+                    err.push("Please enter City");
+                }
+                if(form.value.billingPostcode==''){
+                    err.push("Please enter PostCode");
+                }
+
+                if(err.length > 0){
+                    err.forEach(function(v,i){
+                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                            message: v,
+                            ttl: 5,
+                            type: 'danger'
+                        });
+                    });
+                }else{
+                    axios.post('/update-customer-billing-address',{
+                        customer_id:route.params.customer_id,
+                        postcode:form.value.billingPostcode,
+                        county:form.value.county,
+                        city:form.value.billingCity,
+                        address1:form.value.billingAddress1,
+                        address2:form.value.billingAddress2,
+                        customerLat:form.value.customerLat,
+                        customerLon:form.value.customerLon,
+                    }).then((res)=>{
+                        if(res.data){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                message: 'Customer address updated',
+                                ttl: 5,
+                                type: 'success'
+                            });
+                            billing_address_edit.value = false;
                         }
                     }).catch((err)=>{
                         console.log(err);
@@ -1955,7 +2190,9 @@
                 closePauseRecurringModal,
                 openPauseRecurringModal,
                 show_model_SubAccount,
-                createSubAccount
+                createSubAccount,
+                billing_address_edit,
+                validateAndSaveBillingAddress
             }
 
         },
@@ -2263,6 +2500,7 @@ background: #4E58E7;
     .customer-type,
     .payment-method{
         width: 220px;
+        min-height: 40px;
     }
     .w-75{
         width: 75%;
@@ -2390,3 +2628,4 @@ input.error:focus{
     background:#FFEFED;
 }
 </style>
+       

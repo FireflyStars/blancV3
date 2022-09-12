@@ -308,7 +308,7 @@
                                     </div>
                                 </div>
                                 <!-- <AccountImportModal ref="importModal"/> -->
-                                <transition name="list" appear v-if="form.paymentMethod == 'BACS' || (form.alreadyLinkedToAccount && form.customerType == 'B2B')">
+                                <!-- <transition name="list" appear v-if="form.paymentMethod == 'BACS' || (form.alreadyLinkedToAccount && form.customerType == 'B2B')">
                                     <div class="invoice-details-panel">
                                         <h3 class="title d-flex">
                                             VAT Invoice details
@@ -358,9 +358,9 @@
                                                     <label>Email address 2</label>
                                                     <input type="email" v-model="form.invoiceEmail2" placeholder="Email" class="form-control">
                                                 </div>
-                                                <!-- <KeepAlive>
+                                               <KeepAlive>
                                                     <MultipleEmail v-model="form.invoiceEmails"></MultipleEmail>
-                                                </KeepAlive> -->
+                                                </KeepAlive>
                                             </div>
                                             <div class="w-55 mt-4">
                                                 <label for="">Billing address *</label>
@@ -401,7 +401,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </transition>
+                                </transition> -->
                                 <div class="discount-credit-panel" v-if="form.accountType !='Master'">
                                     <h3 class="title d-flex">Discounts <CheckBox v-model="form.applyDiscountToSub" class="ms-5"><slot>Apply to sub-accounts</slot></CheckBox></h3>
                                     <div class="page-section">
@@ -420,6 +420,107 @@
                                             <div class="input-group">
                                                 <span class="input-group-text fw-bold">£</span>
                                                 <input type="text" v-model="form.addCredit" class="form-control" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="new-invoice-details-panel" v-if="form.accountType !='Sub' && form.CustomerPayemenProfile == 1">
+                                <!-- <div class="invoice-details-panel" v-if="form.accountType !='Main' && form.CustomerPayemenProfile == 1 "> -->
+                                    <h3 class="title d-flex">
+                                        Invoice details
+                                        <CheckBox  v-model="form.receiptToVatInvoice" class="ms-5"><slot>Attach e-Receipts to VAT Invoice</slot></CheckBox>
+                                    </h3>
+                                    <div class="page-section bacs">
+                                        <div class="form-group mb-0 company-legal-name">
+                                            <label for="company_legal_name">Company legal name</label>
+                                            <input type="text" v-model="form.companyLegalName" class="form-control">
+                                        </div>
+                                        <div class="d-flex mt-3">
+                                            <div class="customer-contact w-55 d-flex justify-content-between">
+                                                <div class="form-group m-0">
+                                                    <label class="form-label d-block m-0" for="first_name">Invoice recipient*</label>
+                                                    <input type="text" v-model="form.invoicename" class="form-control custom-input" placeholder="Name">
+                                                </div>
+                                                <div class="form-group m-0">
+                                                    <label class="form-label d-block m-0" for="first_name">&nbsp;</label>
+                                                    <input type="text" v-model="form.invoiceFirstname" class="form-control custom-input" placeholder="First name">
+                                                </div>
+                                            </div>
+                                            <div class="customer-phone w-45">
+                                                <div>
+                                                    <label>Phone Number</label>
+                                                </div>
+                                                <div class="d-flex">
+                                                    <div class="phone-country-code">
+                                                        <select-options
+                                                            v-model="form.companyPhoneCountryCode"
+                                                            :modelValue="form.companyPhoneCountryCode"
+                                                            :options="phoneCodesSorted"
+                                                            :width = "'100px'"
+                                                            :name="'phoneCountryCode'">
+                                                        </select-options>
+                                                    </div>
+                                                    <div class="form-group ms-2">
+                                                        <input type="text" v-model="form.companyPhoneNumber" class="form-control custom-input">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- ////// -->
+                                        <div class="d-flex mt-3">
+                                            <div class="customer-contact w-55 justify-content-between">
+                                                    <label class="form-label d-block m-0" for="first_name">Invoice Email address 1*</label>
+                                                    <input type="text" v-model="form.invoiceAddressEmail1 " class="form-control custom-input" placeholder="Invoice Email address 1">
+                                            </div>
+                                        </div>
+                                        <div class="d-flex mt-3">
+                                            <div class="customer-contact w-55 justify-content-between">
+                                                    <label class="form-label d-block m-0" for="first_name">Invoice Email address 2</label>
+                                                    <input type="text" v-model="form.invoiceAddressEmail2" class="form-control custom-input" placeholder="Invoice Email address 2">
+                                            </div>
+                                      
+                                        </div>
+                                        <!-- /////// -->
+                                    </div>
+                                </div>
+                                <div class="billing-address-panel" v-if="form.accountType !='Sub' && form.CustomerPayemenProfile == 1">
+                                <!-- <div class="invoice-details-panel" v-if="form.accountType !='Main' && form.CustomerPayemenProfile == 1 "> -->
+                                    <h3 class="title d-flex">
+                                        Billing address
+                                    </h3>
+                                    <div class="page-section bacs">
+                                        <div class="form-group mb-0 company-legal-name">
+                                            <label for="company_legal_name">Billing address *</label>
+                                            <input type="text" v-model="form.billingAddress1" class="form-control" placeholder="Address line 1">
+                                        </div>
+                                        <div class="form-group mb-0 mt-3 company-legal-name">
+                                            <input type="text" v-model="form.billingAddress2" class="form-control" placeholder="Address line 2">
+                                        </div>
+
+                                        <div class="d-flex mt-3">
+                                            <div class="w-55 d-flex justify-content-between">
+                                                <div class="form-group m-0">
+                                                    <label for="post_code">Search postcode *</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">
+                                                            <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <g clip-path="url(#clip0_1034_1828)">
+                                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M17.1605 14.8985L22.5405 20.2785C22.7296 20.4677 22.8357 20.7243 22.8356 20.9919C22.8356 21.2594 22.7292 21.5159 22.54 21.705C22.3507 21.8941 22.0941 22.0003 21.8266 22.0002C21.5591 22.0001 21.3026 21.8937 21.1135 21.7045L15.7335 16.3245C14.1252 17.5702 12.1027 18.1564 10.0776 17.9639C8.05244 17.7713 6.17669 16.8145 4.83194 15.2881C3.48719 13.7617 2.77445 11.7803 2.83871 9.74705C2.90297 7.71378 3.73941 5.78136 5.17787 4.34291C6.61632 2.90445 8.54874 2.06801 10.582 2.00375C12.6153 1.93949 14.5967 2.65223 16.1231 3.99698C17.6495 5.34173 18.6063 7.21748 18.7988 9.24263C18.9913 11.2678 18.4051 13.2902 17.1595 14.8985H17.1605ZM10.8355 15.9995C12.4268 15.9995 13.9529 15.3674 15.0781 14.2421C16.2033 13.1169 16.8355 11.5908 16.8355 9.9995C16.8355 8.4082 16.2033 6.88208 15.0781 5.75686C13.9529 4.63164 12.4268 3.9995 10.8355 3.9995C9.24416 3.9995 7.71804 4.63164 6.59282 5.75686C5.4676 6.88208 4.83546 8.4082 4.83546 9.9995C4.83546 11.5908 5.4676 13.1169 6.59282 14.2421C7.71804 15.3674 9.24416 15.9995 10.8355 15.9995V15.9995Z" fill="#C3C3C3"/>
+                                                            </g>
+                                                            <defs>
+                                                            <clipPath id="clip0_1034_1828">
+                                                            <rect width="20.0009" height="20.0004" fill="white" transform="translate(2.83472 1.99976)"/>
+                                                            </clipPath>
+                                                            </defs>
+                                                            </svg>
+                                                        </span>
+                                                        <input type="text" ref="companyPostCode" class="form-control custom-input" v-model="form.billingPostcode" placeholder="postcode">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group m-0">
+                                                    <label for="customer_city">City *</label>
+                                                    <input type="text" v-model="form.billingCity" class="form-control custom-input" placeholder="city">
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -667,7 +768,7 @@
 <script>
     import BreadCrumb from '../layout/BreadCrumb'
     import SideBar from '../layout/SideBar'
-    import { useRouter } from 'vue-router';
+    import { useRouter , useRoute } from 'vue-router';
     import {ref,onMounted, nextTick, watch, inject } from 'vue';
     import SelectOptions from '../test/SelectOptions';
     import MultipleEmail from '../test/MultipleEmail';
@@ -703,7 +804,7 @@ import axios from 'axios';
             NewSubAccountForm   
         },
         setup(){
-            const store = useStore(); 
+            const store = useStore();
             const show_model_SubAccount = ref(false);
             const form = ref({
                 customerID: '',
@@ -745,6 +846,10 @@ import axios from 'axios';
                 companyPhoneNumber: '',
                 invoiceEmail1: '',
                 invoiceEmail2: '',
+                invoiceAddressEmail1:'',
+                invoiceAddressEmail2:'',
+                invoiceFirstname:'',
+                invoicename:'',
                 companyPostCode: '',
                 companyCity: '',
                 companyCounty: '',
@@ -758,6 +863,11 @@ import axios from 'axios';
                 applyDiscountToSub: false,
                 creditAmount: 0,
                 addCredit: 0,
+                //billing address
+                billingAddress1:'',
+                billingAddress2:'',
+                billingPostcode:'',
+                billingCity:'',
                 // preferences
                 preferences: [],
                 deliveryByday: '0',
@@ -770,6 +880,7 @@ import axios from 'axios';
                 linkedAccounts: []
             })
             const router = useRouter();
+            const route=useRoute();
             const step = ref('account_details');
             // const pickupAvailableDays = ref([]);
             const pickupDays = ref([]);
@@ -821,6 +932,7 @@ import axios from 'axios';
             const showcontainer=ref(false);
             const searchCustomer=ref(false);
             const cardFormat = inject('cardFormat');
+
             // const importModal = ref(null);
             const paths=ref([
                 { name:'Customer', route:'Customer'},
@@ -1010,7 +1122,7 @@ import axios from 'axios';
                         }
                         if(form.value.invoiceEmail2 != ''){
                             if( !emailValidation(form.value.invoiceEmail2) ){
-                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 1', ttl:5, type:'danger' });
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 2', ttl:5, type:'danger' });
                                 return;
                             }
                         }
@@ -1132,12 +1244,6 @@ import axios from 'axios';
                                 return;
                             }
                         }
-                        if(form.value.invoiceEmail2 != ''){
-                            if( !emailValidation(form.value.invoiceEmail2) ){
-                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 1', ttl:5, type:'danger' });
-                                return;
-                            }
-                        }
                         if(form.value.companyAddress1 == ''){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter address for company', ttl:5, type:'danger' });
                             return;
@@ -1168,6 +1274,40 @@ import axios from 'axios';
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter CVC', ttl:5, type:'danger' });
                             return;
                         }
+                    }
+                    if(form.value.CustomerPayemenProfile == 1 && form.value.accountType != "Sub" ){
+
+                    //invoce details
+                    if(form.value.invoiceAddressEmail1 != ''){
+                        if( !emailValidation(form.value.invoiceAddressEmail1) ){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 1', ttl:5, type:'danger' });
+                                return;
+                        }
+                    }
+                    if(form.value.invoiceAddressEmail2 != ''){
+                        if( !emailValidation(form.value.invoiceAddressEmail2) ){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 2', ttl:5, type:'danger' });
+                                return;
+                        }
+                    }
+                    if(form.value.invoiceAddressEmail1 == ''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Email Address 1', ttl:5, type:'danger' });
+                    }  
+
+                    //Billing address
+                    if(form.value.billingAddress1 == ''){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Address 1', ttl:5, type:'danger' });
+                        return;
+                    }
+                    if(form.value.billingCity == ''){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter city ', ttl:5, type:'danger' });
+                        return;
+                    }
+                    if(form.value.billingPostcode == ''){
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Postcode ', ttl:5, type:'danger' });
+                    return;
+                    } 
+
                     }
                     step.value = 'preferences';
                 }else if( step.value == 'preferences' ){
@@ -1268,12 +1408,22 @@ import axios from 'axios';
                                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: response.data.error, ttl:5, type:'danger' });
                                 }
                             }else{
-                                router.push({
-                                    name: 'CustomerDetail',
-                                    params:{
-                                        customer_id: response.data
-                                    }
-                                });
+                                       if(route.params.name  == "NewOrder" ){
+                                            router.push({
+                                                name: 'NewOrder',
+                                                params:{
+                                                    customer_id: response.data
+                                                }
+                                            });
+                                        } else {
+                                            router.push({
+                                                name: 'CustomerDetail',
+                                                params:{
+                                                    customer_id: response.data
+                                                }
+                                            });
+                                        }
+                                
                             }
                         }).catch((errors)=>{
                             console.log(errors);
@@ -1304,12 +1454,22 @@ import axios from 'axios';
                                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: response.data.error, ttl:5, type:'danger' });
                                         }
                                     }else{
-                                        router.push({
-                                            name: 'CustomerDetail',
-                                            params:{
-                                                customer_id: response.data
-                                            }
-                                        });
+
+                                        if(route.params.name  == "NewOrder" ){
+                                            router.push({
+                                                name: 'NewOrder',
+                                                params:{
+                                                    customer_id: response.data
+                                                }
+                                            });
+                                        } else {
+                                            router.push({
+                                                name: 'CustomerDetail',
+                                                params:{
+                                                    customer_id: response.data
+                                                }
+                                            });
+                                        }
                                     }
                                 }).catch((errors)=>{
                                     console.log(errors);

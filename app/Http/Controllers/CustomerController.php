@@ -350,7 +350,6 @@ class CustomerController extends Controller
                 return response()->json(['error'=> $e->getMessage()]);
             }
 
-            if($request->firstname != null){
                 $contact = [
                     'CustomerID'    => $CustomerUUID,
                     'address_id'    => $billing_address_id,
@@ -369,7 +368,50 @@ class CustomerController extends Controller
                     return response()->json(['error'=> $e->getMessage()]);
              }
             }
-        }
+
+            if($request->CustomerPayemenProfile == "1" && $request->accountType != "Sub" ){
+              
+                $billing_address = [
+                    'CustomerID'    => $CustomerUUID,
+                    'AddressID'     => '',
+                    'longitude'     => $request->customerLon,
+                    'Latitude'      => $request->customerLat,
+                    'Town'          => $request->billingCity,
+                    'Country'       => "GB",
+                    'postcode'      => $request->billingPostcode,
+                    'address1'      => $request->billingAddress1,
+                    'address2'      => $request->billingAddress2,
+                    'status'        => 'BILLING',
+                    'created_at'    => now(),
+                    'updated_at'    => now(),
+                ];
+                try {
+                    $billing_address_id = DB::table('address')->insertGetId($billing_address);
+                } catch (\Exception $e) {
+                    return response()->json(['error'=> $e->getMessage()]);
+                }
+
+                dump($billing_address);
+
+                $contact = [
+                    'CustomerID'    => $CustomerUUID,
+                    'address_id'    => $billing_address_id,
+                    'name'          => $info_customer['Name'],
+                    'firstname'     => $request->invoiceFirstname,
+                    'company'       => $request->companyLegalName,
+                    'email'         => $request->invoiceAddressEmail1,
+                    'email2'         => $request->invoiceAddressEmail2,
+                    'Phone'         => $request->companyPhoneNumber != '' ? '["'.$request->companyPhoneCountryCode.'|'.$request->companyPhoneNumber.']"' : '',
+                    'created_at'    => now(),
+                    'updated_at'    => now(),
+                ];
+                try {
+                    DB::table('contacts')->insert($contact);
+                } catch (\Exception $e) {
+                    return response()->json(['error'=> $e->getMessage()]);
+             }
+
+            }
 
         foreach ($request->preferences as $group) {
             foreach ($group['data'] as $item) {
@@ -1351,7 +1393,7 @@ class CustomerController extends Controller
      */
     public function getCustomerFullDetail(Request $request){
         $customer = DB::table('infoCustomer')
-                    ->select('infoCustomer.FirstName as firstName', 'infoCustomer.LastName as lastName', 'infoCustomer.Name as Name' ,  'infoCustomer.EmailAddress as email', 'infoCustomer.Phone as phone',
+                    ->select('infoCustomer.FirstName as firstName', 'infoCustomer.LastName as lastName', 'infoCustomer.Name as Name' ,'infoCustomer.CompanyName' ,  'infoCustomer.EmailAddress as email', 'infoCustomer.Phone as phone',
                         'infoCustomer.TotalSpend as totalSpent', 'infoCustomer.cardvip as kioskNumber', 'bycard as paymentMethod', 'infoCustomer.OnAccount' ,
                         DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'), DB::raw('IF(infoCustomer.CustomerIDMaster = "", "Main", "Sub") as accountType'),
                          'infoCustomer.TypeDelivery as typeDelivery','infoCustomer.CustomerIDMaster','infoCustomer.OnAccount',
@@ -1382,6 +1424,14 @@ class CustomerController extends Controller
             //                     ->select('')
         }
 
+        $customer->billing = DB::table('address')->select('AddressID' , 'id' ,'address1', 'address2', 'postcode', 'Town')
+                                ->where('CustomerID', $customer->CustomerID)
+                                ->where('status', "BILLING")
+                                ->first();
+
+        $customer->invoice = DB::table('contacts')
+        ->where('CustomerID', $customer->CustomerID)
+        ->first();                        
         $customer->currentOrders = false;
         $customer->pastOrders = false;
 
@@ -1732,6 +1782,7 @@ class CustomerController extends Controller
                     'EmailAddress'=>$request->email,
                     'Phone'=>(!empty($phone_arr)?json_encode($phone_arr):""),
                     'OnAccount'=>$request->CustomerPayemenProfile,
+                    'CompanyName'=>$request->CompanyName,
                 ]);
 
 
@@ -2545,5 +2596,99 @@ class CustomerController extends Controller
     public function downloadArPdf(Request $request){
         $filename=$request->get('filename');
         return Storage::download($filename);
+    }
+
+    public function updateCustomerBillingAddress(Request $request){
+        $customer_id = $request->customer_id;
+
+        $updated = false;
+        $cust = DB::table('infoCustomer')->where('id',$customer_id)->first();
+
+        if($cust){
+            $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','BILLING')->first();
+
+            if($addr){
+                $updated = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','BILLING')->update([
+                    'address1'=>$request->address1,
+                    'address2'=>$request->address2,
+                    'postcode'=>$request->postcode,
+                    'Town'=>$request->city,
+                    'updated_at'    => now(),
+                ]);
+            }else{
+
+            $billing_address = [
+                'CustomerID'    => $CustomerUUID,
+                'AddressID'     => '',
+                'longitude'     => $request->customerLon,
+                'Latitude'      => $request->customerLat,
+                'Town'          => $request->companyCity,
+                'County'        => $request->companyCounty,
+                'Country'       => $request->companyCountry,
+                'postcode'      => $request->companyPostCode,
+                'address1'      => $request->companyAddress1,
+                'address2'      => $request->companyAddress2,
+                'status'        => 'BILLING',
+                'created_at'    => now(),
+                'updated_at'    => now(),
+            ];
+            try {
+                $billing_address_id = DB::table('address')->insertGetId($billing_address);
+            } catch (\Exception $e) {
+                return response()->json(['error'=> $e->getMessage()]);
+            }
+        }
+    }
+
+        return response()->json([
+            'post'=>$request->all(),
+            'updated'=>$updated,
+        ]);
+    }
+
+    public function updateInvoiceDetails(Request $request){
+        $customer_id = $request->customer_id;
+
+        $updated = false;
+        $cust = DB::table('infoCustomer')->where('id',$customer_id)->first();
+        
+        if($cust){
+            $contact = DB::table('contacts')->where('CustomerID',$cust->CustomerID)->first();
+            if($contact ){
+                $updated = DB::table('contacts')->where('CustomerID',$cust->CustomerID)->update([
+                    'company'=>$request->company,
+                    'email'=>$request->email,
+                    'email2'=>$request->email2,
+                    'Phone'=>$request->Phone,
+                    'firstname'=>$request->firstname,
+                    'name'=>$request->name,
+                    'updated_at'    => now(),
+                ]);
+            }else{
+
+                $contact = [
+                    'CustomerID'    => $customer_id,
+                    'address_id'    => '',
+                    'name'          => $request->name,
+                    'firstname'     => $request->firstname,
+                    'company'       => $request->company,
+                    'email'         => $request->email,
+                    'email2'         => $request->email2,
+                    'Phone'         => $request->companyPhoneNumber != '' ? '["'.$request->companyPhoneCountryCode.'|'.$request->companyPhoneNumber.']"' : '',
+                    'created_at'    => now(),
+                    'updated_at'    => now(),
+                ];
+                try {
+                    DB::table('contacts')->insert($contact);
+                } catch (\Exception $e) {
+                    return response()->json(['error'=> $e->getMessage()]);
+             }
+        }
+    }
+
+        return response()->json([
+            'post'=>$request->all(),
+            'updated'=>$updated,
+        ]);
     }
 }
