@@ -131,7 +131,7 @@
                                                 :label="'Customer payement profile'"
                                                 :name="'CustomerPayemenProfile'">
                                              </select-options>
-                                           </div> 
+                                           </div>
                                            <div class="from-group" v-else>
                                                 <label for="">Customer payement profile</label>
                                                 <div class="customer-type py-2 bg-color rounded-3">
@@ -208,8 +208,8 @@
                                                         {{ form.kioskNumber }} &nbsp;
                                                     </div>
                                                 </div>
-                                            </div> 
-                                        
+                                            </div>
+
                                         <div class="mt-3" v-if="contact_details_edit">
                                             <button class="btn btn btn-success each-save-btn" @click="validateAndSaveContactDetails">Save</button>
                                         </div>
@@ -531,7 +531,7 @@
                                                     <label class="form-label d-block m-0" for="first_name">Invoice Email address 2</label>
                                                     <input type="text" v-model="form.invoiceAddressEmail2" class="form-control custom-input" placeholder="Invoice Email address 2">
                                             </div>
-                                      
+
                                         </div>
                                         <!-- /////// -->
                                     </div>
@@ -539,7 +539,7 @@
                                 <div class="billing-address-panel" v-if="form.accountType !='Sub' && form.CustomerPayemenProfile == 1">
                                 <!-- <div class="invoice-details-panel" v-if="form.accountType !='Main' && form.CustomerPayemenProfile == 1 "> -->
                                     <h3 class="title d-flex">
-                                        Billing address 
+                                        Billing address
                                         <span class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="billing_address_edit = !billing_address_edit">Edit</span>
                                     </h3>
                                     <div class="page-section bacs">
@@ -733,7 +733,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="set-booking-pannel" v-if="viewRecurring == false">
+                                            <div class="set-booking-pannel"> <!--  v-if="viewRecurring == false" -->
                                                 <div class="item-block p-3 border-bottom" v-if="form.deliveryByday == '1'">
                                                     <h4 class="sub-title col-12">Pickup & delivery days</h4>
                                                     <p>Please pick number of days we will visit the customer, with matching slots.</p>
@@ -883,7 +883,7 @@
                         <transition name="list" appear v-if="step =='linked_account'">
                             <div class="cust-page-content m-auto pt-5">
                                 <h3 class="title mb-3">Linked account(s)</h3>
-                                <div class="account-list-section">    
+                                <div class="account-list-section">
                                     <table class="table linked-account-table bg-white">
                                         <thead>
                                             <tr>
@@ -1128,7 +1128,7 @@
             const creditCardCustomer=ref(false);
             const currentOrders=ref([]);
             const pastOrders=ref([]);
-            const timeout =ref('');        
+            const timeout =ref('');
             let name_regex = /^[a-zA-Z ]*$/;
             const cardErrors = ref({});
             const cardFormat = inject('cardFormat');
@@ -1182,8 +1182,8 @@
                     else if(res.data.customer.accountType == "Sub"){
                            const filteredListMain = res.data.customer.linkedAccounts.filter((e) => e.accountType === "Main");
                            form.value.linkedAccounts = filteredListMain;
-                    } 
-                    
+                    }
+
                     form.value.CustomerPayemenProfile = res.data.customer.OnAccount
                     form.value.CompanyName = res.data.customer.CompanyName
                     form.value.id_customer = res.data.customer.id
@@ -1228,7 +1228,7 @@
                     }else {
                         form.value.phoneCountryCode = "+"+phone.code;
                     }
-                    
+
                     form.value.phoneNumber = phone.number;
                     form.value.email = res.data.customer.email;
                     // address part in account details tab
@@ -1483,7 +1483,7 @@
                         spent:  data.spent
                     }
                 ]
-                // add function create sub account 
+                // add function create sub account
                 axios.post('/create-customer-sub-account',{
                          customer_data: data,
                          customer_id : form.value.customerID
@@ -1491,7 +1491,7 @@
                     }).catch((error)=>{
                         console.log(error);
                     })
-            };   
+            };
             // handler when you unlink sub account from linked accounts
             const removeLinkedAccount = (id)=>{
                axios.post('/unlink-Account', {
@@ -1506,7 +1506,7 @@
                         }
                     }).catch((errors)=>{
                         console.log(errors)
-                    });        
+                    });
             }
             const formatPhone = (phoneString)=>{
                 if(phoneString != ""){
@@ -1600,7 +1600,7 @@
             // handler when you click a create sub account button
             const createSubAccount = ()=>{
                 show_model_SubAccount.value = true;
-                
+
             }
 
 
@@ -1789,10 +1789,10 @@
             }
             setTimeout(() => {
                         const customerAddress = new google.maps.places.Autocomplete(postcode.value,
-                            { 
+                            {
                                 componentRestrictions: { country: "uk" },
                                 fields: ["address_components", "geometry"],
-                            }                        
+                            }
                         );
                         customerAddress.addListener("place_changed", () => {
                             const place = customerAddress.getPlace();
@@ -1800,7 +1800,7 @@
                             form.value.customerLon = place.geometry.location.lng();
                             setCustomerAddress(place.address_components);
                         });
-            }, 1);   
+            }, 1);
 
             function validateAndSaveBillingAddress(){
                 let err = [];
@@ -2630,4 +2630,3 @@ input.error:focus{
     background:#FFEFED;
 }
 </style>
-       

@@ -558,6 +558,10 @@ Route::get('inv-pdf',function(Request $request){
             'details_per_cust'=>$details_per_cust,
         ];
 
+        echo "<pre>";
+        print_r($data);
+        die();
+
 
         Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
 

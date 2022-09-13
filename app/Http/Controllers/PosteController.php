@@ -141,6 +141,8 @@ class PosteController extends Controller
             $inv->count_six_month_items = count($has_six_month_items);
 
             $order = DB::table('infoOrder')->where('OrderID',$inv->OrderID)->first();
+            $inv->order_total_due = 0;
+            $inv->order_discount = 0;
 
             if($order){
                 $date_add = date('d/m/Y H:i:s',strtotime($order->created_at));
@@ -153,6 +155,9 @@ class PosteController extends Controller
                 $date_due = $due_date_arr[2]."-".$due_date_arr[1];
 
                 $order->date_due = $date_due;
+
+                $inv->order_total_due = $order->Total;
+                $inv->order_discount = $order->OrderDiscount;
 
             }
 

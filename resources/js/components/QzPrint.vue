@@ -287,9 +287,10 @@
                     toPrint += '<table border="0" width="100%" style="font-size:9pt;">';
                     toPrint += '<tr>';
                     toPrint += '<td style="font-size:14pt" width="50%">'+nb_pieces+' PIECE'+(nb_pieces>1?'S':'')+'</td>';
-                    toPrint +='<td style="font-size:10pt; text-align:right;" width="30%;">SUBTOTAL</td><td style="font-size:10pt; text-align: right;">'+total_items_price.toFixed(2)+'</td>';
+                    toPrint +='<td style="font-size:10pt; text-align:right;" width="30%;">ITEMS SUBTOTAL</td><td style="font-size:10pt; text-align: right;">'+total_items_price.toFixed(2)+'</td>';
                     toPrint += '</tr>';
-                    toPrint += '<tr><td></td><td width="30%" style="font-size:10pt; text-align: right">TOTAL</td><td width="20%" style="font-size:10pt; text-align: right">'+total_items_price.toFixed(2)+'</td></tr>';
+                    toPrint += '<tr><td></td><td width="30%" style="font-size:10pt; text-align: right">DISCOUNT</td><td width="20%" style="font-size:10pt; text-align: right">'+inv.order_discount.toFixed(2)+'</td></tr>';
+                    toPrint += '<tr><td></td><td width="30%" style="font-size:10pt; text-align: right">TOTAL DUE</td><td width="20%" style="font-size:10pt; text-align: right">'+inv.order_total_due.toFixed(2)+'</td></tr>';
                     toPrint += '</table>';
 
                 }

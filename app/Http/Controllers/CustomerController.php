@@ -14,6 +14,8 @@ use App\Models\Delivery;
 use App\Models\InfoCustomer;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use App\Models\OrderRecurringCreator;
+use App\Http\Controllers\NotificationController;
 
 class CustomerController extends Controller
 {
@@ -1421,7 +1423,7 @@ class CustomerController extends Controller
                                             ->select( 'City as city', 'postcode as postCode', 'address1', 'address2')
                                             ->where('CustomerID', $customer->CustomerID)
                                             ->whereNotIn('status', ['DEL', 'BILLING'])->first();
-        }                      
+        }
 
         if($customer->paymentMethod == 1){
             $customer->card = DB::table('cards')->select('cardNumber', 'type', 'dateexpiration as expDate', 'cardHolderName', 'id' , 'Actif')
@@ -1808,7 +1810,7 @@ class CustomerController extends Controller
         $updated = false;
         $cust = DB::table('infoCustomer')->where('id',$customer_id)->first();
         $new_address_id = 0;
-      
+
         if($cust){
             $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->first();
 
@@ -1817,7 +1819,7 @@ class CustomerController extends Controller
                     'status'=>'DEL'
                 ]);
             }
-            
+
              // add a new record to address table
             $address = [
                 'CustomerID'    => $cust->CustomerID,
@@ -1838,7 +1840,7 @@ class CustomerController extends Controller
                     return response()->json(['error'=> $e->getMessage()]);
                 }
 
-            // add a new record to new address table  
+            // add a new record to new address table
            $new_address_id = [
                 'AddressID'=>'',
                 'CustomerID'=>$cust->CustomerID,
@@ -1952,13 +1954,49 @@ class CustomerController extends Controller
         $info_customer['DeliverySat'] = '';
         $info_customer['PauseDateTo'] = null;
         $info_customer['PauseDateFrom'] = null;
+
+        $has_recurring = [];
+        $success = false;
+
         foreach ($request->pickupSlots as $slot) {
-            $info_customer[$slot['key']] = [json_decode($slot['value'])];
+            if(!is_null($slot['value'])){
+                $info_customer[$slot['key']] = [$slot['value']];
+                $has_recurring[$slot['key']] = [$slot['value']];
+            }
         }
-        $success = DB::table('infoCustomer')->where('id',$request->customerId)->update($info_customer);
+
+        $cust = DB::table('infoCustomer')->where('id',$request->customerId)->first();
+        if($cust && !empty($has_recurring)){
+            //Add template
+
+            $addr = DB::table('address')
+                ->where('CustomerID',$cust->CustomerID)
+                ->where('status','DELIVERY')
+                ->first();
+
+            $full_address = "";
+
+            if($addr) {
+                $full_address = $addr->address1 . ($addr->address2 != '' ? ", " . $addr->address2 : "") . ", " . $addr->postcode . ", " . $addr->Town . (!is_null($addr->County) ? ", " . $addr->County : "") . (!is_null($addr->Country) ? ", " . $addr->Country : "") ;
+            }
+
+            $success = DB::table('infoCustomer')->where('id',$request->customerId)->update($info_customer);
+
+
+
+
+            //Create recurring
+            OrderRecurringCreator::processRecurringOrders('SAVE RECCURING BOOKING',$cust->CustomerID);
+        }
+
+
+
+
 
         return response()->json([
-            'success'   =>  $success
+            'success'=>$success,
+            'post'=>$request->all(),
+            'has_recurring'=>$has_recurring,
         ]);
     }
     /**
