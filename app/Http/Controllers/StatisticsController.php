@@ -2719,7 +2719,7 @@ class StatisticsController extends Controller
                         ->select(
                             'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode',
                             'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%d/%m") as prod'), 'infoitems.id AS item_id',
-                            'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
+                            'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location','infoitems.date_add',
                             'infoitems.idPartner', 'TypePost.bg_color as location_color',  'TypePost.process', 'TypePost.circle_color',
                             // DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),
                             DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as deliv'),
@@ -2746,8 +2746,11 @@ class StatisticsController extends Controller
                 $invoices = $invoices ->Where('infoitems.ItemTrackingKey', 'LIKE', $request->search)
                 ->orWhere('infoitems.id', 'LIKE', $request->search)
                 ->orWhere('infoitems.id_items', 'LIKE', $request->search)
-                ->orWhere('infoOrder.id', 'LIKE', $request->search);
+                ->orWhere('infoOrder.id', 'LIKE', $request->search)
+                ->orWhere('infoCustomer.FirstName', 'LIKE', $request->search)
+                ->orWhere('infoCustomer.LastName', 'LIKE', $request->search);
              }
+             $invoices = $invoices->orderBy('infoitems.date_add', 'desc');
         } else {
             $invoices   =  $invoices->where('infoitems.Actif',1)
                                 ->whereIn('infoitems.express', $arr)

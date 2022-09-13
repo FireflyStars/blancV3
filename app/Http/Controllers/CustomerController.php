@@ -1828,7 +1828,7 @@ class CustomerController extends Controller
                 'postcode'      => $request->postcode,
                 'address1'      => $request->address1,
                 'address2'      => $request->address2,
-                'status'        => $request->typedelivery,
+                'status'        => 'DELIVERY',
                 'created_at'    => now(),
                 'updated_at'    => now(),
             ];
@@ -2654,13 +2654,13 @@ class CustomerController extends Controller
             }else{
 
             $billing_address = [
-                'CustomerID'    => $CustomerUUID,
+                'CustomerID'    => $cust->CustomerID,
                 'AddressID'     => '',
                 'longitude'     => $request->customerLon,
                 'Latitude'      => $request->customerLat,
                 'Town'          => $request->companyCity,
                 'County'        => $request->companyCounty,
-                'Country'       => $request->companyCountry,
+                'Country'       => 'GB',
                 'postcode'      => $request->companyPostCode,
                 'address1'      => $request->companyAddress1,
                 'address2'      => $request->companyAddress2,

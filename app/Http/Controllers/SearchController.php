@@ -25,26 +25,30 @@ public function SearchCustomer(Request $request)
     $PerPageEmails = $request['PerPageEmails'];
     $PerPageItems = $request['PerPageItems'];
 
-    $orders = DB::table('infoOrder')->select(['infoOrder.id','infoOrder.Status','infoOrder.DateDeliveryAsk','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CustomerID',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate'])
+    $orders = DB::table('infoOrder')->select(['infoOrder.created_at' ,'infoOrder.id','infoOrder.Status','infoOrder.DateDeliveryAsk','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CustomerID',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate'])
     ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
     ->leftJoin('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
     ->leftJoin('infoitems',function($join){
     $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
-    //->where('infoitems.InvoiceID','!=','')
     ->whereNotIn('infoitems.Status',['DELETE','VOID']);
-     })
-    ->where('FirstName', 'LIKE', '%'. $query . '%')
-    ->orWhere('LastName','LIKE', '%'. $query . '%')
-    ->orWhere('EmailAddress','LIKE', '%'. $query.'%')
-    ->orWhereIn('FirstName', $keywords)
-    ->orWhereIn('LastName', $keywords)
-    ->orWhereIn('EmailAddress', $keywords)
+     });
+     foreach($keywords as $searchTerm){
+        $orders->where(function($q) use ($searchTerm){
+            $q->where('FirstName', 'like', '%'.$searchTerm.'%')
+            ->orWhere('LastName', 'like', '%'.$searchTerm.'%')
+            ->orWhere('Name', 'like', '%'.$searchTerm.'%')
+            ->orWhere('EmailAddress', 'like', '%'.$searchTerm.'%');
+            // and so on
+        });
+    };
+
+    $orders = $orders
+    ->where('infoOrder.Status','!=' ,'DELETE')
     ->orWhere('infoOrder.id','LIKE' , $query)
     ->orWhere('infoitems.ItemTrackingKey','LIKE' ,$query)
     ->orWhere('infoitems.id_items',$query)
     ->orWhere('infoInvoice.NumInvoice', 'LIKE', $query)
-    ->groupBy('infoOrder.CustomerID')
-    ->orderBy('infoOrder.id')
+    ->orderBy('infoOrder.created_at', 'desc')
     ->paginate($PerPageOrder);
 
 
@@ -75,13 +79,13 @@ public function SearchCustomer(Request $request)
     ->select( 
         'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey', 
         'infoitems.typeitem as iteminfo', 'infoitems.id AS item_id','infoitems.brand',
-        'infoitems.nextpost', 'infoitems.store',  'postes.nom as location', 'postes.nominterface'
-       
+        'infoitems.nextpost', 'infoitems.store',  'postes.nom as location', 'postes.nominterface','infoCustomer.FirstName','infoCustomer.LastName', 
+        'infoOrder.OrderID'
     )
     ->Join('infoInvoice','infoitems.InvoiceID','infoInvoice.InvoiceID')
-    ->Join('infoOrder','infoInvoice.OrderID','infoOrder.OrderID')
+    ->leftJoin('infoOrder','infoInvoice.OrderID','infoOrder.OrderID')
+    ->leftJoin('infoCustomer','infoCustomer.CustomerID','infoOrder.CustomerID')
     ->leftJoin('postes','postes.id','=','infoitems.nextpost');
-    
 
      if(str_contains($query , "-")){
         $items = $items->Where('infoInvoice.NumInvoice', '=', $query);
@@ -89,7 +93,12 @@ public function SearchCustomer(Request $request)
         $items = $items ->Where('infoitems.ItemTrackingKey', 'LIKE', $query)
         ->orWhere('infoitems.id', 'LIKE', $query)
         ->orWhere('infoitems.id_items', 'LIKE', $query)
-        ->orWhere('infoOrder.id', 'LIKE', $query);
+        ->orWhere('infoOrder.id', 'LIKE', $query)
+        ->orWhere('infoCustomer.FirstName', 'LIKE', $query)
+        ->orWhere('infoCustomer.LastName', 'LIKE', $query)
+        ->orWhereIn('infoCustomer.FirstName', $keywords)
+        ->orWhereIn('infoCustomer.LastName', $keywords)
+        ->orWhereIn('infoCustomer.EmailAddress', $keywords);
      }
 
    
