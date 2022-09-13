@@ -1004,7 +1004,6 @@ class OrderController extends Controller
                     $detailing_map[$cur_item_id] = $v->id;
                }
 
-
             }
         }
 
