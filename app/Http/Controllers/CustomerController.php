@@ -1983,8 +1983,10 @@ class CustomerController extends Controller
             $success = DB::table('infoCustomer')->where('id',$request->customerId)->update($info_customer);
 
 
+
+
             //Create recurring
-            //OrderRecurringCreator::processRecurringOrders('SAVE RECCURING BOOKING',$cust->CustomerID);
+            OrderRecurringCreator::processRecurringOrders('SAVE RECCURING BOOKING',$cust->CustomerID);
         }
 
 
