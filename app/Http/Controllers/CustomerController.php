@@ -2030,7 +2030,7 @@ class CustomerController extends Controller
 
         if($request->deliveryByday==0){
             $success = DB::table('infoCustomer')->where('id',$request->customerId)->update($info_customer);
-            OrderRecurringCreator::processRecurringOrders('SAVE RECCURING BOOKING',$infocustomer->CustomerID);
+            OrderRecurringCreator::processRecurringOrders('DEL RECCURING BOOKING',$infocustomer->CustomerID);
             NotificationController::Notify($infocustomer->EmailAddress, '+123456789', '4C_RECURRING_CANCELLED', '', ['FirstName'=>$infocustomer->FirstName], false, 0,$infocustomer->CustomerID);
         }
 
