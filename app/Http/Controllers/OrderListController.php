@@ -479,7 +479,7 @@ class OrderListController extends Controller
                 DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                 DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID')
             ])
-            ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID)'))
+            ->join('infoCustomer','infoOrder.CustomerID','=', 'infoCustomer.CustomerID')
             ->leftJoin('pickup', 'infoOrder.id', '=', 'pickup.order_id')
             ->leftJoin('deliveryask', 'infoOrder.id', '=', 'deliveryask.order_id')
             ->leftJoin('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -487,20 +487,25 @@ class OrderListController extends Controller
                 $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
                     ->where('infoitems.InvoiceID','!=','')
                     ->whereNotIn('infoitems.Status',['DELETE','VOID']);
-            })
-            ->where('infoOrder.OrderID','!=','')
-            ->where(function($q) use ($keyword , $keywords) {
-                $q->Where('Name','LIKE','%'.$keyword.'%')
-                    ->orWhere('LastName','LIKE','%'.$keyword.'%')
-                    ->orWhere('EmailAddress','LIKE','%'.$keyword.'%')
-                    ->orWhere('infoOrder.id','LIKE',$keyword)
-                    ->orWhere('infoitems.ItemTrackingKey','LIKE' ,$keyword)
-                    ->orWhere('infoitems.id_items', $keyword)
-                    ->orWhere('infoInvoice.NumInvoice', 'LIKE', $keyword)
-                    ->orWhereIn('FirstName', $keywords)
-                    ->orWhereIn('LastName', $keywords)
-                    ->orWhereIn('EmailAddress', $keywords);
             });
+
+            foreach($keywords as $searchTerm){
+                $orderlist->where(function($q) use ($searchTerm){
+                    $q->where('FirstName', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('LastName', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('Name', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('EmailAddress', 'like', '%'.$searchTerm.'%');
+                    // and so on
+                });
+            };
+        
+            $orderlist = $orderlist
+            ->where('infoOrder.Status','!=' ,'DELETE')
+            ->orWhere('infoOrder.id','LIKE' , $keyword)
+            ->orWhere('infoitems.ItemTrackingKey','LIKE' ,$keyword)
+            ->orWhere('infoitems.id_items',$keyword)
+            ->orWhere('infoInvoice.NumInvoice', 'LIKE', $keyword)
+            ->orderBy('infoOrder.created_at', 'desc');
 
         }else{
             $orderlist=DB::table('infoOrder')
@@ -516,7 +521,7 @@ class OrderListController extends Controller
                     DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                     DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID')
                 ])
-                ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID)'))
+                ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster = "", infoCustomer.CustomerID , infoCustomer.CustomerIDMaster)'))
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
                 ->leftJoin('pickup', 'infoOrder.id', '=', 'pickup.order_id')
                 ->leftJoin('deliveryask', 'infoOrder.id', '=', 'deliveryask.order_id')
@@ -1021,7 +1026,7 @@ class OrderListController extends Controller
                 END as right_edit'
             ),
             DB::raw(
-                'CASE WHEN infoCustomer.IsMaster = 1 THEN "MAIN"
+                'CASE WHEN infoCustomer.isMaster = 1 AND infoCustomer.CustomerIDMaster = "" THEN "MAIN"
                       WHEN infoCustomer.isMaster = 0 AND infoCustomer.CustomerIDMaster <> "" THEN "Sub"
                 END as account_type'
             ),

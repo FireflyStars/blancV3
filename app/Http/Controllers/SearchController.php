@@ -25,7 +25,7 @@ public function SearchCustomer(Request $request)
     $PerPageEmails = $request['PerPageEmails'];
     $PerPageItems = $request['PerPageItems'];
 
-    $orders = DB::table('infoOrder')->select(['infoOrder.created_at' ,'infoOrder.id','infoOrder.Status','infoOrder.DateDeliveryAsk','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CustomerID',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate'])
+    $orders = DB::table('infoOrder')->select(['infoOrder.created_at' ,'infoOrder.id','infoOrder.Status','infoOrder.DateDeliveryAsk','infoCustomer.Name','infoOrder.TypeDelivery','infoCustomer.CustomerID',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate'])
     ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
     ->leftJoin('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
     ->leftJoin('infoitems',function($join){
