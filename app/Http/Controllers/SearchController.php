@@ -53,7 +53,9 @@ public function SearchCustomer(Request $request)
 
 
     $users = DB::table('infoCustomer')
-    ->select('Name', 'EmailAddress', 'Phone','infoCustomer.id', 'infoCustomer.CustomerID' , DB::raw(' IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as cust_type')
+    ->select('Name', 'EmailAddress', 'Phone','infoCustomer.id', 'infoCustomer.CustomerID' , 'infoCustomer.CustomerIDMaster',
+    DB::raw(' IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as cust_type'),
+    DB::raw(' IF(infoCustomer.CustomerIDMaster = "",  "Main", "Sub") as customer_account')
     );
     foreach($keywords as $searchTerm){
         $users->where(function($q) use ($searchTerm){
@@ -68,6 +70,23 @@ public function SearchCustomer(Request $request)
     $users = $users->paginate($PerPageUser);
     foreach ($users as $item) {
         $item->Phone=json_decode($item->Phone);
+    }
+    foreach ($users as $item) {
+
+        if($item->customer_account == "Main"){
+            $item->Pickup = DB::table('pickup')->select('status as status_pickup', 'date as date_pickup')
+            ->where('pickup.CustomerID','=',$item->CustomerID)
+            ->where('pickup.status','=','DELIVERY')
+            ->whereDate('pickup.date', '>=', date('Y-m-d'))
+            ->get();
+        }
+        if($item->customer_account == "Sub"){
+            $item->Pickup = DB::table('pickup')->select('status as status_pickup', 'date as date_pickup')
+            ->where('pickup.CustomerID','=',$item->CustomerIDMaster)
+            ->where('pickup.status','=','DELIVERY')
+            ->whereDate('pickup.date', '>=', date('Y-m-d'))
+            ->get();
+        }    
     }
 
     $emails = DB::table('infoCustomer')

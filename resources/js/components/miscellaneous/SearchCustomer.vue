@@ -28,6 +28,12 @@
                     <div class="row">
                        <div class="col-3">
                           <span class="body_medium"><a href="javascript:void(0)" @click="goCustomerView(customer.id)" >{{customer.Name}}</a></span>
+                          <div class="col-2">
+                            <tag   v-if="customer.cust_type=='B2C'" :name="'B2C'" ></tag>
+                            <tag   v-else :name="'B2B'" ></tag>
+                          </div>
+                       </div>
+                      <div class="col-5">
                             <div  v-if="customer.Phone!=''&&customer.Phone!=null" >
                               <div v-for="phone in customer.Phone.slice(0,1)" :key="phone">
                                <b class ="body_regular">+{{phone.replace('|',' ')}}</b>
@@ -35,21 +41,16 @@
                             </div>
                             <div v-else>
 
-                              <div class="phone body_small">--</div>
+                            <div class="phone body_small">--</div>
                             </div>
-                       </div>
-                      <div class="col-5">
+
                              <b class ="body_regular">{{customer.EmailAddress}}</b>
                        </div>
-                       <div class="col-2" style="text-align: end;" @click="goToOrderList(customer.CustomerID)">
+                       <div class="col-2" style="text-align: end;" >
                             <!-- <tag   :name="'Orders'" ></tag> -->
-                            <button class="btn btn-white body_medium text-nowrap btn-new-orders"> New order</button>
+                            <button v-if="customer.Pickup.length > 0"  class="btn btn-white body_medium text-nowrap btn-new-orders"> New order</button>
                         </div>
-                       <!-- <div class="col-2" style="text-align: end;">
-                            <tag   v-if="customer.cust_type=='B2C'" :name="'B2C'" ></tag>
-                            <tag   v-else :name="'B2B'" ></tag>
-                        </div> -->
-                        <div class="col-2" style="text-align: end;">
+                        <div class="col-2" style="text-align: end;" @click="goToOrderList(customer.CustomerID)">
                             <button class="btn btn-white body_medium text-nowrap btn-all-orders"> All Orders</button>
                         </div>
 
