@@ -1707,7 +1707,7 @@ class OrderListController extends Controller
         if($current_tab != 'customer_care'){
             $orderlist=DB::table('infoOrder')
             ->select( [
-                'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id',
+                'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id','infoCustomer.CustomerIDMaster',
                 'infoCustomer.Name','infoOrder.TypeDelivery', 'infoitems.PromisedDate',
                 'infoOrder.DateDeliveryAsk','infoInvoice.datesold','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold', 'infoOrder.deliverymethod','pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask',
                 DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
@@ -1718,7 +1718,7 @@ class OrderListController extends Controller
                 DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                 DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID')
             ])
-            ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID)'))
+            ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
             ->leftJoin('pickup', 'infoOrder.id', '=', 'pickup.order_id')
             ->leftJoin('deliveryask', 'infoOrder.id', '=', 'deliveryask.order_id')
             ->leftJoin('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -1728,13 +1728,13 @@ class OrderListController extends Controller
                     ->whereNotIn('infoitems.Status',['DELETE','VOID']);
             })
             ->where('infoOrder.OrderID','!=','')
-            ->where('infoCustomer.CustomerID','=',$customerId)
+            ->where('infoOrder.CustomerID','=',$customerId)
             ->whereNotIn('infoOrder.Status',['VOID', 'DELETE']);
 
         }else{
             $orderlist=DB::table('infoOrder')
                 ->select( [
-                    'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id',
+                    'infoOrder.id','infoOrder.Status','infoOrder.Total', 'infoitems.id as item_id','infoCustomer.CustomerIDMaster',
                     'infoCustomer.Name as Customer','infoCustomer.TypeDelivery', 'infoInvoice.datesold', 'infoCustomer.CustomerID','infoOrder.datesold as Orderdatesold','infoCustomer.DeliverybyDay','infoOrder.DatePickup','infoOrder.DateDeliveryAsk',
                     'infoOrder.deliverymethod','pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask',
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
@@ -1745,7 +1745,7 @@ class OrderListController extends Controller
                     DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                     DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID')
                 ])
-                ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID)'))
+                ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
                 ->leftJoin('pickup', 'infoOrder.id', '=', 'pickup.order_id')
                 ->leftJoin('deliveryask', 'infoOrder.id', '=', 'deliveryask.order_id')
@@ -1770,7 +1770,7 @@ class OrderListController extends Controller
                         });
                     })
                   ->where('infoCustomer.CustomerID','=',$customerId);
-        }
+        }   
 
         if($current_tab=='with_partner')
         $orderlist=$orderlist->where('infoitems.idPartner','!=','0')
