@@ -50,8 +50,8 @@
                             <!-- <tag   :name="'Orders'" ></tag> -->
                             <button v-if="customer.Pickup.length > 0"  class="btn btn-white body_medium text-nowrap btn-new-orders"> New order</button>
                         </div>
-                        <div class="col-2" style="text-align: end;" @click="goToOrderList(customer.CustomerID)">
-                            <button class="btn btn-white body_medium text-nowrap btn-all-orders"> All Orders</button>
+                        <div class="col-2" style="text-align: end;">
+                            <button class="btn btn-white body_medium text-nowrap btn-all-orders"  @click="goToOrderList(customer.CustomerID)"> All Orders</button>
                         </div>
 
                      </div>
