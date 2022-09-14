@@ -737,6 +737,7 @@ class CustomerController extends Controller
         $CustomerID=$request->post('CustomerID');
         $infoCustomer = null;
         $sel_postcode = null;
+        $user = Auth::user();
 
         $delivery_ask_status_to_include = Delivery::getDeliveryAskStatusToInclude();
         $pickup_status_to_include = Delivery::getPickupStatutToInclude();
@@ -860,6 +861,8 @@ class CustomerController extends Controller
             if($delivery_preference){
                 $infoCustomer->delivery_preference = $delivery_preference;
             }
+
+            $infoCustomer->current_user = $user;
         }
 
         return response()->json(['customer'=>$infoCustomer]);

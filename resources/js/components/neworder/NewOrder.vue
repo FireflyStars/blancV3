@@ -819,6 +819,7 @@ import axios from 'axios';
 
 
                 if(current_customer){
+
                     deliverymethod.value='';
                     store_name.value='';
                     isc_pickup_timeslot.value=0;
@@ -877,6 +878,14 @@ import axios from 'axios';
                             isc_pickup_disabled.value=true;
 
                         }else{
+                            if(current_customer.main_account.recent_deliveryask==null){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                    message:"No booking on mail account",
+                                    ttl:5,
+                                    type:'danger'
+                                });
+                            }
+
                              deliverymethod.value='delivery_only';
                               deliverymethod_disabled.value=true;
                               do_delivery_disabled.value=true;
@@ -895,6 +904,26 @@ import axios from 'axios';
                     //store.dispatch(`${NEWORDER_MODULE}${NEW_ORDER_SET_TRANCHE_POSTCODE}`,current_customer.postcode);
                     available_days.value = current_customer.available_days;
                     available_cust_slots.value = current_customer.available_slots;
+
+
+                    if(current_customer.current_user.store==1){
+                        deliverymethod.value = 'home_delivery';
+                    }
+                    if(current_customer.current_user.store >1){
+                        deliverymethod.value = 'in_store_collection';
+
+                        //2: MB / 3:CHELSEA / 4:SOUTH KEN / 5:NOTTING HILL
+                        let stores = [];
+                        stores[2] = 'MARYLEBONE';
+                        stores[3] = 'CHELSEA';
+                        stores[4] = 'SOUTH KEN';
+                        stores[5] = 'NOTTING HILL';
+
+                        if(stores[current_customer.current_user.store]){
+                            store_name.value = stores[current_customer.current_user.store];
+                        }
+                        isc_pickup_timeslot.value = 11;
+                    }
                 }
 
                 return current_customer;
@@ -926,7 +955,7 @@ import axios from 'axios';
                 }
             });
             watch(() =>cust_type_delivery.value, (current_val, previous_val) => {
-                store_name.value = current_val.toString().toUpperCase();
+                //store_name.value = current_val.toString().toUpperCase();
             });
 
 /*
@@ -1007,6 +1036,8 @@ import axios from 'axios';
                        })
 
                    }else{
+
+
 
                     const new_order = {};
                     new_order.CustomerID = CustomerID.value;
