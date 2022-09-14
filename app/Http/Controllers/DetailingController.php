@@ -813,6 +813,10 @@ class DetailingController extends Controller
             $err = "HSL $tracking is already being detailed.";
         }
 
+        if($err==''){
+            DB::table('infoOrder')->where('id',$order_id)->update(['Status'=>'IN DETAILING']);
+        }
+
         return response()->json([
             'item'=>$item,
             'err'=>$err,
