@@ -47,6 +47,18 @@ class Delivery extends Model
         return ['NEW','API','PMS','DONE', 'PMS-DONE', 'API-DONE','REC','REC-DONE','REC-NOK','PMS-NOK','API-NOK'];
     }
 
+    public static function getTrancheByIndex($index){
+        $arr = [
+            1=>['from'=>'08:00','to'=>'10:00'],
+            3=>['from'=>'10:00','to'=>'12:00'],
+            5=>['from'=>'12:00','to'=>'14:00'],
+            7=>['from'=>'14:00','to'=>'16:00'],
+            9=>['from'=>'16:00','to'=>'18:00'],
+            11=>['from'=>'18:00','to'=>'20:00'],
+            13=>['from'=>'08:00','to'=>'20:00'],
+        ];
 
+        return $arr[$index];
+    }
 
 }

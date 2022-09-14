@@ -1954,43 +1954,82 @@ class CustomerController extends Controller
         $info_customer['DeliverySat'] = '';
         $info_customer['PauseDateTo'] = null;
         $info_customer['PauseDateFrom'] = null;
-
+      
         $has_recurring = [];
         $success = false;
 
+        $array_map = [
+            'DeliveryMon'=>'MONDAY',
+            'DeliveryTu'=>'TUESDAY',
+            'DeliveryWed'=>'WEDNESDAY',
+            'DeliveryTh'=>'THURSDAY',
+            'DeliveryFri'=>'FRIDAY',
+            'DeliverySat'=>'SATURDAY'
+        ];
+        $arr=[];
         foreach ($request->pickupSlots as $slot) {
             if(!is_null($slot['value'])){
-                $info_customer[$slot['key']] = [$slot['value']];
-                $has_recurring[$slot['key']] = [$slot['value']];
+                $arr[]= $array_map[$slot['key']].'_'.$slot['value'][0];
+                $info_customer[$slot['key']] = '['.$slot['value'][0].']';
+                $has_recurring[$slot['key']] = '['.$slot['value'][0].']';
             }
         }
 
-        $cust = DB::table('infoCustomer')->where('id',$request->customerId)->first();
-        if($cust && !empty($has_recurring)){
+        $infocustomer = DB::table('infoCustomer')->where('id',$request->customerId)->first();
+        if($infocustomer && !empty($has_recurring)){
             //Add template
 
-            $addr = DB::table('address')
-                ->where('CustomerID',$cust->CustomerID)
-                ->where('status','DELIVERY')
-                ->first();
-
-            $full_address = "";
-
-            if($addr) {
-                $full_address = $addr->address1 . ($addr->address2 != '' ? ", " . $addr->address2 : "") . ", " . $addr->postcode . ", " . $addr->Town . (!is_null($addr->County) ? ", " . $addr->County : "") . (!is_null($addr->Country) ? ", " . $addr->Country : "") ;
-            }
 
             $success = DB::table('infoCustomer')->where('id',$request->customerId)->update($info_customer);
 
+            $mail_vars = [];
 
-
+        
+                $addr = DB::table('address')
+                    ->where('CustomerID',$infocustomer->CustomerID)
+                    ->where('status','DELIVERY')
+                    ->first();
+    
+                $full_address = "";
+    
+                if($addr) {
+                    $full_address = $addr->address1 . ($addr->address2 != '' ? ", " . $addr->address2 : "") . ", " . $addr->postcode . ", " . $addr->Town . (!is_null($addr->County) ? ", " . $addr->County : "") . (!is_null($addr->Country) ? ", " . $addr->Country : "") ;
+                }
+    
+                $pickups = [];
+    
+                foreach($arr as $k=>$v){
+                    $part = explode("_",$v);
+                    $tranche = Delivery::getTrancheByIndex($part[1]);
+                    $day = $part[0];
+    
+                    $pickups[] = ucfirst(strtolower($day))."s from ".Tranche::formatToAmPm($tranche['from'],$tranche['to']);
+    
+                }
+    
+                $mail_vars = [
+                    'FirstName'=>$infocustomer->FirstName,
+                    'CreatedOn'=>date('l d F @H:i:s'),
+                    'FullName'=>$infocustomer->Name,
+                    'UserAddress'=>$full_address,
+                    'Frequency'=>count($arr),
+                    'PickUpSlot'=>(isset($pickups[0])?$pickups[0]:''),
+                    'PickUpSlot2'=>(isset($pickups[1])?$pickups[1]:''),
+    
+                ];
+    
+            NotificationController::Notify($infocustomer->EmailAddress, '+123456789', '4A_RECURRING_CONFIRM', '', $mail_vars, false, 0, $infocustomer->CustomerID);
 
             //Create recurring
-            OrderRecurringCreator::processRecurringOrders('SAVE RECCURING BOOKING',$cust->CustomerID);
+            OrderRecurringCreator::processRecurringOrders('SAVE RECCURING BOOKING',$infocustomer->CustomerID);
         }
 
 
-
+        if($request->deliveryByday==0){
+            $success = DB::table('infoCustomer')->where('id',$request->customerId)->update($info_customer);
+            OrderRecurringCreator::processRecurringOrders('SAVE RECCURING BOOKING',$infocustomer->CustomerID);
+            NotificationController::Notify($infocustomer->EmailAddress, '+123456789', '4C_RECURRING_CANCELLED', '', ['FirstName'=>$infocustomer->FirstName], false, 0,$infocustomer->CustomerID);
+        }
 
 
         return response()->json([

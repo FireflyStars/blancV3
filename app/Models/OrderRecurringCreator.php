@@ -1,16 +1,5 @@
 <?php
-namespace App\Models;
-
-use Carbon\Carbon;
-use function GuzzleHttp\Psr7\str;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use App\Models\Holiday;
-
-class OrderRecurringCreator
-{
-
-    /*
+/*
  *
  * // retrieve begin of week
 
@@ -50,8 +39,18 @@ cancel_bookings[]=array(
  *
  *
  * **/
+namespace App\Models;
 
+use App\Customer;
+use App\Models\DayGenerator;
+use Carbon\Carbon;
+use function GuzzleHttp\Psr7\str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
+class OrderRecurringCreator
+{
 
     public $holidays;
 
@@ -74,7 +73,6 @@ cancel_bookings[]=array(
         $this->file_time= date('Y-m-d');
         //Storage::disk('local')->delete('order_recurring'.DIRECTORY_SEPARATOR.'OR_'.$this->file_time.'.md');
         $this->holidays=Holiday::getHolidays();
-
         $this->ENABLE_ORDER_RECURRING_LOG=getenv('ENABLE_ORDER_RECURRING_LOG');
         $this->l("## Cron order reccuring trigger @ ".date('Y-m-d H:i:s'));
         $this->l("\t Triggered by $trigger");
@@ -107,13 +105,14 @@ cancel_bookings[]=array(
             $CustomerID=$customer->CustomerID;
             $this->l("   ".'Now processing customer: `'.$customer->CustomerID.'`');
             $BOOKINGS=$this->getRecurringBookingDates($customer);
-
-
             foreach ($BOOKINGS as $PICKUP_DATE){
                     $DELIVERY_DATE=$this->getDeliveryDate($PICKUP_DATE,$customer);
                     $this->l("Creating order recurring with pickup date `$PICKUP_DATE` and delivery date `$DELIVERY_DATE`");
                     $this->createOrder($PICKUP_DATE,$DELIVERY_DATE,$customer);
             }
+
+
+
 
 
             //checks against holidays
@@ -205,24 +204,20 @@ cancel_bookings[]=array(
                    if($pickup_slot['tranchefrom']!="")
                     $pickuptime_updated=DB::table('pickup')->where('PickupID','=',$infoOrder->PickupID)->update([
                         'trancheFrom'=>$pickup_slot['tranchefrom'],
-                        'trancheto'=>$pickup_slot['trancheto'],
-                        'order_id'=>$infoOrder->id,
+                        'trancheto'=>$pickup_slot['trancheto']
                     ]);
                     $delivery_slot=$this->getTimeSlot($infoOrder->DateDeliveryAsk,$customer);
 
                   if($delivery_slot['tranchefrom']!="")
                     $deliverytime_updated=DB::table('deliveryask')->where('DeliveryaskID','=',$infoOrder->DeliveryaskID)->update([
                         'trancheFrom'=>$delivery_slot['tranchefrom'],
-                        'trancheto'=>$delivery_slot['trancheto'],
-                        'order_id'=>$infoOrder->id,
+                        'trancheto'=>$delivery_slot['trancheto']
                     ]);
 
                   if($pickuptime_updated>0)
                       $this->l("The pickup time slot for order `$infoOrder->id` has been updated to `".$pickup_slot['tranchefrom']."` - `".$pickup_slot['trancheto'].'`');
                   if($deliverytime_updated>0)
                         $this->l("The delivery time slot for order `$infoOrder->id` has been updated to `".$delivery_slot['tranchefrom']."` - `".$delivery_slot['trancheto'].'`');
-
-                    $this->cur_orders[] = $infoOrder->id;
                 }
                 $this->l('Check 04: Check ended');
             }
@@ -318,7 +313,6 @@ cancel_bookings[]=array(
     }
     public function getRecurringBookingDates($customer){
         $ScheduleBookingDay=$this->scheduleBookingDay($customer);
-
         if(empty($ScheduleBookingDay)){
             $this->l('No recurring booking scheduled for this customer.');
             return $ScheduleBookingDay;
@@ -348,7 +342,6 @@ cancel_bookings[]=array(
             }
             $d++;
         }
-
         $this->l('Possible booking dates (Pickup): `'.implode('`, `',$PossibleScheduleBookingDates).'`');
 
         $pausedFrom=$customer->PauseDateFrom;
@@ -384,7 +377,6 @@ cancel_bookings[]=array(
         }
 
 
-
         if($pausedFrom!=''||$pausedTo!='')
         $this->l('Possible booking dates (Pickup) after considering Paused dates: `'.implode('`, `',$PossibleScheduleBookingDates).'`');
 
@@ -414,20 +406,8 @@ cancel_bookings[]=array(
 
         $this->l('Check 00: Checking existing orders for the dates `'.implode('`, `',$PossibleScheduleBookingDates).'`');
         foreach ($PossibleScheduleBookingDates as $k=>$PossibleScheduleBookingDate){
-
-
-            $infoOrder=DB::table('infoOrder')->where('CustomerID','=',$customer->CustomerID)
-            ->where(function($query) use($PossibleScheduleBookingDate){
-                $query->where(function($query2) use($PossibleScheduleBookingDate){
-                    $query2->where('DatePickup','=',$PossibleScheduleBookingDate)
-                    ->where('Status','=','RECURRING');
-
-                }) ->orWhere('deliverymethod','recurring');
-           
-            })->first();
-
+            $infoOrder=DB::table('infoOrder')->where('CustomerID','=',$customer->CustomerID)->where('Status','=','RECURRING')->where('DatePickup','=',$PossibleScheduleBookingDate)->first();
             if($infoOrder!=null){
-         
                 $this->l("A recurring order exist for `$PossibleScheduleBookingDate`. No order will be created for this date.");
                 $this->l("Checking if the order delivery date `$infoOrder->DateDeliveryAsk` need to be rescheduled");
                 $this->reScheduleDelivery($infoOrder,$customer);
@@ -441,7 +421,6 @@ cancel_bookings[]=array(
         }else {
             $this->l('Final booking dates (Pickup) after considering Paused dates, Holidays, expired date time slot and existing Orders: `' . implode('`, `', $PossibleScheduleBookingDates) . '`');
         }
-
         return $PossibleScheduleBookingDates;
 
     }
@@ -552,6 +531,8 @@ cancel_bookings[]=array(
                 'DeliveryaskID' => $new_deliveryask->DeliveryaskID,
                 'DateDeliveryAsk' => $delivery_date
             ]);
+
+
             $this->l("Rescheduling delivery performed on `$infoOrder->id` from `$infoOrder->DateDeliveryAsk` to `$delivery_date`");
             DB::table('deliveryask')->where('CustomerID', '=', $customer->CustomerID)->where('DeliveryaskID', '=', $infoOrder->DeliveryaskID)->update([
                 'date' => '2020-01-01',
@@ -689,8 +670,8 @@ cancel_bookings[]=array(
     public function l($string){
 
         if($this->ENABLE_ORDER_RECURRING_LOG)
-        Storage::disk('local')->append('order_recurring'.DIRECTORY_SEPARATOR.'OR_'.$this->file_time.'.md', $string."\r\n");
-        //    file_put_contents(Storage::path('order_recurring'.DIRECTORY_SEPARATOR.'R_'.$this->file_time.'.md'), $string."\r\n\r\n", FILE_USE_INCLUDE_PATH | FILE_APPEND );
+      //  Storage::disk('local')->append('order_recurring'.DIRECTORY_SEPARATOR.'OR_'.$this->file_time.'.md', $string."\r\n");
+            file_put_contents(Storage::path('order_recurring'.DIRECTORY_SEPARATOR.'R_'.$this->file_time.'.md'), $string."\r\n\r\n", FILE_USE_INCLUDE_PATH | FILE_APPEND );
 
     }
 
@@ -761,18 +742,40 @@ cancel_bookings[]=array(
             ]);
             $deliveryask = DB::table('deliveryask')->where('id', '=', $deliveryask_id)->first();
 
+
+
             $infoOrder_id = DB::table('infoOrder')->insertGetId([
                 "DateDeliveryAsk" => $DELIVERYDATE,
+                "deliverymethod"=>'home_delivery',
                 "DatePickup" => $PICKUPDATE,
                 "PickupID" => $pickup->PickupID,
                 "DeliveryaskID" => $deliveryask->DeliveryaskID,
                 "CustomerID" => $customer->CustomerID,
                 "created_at" => date('Y-m-d H:i:s'),
                 "updated_at" => date('Y-m-d H:i:s'),
-                "Status" => 'RECURRING',
-                "deliverymethod"=>"recurring",
+                "Status" => 'RECURRING'
             ]);
             $this->l("New Order created: infoOrder_id `$infoOrder_id` with PickupID `$pickup->PickupID` and DeliveryaskID `$deliveryask->DeliveryaskID` ");
+            //find list subs and create infoOrder for each of them
+            $subs=DB::table('infoCustomer')->select('CustomerID')->where('CustomerIDMaster','=',$customer->CustomerID)->get();
+            foreach($subs as $sub){
+                
+            $infoOrder_id = DB::table('infoOrder')->insertGetId([
+                "DateDeliveryAsk" => $DELIVERYDATE,
+                "deliverymethod"=>'home_delivery',
+                "DatePickup" => $PICKUPDATE,
+                "CustomerID" => $sub->CustomerID,
+                "created_at" => date('Y-m-d H:i:s'),
+                "updated_at" => date('Y-m-d H:i:s'),
+                "Status" => 'RECURRING'
+            ]);
+            $this->l("New Sub Order Recurring created: infoOrder_id `$infoOrder_id` with customerID ` $sub->CustomerID`. CustomerIDMaster is  `$customer->CustomerID` ");
+            }
+            $user=Auth::user();// when using cron no user is logged it
+            Customer::logBookingHistory($pickup_id,$infoOrder_id,$customer->id,$user!=null?Auth::user()->id:0,'recurring');
+            Customer::logBookingHistory($deliveryask_id,$infoOrder_id,$customer->id,$user!=null?Auth::user()->id:0,'recurring');
+
+           
 
     }
 

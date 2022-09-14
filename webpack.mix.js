@@ -21,4 +21,11 @@ mix.webpackConfig ({
 })
 mix.js('resources/js/app.js', 'public/js')
     // .sass('resources/css/app.scss', 'public/css').vue();
-    .sass('resources/css/app.scss', 'public/css').vue();
+    .sass('resources/css/app.scss', 'public/css').vue().browserSync({
+        proxy:'http://blanc2.local',
+        files: [
+            'resources/views/**/*.php',
+            'public/js/**/*.js',
+            'public/css/**/*.css'
+        ]
+    }).version();;
