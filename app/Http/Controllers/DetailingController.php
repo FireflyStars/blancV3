@@ -1107,16 +1107,19 @@ class DetailingController extends Controller
                 if($order->deliverymethod=='home_delivery'){
                     $pickup = DB::table('pickup')->where('order_id',$order->id)->where('status','NEW')->first();
 
+                    $booking_details['pickup_date'] = '';
+                    $booking_details['pickup_day'] = '';
+                    $booking_details['pickup_time'] = '';
+
                     if($pickup){
                         $pickup_stamp = strtotime($pickup->date);
                         $pickup_day_index = date('w',$pickup_stamp);
                         $pickup_slot = Tranche::getSlotFromTranche($pickup->trancheFrom,$pickup->trancheto);
+
+                        $booking_details['pickup_date'] = date('d/m',$pickup_stamp);
+                        $booking_details['pickup_day'] = $days[$pickup_day_index];
+                        $booking_details['pickup_time'] = $tranches[$pickup_slot];
                     }
-
-
-                    $booking_details['pickup_date'] = date('d/m',$pickup_stamp);
-                    $booking_details['pickup_day'] = $days[$pickup_day_index];
-                    $booking_details['pickup_time'] = $tranches[$pickup_slot];
 
                 }
             }
