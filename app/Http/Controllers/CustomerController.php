@@ -999,10 +999,10 @@ class CustomerController extends Controller
                     ->leftJoin('InfoCustomerPreference', 'InfoCustomerPreference.CustomerID', '=', 'infoCustomer.CustomerID')
                     ->select('Name as name', 'EmailAddress as email', 'Phone as phone',
                         DB::raw('IF(btob = 0, "B2C", "B2B") as cust_type'),
-                        'infoCustomer.TypeDelivery as location', 'infoCustomer.CustomerNotes as notes', 'infoCustomer.id', 'infoCustomer.CustomerID',
+                        'infoCustomer.TypeDelivery as location', 'infoCustomer.CustomerNotes as notes', 'infoCustomer.id', 'infoCustomer.CustomerID','infoCustomer.CustomerIDMaster',
                         DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recuring", "Normal") as booking'),
                         DB::raw(
-                            'CASE WHEN infoCustomer.IsMaster = 1 THEN "MAIN"
+                            'CASE WHEN infoCustomer.IsMaster = 1 AND infoCustomer.CustomerIDMaster = "" THEN "MAIN"
                                   WHEN infoCustomer.isMasterAccount = 1 THEN "MASTER"
                                   WHEN infoCustomer.isMaster = 0 AND infoCustomer.CustomerIDMaster <> "" THEN "Sub"
                                   WHEN infoCustomer.isMaster = 0 AND infoCustomer.CustomerIDMaster = "" THEN "Individual"
@@ -1017,6 +1017,15 @@ class CustomerController extends Controller
                     )
                     ->where('infoCustomer.id', $request->customer_id)
                     ->first();
+                    if($customer->account_type == "Sub"){
+                        $company = DB::table('infoCustomer')->select('infoCustomer.CompanyName')->where('infoCustomer.CustomerID','=',$customer->CustomerIDMaster)->first();
+                        $customer->CompanyName = $company->CompanyName;
+                   }
+                   else if($customer->account_type == "Main"){
+                       $company = DB::table('infoCustomer')->select('infoCustomer.CompanyName')->where('infoCustomer.CustomerID','=',$customer->CustomerID)->first();
+                       $customer->CompanyName = $company->CompanyName;
+                   }
+               
         $total = DB::table('infoOrder')->where('CustomerID', $customer->CustomerID)
                     ->select(
                         DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),

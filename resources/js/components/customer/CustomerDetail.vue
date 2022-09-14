@@ -2,28 +2,36 @@
     <div class="container detail-panel" v-if="showCustomerDetail">
         <div class="detail-progressbar" :class="loaderclass"></div>
         <div class="w-100" v-if="CUSTOMER.name != ''">
-            <div class="detail-header position-fixed d-flex align-items-center justify-content-between">
-                <div class="detail-title text-capitalize">
-                    {{ CUSTOMER.name.toLowerCase() }}
-                    <span class="ms-3 cursor-pointer" style="font-size: 12px; line-height: 14px; color: #42A71E; text-decoration: underline;" @click="EditCustomer(CUSTOMER.id)" >View</span>
+            <div class="detail-header position-fixed">
+                <div class = "d-flex align-items-center justify-content-between">
+                    <div class="detail-title text-capitalize">
+                        {{ CUSTOMER.name.toLowerCase() }}
+                        <span class="ms-3 cursor-pointer" style="font-size: 12px; line-height: 14px; color: #42A71E; text-decoration: underline;" @click="EditCustomer(CUSTOMER.id)" >View</span>
+                    </div>
+                    <div class="detail-close-section d-flex align-items-center">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14.2976 16H1.021V8.17017H1.70185V15.3191H13.6167V8.17017H14.2976V16Z" fill="white"/>
+                            <path d="M13.5149 8.61277C12.5202 8.61277 11.7106 7.80358 11.7106 6.80851H12.3915C12.3915 7.42774 12.8953 7.93192 13.5149 7.93192C14.1341 7.93192 14.6383 7.42809 14.6383 6.80851V5.53192L12.0511 0.680851H3.26809L0.680851 5.53192V6.80851C0.680851 7.42774 1.18468 7.93192 1.80426 7.93192C2.42383 7.93192 2.92766 7.42809 2.92766 6.80851H3.60851C3.60851 7.80323 2.79898 8.61277 1.80426 8.61277C0.809532 8.61277 0 7.80323 0 6.80851V5.3617L2.85957 0H12.4596L15.3191 5.3617V6.80851C15.3191 7.80323 14.51 8.61277 13.5149 8.61277Z" fill="white"/>
+                            <path d="M4.73199 8.61285C3.73727 8.61285 2.92773 7.80366 2.92773 6.80859H3.60859C3.60859 7.42783 4.11241 7.932 4.73199 7.932C5.35156 7.932 5.85539 7.42817 5.85539 6.80859H6.53625C6.53625 7.80332 5.72671 8.61285 4.73199 8.61285Z" fill="white"/>
+                            <path d="M7.65972 8.61285C6.665 8.61285 5.85547 7.80366 5.85547 6.80859H6.53632C6.53632 7.42783 7.04015 7.932 7.65972 7.932C8.2793 7.932 8.78313 7.42817 8.78313 6.80859H9.46398C9.46398 7.80332 8.65445 8.61285 7.65972 8.61285Z" fill="white"/>
+                            <path d="M10.587 8.61285C9.59225 8.61285 8.78271 7.80366 8.78271 6.80859H9.46357C9.46357 7.42783 9.96739 7.932 10.587 7.932C11.2062 7.932 11.7104 7.42817 11.7104 6.80859H12.3912C12.3912 7.80332 11.5817 8.61285 10.587 8.61285Z" fill="white"/>
+                            <path d="M12.2555 13.9575H3.06396V7.82983H3.74482V13.2766H11.5746V7.82983H12.2555V13.9575Z" fill="white"/>
+                            <path d="M10.964 11.5038L9.77246 10.3123L9.29103 10.7937L10.4826 11.9852L10.964 11.5038Z" fill="white"/>
+                            <path d="M9.94263 12.1846L7.72998 9.97192L7.24855 10.4534L9.4612 12.666L9.94263 12.1846Z" fill="white"/>
+                        </svg>
+                        <span class="cust-location-name ms-1">{{ CUSTOMER.location == 0 ? '--' : CUSTOMER.location }}</span>
+                        <svg class="detail-close ms-4" width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" @click="close">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M1.78812 0.297179C1.3976 -0.0953162 0.764438 -0.0953162 0.373917 0.297179C-0.0166053 0.689674 -0.0166053 1.32604 0.373916 1.71853L5.58834 6.9593L0.292891 12.2815C-0.0976305 12.674 -0.0976304 13.3104 0.292891 13.7029C0.683413 14.0954 1.31657 14.0954 1.7071 13.7029L7.00254 8.38065L12.293 13.6978C12.6835 14.0903 13.3166 14.0903 13.7072 13.6978C14.0977 13.3053 14.0977 12.6689 13.7072 12.2765L8.41675 6.9593L13.6261 1.72358C14.0167 1.33109 14.0167 0.694726 13.6261 0.302231C13.2356 -0.0902646 12.6025 -0.0902643 12.2119 0.302231L7.00254 5.53795L1.78812 0.297179Z" fill="white"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="detail-close-section d-flex align-items-center">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M14.2976 16H1.021V8.17017H1.70185V15.3191H13.6167V8.17017H14.2976V16Z" fill="white"/>
-                        <path d="M13.5149 8.61277C12.5202 8.61277 11.7106 7.80358 11.7106 6.80851H12.3915C12.3915 7.42774 12.8953 7.93192 13.5149 7.93192C14.1341 7.93192 14.6383 7.42809 14.6383 6.80851V5.53192L12.0511 0.680851H3.26809L0.680851 5.53192V6.80851C0.680851 7.42774 1.18468 7.93192 1.80426 7.93192C2.42383 7.93192 2.92766 7.42809 2.92766 6.80851H3.60851C3.60851 7.80323 2.79898 8.61277 1.80426 8.61277C0.809532 8.61277 0 7.80323 0 6.80851V5.3617L2.85957 0H12.4596L15.3191 5.3617V6.80851C15.3191 7.80323 14.51 8.61277 13.5149 8.61277Z" fill="white"/>
-                        <path d="M4.73199 8.61285C3.73727 8.61285 2.92773 7.80366 2.92773 6.80859H3.60859C3.60859 7.42783 4.11241 7.932 4.73199 7.932C5.35156 7.932 5.85539 7.42817 5.85539 6.80859H6.53625C6.53625 7.80332 5.72671 8.61285 4.73199 8.61285Z" fill="white"/>
-                        <path d="M7.65972 8.61285C6.665 8.61285 5.85547 7.80366 5.85547 6.80859H6.53632C6.53632 7.42783 7.04015 7.932 7.65972 7.932C8.2793 7.932 8.78313 7.42817 8.78313 6.80859H9.46398C9.46398 7.80332 8.65445 8.61285 7.65972 8.61285Z" fill="white"/>
-                        <path d="M10.587 8.61285C9.59225 8.61285 8.78271 7.80366 8.78271 6.80859H9.46357C9.46357 7.42783 9.96739 7.932 10.587 7.932C11.2062 7.932 11.7104 7.42817 11.7104 6.80859H12.3912C12.3912 7.80332 11.5817 8.61285 10.587 8.61285Z" fill="white"/>
-                        <path d="M12.2555 13.9575H3.06396V7.82983H3.74482V13.2766H11.5746V7.82983H12.2555V13.9575Z" fill="white"/>
-                        <path d="M10.964 11.5038L9.77246 10.3123L9.29103 10.7937L10.4826 11.9852L10.964 11.5038Z" fill="white"/>
-                        <path d="M9.94263 12.1846L7.72998 9.97192L7.24855 10.4534L9.4612 12.666L9.94263 12.1846Z" fill="white"/>
-                    </svg>
-                    <span class="cust-location-name ms-1">{{ CUSTOMER.location == 0 ? '--' : CUSTOMER.location }}</span>
-                    <svg class="detail-close ms-4" width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" @click="close">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M1.78812 0.297179C1.3976 -0.0953162 0.764438 -0.0953162 0.373917 0.297179C-0.0166053 0.689674 -0.0166053 1.32604 0.373916 1.71853L5.58834 6.9593L0.292891 12.2815C-0.0976305 12.674 -0.0976304 13.3104 0.292891 13.7029C0.683413 14.0954 1.31657 14.0954 1.7071 13.7029L7.00254 8.38065L12.293 13.6978C12.6835 14.0903 13.3166 14.0903 13.7072 13.6978C14.0977 13.3053 14.0977 12.6689 13.7072 12.2765L8.41675 6.9593L13.6261 1.72358C14.0167 1.33109 14.0167 0.694726 13.6261 0.302231C13.2356 -0.0902646 12.6025 -0.0902643 12.2119 0.302231L7.00254 5.53795L1.78812 0.297179Z" fill="white"/>
-                    </svg>
+                <div class = "mt-1 d-flex align-items-center">
+                        <img  @click="removeLinkedAccount(CUSTOMER.id)" v-if="CUSTOMER.account_type == 'Sub'" src="/images/link.png"/>
+                        <div class="text-type">
+                            {{CUSTOMER.CompanyName}}
+                        </div>
                 </div>
-            </div>
+           </div>
             <div class="detail-body">
                 <div class="private-info d-flex flex-wrap">
                     <div class="private-info-left">
@@ -253,6 +261,22 @@ export default {
                         },
                     });
             }
+             // handler when you unlink sub account from linked accounts
+             const removeLinkedAccount = (id)=>{
+               
+               axios.post('/unlink-Account', {
+                        customer_id: id,
+                    }).then((res)=>{
+                        if(res.data.message == "OK"){    
+                            location.reload();
+                        } else {
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: res.data.error , ttl:5, type:'danger' });
+                        }
+                    }).catch((errors)=>{
+                        console.log(errors)
+                    });  
+                    
+            }
 
         return{
             route,
@@ -268,7 +292,8 @@ export default {
             loaderclass: computed(()=>{
                 return store.getters[`${CUSTOMER_MODULE}${GET_LOADER_CLASS}`];
             }),
-            EditCustomer
+            EditCustomer,
+            removeLinkedAccount
         }
     }
 }
@@ -312,7 +337,7 @@ export default {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
     padding: 0;
     .detail-header{
-        height: 65px;
+        height: 75px;
         background: #47454B;
         padding: 20px 30px;
         width: 684px;
@@ -321,6 +346,16 @@ export default {
             font-size: 20px;
             line-height: 110%;
             color: #FFFFFF;
+        }
+        .text-type{
+            color: #FFFFFF;
+            text-overflow: ellipsis;
+            max-width: 400px;
+            overflow: hidden;
+            white-space: nowrap;
+            padding-left: 3px;
+            font-weight: 300;
+            line-height: 19.8px;
         }
         .cust-location-name{
             font-size: 16px;

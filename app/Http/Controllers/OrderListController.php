@@ -948,7 +948,7 @@ class OrderListController extends Controller
         $order=DB::table('infoOrder')
             ->select(['infoOrder.id AS order_id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoOrder.TypeDelivery','infoCustomer.CompanyName','infoCustomer.id' , 'infoOrder.DeliveryaskID' , 'infoOrder.PickupID' , 
             'infoOrder.DateDeliveryAsk','infoOrder.DatePickup' , 'infoCustomer.Phone','infoCustomer.CustomerID','booking_histories.user_id',
-            'booking_histories.status','infoCustomer.OnAccount',
+            'booking_histories.status','infoCustomer.OnAccount','infoCustomer.CustomerIDMaster',
             DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),
             DB::raw('IF(infoOrder.DatePickup ="2020-01-01" OR infoOrder.DatePickup ="2000-01-01" OR infoOrder.DatePickup ="","--",DATE_FORMAT(infoOrder.DatePickup , " %W %d %M %Y")) as DatePickup '),
             DB::raw('IF(pickup.date ="2020-01-01" OR pickup.date ="2000-01-01" OR pickup.date ="","--",DATE_FORMAT(pickup.date , " %W %d %M %Y")) as PickupDateNew '),
@@ -1037,6 +1037,15 @@ class OrderListController extends Controller
             ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
             ->leftJoin('booking_histories', 'booking_histories.order_id', '=', 'infoOrder.id')
             ->where('infoOrder.id','=',$infoOrder_id)->first();
+
+            if($order->account_type == "Sub"){
+                 $company = DB::table('infoCustomer')->select('infoCustomer.CompanyName')->where('infoCustomer.CustomerID','=',$order->CustomerIDMaster)->first();
+                 $order->CompanyName = $company->CompanyName;
+            }
+            else if($order->account_type == "Main"){
+                $company = DB::table('infoCustomer')->select('infoCustomer.CompanyName')->where('infoCustomer.CustomerID','=',$order->CustomerID)->first();
+                $order->CompanyName = $company->CompanyName;
+            }
 
             $Booking_histories=DB::table('booking_histories')->select(['booking_histories.user_id' , 'users.name' ,'booking_histories.created_at',
             DB::raw('IF(booking_histories.created_at="2020-01-01" OR booking_histories.created_at="2000-01-01" OR booking_histories.created_at="","--",DATE_FORMAT(booking_histories.created_at, "%a %d/%m/%Y")) as CreatedDate'),
