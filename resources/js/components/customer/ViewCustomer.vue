@@ -1938,7 +1938,7 @@
             function saveDeliveryInstructions(){
                 let err = [];
 
-                if(form.value.altTypeDelivery==''){
+                /*if(form.value.altTypeDelivery==''){
                     err.push("Please enter type delivery");
                 }
 
@@ -1952,7 +1952,7 @@
 
                 if(form.value.altPhoneNumber==''){
                     err.push("Please enter contact phone number");
-                }
+                }*/
 
                 if(err.length > 0){
                     err.forEach(function(err_msg,index){
