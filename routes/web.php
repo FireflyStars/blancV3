@@ -846,6 +846,8 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
         if($status=='succeeded' && $amount_to_pay <=0){
             $updated = DB::table("infoOrder")->where('id',$order_id)->update(['Paid'=>1]);
+
+            DB::table('infoInvoice')->where('OrderID',$order->OrderID)->update(['Paid'=>1]);
         }
 
         echo json_encode(['payment_id'=>$payment_id]);
