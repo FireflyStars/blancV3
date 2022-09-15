@@ -43,7 +43,7 @@
     import {ref,computed,watch} from 'vue'
     import {useStore} from 'vuex';
     import {featureUnavailable} from "../helpers/helpers";
-    import {formatPrice,formatPhone} from '../helpers/helpers';
+    import {formatPrice} from '../helpers/helpers';
     import {NEWORDER_GET_CUSTOMER, NEWORDER_MODULE, NEWORDER_PRELOAD_ORDER_GET} from "../../store/types/types";
 import { useRouter } from 'vue-router';
     export default {
@@ -83,6 +83,19 @@ import { useRouter } from 'vue-router';
                 });
             }
 
+            const formatPhone = (phoneString)=>{
+            if(phoneString != ""){
+                var phone = phoneString.split('"')[1];
+                if(phone.split("|").length > 1){
+                    var area_code = phone.split("|")[0];
+                    var number = phone.split("|")[1];
+                    return '+' + area_code.replace(/\D/g, '') + ' ' + number.replace(/ /g, '').replace(/(\d{3})(\d{3})(\d{3,4})/, "$1 $2 $3");
+                }else
+                    return phone.replace(/\D/g, '').replace(/(\d{2})(\d{3})(\d{3})(\d{3,4})/, "+$1 $2 $3 $3");
+            }else{
+                return '--';
+            }
+        }  
             return{
                 featureUnavailable,
                 CustomerID,
