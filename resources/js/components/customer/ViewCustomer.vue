@@ -728,7 +728,7 @@
                                                     <div class="col-8">
                                                         <h4 class="sub-title col-12">Recurring</h4>
                                                     </div>
-                                                    <div class="col-3">
+                                                    <div class="col-3 d-flex justofy-content-end">
                                                         <switch-btn class="ms-auto" v-model="form.deliveryByday"></switch-btn>
                                                     </div>
                                                 </div>
@@ -768,21 +768,21 @@
                                             </div>
                                                 </transition>
                                                  <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
-                                            <div class="p-3 " v-if="viewRecurring == true && form.deliveryByday == '1'">
+                                            <div class="" style="padding:2rem;" v-if="viewRecurring == true && form.deliveryByday == '1'">
                                                 <h4 class="sub-title col-12">{{form.firstName!=null&&form.firstName.trim()!=''?`${form.firstName}’s `:''}}recurring booking is <span class="primary-color"><span v-if="form.pickupSlots.length==1">once</span><span v-if="form.pickupSlots.length==2">twice</span><span v-if="form.pickupSlots.length==3">three times</span><span v-if="form.pickupSlots.length==4">four times</span><span v-if="form.pickupSlots.length==5">five times</span><span v-if="form.pickupSlots.length==6">six times</span> week</span></h4>
                                                 <div class="item-block d-flex py-3 px-5 border-bottom bg-color" :class="{ 'border-bottom': (index < form.pickupSlots.length-1) }" v-for="(slot, index) in form.pickupSlots" :key="index">
                                                     <div class="col-6 fw-bold"> {{ slot.day }} </div>
                                                     <div class="col-6 fw-bold text-end"> {{  getSlotDisplayByValue(slot.key, slot.value) }} </div>
                                                 </div>
                                                 <div class="w-100 mt-3" v-if="pauseRecurring">
-                                                    <p class="fw-bold">The RECURRING BOOKING IN PAUSE : {{ form.pauseDateFrom }} TO {{ form.pauseDateTo }}</p>
+                                                    <p class="fw-bold">{{form.pauseDateFrom!=''?`Paused from: ${fdate(form.pauseDateFrom)}`:'' }} {{form.pauseDateFrom==''&&form.pauseDateTo!=''?`Paused till: ${fdate(form.pauseDateTo)}`:form.pauseDateTo!=''?`to ${fdate(form.pauseDateTo)}`:``}}</p>
                                                 </div>
                                                 <div class="d-flex gap-3 mt-3 justify-content-end">
                                                      <div class="">
                                                           <button class="btn  btn-outline-danger" @click="form.deliveryByday=0">Cancel</button>
                                                      </div>
                                                     <div class="">
-                                                    <button class="btn btn-dark each-save-btn me-3" v-if="!pauseRecurring" @click="openPauseRecurringModal">Pause</button>
+                                                    <button class="btn btn-dark each-save-btn " v-if="!pauseRecurring" @click="openPauseRecurringModal">Pause</button>
                                                     <button class="btn  btn-dark each-save-btn" v-else @click="unpauseRecurringFunc">Unpause</button>
                                                     </div>
                                                 </div>
@@ -1315,7 +1315,7 @@
                     form.value.pauseDateTo = res.data.customer.pauseDateTo ?? "";
                     form.value.pauseDateFrom = res.data.customer.pauseDateFrom ?? "";
                     if(form.value.deliveryByday == '1'){
-                        if(form.value.pauseDateTo != ''){
+                        if(form.value.pauseDateFrom != '' || form.value.pauseDateTo != ''){
                             pauseRecurring.value = true;
                         }
                         pickupDays.value = res.data.available_days;
@@ -2134,6 +2134,7 @@
                 axios.post('/unpause-customer-recurring',{
                     customerId: route.params.customer_id,
                 }).then((res)=>{
+                    console.log('unpausing..');
                     if(res.data){
                         pauseRecurring.value = false;
                         form.value.pauseDateTo = '';
@@ -2151,7 +2152,14 @@
                 });
             }
 
+            const fdate=(Ymd)=>{
+                let datepart=Ymd.split('-');
+                const date = new Date(datepart[0], datepart[1]-1, datepart[2]);  // 2009-11-10
+                const month = date.toLocaleString('default', { month: 'long' });
+                return `${parseInt(datepart[2])} ${month} ${datepart[0]}`;
+            }
             return {
+                fdate,
                 form,
                 step,
                 contact_details_edit,

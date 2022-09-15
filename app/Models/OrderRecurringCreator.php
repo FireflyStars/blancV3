@@ -764,6 +764,8 @@ class OrderRecurringCreator
                 "DateDeliveryAsk" => $DELIVERYDATE,
                 "deliverymethod"=>'home_delivery',
                 "DatePickup" => $PICKUPDATE,
+                "PickupID" => $pickup->PickupID,
+                "DeliveryaskID" => $deliveryask->DeliveryaskID,
                 "CustomerID" => $sub->CustomerID,
                 "created_at" => date('Y-m-d H:i:s'),
                 "updated_at" => date('Y-m-d H:i:s'),
