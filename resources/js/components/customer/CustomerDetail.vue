@@ -206,7 +206,7 @@ export default {
             router.push({
                     name:'LandingPage',
                     params: {
-                       customerId,
+                        customerId:customerId,
                     },
                 })
             // router.push({

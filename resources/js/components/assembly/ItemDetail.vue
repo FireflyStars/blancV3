@@ -55,7 +55,7 @@
                 <div class="item-detail-fabric-size">
                     <div class="item-detail-variant-fabric d-flex">
                         <p class="w-50 m-0">Fabric</p>
-                        <p class="w-50 m-0">{{ ITEM.breif_info.fabric }}</p>
+                        <p class="w-50 m-0">{{ ITEM.breif_info.fabrics}}</p>
                     </div>
                     <div class="item-detail-variant-size mt-2 d-flex">
                         <p class="w-50 m-0">Size</p>
