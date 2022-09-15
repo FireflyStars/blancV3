@@ -453,7 +453,7 @@
                                                     </div>
                                                     -->
                                                     <div class="form-group">
-                                                        <input type="text" class="form-control w-auto" v-model="form.discountLevel" @keyup="setCustomerDiscount"/>
+                                                        <input :disabled="current_user && current_user.role_id != 1"  type="text" class="form-control w-auto" v-model="form.discountLevel" @keyup="setCustomerDiscount"/>
                                                     </div>
                                                 </div>
                                             </div>
@@ -470,7 +470,7 @@
                                                     <label for="add_credit">Add credit</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text fw-bold">£</span>
-                                                        <input type="text" v-model="credit_to_add"  class="form-control" id="add_credit" placeholder="0.00" @keyup="addCustomerCredit">
+                                                        <input :disabled="current_user && current_user.role_id != 1" type="text" v-model="credit_to_add"  class="form-control" id="add_credit" placeholder="0.00" @keyup="addCustomerCredit">
                                                     </div>
                                                 </div>
                                             </div>
@@ -2645,5 +2645,8 @@ input.error:focus{
     font:bold 22px "Gilroy";
     color:#F4003D;
     background:#FFEFED;
+}
+.form-control:disabled{
+    background-color: #F8F8F8;
 }
 </style>

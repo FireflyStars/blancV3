@@ -409,23 +409,27 @@
                                     </div>
                                 </transition> -->
                                 <div class="discount-credit-panel" v-if="form.accountType !='Master'">
-                                    <h3 class="title d-flex">Discounts <CheckBox v-model="form.applyDiscountToSub" class="ms-5"><slot>Apply to sub-accounts</slot></CheckBox></h3>
+                                    <h3 class="title d-flex">Discounts 
+                                        <!-- <CheckBox v-model="form.applyDiscountToSub" class="ms-5"><slot>Apply to sub-accounts</slot></CheckBox> -->
+                                    </h3>
                                     <div class="page-section">
                                         <div class="form-group mb-0 payment-method">
                                             <label for="discount_credit">Discount Level</label>
                                             <div class="input-group">
                                                 <span class="input-group-text fw-bold">%</span>
-                                                <input type="text" v-model="form.discountLevel" class="form-control" placeholder="0.00">
+                                                <input :disabled="current_user && current_user.role_id != 1" type="text" v-model="form.discountLevel" class="form-control" placeholder="0.00">
                                             </div>
                                         </div>
                                     </div>
-                                    <h3 class="title d-flex">Credits <CheckBox v-model="form.applyCreditToSub" class="ms-5"><slot>Apply to sub-accounts</slot></CheckBox></h3>
+                                    <h3 class="title d-flex">Credits 
+                                        <!-- <CheckBox v-model="form.applyCreditToSub" class="ms-5"><slot>Apply to sub-accounts</slot></CheckBox> -->
+                                    </h3>
                                     <div class="page-section">
                                         <div class="form-group payment-method">
                                             <label for="discount_credit">Add credit</label>
                                             <div class="input-group">
                                                 <span class="input-group-text fw-bold">£</span>
-                                                <input type="text" v-model="form.addCredit" class="form-control" placeholder="0.00">
+                                                <input :disabled="current_user && current_user.role_id != 1" type="text" v-model="form.addCredit" class="form-control" placeholder="0.00">  
                                             </div>
                                         </div>
                                     </div>
@@ -892,6 +896,7 @@ import axios from 'axios';
             // const pickupAvailableDays = ref([]);
             const pickupDays = ref([]);
             const timeslots = ref([]);
+            const current_user = ref({});
 
             const addPickupDay = (index)=>{
                 let pickupDay = pickupDays.value[index];
@@ -952,6 +957,14 @@ import axios from 'axios';
             const cardErrors = ref({});
 
             onMounted(()=>{
+                axios.post('/get-current-user',{})
+                    .then((res)=>{
+                        current_user.value = res.data.user;
+                    }).catch((err)=>{
+
+                    }).finally(()=>{
+
+                });
                 axios.post('/get-customer-preferences').then((res)=>{
                     Object.keys(res.data).forEach((item)=>{
                         form.value.preferences.push({
@@ -1556,7 +1569,8 @@ import axios from 'axios';
                 selectedSubAccount,
                 checkCard,
                 formatPhone,
-                show_model_SubAccount
+                show_model_SubAccount,
+                current_user
             }
         },
         data(){
@@ -1971,5 +1985,8 @@ input.error:focus{
 .pickup-day.active{
     color: white;
     background: #42A71E;
+}
+.form-control:disabled{
+    background-color: #F8F8F8;
 }
 </style>
