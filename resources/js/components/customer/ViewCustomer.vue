@@ -722,7 +722,7 @@
                                     </div>
                                     <div class="blocks">
                                         <h3 class="title mb-3">Recurring Booking</h3>
-                                        <div class="page-section">
+                                        <div class="page-section" >
                                             <div class="item-block py-3 border-bottom">
                                                 <div class="d-flex justify-content-between">
                                                     <div class="col-8">
@@ -733,7 +733,8 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="set-booking-pannel"> <!--  v-if="viewRecurring == false" -->
+                                                <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
+                                            <div class="set-booking-pannel " v-if="viewRecurring == false"> <!--  v-if="viewRecurring == false" -->
                                                 <div class="item-block p-3 border-bottom" v-if="form.deliveryByday == '1'">
                                                     <h4 class="sub-title col-12">Pickup & delivery days</h4>
                                                     <p>Please pick number of days we will visit the customer, with matching slots.</p>
@@ -765,8 +766,10 @@
                                                     <button class="btn btn-success each-save-btn" @click="saveRecurring">Save Recurring</button>
                                                 </div>
                                             </div>
-                                            <div class="p-3" v-if="viewRecurring == true && form.deliveryByday == '1'">
-                                                <h4 class="sub-title col-12">Recurring booking is <span class="primary-color">{{ form.pickupSlots.length }} a week</span></h4>
+                                                </transition>
+                                                 <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
+                                            <div class="p-3 " v-if="viewRecurring == true && form.deliveryByday == '1'">
+                                                <h4 class="sub-title col-12">{{form.firstName!=null&&form.firstName.trim()!=''?`${form.firstName}’s `:''}}recurring booking is <span class="primary-color"><span v-if="form.pickupSlots.length==1">once</span><span v-if="form.pickupSlots.length==2">twice</span><span v-if="form.pickupSlots.length==3">three times</span><span v-if="form.pickupSlots.length==4">four times</span><span v-if="form.pickupSlots.length==5">five times</span><span v-if="form.pickupSlots.length==6">six times</span> week</span></h4>
                                                 <div class="item-block d-flex py-3 px-5 border-bottom bg-color" :class="{ 'border-bottom': (index < form.pickupSlots.length-1) }" v-for="(slot, index) in form.pickupSlots" :key="index">
                                                     <div class="col-6 fw-bold"> {{ slot.day }} </div>
                                                     <div class="col-6 fw-bold text-end"> {{  getSlotDisplayByValue(slot.key, slot.value) }} </div>
@@ -774,11 +777,17 @@
                                                 <div class="w-100 mt-3" v-if="pauseRecurring">
                                                     <p class="fw-bold">The RECURRING BOOKING IN PAUSE : {{ form.pauseDateFrom }} TO {{ form.pauseDateTo }}</p>
                                                 </div>
-                                                <div class="w-100 mt-3">
-                                                    <button class="btn btn-success each-save-btn me-3" v-if="!pauseRecurring" @click="openPauseRecurringModal">Pause</button>
-                                                    <button class="btn btn-success each-save-btn" v-else @click="unpauseRecurringFunc">Unpause</button>
+                                                <div class="d-flex gap-3 mt-3 justify-content-end">
+                                                     <div class="">
+                                                          <button class="btn  btn-outline-danger" @click="form.deliveryByday=0">Cancel</button>
+                                                     </div>
+                                                    <div class="">
+                                                    <button class="btn btn-dark each-save-btn me-3" v-if="!pauseRecurring" @click="openPauseRecurringModal">Pause</button>
+                                                    <button class="btn  btn-dark each-save-btn" v-else @click="unpauseRecurringFunc">Unpause</button>
+                                                    </div>
                                                 </div>
                                             </div>
+                                                 </transition>
                                         </div>
                                     </div>
                                     <div class="blocks">

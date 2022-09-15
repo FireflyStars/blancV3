@@ -2058,6 +2058,8 @@ class CustomerController extends Controller
             'PauseDateTo'   => $request->pauseDateTo,
             'PauseDateFrom' => $request->pauseDateFrom,
         ]);
+        $infocustomer = DB::table('infoCustomer')->where('id',$request->customerId)->first();
+        OrderRecurringCreator::processRecurringOrders('PAUSE RECCURING BOOKING',$infocustomer->CustomerID);
         return response()->json($success);
     }
 
@@ -2069,6 +2071,8 @@ class CustomerController extends Controller
             'PauseDateTo'=> null,
             'PauseDateFrom'=> null,
         ]);
+        $infocustomer = DB::table('infoCustomer')->where('id',$request->customerId)->first();
+        OrderRecurringCreator::processRecurringOrders('UNPAUSE RECCURING BOOKING',$infocustomer->CustomerID);
         return response()->json($success);
     }
     public function getCustomerOrderDetails(Request $request){
