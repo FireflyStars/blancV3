@@ -1254,7 +1254,7 @@ class OrderListController extends Controller
                       ->where('infoitems.id', $request->item_id)
                       ->select(
                           'infoitems.id', 'infoitems.ItemTrackingKey as item_key', 'infoitems.Colors as colors','infoInvoice.InvoiceID', 
-                          'infoitems.Fabrics as fabrics', 'infoitems.Patterns as patterns', 'infoitems.Size as size',
+                          'infoitems.Fabrics as fabrics', 'infoitems.Patterns as patterns', 'infoitems.Size as size','infoitems.brand',
                           'infoitems.StoreName as store_name', 'infoitems.store', 'infoitems.damage', 'infoitems.id_items',
                           'infoitems.typeitem as item_name', 'TypePost.bg_color as location_color', 'postes.nom as location', 'TypePost.circle_color', 'TypePost.process',
                           'infoCustomer.Name as customer_name', 'infoCustomer.CustomerIDMaster', 'infoCustomer.CustomerIDMasterAccount',
