@@ -156,7 +156,7 @@
                                             <div id="select_div" v-if="!isRecurring">
                                                 <label>
                                                 <select id="method_select" v-model="deliverymethod">
-                                                    <option selected style="font-family: Verdana">Choose a method</option>
+                                                    <option selected style="font-family: Verdana" value="">Choose a method</option>
                                                     <option v-for="(method,index) in deliverymethods" :value="method.value" :disabled="method.disabled" style="font-family: Verdana;">
                                                         {{method.display}}
                                                     </option>
@@ -784,6 +784,8 @@ import axios from 'axios';
                     }
 
                     isc_pickup.value = collectionDate;
+
+                    isc_pickup_timeslot.value = 11;
                 }
             });
 
