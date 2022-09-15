@@ -746,7 +746,9 @@ class OrderController extends Controller
                         $booking = $deliveryask;
                     }
                 }
-                $promised_date = $booking->date;
+                if($booking){
+                    $promised_date = $booking->date;
+                }
             }
 
 
