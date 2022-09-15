@@ -8,7 +8,7 @@
  <transition
             enter-active-class="animate__animated animate__fadeIn"
  >
- <div v-if="showSearch" class="search">
+ <div v-if="showSearch" class="search" @click='HideSearch($event)'>
    <section class="nodata p-2" v-if ="Customer.length == 0 && CustomerEmails.length == 0 && CustomerOrders.length == 0 && ListItems.length == 0">
             <p v-if="!loader_running">we couldn't find any customers.</p>
   </section>
@@ -241,8 +241,14 @@ export default({
          showbutton.value = false;
          show_loader.value= false;
        }
+       function HideSearch(event){
+        event.target.classList.forEach((element)=>{
+          if(element == "search" ){
+            clearSearch()
+          }
+        })
+       }
          function selectrow(id,status,colname){
-               console.log(id,colname);
 
                showSearch.value = false;
                show_loader.value= false;
@@ -434,7 +440,8 @@ export default({
                 goCustomerView,
                 displayAll,
                 filterDef,
-                selectItem
+                selectItem,
+                HideSearch
 
             }
         }
