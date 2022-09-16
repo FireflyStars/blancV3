@@ -236,7 +236,7 @@
                                                 <span class="question_mark">?</span>
                                                 &#163;0.00
                                             </span>
-                                            <span v-else-if="cleaning_price_type=='PriceNow'"></span>
+                                            <span v-else-if="cleaning_price_type=='PriceNow'">&#163;{{detailingitem.dry_cleaning_price.toFixed(2)}}</span>
                                             <span v-else>&#163;{{grouped_cleaning_price[gpService]}}</span>
                                         </span>
                                     </div>
@@ -247,7 +247,7 @@
                                         <span v-if="detailingitem.tailoring_price_type=='Quote'">
                                             <span class="question_mark">?</span>&#163;0.00
                                         </span>
-                                        <span v-else-if="detailingitem.tailoring_price_type=='PriceNow'"></span>
+                                        <span v-else-if="detailingitem.tailoring_price_type=='PriceNow'">&#163;{{detailingitem.tailoring_price.toFixed(2)}}</span>
                                         <span v-else>&#163;{{tailoring_price}}</span>
                                     </div>
                                 </div>

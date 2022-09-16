@@ -908,7 +908,7 @@ import axios from 'axios';
                     available_cust_slots.value = current_customer.available_slots;
 
 
-                    if(current_customer.current_user.store==1){
+                    if(current_customer.current_user.store==1 && typeof current_customer.main_account=="undefined"){
                         deliverymethod.value = 'home_delivery';
                     }
                     if(current_customer.current_user.store >1){

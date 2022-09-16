@@ -191,7 +191,7 @@ import {
 
 export default {
     name: "DetailingServices",
-    emits:['save-item-services','go-to-step'],
+    emits:['save-item-services','go-to-step','init-detailing'],
     components: {Modal},
     props: {
         detailingitem: {},
@@ -672,6 +672,9 @@ export default {
                         price_now_type.value = '';
                         closePriceNowModal();
 
+                        context.emit('init-detailing');
+
+/*
                         context.emit("save-item-services", {
                             step:11,
                             detailingitem_id: props.detailingitem.id,
@@ -681,7 +684,7 @@ export default {
                             tailoring_price_type:sel_tailoring_price_type.value,
                             montant:montant,
                         });
-
+*/
 
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
                             message: 'Item price updated',

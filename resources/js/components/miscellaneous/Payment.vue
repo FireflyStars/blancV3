@@ -1,5 +1,5 @@
 <template>
-    <div class="col-12" v-if="!editcard && cust.bycard==1 && custcard" id="has_card">
+    <div class="col-12" v-if="!editcard && cust.bycard==1 && custcard && cust.OnAccount==0" id="has_card">
         <div class="row mt-3">
            <div class="col-5 payment-subtitle mb-2">Payment type</div>
            <div class="col-7 payment-subtitle mb-2">Card details</div>
@@ -9,7 +9,8 @@
             <div class="col-7 payment-text"><span id="cardnum"><img src="/images/mastercard.svg"/>{{custcard.cardNumber}}</span></div>
         </div>
     </div>
-    <div class="col-12" v-else-if="cust.bycard==0">
+<!--
+    <div class="col-12" v-else-if="cust.OnAccount==1">
         <div class="row my-3">
            <div class="col-5">
                 <div class="payment-subtitle mb-2">Payment type</div>
@@ -21,7 +22,8 @@
            </div>
         </div>
     </div>
-     <div class="col-12" v-else-if="(cust.bycard==1 && !custcard) || editcard">
+-->
+     <div class="col-12" v-else-if="cust.OnAccount==0 && (cust.bycard==1 && !custcard) || editcard">
             <div class="row" id="credit_card_div">
             <div class="credit-card col-12">
                 <div class="row mb-3">

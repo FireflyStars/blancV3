@@ -1005,7 +1005,12 @@ class DetailingController extends Controller
 
         if($order){
 
+            $master_account = false;
+
             $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+            if($cust->CustomerIDMaster!=''){
+                $master_account = DB::table('infoCustomer')->where('CustomerID',$cust->CustomerIDMaster)->first();
+            }
 
             $cust->phone_num = [];
             if($cust){
@@ -1020,6 +1025,7 @@ class DetailingController extends Controller
 
                     $master_cust = DB::table('infoCustomer')->where('CustomerID',$cust->CustomerIDMaster)->first();
                     $cust->pay_name = $master_cust->Name;
+                    $cust->OnAccount = $master_cust->OnAccount;
                 }
 
                 $cust_card = DB::table('cards')->where('CustomerID',$cust_id)->where('Actif',1)->first();
@@ -1076,11 +1082,22 @@ class DetailingController extends Controller
 
                 $delivery_ask = DB::table('deliveryask')->where('order_id',$order->id)->where('status','NEW')->first();
                 $booking_hist = DB::table('booking_histories')
-                    ->select('users.name as user','booking_histories.created_at')
+                    ->select('users.name as user','booking_histories.created_at','booking_histories.booking_id')
                     ->join('users','booking_histories.user_id','users.id')
                     ->where('booking_histories.order_id',$order->id)->where('booking_histories.status','NEW')
                     ->latest('booking_histories.id')
                     ->first();
+
+                if($master_account && $order->deliverymethod=='delivery_only'){
+                    if($order->DeliveryaskID!=''){
+                        $delivery_ask = DB::table('deliveryask')->where('DeliveryaskID',$order->DeliveryaskID)->first();
+                    }
+
+                    if($order->PickupID !=''){
+                        $delivery_ask = DB::table('pickup')->where('PickupID',$order->PickupID)->first();
+                    }
+
+                }
 
                 if($delivery_ask && $booking_hist){
 
@@ -1122,6 +1139,8 @@ class DetailingController extends Controller
                     }
 
                 }
+
+
             }
 
             if($order->deliverymethod=='recurring'){
@@ -1489,11 +1508,16 @@ class DetailingController extends Controller
 
         $order_without_upcharges = $total_price;
         $order_addon = 0;
+        $failed_delivery_price = 0;
 
         $upcharges = DB::table('order_upcharges')->where('order_id',$order_id)->get();
         if(count($upcharges) > 0){
             foreach($upcharges as $k=>$v){
-                $order_addon += $v->amount;
+                if($v->upcharges_id==3){
+                    $failed_delivery_price = $v->amount;
+                }else{
+                    $order_addon += $v->amount;
+                }
             }
         }
 
@@ -1529,7 +1553,10 @@ class DetailingController extends Controller
         $total_exc_vat = number_format(($total_with_discount/1.2),2);
         $vat = $total_inc_vat - $total_exc_vat;
 
+
+
         $total_with_discount = $total_inc_vat;
+        $price_plus_delivery = $total_inc_vat + $failed_delivery_price;
 
         $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
 
@@ -1665,6 +1692,9 @@ class DetailingController extends Controller
             'order_upcharges'=>$order_upcharges,
             'order_vouchers'=>$order_vouchers,
             'discount_from_voucher'=>$discount_from_voucher,
+            'master_account'=>$master_account,
+            'failed_delivery_price'=>number_format($failed_delivery_price,2),
+            'price_plus_delivery'=>number_format($price_plus_delivery,2),
         ]);
     }
 
