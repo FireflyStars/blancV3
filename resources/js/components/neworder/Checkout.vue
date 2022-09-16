@@ -193,10 +193,6 @@
 
                                         </div>
 
-                                        <div class="row px-0 mt-2 sub-total-text" v-if="upcharges > 0">
-                                            <div class="col-9">Upcharges</div>
-                                            <div class="col-3 text-align-right">+&#163;{{upcharges.toFixed(2)}}</div>
-                                        </div>
 
                                         <div class="row px-0 mt-2 sub-total-text">
                                             <div class="col-4">Account Discount</div>
@@ -213,9 +209,20 @@
                                             <div class="col-3 text-align-right">-&#163;{{discount_from_voucher}}</div>
                                         </div>
 
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="upcharges > 0">
+                                            <div class="col-9">Upcharges</div>
+                                            <div class="col-3 text-align-right">+&#163;{{upcharges.toFixed(2)}}</div>
+                                        </div>
+
+
+
                                         <div class="row px-0 mt-3 pb-4 total-text">
                                             <div class="col-9">Total</div>
-                                            <div class="col-3 text-align-right">&#163;{{total_inc_vat}}</div>
+                                            <div class="col-3 text-align-right">&#163;{{price_plus_delivery}}</div><!--total_inc_vat-->
+                                        </div>
+                                         <div class="row px-0 mt-2 sub-total-text" v-if="failed_delivery_price > 0">
+                                            <div class="col-9">Failed delivery</div>
+                                            <div class="col-3 text-align-right">+&#163;{{failed_delivery_price}}</div>
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text">
                                             <div class="col-9">Total (excl. VAT)</div>
@@ -579,11 +586,11 @@
                                                                         <div class="col-5 cust_credit_value text-white">&#163;{{cust_credit.toFixed(2)}}</div>
                                                                     </div>
                                                                     <div class="row cust_credit_detail">
-                                                                        <div class="col-7 cust_credit_desc">Customer payment status</div>
-                                                                        <div class="col-5 cust_credit_value text-white">Pay as you go</div>
+                                                                        <div class="col-7 cust_credit_desc">Customer payment profile</div>
+                                                                        <div class="col-5 cust_credit_value text-white"><span v-if="cust.OnAccount==1">On Account</span><span v-else>Pay as you go</span></div>
                                                                     </div>
                                                                 </div>
-                                                                <div class="col-12 payment_title">
+                                                                <div class="col-12 payment_title" :class="{'d-none':cust.OnAccount==1}">
                                                                     <span class="sidebar_title text-white mb-3">Card details <a href="javascript:void(0)" v-if="custcard" id="editcard" @click="setEditCard" :class="{'canceleditcard':editcard}"><span v-if="!editcard">Edit</span><span v-else>Cancel</span></a></span>
                                                                 </div>
 
@@ -752,6 +759,8 @@ export default {
         const remove_voucher_modal = ref();
         const cur_voucher_to_remove = ref('');
         const cur_id_voucher_to_remove = ref(0);
+        const failed_delivery_price = ref(0);
+        const price_plus_delivery = ref(0);
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
@@ -808,6 +817,8 @@ export default {
                 order_upcharges.value = res.data.order_upcharges;
                 order_vouchers.value = res.data.order_vouchers;
                 discount_from_voucher.value = res.data.discount_from_voucher;
+                failed_delivery_price.value = res.data.failed_delivery_price;
+                price_plus_delivery.value = res.data.price_plus_delivery;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -1199,6 +1210,8 @@ export default {
             cur_voucher_to_remove,
             cur_id_voucher_to_remove,
             addVoucher,
+            failed_delivery_price,
+            price_plus_delivery,
         }
 
     },

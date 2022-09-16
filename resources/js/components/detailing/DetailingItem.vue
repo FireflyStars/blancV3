@@ -104,6 +104,7 @@
                                     :tailoring_services="tailoring_services"
                                     @save-item-services="saveItemDetails"
                                     @go-to-step="backPreviousStep"
+                                    @init-detailing="initDetailing"
                                 ></detailing-services>
                             </div>
                         </div>
