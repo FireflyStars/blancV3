@@ -417,19 +417,19 @@
                                             <label for="discount_credit">Discount Level</label>
                                             <div class="input-group">
                                                 <span class="input-group-text fw-bold">%</span>
-                                                <input :disabled="current_user && current_user.role_id != 1" type="text" v-model="form.discountLevel" class="form-control" placeholder="0.00">
+                                                <input :disabled="current_user && ![1,4].includes(current_user.role_id)" type="text" v-model="form.discountLevel" class="form-control" placeholder="0.00">
                                             </div>
                                         </div>
                                     </div>
-                                    <h3 class="title d-flex">Credits 
+                                    <h3 v-if="current_user && (current_user.role_id == 1 || current_user.role_id == 4)" class="title d-flex">Credits 
                                         <!-- <CheckBox v-model="form.applyCreditToSub" class="ms-5"><slot>Apply to sub-accounts</slot></CheckBox> -->
                                     </h3>
-                                    <div class="page-section">
+                                    <div class="page-section" v-if="current_user && [1,4].includes(current_user.role_id)">
                                         <div class="form-group payment-method">
                                             <label for="discount_credit">Add credit</label>
                                             <div class="input-group">
                                                 <span class="input-group-text fw-bold">£</span>
-                                                <input :disabled="current_user && current_user.role_id != 1" type="text" v-model="form.addCredit" class="form-control" placeholder="0.00">  
+                                                <input :disabled="current_user && ![1,4].includes(current_user.role_id)" type="text" v-model="form.addCredit" class="form-control" placeholder="0.00">  
                                             </div>
                                         </div>
                                     </div>

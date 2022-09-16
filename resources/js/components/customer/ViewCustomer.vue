@@ -453,7 +453,7 @@
                                                     </div>
                                                     -->
                                                     <div class="form-group">
-                                                        <input :disabled="current_user && current_user.role_id != 1"  type="text" class="form-control w-auto" v-model="form.discountLevel" @keyup="setCustomerDiscount"/>
+                                                        <input :disabled="current_user && ![1,4].includes(current_user.role_id)"  type="text" class="form-control w-auto" v-model="form.discountLevel" @keyup="setCustomerDiscount"/>
                                                     </div>
                                                 </div>
                                             </div>
@@ -465,12 +465,12 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-4" v-if="current_user && (current_user.role_id == 1 || current_user.role_id == 4)">
+                                            <div class="col-4" v-if="current_user && [1,4].includes(current_user.role_id)">
                                                 <div class="form-group col-6">
                                                     <label for="add_credit">Add credit</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text fw-bold">£</span>
-                                                        <input :disabled="current_user && current_user.role_id != 1" type="text" v-model="credit_to_add"  class="form-control" id="add_credit" placeholder="0.00" @keyup="addCustomerCredit">
+                                                        <input :disabled="current_user && ![1,4].includes(current_user.role_id)" type="text" v-model="credit_to_add"  class="form-control" id="add_credit" placeholder="0.00" @keyup="addCustomerCredit">
                                                     </div>
                                                 </div>
                                             </div>
