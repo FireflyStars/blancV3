@@ -633,6 +633,11 @@ padding:0 1.2rem;
     margin: 48px 0 67px 22px;
   }
 }
+@media only screen and (min-width: 1280px) and (max-width: 1298px) {
+  .main-view h2{
+    margin-left: 10px !important;
+  }
+}
 @media only screen and (max-width: 1280px) {
   .breadcrumb{
     margin-left: 0!important;
