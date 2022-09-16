@@ -7,11 +7,19 @@
                             <span class="col-9  subordernum body_small_medium">
                               Sub order {{suborder}}
                             </span>
-                            <div class="col-3">
-                                <img class="img-arrow" src="/images/flesh.png" />
-                                <img class="img-arrow" @click="setSubOrderFulfilled(ITEMS[0].InvoiceID , ITEMS[0].Invoice_Status)" src="/images/check.png" />
-                                <img class="img-arrow" src="/images/download.png" @click="openModal(ITEMS[0].InvoiceID)" />
-                                <img class="img-arrow" @click="OpenSubOrderOptions(suborder)"  src="/images/menu.png"   :class="{ active: show === suborder }"/>   
+                            <div class="col-3 list-options-suborder" >
+                                <div class='column1'  >
+                                    <img  class="img-arrow" src="/images/flesh.png" />
+                                </div>
+                                <div class='column2' >
+                                    <img  class="img-arrow" @click="setSubOrderFulfilled(ITEMS[0].InvoiceID , ITEMS[0].Invoice_Status)" src="/images/check.png" />
+                                </div>   
+                                <div class='column3' >
+                                   <img  class="img-arrow" src="/images/download.png" @click="openModal(ITEMS[0].InvoiceID)" />
+                                </div>
+                                <div class='column4' >
+                                   <img  class="img-arrow" @click="OpenSubOrderOptions(suborder)"  src="/images/menu.png"   :class="{ active: show === suborder }"/>   
+                                </div>
                             </div>
                     </div>
 
@@ -388,4 +396,110 @@ span.tool-tip.body_small {
 .tag {
     max-width: 130px;
 }
+    .list-options-suborder{
+        display: flex;
+    }
+    .column1 {
+    width: 30px;
+    margin: 0;
+    position: relative;
+    }
+    .column2 {
+    width: 30px;
+    margin: 0;
+    position: relative;
+    }
+    .column3 {
+    width: 30px;
+    margin: 0;
+    position: relative;
+    }
+    .column4 {
+    width: 30px;
+    margin: 0;
+    position: relative;
+    }
+    /* .column1:after {
+        content: "";
+        position: absolute;
+        right: 0%;
+        color: #FFFFFF;
+        font-size: 10px;
+        background: #000;
+        padding: 3px;
+        top: -20px;
+        opacity: 0;
+        height: 19px;
+        width: max-content;
+        size: -3px;
+        font-weight: 100;
+        text-size-adjust: 8px;
+        font-family: "Gotham Rounded";
+  } */
+  .column2:after {
+    content: "Fulfill SubOrder.";
+    position: absolute;
+    right: 0%;
+        color: #FFFFFF;
+        font-size: 10px;
+        background: #000;
+        padding: 3px;
+        top: -20px;
+        opacity: 0;
+        height: 19px;
+        width: max-content;
+        size: -3px;
+        font-weight: 100;
+        text-size-adjust: 8px;
+        font-family: "Gotham Rounded";
+  }
+  .column3:after {
+    content: "Print ticket(s).";
+    position: absolute;
+    right: 0%;
+        color: #FFFFFF;
+        font-size: 10px;
+        background: #000;
+        padding: 3px;
+        top: -20px;
+        opacity: 0;
+        height: 19px;
+        width: max-content;
+        size: -3px;
+        font-weight: 100;
+        text-size-adjust: 8px;
+        font-family: "Gotham Rounded";
+  }
+  .column4:after {
+    content: " Split, offload & more...";
+    position: absolute;
+    right: 0%;
+        color: #FFFFFF;
+        font-size: 10px;
+        background: #000;
+        padding: 3px;
+        top: -20px;
+        opacity: 0;
+        height: 19px;
+        width: max-content;
+        size: -3px;
+        font-weight: 100;
+        text-size-adjust: 8px;
+        font-family: "Gotham Rounded";
+  }
+ 
+  
+/* .column1:hover:after {
+    opacity: 1;
+} */
+.column2:hover:after {
+    opacity: 1;
+}
+.column3:hover:after {
+    opacity: 1;
+}
+.column4:hover:after {
+    opacity: 1;
+}
+
 </style>

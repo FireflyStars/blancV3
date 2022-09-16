@@ -164,21 +164,18 @@
             }
             const loadPrinterModal = (invoice_id, target)=>{
                 invoiceId.value = invoice_id;
-                shouldClose.value = false;
+                shouldClose.value = true;
                 Target.value = target
-                print_modal.value.showModal();
-                if(Target.value == ".item-detail-panel"){
-                    shouldClose.value = true;
-                    printReceipt()
-                }
+                printReceipt()
+                // print_modal.value.showModal();
             }
             const printReceipt = ()=>{
                 let err =false;
                 let err_arr = [];
-                if(printer_name.value == '' && (Target.value != ".item-detail-panel")){
-                    err = true;
-                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message:`Please enter printer name`,ttl:5, type:'info'},{ root: true });
-                }
+                // if(printer_name.value == '' && (Target.value != ".item-detail-panel")){
+                //     err = true;
+                //     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message:`Please enter printer name`,ttl:5, type:'info'},{ root: true });
+                // }
 
                 if(err){
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message: "An error has occured",ttl:5, type:'danger'},{ root: true });
