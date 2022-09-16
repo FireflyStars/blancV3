@@ -419,8 +419,8 @@ span.tool-tip.body_small {
     margin: 0;
     position: relative;
     }
-    /* .column1:after {
-        content: "";
+    .column1:after {
+        content: "..";
         position: absolute;
         right: 0%;
         color: #FFFFFF;
@@ -435,7 +435,7 @@ span.tool-tip.body_small {
         font-weight: 100;
         text-size-adjust: 8px;
         font-family: "Gotham Rounded";
-  } */
+  }
   .column2:after {
     content: "Fulfill SubOrder.";
     position: absolute;
@@ -489,9 +489,9 @@ span.tool-tip.body_small {
   }
  
   
-/* .column1:hover:after {
+.column1:hover:after {
     opacity: 1;
-} */
+}
 .column2:hover:after {
     opacity: 1;
 }
