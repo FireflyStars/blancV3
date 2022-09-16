@@ -146,7 +146,6 @@
                           accountType: 'Sub',
                           phoneNumber: formModal.value.phoneNumber,
                           phoneCountryCode: formModal.value.phoneCountryCode,
-                          phone: formModal.value.phoneNumber != "" ?'["'+formModal.value.phoneCountryCode+'|'+formModal.value.phoneNumber+'"]' : '',
                           email: formModal.value.email, 
                           date: '', 
                           spent: 0,

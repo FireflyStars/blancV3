@@ -475,7 +475,7 @@ class CustomerController extends Controller
                 'LastName'      => $request->customer_data['lastname'],
                 'Name'          => $request->customer_data['name'],
                 'EmailAddress'  => $request->customer_data['email'],
-                'Phone'         =>  $request->customer_data['phone']!= '' ? '["'.$request->customer_data['phoneCountryCode'].'|'.$request->customer_data['phoneNumber'].']"' : '',
+                'Phone'         => '["'.$request->customer_data['phoneCountryCode'].'|'.$request->customer_data['phoneNumber'].'"]' ,
                 'SignupDate'    => Carbon::now()->format('Y-m-d'),
             ];
             try {
