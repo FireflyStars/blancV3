@@ -76,14 +76,14 @@ public function SearchCustomer(Request $request)
         if($item->customer_account == "Main"){
             $item->Pickup = DB::table('pickup')->select('status as status_pickup', 'date as date_pickup')
             ->where('pickup.CustomerID','=',$item->CustomerID)
-            ->where('pickup.status','=','DELIVERY')
+            ->where('pickup.status', 'not LIKE', '%DEL%')
             ->whereDate('pickup.date', '>=', date('Y-m-d'))
             ->get();
         }
         if($item->customer_account == "Sub"){
             $item->Pickup = DB::table('pickup')->select('status as status_pickup', 'date as date_pickup')
             ->where('pickup.CustomerID','=',$item->CustomerIDMaster)
-            ->where('pickup.status','=','DELIVERY')
+            ->where('pickup.status','not LIKE', '%DEL%')
             ->whereDate('pickup.date', '>=', date('Y-m-d'))
             ->get();
         }    
