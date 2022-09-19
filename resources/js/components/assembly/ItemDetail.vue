@@ -49,6 +49,7 @@
                         <p class="w-50 m-0 d-flex align-items-center">Colours & patterns</p>
                         <p class="w-50 m-0 d-flex align-items-center flex-wrap">
                             <span class="item-detail-color-item d-block me-1 mb-1 mt-1" v-for="(color, index) in (ITEM.breif_info.colors).split(',')" :style="{ 'background': color.toLowerCase().trim() }" :key="index"></span>
+                            <!-- <color-tag  v-for="(color, index) in (ITEM.breif_info.colors).split(',')"  :colors="color.toLowerCase()"></color-tag> -->
                         </p>
                     </div>
                 </div>
@@ -154,14 +155,14 @@
                         <div class="w-50">
                             <p class="w-100 m-0 sub-title mb-2">Cleaning</p>
                             <div class="issue-item stain d-flex align-items-center" v-for="(cleaning, index) in ITEM.Services.cleaning_services" :key="index">
-                                <span class="service-item-num service d-flex align-items-center justify-content-center">1</span>
+                                <span class="service-item-num service d-flex align-items-center justify-content-center"></span>
                                 <span class="issue-item-name ms-1">{{cleaning.name}} </span>
                             </div>
                         </div>
                         <div class="w-50">
                             <p class="m-0 sub-title mb-2">Tailoring</p>
                             <div class="issue-item stain d-flex align-items-center" v-for="(tailoring, index) in ITEM.Services.tailoring_services" :key="index">
-                                <span class="service-item-num d-flex align-items-center justify-content-center" >1</span>
+                                <span class="service-item-num d-flex align-items-center justify-content-center" ></span>
                                 <span class="issue-item-name ms-1">{{tailoring.name}}</span>                                
                             </div>                                                        
                         </div>
@@ -223,12 +224,14 @@ import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import QzPrint from "../QzPrint";
+import ColorTag from "../miscellaneous/ColorTag";
 
 export default {
     name: "ItemDetail",
     props:['item_id' , 'invoiceId'],
     components:{
-        QzPrint
+        QzPrint,
+        ColorTag
     },
     setup(props, context){
         const route =useRoute();
