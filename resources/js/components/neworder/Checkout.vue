@@ -1282,9 +1282,8 @@ export default {
 
 .summary-title{
     font-size:32px;
-    margin-right:20px;
+    margin-right:10px;
 }
-
 
 .checkout-sidebar,
 .accordion-collapse,

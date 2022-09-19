@@ -629,9 +629,7 @@ Route::get('notify-test', function () {
 });
 
 
-
 /* END TEST ROUTES */
-
 // added by yonghuan to search customers to be linked
 Route::post('/search-customer', [SearchController::class, 'SearchCustomersToLink'])->name('SearchCustomersToLink');
 
@@ -781,7 +779,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
                 'amount' => 100*$amount_two_dp,
                 'currency' => 'gbp',
                 'payment_method_types' => [
-                                            'card_present',
+                                'card_present',
                                         ],
                 'capture_method' => 'manual',
                 'description'=>'Order: '.$order_id,

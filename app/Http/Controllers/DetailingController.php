@@ -2214,7 +2214,12 @@ class DetailingController extends Controller
     public static function checkOrderBundles($order_id){
         $items = DB::table('detailingitem')->where('order_id',$order_id)->get();
 
-        $bundles = DB::table('bundles')->get();
+
+        $bundles = DB::table('bundles')
+            ->where('active',1)
+            ->where('datefrom','<=',date('Y-m-d'))
+            ->where('dateto','>=',date('Y-m-d'))
+            ->get();
 
         $test_arr = [];
         $sel_bundle_id = [];
