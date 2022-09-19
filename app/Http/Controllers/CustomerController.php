@@ -1000,7 +1000,7 @@ class CustomerController extends Controller
                     ->select('Name as name', 'EmailAddress as email', 'Phone as phone',
                         DB::raw('IF(btob = 0, "B2C", "B2B") as cust_type'),
                         'infoCustomer.TypeDelivery as location', 'infoCustomer.CustomerNotes as notes', 'infoCustomer.id', 'infoCustomer.CustomerID','infoCustomer.CustomerIDMaster',
-                        DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recuring", "Normal") as booking'),
+                        DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recurring", "Normal") as booking'),
                         DB::raw(
                             'CASE WHEN infoCustomer.IsMaster = 1 AND infoCustomer.CustomerIDMaster = "" THEN "MAIN"
                                   WHEN infoCustomer.isMasterAccount = 1 THEN "MASTER"
@@ -1413,7 +1413,7 @@ class CustomerController extends Controller
                         DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'), DB::raw('IF(infoCustomer.CustomerIDMaster = "", "Main", "Sub") as accountType'),
                          'infoCustomer.TypeDelivery as typeDelivery','infoCustomer.CustomerIDMaster','infoCustomer.OnAccount',
                         'infoCustomer.CustomerNotes', 'infoCustomer.id', 'infoCustomer.CustomerID',
-                        DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recuring", "Normal") as booking'), 'discount', 'credit',
+                        DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recurring", "Normal") as booking'), 'discount', 'credit',
                         'infoCustomer.DeliverybyDay as deliveryByDay', 'DeliveryMon', 'DeliveryTu', 'DeliveryWed', 'DeliveryTh', 'DeliveryFri', 'DeliverySat',
                         'AcceptSMSMarketing as acceptSMSMarketing', 'AcceptMarketing as acceptMarketing', 'PauseDateTo as pauseDateTo', 'PauseDateFrom as pauseDateFrom'
                     )

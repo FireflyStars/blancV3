@@ -120,7 +120,7 @@
                     <h4 class="m-0">Issues</h4>
                 </div>
                 <div class="toggle-panel-content" :class="{ 'd-none': !issues_panel }">
-                    <div class="d-flex">
+                    <div class="d-flex" v-if="ITEM.Issues != null">
                         <div class="w-50">
                             <p class="w-100 m-0 sub-title mb-2">Stains</p>
                             <div class="issue-item stain d-flex align-items-center" v-for="(stain, index) in ITEM.Issues.stains" :key="index">
@@ -150,7 +150,7 @@
                     <h4 class="m-0">Services</h4>
                 </div>
                 <div class="toggle-panel-content" :class="{ 'd-none': !services_panel }">
-                    <div class="d-flex">
+                    <div class="d-flex" v-if="ITEM.Services != null">
                         <div class="w-50">
                             <p class="w-100 m-0 sub-title mb-2">Cleaning</p>
                             <div class="issue-item stain d-flex align-items-center" v-for="(cleaning, index) in ITEM.Services.cleaning_services" :key="index">
