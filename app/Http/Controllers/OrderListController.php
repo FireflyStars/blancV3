@@ -1325,14 +1325,51 @@ class OrderListController extends Controller
                 };    
             $location_history = $history;    
             }
+      
+            $Issues = DB::table('detailingitem')->select('detailingitem.stainstext' , 'detailingitem.stains','detailingitem.damagestext' , 'detailingitem.damages')
+            ->where('detailingitem.item_id', $request->item_id)
+            ->where('detailingitem.InvoiceID',$request->invoice_Id)
+            ->first();
+
+            if(!is_null($Issues)){
+
+                if(!is_null($Issues->stains)){
+                $stains_decode =json_decode($Issues->stains);
+                $Issues->stains = DB::table('issues_tag')->select('id','name')->whereIn('id', array_column($stains_decode, 'id_issue'))->get();
+                }
+
+                if(!is_null($Issues->damages)){
+                    $damages_decode =json_decode($Issues->damages);
+                    $Issues->damages = DB::table('issues_tag')->select('id','name')->whereIn('id', array_column($damages_decode, 'id_issue'))->get();
+                }
+            }
             
+            $services = DB::table('detailingitem')->select('detailingitem.cleaning_services' , 'detailingitem.tailoring_services')
+            ->where('detailingitem.item_id', $request->item_id)
+            ->where('detailingitem.InvoiceID',$request->invoice_Id)
+            ->first();
+
+            if(!is_null($services)){
+
+                if(!is_null($services->cleaning_services)){
+                    $cleaning_services_decode =json_decode($services->cleaning_services);
+                    $services->cleaning_services = DB::table('cleaningservices')->select('id','name')->whereIn('id', $cleaning_services_decode)->get();
+                }
+
+                if(!is_null($services->tailoring_services)){
+                    $tailoring_services_decode =json_decode($services->tailoring_services);
+                    $services->tailoring_services = DB::table('tailoring_services')->select('id','name')->whereIn('id', $tailoring_services_decode)->get();
+                } 
+            }  
 
         return response()->json([
             'item_detail'=>[
                 'breif_info'        => $itemInfo,
                 'location_history'  => $location_history,
-                'item_list' => $itemsList,
-                'suborder' => $subOrder
+                'item_list'         => $itemsList,
+                'suborder'          => $subOrder,
+                'Issues'            => $Issues,
+                'Services'          => $services
             ]
         ]);
     }

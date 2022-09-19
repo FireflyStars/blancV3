@@ -123,33 +123,24 @@
                     <div class="d-flex">
                         <div class="w-50">
                             <p class="w-100 m-0 sub-title mb-2">Stains</p>
-                            <div class="issue-item stain d-flex align-items-center">
+                            <div class="issue-item stain d-flex align-items-center" v-for="(stain, index) in ITEM.Issues.stains" :key="index">
                                 <span class="issue-item-num d-flex align-items-center justify-content-center">1</span>
-                                <span class="issue-item-name ms-1">Stain - RIGHT LEG </span>
+                                <span class="issue-item-name ms-1">Stain - {{stain.name}} </span>
                             </div>
-                            <div class="issue-item stain d-flex align-items-center">
-                                <span class="issue-item-num d-flex align-items-center justify-content-center">1</span>
-                                <span class="issue-item-name ms-1">Stain - RIGHT LEG </span>
+                            <div class="issue-item stain d-flex align-items-center" >
+                                <span class="issue-item-name ms-1 pt-2">{{ITEM.Issues.stainstext}} </span>
                             </div>
-                            <div class="issue-item stain d-flex align-items-center">
-                                <span class="issue-item-num d-flex align-items-center justify-content-center">1</span>
-                                <span class="issue-item-name ms-1">Stain - HEM RIGHT LEG</span>
-                            </div>
+                            
                         </div>
                         <div class="w-50">
                             <p class="m-0 sub-title mb-2">Damages</p>
-                            <div class="issue-item damage d-flex align-items-center">
+                            <div class="issue-item damage d-flex align-items-center" v-for="(damage, index) in ITEM.Issues.damages" :key="index">
                                 <span class="issue-item-num d-flex align-items-center justify-content-center">1</span>
-                                <span class="issue-item-name ms-1">Bobbly</span>                                
-                            </div>                            
-                            <div class="issue-item damage d-flex align-items-center">
-                                <span class="issue-item-num d-flex align-items-center justify-content-center">1</span>
-                                <span class="issue-item-name ms-1">Hair all over </span>                                
-                            </div>                            
-                            <div class="issue-item damage d-flex align-items-center">
-                                <span class="issue-item-num d-flex align-items-center justify-content-center">1</span>
-                                <span class="issue-item-name ms-1">1 hole </span>                                
-                            </div>                            
+                                <span class="issue-item-name ms-1">Damage - {{damage.name}}</span>                                
+                            </div> 
+                            <div class="issue-item stain d-flex align-items-center" >
+                                <span class="issue-item-name ms-1 pt-2">{{ITEM.Issues.damagestext}} </span>
+                            </div>                                                       
                         </div>
                     </div>
                 </div>
@@ -159,7 +150,22 @@
                     <h4 class="m-0">Services</h4>
                 </div>
                 <div class="toggle-panel-content" :class="{ 'd-none': !services_panel }">
-
+                    <div class="d-flex">
+                        <div class="w-50">
+                            <p class="w-100 m-0 sub-title mb-2">Cleaning</p>
+                            <div class="issue-item stain d-flex align-items-center" v-for="(cleaning, index) in ITEM.Services.cleaning_services" :key="index">
+                                <span class="service-item-num service d-flex align-items-center justify-content-center">1</span>
+                                <span class="issue-item-name ms-1">{{cleaning.name}} </span>
+                            </div>
+                        </div>
+                        <div class="w-50">
+                            <p class="m-0 sub-title mb-2">Tailoring</p>
+                            <div class="issue-item stain d-flex align-items-center" v-for="(tailoring, index) in ITEM.Services.tailoring_services" :key="index">
+                                <span class="service-item-num d-flex align-items-center justify-content-center" >1</span>
+                                <span class="issue-item-name ms-1">{{tailoring.name}}</span>                                
+                            </div>                                                        
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="toggle-panel" :class="{ active: item_history_panel }" >
@@ -518,7 +524,21 @@ export default {
     .issue-item.damage .issue-item-num{
         background: #EB5757;
     }
+    .issue-item.stain .service-item-num {
+        background: #6c757d;
+    }
     .issue-item .issue-item-num{
+        width: 16.53px;
+        height: 18px;        
+        border-radius: 50%;
+        color: white;
+        font-family: 'Gotham Rounded';
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 140%;
+    }
+    .issue-item .service-item-num {
         width: 16.53px;
         height: 18px;        
         border-radius: 50%;
