@@ -143,7 +143,7 @@
                                 <div class="panel">
                                     <h2 class="subtitle">Order Details</h2>
                                     <div class="row border-bottom m-0">
-                                        <div class="col p-0"><h2 class="slot-text">Slot</h2></div>
+                                        <div class="col p-0"><h2 class="slot-text">Delivery details</h2></div>
                                         <div class="col p-0 justify-content-end d-flex rec_switch" v-if="showRecurring"><switch-btn v-model="isRecurring" label-left="Recurring"></switch-btn></div>
                                     </div>
                                     <div class="row mt-4">
@@ -153,15 +153,16 @@
                                                     <!--
                                             <select-options classnames="deliverymethod" v-model="deliverymethod"  placeholder="Choose a method" :options="deliverymethods" name="delivery_method" hint=""  label="Delivery method"></select-options>
                                             -->
+                                            <label >Choose a delivery method </label>
                                             <div id="select_div" v-if="!isRecurring">
-                                                <label>
-                                                <select id="method_select" v-model="deliverymethod">
-                                                    <option selected style="font-family: Verdana" value="">Choose a method</option>
+                                                
+                                                <select id="method_select" v-model="deliverymethod" >
+                                                    <option value="" disabled hidden>Select </option>
                                                     <option v-for="(method,index) in deliverymethods" :value="method.value" :disabled="method.disabled" style="font-family: Verdana;">
                                                         {{method.display}}
                                                     </option>
                                                 </select>
-                                                </label>
+                                               
                                             </div>
 
                                             <!--
@@ -209,14 +210,14 @@
                                                         <!--
                                                         <date-picker v-model="do_dropoff" name="do_dropoff" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Drop off" :disabledToDate="yesterday"></date-picker>
                                                         -->
-                                                        <label for="do_dropoff">Drop off</label>
+                                                        <label for="do_dropoff">date</label>
                                                         <input type="text" class="form-control" :value="getCurDateTime('date')" readonly id="do_dropoff"/>
                                                     </div>
                                                     <div class="col-3">
                                                         <!--
                                                         <time-slot-picker v-model="do_dropoff_timeslot"   name="do_dropoff_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
                                                         -->
-                                                        <label for="do_dropoff_time"></label>
+                                                        <label for="do_dropoff_time">time</label>
                                                         <input type="text" class="form-control" :value="getCurDateTime('time')" readonly id="do_dropoff_time"/>
                                                     </div>
 
@@ -224,7 +225,7 @@
                                                         <date-picker :disabled="do_delivery_disabled" v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="addRemoveDays('add',0,cur_date)" @loadtranche="loadtranche('do_delivery')" ref="do_delivery_datepicker" :disabled-sunday="true" :available-days="available_days" :disabledDates="holidays"></date-picker>
                                                     </div>
                                                     <div class="col-3">
-                                                        <time-slot-picker v-model="do_delivery_timeslot"   name="do_delivery_timeslot" :available-slots="do_delivery_tranche"  label=" "></time-slot-picker>
+                                                        <time-slot-picker v-model="do_delivery_timeslot"   name="do_delivery_timeslot" :available-slots="do_delivery_tranche"  label="time"></time-slot-picker>
                                                     </div>
                                                 </div>
                                             </transition>
@@ -276,7 +277,7 @@
                                     </div>
 
                                     <div class="row border-bottom" v-if="deliverymethod !='' &&deliverymethod !='in_store_collection'">
-                                        <div class="col detailsection"><h2 class="subtitle">Details</h2></div>
+                                        <div class="col detailsection"><h2 class="subtitle">Address details</h2></div>
                                     </div>
                                     <div class="row mt-3" v-if="!isRecurring && (deliverymethod=='shipping' || deliverymethod=='delivery_only' || deliverymethod=='home_delivery')">
 
@@ -692,12 +693,12 @@ import axios from 'axios';
             const deliverymethods=ref([
                 {
                     value:'in_store_collection',
-                    display:'In Store collection',
+                    display:'Collect from Store',
                     disabled: false
                 },
                 {
                     value:'home_delivery',
-                    display:'Home Delivery',
+                    display:'Pickup & Delivery',
                     disabled: deliverymethod_disabled,
                 },
                 {
