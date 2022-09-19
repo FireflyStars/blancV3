@@ -292,7 +292,7 @@
                         <transition name="list" appear v-if="step =='payment'">
                             <div class="payment cust-page-content m-auto pt-5">
                                 <div class="payment-method-section" v-if="form.accountType !='Master'">
-                                    <h3 class="title">Payment method <span v-if="!creditCardCustomer" class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="AddCreditCardCustomer()">Add</span></h3>
+                                    <h3 class="title">Payment method <span v-if="!creditCardCustomer" class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="toggleCreditCard()">Edit</span></h3>
 
                                     <div class="page-section">
                                           <img v-if="creditCardCustomer" src="/images/trash.svg" style="float: right;" @click="DeleteCreditCardCustomer()"/>
@@ -315,7 +315,7 @@
                                                 </div>
                                             </div>
                                            </div>
-                                        <div class="credit-card mt-3 d-flex justify-content-between">
+                                        <div class="credit-card mt-3 d-flex justify-content-between" v-if="form.paymentMethod=='Credit Card'">
                                             <div class="form-group col-3 cardholder mb-0">
                                                 <label for="">Cardholder name</label>
                                                 <div class="w-100 py-2 rounded-2 bg-color px-3">
@@ -350,7 +350,11 @@
                                                 </div>
                                             </div>
                                         </div>
-
+                                        <div class="row justify-content-end mt-4" v-if="add_payement && form.paymentMethod=='Credit Card'">
+                                            <div class="col-2">
+                                                <button class="btn btn-dark w-100" @click="AddCreditCardCustomer()">Save</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="invoice-details-panel" v-if="1 != 1">
@@ -1613,8 +1617,12 @@
             }
 
 
+            function toggleCreditCard(){
+                this.add_payement = !this.add_payement;
+            }
+
+
             function AddCreditCardCustomer(){
-               this.add_payement = !this.add_payement
 
                 if(form.value.cardHolderName != "" && form.value.cardDetails != ""  && form.value.cardExpDate != "" &&  form.value.cardCVV != "" && form.value.paymentMethod != ""){
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Add Card Customer...']);
@@ -1623,8 +1631,22 @@
                     form.value.cardId =  res.data
                     creditCardCustomer.value = true
                 }).catch((error)=>{
-                    console.log(error);
+
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                        message:"Error saving card details",
+                        ttl: 5,
+                        type: 'danger'
+                    });
+
+                }).finally(()=>{
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 })
+                }else{
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                        message:"Credit card details missing",
+                        ttl: 5,
+                        type: 'danger'
+                    });
                 }
 
 
@@ -2211,7 +2233,8 @@
                 show_model_SubAccount,
                 createSubAccount,
                 billing_address_edit,
-                validateAndSaveBillingAddress
+                validateAndSaveBillingAddress,
+                toggleCreditCard,
             }
 
         },
