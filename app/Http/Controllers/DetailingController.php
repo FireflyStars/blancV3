@@ -1549,7 +1549,26 @@ class DetailingController extends Controller
             $total_with_discount = $total_with_discount - $order_discount;
         }
 
+
+
+        //Bundles
+        $order_bundles = [];
+        $bundles_discount = 0;
+        $bundles_id = DetailingController::checkOrderBundles($order_id);
+
+        if(!empty($bundles_id)){
+            $bundles = DB::table('bundles')->whereIn('id',$bundles_id)->get();
+
+            foreach($bundles as $k=>$v){
+                $order_bundles[$v->name] = number_format($v->discount,2);
+                $bundles_discount += $v->discount;
+            }
+        }
+
+        $total_with_discount = $total_with_discount - $bundles_discount;
+
         $total_inc_vat = $total_with_discount;
+
         $total_exc_vat = number_format(($total_with_discount/1.2),2);
         $vat = $total_inc_vat - $total_exc_vat;
 
@@ -1695,6 +1714,7 @@ class DetailingController extends Controller
             'master_account'=>$master_account,
             'failed_delivery_price'=>number_format($failed_delivery_price,2),
             'price_plus_delivery'=>number_format($price_plus_delivery,2),
+            'order_bundles'=>$order_bundles,
         ]);
     }
 
@@ -2189,6 +2209,90 @@ class DetailingController extends Controller
         }
 
         return $item;
+    }
+
+    public static function checkOrderBundles($order_id){
+        $items = DB::table('detailingitem')->where('order_id',$order_id)->get();
+
+        $bundles = DB::table('bundles')->get();
+
+        $test_arr = [];
+        $sel_bundle_id = [];
+
+        foreach($bundles as $k=>$v){
+            $test_arr[] = [
+                'type'=>$v->type,
+                'typeservice'=>$v->typeservice,
+                'bundles_id'=>$v->bundles_id,
+                'qty'=>$v->qty,
+                'id'=>$v->id,
+            ];
+        }
+
+
+        $grouped_by_typeitem = [];
+        $count_per_typeitem = [];
+
+        $grouped_by_cleaning_service = [];
+        $count_by_cleaning_service = [];
+
+        $grouped_by_tailoring_service = [];
+        $count_by_tailoring_service = [];
+
+        foreach($items as $k=>$v){
+            $grouped_by_typeitem[$v->typeitem_id][] = $v->id;
+
+            $cs = @json_decode($v->cleaning_services);
+            foreach($cs as $id=>$idservice){
+                $grouped_by_cleaning_service[$idservice][] = $v->id;
+            }
+
+            $ts = @json_decode($v->tailoring_services);
+            foreach($ts as $id=>$idservice){
+                $grouped_by_tailoring_service[$idservice][] = $v->id;
+            }
+        }
+
+        foreach($grouped_by_typeitem as $k=>$v){
+            $count_per_typeitem[$k] = count($v);
+        }
+
+        foreach($grouped_by_cleaning_service as $k=>$v){
+            $count_by_cleaning_service[$k] = count($v);
+        }
+
+        foreach($grouped_by_tailoring_service as $k=>$v){
+            $count_by_tailoring_service[$k] = count($v);
+        }
+
+        //1st Case - Count by typeitem
+        foreach($count_per_typeitem as $typeitem=>$count){
+            foreach($test_arr as $k=>$v){
+                if($v['type']=='typeitem' && $v['bundles_id']==$typeitem && $count >= $v['qty']){
+                    $sel_bundle_id[] = $v['id'];
+                }
+            }
+        }
+
+        //2nd Case - Count by cleaning services
+        foreach($count_by_cleaning_service as $service=>$count){
+            foreach($test_arr as $k=>$v){
+                if($v['type']=='service' && $v['typeservice']=='cleaning' && $v['bundles_id']==$service && $count >= $v['qty']){
+                    $sel_bundle_id[] = $v['id'];
+                }
+            }
+        }
+
+        //3rd case - Count by tailoring services
+        foreach($count_by_tailoring_service as $service=>$count){
+            foreach($test_arr as $k=>$v){
+                if($v['type']=='service' && $v['typeservice']=='tailoring' && $v['bundles_id']==$service && $count >= $v['qty']){
+                    $sel_bundle_id[] = $v['id'];
+                }
+            }
+        }
+
+        return $sel_bundle_id;
     }
 
 }

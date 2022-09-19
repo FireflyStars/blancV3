@@ -214,6 +214,17 @@
                                             <div class="col-3 text-align-right">+&#163;{{upcharges.toFixed(2)}}</div>
                                         </div>
 
+                                        <div class="row px-0 sub-total-text" v-if="Object.keys(order_bundles).length > 0" id="bundles_bloc">
+                                            <div class="col-12">
+                                                <div class="row mt-2" v-for="(discount,name) in order_bundles">
+                                                    <div class="col-9">{{name}}</div>
+                                                    <div class="col-3 text-align-right">
+                                                        -&#163;{{discount}}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
 
 
                                         <div class="row px-0 mt-3 pb-4 total-text">
@@ -566,6 +577,28 @@
                                                 </div>
                                             </div>
 
+                                            <!--
+                                            <div class="accordion-item mx-2 mb-4">
+                                                <h2 class="accordion-header" id="flush-headingOne">
+                                                    <button
+                                                        class="accordion-button collapsed gilroy-extra-bold"
+                                                        type="button"
+                                                        @click="openAccordionclick('bundles')" id="acdbtn_bundles"
+                                                    >Bundles</button>
+                                                </h2>
+                                                <div class="accordion-collapse collapse" id="acdpanel_bundles">
+                                                    <div class="accordion-body d-table w-100 px-0 py-0">
+                                                        <div class="accordion-content p-4 mt-3">
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    Bundles content
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            -->
                                             <!-- Accordion for payment -->
                                             <div class="accordion-item mx-2 mb-4">
                                                 <h2 class="accordion-header" id="flush-headingOne">
@@ -761,6 +794,7 @@ export default {
         const cur_id_voucher_to_remove = ref(0);
         const failed_delivery_price = ref(0);
         const price_plus_delivery = ref(0);
+        const order_bundles = ref([]);
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
@@ -819,6 +853,7 @@ export default {
                 discount_from_voucher.value = res.data.discount_from_voucher;
                 failed_delivery_price.value = res.data.failed_delivery_price;
                 price_plus_delivery.value = res.data.price_plus_delivery;
+                order_bundles.value = res.data.order_bundles;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -1212,6 +1247,7 @@ export default {
             addVoucher,
             failed_delivery_price,
             price_plus_delivery,
+            order_bundles,
         }
 
     },
@@ -1680,6 +1716,12 @@ export default {
 
 .each-order-voucher img{
     right: 0.5rem;
+}
+
+#bundles_bloc{
+    /*
+    border-bottom: thin solid #c3c3c3;
+    */
 }
 
 </style>
