@@ -19,11 +19,11 @@
                 <img class="img-arrow" src="/images/arrow.png" />
                 <span>Reassign</span>
             </div>
-             <div class="col-12 row-option" >
+             <!-- <div class="col-12 row-option" >
                 <img class="img-arrow" src="/images/garbage.png" />
                 <span>Delete</span>
-            </div>
-            <div class="col-12 row-option" v-if="user==1 &&invoice_Status!='VOID'"  @click="VoidSubOrder()">
+            </div> -->
+            <div class="col-12 row-option" v-if="(user == 1 || user == 4) && invoice_Status!='VOID'"  @click="VoidSubOrder()">
                 <img class="img-arrow" src="/images/erase.png" />
                 <span>Void</span>
             </div>
@@ -51,6 +51,7 @@
            const show_void_conf=ref(false);
            const listItems =ref([]);
            const ListHSL =ref([]);
+
 
 
 

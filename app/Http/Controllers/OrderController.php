@@ -672,7 +672,8 @@ class OrderController extends Controller
                   ->update([
                     'Status' => 'VOID',
                     'Actif' => '0',
-                    'nextpost' => '34'
+                    'nextpost' => '34',
+                    'PromisedDate' => '2020-01-01'
                 ]);
 
             }
