@@ -742,7 +742,7 @@
                                             </svg>
                                             Add Existing SubAccount
                                         </button>
-                                        <Search ref="searchpanel" @selectedSubAccount="selectedSubAccount"/>
+                                        <Search ref="searchpanel" :customerID = "form.customerID" @selectedSubAccount="selectedSubAccount"/>
                                     </div>
                                     <div class="d-flex" v-else>
                                         <button @click="showSearchPanel(1)" class="border-btn add-existing-account d-flex justify-content-between align-items-center">

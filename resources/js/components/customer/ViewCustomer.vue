@@ -953,7 +953,7 @@
                                             </svg>
                                             Add existing SubAccount
                                         </button>
-                                        <Search ref="searchpanel"  @selectedSubAccount="selectedSubAccount"/>
+                                        <Search ref="searchpanel" :customerID = "form.customerID"  @selectedSubAccount="selectedSubAccount"/>
                                     </div>
                                 </div>
                             </div>

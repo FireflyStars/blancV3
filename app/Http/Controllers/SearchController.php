@@ -163,10 +163,12 @@ public function SearchByCustomer(Request $request)
                     ->where(function($query){
                         $query->where('SignupDate', '!=', '2000-01-01')->orWhere('SignupDateOnline', '!=', '2000-01-01');
                     })
-                    ->where('IsMaster', $request->accountType)
+                    ->where('infoCustomer.CustomerIDMaster','!=', $request->customerID)
                     ->where(function($query) use ($request) {
                         $query->where('Name', 'LIKE', '%' .$request['query']. '%')
                             ->orWhere('EmailAddress', 'LIKE', '%' . $request['query'] . '%')
+                            ->orWhere('FirstName', 'LIKE', '%' . $request['query'] . '%')
+                            ->orWhere('LastName', 'LIKE', '%' . $request['query'] . '%')
                             ->orWhere('Phone', 'LIKE', '%' . $request['query'] . '%');
                     })
                     ->orderByDesc('Name')->get();
