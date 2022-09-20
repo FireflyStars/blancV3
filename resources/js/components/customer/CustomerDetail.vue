@@ -170,7 +170,7 @@ export default {
         const store = useStore();
         const route = useRoute();
         const router= useRouter();
-        const selected_panel = ref('');
+        const selected_panel = ref('current_orders');
         const selectPanel = (panelName)=>{
             if(selected_panel.value == panelName){
                 selected_panel.value = '';
