@@ -275,8 +275,8 @@ class CustomerController extends Controller
                     'type' => 'card',
                     'card' => [
                         'number'      => $request->cardDetails,
-                        'exp_month'   => intval(explode('/', $request->cardExpDate)[0]),
-                        'exp_year'    => intval(explode('/', $request->cardExpDate)[1]),
+                        'exp_month'   => intval(explode('/', str_replace(' ','',$request->cardExpDate))[0]),
+                        'exp_year'    => intval(explode('/', str_replace(' ','',$request->cardExpDate))[1]),
                         'cvc'         => $request->cardCVC,
                     ],
                 ]);
@@ -304,7 +304,7 @@ class CustomerController extends Controller
                     'cardHolderName'    => $request->cardHolderName,
                     'type'              => $card->card->brand,
                     'cardNumber'        => substr_replace($request->cardDetails, str_repeat('*', strlen($request->cardDetails) - 6), 3, -3),
-                    'dateexpiration'    => $request->cardExpDate,
+                    'dateexpiration'    => str_replace(' ','',$request->cardExpDate),
                     'stripe_customer_id'=> $stripe_customer->id,
                     'stripe_card_id'    => $card->id,
                     'created_at'        => now(),
@@ -549,8 +549,8 @@ class CustomerController extends Controller
                 'type' => 'card',
                 'card' => [
                     'number'      => $request->cardDetails,
-                    'exp_month'   => explode('/', $request->cardExpDate)[0],
-                    'exp_year'    => explode('/', $request->cardExpDate)[1],
+                    'exp_month'   => explode('/', str_replace(' ','',$request->cardExpDate))[0],
+                    'exp_year'    => explode('/', str_replace(' ','',$request->cardExpDate))[1],
                     'cvc'         => $request->cardCVC,
                 ],
             ]);
@@ -1700,8 +1700,8 @@ class CustomerController extends Controller
                 'type' => 'card',
                 'card' => [
                     'number'      => $request->cardDetails,
-                    'exp_month'   => intval(explode('/', $request->cardExpDate)[0]),
-                    'exp_year'    => intval(explode('/', $request->cardExpDate)[1]),
+                    'exp_month'   => intval(explode('/', str_replace(' ','',$request->cardExpDate))[0]),
+                    'exp_year'    => intval(explode('/', str_replace(' ','',$request->cardExpDate))[1]),
                     'cvc'         => $request->cardCVC,
                 ],
             ]);
@@ -1730,7 +1730,7 @@ class CustomerController extends Controller
                     'type'              => $card->card->brand,
                     'Actif'             => 1 ,
                     'cardNumber'        => substr_replace($request->cardDetails, str_repeat('*', strlen($request->cardDetails) - 6), 3, -3),
-                    'dateexpiration'    => $request->cardExpDate,
+                    'dateexpiration'    => str_replace(' ','',$request->cardExpDate),
                     'stripe_customer_id'=> $stripe_customer->id,
                     'stripe_card_id'    => $card->id,
                     'created_at'        => now(),
@@ -1743,9 +1743,11 @@ class CustomerController extends Controller
     }
 
     public function DeleteCreditCard(Request $request){
+        $c=  DB::table('cards')
+        ->where('cards.id', $request->id)->first();
 
         $card = DB::table('cards')
-        ->where('cards.id', $request->id)->update(['Actif' => 0]);
+        ->where('cards.CustomerID', $c->CustomerID)->update(['Actif' => 0]);
         $card2 = DB::table('cards')->where('cards.id', $request->id)->first();
         return response()->json( $card2 );
 

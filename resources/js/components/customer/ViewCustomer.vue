@@ -1245,6 +1245,7 @@
                     form.value.phoneNumber = phone.number;
                     form.value.email = res.data.customer.email;
                     // address part in account details tab
+                    if(res.data.customer.address!=null){
                     form.value.postCode = res.data.customer.address.postCode;
                     form.value.city = res.data.customer.address.city;
                     form.value.state = res.data.customer.address.state;
@@ -1252,6 +1253,7 @@
                     form.value.country = res.data.customer.address.country;
                     form.value.deliveryAddress1 = res.data.customer.address.address1;
                     form.value.deliveryAddress2 = res.data.customer.address.address2;
+                    }
                     form.value.customerNote = res.data.customer.CustomerNotes;
                     // payment tab
 
