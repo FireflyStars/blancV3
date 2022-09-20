@@ -1743,9 +1743,11 @@ class CustomerController extends Controller
     }
 
     public function DeleteCreditCard(Request $request){
+        $c=  DB::table('cards')
+        ->where('cards.id', $request->id)->first();
 
         $card = DB::table('cards')
-        ->where('cards.id', $request->id)->update(['Actif' => 0]);
+        ->where('cards.CustomerID', $c->CustomerID)->update(['Actif' => 0]);
         $card2 = DB::table('cards')->where('cards.id', $request->id)->first();
         return response()->json( $card2 );
 
