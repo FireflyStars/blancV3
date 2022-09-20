@@ -49,6 +49,7 @@ public function SearchCustomer(Request $request)
     ->orWhere('infoitems.id_items',$query)
     ->orWhere('infoInvoice.NumInvoice', 'LIKE', $query)
     ->orderBy('infoOrder.created_at', 'desc')
+    ->distinct('infoOrder.id')
     ->paginate($PerPageOrder);
 
 
