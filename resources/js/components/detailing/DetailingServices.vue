@@ -652,8 +652,9 @@ export default {
 
         function priceNow(){
            let montant = price_now_value.value;
+           console.log(parseFloat(montant));
 
-            if(montant=='' || !parseFloat(montant)){
+            if(montant=='' || parseFloat(montant)=='NaN'){
                 price_now_value.value = '';
                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
                         message: 'Invalid price now value',
