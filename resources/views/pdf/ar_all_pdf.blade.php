@@ -5,13 +5,19 @@
 <style>
 
     @page { size: 21cm 29.7cm portrait; }
+
+    body{
+
+        margin-top:40%;
+        margin-bottom:22%;
+
+    }
+
     .page-break {
         page-break-after: always;
     }
 
-    body{
-        margin-top:40%;
-        margin-bottom:20%;
+    .each-page-content{;
     }
 
     header { position: fixed; top: 0px; left: 0px; right: 0px; height: 25%;}
@@ -33,6 +39,10 @@
     }
 
     main{
+        /*
+        margin-top:40%;
+        margin-bottom:22%;
+        */
     }
 
     #inv_summary{
@@ -220,7 +230,8 @@
 </head>
 <body style="font-family: Helvetica;">
     @foreach($details_per_cust as $k=>$v)
-    <div class="@php if($k+1 < count($details_per_cust)){echo "page-break";} @endphp">
+
+    <div class="each-page-content @php if($k+1 < count($details_per_cust)){echo "page-break";} @endphp">
     <header>
         <img src="{{public_path('/images/pdf_logo.jpg')}}"/>
 
@@ -347,7 +358,6 @@
 
 
     </div>
-
 
     @endforeach
 

@@ -1025,7 +1025,7 @@ class CustomerController extends Controller
                        $company = DB::table('infoCustomer')->select('infoCustomer.CompanyName')->where('infoCustomer.CustomerID','=',$customer->CustomerID)->first();
                        $customer->CompanyName = $company->CompanyName;
                    }
-               
+
         $total = DB::table('infoOrder')->where('CustomerID', $customer->CustomerID)
                     ->select(
                         DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
@@ -1968,7 +1968,7 @@ class CustomerController extends Controller
         $info_customer['DeliverySat'] = '';
         $info_customer['PauseDateTo'] = null;
         $info_customer['PauseDateFrom'] = null;
-      
+
         $has_recurring = [];
         $success = false;
 
@@ -1998,29 +1998,29 @@ class CustomerController extends Controller
 
             $mail_vars = [];
 
-        
+
                 $addr = DB::table('address')
                     ->where('CustomerID',$infocustomer->CustomerID)
                     ->where('status','DELIVERY')
                     ->first();
-    
+
                 $full_address = "";
-    
+
                 if($addr) {
                     $full_address = $addr->address1 . ($addr->address2 != '' ? ", " . $addr->address2 : "") . ", " . $addr->postcode . ", " . $addr->Town . (!is_null($addr->County) ? ", " . $addr->County : "") . (!is_null($addr->Country) ? ", " . $addr->Country : "") ;
                 }
-    
+
                 $pickups = [];
-    
+
                 foreach($arr as $k=>$v){
                     $part = explode("_",$v);
                     $tranche = Delivery::getTrancheByIndex($part[1]);
                     $day = $part[0];
-    
+
                     $pickups[] = ucfirst(strtolower($day))."s from ".Tranche::formatToAmPm($tranche['from'],$tranche['to']);
-    
+
                 }
-    
+
                 $mail_vars = [
                     'FirstName'=>$infocustomer->FirstName,
                     'CreatedOn'=>date('l d F @H:i:s'),
@@ -2029,9 +2029,9 @@ class CustomerController extends Controller
                     'Frequency'=>count($arr),
                     'PickUpSlot'=>(isset($pickups[0])?$pickups[0]:''),
                     'PickUpSlot2'=>(isset($pickups[1])?$pickups[1]:''),
-    
+
                 ];
-    
+
             NotificationController::Notify($infocustomer->EmailAddress, '+123456789', '4A_RECURRING_CONFIRM', '', $mail_vars, false, 0, $infocustomer->CustomerID);
 
             //Create recurring
@@ -2527,7 +2527,7 @@ class CustomerController extends Controller
                             $item_txt = $v->brand." ".str_replace(' ',' ',$v->Description);
 
                             $dept[$v->Department][] = $item_txt;
-                            $net += $v->priceTotal;
+                            $total += $v->priceTotal;
                         }
                         $items_per_dept[$v->Department] = array_count_values($dept[$v->Department]);
 
@@ -2535,10 +2535,10 @@ class CustomerController extends Controller
                             return strtotime($b) - strtotime($a);
                         });
 
-                        $order_net += $net;
+                        $order_total += $total;
+                        $net = $total/1.2;
 
-                        $vat = 0.2*$net;
-                        $total = 1.2*$net;
+                        $vat = $total - $net;
 
                         $order_details[$customerid][$invoiceid]['orderid'] = $orderid;
                         $order_details[$customerid][$invoiceid]['date'] = (isset($promised_dates[0]) && $promised_dates[0]!='0000-00-00'?date('d/m/y',strtotime($promised_dates[0])):"--");
@@ -2563,10 +2563,12 @@ class CustomerController extends Controller
             }
            }
 
-           $facture_net[] = $order_net;
+           $order_net = $order_total/1.2;
+           $facture_total[] = $order_total;
 
-           $order_vat = 0.2*$order_net;
-           $order_total = 1.2*$order_net;
+
+           $order_vat = $order_total - $order_net;
+
 
 
 
@@ -2585,11 +2587,11 @@ class CustomerController extends Controller
         }
 
 
-        $facture_amount_net = array_sum($facture_net);
-        $discounted_amount = $facture_amount_net - $discount;
+        $facture_amount_total = array_sum($facture_total);
+        $discounted_amount = $facture_amount_total - $discount;
+        $facture_amount_net = $discounted_amount/1.2;
 
-        $facture_amount_vat = 0.2*$discounted_amount;
-        $facture_amount_total = 1.2*$discounted_amount;
+        $facture_amount_vat = $discounted_amount - $facture_amount_net;
 
         $data = [
            'customer'=>$customer,
