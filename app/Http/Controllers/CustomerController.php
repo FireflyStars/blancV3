@@ -2181,7 +2181,9 @@ class CustomerController extends Controller
             ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID')
             ->join('detailingitem','infoOrder.id','detailingitem.order_id')
             ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
+            ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
             ->where('infoOrder.orderinvoiced',0)
+            ->whereNotIn('infoInvoice.Status',['DELETE','VOID'])
             ->whereIn('infoOrder.CustomerID',$bacs_cust_id)
             ->get();
 
