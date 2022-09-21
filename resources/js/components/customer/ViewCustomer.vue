@@ -1626,7 +1626,7 @@
 
             function AddCreditCardCustomer(){
 
-                if(form.value.cardHolderName != "" && form.value.cardDetails != ""  && form.value.cardExpDate != "" &&  form.value.cardCVV != "" && form.value.paymentMethod != ""){
+                //if(form.value.cardHolderName != "" && form.value.cardDetails != ""  && form.value.cardExpDate != "" &&  form.value.cardCVV != "" && form.value.paymentMethod != ""){
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Add Card Customer...']);
                 axios.post('/add-credit-card', form.value ).then((res)=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
@@ -1643,14 +1643,14 @@
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 })
-                }else{
+             /*   }else{
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
                         message:"Credit card details missing",
                         ttl: 5,
                         type: 'danger'
                     });
                 }
-
+*/
 
 
             }

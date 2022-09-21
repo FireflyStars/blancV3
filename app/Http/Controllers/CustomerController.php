@@ -1692,7 +1692,7 @@ class CustomerController extends Controller
         if($stripe_test){
             $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
         }
-
+        if(trim($request->cardHolderName)!=""&&trim($request->cardDetails)!=""&&trim($request->cardExpDate)!=""&&trim($request->cardCVC)!=""){
         $stripe = new \Stripe\StripeClient(env($stripe_key));
 
             //create a card object to stripe
@@ -1723,6 +1723,7 @@ class CustomerController extends Controller
                                         'line2'         => $request->deliveryAddress2,
                                     ]
             ]);
+     
             //add a new record to cards table
                 $credit_card = [
                     'CustomerID'        => $request->customerID,
@@ -1736,10 +1737,15 @@ class CustomerController extends Controller
                     'created_at'        => now(),
                     'updated_at'        => now(),
                 ];
-
                 $credit_card_id = DB::table('cards')->insertGetId($credit_card);
-                 return response()->json( $credit_card_id );
+                return response()->json( $credit_card_id );
 
+            }else{
+                DB::table('infoCustomer')->where('CustomerID','=',$request->customerID)->update(array('bycard'=>1));
+            }
+
+            return response()->json( 0 );
+                 
     }
 
     public function DeleteCreditCard(Request $request){
