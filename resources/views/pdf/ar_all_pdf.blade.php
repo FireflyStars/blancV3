@@ -225,6 +225,10 @@
         margin-top:10px;
     }
 
+    .sub_order_total{
+        text-align:right;
+    }
+
 
 </style>
 </head>
@@ -299,11 +303,13 @@
                     <td class="total_text">Net Total:</td>
                     <td class="amount_total">&#163;{{$v['facture_net']}}</td>
                 </tr>
+                <!--
                 <tr>
                     <td>&nbsp;</td>
                     <td class="total_text">Discount:</td>
                     <td class="amount_total">@if($v['facture_discount'] > 0)-@endif &#163;{{$v['facture_discount']}}</td>
                 </tr>
+            -->
                 <tr>
                     <td>&nbsp;</td>
                     <td class="total_text vat_total">VAT @ 20%:</td>
@@ -325,7 +331,7 @@
 
                 <table width="100%" class="items_table" cellspacing="0">
                     <tr class="header_row">
-                        <th>Date</th><th>Order</th><th>Sub-order</th><th>Description</th><th>Net</th><th>VAT</th><th>Total</th>
+                        <th>Date</th><th>Order</th><th>Ticket</th><th>Description</th><th>Net</th><th>VAT</th><th>Total</th>
                     </tr>
                     @foreach ($invoices as $invoiceid=>$invoice )
                         <tr>
@@ -348,7 +354,13 @@
                         </tr>
                     @endforeach
                     <tr class="total_row">
-                        <th colspan="4"></th><th class="amount">{{$v['order_totals'][$customerid]['order_net']}}</th><th class="amount">{{$v['order_totals'][$customerid]['order_vat']}}</th><th class="amount">{{$v['order_totals'][$customerid]['order_total']}}</th>
+                        <th colspan="4"></th><th class="amount">{{$v['order_totals'][$customerid]['order_net']}}</th><th class="amount">{{$v['order_totals'][$customerid]['order_vat']}}</th><th class="amount">{{$v['order_totals'][$customerid]['order_without_discount']}}</th>
+                    </tr>
+                    <tr>
+                        <th colspan="4"></th><th colspan="2" class="sub_order_total">Discount</th><th class="amount">{{$v['order_totals'][$customerid]['discount']}}</th>
+                    </tr>
+                    <tr>
+                        <th colspan="4"></th><th colspan="2" class="sub_order_total">Total</th><th class="amount">{{$v['order_totals'][$customerid]['order_total']}}</th>
                     </tr>
 
 

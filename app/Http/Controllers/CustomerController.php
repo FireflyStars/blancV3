@@ -2502,10 +2502,18 @@ class CustomerController extends Controller
             $order_vat = 0;
             $order_total = 0;
 
+            $orderid_per_customer = [];
+
            foreach($orders as $orderid=>$invoices){
+                if(!in_array($orderid,$orderid_per_customer)){
+                    array_push($orderid_per_customer,$orderid);
+                }
+
+
                 $orderids[] = $orderid;
 
                 foreach($invoices as $invoiceid=>$items){
+
                     $inv = DB::table('infoInvoice')->where('InvoiceID',$invoiceid)->first();
                     $order_details[$customerid][$invoiceid] = [];
 
@@ -2547,6 +2555,8 @@ class CustomerController extends Controller
                         $order_details[$customerid][$invoiceid]['vat'] = number_format($vat,2);
                         $order_details[$customerid][$invoiceid]['total'] = number_format($total,2);
                         $order_details[$customerid][$invoiceid]['numinvoice'] = $inv->NumInvoice;
+
+
                     }
                 }
            }
@@ -2563,6 +2573,17 @@ class CustomerController extends Controller
             }
            }
 
+           $discount_per_customer = 0;
+
+           $orders_per_cust = DB::table('infoOrder')->whereIn('id',$orderid_per_customer)->get();
+
+           foreach($orders_per_cust as $ok=>$oc){
+            $discount_per_customer += $oc->OrderDiscount;
+           }
+
+           $order_total_exc_discount = $order_total;
+           $order_total = $order_total - $discount_per_customer;
+
            $order_net = $order_total/1.2;
            $facture_total[] = $order_total;
 
@@ -2571,21 +2592,23 @@ class CustomerController extends Controller
 
 
 
-
            $order_totals[$customerid]['order_net'] = number_format($order_net,2);
            $order_totals[$customerid]['order_vat'] = number_format($order_vat,2);
            $order_totals[$customerid]['order_total'] = number_format($order_total,2);
+           $order_totals[$customerid]['discount'] = number_format($discount_per_customer,2);
+           $order_totals[$customerid]['order_without_discount'] = number_format($order_total_exc_discount,2);
 
         }
 
         $orders = DB::table('infoOrder')->whereIn('id',$orderids)->get();
         $discount = 0;
+        /*
         if(count($orders) > 0){
             foreach($orders as $k=>$v){
                 $discount += $v->OrderDiscount;
             }
         }
-
+        */
 
         $facture_amount_total = array_sum($facture_total);
         $discounted_amount = $facture_amount_total - $discount;
