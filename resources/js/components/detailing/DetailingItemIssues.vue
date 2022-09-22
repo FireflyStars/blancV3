@@ -86,7 +86,7 @@
             >{{ stain.name }}</div>
         </div>
         <div class="row free-text">
-            <span class="free-text-label">Free text</span>
+            <span class="free-text-label">Stains - Additional Comments</span>
             <textarea
                 placeholder="Specification about stain"
                 class="free-text-input"
@@ -108,7 +108,7 @@
             >{{ dam.name }}</div>
         </div>
         <div class="row free-text">
-            <span class="free-text-label">Free text</span>
+            <span class="free-text-label">Damages - Additional Comments</span>
             <textarea
                 placeholder="Specification about damage"
                 class="free-text-input"
