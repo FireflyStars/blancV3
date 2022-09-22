@@ -80,7 +80,7 @@
         <div class="row">
             <div
                 class="stain-type"
-                :class="{ selected: stain.id === stainTag }"
+                :class="{ selected: stainTags.includes(stain.id) }"
                 v-for="(stain, index) in stainKind"
                 @click="addTag(stain.id)"
             >{{ stain.name }}</div>
@@ -102,7 +102,7 @@
         <div class="row">
             <div
                 class="stain-type"
-                :class="{ selected: dam.id === damageTag }"
+                :class="{ selected: damagTags.includes(dam.id) }"
                 v-for="(dam, index) in damageKind"
                 @click="addTag(dam.id)"
             >{{ dam.name }}</div>
@@ -154,6 +154,8 @@ export default {
         const issuesSteps = ref([]);
         const issuesStep = ref([]);
         const stainTag = ref(0);
+        const stainTags = ref([]);
+        const damagTags = ref([]);
         const damageTag = ref(0);
         const cur_zone_id = ref(0);
 
@@ -169,7 +171,8 @@ export default {
         issuesStep.value = damageZone.value.length > 0 ? 5 : (stainZone.value.length > 0 ? 2 : 0);
         stain_free_text.value = props.detailingitem.stainstext;
         damage_free_text.value = props.detailingitem.damagestext;
-
+        stainTags.value = props.detailingitem.stainsissue != null ? JSON.parse(props.detailingitem.stainsissue) : [];
+        damagTags.value = props.detailingitem.damagesissues != null ? JSON.parse(props.detailingitem.damagesissues) : [];
         //stainTag.value = stainZone.value.length > 0 ? stainZone.value[0].id_issue : 0;
 
         if(stainZone.value.length==1){
@@ -249,23 +252,34 @@ export default {
         }
         function addTag(tag_id) {
             if (issuesStep.value == 2 || issuesStep.value==0) {
-                stainTag.value = stainTag.value == tag_id ? 0 : tag_id;
+
+                if (!stainTags.value.includes(tag_id)) {
+                    stainTags.value.push(tag_id);
+                } else {
+                    stainTags.value.splice(stainTags.value.indexOf(tag_id), 1);
+                }
 
                 if(stainZone.value.length==1){
                     stainZone.value[0].id_issue = stainTag.value;
                 }else if(stainZone.value.length > 0){
                     let index = stainZone.value.findIndex((z) => { return z.id_zone === cur_zone_id.value });
-
                     stainZone.value[index].id_issue = stainTag.value;
                 }
 
                 context.emit("save-item-issues", {
                     detailingitem_id: props.detailingitem.id,
-                    stains: JSON.stringify(stainZone.value)
+                    stains: JSON.stringify(stainZone.value),
+                    stainisssue : stainTags.value
                 });
             }
             if (issuesStep.value == 5 || issuesStep.value==3) {
-                damageTag.value = damageTag.value == tag_id ? 0 : tag_id;
+                //damageTag.value = damageTag.value == tag_id ? 0 : tag_id;
+
+                if (!damagTags.value.includes(tag_id)) {
+                    damagTags.value.push(tag_id);
+                } else {
+                    damagTags.value.splice(damagTags.value.indexOf(tag_id), 1);
+                }
 
                 if(damageZone.value.length==1){
                     damageZone.value[0].id_issue = damageTag.value;
@@ -278,7 +292,8 @@ export default {
 
                 context.emit("save-item-issues", {
                     detailingitem_id: props.detailingitem.id,
-                    damages: JSON.stringify(damageZone.value)
+                    damages: JSON.stringify(damageZone.value),
+                    damagesissues : damagTags.value
                 });
             }
         }
@@ -371,6 +386,8 @@ export default {
             save,
             back,
             cur_zone_id,
+            stainTags,
+            damagTags
         };
     },
 }
