@@ -9,4 +9,10 @@ class TailoringService extends Model{
     protected $table="tailoring_services";
     use SoftDeletes;
 	use HasFactory;
+	
+	
+		public function categorie_service() 
+	{
+		return $this->belongsTo(TailoringTypeService::class, 'type_service_id');
+	}
 }

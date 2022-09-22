@@ -1033,7 +1033,7 @@ class CustomerController extends Controller
                        $company = DB::table('infoCustomer')->select('infoCustomer.CompanyName')->where('infoCustomer.CustomerID','=',$customer->CustomerID)->first();
                        $customer->CompanyName = $company->CompanyName;
                    }
-               
+
         $total = DB::table('infoOrder')->where('CustomerID', $customer->CustomerID)
                     ->select(
                         DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
@@ -1700,7 +1700,7 @@ class CustomerController extends Controller
         if($stripe_test){
             $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
         }
-
+        if(trim($request->cardHolderName)!=""&&trim($request->cardDetails)!=""&&trim($request->cardExpDate)!=""&&trim($request->cardCVC)!=""){
         $stripe = new \Stripe\StripeClient(env($stripe_key));
 
             //create a card object to stripe
@@ -1731,6 +1731,7 @@ class CustomerController extends Controller
                                         'line2'         => $request->deliveryAddress2,
                                     ]
             ]);
+     
             //add a new record to cards table
                 $credit_card = [
                     'CustomerID'        => $request->customerID,
@@ -1744,10 +1745,15 @@ class CustomerController extends Controller
                     'created_at'        => now(),
                     'updated_at'        => now(),
                 ];
-
                 $credit_card_id = DB::table('cards')->insertGetId($credit_card);
-                 return response()->json( $credit_card_id );
+                return response()->json( $credit_card_id );
 
+            }else{
+                DB::table('infoCustomer')->where('CustomerID','=',$request->customerID)->update(array('bycard'=>1));
+            }
+
+            return response()->json( 0 );
+                 
     }
 
     public function DeleteCreditCard(Request $request){
@@ -1976,7 +1982,7 @@ class CustomerController extends Controller
         $info_customer['DeliverySat'] = '';
         $info_customer['PauseDateTo'] = null;
         $info_customer['PauseDateFrom'] = null;
-      
+
         $has_recurring = [];
         $success = false;
 
@@ -2006,29 +2012,29 @@ class CustomerController extends Controller
 
             $mail_vars = [];
 
-        
+
                 $addr = DB::table('address')
                     ->where('CustomerID',$infocustomer->CustomerID)
                     ->where('status','DELIVERY')
                     ->first();
-    
+
                 $full_address = "";
-    
+
                 if($addr) {
                     $full_address = $addr->address1 . ($addr->address2 != '' ? ", " . $addr->address2 : "") . ", " . $addr->postcode . ", " . $addr->Town . (!is_null($addr->County) ? ", " . $addr->County : "") . (!is_null($addr->Country) ? ", " . $addr->Country : "") ;
                 }
-    
+
                 $pickups = [];
-    
+
                 foreach($arr as $k=>$v){
                     $part = explode("_",$v);
                     $tranche = Delivery::getTrancheByIndex($part[1]);
                     $day = $part[0];
-    
+
                     $pickups[] = ucfirst(strtolower($day))."s from ".Tranche::formatToAmPm($tranche['from'],$tranche['to']);
-    
+
                 }
-    
+
                 $mail_vars = [
                     'FirstName'=>$infocustomer->FirstName,
                     'CreatedOn'=>date('l d F @H:i:s'),
@@ -2037,9 +2043,9 @@ class CustomerController extends Controller
                     'Frequency'=>count($arr),
                     'PickUpSlot'=>(isset($pickups[0])?$pickups[0]:''),
                     'PickUpSlot2'=>(isset($pickups[1])?$pickups[1]:''),
-    
+
                 ];
-    
+
             NotificationController::Notify($infocustomer->EmailAddress, '+123456789', '4A_RECURRING_CONFIRM', '', $mail_vars, false, 0, $infocustomer->CustomerID);
 
             //Create recurring
@@ -2189,7 +2195,9 @@ class CustomerController extends Controller
             ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID')
             ->join('detailingitem','infoOrder.id','detailingitem.order_id')
             ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
+            ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
             ->where('infoOrder.orderinvoiced',0)
+            ->whereNotIn('infoInvoice.Status',['DELETE','VOID'])
             ->whereIn('infoOrder.CustomerID',$bacs_cust_id)
             ->get();
 
@@ -2510,10 +2518,18 @@ class CustomerController extends Controller
             $order_vat = 0;
             $order_total = 0;
 
+            $orderid_per_customer = [];
+
            foreach($orders as $orderid=>$invoices){
+                if(!in_array($orderid,$orderid_per_customer)){
+                    array_push($orderid_per_customer,$orderid);
+                }
+
+
                 $orderids[] = $orderid;
 
                 foreach($invoices as $invoiceid=>$items){
+
                     $inv = DB::table('infoInvoice')->where('InvoiceID',$invoiceid)->first();
                     $order_details[$customerid][$invoiceid] = [];
 
@@ -2535,7 +2551,7 @@ class CustomerController extends Controller
                             $item_txt = $v->brand." ".str_replace(' ',' ',$v->Description);
 
                             $dept[$v->Department][] = $item_txt;
-                            $net += $v->priceTotal;
+                            $total += $v->priceTotal;
                         }
                         $items_per_dept[$v->Department] = array_count_values($dept[$v->Department]);
 
@@ -2543,10 +2559,10 @@ class CustomerController extends Controller
                             return strtotime($b) - strtotime($a);
                         });
 
-                        $order_net += $net;
+                        $order_total += $total;
+                        $net = $total/1.2;
 
-                        $vat = 0.2*$net;
-                        $total = 1.2*$net;
+                        $vat = $total - $net;
 
                         $order_details[$customerid][$invoiceid]['orderid'] = $orderid;
                         $order_details[$customerid][$invoiceid]['date'] = (isset($promised_dates[0]) && $promised_dates[0]!='0000-00-00'?date('d/m/y',strtotime($promised_dates[0])):"--");
@@ -2555,6 +2571,8 @@ class CustomerController extends Controller
                         $order_details[$customerid][$invoiceid]['vat'] = number_format($vat,2);
                         $order_details[$customerid][$invoiceid]['total'] = number_format($total,2);
                         $order_details[$customerid][$invoiceid]['numinvoice'] = $inv->NumInvoice;
+
+
                     }
                 }
            }
@@ -2571,33 +2589,48 @@ class CustomerController extends Controller
             }
            }
 
-           $facture_net[] = $order_net;
+           $discount_per_customer = 0;
 
-           $order_vat = 0.2*$order_net;
-           $order_total = 1.2*$order_net;
+           $orders_per_cust = DB::table('infoOrder')->whereIn('id',$orderid_per_customer)->get();
+
+           foreach($orders_per_cust as $ok=>$oc){
+            $discount_per_customer += $oc->OrderDiscount;
+           }
+
+           $order_total_exc_discount = $order_total;
+           $order_total = $order_total - $discount_per_customer;
+
+           $order_net = $order_total/1.2;
+           $facture_total[] = $order_total;
+
+
+           $order_vat = $order_total - $order_net;
 
 
 
            $order_totals[$customerid]['order_net'] = number_format($order_net,2);
            $order_totals[$customerid]['order_vat'] = number_format($order_vat,2);
            $order_totals[$customerid]['order_total'] = number_format($order_total,2);
+           $order_totals[$customerid]['discount'] = number_format($discount_per_customer,2);
+           $order_totals[$customerid]['order_without_discount'] = number_format($order_total_exc_discount,2);
 
         }
 
         $orders = DB::table('infoOrder')->whereIn('id',$orderids)->get();
         $discount = 0;
+        /*
         if(count($orders) > 0){
             foreach($orders as $k=>$v){
                 $discount += $v->OrderDiscount;
             }
         }
+        */
 
+        $facture_amount_total = array_sum($facture_total);
+        $discounted_amount = $facture_amount_total - $discount;
+        $facture_amount_net = $discounted_amount/1.2;
 
-        $facture_amount_net = array_sum($facture_net);
-        $discounted_amount = $facture_amount_net - $discount;
-
-        $facture_amount_vat = 0.2*$discounted_amount;
-        $facture_amount_total = 1.2*$discounted_amount;
+        $facture_amount_vat = $discounted_amount - $facture_amount_net;
 
         $data = [
            'customer'=>$customer,
