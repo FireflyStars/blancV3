@@ -911,7 +911,7 @@
                                         </thead>
                                         <tbody>
                                             <tr v-for="(item, index) in form.linkedAccounts" :key="index">
-                                                <td valign=middle class="text-nowrap">{{ item.name }}</td>
+                                                <td valign=middle class="text-nowrap link_account"><a href="javascript:void(0)" @click="goCustomerView(item.id)">{{ item.name }}</a></td>
                                                 <td valign=middle class="text-nowrap fw-bold">{{ item.accountType }}</td>
                                                 <td valign=middle class="text-nowrap">{{ formatPhone(item.phone) }}</td>
                                                 <td valign=middle class="text-nowrap">{{ item.email }}</td>
@@ -1501,7 +1501,9 @@
                 // add function create sub account
                 axios.post('/create-customer-sub-account',{
                          customer_data: data,
-                         customer_id : form.value.customerID
+                         customer_id : form.value.customerID,
+                         CustomerPayemenProfile : form.value.CustomerPayemenProfile,
+                         typeDelivery : form.value.typeDelivery
                     }).then((res)=>{
                     }).catch((error)=>{
                         console.log(error);
@@ -1524,7 +1526,7 @@
                     });
             }
             const formatPhone = (phoneString)=>{
-                if(phoneString != ""){
+                if(phoneString != "" && phoneString != undefined){
                     if(phoneString.split('"').length == 1){
                         return phoneString;
                     }else{
@@ -2182,6 +2184,17 @@
                 const month = date.toLocaleString('default', { month: 'long' });
                 return `${parseInt(datepart[2])} ${month} ${datepart[0]}`;
             }
+
+            function goCustomerView(customerId){
+
+                // router.push({
+                //     name:'ViewCustomer',
+                //     params: {
+                //             customer_id:customerId,
+                //         },
+                // })
+            }
+
             return {
                 fdate,
                 form,
@@ -2237,6 +2250,7 @@
                 billing_address_edit,
                 validateAndSaveBillingAddress,
                 toggleCreditCard,
+                goCustomerView
             }
 
         },
@@ -2673,5 +2687,8 @@ input.error:focus{
 }
 .form-control:disabled{
     background-color: #F8F8F8;
+}
+.link_account a{
+    text-decoration : none
 }
 </style>

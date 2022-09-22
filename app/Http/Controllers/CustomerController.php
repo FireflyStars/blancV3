@@ -101,13 +101,15 @@ class CustomerController extends Controller
                                 $info_customer_sub = [
                                     'CustomerID'    => '',
                                     'CustomerIDMaster'=> $CustomerUUID,
+                                    'OnAccount'     => $request->CustomerPayemenProfile,
+                                    'TypeDelivery'     => $request->typeDelivery,
                                     'isMaster'      => 0,
                                     'btob'          => 1,
                                     'FirstName'     => $account['firstname'],
                                     'LastName'      => $account['lastname'],
                                     'Name'          => $account['name'],
                                     'EmailAddress'  => $account['email'],
-                                    'Phone'        => $account['phone']!= '' ? '["'.$account['phoneCountryCode'].'|'.$account['phoneNumber'].']"' : '',
+                                    'Phone'         => $account['phoneNumber']!= '' ? '["'.$account['phoneCountryCode'].'|'.$account['phoneNumber'].']"' : '',
                                     'SignupDate'    => Carbon::now()->format('Y-m-d'),
                                 ];
                                 try {
@@ -459,16 +461,22 @@ class CustomerController extends Controller
     }
 
     public function createCustomerSubAccount(Request $request){
-        dump($request->customer_id);
         $emailAddress = $request->customer_data['email'] !='' ? $request->customer_data['email'] : (Str::random(10).'@noemail.com');
 
         if($request->customer_data['customerId'] != "" && $request->customer_data['id'] != 0 ){
-            DB::table('infoCustomer')->where('id', $request->customer_data['id'])->update(['CustomerIDMaster' => $request->customer_id]);
+            DB::table('infoCustomer')->where('id', $request->customer_data['id'])
+            ->update([
+                'CustomerIDMaster' => $request->customer_id,
+                'OnAccount'        => $request->CustomerPayemenProfile,
+                'TypeDelivery'     => $request->typeDelivery
+            ]);
         }else {
 
             $info_customer_sub = [
                 'CustomerID'    => '',
                 'CustomerIDMaster'=> $request->customer_id,
+                'OnAccount'       => $request->CustomerPayemenProfile,
+                'TypeDelivery'    => $request->typeDelivery,
                 'isMaster'      => 0,
                 'btob'          => 1,
                 'FirstName'     => $request->customer_data['firstname'],
