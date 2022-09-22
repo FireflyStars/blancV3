@@ -132,27 +132,30 @@
                         };
                     });
 
-                    qz.websocket.connect().then(function() {
-                        //Find printers
-                        qz.printers.find().then(function (data) {
-                            available_printers.value = data;
+                    if(!qz.websocket.isActive()){
+                        qz.websocket.connect().then(function() {
+                            //Find printers
+                            qz.printers.find().then(function (data) {
+                                available_printers.value = data;
+                            }).catch(function (e) {
+                                console.error(e);
+                            });
+
+                            //Get default printer
+                            qz.printers.getDefault().then(function(data) {
+                                printer_name.value = data;
+                            }).catch(function (e) {
+                                console.error(e);
+                            });
+
                         }).catch(function (e) {
                             console.error(e);
                         });
-
-                        //Get default printer
-                        qz.printers.getDefault().then(function(data) {
-                            printer_name.value = data;
-                        }).catch(function (e) {
-                            console.error(e);
-                        });
-
-                    }).catch(function (e) {
-                        console.error(e);
-                    });
+                    }
 
                 });
             })
+
 
             onBeforeUnmount( ()=>{
                 qz.websocket.disconnect();
@@ -170,6 +173,30 @@
                 // print_modal.value.showModal();
             }
             const printReceipt = ()=>{
+                if(!qz.websocket.isActive()){
+                        qz.websocket.connect().then(function() {
+                            //Find printers
+                            qz.printers.find().then(function (data) {
+                                available_printers.value = data;
+                            }).catch(function (e) {
+                                console.error(e);
+                            });
+
+                            //Get default printer
+                            qz.printers.getDefault().then(function(data) {
+                                console.log(data);
+                                printer_name.value = data;
+                            }).catch(function (e) {
+                                console.error(e);
+                            });
+
+                        }).catch(function (e) {
+                            console.error(e);
+                        });
+                    }
+
+
+
                 let err =false;
                 let err_arr = [];
                 // if(printer_name.value == '' && (Target.value != ".item-detail-panel")){
