@@ -1,5 +1,6 @@
 <?php
 
+use App\Customer;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\PermissionController;
@@ -219,7 +220,7 @@ Route::get('tailoring-services-test',function(){
 */
 
 
-Route::get('stripe-test',function(){
+Route::get('stripe-test-card',function(){
     $id_customer = 	3428;
 
     $cust = DB::table('infoCustomer')->where('id',$id_customer)->first();
@@ -229,7 +230,7 @@ Route::get('stripe-test',function(){
     $stripe = new \Stripe\StripeClient(env('STRIPE_TEST_SECURITY_KEY'));
 
     $card_exp = '12/23';
-    $card_num =  '4850180100577561';
+    $card_num =  '4242424242424242';
     $cardholder_name = 'Franck Gavois';
 
     $stripe_customer = null;
@@ -261,7 +262,6 @@ Route::get('stripe-test',function(){
                     'cvc'         => 999,
                 ],
             ]);
-
 
             //create a customer object to stripe
             $stripe_customer = $stripe->customers->create([
@@ -298,7 +298,7 @@ Route::get('stripe-test',function(){
 
             DB::table('cards')->insert($credit_card);
         }
-        /*
+
         $payment_intent = $stripe->paymentIntents->create([
             'amount'            => 30, //100*0.01
             'currency'          => 'gbp',
@@ -311,8 +311,22 @@ Route::get('stripe-test',function(){
             "receipt_email"=>"rushdi@vpc-direct-service.com",
         ]);
 
+
+        $cardid = $payment_intent->charges->data[0]->payment_method;
+
+        /*
+        $stripe_cust  = $stripe->customers->retrieve(
+            $custid,
+            []
+          );
+        */
+        $card2 = $stripe->paymentMethods->retrieve($cardid);
+
         echo "<pre>";
-        print($payment_intent);
+        print_r($card2);
+
+
+        die();
 
         if($payment_intent->status == 'succeeded'){
             //Update order
@@ -533,40 +547,26 @@ Route::get('test-stripe-terminal',function(Request $request){
 
 
 Route::get('inv-pdf',function(Request $request){
-    $facture_id = $request->id;
+    $facture_id = '966ec862-3a69-11ed-b3ba-080027d0ed3e';//$request->id;
 
     if(!isset($facture_id) || $facture_id ==''){
         die('Facture not set');
     }
 
-    $details = DB::table('infoOrderPrint')->where('FactureID',$facture_id)->get();
-    $details_per_cust = [];
-
-    foreach($details as $key=>$details){
-        $details_per_cust[] = CustomerController::getArPDFData($details);
-    }
-
-    foreach($details_per_cust as $k=>$v){
-        if(empty($v['order_details'])){
-            unset($details_per_cust[$k]);
-        }
-    }
+    $details = DB::table('infoOrderPrint')->where('FactureID',$facture_id)->first();
 
 
-   if(!empty($details_per_cust)){
-        $data = [
-            'details_per_cust'=>$details_per_cust,
-        ];
+    $data = CustomerController::getArPDFData($details);
 
-        echo "<pre>";
-        print_r($data);
-        die();
+    if(!empty($data['order_details'])){
 
+
+        $pdf_data['v'] = $data;
 
         Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
 
 
-        $pdf = Pdf::loadView('pdf/ar_all_pdf', $data);
+        $pdf = Pdf::loadView('pdf/ar_pdf', $pdf_data);
 
         $pdf->output();
 
@@ -586,10 +586,11 @@ Route::get('inv-pdf',function(Request $request){
         $canvas->page_text($x, $y, $text , $font, 10, array(0, 0, 0));
 
         return $pdf->download('invoice'.$details->CustomerID.'.pdf');
+
+
     }else{
         die("Invoice has no valid items");
     }
-
 });
 
 Route::get('notify-test', function () {
@@ -626,6 +627,159 @@ Route::get('notify-test', function () {
 
     NotificationController::Notify('rushdi@vpc-direct-service.com', '+123456789', '3A_BOOKING_CONFIRM', '', $mail_vars, true, 0, '');
     */
+});
+
+/* A REFAIRE */
+
+Route::get('ar-test',function(){
+    $customers = DB::table('infoCustomer')
+    ->where('OnAccount',1)
+    ->get();
+
+    $bacs_cust_id = [];
+    $list = [];
+
+    if(count($customers) > 0){
+        foreach($customers as $k=>$v){
+            $bacs_cust_id[] = $v->CustomerID;
+        }
+    }
+
+    $grouped_by_cust_id = [];
+    $grouped_by_cust_order_date = [];
+    $custid_with_orders = [];
+    $master_cust = [];
+
+    $orders = DB::table('infoOrder')
+        ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID')
+        ->join('detailingitem','infoOrder.id','detailingitem.order_id')
+        ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
+        ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+        ->where('infoOrder.orderinvoiced',0)
+        ->whereNotIn('infoInvoice.Status',['DELETE','VOID'])
+        ->whereIn('infoOrder.CustomerID',$bacs_cust_id)
+        ->get();
+
+
+    if(count($orders) > 0){
+
+        $cust_ids = [];
+
+
+        foreach($orders as $k=>$v){
+            if(!in_array($v->CustomerID,$cust_ids)){
+                array_push($cust_ids,$v->CustomerID);
+            }
+        }
+
+        $all_customers = DB::table('infoCustomer')->whereIn('CustomerID',$cust_ids)->get();
+
+    }
+
+    die();
+    foreach($orders as $k=>$v){
+        $grouped_by_cust_id[$v->CustomerID][] = $v->Total;
+        $grouped_by_cust_order_date[$v->CustomerID][] = $v->created_at;
+
+        if(!in_array($v->CustomerID,$custid_with_orders)){
+            array_push($custid_with_orders,$v->CustomerID);
+        }
+    }
+
+
+    foreach($grouped_by_cust_order_date as $k=>$v){
+        usort($grouped_by_cust_order_date[$k],function($a, $b) {
+            return strtotime($b) - strtotime($a);
+        });
+    }
+
+    $cust_with_orders = DB::table('infoCustomer')->whereIn('CustomerID',$custid_with_orders)->get();
+
+
+    if(count($cust_with_orders) > 0){
+        foreach($cust_with_orders as $k=>$v){
+            if($v->CustomerIDMaster !=''){
+                $master_cust[$v->CustomerID] = $v->CustomerIDMaster;
+            }
+        }
+    }
+
+
+    foreach($grouped_by_cust_id as $k=>$v){
+        if(isset($master_cust[$k])){
+            $list[$master_cust[$k]]['order_total'][] = array_sum($v);
+        }else{
+            $list[$k]['order_total'][] = array_sum($v);
+        }
+    }
+
+    foreach($grouped_by_cust_order_date as $k=>$v){
+        if(isset($master_cust[$k])){
+            $list[$master_cust[$k]]['order_date'][] = (isset($v[0])?$v[0]:"");
+        }else{
+            $list[$k]['order_date'][] = (isset($v[0])?$v[0]:"");
+        }
+    }
+
+    $final_cust_id = [];
+    foreach($list as $k=>$v){
+        $final_cust_id[] = $k;
+    }
+
+    $final_cust = DB::table('infoCustomer')->whereIn('CustomerID',$final_cust_id)->get();
+
+    $final_cust_addr = DB::table('address')->whereIn('CustomerID',$final_cust_id)->where('status','BILLING')->get();
+    $final_customers = [];
+
+
+    if(count($final_cust) > 0){
+        foreach($final_cust as $k=>$v){
+            if(isset($list[$v->CustomerID])){
+                /*
+                    IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0
+                */
+
+                $ctype = "B2C";
+                if($v->CustomerIDMaster=='' && $v->CustomerIDMasterAccount=='' && $v->IsMaster==0 && $v->IsMasterAccount==0){
+                    $ctype = "B2B";
+                }
+                $list[$v->CustomerID]['id'] = $v->id;
+                $list[$v->CustomerID]['type'] = ($v->btob==0?"B2C":"B2B");
+                $list[$v->CustomerID]['active_in'] = $v->TypeDelivery;
+                $list[$v->CustomerID]['name'] = $v->Name;
+                $list[$v->CustomerID]['email'] = $v->EmailAddress;
+
+                $list[$v->CustomerID]['phone'] = $v->Phone;
+            }
+        }
+    }
+
+    if(count($final_cust_addr) > 0){
+        foreach($final_cust_addr as $k=>$v){
+            if(isset($list[$v->CustomerID])){
+                $list[$v->CustomerID]['address1'] = $v->address1;
+                $list[$v->CustomerID]['postcode'] = $v->postcode;
+            }
+        }
+    }
+
+
+    foreach($list as $k=>$v){
+    $order_total = $list[$k]['order_total'];
+    $list[$k]['order_total'] = array_sum($order_total);
+
+    usort($list[$k]['order_date'],function($a, $b) {
+            return strtotime($b) - strtotime($a);
+        });
+    }
+
+    foreach($list as $k=>$v){
+        $list[$k]['last_order_date'] = "";
+
+        if(isset($list[$k]['order_date'][0])){
+            $list[$k]['last_order_date'] = date("d/m/y",strtotime($list[$k]['order_date'][0]));
+        }
+    }
 });
 
 

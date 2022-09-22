@@ -1731,7 +1731,7 @@ class CustomerController extends Controller
                                         'line2'         => $request->deliveryAddress2,
                                     ]
             ]);
-     
+
             //add a new record to cards table
                 $credit_card = [
                     'CustomerID'        => $request->customerID,
@@ -1753,7 +1753,7 @@ class CustomerController extends Controller
             }
 
             return response()->json( 0 );
-                 
+
     }
 
     public function DeleteCreditCard(Request $request){
@@ -2730,6 +2730,16 @@ class CustomerController extends Controller
 
             foreach($all_details as $k=>$v){
                 $cust = DB::table('infoCustomer')->where('CustomerID',$v->CustomerID)->first();
+
+                $addr = Delivery::getAddressByCustomerUUID($cust->CustomerID,true);
+
+                $contact = false;
+
+                if($addr){
+                    $contact = DB::table('contacts')->where('address_id',$addr->id)->first();
+                }
+
+
                 $info = @json_decode($v->info);
 
                 $orderid = 0;
@@ -2752,7 +2762,17 @@ class CustomerController extends Controller
                     ];
                 }
 
-                $sent = NotificationController::Notify('admin@vpc-direct-service.com', '+123456789', '5K_EMAIL_B2B_INVOICE', '', $mail_vars, true, 0, '');
+                $email = $cust->EmailAddress;
+                if($contact){
+                    if($contact->email!=''){
+                        $email = $contact->email;
+                    }
+                    else if($contact->email=='' && $contact->email2!=''){
+                        $email = $contact->email2;
+                    }
+                }
+
+                $sent = NotificationController::Notify('rushdi@vpc-direct-service.com', '+123456789', '5K_EMAIL_B2B_INVOICE', '', $mail_vars, true, 0, '');
             }
         }
 
