@@ -90,7 +90,7 @@
             <textarea
                 placeholder="Specification about stain"
                 class="free-text-input"
-                maxlength="30"
+                maxlength="140"
                 v-model="stain_free_text"
                 @blur="addFreeText"
             ></textarea>
@@ -112,7 +112,7 @@
             <textarea
                 placeholder="Specification about damage"
                 class="free-text-input"
-                maxlength="30"
+                maxlength="140"
                 v-model="damage_free_text"
                 @blur="addFreeText"
             ></textarea><!-- @keyup.enter="addFreeText" -->
