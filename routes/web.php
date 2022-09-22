@@ -547,7 +547,7 @@ Route::get('test-stripe-terminal',function(Request $request){
 
 
 Route::get('inv-pdf',function(Request $request){
-    $facture_id = '966ec862-3a69-11ed-b3ba-080027d0ed3e';//$request->id;
+    $facture_id = $request->id;
 
     if(!isset($facture_id) || $facture_id ==''){
         die('Facture not set');
