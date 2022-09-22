@@ -180,12 +180,12 @@
         <div class="item-detail-footer" v-if="ITEM.breif_info.id !=''">
             <div class="d-flex col-12 p-0">
                 <div class="col-6 p-0 d-flex justify-content-between">
-                    <button class="item-detail-btn item-detail-btn-void text-center">
+                    <!-- <button class="item-detail-btn item-detail-btn-void text-center">
                         Void
                     </button>
                     <button class="item-detail-btn item-detail-btn-mark-as-late text-center" @click="markaslate">
                         Mark as late
-                    </button>
+                    </button> -->
                 </div>
                 <div class="col-6 p-0 text-end">
                     <button class="item-detail-btn item-detail-btn-print text-center" @click="openModal">
