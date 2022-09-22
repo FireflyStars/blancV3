@@ -150,7 +150,7 @@
                                                 class="col comp-coefcleaning"
                                             >£{{ (comp.coefcleaning * item_description.base_price).toFixed(2) }}</div>
                                         </div>
-                                        <p v-if ="detailingitem.complexities_id == '[0]' ">None</p>
+                                        <p class="description-text" v-if ="detailingitem.complexities_id == '[0]' ">None</p>
                                     </div>
                                 </div>
                             </div>
