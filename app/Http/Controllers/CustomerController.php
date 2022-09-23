@@ -2203,7 +2203,7 @@ class CustomerController extends Controller
 
 
         foreach($orders as $k=>$v){
-            $grouped_by_cust_id[$v->CustomerID][$v->order_id] = $v->Total - $v->OrderDiscount;
+            $grouped_by_cust_id[$v->CustomerID][$v->order_id] = $v->Total;
             $grouped_by_cust_order_date[$v->CustomerID][] = $v->created_at;
 
             if(!in_array($v->CustomerID,$custid_with_orders)){
@@ -2360,6 +2360,8 @@ class CustomerController extends Controller
                     $map_sub_id[$v->CustomerID] = $v->CustomerIDMaster;
                 }
             }
+
+            $all_customer_ids = array_merge($all_customer_ids,$cust_master_ids);
         }
 
         $orders = DB::table('infoOrder')
@@ -2601,11 +2603,11 @@ class CustomerController extends Controller
            $order_total_exc_discount = $order_total;
            $order_total = $order_total - $discount_per_customer;
 
-           $order_net = $order_total/1.2;
+           $order_net = $order_total_exc_discount/1.2;
            $facture_total[] = $order_total;
 
 
-           $order_vat = $order_total - $order_net;
+           $order_vat = $order_total_exc_discount - $order_net;
 
 
 
