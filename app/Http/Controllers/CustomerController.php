@@ -2192,7 +2192,7 @@ class CustomerController extends Controller
         $master_cust = [];
 
         $orders = DB::table('infoOrder')
-            ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID')
+            ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID','infoOrder.OrderDiscount')
             ->join('detailingitem','infoOrder.id','detailingitem.order_id')
             ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
             ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -2203,7 +2203,7 @@ class CustomerController extends Controller
 
 
         foreach($orders as $k=>$v){
-            $grouped_by_cust_id[$v->CustomerID][] = $v->Total;
+            $grouped_by_cust_id[$v->CustomerID][$v->order_id] = $v->Total;
             $grouped_by_cust_order_date[$v->CustomerID][] = $v->created_at;
 
             if(!in_array($v->CustomerID,$custid_with_orders)){
@@ -2237,6 +2237,7 @@ class CustomerController extends Controller
                 $list[$k]['order_total'][] = array_sum($v);
             }
         }
+
 
         foreach($grouped_by_cust_order_date as $k=>$v){
             if(isset($master_cust[$k])){
@@ -2359,6 +2360,8 @@ class CustomerController extends Controller
                     $map_sub_id[$v->CustomerID] = $v->CustomerIDMaster;
                 }
             }
+
+            $all_customer_ids = array_merge($all_customer_ids,$cust_master_ids);
         }
 
         $orders = DB::table('infoOrder')
@@ -2600,11 +2603,11 @@ class CustomerController extends Controller
            $order_total_exc_discount = $order_total;
            $order_total = $order_total - $discount_per_customer;
 
-           $order_net = $order_total/1.2;
+           $order_net = $order_total_exc_discount/1.2;
            $facture_total[] = $order_total;
 
 
-           $order_vat = $order_total - $order_net;
+           $order_vat = $order_total_exc_discount - $order_net;
 
 
 
@@ -2680,14 +2683,21 @@ class CustomerController extends Controller
             }
 
             if(!empty($details_per_cust)){
-                $data = [
-                    'details_per_cust'=>$details_per_cust,
-                ];
 
                 Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
 
+                if(count($row_ids)==1){
+                    $data['v'] = $details_per_cust[0];
+                    $pdf = Pdf::loadView('pdf/ar_pdf', $data);
 
-                $pdf = Pdf::loadView('pdf/ar_all_pdf', $data);
+                }else{
+
+                    $data = [
+                        'details_per_cust'=>$details_per_cust,
+                    ];
+
+                    $pdf = Pdf::loadView('pdf/ar_all_pdf', $data);
+                }
 
                 $pdf->output();
 

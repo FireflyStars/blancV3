@@ -992,29 +992,33 @@ export default {
         }
 
         function validatePayment(){
-            if(editcard.value==true){
-                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
-                    {
-                        message: "Please save card details or cancel editing",
-                        ttl: 3,
-                        type: 'danger'
-                    });
+            if(cust.value.OnAccount==1){
+                completeCheckout();
             }else{
-                let err = false;
-                if(amount_to_pay.value > 0 && cust.value.bycard==1 && !custcard.value){
-                    err = true;
-                    no_payment_modal.value.showModal();
-                }
-
-                if(!err){
-
-                    if(custcard.value && cust.value.bycard==1 && typeof(custcard.value.id)!='undefined' && amount_to_pay.value > 0){
-                        console.log('by card',amount_to_pay.value);
-                        payment_comp.value.effectPayment('Pay')
+                if(editcard.value==true){
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                        {
+                            message: "Please save card details or cancel editing",
+                            ttl: 3,
+                            type: 'danger'
+                        });
+                }else{
+                    let err = false;
+                    if(amount_to_pay.value > 0 && cust.value.bycard==1 && !custcard.value){
+                        err = true;
+                        no_payment_modal.value.showModal();
                     }
-                    else{
-                        console.log('by credit',credit_to_deduct.value);
-                        completeCheckout();
+
+                    if(!err){
+
+                        if(custcard.value && cust.value.bycard==1 && typeof(custcard.value.id)!='undefined' && amount_to_pay.value > 0){
+                            console.log('by card',amount_to_pay.value);
+                            payment_comp.value.effectPayment('Pay')
+                        }
+                        else{
+                            console.log('by credit',credit_to_deduct.value);
+                            completeCheckout();
+                        }
                     }
                 }
             }

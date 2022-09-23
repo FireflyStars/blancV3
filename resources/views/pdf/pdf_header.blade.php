@@ -18,7 +18,7 @@
             <div>{{$v['contact']->company}}</div>
             <div>{{$v['contact']->name}}</div>
         @else
-            <div>{{$v['customer']->company}}</div>
+            <div>{{$v['customer']->CompanyName}}</div>
             <div>{{$v['customer']->Name}}</div>
         @endif
 
