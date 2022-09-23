@@ -95,6 +95,8 @@
                                     :typeitemPicto="item_description.typeitem_picto"
                                     @save-item-issues="saveItemDetails"
                                     @go-to-step="backPreviousStep"
+                                    @get-free-text="getFreeText"
+                                    @get-issues-Step ="getIssuesStep"
                                 ></detailing-item-issues>
                                 <detailing-services
                                     v-if="detailingitem.etape == 11"
@@ -114,6 +116,8 @@
                             :detailingitem="detailingitem"
                             :cleaning_services="cust_cleaning_services"
                             :step="step"
+                            :IssueStep="IssueStep"
+                            @get-free-text="getFreeText"
                             @update-cleaning-price="saveItemDetails"
                             ref="right_panel_cmp"
                         ></detailing-right-panel>
@@ -195,6 +199,7 @@ export default {
         const main_services = ref({});
         const right_panel_cmp = ref();
         const tailoring_services = ref({});
+        const IssueStep = ref(0);
 
         store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Please wait....']);
 
@@ -359,6 +364,20 @@ export default {
                 });
 
         }
+        function getFreeText(issues){
+
+            if ([0,1,2].includes(issues.issuesStep)) {
+                detailingitem.value.stainstext = issues.text_stain
+            }
+            if ([3,4,5].includes(issues.issuesStep)) {
+                detailingitem.value.damagestext = issues.text_damage  
+            }
+
+        }
+        function getIssuesStep(issuesStep){
+            IssueStep.value = issuesStep
+        }
+
         return {
             paths,
             user,
@@ -387,6 +406,9 @@ export default {
             right_panel_cmp,
             tailoring_services,
             initDetailing,
+            getFreeText,
+            IssueStep,
+            getIssuesStep
         };
     },
 }

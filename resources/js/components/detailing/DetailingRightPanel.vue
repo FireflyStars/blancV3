@@ -211,27 +211,29 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- <div class="row free-text pt-3">
-                                        <span class="free-text-label">Stains - Additional Comments</span>
+                                <p>{{getIssueStep()}}</p>
+                                <div class="row free-text pt-3" v-if="issuesStep == 0 || issuesStep == 1 || issuesStep == 2">
+                                        <span class="free-text-label">Stains - Additional Comments </span>
                                         <textarea
                                             placeholder="Specification about stain"
                                             class="free-text-input"
-                                            maxlength="30"
+                                            maxlength="140"
+                                            @keyup.prevent="submit"
                                             v-model="stain_free_text"
                                             @blur="addFreeText"
                                         ></textarea>
-                                </div> -->
-
-                                <!-- <div class="row free-text pt-3" v-if="[3,4,5].includes(issuesStep)">
+                                </div>
+                                <div class="row free-text pt-3" v-if="issuesStep == 3 || issuesStep == 4 || issuesStep == 5">
                                         <span class="free-text-label">Damages - Additional Comments</span>
                                         <textarea
-                                            placeholder="Specification about stain"
+                                            placeholder="Specification about damage"
                                             class="free-text-input"
-                                            maxlength="30"
-                                            v-model="stain_free_text"
+                                            maxlength="140"
+                                            @keyup.prevent="submit"
+                                            v-model="damage_free_text"
                                             @blur="addFreeText"
                                         ></textarea>
-                                </div> -->
+                                </div>
                                 
                             </div>
                         </div>
@@ -297,7 +299,7 @@
     </transition>
 </template>
 <script>
-import { ref, watch, onMounted, onUpdated } from 'vue';
+import { ref, watch, onMounted, onUpdated, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
 export default {
@@ -309,6 +311,7 @@ export default {
         detailingitem: {},
         step: Number,
         cleaning_services:{},
+        IssueStep:Number
     },
     emits:['update-cleaning-price'],
     setup(props, context) {
@@ -329,8 +332,31 @@ export default {
         const sel_tailoring_services = ref({});
         const tailoring_price = ref(0);
         const showCustomerInstructions = ref(false);
+        const stain_free_text = ref('');
+        const damage_free_text = ref('');
+        const issuesStep = ref([]);
+        const timeout =ref('');
+        
+        stain_free_text.value = props.detailingitem.stainstext;
+        damage_free_text.value = props.detailingitem.damagestext;
 
-        //
+        watch(() => props, (current_val,previous_val ) => {
+            stain_free_text.value = props.detailingitem.stainstext;
+            damage_free_text.value = props.detailingitem.damagestext;
+        });
+       
+        watch(() => props.IssueStep, (current_val,previous_val ) => {
+           issuesStep.value = current_val
+        });
+
+        watch(() => props.detailingitem.stainstext, (current_val,previous_val ) => {
+            stain_free_text.value = current_val
+        });
+
+        watch(() => props.detailingitem.damagestext, (current_val,previous_val ) => {
+            damage_free_text.value = current_val
+        });
+
 
         instAcc.value = props.step == 1 ? true : false;
         descAcc.value = props.step > 1 && props.step <= 9 ? true : false;
@@ -377,6 +403,12 @@ export default {
         }
         function getStainName(id) {
             return props.item_description.issues_tags.filter((tag) => tag.id === id)[0].name;
+        }
+
+        function getIssueStep(){
+            watch(() => props.IssueStep, (current_val,previous_val ) => {       
+                issuesStep.value = current_val.issuesStep
+            });
         }
 
         function initCleaningServices(data,price_type){
@@ -549,6 +581,70 @@ export default {
                 return price;
             }
         }
+        function submit(e) { 
+
+               clearTimeout(timeout.value);
+               timeout.value = setTimeout(function(){
+                   nextTick(() => {
+                     if ([0,1,2].includes(issuesStep.value)) {
+
+                        context.emit("get-free-text", {
+                            text_stain : e.target.value,
+                            issuesStep :issuesStep.value
+                        });
+                    }
+                    if ([3,4,5].includes(issuesStep.value)) {
+
+                        context.emit("get-free-text", {
+                            text_damage: e.target.value,
+                            issuesStep :issuesStep.value
+                        });
+                    }
+                });
+               }  
+              , 500)
+        };
+
+        function addFreeText(e) {
+            let data = {};
+            data['detailingitem_id'] = props.detailingitem.id;
+            if ([0,1,2].includes(issuesStep.value)) {
+                /*
+                //stainZone.value[0].description = e.target.value;
+                context.emit("save-item-issues", {
+                    detailingitem_id: props.detailingitem.id,
+                    stains_text: e.target.value,
+                    //JSON.stringify(stainZone.value)
+                });
+                */
+                data['stains_text']  = e.target.value;
+            }
+            if ([3,4,5].includes(issuesStep.value)) {
+               /*
+               context.emit("save-item-issues", {
+                    detailingitem_id: props.detailingitem.id,
+                    damages_text: e.target.value,
+                });
+                */
+               data['damages_text'] = e.target.value;
+            }
+
+            axios.post('/update-detailing-issues-text',data)
+                .then((res)=>{
+                    if(res.data.updated){
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                            message: 'Free text updated',
+                            ttl: 5,
+                            type: 'success'
+                        });
+                    }
+                }).catch((err)=>{
+
+                }).finally(()=>{
+
+                });
+
+        }
 
         onMounted(()=>{
 
@@ -597,6 +693,12 @@ export default {
             sel_tailoring_services,
             tailoring_price,
             showCustomerInstructions,
+            stain_free_text,
+            damage_free_text,
+            getIssueStep,
+            issuesStep,
+            submit,
+            addFreeText
         };
     },
 }
@@ -834,6 +936,26 @@ export default {
 #voucher_code{
     background:#333;
     padding:0.25rem;
+}
+.free-text-input {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    border: 1px solid #868686;
+    box-sizing: border-box;
+    border-radius: 5px;
+    flex: none;
+    order: 2;
+    align-self: stretch;
+    flex-grow: 1;
+    margin: 8px;
+    font-family: Gotham Rounded;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 140%;
+    color: #868686;
 }
 
 </style>

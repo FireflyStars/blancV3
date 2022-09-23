@@ -92,6 +92,7 @@
                 class="free-text-input"
                 maxlength="140"
                 v-model="stain_free_text"
+                @keyup.prevent="submit"
                 @blur="addFreeText"
             ></textarea>
         </div>
@@ -114,6 +115,7 @@
                 class="free-text-input"
                 maxlength="140"
                 v-model="damage_free_text"
+                @keyup.prevent="submit"
                 @blur="addFreeText"
             ></textarea><!-- @keyup.enter="addFreeText" -->
         </div>
@@ -131,7 +133,7 @@
     </div>
 </template>
 <script>
-import { ref, watch } from 'vue';
+import { ref, watch , nextTick } from 'vue';
 import ItemPictoNew from '../miscellaneous/ItemPictoNew.vue'
 import {TOASTER_MODULE, TOASTER_MESSAGE} from '../../store/types/types';
 import {useStore} from 'vuex';
@@ -158,6 +160,7 @@ export default {
         const damagTags = ref([]);
         const damageTag = ref(0);
         const cur_zone_id = ref(0);
+        const timeout =ref('');
 
         const stain_free_text = ref('');
         const damage_free_text = ref('');
@@ -173,6 +176,27 @@ export default {
         damage_free_text.value = props.detailingitem.damagestext;
         stainTags.value = props.detailingitem.stainsissue != null ? JSON.parse(props.detailingitem.stainsissue) : [];
         damagTags.value = props.detailingitem.damagesissues != null ? JSON.parse(props.detailingitem.damagesissues) : [];
+
+        context.emit("get-issues-Step", {
+                   issuesStep:issuesStep.value,
+            });
+
+        watch(() => issuesStep.value, (current_val,previous_val ) => { 
+            context.emit("get-issues-Step", {
+                   issuesStep:current_val,
+            });
+        });
+
+        watch(() => props.detailingitem.stainstext, (current_val,previous_val ) => {
+            stain_free_text.value = current_val
+            props.detailingitem.stainstext = current_val
+        });
+
+        watch(() => props.detailingitem.damagestext, (current_val,previous_val ) => {
+            damage_free_text.value = current_val
+            props.detailingitem.damagestext = current_val
+        });
+       
         //stainTag.value = stainZone.value.length > 0 ? stainZone.value[0].id_issue : 0;
 
         if(stainZone.value.length==1){
@@ -259,12 +283,6 @@ export default {
                     stainTags.value.splice(stainTags.value.indexOf(tag_id), 1);
                 }
 
-                if(stainZone.value.length==1){
-                    stainZone.value[0].id_issue = stainTag.value;
-                }else if(stainZone.value.length > 0){
-                    let index = stainZone.value.findIndex((z) => { return z.id_zone === cur_zone_id.value });
-                    stainZone.value[index].id_issue = stainTag.value;
-                }
 
                 context.emit("save-item-issues", {
                     detailingitem_id: props.detailingitem.id,
@@ -281,14 +299,14 @@ export default {
                     damagTags.value.splice(damagTags.value.indexOf(tag_id), 1);
                 }
 
-                if(damageZone.value.length==1){
-                    damageZone.value[0].id_issue = damageTag.value;
-                }
-                else if(damageZone.value.length > 1){
-                    let index = damageZone.value.findIndex((z) => { return z.id_zone === cur_zone_id.value });
-
-                    damageZone.value[index].id_issue = damageTag.value;
-                }
+                // if(damageZone.value.length==1){
+                //     damageZone.value[0].id_issue = damageTag.value;
+                // }
+                // else if(damageZone.value.length > 1){
+                //     let index = damageZone.value.findIndex((z) => { return z.id_zone === cur_zone_id.value });
+                //     console.log(damageZone.value , index , cur_zone_id.value)
+                //     damageZone.value[index].id_issue = damageTag.value;
+                // }
 
                 context.emit("save-item-issues", {
                     detailingitem_id: props.detailingitem.id,
@@ -297,6 +315,30 @@ export default {
                 });
             }
         }
+
+        function submit(e) { 
+
+               clearTimeout(timeout.value);
+               timeout.value = setTimeout(function(){
+                   nextTick(() => {
+                     if ([0,1,2].includes(issuesStep.value)) {
+
+                        context.emit("get-free-text", {
+                            text_stain : e.target.value,
+                            issuesStep :issuesStep.value
+                        });
+                    }
+                    if ([3,4,5].includes(issuesStep.value)) {
+
+                        context.emit("get-free-text", {
+                            text_damage: e.target.value,
+                            issuesStep :issuesStep.value
+                        });
+                    }
+                });
+               }  
+              , 500)
+            };
         function addFreeText(e) {
             let data = {};
             data['detailingitem_id'] = props.detailingitem.id;
@@ -387,7 +429,8 @@ export default {
             back,
             cur_zone_id,
             stainTags,
-            damagTags
+            damagTags,
+            submit
         };
     },
 }
