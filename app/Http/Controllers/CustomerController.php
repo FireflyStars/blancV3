@@ -2192,7 +2192,7 @@ class CustomerController extends Controller
         $master_cust = [];
 
         $orders = DB::table('infoOrder')
-            ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID')
+            ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID','infoOrder.OrderDiscount')
             ->join('detailingitem','infoOrder.id','detailingitem.order_id')
             ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
             ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -2203,7 +2203,7 @@ class CustomerController extends Controller
 
 
         foreach($orders as $k=>$v){
-            $grouped_by_cust_id[$v->CustomerID][] = $v->Total;
+            $grouped_by_cust_id[$v->CustomerID][$v->order_id] = $v->Total - $v->OrderDiscount;
             $grouped_by_cust_order_date[$v->CustomerID][] = $v->created_at;
 
             if(!in_array($v->CustomerID,$custid_with_orders)){
@@ -2237,6 +2237,7 @@ class CustomerController extends Controller
                 $list[$k]['order_total'][] = array_sum($v);
             }
         }
+
 
         foreach($grouped_by_cust_order_date as $k=>$v){
             if(isset($master_cust[$k])){
@@ -2772,7 +2773,7 @@ class CustomerController extends Controller
                     }
                 }
 
-                $sent = NotificationController::Notify('rushdi@vpc-direct-service.com', '+123456789', '5K_EMAIL_B2B_INVOICE', '', $mail_vars, true, 0, '');
+                $sent = NotificationController::Notify($email, '+123456789', '5K_EMAIL_B2B_INVOICE', '', $mail_vars, true, 0, '');
             }
         }
 
