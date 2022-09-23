@@ -911,7 +911,7 @@ class CustomerController extends Controller
               //DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
               'infoCustomer.TotalSpend as total_spent'
 
-             );
+             )->where('infoCustomer.Actif', '=', 1);
              foreach($keywords as $searchTerm){
                 $customers->where(function($q) use ($searchTerm){
                     $q->where('infoCustomer.FirstName', 'like', '%'.$searchTerm.'%')

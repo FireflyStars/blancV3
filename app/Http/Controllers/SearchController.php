@@ -54,10 +54,10 @@ public function SearchCustomer(Request $request)
 
 
     $users = DB::table('infoCustomer')
-    ->select('Name', 'EmailAddress', 'Phone','infoCustomer.id', 'infoCustomer.CustomerID' , 'infoCustomer.CustomerIDMaster',
+    ->select('Name', 'EmailAddress', 'Phone','infoCustomer.id', 'infoCustomer.CustomerID' , 'infoCustomer.Actif','infoCustomer.CustomerIDMaster',
     DB::raw(' IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as cust_type'),
     DB::raw(' IF(infoCustomer.CustomerIDMaster = "",  "Main", "Sub") as customer_account')
-    );
+    )->where('infoCustomer.Actif', '=', 1);
     foreach($keywords as $searchTerm){
         $users->where(function($q) use ($searchTerm){
             $q->where('FirstName', 'like', '%'.$searchTerm.'%')
@@ -133,10 +133,13 @@ public function SearchByCustomer(Request $request)
  {
     $query = $request['query'];
     $PerPage = $request['PerPage'];
-    $Customer = DB::table('infoCustomer')->select(['infoCustomer.id','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CustomerID','infoCustomer.Phone','infoCustomer.EmailAddress'])
-    ->where('Name', 'LIKE', '%' . $query . '%')
-    ->orWhere('EmailAddress', 'LIKE', $query . '%')
-    ->orWhere('Phone', 'LIKE', '%' . $query . '%')
+    $Customer = DB::table('infoCustomer')->select(['infoCustomer.Actif','infoCustomer.id','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CustomerID','infoCustomer.Phone','infoCustomer.EmailAddress'])
+    ->where('infoCustomer.Actif', '=', 1)
+    ->where(function($q) use ($query) {
+        $q->where('Name', 'LIKE', '%' . $query . '%')
+        ->orWhere('EmailAddress', 'LIKE', $query . '%')
+        ->orWhere('Phone', 'LIKE', '%' . $query . '%');
+    })
     ->orderBy('Name')
     ->paginate($PerPage);
 
@@ -164,6 +167,7 @@ public function SearchByCustomer(Request $request)
                     ->where(function($query){
                         $query->where('SignupDate', '!=', '2000-01-01')->orWhere('SignupDateOnline', '!=', '2000-01-01');
                     })
+                    ->where('infoCustomer.Actif', '=', 1)
                     ->where('infoCustomer.CustomerIDMaster','!=', $request->customerID)
                     ->where(function($query) use ($request) {
                         $query->where('Name', 'LIKE', '%' .$request['query']. '%')
