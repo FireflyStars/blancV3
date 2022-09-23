@@ -489,7 +489,7 @@
                             <div class="row mx-0 mt-5 mb-4 justify-content-end align-items-center">
                                 <div class="d-none">{{cur_cust}}</div>
                                 <div class="col-2">
-                                    <a href="javascript:void(0)" id="cancel_new_order">Cancel</a>
+                                    <a href="javascript:void(0)" id="cancel_new_order" @click="cancel">Cancel</a>
                                 </div>
                                 <div class="col-2 px-0">
                                     <button class="btn btn-grey w-100" @click="validateDetails" :disabled="proceedtodetailing_disabled">Create Order</button>
@@ -1721,6 +1721,13 @@ import axios from 'axios';
 
             }
 
+            // cancel to create order
+            const cancel = ()=>{
+                router.push({
+                    name: 'LandingPage'
+                });
+            }
+
             return {
                 showcontainer,
                 paths,
@@ -1808,6 +1815,7 @@ import axios from 'axios';
                 available_days,
                 available_cust_slots,
                 holidays,
+                cancel
             }
         },
         data(){

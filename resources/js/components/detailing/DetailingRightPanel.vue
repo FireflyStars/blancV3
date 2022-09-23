@@ -111,7 +111,7 @@
                                         </div>
                                     </div>
                                     <div class="col-6">
-                                        <div class="description-title">Colour & pattern</div>
+                                        <div class="description-title">Colour</div>
                                         <div
                                             class="d-flex description-text"
                                             v-if="item_description.colors_name != undefined && item_description.colors_name.length > 0"
@@ -125,13 +125,19 @@
                                                 ></span>
                                             </div>
                                         </div>
-                                        {{ item_description.pattern_name }}
+                                        
                                     </div>
                                     <div class="col-6">
                                         <div class="description-title">Condition</div>
                                         <div
                                             class="description-text"
                                         >{{ item_description.condition_name }}</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="description-title">pattern</div>
+                                        <div
+                                            class="description-text"
+                                        >{{ item_description.pattern_name }}</div>
                                     </div>
                                     <div class="col-12">
                                         <div class="description-title">Complexities</div>
@@ -144,6 +150,7 @@
                                                 class="col comp-coefcleaning"
                                             >£{{ (comp.coefcleaning * item_description.base_price).toFixed(2) }}</div>
                                         </div>
+                                        <p class="description-text" v-if ="detailingitem.complexities_id == '[0]' ">None</p>
                                     </div>
                                 </div>
                             </div>
@@ -204,6 +211,28 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- <div class="row free-text pt-3">
+                                        <span class="free-text-label">Stains - Additional Comments</span>
+                                        <textarea
+                                            placeholder="Specification about stain"
+                                            class="free-text-input"
+                                            maxlength="30"
+                                            v-model="stain_free_text"
+                                            @blur="addFreeText"
+                                        ></textarea>
+                                </div> -->
+
+                                <!-- <div class="row free-text pt-3" v-if="[3,4,5].includes(issuesStep)">
+                                        <span class="free-text-label">Damages - Additional Comments</span>
+                                        <textarea
+                                            placeholder="Specification about stain"
+                                            class="free-text-input"
+                                            maxlength="30"
+                                            v-model="stain_free_text"
+                                            @blur="addFreeText"
+                                        ></textarea>
+                                </div> -->
+                                
                             </div>
                         </div>
                     </div>

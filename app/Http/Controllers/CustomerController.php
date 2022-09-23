@@ -101,13 +101,15 @@ class CustomerController extends Controller
                                 $info_customer_sub = [
                                     'CustomerID'    => '',
                                     'CustomerIDMaster'=> $CustomerUUID,
+                                    'OnAccount'     => $request->CustomerPayemenProfile,
+                                    'TypeDelivery'     => $request->typeDelivery,
                                     'isMaster'      => 0,
                                     'btob'          => 1,
                                     'FirstName'     => $account['firstname'],
                                     'LastName'      => $account['lastname'],
                                     'Name'          => $account['name'],
                                     'EmailAddress'  => $account['email'],
-                                    'Phone'        => $account['phone']!= '' ? '["'.$account['phoneCountryCode'].'|'.$account['phoneNumber'].']"' : '',
+                                    'Phone'         => $account['phoneNumber']!= '' ? '["'.$account['phoneCountryCode'].'|'.$account['phoneNumber'].']"' : '',
                                     'SignupDate'    => Carbon::now()->format('Y-m-d'),
                                 ];
                                 try {
@@ -459,16 +461,22 @@ class CustomerController extends Controller
     }
 
     public function createCustomerSubAccount(Request $request){
-        dump($request->customer_id);
         $emailAddress = $request->customer_data['email'] !='' ? $request->customer_data['email'] : (Str::random(10).'@noemail.com');
 
         if($request->customer_data['customerId'] != "" && $request->customer_data['id'] != 0 ){
-            DB::table('infoCustomer')->where('id', $request->customer_data['id'])->update(['CustomerIDMaster' => $request->customer_id]);
+            DB::table('infoCustomer')->where('id', $request->customer_data['id'])
+            ->update([
+                'CustomerIDMaster' => $request->customer_id,
+                'OnAccount'        => $request->CustomerPayemenProfile,
+                'TypeDelivery'     => $request->typeDelivery
+            ]);
         }else {
 
             $info_customer_sub = [
                 'CustomerID'    => '',
                 'CustomerIDMaster'=> $request->customer_id,
+                'OnAccount'       => $request->CustomerPayemenProfile,
+                'TypeDelivery'    => $request->typeDelivery,
                 'isMaster'      => 0,
                 'btob'          => 1,
                 'FirstName'     => $request->customer_data['firstname'],
@@ -1723,7 +1731,7 @@ class CustomerController extends Controller
                                         'line2'         => $request->deliveryAddress2,
                                     ]
             ]);
-     
+
             //add a new record to cards table
                 $credit_card = [
                     'CustomerID'        => $request->customerID,
@@ -1745,7 +1753,7 @@ class CustomerController extends Controller
             }
 
             return response()->json( 0 );
-                 
+
     }
 
     public function DeleteCreditCard(Request $request){
@@ -2184,7 +2192,7 @@ class CustomerController extends Controller
         $master_cust = [];
 
         $orders = DB::table('infoOrder')
-            ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID')
+            ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID','infoOrder.OrderDiscount')
             ->join('detailingitem','infoOrder.id','detailingitem.order_id')
             ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
             ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -2195,7 +2203,7 @@ class CustomerController extends Controller
 
 
         foreach($orders as $k=>$v){
-            $grouped_by_cust_id[$v->CustomerID][] = $v->Total;
+            $grouped_by_cust_id[$v->CustomerID][$v->order_id] = $v->Total;
             $grouped_by_cust_order_date[$v->CustomerID][] = $v->created_at;
 
             if(!in_array($v->CustomerID,$custid_with_orders)){
@@ -2229,6 +2237,7 @@ class CustomerController extends Controller
                 $list[$k]['order_total'][] = array_sum($v);
             }
         }
+
 
         foreach($grouped_by_cust_order_date as $k=>$v){
             if(isset($master_cust[$k])){
@@ -2351,6 +2360,8 @@ class CustomerController extends Controller
                     $map_sub_id[$v->CustomerID] = $v->CustomerIDMaster;
                 }
             }
+
+            $all_customer_ids = array_merge($all_customer_ids,$cust_master_ids);
         }
 
         $orders = DB::table('infoOrder')
@@ -2592,11 +2603,11 @@ class CustomerController extends Controller
            $order_total_exc_discount = $order_total;
            $order_total = $order_total - $discount_per_customer;
 
-           $order_net = $order_total/1.2;
+           $order_net = $order_total_exc_discount/1.2;
            $facture_total[] = $order_total;
 
 
-           $order_vat = $order_total - $order_net;
+           $order_vat = $order_total_exc_discount - $order_net;
 
 
 
@@ -2672,14 +2683,21 @@ class CustomerController extends Controller
             }
 
             if(!empty($details_per_cust)){
-                $data = [
-                    'details_per_cust'=>$details_per_cust,
-                ];
 
                 Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
 
+                if(count($row_ids)==1){
+                    $data['v'] = $details_per_cust[0];
+                    $pdf = Pdf::loadView('pdf/ar_pdf', $data);
 
-                $pdf = Pdf::loadView('pdf/ar_all_pdf', $data);
+                }else{
+
+                    $data = [
+                        'details_per_cust'=>$details_per_cust,
+                    ];
+
+                    $pdf = Pdf::loadView('pdf/ar_all_pdf', $data);
+                }
 
                 $pdf->output();
 
@@ -2722,6 +2740,16 @@ class CustomerController extends Controller
 
             foreach($all_details as $k=>$v){
                 $cust = DB::table('infoCustomer')->where('CustomerID',$v->CustomerID)->first();
+
+                $addr = Delivery::getAddressByCustomerUUID($cust->CustomerID,true);
+
+                $contact = false;
+
+                if($addr){
+                    $contact = DB::table('contacts')->where('address_id',$addr->id)->first();
+                }
+
+
                 $info = @json_decode($v->info);
 
                 $orderid = 0;
@@ -2744,7 +2772,17 @@ class CustomerController extends Controller
                     ];
                 }
 
-                $sent = NotificationController::Notify('admin@vpc-direct-service.com', '+123456789', '5K_EMAIL_B2B_INVOICE', '', $mail_vars, true, 0, '');
+                $email = $cust->EmailAddress;
+                if($contact){
+                    if($contact->email!=''){
+                        $email = $contact->email;
+                    }
+                    else if($contact->email=='' && $contact->email2!=''){
+                        $email = $contact->email2;
+                    }
+                }
+
+                $sent = NotificationController::Notify('rushdi@vpc-direct-service.com', '+123456789', '5K_EMAIL_B2B_INVOICE', '', $mail_vars, true, 0, '');
             }
         }
 

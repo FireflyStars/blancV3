@@ -300,7 +300,9 @@ class DetailingController extends Controller
         $status = $request->post('status');
         $step = $request->post('step');
         $stains = $request->post('stains');
+        $stainisssue = $request->post('stainisssue');
         $damages = $request->post('damages');
+        $damagesissues = $request->post('damagesissues');
         $brand_name = $request->post('brand_name');
         $cleaning_services = $request->post('cleaning_services');
         $cleaning_price_type = $request->post('cleaning_price_type');
@@ -440,8 +442,14 @@ class DetailingController extends Controller
         if (isset($stains)) {
             DB::table('detailingitem')->where('id', $detailingitem_id)->update(['stains' => $stains, 'updated_at' => date('Y-m-d H:i:s')]);
         }
+        if (isset($stainisssue)) {
+            DB::table('detailingitem')->where('id', $detailingitem_id)->update(['stainsissue' => $stainisssue, 'updated_at' => date('Y-m-d H:i:s')]);
+        }
         if (isset($damages)) {
             DB::table('detailingitem')->where('id', $detailingitem_id)->update(['damages' => $damages, 'updated_at' => date('Y-m-d H:i:s')]);
+        }
+        if (isset($damagesissues)) {
+            DB::table('detailingitem')->where('id', $detailingitem_id)->update(['damagesissues' => $damagesissues, 'updated_at' => date('Y-m-d H:i:s')]);
         }
         if (isset($step)) {
             if ($step == 3 && isset($typeitem_id)) {
