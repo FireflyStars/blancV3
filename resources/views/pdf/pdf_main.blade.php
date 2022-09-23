@@ -1,9 +1,10 @@
 <main>
     @foreach ($v['order_details'] as $customerid=>$invoices)
-        <span class="cust_name">{{$v['cust_names'][$customerid]}}</span>
-
 
         <table width="100%" class="items_table" cellspacing="0">
+            <tr>
+                <th colspan="7" style="text-align: left; padding:5px 0;"><span class="cust_name">{{$v['cust_names'][$customerid]}}</span></th>
+            </tr>
             <tr class="header_row">
                 <th>Date</th><th>Order</th><th>Ticket</th><th>Description</th><th>Net</th><th>VAT</th><th>Total</th>
             </tr>
@@ -36,8 +37,6 @@
             <tr>
                 <th colspan="4"></th><th colspan="2" class="sub_order_total">Total</th><th class="amount">{{$v['order_totals'][$customerid]['order_total']}}</th>
             </tr>
-
-
         </table>
     @endforeach
 </main>

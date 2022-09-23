@@ -236,6 +236,13 @@
 
                         </div>
                     </div>
+
+                    <div class="row my-5">
+                        <div class="col-2">
+                            <invoice-pdf></invoice-pdf>
+                        </div>
+                    </div>
+
             </div>
         </div>
         </div>
@@ -263,11 +270,12 @@
     import DetailingRightPanel from '../detailing/DetailingRightPanel.vue';
     import Modal from '../miscellaneous/Modal.vue';
     import { useRouter, useRoute } from "vue-router";
+    import InvoicePdf from '../miscellaneous/InvoicePdf.vue';
 
 
     export default {
         name: "ComponentTest",
-        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,SwitchBtn,OrderBarcode, RecurringForm,ItemPictoNew,DetailingRightPanel,Modal},
+        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,SwitchBtn,OrderBarcode, RecurringForm,ItemPictoNew,DetailingRightPanel,Modal,InvoicePdf},
         setup(props,context){
             const showcontainer=ref(false);
             const show_barcode= ref(false);
