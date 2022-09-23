@@ -2683,14 +2683,21 @@ class CustomerController extends Controller
             }
 
             if(!empty($details_per_cust)){
-                $data = [
-                    'details_per_cust'=>$details_per_cust,
-                ];
 
                 Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
 
+                if(count($row_ids)==1){
+                    $data['v'] = $details_per_cust[0];
+                    $pdf = Pdf::loadView('pdf/ar_pdf', $data);
 
-                $pdf = Pdf::loadView('pdf/ar_all_pdf', $data);
+                }else{
+
+                    $data = [
+                        'details_per_cust'=>$details_per_cust,
+                    ];
+
+                    $pdf = Pdf::loadView('pdf/ar_all_pdf', $data);
+                }
 
                 $pdf->output();
 
@@ -2775,7 +2782,7 @@ class CustomerController extends Controller
                     }
                 }
 
-                $sent = NotificationController::Notify($email, '+123456789', '5K_EMAIL_B2B_INVOICE', '', $mail_vars, true, 0, '');
+                $sent = NotificationController::Notify('rushdi@vpc-direct-service.com', '+123456789', '5K_EMAIL_B2B_INVOICE', '', $mail_vars, true, 0, '');
             }
         }
 
