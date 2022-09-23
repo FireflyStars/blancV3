@@ -167,6 +167,14 @@ class OrderRecurringCreator
                 })->where('Status', '=', 'RECURRING')->get();
 
                 foreach ($infoOrders as $infoOrder){
+                           //fix for sub account
+                           $subaccount=DB::table('infoCustomer')->select(['CustomerIDMaster'])->where('CustomerID','=',$infoOrder->CustomerID)->first();
+                           if( $subaccount!=null&& $subaccount->CustomerIDMaster!=''){
+                               $this->l("\t\tThe order `$infoOrder->id` is a suborder, Therefore  Master account recurring config will be used to perform CHECK03.");
+                           $masteraccount=DB::table('infoCustomer')->where('CustomerID','=',$subaccount->CustomerIDMaster)->first();
+                           $noBookingDays=$this->getDaysWithoutBooking($masteraccount);
+                           }
+                           //end fix for subaccount
                     $pickupday=date('l',strtotime($infoOrder->DatePickup));
                     $deliveryday=date('l',strtotime($infoOrder->DateDeliveryAsk));
                     if($this->isDateFuture($infoOrder->DatePickup)&&in_array($pickupday,$noBookingDays)){
