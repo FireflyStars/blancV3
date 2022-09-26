@@ -2315,7 +2315,23 @@ class CustomerController extends Controller
 
         foreach ($request->listCustomers as $customer) {
             try {
+
                   DB::table('infoCustomer')->where('CustomerID', $customer)->update(['SMS6I' => 1]);
+
+                  $ListItems = DB::table('infoInvoice')->select('infoInvoice.InvoiceID', 'infoitems.id' , 'infoitems.CCStatus')
+                  ->join('infoitems',function($join){
+                    $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
+                        ->where('infoitems.CCStatus','=','No Delivery Date');
+                    })
+                  ->where('infoInvoice.CustomerID' , $customer)->get();
+
+                  if(!empty($ListItems)){
+                    
+                    foreach($ListItems as $item){
+                        DB::table('infoitems')->where('infoitems.id', $item->id)->update(['CCStatus' => ""]);
+                      }
+                  }
+
             } catch (\Exception $e) {
                 return response()->json(['error'=> $e->getMessage()]);
             }
