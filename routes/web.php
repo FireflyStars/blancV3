@@ -61,6 +61,7 @@ Route::post('/getorderlistbysearch',[OrderListController::class, 'getorderlistby
 Route::post('/getOrdersByCustomerId',[OrderListController::class, 'getOrdersByCustomerId'])->middleware('auth')->name('ordersByCustomerId');
 Route::post('/cancelorders',[OrderController::class, 'cancelorders'])->middleware('auth')->name('cancelorders');
 Route::post('/voidSuborder',[OrderController::class, 'voidSuborder'])->middleware('auth')->name('voidSuborder');
+Route::post('/voidOrder',[OrderController::class, 'voidOrder'])->middleware('auth')->name('voidOrder');
 Route::post('/cancelBooking',[OrderController::class, 'cancelBooking'])->middleware('auth')->name('cancelBooking');
 Route::post('/create-new-order',[OrderController::class,'createNewOrder'])->name('create-new-order')->middleware('auth');
 Route::post('/markaslate',[OrderListController::class, 'markaslate'])->middleware('auth')->name('markaslate');

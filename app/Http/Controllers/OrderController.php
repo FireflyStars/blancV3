@@ -1203,4 +1203,55 @@ class OrderController extends Controller
         ]);
     }
 
+    public function voidOrder(Request $request){
+
+       $order_id=$request->post('order_id');
+       $ListSubOrder=$request->post('items');
+       $ListInvoice=[];
+       $infoitemsIds=[];
+
+           $order =  DB::table('infoOrder')->where('infoOrder.id',$order_id)->update(['Status' => 'VOID',]);
+
+           foreach ($ListSubOrder as $suborder) {
+                foreach ($suborder as $key=>$invoice) {
+                       DB::table('infoInvoice')->where('infoInvoice.InvoiceID', $invoice['InvoiceID'] )
+                                ->update([
+                                    'Status'=>'VOID'
+                                ]);
+                $ListInvoice[] = DB::table('infoInvoice')->select('infoInvoice.NumInvoice' , 'infoInvoice.InvoiceID')->where('infoInvoice.InvoiceID',$invoice['InvoiceID'])->get();    
+                }
+           };
+
+           if(!empty($ListInvoice)){
+
+                foreach ($ListInvoice as $key=>$invoice) {
+
+                        $infoitems=DB::table('infoitems')->select('infoitems.id')
+                                    ->where('infoitems.InvoiceID', '=' , $invoice[0]->InvoiceID)
+                                    ->get();          
+            
+                        $infoitems->each(function ($item, $key) use(&$infoitemsIds){
+                                $infoitemsIds[]=$item->id;
+                            });
+                };
+
+                $infoitemsIds= array_unique($infoitemsIds);
+
+                foreach ($infoitemsIds as $item) {
+
+                    $affected = DB::table('infoitems')
+                    ->where('id', $item)
+                    ->update([
+                        'Status' => 'VOID',
+                        'Actif' => '0',
+                        'nextpost' => '34',
+                        'PromisedDate' => '2020-01-01'
+                    ]);
+
+                }
+           }
+
+      return response()->json(['done'=>'ok']);
+    }
+
 }
