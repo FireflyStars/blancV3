@@ -20,7 +20,7 @@ export default {
         order: Object || null,
         amounttopay: Number,
     },
-    emits:['complete-checkout','close-payment-modal'],
+    emits:['complete-checkout','close-payment-modal','set-terminal-pay'],
     setup(props,context) {
         const store = useStore();
         const terminal = ref();
@@ -242,6 +242,7 @@ export default {
         async function capture() {
             console.log('capture started');
             if(paymentIntentId.value !=''){
+                console.log('payment_intnet_id',paymentIntentId.value);
                 return fetch('/stripe-test/capture_payment_intent', {
                     method: "POST",
                     headers: {
@@ -308,10 +309,31 @@ export default {
             });
         }
 
+        function refundPayment(){
+            console.log('Refund Started');
+
+            const bodyContent = JSON.stringify({
+                payment_intent_id = paymentIntentId.value,
+            });
+
+            return fetch('/stripe-test/refund-payment',{
+                method:"POST",
+                headers: {
+                    'Content-Type':'application/json'
+                },
+                body: bodyContent
+            }).then(function(data){
+                console.log(data);
+            }).finally(()=>{
+                console.log('Refund finished');
+            })
+        }
+
 
         return {
             payNow,
             selected_reader,
+            refundPayment,
         }
 
     },

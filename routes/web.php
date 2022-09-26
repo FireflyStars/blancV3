@@ -1005,6 +1005,17 @@ Route::group(['prefix'=>'stripe-test'],function(){
         echo json_encode(['payment_id'=>$payment_id]);
     });
 
+    Route::post('/refund-payment',function(){
+        $json_str = file_get_contents('php://input');
+        $request = json_decode($json_str);
+
+        $payment_intent_id = $request->payment_intent_id;
+
+        $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+        $stripe->refunds->create(['payment_intent' => $payment_intent_id]);
+    });
+
 });
 
 /**

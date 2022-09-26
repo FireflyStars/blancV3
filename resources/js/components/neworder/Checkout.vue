@@ -675,7 +675,7 @@
                 <div class="col-10">
                     <div class="row justify-content-center mb-4">
                         <div class="col-6">
-                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="parseFloat(amount_to_pay)" @complete-checkout="completeCheckout" @close-payment-modal="closePaymentAndShowLoading" @close-awaiting-payment="closeAwaitingPaymentModal"></stripe-pay-now>
+                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="parseFloat(amount_to_pay)" @complete-checkout="completeCheckout" @close-payment-modal="closePaymentAndShowLoading" @close-awaiting-payment="closeAwaitingPaymentModal" @set-terminal-pay="setTerminalPay" ref="stripePay"></stripe-pay-now>
                         </div>
                         <div class="col-6">
                             <button class="pay-btn w-100 py-3" @click="completeCheckout">Pay later</button>
@@ -798,6 +798,14 @@ export default {
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
+
+        const terminal_pay = ref(0);
+        const stripePay = ref();
+
+        const setTerminalPay = ()=>{
+            terminal_pay.value = 1;
+        }
+
 
         const paths = ref([
             { name: "Order", route: "LandingPage" },
@@ -970,6 +978,10 @@ export default {
                     */
                    router.push('/order_details/'+order_id.value);
                 }else{
+                    if(terminal_pay.value==1){
+                        stripePay.value.refundPayment();
+                    }
+
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
                     {
                         message: "An error has occured during items creation",
@@ -1252,6 +1264,8 @@ export default {
             failed_delivery_price,
             price_plus_delivery,
             order_bundles,
+            setTerminalPay,
+            stripePay,
         }
 
     },
