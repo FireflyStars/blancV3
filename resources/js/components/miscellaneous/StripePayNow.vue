@@ -313,7 +313,7 @@ export default {
             console.log('Refund Started');
 
             const bodyContent = JSON.stringify({
-                payment_intent_id = paymentIntentId.value,
+                payment_intent_id:paymentIntentId.value,
             });
 
             return fetch('/stripe-test/refund-payment',{
@@ -327,6 +327,7 @@ export default {
             }).finally(()=>{
                 console.log('Refund finished');
             })
+
         }
 
 
