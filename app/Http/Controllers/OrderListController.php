@@ -479,7 +479,10 @@ class OrderListController extends Controller
                 DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                 DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID')
             ])
-            ->join('infoCustomer','infoOrder.CustomerID','=', 'infoCustomer.CustomerID')
+            ->join( 'infoCustomer', function ($join){
+                $join->on( 'infoCustomer.CustomerID', '=', 'infoOrder.CustomerID')
+                ->where('infoCustomer.Actif', '=' , 1);
+            })
             ->leftJoin('pickup', 'infoOrder.id', '=', 'pickup.order_id')
             ->leftJoin('deliveryask', 'infoOrder.id', '=', 'deliveryask.order_id')
             ->leftJoin('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
