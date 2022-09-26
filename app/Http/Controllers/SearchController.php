@@ -25,8 +25,11 @@ public function SearchCustomer(Request $request)
     $PerPageEmails = $request['PerPageEmails'];
     $PerPageItems = $request['PerPageItems'];
 
-    $orders = DB::table('infoOrder')->select(['infoOrder.created_at' ,'infoOrder.id','infoOrder.Status','infoOrder.DateDeliveryAsk','infoCustomer.Name','infoOrder.TypeDelivery','infoCustomer.CustomerID',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate'])
-    ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
+    $orders = DB::table('infoOrder')->select(['infoOrder.created_at' ,'infoOrder.id','infoOrder.Status','infoOrder.DateDeliveryAsk','infoCustomer.Name','infoOrder.TypeDelivery','infoCustomer.Actif' , 'infoCustomer.CustomerID',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate'])
+    ->join( 'infoCustomer', function ($join){
+        $join->on( 'infoCustomer.CustomerID', '=', 'infoOrder.CustomerID')
+        ->where('infoCustomer.Actif', '=' , 1);
+    })
     ->leftJoin('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
     ->leftJoin('infoitems',function($join){
     $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
@@ -98,13 +101,16 @@ public function SearchCustomer(Request $request)
     $items = DB::table('infoitems') 
     ->select( 
         'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey', 
-        'infoitems.typeitem as iteminfo', 'infoitems.id AS item_id','infoitems.brand',
+        'infoitems.typeitem as iteminfo', 'infoitems.id AS item_id','infoitems.brand','infoCustomer.Actif',
         'infoitems.nextpost', 'infoitems.store',  'postes.nom as location', 'postes.nominterface','infoCustomer.FirstName','infoCustomer.LastName', 
         'infoOrder.OrderID'
     )
     ->Join('infoInvoice','infoitems.InvoiceID','infoInvoice.InvoiceID')
     ->leftJoin('infoOrder','infoInvoice.OrderID','infoOrder.OrderID')
-    ->leftJoin('infoCustomer','infoCustomer.CustomerID','infoOrder.CustomerID')
+    ->leftJoin( 'infoCustomer', function ($join){
+        $join->on( 'infoCustomer.CustomerID', '=', 'infoOrder.CustomerID')
+        ->where('infoCustomer.Actif', '=' , 1);
+    })
     ->leftJoin('postes','postes.id','=','infoitems.nextpost');
 
      if(str_contains($query , "-")){
