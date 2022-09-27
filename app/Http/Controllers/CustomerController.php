@@ -1700,7 +1700,8 @@ class CustomerController extends Controller
         if($stripe_test){
             $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
         }
-        if(trim($request->cardHolderName)!=""&&trim($request->cardDetails)!=""&&trim($request->cardExpDate)!=""&&trim($request->cardCVC)!=""){
+   
+        if(trim($request->cardHolderName)!=""&&trim($request->cardDetails)!=""&&trim($request->cardExpDate)!=""&&trim($request->cardCVV)!=""){
         $stripe = new \Stripe\StripeClient(env($stripe_key));
 
             //create a card object to stripe
