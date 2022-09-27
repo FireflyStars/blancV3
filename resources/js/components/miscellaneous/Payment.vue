@@ -27,6 +27,9 @@
             <div class="row" id="credit_card_div">
             <div class="credit-card col-12">
                 <div class="row mb-3">
+                    <div class="col">  <button id="save_card_details_terminal" class="w-100 py-2" :class="{sel:save_card_details_terminal}" @click="toggleSaveCardDetailsInTerminal">Save Card Details In Terminal</button></div>
+                </div>
+                <div class="row mb-3">
                     <div class="form-group col-6 cardholder">
                         <label for="" class="payment-subtitle">Cardholder name</label>
                         <input type="text" placeholder="Name" v-model="form.cardHolderName" required class="form-control">
@@ -98,7 +101,7 @@ export default {
         cust: Object || null,
         amounttopay: Number,
     },
-    emits:['reload-checkout','complete-checkout'],
+    emits:['reload-checkout','complete-checkout','require_save_card'],
     setup(props,context) {
          //Payment details
 
@@ -113,6 +116,7 @@ export default {
                 cardExpDate: '',
                 cardCVV: '',
             });
+            const save_card_details_terminal=ref(false);
 
 
             const cardErrors = ref({});
@@ -282,7 +286,11 @@ export default {
                 }
                 */
             });
-
+            const toggleSaveCardDetailsInTerminal=()=>{
+        
+                save_card_details_terminal.value=!save_card_details_terminal.value;
+                context.emit('require_save_card',save_card_details_terminal.value);
+            }
 
             return {
                 paymentMethod,
@@ -292,6 +300,8 @@ export default {
                 effectPayment,
                 editcard,
                 setEditCard,
+                save_card_details_terminal,
+                toggleSaveCardDetailsInTerminal
             }
 
 
@@ -394,7 +404,7 @@ input.error:focus{
     color:#f8f8f8;
 }
 
-#save_card_details{
+#save_card_details,#save_card_details_terminal{
     font:normal 16px "Gotham Rounded";
     border:thin solid #42A71E;
     background:#fff;
@@ -403,7 +413,7 @@ input.error:focus{
 }
 
 
-#save_card_details:hover{
+#save_card_details:hover,#save_card_details_terminal.sel{
     background: #42A71E;
     color:#fff;
 }

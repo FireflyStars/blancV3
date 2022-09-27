@@ -922,6 +922,8 @@ Route::group(['prefix'=>'stripe-test'],function(){
             $json_obj = json_decode($json_str);
 
             $order_id = $json_obj->order_id;
+            $savecardinfo=$json_obj->savecardinfo;
+
             $order = DB::table('infoOrder')->where('id',$order_id)->first();
             $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
 
@@ -941,6 +943,38 @@ Route::group(['prefix'=>'stripe-test'],function(){
                 "receipt_email"=>$cust->EmailAddress,
             ]);
 
+            if($savecardinfo){
+
+        $cardid = $intent->charges->data[0]->payment_method;
+        $payment_method=$stripe->paymentMethods->retrieve($cardid);
+        $custid=$payment_method->customer;
+
+        
+        $stripe_cust  = $stripe->customers->retrieve(
+            $custid,
+            []
+          );
+                    $exp_month=$payment_method->card->exp_month;
+                    if(strlen($exp_month)==1){
+                        $exp_month='0'.$exp_month;
+                    }
+                    $exp_year=$payment_method->card->exp_year;
+                    $exp_year=date('yy',strtotime($exp_year.'-01-01'));
+
+                $credit_card = [
+                    'CustomerID'        => $order->CustomerID,
+                    'cardHolderName'    => $stripe_cust->name,
+                    'type'              => $payment_method->card->brand,
+                    'cardNumber'        => str_repeat('*',12).$payment_method->card->last4,
+                    'dateexpiration'    => $exp_month.'/'.$exp_year,
+                    'stripe_customer_id'=> $custid,
+                    'stripe_card_id'    => $payment_method->id,
+                    'created_at'        => now(),
+                    'updated_at'        => now(),
+                ];
+    
+                $card_id = DB::table('cards')->insertGetId($credit_card);
+            }
             echo json_encode($intent);
         } catch (Throwable $e) {
             http_response_code(500);
