@@ -230,21 +230,49 @@ export default {
                 axios.post('/make-payment-or-create-card',params)
                     .then((res)=>{
                         if(type!='Save'){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
-                            {
-                                message: (res.data.paid?"Payment successful":res.data.err_payment),
-                                ttl: 5,
-                                type:(res.data.paid?'success':'danger'),
-                            });
+                            if(res.data.error_stripe){
+                                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                    message: JSON.stringify(res.data.error_stripe),
+                                    ttl:5,
+                                    type:'danger',
+                                 });
+                            }else{
+                                /*
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                                {
+                                    message: (res.data.paid?"Payment successful":JSON.stringify(res.data.err_payment)),
+                                    ttl: 5,
+                                    type:(res.data.paid?'success':'danger'),
+                                });
+                                */
 
-                            if(res.data.paid){
-                                async function createItems(){
-                                    await delayPage(5);
+                               if(res.data.payment_intent){
+                                    async function createItems(){
+                                        await delayPage(5);
 
-                                    context.emit('complete-checkout');
-                                }
+                                        context.emit('complete-checkout');
+                                    }
 
-                                createItems();
+                                    if(res.data.payment_intent.status=='succeeded'){
+                                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                                        {
+                                            message:"Payment successful",
+                                            ttl:5,
+                                            type:'success',
+                                        });
+
+
+                                    }else{
+                                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                                        {
+                                            message:"Payment unsuccessful - "+res.data.payment_intent.status,
+                                            ttl:5,
+                                            type:'danger',
+                                        });
+                                    }
+
+                                    createItems();
+                               }
                             }
                         }
                     }).catch((err)=>{
