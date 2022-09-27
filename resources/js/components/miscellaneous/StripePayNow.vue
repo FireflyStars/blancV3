@@ -1,5 +1,5 @@
 <template>
-    <button class="pay-btn w-100 py-3" @click="payNow">Pay now</button>
+    <button class="pay-btn w-100 py-3" @click="checkConfirmationBeforePayNow">Pay now</button>
 </template>
 <script>
 import {ref,watch} from 'vue';
@@ -19,8 +19,14 @@ export default {
         user: Object || null,
         order: Object || null,
         amounttopay: Number,
+        save_card_confirmed:{
+            type:Boolean,
+            required:false,
+            default:false,
+        }
     },
-    emits:['complete-checkout','close-payment-modal','set-terminal-pay'],
+    emits:['complete-checkout','close-payment-modal','set-terminal-pay','openSaveCardDetailConfirmation','await-payment-modal'],
+
     setup(props,context) {
         const store = useStore();
         const terminal = ref();
@@ -116,10 +122,18 @@ export default {
             });
         }
 
-
-
-        async function payNow(){
-            context.emit('close-payment-modal');
+        function checkConfirmationBeforePayNow(){
+            if(props.save_card_confirmed){
+                 payNow(true);
+            }else{
+                context.emit('openSaveCardDetailConfirmation');
+            }
+        }
+         const savecardinfo=ref(false);
+         const payNow=async(savecarddetails)=>{
+            savecardinfo.value=savecarddetails;
+              context.emit('close-payment-modal');
+            context.emit('await-payment-modal');
             console.log('call start');
 
             await listReaders();
@@ -222,7 +236,7 @@ export default {
 
 
         async function fetchPaymentIntentClientSecret(amount) {
-            const bodyContent = JSON.stringify({ amount: amount,order_id:props.order.id });
+            const bodyContent = JSON.stringify({ amount: amount,order_id:props.order.id,savecardinfo:savecardinfo.value });
             return fetch('/stripe-test/create_payment_intent', {
                 method: "POST",
                 headers: {
@@ -335,6 +349,7 @@ export default {
             payNow,
             selected_reader,
             refundPayment,
+            checkConfirmationBeforePayNow
         }
 
     },

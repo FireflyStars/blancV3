@@ -295,7 +295,7 @@
                                     <h3 class="title">Payment method <span v-if="!creditCardCustomer" class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="toggleCreditCard()">Edit</span></h3>
 
                                     <div class="page-section">
-                                          <img v-if="creditCardCustomer" src="/images/trash.svg" style="float: right;" @click="DeleteCreditCardCustomer()"/>
+                                          <img v-if="creditCardCustomer&&cardId!=null" src="/images/trash.svg" style="float: right;" @click="DeleteCreditCardCustomer()"/>
                                           <div class="credit-card d-flex justify-content-between">
                                             <div class="form-group col-3 cardholder mb-0">
                                                 <label for="">Payment method</label>
