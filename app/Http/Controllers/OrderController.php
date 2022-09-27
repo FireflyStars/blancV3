@@ -8,6 +8,7 @@ use App\Models\InfoCustomer;
 use App\Http\Controllers\BookingController;
 use App\Models\OrderRecurringCreator;
 use App\Models\Delivery;
+use Exception;
 use stdClass;
 
 class OrderController extends Controller
@@ -558,7 +559,7 @@ class OrderController extends Controller
         //Effecting payment
 
         $amount_paid = 0;
-        $existing_payments = DB::table('payments')->where('order_id',$order->id)->get();
+        $existing_payments = DB::table('payments')->where('order_id',$order->id)->where('status','=','succeeded')->get();
         if(count($existing_payments) > 0){
             foreach($existing_payments as $k=>$v){
                 $amount_paid += $v->montant;
@@ -567,40 +568,51 @@ class OrderController extends Controller
 
         $amount_diff = $amount_to_pay - $amount_paid;
 
+        $card_pay = false;
 
         if($payment_type !='Save' && $card && $order && $order->CustomerID==$card->CustomerID && $amount_diff > 0){
             $amount_two_dp = number_format($amount_to_pay,2);
 
+            $card_pay = true;
+
             $total_amount = 100*$amount_two_dp;
 
-            $payment_intent = $stripe->paymentIntents->create([
-                'amount'            => $total_amount, //100*0.01
-                'currency'          => 'gbp',
-                'confirm'           => true,
-                "payment_method"    => $card->stripe_card_id,
-                "customer"          => $card->stripe_customer_id,
-                "capture_method"    => "automatic",
-                'payment_method_types' => ['card'],
-                "description"=>"Order: ".$order_id,
-                "receipt_email"=>$cust->EmailAddress, //To change for customer email
-            ]);
+            try{
+                $payment_intent = $stripe->paymentIntents->create([
+                    'amount'            => $total_amount, //100*0.01
+                    'currency'          => 'gbp',
+                    'confirm'           => true,
+                    "payment_method"    => $card->stripe_card_id,
+                    "customer"          => $card->stripe_customer_id,
+                    "capture_method"    => "automatic",
+                    'payment_method_types' => ['card'],
+                    "description"=>"Order: ".$order_id,
+                    "receipt_email"=>$cust->EmailAddress, //To change for customer email
+                ]);
+            }catch(Exception $e){
+                return response([
+                    'error_stripe'=>$e,
+                ]);
+            }
 
 
             if($payment_intent && isset($payment_intent->status)){
-                $payment_arr = [
-                    'type'=>'card',
-                    'datepayment'=>date('Y-m-d H:i:s'),
-                    'status'=>$payment_intent->status,
-                    'montant'=>number_format($amount_two_dp,2),
-                    'order_id'=>$order_id,
-                    'card_id'=>$card->id,
-                    'CustomerID'=>$order->CustomerID,
-                    'created_at'=>date('Y-m-d H:i:s'),
-                ];
-
-                $payment_id = DB::table('payments')->insertGetId($payment_arr);
 
                 if($payment_intent->status == 'succeeded'){
+
+                    $payment_arr = [
+                        'type'=>'card',
+                        'datepayment'=>date('Y-m-d H:i:s'),
+                        'status'=>$payment_intent->status,
+                        'montant'=>number_format($amount_two_dp,2),
+                        'order_id'=>$order_id,
+                        'card_id'=>$card->id,
+                        'CustomerID'=>$order->CustomerID,
+                        'created_at'=>date('Y-m-d H:i:s'),
+                    ];
+
+                    $payment_id = DB::table('payments')->insertGetId($payment_arr);
+
                     //Update order
                     DB::table('infoOrder')->where('id',$order_id)->update([
                         //'Paid'=>1,
@@ -613,8 +625,10 @@ class OrderController extends Controller
 
 
                 }else{
-                    $err_payment = $payment_intent->status;
+                    $err_payment = $payment_intent;
                 }
+            }else{
+                $err_payment = "Payment unsuccessful";
             }
         }
 
@@ -629,6 +643,9 @@ class OrderController extends Controller
             'paid'=>$paid,
             'payment_type'=>$payment_type,
             'post'=>$request->all(),
+            'order'=>$order,
+            'card_pay'=>$card_pay,
+            'amount_diff'=>$amount_diff,
         ]);
     }
 
@@ -1228,7 +1245,7 @@ class OrderController extends Controller
                                 ->update([
                                     'Status'=>'VOID'
                                 ]);
-                $ListInvoice[] = DB::table('infoInvoice')->select('infoInvoice.NumInvoice' , 'infoInvoice.InvoiceID')->where('infoInvoice.InvoiceID',$invoice['InvoiceID'])->get();    
+                $ListInvoice[] = DB::table('infoInvoice')->select('infoInvoice.NumInvoice' , 'infoInvoice.InvoiceID')->where('infoInvoice.InvoiceID',$invoice['InvoiceID'])->get();
                 }
            };
 
@@ -1238,8 +1255,8 @@ class OrderController extends Controller
 
                         $infoitems=DB::table('infoitems')->select('infoitems.id')
                                     ->where('infoitems.InvoiceID', '=' , $invoice[0]->InvoiceID)
-                                    ->get();          
-            
+                                    ->get();
+
                         $infoitems->each(function ($item, $key) use(&$infoitemsIds){
                                 $infoitemsIds[]=$item->id;
                             });
