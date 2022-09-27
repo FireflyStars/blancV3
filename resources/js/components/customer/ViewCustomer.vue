@@ -2186,13 +2186,7 @@
             }
 
             function goCustomerView(customerId){
-
-                // router.push({
-                //     name:'ViewCustomer',
-                //     params: {
-                //             customer_id:customerId,
-                //         },
-                // })
+                window.location='/view-customer/'+customerId;
             }
 
             return {
