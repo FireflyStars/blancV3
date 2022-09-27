@@ -756,7 +756,7 @@ class DetailingController extends Controller
                 ->where('CustomerID',$customer_id)
                 ->get();
 
-            if(count($inv)==0){
+            if(count($inv)>0){
                 $err = "HSL $tracking already linked with another customer.";
             }else{
                 if(!in_array($item->nextpost,[28,34,39,47,43,44,46])){
