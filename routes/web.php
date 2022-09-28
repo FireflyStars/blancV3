@@ -922,7 +922,8 @@ Route::group(['prefix'=>'stripe-test'],function(){
             $json_obj = json_decode($json_str);
 
             $order_id = $json_obj->order_id;
-            $savecardinfo=$json_obj->savecardinfo;
+            //$savecardinfo=$json_obj->savecardinfo;
+            $savecardinfo = true;
 
             $order = DB::table('infoOrder')->where('id',$order_id)->first();
             $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
@@ -942,14 +943,14 @@ Route::group(['prefix'=>'stripe-test'],function(){
                 'description'=>'Order: '.$order_id,
                 "receipt_email"=>$cust->EmailAddress,
             ]);
-
+/*
             if($savecardinfo){
 
         $cardid = $intent->charges->data[0]->payment_method;
-        $payment_method=$stripe->paymentMethods->retrieve($cardid);
+        $payment_method=$stripe->paymentMethods->retrieve($cardid,[]);
         $custid=$payment_method->customer;
 
-        
+
         $stripe_cust  = $stripe->customers->retrieve(
             $custid,
             []
@@ -972,9 +973,10 @@ Route::group(['prefix'=>'stripe-test'],function(){
                     'created_at'        => now(),
                     'updated_at'        => now(),
                 ];
-    
+
                 $card_id = DB::table('cards')->insertGetId($credit_card);
             }
+*/
             echo json_encode($intent);
         } catch (Throwable $e) {
             http_response_code(500);
@@ -1056,6 +1058,74 @@ Route::group(['prefix'=>'stripe-test'],function(){
 /**
  * END - Route for Stripe Terminal
  */
+
+/**
+ * Route for stripe unpaid orders
+ */
+
+Route::get('/unpaid-orders',function(Request $request){
+    $start = microtime(true);
+
+    $token = $request->get('token');
+
+    $app_token = setting('admin.url_token');//EjD4L7tgrHxmCY3exnCE31b3
+
+    if(!isset($token)){
+        die('token not set');
+    }
+
+    if($app_token != $token){
+        die('invalid token');
+    }
+
+    $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+
+    $unpaid_orders = DB::table('unpaid_orders')->where('paid',0)->get();
+
+    $orders_to_update = [];
+    $lines_to_update = [];
+
+    if(count($unpaid_orders) > 0){
+        foreach($unpaid_orders as $k=>$v){
+            $payment_intent = $stripe->paymentIntents->retrieve(
+                $v->payment_intent_id,
+                []
+              );
+
+            if($payment_intent->status=='succeeded'){
+                $orders_to_update[] = $v->order_id;
+                $lines_to_update[] = $v->id;
+            }
+
+        }
+    }
+
+    if(!empty($orders_to_update)){
+
+        $orders = DB::table('infoOrder')->whereIn('id',$orders_to_update)->get();
+
+        $orders_ids = [];
+        foreach($orders as $k=>$v){
+            $orders_ids[] = $v->OrderID;
+        }
+
+        DB::table('infoInvoice')->where('OrderID',$orders_ids)->update(['Paid'=>1]);
+        DB::table('infoOrder')->where('id',$orders_to_update)->update(['Paid'=>1]);
+    }
+
+
+    if(!empty($lines_to_update)){
+        DB::table('unpaid_orders')->whereIn('id',$lines_to_update)->update(['paid'=>1]);
+    }
+
+    $end = microtime(true);
+    $timetaken = $end-$start;
+
+    echo "Time taken: ".gmdate('H:i:s',$timetaken)."<br/>";
+    echo count($lines_to_update)." lines updated";
+
+});
 
 
 /**
