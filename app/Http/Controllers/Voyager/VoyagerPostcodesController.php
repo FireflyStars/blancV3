@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Voyager;
 
 use App\Http\Controllers\Controller;
+use Hamcrest\Arrays\IsArray;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -73,11 +74,19 @@ class VoyagerPostcodesController extends Controller
             //$this->authorize('edit_configure-postcodes');
             $postcodes = [];
             $t_ = $request->post('t_');
-
+            if(is_array($t_))
             foreach ($t_ as $t) {
                 $tranche = explode('_', $t);
                 $postcodes[$tranche['0']][$tranche[1]][] = $tranche[2];
             }
+
+    $existingPostcodes=DB::table('tranchepostcode')->select(['Postcode'])->distinct()->get();
+    foreach($existingPostcodes as $pcode){
+        if(!key_exists($pcode->Postcode,$postcodes)){
+            DB::table('tranchepostcode')->where('Postcode', $pcode->Postcode)->update(['tranche' => '[]']);
+        }
+    }
+
 
             foreach ($postcodes as $postcode => $days) {
 
