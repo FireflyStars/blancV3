@@ -1634,6 +1634,8 @@
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                     form.value.cardId =  res.data
                     creditCardCustomer.value = true
+                    this.add_payement =false;
+                    window.location.reload();
                 }).catch((error)=>{
 
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
