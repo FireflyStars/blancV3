@@ -1700,7 +1700,7 @@ class CustomerController extends Controller
         if($stripe_test){
             $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
         }
-   
+
         if(trim($request->cardHolderName)!=""&&trim($request->cardDetails)!=""&&trim($request->cardExpDate)!=""&&trim($request->cardCVV)!=""){
         $stripe = new \Stripe\StripeClient(env($stripe_key));
 
@@ -2327,7 +2327,7 @@ class CustomerController extends Controller
                   ->where('infoInvoice.CustomerID' , $customer)->get();
 
                   if(!empty($ListItems)){
-                    
+
                     foreach($ListItems as $item){
                         DB::table('infoitems')->where('infoitems.id', $item->id)->update(['CCStatus' => ""]);
                       }
@@ -2689,6 +2689,16 @@ class CustomerController extends Controller
         $details_per_cust = [];
 
         if($type=='pdf'){
+            $path = glob(storage_path('app/pdf/').'*.*');
+
+            //Remove previous files
+            if(!empty($path)){
+                foreach($path as $k=>$v){
+                    unlink($v);
+                }
+            }
+
+
             foreach($all_details as $key=>$details){
                 $details_per_cust[] = CustomerController::getArPDFData($details);
             }
@@ -2699,10 +2709,66 @@ class CustomerController extends Controller
                 }
             }
 
+
             if(!empty($details_per_cust)){
 
                 Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
 
+                $arrfiles = [];
+
+                foreach($details_per_cust as $k=>$v){
+                    $data['v'] = $v;
+                    $pdf = Pdf::loadView('pdf/ar_pdf', $data);
+
+                    $pdf->output();
+
+                    $canvas = $pdf->getDomPDF()->getCanvas();
+
+                    $fontMetrics = $pdf->getDomPDF()->getFontMetrics();
+                    $font = $fontMetrics->getFont('Times-Roman');
+
+                    $text = "Page {PAGE_NUM} of {PAGE_COUNT}";
+                    $size = 10;
+
+                    $width = $fontMetrics->getTextWidth($text, $font, $size) / 2;
+
+                    $x = $canvas->get_width() - $width;
+                    $y = $canvas->get_height() - 35;
+
+                    $canvas->page_text($x, $y, $text , $font, 10, array(0, 0, 0));
+
+                    //return $pdf->download('invoice'.$details->CustomerID.'.pdf');
+
+
+                    $filename = 'invoice_'.$k.'_'.strtotime('now').'.pdf';
+
+
+                    $pdfstr=$pdf->output();
+                    Storage::disk('local')->put('pdf'.DIRECTORY_SEPARATOR.$filename, $pdfstr);
+
+                    $arrfiles[] = storage_path('app/pdf/').$filename;
+                }
+
+                $files = implode(" ",$arrfiles);
+
+                $output_file = storage_path('app/pdf/').'invoices'.strtotime('now').'.pdf';
+
+                //print_r($files);
+
+                shell_exec("gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=$output_file -dBATCH $files");
+
+                //Remove individual files
+                foreach($arrfiles as $k=>$v){
+                    unlink($v);
+                }
+
+                $url = 'pdf'.DIRECTORY_SEPARATOR.basename($output_file);
+
+                return response()->json(
+                    ['url'=>route('download-ar-pdf',['filename'=>$url])]
+                );
+
+                /*
                 if(count($row_ids)==1){
                     $data['v'] = $details_per_cust[0];
                     $pdf = Pdf::loadView('pdf/ar_pdf', $data);
@@ -2748,6 +2814,7 @@ class CustomerController extends Controller
                 return response()->json(
                     ['url'=>route('download-ar-pdf',['filename'=>$url])]
                 );
+                */
             }
         }
 

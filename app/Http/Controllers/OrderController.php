@@ -389,7 +389,7 @@ class OrderController extends Controller
             $card_id = $card->id;
 
         }else{
-            if($cust &&  $addr){
+            if($cust){
              //create a card object to stripe
              $card = $stripe->paymentMethods->create([
                 'type' => 'card',
@@ -412,12 +412,12 @@ class OrderController extends Controller
                                             'CustomerID' => $cust->CustomerID
                                     ],
                 'address'           => [
-                                        'city'          => $addr->Town,
-                                        'state'         => $addr->County,
-                                        'country'       => $addr->Country,
-                                        'postal_code'   => $addr->postcode,
-                                        'line1'         => $addr->address1,
-                                        'line2'         => $addr->address2,
+                                        'city'          => ($addr?$addr->Town:''),
+                                        'state'         => ($addr?$addr->County:''),
+                                        'country'       => ($addr?$addr->Country:''),
+                                        'postal_code'   => ($addr?$addr->postcode:''),
+                                        'line1'         => ($addr?$addr->address1:''),
+                                        'line2'         => ($addr?$addr->address2:''),
                                     ]
             ]);
 
@@ -438,10 +438,10 @@ class OrderController extends Controller
             $card_id = DB::table('cards')->insertGetId($credit_card);
             $card = DB::table('cards')->where('id',$card_id)->first();
             }else{
-
+                /*
                 if(is_null($addr)){
                     $err_txt = "No address for customer";
-                }
+                }*/
 
             }
         }
@@ -504,7 +504,7 @@ class OrderController extends Controller
 
             $card_id = 0;
 
-            if($cust && $addr){
+            if($cust){
                 $card = $stripe->paymentMethods->create([
                     'type' => 'card',
                     'card' => [
@@ -526,12 +526,12 @@ class OrderController extends Controller
                                                 'CustomerID' => $cust->CustomerID
                                         ],
                     'address'           => [
-                                            'city'          => $addr->Town,
-                                            'state'         => $addr->County,
-                                            'country'       => $addr->Country,
-                                            'postal_code'   => $addr->postcode,
-                                            'line1'         => $addr->address1,
-                                            'line2'         => $addr->address2,
+                                            'city'          => ($addr?$addr->Town:''),
+                                            'state'         => ($addr?$addr->County:''),
+                                            'country'       => ($addr?$addr->Country:''),
+                                            'postal_code'   => ($addr?$addr->postcode:''),
+                                            'line1'         => ($addr?$addr->address1:''),
+                                            'line2'         => ($addr?$addr->address2:''),
                                         ]
                 ]);
 

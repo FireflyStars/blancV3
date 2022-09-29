@@ -703,7 +703,6 @@ Route::get('/merge-pdf',function(){
 });
 
 
-
 /* END TEST ROUTES */
 // added by yonghuan to search customers to be linked
 Route::post('/search-customer', [SearchController::class, 'SearchCustomersToLink'])->name('SearchCustomersToLink');
@@ -751,7 +750,7 @@ Route::post('get-suborder-and-print', [ PosteController::class, 'getSubOrderToPr
 */
 Route::post('update-zone-label-pos',[ItemController::class,'updateZoneLabelPos'])->name('update-zone-label-pos')->middleware('auth');
 
-/*  search  by barcode 
+/*  search  by barcode
 */
 Route::post('get-item-barcode',[ItemController::class,'getitembyBarcode'])->name('get-item-barcode')->middleware('auth');
 
