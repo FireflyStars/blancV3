@@ -1814,6 +1814,7 @@ class DetailingController extends Controller
         $type = $request->type;
         $id = $request->id;
         $montant = $request->montant;
+        $describeprixnow = $request->describeprixnow;
 
         $updated = false;
 
@@ -1821,6 +1822,7 @@ class DetailingController extends Controller
             $updated = DB::table('detailingitem')->where('id',$id)->update([
                 'tailoring_price_type'=>'PriceNow',
                 'tailoring_price'=>$montant,
+                'describeprixnow'=>$describeprixnow,
                 'updated_at'=>date('Y-m-d H:i:s')
             ]);
         }
@@ -1828,6 +1830,7 @@ class DetailingController extends Controller
             $updated = DB::table('detailingitem')->where('id',$id)->update([
                 'cleaning_price_type'=>'PriceNow',
                 'dry_cleaning_price'=>$montant,
+                'describeprixnow'=>$describeprixnow,
                 'cleaning_addon_price'=>0,
                 'updated_at'=>date('Y-m-d H:i:s')
             ]);

@@ -108,7 +108,7 @@
                 id="acdpanel_tailoringpricetype" :class="{'show':detailingitem.tailoring_price_type!=null && detailingitem.tailoring_price_type!=''}"
             >
                 <div class="accordion-body row mt-3">
-                    <div class="col-2 d-flex text-center each-sub-service py-4 justify-content-center tailoring-subservice tailoring-price-type" :id="'sub_service_tailoring_'+type.replace(' ','')" :class="{'sel_service':detailingitem.tailoring_price_type==type}" v-for="type in type_prices" :data-tailoring-price-type="type" @click="toggleSubService('tailoring_'+type.replace(' ',''))">
+                    <div   class="col-2 d-flex text-center each-sub-service py-4 justify-content-center tailoring-subservice tailoring-price-type" :id="'sub_service_tailoring_'+type.replace(' ','')" :class="{'sel_service':detailingitem.tailoring_price_type==type}" :data-tailoring-price-type="type"  v-for="(type) in type_prices" @click="toggleSubService('tailoring_'+type.replace(' ',''))">
                         {{type}}
                     </div>
                     <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" id="pricenow_tailoring" @click="loadPriceNowModal('tailoring')" :class="{'sel_service':detailingitem.tailoring_price_type=='PriceNow'}">Price now</div>
@@ -161,15 +161,34 @@
             <span class="close" id="pricenow_modal_close" @click="closePriceNowModal"></span>
         </template>
         <template #bheader>
-            <div class="bmodal-header py-4 text-center">Enter price</div>
+            <div class="bmodal-header py-4 text-center">Describe & Price Now</div>
         </template>
         <template #bcontent>
             <div class="row justify-content-center pt-4">
-                <div class="col-4 form-group"><input type="text" class="form-control py-2" v-model="price_now_value"></div>
+                <div class="Describe row justify-content-center d-block">
+                    <div class="form-group">
+                        <label for="exampleInputEmail1" class="form-label body_medium">Describe Job (50 characters max.)</label>
+                        <input type="text" class="form-control py-2" v-model="describe_job_value" placeholder="Type job description">
+                    </div>
+                    <div class="col-4 form-group pt-3">
+                        <label  class="form-label body_medium">Enter Price</label>
+                        <div class="input-group">
+                            <span class="input-group-text fw-bold" style="background: none;">£</span>
+                            <input style="border-left: none;" type="text" v-model="price_now_value" class="form-control"  placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+                <div class="row mx-0 justify-content-center mt-3 mb-5">
+                    <div class="col-4">
+                        <button class="btn btn-outline-danger body_medium w-100" @click="closePriceNowModal">Cancel</button>
+                    </div>
+                    <div class="col-1"></div>
+                    <div class="col-4">
+                        <button class="btn btn-dark body_medium w-100" @click="priceNow">Save</button>
+                    </div>
+                </div>
             </div>
-            <div class="row justify-content-center py-4">
-                <div class="col-3 form-group"><button class="btn btn-outline-success w-100" @click="priceNow">OK</button></div>
-            </div>
+           
         </template>
 
     </modal>
@@ -217,6 +236,7 @@ export default {
         const price_now_type = ref('');
         const pricenow_modal = ref();
         const price_now_value = ref('');
+        const describe_job_value = ref('');
         const preference_customer = ref([]);
 
         function toggleMainService(id){
@@ -520,6 +540,7 @@ export default {
                 //    preference_customer.value.forEach(function(id){
                 //     changeCustomerPreference(id)
                 //    });
+                toggleSubService
                }).catch((err)=>{
 
                })
@@ -670,20 +691,33 @@ export default {
 
         function priceNow(){
            let montant = price_now_value.value;
-           console.log(parseFloat(montant));
+           let describeprixnow = describe_job_value.value
 
-            if(montant=='' || parseFloat(montant)=='NaN'){
-                price_now_value.value = '';
-                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
-                        message: 'Invalid price now value',
-                        ttl: 5,
-                        type: 'danger'
-                    });
-            }else{
+           console.log("describeprixnow == '' && montant==''" ,describeprixnow == '' || (montant=='' || parseFloat(montant)=='NaN'))
+
+           if(describeprixnow == '' || montant=='' || parseFloat(montant)=='NaN'){
+                if(describeprixnow == ''){
+                    describe_job_value.value = '';
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                            message: 'Invalid describe',
+                            ttl: 5,
+                            type: 'danger'
+                        });
+                }
+                if(montant=='' || parseFloat(montant)=='NaN'){
+                    price_now_value.value = '';
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                            message: 'Invalid price now value',
+                            ttl: 5,
+                            type: 'danger'
+                        });
+                }
+           }else{
                 axios.post('/set-price-now',{
                     id:props.detailingitem.id,
                     type:price_now_type.value,
                     montant:montant,
+                    describeprixnow : describe_job_value.value
                 }).then((res)=>{
                     //console.log(res);
                     if(res.data.updated){
@@ -706,7 +740,7 @@ export default {
 */
 
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
-                            message: 'Item price updated',
+                            message: 'Item describe and price updated',
                             ttl: 5,
                             type: 'success'
                         });
@@ -749,7 +783,8 @@ export default {
             loadPriceNowModal,
             closePriceNowModal,
             price_now_value,
-            preference_customer
+            preference_customer,
+            describe_job_value
         };
     },
 }
@@ -887,6 +922,17 @@ export default {
     .each-sub-service.sel_service.disabled_service{
         background-color: #47454b;
     }
+    .Describe{
+        padding: 3% 14%;
+    }
+    .form-control::placeholder {
+    color: #C3C3C3;
+    opacity: 1;
+    font-style: normal;
+    font-weight: 325;
+    font-size: 16px;
+    line-height: 140%;
+}
 
 
 </style>
