@@ -632,156 +632,76 @@ Route::get('notify-test', function () {
 
 /* A REFAIRE */
 
-Route::get('ar-test',function(){
-    $customers = DB::table('infoCustomer')
-    ->where('OnAccount',1)
-    ->get();
+Route::get('/test-pi',function(){
+    $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
 
-    $bacs_cust_id = [];
-    $list = [];
-
-    if(count($customers) > 0){
-        foreach($customers as $k=>$v){
-            $bacs_cust_id[] = $v->CustomerID;
-        }
-    }
-
-    $grouped_by_cust_id = [];
-    $grouped_by_cust_order_date = [];
-    $custid_with_orders = [];
-    $master_cust = [];
-
-    $orders = DB::table('infoOrder')
-        ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID')
-        ->join('detailingitem','infoOrder.id','detailingitem.order_id')
-        ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
-        ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
-        ->where('infoOrder.orderinvoiced',0)
-        ->whereNotIn('infoInvoice.Status',['DELETE','VOID'])
-        ->whereIn('infoOrder.CustomerID',$bacs_cust_id)
-        ->get();
+    //pi_3LmbjTB2SbORtEDs0a096Bpx
+    //pi_3LmxCmB2SbORtEDs12rd08p0
+    $intent = $stripe->paymentIntents->retrieve('pi_3Lmae9B2SbORtEDs1otNXt3W',[]);
 
 
-    if(count($orders) > 0){
 
-        $cust_ids = [];
+    $cardid = $intent->charges->data[0]->payment_method;
+        $payment_method=$stripe->paymentMethods->retrieve($cardid,[]);
+        $custid=$payment_method->customer;
+
+        //$cardid = $intent->charges->data[0]->payment_method;
+        $card = $intent->charges->data[0]->payment_method_details['card_present'];
+        //$payment_method=$stripe->paymentMethods->retrieve($cardid,[]);
 
 
-        foreach($orders as $k=>$v){
-            if(!in_array($v->CustomerID,$cust_ids)){
-                array_push($cust_ids,$v->CustomerID);
-            }
+        //$custid=$payment_method->customer;
+
+        $stripe_cust = false;
+        if($custid !=''){
+        $stripe_cust  = $stripe->customers->retrieve(
+            $custid,
+            []
+          );
         }
 
-        $all_customers = DB::table('infoCustomer')->whereIn('CustomerID',$cust_ids)->get();
+        echo "<pre>";
+        print_r($intent);
 
-    }
-
-    die();
-    foreach($orders as $k=>$v){
-        $grouped_by_cust_id[$v->CustomerID][] = $v->Total;
-        $grouped_by_cust_order_date[$v->CustomerID][] = $v->created_at;
-
-        if(!in_array($v->CustomerID,$custid_with_orders)){
-            array_push($custid_with_orders,$v->CustomerID);
+/*
+        $exp_month=$card->exp_month;
+        if(strlen($exp_month)==1){
+            $exp_month='0'.$exp_month;
         }
-    }
+        $exp_year=$card->exp_year;
+        $exp_year=date('yy',strtotime($exp_year.'-01-01'));
 
+        echo "<pre>";
+        print_r($payment_method);
+/*
+                $credit_card = [
+                    'CustomerID'        => 'xx',//$order->CustomerID,
+                    'cardHolderName'    => ($stripe_cust?$stripe_cust->name:""),
+                    'type'              => $payment_method->card->brand,
+                    'cardNumber'        => str_repeat('*',12).$payment_method->card->last4,
+                    'dateexpiration'    => $exp_month.'/'.$exp_year,
+                    'stripe_customer_id'=> $custid,
+                    'stripe_card_id'    => $payment_method->id,
+                    'created_at'        => now(),
+                    'updated_at'        => now(),
+                ];
+            */
 
-    foreach($grouped_by_cust_order_date as $k=>$v){
-        usort($grouped_by_cust_order_date[$k],function($a, $b) {
-            return strtotime($b) - strtotime($a);
-        });
-    }
-
-    $cust_with_orders = DB::table('infoCustomer')->whereIn('CustomerID',$custid_with_orders)->get();
-
-
-    if(count($cust_with_orders) > 0){
-        foreach($cust_with_orders as $k=>$v){
-            if($v->CustomerIDMaster !=''){
-                $master_cust[$v->CustomerID] = $v->CustomerIDMaster;
-            }
-        }
-    }
-
-
-    foreach($grouped_by_cust_id as $k=>$v){
-        if(isset($master_cust[$k])){
-            $list[$master_cust[$k]]['order_total'][] = array_sum($v);
-        }else{
-            $list[$k]['order_total'][] = array_sum($v);
-        }
-    }
-
-    foreach($grouped_by_cust_order_date as $k=>$v){
-        if(isset($master_cust[$k])){
-            $list[$master_cust[$k]]['order_date'][] = (isset($v[0])?$v[0]:"");
-        }else{
-            $list[$k]['order_date'][] = (isset($v[0])?$v[0]:"");
-        }
-    }
-
-    $final_cust_id = [];
-    foreach($list as $k=>$v){
-        $final_cust_id[] = $k;
-    }
-
-    $final_cust = DB::table('infoCustomer')->whereIn('CustomerID',$final_cust_id)->get();
-
-    $final_cust_addr = DB::table('address')->whereIn('CustomerID',$final_cust_id)->where('status','BILLING')->get();
-    $final_customers = [];
-
-
-    if(count($final_cust) > 0){
-        foreach($final_cust as $k=>$v){
-            if(isset($list[$v->CustomerID])){
-                /*
-                    IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0
-                */
-
-                $ctype = "B2C";
-                if($v->CustomerIDMaster=='' && $v->CustomerIDMasterAccount=='' && $v->IsMaster==0 && $v->IsMasterAccount==0){
-                    $ctype = "B2B";
-                }
-                $list[$v->CustomerID]['id'] = $v->id;
-                $list[$v->CustomerID]['type'] = ($v->btob==0?"B2C":"B2B");
-                $list[$v->CustomerID]['active_in'] = $v->TypeDelivery;
-                $list[$v->CustomerID]['name'] = $v->Name;
-                $list[$v->CustomerID]['email'] = $v->EmailAddress;
-
-                $list[$v->CustomerID]['phone'] = $v->Phone;
-            }
-        }
-    }
-
-    if(count($final_cust_addr) > 0){
-        foreach($final_cust_addr as $k=>$v){
-            if(isset($list[$v->CustomerID])){
-                $list[$v->CustomerID]['address1'] = $v->address1;
-                $list[$v->CustomerID]['postcode'] = $v->postcode;
-            }
-        }
-    }
-
-
-    foreach($list as $k=>$v){
-    $order_total = $list[$k]['order_total'];
-    $list[$k]['order_total'] = array_sum($order_total);
-
-    usort($list[$k]['order_date'],function($a, $b) {
-            return strtotime($b) - strtotime($a);
-        });
-    }
-
-    foreach($list as $k=>$v){
-        $list[$k]['last_order_date'] = "";
-
-        if(isset($list[$k]['order_date'][0])){
-            $list[$k]['last_order_date'] = date("d/m/y",strtotime($list[$k]['order_date'][0]));
-        }
-    }
 });
+
+Route::get('/merge-pdf',function(){
+    $path = storage_path('app/pdf/').'*.*';
+
+    $arrfiles = glob($path);
+    $files = implode(" ",$arrfiles);
+
+    $output_file = storage_path('app/pdf/').'test.pdf';
+
+    //print_r($files);
+
+    shell_exec("gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=$output_file -dBATCH $files");
+});
+
 
 
 /* END TEST ROUTES */
@@ -927,7 +847,8 @@ Route::group(['prefix'=>'stripe-test'],function(){
             $json_obj = json_decode($json_str);
 
             $order_id = $json_obj->order_id;
-            $savecardinfo=$json_obj->savecardinfo;
+            //$savecardinfo=$json_obj->savecardinfo;
+            $savecardinfo = true;
 
             $order = DB::table('infoOrder')->where('id',$order_id)->first();
             $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
@@ -945,16 +866,17 @@ Route::group(['prefix'=>'stripe-test'],function(){
                                         ],
                 'capture_method' => 'manual',
                 'description'=>'Order: '.$order_id,
+                //'setup_future_usage'=>'off_season',
                 "receipt_email"=>$cust->EmailAddress,
             ]);
-
+/*
             if($savecardinfo){
 
         $cardid = $intent->charges->data[0]->payment_method;
-        $payment_method=$stripe->paymentMethods->retrieve($cardid);
+        $payment_method=$stripe->paymentMethods->retrieve($cardid,[]);
         $custid=$payment_method->customer;
 
-        
+
         $stripe_cust  = $stripe->customers->retrieve(
             $custid,
             []
@@ -977,9 +899,10 @@ Route::group(['prefix'=>'stripe-test'],function(){
                     'created_at'        => now(),
                     'updated_at'        => now(),
                 ];
-    
+
                 $card_id = DB::table('cards')->insertGetId($credit_card);
             }
+*/
             echo json_encode($intent);
         } catch (Throwable $e) {
             http_response_code(500);
@@ -1056,11 +979,89 @@ Route::group(['prefix'=>'stripe-test'],function(){
         $stripe->refunds->create(['payment_intent' => $payment_intent_id]);
     });
 
+    Route::post('/save_payment_intent',function(){
+        $json_str = file_get_contents('php://input');
+        $request = json_decode($json_str);
+
+        $payment_intent = $request->payment_intent;
+
+        $customer = DB::table("infoCustomer")->where('id',3428)->first();
+
+
+    });
 });
 
 /**
  * END - Route for Stripe Terminal
  */
+
+/**
+ * Route for stripe unpaid orders
+ */
+
+Route::get('/unpaid-orders',function(Request $request){
+    $start = microtime(true);
+
+    $token = $request->get('token');
+
+    $app_token = setting('admin.url_token');//EjD4L7tgrHxmCY3exnCE31b3
+
+    if(!isset($token)){
+        die('token not set');
+    }
+
+    if($app_token != $token){
+        die('invalid token');
+    }
+
+    $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+
+    $unpaid_orders = DB::table('unpaid_orders')->where('paid',0)->get();
+
+    $orders_to_update = [];
+    $lines_to_update = [];
+
+    if(count($unpaid_orders) > 0){
+        foreach($unpaid_orders as $k=>$v){
+            $payment_intent = $stripe->paymentIntents->retrieve(
+                $v->payment_intent_id,
+                []
+              );
+
+            if($payment_intent->status=='succeeded'){
+                $orders_to_update[] = $v->order_id;
+                $lines_to_update[] = $v->id;
+            }
+
+        }
+    }
+
+    if(!empty($orders_to_update)){
+
+        $orders = DB::table('infoOrder')->whereIn('id',$orders_to_update)->get();
+
+        $orders_ids = [];
+        foreach($orders as $k=>$v){
+            $orders_ids[] = $v->OrderID;
+        }
+
+        DB::table('infoInvoice')->where('OrderID',$orders_ids)->update(['Paid'=>1]);
+        DB::table('infoOrder')->where('id',$orders_to_update)->update(['Paid'=>1]);
+    }
+
+
+    if(!empty($lines_to_update)){
+        DB::table('unpaid_orders')->whereIn('id',$lines_to_update)->update(['paid'=>1]);
+    }
+
+    $end = microtime(true);
+    $timetaken = $end-$start;
+
+    echo "Time taken: ".gmdate('H:i:s',$timetaken)."<br/>";
+    echo count($lines_to_update)." lines updated";
+
+});
 
 
 /**

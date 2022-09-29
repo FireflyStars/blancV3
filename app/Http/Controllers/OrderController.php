@@ -625,6 +625,12 @@ class OrderController extends Controller
 
 
                 }else{
+                    DB::table('unpaid_orders')->insert([
+                        'payment_intent_id'=>$payment_intent->id,
+                        'order_id'=>$order_id,
+                        'created_at'=>date('Y-m-d H:i:s'),
+                    ]);
+
                     $err_payment = $payment_intent;
                 }
             }else{

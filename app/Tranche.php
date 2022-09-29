@@ -240,4 +240,22 @@ class Tranche extends Model
         );
     }
 
+
+    public static function getSlotFromTranche($from,$to){
+        if($from=='08:00:00'&&$to=='10:00:00')
+            return 1;
+        if($from=='10:00:00'&&$to=='12:00:00')
+            return 3;
+        if($from=='12:00:00'&&$to=='14:00:00')
+            return 5;
+        if($from=='14:00:00'&&$to=='16:00:00')
+            return 7;
+        if($from=='16:00:00'&&$to=='18:00:00')
+            return 9;
+        if($from=='18:00:00'&&$to=='20:00:00')
+            return 11;
+        if($from=='08:00:00'&&$to=='20:00:00')
+            return 13;
+    }
+
 }
