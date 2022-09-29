@@ -118,6 +118,16 @@ class ItemController extends Controller{
             'updated'=>$updated
         ]);
     }
+
+    public function getitembyBarcode(Request $request){
+
+        $item = DB::table('infoitems')->where('ItemTrackingKey',$request->Barcode)->first();
+
+        return response()->json([
+            'item'=>$item
+        ]);
+
+    }
 }
 
 ?>

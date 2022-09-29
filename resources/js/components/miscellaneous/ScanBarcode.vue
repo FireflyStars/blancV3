@@ -10,7 +10,7 @@
           <div  class="Scan-message">
                 <span class="body_small_bold"> Scan Barcode </span>
                 <div class ="input_barcode">
-                <input type="text"  placeholder="Type barcode..." v-model="search" @keyup.prevent="submit"/> 
+                <input type="text"  placeholder="Type barcode..." v-model="search" @keyup.enter="submit"/> 
                 </div>  
           </div> 
            
@@ -18,38 +18,63 @@
     </div>
 </template>
 <script>
-import {ref,nextTick,computed , watch} from 'vue';
-import {useRoute,useRouter} from 'vue-router';
-import {useStore} from 'vuex';
+import {ref} from 'vue';
+import {useRouter} from 'vue-router';
+import { useStore } from 'vuex';
+import {
+        TOASTER_MODULE,
+        TOASTER_MESSAGE
+
+    } from "../../store/types/types";
 export default ({
     name: "ScanBarcode",
     components:{},
     setup(props,context) {
-        const store =useStore();
         const search =ref('');
-        const timeout =ref('');
+        const router = useRouter();
+        const store = useStore();
+        
   
-     function submit(e) { 
-               clearTimeout(timeout.value);
-               timeout.value = setTimeout(function(){
-                     
-                   nextTick(() => {
-                    console.log(e.target.value);
-                });
-               }  
-              , 500)
-            };
-   
-     function close(){
-         context.emit('scan_Barcode', false)
-     }
+    
+        function submit(e) { 
+
+            if(e.target.value.length == 8){
+
+                axios.post('/get-item-barcode',{
+                    Barcode: e.target.value
+               }).then((res)=>{
+
+                if(res.data.item != null){
+                    router.push({
+                        name:'ItemDetails',
+                        params: {
+                            item_id:res.data.item.id,
+                        },
+                    })
+                    close();
+                } else {
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message: "Invalid Barcode",ttl:5, type:'danger'},{ root: true });
+                }    
+               });
+            }
+            else if (e.target.value.length == 14){
+                console.log(e.target.value )
+            } else {
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message: "Invalid Barcode",ttl:5, type:'danger'},{ root: true });
+            }
+           
+        };
+
+        function close(){
+            context.emit('scan_Barcode', false)
+        }
+     
 
 
       return{
           search,
           submit,
-          close,
-          
+          close 
       }  
     },
 })
