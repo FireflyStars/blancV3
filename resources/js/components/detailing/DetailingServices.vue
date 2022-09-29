@@ -32,7 +32,7 @@
                     <!--
 (!detailingitem.cleaning_services && service.selected_default==1) ||
                         -->
-                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center position-relative" v-for="(service,id) in services" :class="{'sel_service': service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0,'mb-4':service.cleaning_group==2}" :id="'sub_service_'+service.id" @click="checkSubService(service.id)" :data-cleaning-service-id="service.id">
+                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center position-relative" v-for="(service,id) in services" :class="{'sel_service': service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0,'mb-4':service.cleaning_group==2, 'active_service': preference_customer.includes(service.id_preference)  && detailingitem.status != 'Completed' , 'cleaning': group=='Cleaning Add-on'}" :id="'sub_service_'+service.id" @click="checkSubService(service.id)" :data-cleaning-service-id="service.id">
                         <div class="d-block w-100 text-center">
                             {{service.name}}<span v-if="service.cleaning_group==2" class="text-center d-block w-100">(&#163;{{service.fixed_price}})</span>
 
@@ -510,15 +510,21 @@ export default {
 
         function checkCleaningGroup(){
 
-            axios.post('/getPreferenceCustomer',{
+            if(props.detailingitem.status != 'Completed'){
+
+                axios.post('/getPreferenceCustomer',{
                 Customer_id: props.detailingitem.customer_id,
                 typeitem_id: props.detailingitem.typeitem_id
                }).then((res)=>{
-                   console.log(res.data.prefrenceActive);
                    preference_customer.value = res.data.prefrenceActive
+                //    preference_customer.value.forEach(function(id){
+                //     changeCustomerPreference(id)
+                //    });
                }).catch((err)=>{
 
                })
+            }
+            
 
             let cs = props.cleaning_services;
             let gp = Object.keys(cs);
