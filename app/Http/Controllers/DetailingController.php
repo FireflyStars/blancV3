@@ -2308,4 +2308,28 @@ class DetailingController extends Controller
         return $sel_bundle_id;
     }
 
+    public function getPreferenceCustomer(Request $request){
+
+        $prefrenceActive= null;
+        $cust = DB::table('infoCustomer')->where('infoCustomer.id' , '=' , $request->Customer_id)->first();
+
+        $prferenceIds = DB::table('InfoCustomerPreference')->select('InfoCustomerPreference.id_preference')->where('InfoCustomerPreference.CustomerID' , '=' , '3e9ed19b-2e8a-11ed-987f-fc3497b0d26d')->get();
+
+        if(!empty($prferenceIds)){
+
+            foreach($prferenceIds as $key=>$value){
+                $prference = DB::table('preferencetypitem')
+                                   ->where('preferencetypitem.customerpreferences_id','=' ,$value->id_preference )
+                                   ->where('preferencetypitem.typitem_id','=' , $request->typeitem_id )->first();
+                if($prference != null){
+                    $prefrenceActive [] = $prference->customerpreferences_id ;  
+                }                                 
+            }
+        }
+        return response()->json([
+            "prferenceIds" => $prferenceIds,
+            "prefrenceActive" =>$prefrenceActive
+        ]);
+        
+    }
 }

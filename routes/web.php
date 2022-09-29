@@ -831,6 +831,10 @@ Route::post('get-suborder-and-print', [ PosteController::class, 'getSubOrderToPr
 */
 Route::post('update-zone-label-pos',[ItemController::class,'updateZoneLabelPos'])->name('update-zone-label-pos')->middleware('auth');
 
+/*  search  by barcode 
+*/
+Route::post('get-item-barcode',[ItemController::class,'getitembyBarcode'])->name('get-item-barcode')->middleware('auth');
+
 
 /*
 * Detailing Services
@@ -841,6 +845,7 @@ Route::post('/complete-detailing-item',[DetailingController::class,'completeDeta
 Route::post('/update-cust-preference-from-service',[DetailingController::class,'updateCustomerServicePref'])->name('update-cust-preference-from-service')->middleware('auth');
 Route::post('/remove-detailing-item',[DetailingController::class,'removeDetailingItem'])->name('remove-detailing-item')->middleware('auth');
 Route::post('/set-price-now',[DetailingController::class,'setPriceNow'])->name('set-price-now')->middleware('auth');
+Route::post('/getPreferenceCustomer',[DetailingController::class,'getPreferenceCustomer'])->name('getPreferenceCustomer')->middleware('auth');
 
 /*
 * Create items from detailing

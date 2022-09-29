@@ -217,6 +217,7 @@ export default {
         const price_now_type = ref('');
         const pricenow_modal = ref();
         const price_now_value = ref('');
+        const preference_customer = ref([]);
 
         function toggleMainService(id){
             let el = document.getElementById('main_service_'+id);
@@ -508,6 +509,17 @@ export default {
 
 
         function checkCleaningGroup(){
+
+            axios.post('/getPreferenceCustomer',{
+                Customer_id: props.detailingitem.customer_id,
+                typeitem_id: props.detailingitem.typeitem_id
+               }).then((res)=>{
+                   console.log(res.data.prefrenceActive);
+                   preference_customer.value = res.data.prefrenceActive
+               }).catch((err)=>{
+
+               })
+
             let cs = props.cleaning_services;
             let gp = Object.keys(cs);
             let sel_cleaning_gp = [];
@@ -731,6 +743,7 @@ export default {
             loadPriceNowModal,
             closePriceNowModal,
             price_now_value,
+            preference_customer
         };
     },
 }
@@ -852,6 +865,21 @@ export default {
 
     .each-sub-service:not(.is_pref_disabled) .pref-disable-icon{
         display:none;
+    }
+    .each-sub-service.active_service {
+        cursor: pointer;
+        color: #fff;
+        background: #47454B;
+    }
+    .disabled_service{
+        pointer-events: none;
+        background: transparent;
+        color:rgba(0, 23, 84, 0.15);
+        box-shadow: none;
+        cursor: default;
+    }
+    .each-sub-service.sel_service.disabled_service{
+        background-color: #47454b;
     }
 
 
