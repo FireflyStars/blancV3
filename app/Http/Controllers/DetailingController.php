@@ -753,16 +753,22 @@ class DetailingController extends Controller
         if($item){
             $inv = DB::table('infoInvoice')
                 ->where('InvoiceID',$item->InvoiceID)
-                ->where('CustomerID',$customer_id)
-                ->get();
+                ->latest('id')
+                ->first();
 
-            if(count($inv)==0){
-                $err = "HSL $tracking already linked with another customer.";
-            }else{
-                if(!in_array($item->nextpost,[28,34,39,47,43,44,46])){
-                    $err = "HSL $tracking is active. Please change its station";
+            $is_cust_inv = true;
+            if($inv){
+
+                if($cust->CustomerID != $inv->CustomerID){
+                    $err = "HSL $tracking already linked with another customer.";
+                    $is_cust_inv = false;
                 }
             }
+
+            if($is_cust_inv && !in_array($item->nextpost,[28,34,39,47,43,44,46])){
+                $err = "HSL $tracking is active. Please change its station";
+            }
+
         }
     $previous_detailed_item = false;
 
@@ -797,6 +803,22 @@ class DetailingController extends Controller
                     $duplicate_detailing_item[$key] = null;
                 }
             }
+
+            $item_base_price = $previous_detailed_item->pricecleaning;
+
+            $pricecleaning = $item_base_price
+                + ($item_base_price * $previous_detailed_item->coefcleaningbrand)
+                + ($item_base_price * $previous_detailed_item->coefcleaningfabric)
+                + ($item_base_price * $previous_detailed_item->coefcleaningcomplexities);
+
+            $cs = @json_decode($previous_detailed_item->cleaning_services);
+
+            if(is_array($cs) && !empty($cs)){
+                $pricecleaning = DetailingController::calculateCleaningPrice($cs,$pricecleaning);
+            }
+
+            $duplicate_detailing_item['dry_cleaning_price'] = $pricecleaning;
+
 
             $detailingitem_id = DB::table('detailingitem')->insertGetId($duplicate_detailing_item);
 
@@ -1955,7 +1977,7 @@ class DetailingController extends Controller
         if($input_code){
             $code = $input_code;
         }else{
-            if($order->PickupID !=''){
+            if(isset($order->PickupID) && $order->PickupID !=''){
                 $pickup = DB::table('pickup')->where('PickupID',$order->PickupID)->first();
 
                 if($pickup){
@@ -2333,6 +2355,43 @@ class DetailingController extends Controller
             "prferenceIds" => $prferenceIds,
             "prefrenceActive" =>$prefrenceActive
         ]);
-        
+
+    }
+
+    public static function calculateCleaningPrice($cs,$baseprice){
+        $cleaning_services = DB::table('cleaningservices')->whereIn('id',$cs)->get();
+        $services = [];
+
+        foreach($cleaning_services as $k=>$v){
+            $services[$v->id] = [
+                'perc'=>$v->perc,
+                'fixed_price'=>$v->fixed_price
+            ];
+        }
+
+        if(in_array(1,$cs) && in_array(3,$cs)){
+            //100%
+        }
+
+        if(in_array(1,$cs) && !in_array(3,$cs) && !in_array(2,$cs)){
+            $baseprice = $baseprice*($services[1]['perc']/100);
+        }
+        if(!in_array(1,$cs) && !in_array(3,$cs) && in_array(2,$cs)){
+            $baseprice = $baseprice*($services[2]['perc']/100);
+        }
+        if(!in_array(1,$cs) && in_array(3,$cs) && !in_array(2,$cs)){
+            $baseprice = $baseprice*($services[3]['perc']/100);
+        }
+
+
+        foreach($services as $k=>$v){
+            if(isset($services[$k])){
+                if($v['perc']==0){
+                    $baseprice += $v['fixed_price'];
+                }
+            }
+        }
+
+        return $baseprice;
     }
 }

@@ -199,7 +199,7 @@ export default {
                                 });
                             } else{
                                 //To add fetch for card details
-
+                                context.emit('set-terminal-pay');
 
                                 updateTerminalOrder(order_id,amount,'succeeded','');
                                 console.log('terminal.collectPaymentMethod', result.paymentIntent);
@@ -322,7 +322,7 @@ export default {
             const bodyContent = JSON.stringify({
                 payment_intent_id:paymentIntentId.value,
             });
-
+            /*
             return fetch('/stripe-test/refund-payment',{
                 method:"POST",
                 headers: {
@@ -334,6 +334,7 @@ export default {
             }).finally(()=>{
                 console.log('Refund finished');
             })
+            */
         }
 
         return {
