@@ -627,7 +627,7 @@
                                                                     <span class="sidebar_title text-white mb-3">Card details <a href="javascript:void(0)" v-if="custcard" id="editcard" @click="setEditCard" :class="{'canceleditcard':editcard}"><span v-if="!editcard">Edit</span><span v-else>Cancel</span></a></span>
                                                                 </div>
 
-                                                                <payment @require_save_card="onRequireSaveCard" ref="payment_comp" :custcard="custcard" :order_id="order_id" :cust="cust" :amounttopay="parseFloat(amount_to_pay)" @reload-checkout="closeEditCardAndReload" @complete-checkout="completeCheckout"></payment>
+                                                                <payment ref="payment_comp" :custcard="custcard" :order_id="order_id" :cust="cust" :amounttopay="parseFloat(amount_to_pay)" @reload-checkout="closeEditCardAndReload" @complete-checkout="completeCheckout"></payment>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -675,9 +675,7 @@
                 <div class="col-10">
                     <div class="row justify-content-center mb-4">
                         <div class="col-6">
-
-                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="parseFloat(amount_to_pay)" @complete-checkout="completeCheckout" @close-payment-modal="closePaymentAndShowLoading" @close-awaiting-payment="closeAwaitingPaymentModal" @await-payment-modal="openAwaitPaymentModal"  @openSaveCardDetailConfirmation="openSaveCardDetailConfirmation" :save_card_confirmed="save_card_confirmed" @set-terminal-pay="setTerminalPay" ref="stripePay"></stripe-pay-now>
-
+                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="parseFloat(amount_to_pay)" @complete-checkout="completeCheckout" @close-payment-modal="closePaymentAndShowLoading" @close-awaiting-payment="closeAwaitingPaymentModal" @set-terminal-pay="setTerminalPay" ref="stripePay"></stripe-pay-now>
                         </div>
                         <div class="col-6">
                             <button class="pay-btn w-100 py-3" @click="completeCheckout">Pay later</button>
@@ -719,31 +717,7 @@
 
     </modal>
 
- <modal ref="confirm_save_card_modal">
-        <template #closebtn>
-            <span class="close" id="addon_modal_close" @click="closeConfirmSaveModal"></span>
-        </template>
-        <template #bheader>
-            <div class="bmodal-header-green py-5 text-center">Do you want to save card<br/>details to customer’s account?</div>
-        </template>
-        <template #bcontent>
-        </template>
-        <template #mbuttons>
-            <div class="row mx-0 justify-content-center my-5 py-3">
-                <div class="col-10">
-                    <div class="row justify-content-center mb-4">
-                        <div class="col-6">
-                             <button class="pay-btn w-100 py-3" @click="PayAndSaveCardDetails">Yes, save details now</button>
-                        </div>
-                        <div class="col-6">
-                            <button class="pay-btn w-100 py-3" @click="PayOnly">NO, just pay</button>
-                        </div>
-                    </div>
-                  
-                </div>
-            </div>
-        </template>
-    </modal>
+
 </template>
 <script>
 
@@ -789,7 +763,6 @@ export default {
         const total_exc_vat = ref(0);
         const custcard = ref({});
         const no_payment_modal = ref();
-        const confirm_save_card_modal=ref();
         const stripe_public_key = ref('');
         const cur_user = ref({});
         const payment_comp = ref();
@@ -1091,9 +1064,6 @@ export default {
 
         function closePaymentAndShowLoading(){
             closeNoPaymentModal();
-           
-        }
-        function openAwaitPaymentModal(){
             awaiting_payment_modal.value.showModal();
         }
 
@@ -1222,32 +1192,7 @@ export default {
 
             });
         }
-    
-        const openSaveCardDetailConfirmation=()=>{
-            confirm_save_card_modal.value.showModal();
-            no_payment_modal.value.makeInvisible();
-        }
-        const save_card_confirmed=ref(false);
-        const onRequireSaveCard=(savecard)=>{
-            save_card_confirmed.value=savecard;
-        }
-      
-        const PayOnly=()=>{
-               no_payment_modal.value.makeVisible();
-               stripePay.value.payNow(false);
-               confirm_save_card_modal.value.closeModal();
-        }
-        const PayAndSaveCardDetails=()=>{
-                  no_payment_modal.value.makeVisible();
-               stripePay.value.payNow(true);
-               
-               confirm_save_card_modal.value.closeModal();
-        }
-        const closeConfirmSaveModal=()=>{
-             confirm_save_card_modal.value.closeModal();
-              no_payment_modal.value.makeVisible();
-              no_payment_modal.value.closeModal();
-        }
+
         return {
             order_id,
             paths,
@@ -1321,16 +1266,7 @@ export default {
             order_bundles,
             setTerminalPay,
             stripePay,
-            openSaveCardDetailConfirmation,
-            confirm_save_card_modal,
-            onRequireSaveCard,
-            save_card_confirmed,
-            openAwaitPaymentModal,
-            PayAndSaveCardDetails,
-            PayOnly,
-            closeConfirmSaveModal
         }
-
     },
 }
 </script>
@@ -1707,11 +1643,6 @@ export default {
     font:bold 22px "Gilroy";
     color:#F4003D;
     background:#FFEFED;
-}
-.bmodal-header-green{
-    font:bold 22px "Gilroy";
-    color:#42A71E;
-    background:#D0E9C7;
 }
 
 .pay-btn,#payment_method_btn{

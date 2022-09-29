@@ -1,5 +1,5 @@
 <template>
-    <button class="pay-btn w-100 py-3" @click="checkConfirmationBeforePayNow">Pay now</button>
+    <button class="pay-btn w-100 py-3" @click="payNow">Pay now</button>
 </template>
 <script>
 import {ref,watch} from 'vue';
@@ -19,14 +19,8 @@ export default {
         user: Object || null,
         order: Object || null,
         amounttopay: Number,
-        save_card_confirmed:{
-            type:Boolean,
-            required:false,
-            default:false,
-        }
     },
-    emits:['complete-checkout','close-payment-modal','set-terminal-pay','openSaveCardDetailConfirmation','await-payment-modal'],
-
+    emits:['complete-checkout','close-payment-modal','set-terminal-pay','close-awaiting-payment'],
     setup(props,context) {
         const store = useStore();
         const terminal = ref();
@@ -109,6 +103,7 @@ export default {
                         ttl: 5,
                         type: "danger",
                     });
+                context.emit('close-awaiting-payment');
                 } else {
                     selected_reader.value = connectResult.reader;
                     console.log('Connected to reader: ', connectResult.reader.label);
@@ -122,18 +117,10 @@ export default {
             });
         }
 
-        function checkConfirmationBeforePayNow(){
-            if(props.save_card_confirmed){
-                 payNow(true);
-            }else{
-                context.emit('openSaveCardDetailConfirmation');
-            }
-        }
-         const savecardinfo=ref(false);
-         const payNow=async(savecarddetails)=>{
-            savecardinfo.value=savecarddetails;
-              context.emit('close-payment-modal');
-            context.emit('await-payment-modal');
+
+
+        async function payNow(){
+            context.emit('close-payment-modal');
             console.log('call start');
 
             await listReaders();
@@ -152,6 +139,7 @@ export default {
                     console.log('End calling selectReader');
 
                     if(typeof(selected_reader.value.id)!='undefined'){
+
                         await createPaymentIntent(props.amounttopay,props.order.id);
                     }
 
@@ -169,6 +157,7 @@ export default {
 
 
         async function createPaymentIntent(amount,order_id) {
+            console.log(amount,order_id);
 
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
                 true,
@@ -209,6 +198,9 @@ export default {
                                     type: "danger",
                                 });
                             } else{
+                                //To add fetch for card details
+
+
                                 updateTerminalOrder(order_id,amount,'succeeded','');
                                 console.log('terminal.collectPaymentMethod', result.paymentIntent);
 
@@ -236,7 +228,8 @@ export default {
 
 
         async function fetchPaymentIntentClientSecret(amount) {
-            const bodyContent = JSON.stringify({ amount: amount,order_id:props.order.id,savecardinfo:savecardinfo.value });
+            console.log('fetch amount',amount);
+            const bodyContent = JSON.stringify({ amount: amount,order_id:props.order.id });
             return fetch('/stripe-test/create_payment_intent', {
                 method: "POST",
                 headers: {
@@ -341,15 +334,12 @@ export default {
             }).finally(()=>{
                 console.log('Refund finished');
             })
-
         }
-
 
         return {
             payNow,
             selected_reader,
             refundPayment,
-            checkConfirmationBeforePayNow
         }
 
     },
