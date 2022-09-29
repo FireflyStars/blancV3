@@ -322,7 +322,7 @@ export default {
         }
 
         function cancelPaymentIntent(){
-            if(paymentIntentId.value !=''){
+            //if(paymentIntentId.value !=''){
              return fetch('/stripe-test/cancel_payment_intent', {
                     method: "POST",
                     headers: {
@@ -334,13 +334,13 @@ export default {
                 }).finally(()=>{
                     console.log('save payment intent ended');
                 })
-            }else{
+           /* }else{
                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
                     message: "payment intent id is blanc",
                     ttl:5,
                     type:'danger',
                 });
-            }
+            }*/
         }
 
 

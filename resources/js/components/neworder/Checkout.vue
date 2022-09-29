@@ -692,16 +692,11 @@
     </modal>
 
     <modal ref="awaiting_payment_modal">
-         <template #closebtn>
+        <template #closebtn>
             <span class="close" id="addon_modal_close" @click="closeAwaitingPaymentModal"></span>
         </template>
         <template #bheader>
             <div class="bmodal-header py-5 text-center">Awaiting payment</div>
-        </template>
-
-        <template #mbuttons>
-            <div class="row mx-0 justify-content-center my-5 py-3">
-                <div class="col-3"><button class="btn btn-outline-danger w-100" @click="cancelPayment">Cancel</button></div>
         </template>
     </modal>
 
@@ -1198,10 +1193,6 @@ export default {
             });
         }
 
-        function cancelPayment(){
-            stripePay.value.cancelPaymentIntent();
-        }
-
         return {
             order_id,
             paths,
@@ -1275,7 +1266,6 @@ export default {
             order_bundles,
             setTerminalPay,
             stripePay,
-            cancelPayment,
         }
     },
 }

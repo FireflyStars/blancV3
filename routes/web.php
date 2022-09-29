@@ -984,19 +984,6 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
 
     });
-
-    Route::post('/cancel_payment_intent',function(){
-        $json_str = file_get_contents('php://input');
-        $request = json_decode($json_str);
-
-        $payment_intent_id = $request->payment_intent_id;
-
-        $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
-
-        $stripe->paymentIntents->cancel($payment_intent_id);
-
-
-    });
 });
 
 /**
