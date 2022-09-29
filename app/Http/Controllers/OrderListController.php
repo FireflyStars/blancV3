@@ -1159,7 +1159,7 @@ class OrderListController extends Controller
         ->orderBy('detailingitem.id','ASC')
         ->get();
 
-        return response()->json(['order'=>['detail'=>$order,'billing'=>$billing_add,'delivery'=>$delivery_add,'items'=>$items,'available_slots'=>$available_slots ,'detailingitemlist' => $detailingitemlist,'postcode'=>$sel_postcode , 'booking' => $Booking_histories , 'totalitems' => count($infoitems) ,'user' => $user->id]] );
+        return response()->json(['order'=>['detail'=>$order,'billing'=>$billing_add,'delivery'=>$delivery_add,'items'=>$items,'available_slots'=>$available_slots ,'detailingitemlist' => $detailingitemlist,'postcode'=>$sel_postcode , 'booking' => $Booking_histories , 'totalitems' => count($infoitems) ,'user' => $user->role_id]] );
     }
 
      public function setInvoiceFulfilled(Request $request){
