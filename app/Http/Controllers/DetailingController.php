@@ -2313,7 +2313,10 @@ class DetailingController extends Controller
         $prefrenceActive= null;
         $cust = DB::table('infoCustomer')->where('infoCustomer.id' , '=' , $request->Customer_id)->first();
 
-        $prferenceIds = DB::table('InfoCustomerPreference')->select('InfoCustomerPreference.id_preference')->where('InfoCustomerPreference.CustomerID' , '=' , '3e9ed19b-2e8a-11ed-987f-fc3497b0d26d')->get();
+        $prferenceIds = DB::table('InfoCustomerPreference')->select('InfoCustomerPreference.id_preference')
+        ->where('InfoCustomerPreference.CustomerID' , '=' , $cust->CustomerID)
+        ->where('InfoCustomerPreference.Value' , '=' , 1)
+        ->get();
 
         if(!empty($prferenceIds)){
 
