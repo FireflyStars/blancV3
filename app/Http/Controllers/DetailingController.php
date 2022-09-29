@@ -1844,7 +1844,7 @@ class DetailingController extends Controller
             $updated = DB::table('detailingitem')->where('id',$id)->update([
                 'tailoring_price_type'=>'PriceNow',
                 'tailoring_price'=>$montant,
-                'describeprixnow'=>$describeprixnow,
+                'describeprixnowtailoring'=>$describeprixnow,
                 'updated_at'=>date('Y-m-d H:i:s')
             ]);
         }

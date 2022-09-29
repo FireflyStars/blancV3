@@ -537,10 +537,6 @@ export default {
                 typeitem_id: props.detailingitem.typeitem_id
                }).then((res)=>{
                    preference_customer.value = res.data.prefrenceActive
-                //    preference_customer.value.forEach(function(id){
-                //     changeCustomerPreference(id)
-                //    });
-                toggleSubService
                }).catch((err)=>{
 
                })
@@ -692,8 +688,6 @@ export default {
         function priceNow(){
            let montant = price_now_value.value;
            let describeprixnow = describe_job_value.value
-
-           console.log("describeprixnow == '' && montant==''" ,describeprixnow == '' || (montant=='' || parseFloat(montant)=='NaN'))
 
            if(describeprixnow == '' || montant=='' || parseFloat(montant)=='NaN'){
                 if(describeprixnow == ''){
