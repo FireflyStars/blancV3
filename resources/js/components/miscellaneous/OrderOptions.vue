@@ -7,7 +7,7 @@
                 <img class="img-arrow" src="/images/payment.png" />
                 <span>Take payment</span>
             </div>
-            <div class="col-12 row-option" >
+            <!-- <div class="col-12 row-option" >
                 <img class="img-arrow" src="/images/offload.png" />
                 <span>Offload</span>
             </div>
@@ -22,7 +22,7 @@
              <div class="col-12 row-option" >
                 <img class="img-arrow" src="/images/garbage.png" />
                 <span>Delete</span>
-            </div>
+            </div> -->
             <div class="col-12 row-option" v-if="user_id == 1 || user_id == 4" @click="VoidOrder()">
                 <img class="img-arrow" src="/images/erase.png" />
                 <span>Void</span>
