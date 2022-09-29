@@ -336,10 +336,33 @@ export default {
             })
         }
 
+        function cancelPaymentIntent(){
+            if(paymentIntentId.value !=''){
+             return fetch('/stripe-test/cancel_payment_intent', {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({"payment_intent_id": paymentIntentId.value})
+                }).then(function(data){
+                    console.log(data);
+                }).finally(()=>{
+                    console.log('save payment intent ended');
+                })
+            }else{
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                    message: "payment intent id is blanc",
+                    ttl:5,
+                    type:'danger',
+                });
+            }
+        }
+
         return {
             payNow,
             selected_reader,
             refundPayment,
+            cancelPaymentIntent,
         }
 
     },

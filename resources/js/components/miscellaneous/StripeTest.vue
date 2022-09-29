@@ -196,6 +196,7 @@ export default {
 
 
             fetchPaymentIntentClientSecret(pay_amount).then((client_secret)=>{
+
                 //terminal.value.setSimulatorConfiguration({testCardNumber: '4242424242424242'});
 
 
@@ -253,7 +254,7 @@ export default {
 
 
         function fetchPaymentIntentClientSecret(amount) {
-            const bodyContent = JSON.stringify({ amount: amount });
+            const bodyContent = JSON.stringify({ amount: amount,order_id:0, });
             return fetch('/stripe-test/create_payment_intent', {
                 method: "POST",
                 headers: {
