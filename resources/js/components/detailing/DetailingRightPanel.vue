@@ -253,16 +253,16 @@
                             :class="{ show: servicesAcc === true }"
                         >
                             <div class="accordion-body">
-                                <div class="row mb-2" v-if="Object.values(grouped_cleaning_services).length > 0">
+                                <div class="row mb-2" v-if="Object.values(grouped_cleaning_services).length > 0 || detailingitem.cleaning_price_type=='PriceNow' ">
                                     <div class="col-9"><h5 class="gp_service mb-0">Cleaning</h5></div>
                                 </div>
-                                <div class="row mb-3" v-for="(services,gpService) in grouped_cleaning_services">
+                                <div class="row mb-1" v-for="(services,gpService) in grouped_cleaning_services">
                                     <div class="col-9 pr-0">
                                         <span>{{gpService}}</span>
                                         (<span v-for="(service,index) in services">{{service.name}}<span v-if="index+1 < services.length">, </span></span>)
                                     </div>
                                     <div class="col-3 pl-0 text-right">
-                                        <span v-if="grouped_cleaning_price[gpService]" class="float-right">
+                                        <span v-if="grouped_cleaning_price[gpService] || detailingitem.cleaning_price_type=='PriceNow' " class="float-right">
                                             <span v-if="typeof(cleaning_price_type)!='undefined' && cleaning_price_type=='Quote'">
                                                 <span class="question_mark">?</span>
                                                 &#163;0.00
@@ -272,7 +272,11 @@
                                         </span>
                                     </div>
                                 </div>
-                                <div class="row  mb-2" :class="{'mt-4':Object.values(grouped_cleaning_services).length > 0}" v-if="sel_tailoring_services.length > 0">
+                                <div class="row mb-3 description-service " v-if="detailingitem.cleaning_price_type=='PriceNow'">
+                                    <span>{{detailingitem.describeprixnow}}</span>
+                                </div>
+
+                                <div class="row  mb-2" :class="{'mt-4':Object.values(grouped_cleaning_services).length > 0}" v-if="sel_tailoring_services.length > 0 || detailingitem.tailoring_price_type=='PriceNow' ">
                                     <div class="col-9"><h5 class="gp_service mb-0">Tailoring</h5></div>
                                     <div class="col-3 d-flex justify-content-end">
                                         <span v-if="detailingitem.tailoring_price_type=='Quote'">
@@ -282,11 +286,12 @@
                                         <span v-else>&#163;{{tailoring_price}}</span>
                                     </div>
                                 </div>
-                                <div class="row" v-if="sel_tailoring_services.length > 0">
+                                <div class="row mb-1" v-if="sel_tailoring_services.length > 0">
                                     <div class="col-9 pr-0">
                                         <p v-for="service in sel_tailoring_services" class="mb-2">{{service}}</p>
                                     </div>
                                 </div>
+                                <div v-if="detailingitem.tailoring_price_type=='PriceNow'" class="row description-service"><span>{{detailingitem.describeprixnowtailoring}}</span></div> 
                             </div>
                         </div>
                     </div>
@@ -955,6 +960,16 @@ export default {
     font-weight: normal;
     font-size: 14px;
     line-height: 140%;
+    color: #868686;
+}
+.description-service{
+    font-family: 'Gotham Rounded';
+    font-style: normal;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 140%;
+    display: flex;
+    align-items: center;
     color: #868686;
 }
 

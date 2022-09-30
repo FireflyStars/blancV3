@@ -1844,6 +1844,35 @@ class DetailingController extends Controller
             $updated = DB::table('detailingitem')->where('id',$id)->update([
                 'tailoring_price_type'=>'PriceNow',
                 'tailoring_price'=>$montant,
+                'updated_at'=>date('Y-m-d H:i:s')
+            ]);
+        }
+        if($type=='cleaning'){
+            $updated = DB::table('detailingitem')->where('id',$id)->update([
+                'cleaning_price_type'=>'PriceNow',
+                'dry_cleaning_price'=>$montant,
+                'cleaning_addon_price'=>0,
+                'updated_at'=>date('Y-m-d H:i:s')
+            ]);
+        }
+
+        return response()->json([
+            'updated'=>$updated,
+        ]);
+    }
+
+    public function setDescribeAndPriceNow(Request $request){
+        $type = $request->type;
+        $id = $request->id;
+        $montant = $request->montant;
+        $describeprixnow = $request->describeprixnow;
+
+        $updated = false;
+
+        if($type=='tailoring'){
+            $updated = DB::table('detailingitem')->where('id',$id)->update([
+                'tailoring_price_type'=>'PriceNow',
+                'tailoring_price'=>$montant,
                 'describeprixnowtailoring'=>$describeprixnow,
                 'updated_at'=>date('Y-m-d H:i:s')
             ]);

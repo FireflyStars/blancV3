@@ -764,6 +764,7 @@ Route::post('/complete-detailing-item',[DetailingController::class,'completeDeta
 Route::post('/update-cust-preference-from-service',[DetailingController::class,'updateCustomerServicePref'])->name('update-cust-preference-from-service')->middleware('auth');
 Route::post('/remove-detailing-item',[DetailingController::class,'removeDetailingItem'])->name('remove-detailing-item')->middleware('auth');
 Route::post('/set-price-now',[DetailingController::class,'setPriceNow'])->name('set-price-now')->middleware('auth');
+Route::post('/set-describe-price-now',[DetailingController::class,'setDescribeAndPriceNow'])->name('set-describe-price-now')->middleware('auth');
 Route::post('/getPreferenceCustomer',[DetailingController::class,'getPreferenceCustomer'])->name('getPreferenceCustomer')->middleware('auth');
 
 /*
