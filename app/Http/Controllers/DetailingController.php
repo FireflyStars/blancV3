@@ -793,7 +793,7 @@ class DetailingController extends Controller
             $duplicate_detailing_item['status'] = 'In Process';
 
             $int_field_to_clear = ['dry_cleaning_price','cleaning_addon_price','tailoring_price'];
-            $fields_to_clear = ['stains','damages','cleaning_services','cleaning_price_type','tailoring_price_type'];
+            $fields_to_clear = ['stains','damages','cleaning_price_type','tailoring_price_type'];
 
             foreach($duplicate_detailing_item as $key=>$value){
                 if(in_array($key,$int_field_to_clear)){
@@ -804,7 +804,15 @@ class DetailingController extends Controller
                 }
             }
 
-            $item_base_price = $previous_detailed_item->pricecleaning;
+            $item_base_price = 0;
+
+            $prev_type_item = DB::table('typeitem')->where('id',$previous_detailed_item->typeitem_id)->first();
+
+            if($prev_type_item){
+                $item_base_price = $prev_type_item->pricecleaning;
+            }
+
+            $duplicate_detailing_item['pricecleaning'] = $item_base_price;
 
             $pricecleaning = $item_base_price
                 + ($item_base_price * $previous_detailed_item->coefcleaningbrand)
@@ -818,6 +826,7 @@ class DetailingController extends Controller
             }
 
             $duplicate_detailing_item['dry_cleaning_price'] = $pricecleaning;
+            $duplicate_detailing_item['tailoring_services'] = "[]";
 
 
             $detailingitem_id = DB::table('detailingitem')->insertGetId($duplicate_detailing_item);
@@ -2350,8 +2359,8 @@ class DetailingController extends Controller
                                    ->where('preferencetypitem.customerpreferences_id','=' ,$value->id_preference )
                                    ->where('preferencetypitem.typitem_id','=' , $request->typeitem_id )->first();
                 if($prference != null){
-                    $prefrenceActive [] = $prference->customerpreferences_id ;  
-                }                                 
+                    $prefrenceActive [] = $prference->customerpreferences_id ;
+                }
             }
         }
         return response()->json([
