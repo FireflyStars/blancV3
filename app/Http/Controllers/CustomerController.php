@@ -2386,6 +2386,7 @@ class CustomerController extends Controller
                 ->join('detailingitem','infoOrder.id','detailingitem.order_id')
                 ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+                ->whereNotIn('infoInvoice.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
                 ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
                 ->where('infoOrder.orderinvoiced',0)
                 ->whereIn('infoOrder.CustomerID',$all_customer_ids)
@@ -2397,9 +2398,14 @@ class CustomerController extends Controller
         $total_per_order = [];
         $simplified_invoices_per_order = [];
 
+        $all_orders = [];
 
         foreach($orders as $k=>$v){
             $total_per_order[$v->order_id] = $v->Total;
+
+            if(!in_array($v->order_id,$all_orders)){
+                array_push($all_orders,$v->order_id);
+            }
 
            $invoices_per_order[$v->order_id][$v->InvoiceID][$v->ItemID] = [
                                                                                 'NumInvoice'=>$v->NumInvoice,
@@ -2482,6 +2488,8 @@ class CustomerController extends Controller
             DB::table('infoOrderPrint')->where('id',$row_id)->update(['NumFact'=>$num_facture]);
 
         }
+
+        DB::table('infoOrder')->where('id',$all_orders)->update(['orderinvoiced'=>1]);
 
         return $row_ids;
 
@@ -2866,7 +2874,7 @@ class CustomerController extends Controller
                     }
                 }
 
-                $sent = NotificationController::Notify('rushdi@vpc-direct-service.com', '+123456789', '5K_EMAIL_B2B_INVOICE', '', $mail_vars, true, 0, '');
+                $sent = NotificationController::Notify($email, '+123456789', '5K_EMAIL_B2B_INVOICE', '', $mail_vars, true, 0, '');
             }
         }
 
