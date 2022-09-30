@@ -638,7 +638,11 @@
                                         </div>
                                     </div>
                                 </transition>
-
+                                <div class="row justify-content-center">
+                                    <div class="col-8">
+                                        <button class="btn btn-outline-danger w-100" id="cancelTerminalBtn" @click="cancelTerminalRequest">Cancel Terminal request</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="row justify-content-end py-4" id="last-row-btns">
@@ -1193,6 +1197,18 @@ export default {
             });
         }
 
+        function cancelTerminalRequest(){
+             axios.post('/cancel-terminal-request',{})
+                .then((res)=>{
+                    console.log(res);
+                }).catch((err)=>{
+
+                }).finally(()=>{
+
+                })
+        }
+
+
         return {
             order_id,
             paths,
@@ -1266,6 +1282,7 @@ export default {
             order_bundles,
             setTerminalPay,
             stripePay,
+            cancelTerminalRequest,
         }
     },
 }
@@ -1738,6 +1755,14 @@ export default {
     /*
     border-bottom: thin solid #c3c3c3;
     */
+}
+
+#cancelTerminalBtn{
+    background:#fff;
+}
+
+#cancelTerminalBtn:hover{
+    background:#EB5757;
 }
 
 </style>
