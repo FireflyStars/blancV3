@@ -170,9 +170,6 @@ public function SearchByCustomer(Request $request)
                         'TotalSpend as spent',
                         'CustomerID as customerId'
                     )
-                    ->where(function($query){
-                        $query->where('SignupDate', '!=', '2000-01-01')->orWhere('SignupDateOnline', '!=', '2000-01-01');
-                    })
                     ->where('infoCustomer.Actif', '=', 1)
                     ->where('infoCustomer.CustomerIDMaster','!=', $request->customerID)
                     ->where(function($query) use ($request) {
