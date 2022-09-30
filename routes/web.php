@@ -630,6 +630,7 @@ Route::get('notify-test', function () {
     */
 });
 
+
 /* A REFAIRE */
 
 Route::get('/test-pi',function(){
@@ -988,6 +989,39 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
 
     });
+});
+
+Route::post('/cancel-terminal-request',function(){
+    $user = Auth::user();
+
+    $readers_id = [];
+    $readers_id[1] = 'tmr_Eqz4ewJhXq5eu6'; //Atelier
+    $readers_id[2] = 'tmr_Eq0HXA4Oj7Yjqo'; //Marylebone
+    $readers_id[3] = 'tmr_EqzSAXwuoVzKs0'; //Chelsea
+    $readers_id[4] = 'tmr_Eqz9KQMTISyB47'; //South Ken
+    $readers_id[5] = 'tmr_EqzjQIwM2PjDQy'; //Notting Hill
+
+    $sel_reader = [];
+
+    $output = false;
+
+    if($user && isset($readers_id[$user->store])){
+        $sel_reader = $readers_id[$user->store];
+
+        $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+        $output = $stripe->terminal->readers->cancelAction(
+            $sel_reader,
+            []
+          );
+    }
+
+
+    return response()->json([
+        'user'=>$user,
+        'sel_reader'=>$sel_reader,
+        'output'=>$output,
+    ]);
 });
 
 /**
