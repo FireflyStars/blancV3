@@ -1131,7 +1131,7 @@ class OrderController extends Controller
         }
         //*/
 
-        return $res;
+        return $content;
 
     }
 
@@ -1179,10 +1179,14 @@ class OrderController extends Controller
             ]);
         }
 
-        $order_res = OrderController::createOrderItems($order_id);
+        $content = OrderController::createOrderItems($order_id);
+        $order_res =  @json_decode($content);
+
 
         return response()->json([
+            'content'=>$content,
             'output'=>$order_res,
+
         ]);
     }
 
@@ -1229,7 +1233,8 @@ class OrderController extends Controller
     public function validateCheckOutOrder(Request $request){
         $order_id = $request->order_id;
 
-        $order_res = OrderController::createOrderItems($order_id);
+        $content = OrderController::createOrderItems($order_id);
+        $order_res = @json_decode($content);
 
         return response()->json([
             'output'=>$order_res,
