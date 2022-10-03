@@ -247,11 +247,7 @@ export default {
                                 */
 
                                if(res.data.payment_intent){
-                                    async function createItems(){
-                                        await delayPage(5);
 
-                                        context.emit('complete-checkout');
-                                    }
 
                                     if(res.data.payment_intent.status=='succeeded'){
                                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
@@ -270,16 +266,15 @@ export default {
                                             type:'danger',
                                         });
                                     }
-
-                                    createItems();
                                }
                             }
                         }
                     }).catch((err)=>{
+                        console.log(err);
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
                             {
                                 message: JSON.stringify(err),
-                                ttl: 5,
+                                ttl: 15,
                                 type: 'danger'
                             });
                     }).finally(()=>{
@@ -287,11 +282,19 @@ export default {
 
                         if(type=='Save'){
                              context.emit("reload-checkout");
+                        }else{
+                           createItems();
                         }
 
                     });
 
                     //*/
+            }
+
+            async function createItems(){
+                await delayPage(5);
+
+                context.emit('complete-checkout');
             }
 
             function delayPage(n){

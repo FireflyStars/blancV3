@@ -638,11 +638,13 @@
                                         </div>
                                     </div>
                                 </transition>
+                                <!--
                                 <div class="row justify-content-center">
                                     <div class="col-8">
                                         <button class="btn btn-outline-danger w-100" id="cancelTerminalBtn" @click="cancelTerminalRequest">Cancel Terminal request</button>
                                     </div>
                                 </div>
+                                -->
                             </div>
                         </div>
                         <div class="row justify-content-end py-4" id="last-row-btns">
