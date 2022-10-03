@@ -1056,9 +1056,6 @@ Route::get('/unpaid-orders',function(Request $request){
         ->where('created_at','>=',date('Y-m-d H:i:s',strtotime('-15day')))
         ->get();
 
-    echo "<pre>";
-    print_r($unpaid_orders);
-
     $orders_to_update = [];
     $lines_to_update = [];
 
