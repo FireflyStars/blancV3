@@ -73,13 +73,21 @@ class DetailingController extends Controller
                     $detailingitemlist[$k]->price = $price;
                 }
 
+                /*
                 if($v->InvoiceID !=''){
                     $count_has_invoices += 1;
                 }
+                */
             }
 
             DetailingController::getVoucherAmount($order_id);
         }
+
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+
+        $invoices = DB::table('infoInvoice')->where('OrderID',$order->OrderID)->get();
+
+        $count_has_invoices = count($invoices);
 
         echo json_encode(
             [
@@ -2435,4 +2443,5 @@ class DetailingController extends Controller
 
         return $baseprice;
     }
+
 }
