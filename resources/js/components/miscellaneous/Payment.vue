@@ -278,7 +278,7 @@ export default {
                     }).catch((err)=>{
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
                             {
-                                message: err,
+                                message: JSON.stringify(err),
                                 ttl: 5,
                                 type: 'danger'
                             });
@@ -315,7 +315,7 @@ export default {
                 */
             });
             const toggleSaveCardDetailsInTerminal=()=>{
-        
+
                 save_card_details_terminal.value=!save_card_details_terminal.value;
                 context.emit('require_save_card',save_card_details_terminal.value);
             }

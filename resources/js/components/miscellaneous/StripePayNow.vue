@@ -171,7 +171,6 @@ export default {
                 console.log('client secret from fetch payment',client_secret);
                 console.log('collectPaymentMethod started');
 
-
                 terminal.value.collectPaymentMethod(client_secret).then((result)=>{
 
                     //console.log('collect payment',result);
@@ -182,6 +181,9 @@ export default {
                                     ttl: 5,
                                     type: "danger",
                                 });
+
+                        //To add Call for non payment
+
                     } else {
                         //console.log('client secret',client_secret);
 
