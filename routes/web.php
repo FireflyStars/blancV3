@@ -1051,7 +1051,13 @@ Route::get('/unpaid-orders',function(Request $request){
     $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
 
 
-    $unpaid_orders = DB::table('unpaid_orders')->where('paid',0)->get();
+    $unpaid_orders = DB::table('unpaid_orders')
+        ->where('paid',0)
+        ->where('created_at','>=',date('Y-m-d H:i:s',strtotime('-15day')))
+        ->get();
+
+    echo "<pre>";
+    print_r($unpaid_orders);
 
     $orders_to_update = [];
     $lines_to_update = [];
