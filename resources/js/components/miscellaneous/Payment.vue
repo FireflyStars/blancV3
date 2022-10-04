@@ -231,8 +231,14 @@ export default {
                     .then((res)=>{
                         if(type!='Save'){
                             if(res.data.error_stripe){
+                                let err_msg = JSON.stringify(res.data.error_stripe);
+
+                                if(Object.keys(res.data.error_stripe).length==0){
+                                    err_msg = 'Error Payment Stripe';
+                                }
+
                                  store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
-                                    message: JSON.stringify(res.data.error_stripe),
+                                    message: err_msg,
                                     ttl:5,
                                     type:'danger',
                                  });

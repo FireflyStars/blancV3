@@ -27,6 +27,7 @@ export default {
         const readers = ref([]);
         const paymentIntentId = ref();
         const selected_reader = ref();
+        const err_terminal = ref(false);
 
         let readers_id = {};
         readers_id[1] = 'tmr_Eqz4ewJhXq5eu6'; //Atelier
@@ -103,7 +104,8 @@ export default {
                         ttl: 5,
                         type: "danger",
                     });
-                context.emit('close-awaiting-payment');
+                    err_terminal.value = true;
+               // context.emit('close-awaiting-payment');
                 } else {
                     selected_reader.value = connectResult.reader;
                     console.log('Connected to reader: ', connectResult.reader.label);
@@ -138,8 +140,8 @@ export default {
                     await selectReader(selected_reader.value);
                     console.log('End calling selectReader');
 
-                    if(typeof(selected_reader.value.id)!='undefined'){
 
+                    if(typeof(selected_reader.value.id)!='undefined' && !err_terminal){
                         await createPaymentIntent(props.amounttopay,props.order.id);
                     }
 
@@ -191,7 +193,7 @@ export default {
 
                             context.emit('close-awaiting-payment');
                             if (result.error) {
-
+                                //context.emit('close-awaiting-payment');
 
                                  updateTerminalOrder(order_id,amount,'Failed',result);
                                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
@@ -343,6 +345,7 @@ export default {
             payNow,
             selected_reader,
             refundPayment,
+            err_terminal,
         }
 
     },
