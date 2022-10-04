@@ -105,7 +105,7 @@ class DetailingController extends Controller
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
         if($order->Status=="FULFILLED")
         return; 
-            $detailingitemlist = DB::table('detailingitem')->select(['detailingitem.id','typeitem.pricecleaning','brands.coefcleaning','detailingitem.complexities_id','detailingitem.fabric_id'])
+            $detailingitemlist = DB::table('detailingitem')->select(['detailingitem.id','typeitem.pricecleaning','brands.coefcleaning','detailingitem.complexities_id','detailingitem.fabric_id','detailingitem.cleaning_services','detailingitem.etape'])
                 ->join('typeitem', 'detailingitem.typeitem_id', 'typeitem.id')
                 ->join('brands', 'detailingitem.brand_id', 'brands.id')
                 ->where('detailingitem.order_id', '=', $order_id)
