@@ -140,8 +140,7 @@ export default {
                     await selectReader(selected_reader.value);
                     console.log('End calling selectReader');
 
-
-                    if(typeof(selected_reader.value.id)!='undefined' && !err_terminal){
+                    if(typeof(selected_reader.value.id)!='undefined'){
                         await createPaymentIntent(props.amounttopay,props.order.id);
                     }
 
