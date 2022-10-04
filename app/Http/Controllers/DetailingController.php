@@ -130,6 +130,10 @@ class DetailingController extends Controller
                 }
 
                 $dry_cleaning_price=$detailingitem->pricecleaning + $detailingitem->pricecleaning*$detailingitem->coefcleaning+ $sum_complexites + $sum_fabrics;
+
+                if(($detailingitem->cleaning_services==null||$detailingitem->cleaning_services==''||$detailingitem->cleaning_services=='[]')&&$detailingitem->etape==11)
+                $dry_cleaning_price=0;
+
                 DB::table('detailingitem')->where('id', $detailingitem->id)->update([
                     'dry_cleaning_price'=>$dry_cleaning_price,
                     'updated_at' => date('Y-m-d H:i:s')
