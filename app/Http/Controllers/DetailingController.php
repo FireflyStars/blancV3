@@ -100,18 +100,18 @@ class DetailingController extends Controller
     }
 
     public function recalculateDryCleaningPrice($order_id){
-        //dry_cleaning_price = typeitem.pricecleaning +  typeitem.pricecleaning*brands.coefcleaning 
+        //dry_cleaning_price = typeitem.pricecleaning +  typeitem.pricecleaning*brands.coefcleaning
         //+  SUM (typeitem.pricecleaning*complexities.coefcleaning) + SUM(typeitem.pricecleaning*fabrics.coefcleaning )
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
         if($order->Status=="FULFILLED")
-        return; 
+        return;
             $detailingitemlist = DB::table('detailingitem')->select(['detailingitem.id','typeitem.pricecleaning','brands.coefcleaning','detailingitem.complexities_id','detailingitem.fabric_id','detailingitem.cleaning_services','detailingitem.etape'])
                 ->join('typeitem', 'detailingitem.typeitem_id', 'typeitem.id')
                 ->join('brands', 'detailingitem.brand_id', 'brands.id')
                 ->where('detailingitem.order_id', '=', $order_id)
                 ->get();
             foreach($detailingitemlist as $detailingitem){
-             
+
                 $sum_complexites=0;
                 if($detailingitem->complexities_id!=null&&$detailingitem->complexities_id!=''){
                     $complexitiesids=json_decode($detailingitem->complexities_id);
@@ -139,7 +139,7 @@ class DetailingController extends Controller
                     'updated_at' => date('Y-m-d H:i:s')
                 ]);
             }
-       
+
     }
     public function initDetailing(Request $request)
     {
@@ -1071,7 +1071,7 @@ class DetailingController extends Controller
     public function calculateCheckout($order_id){
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
         if($order->Status=="FULFILLED")
-        return; 
+        return;
 
         $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
         $_SUBTOTAL=0;
@@ -1105,10 +1105,10 @@ class DetailingController extends Controller
                     $_EXPRESS_CHARGES_PRICE += $v->amount;
                 }
             }
-        }    
-    
+        }
+
         $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL;
-        
+
         $_ORDER_DISCOUNT=($_SUBTOTAL+$_EXPRESS_CHARGES_PRICE)*($order->DiscountPerc/100);
 
         $_BUNDLES_DISCOUNT=0;
@@ -1139,16 +1139,16 @@ class DetailingController extends Controller
         }
 
        //SubTotal inc Discount = SubTotal (excl Discount) - Account Discount - Order Discount - Bundles + Express Charge - voucher
-     
+
         $_SUBTOTAL_WITH_DISCOUNT=$_SUBTOTAL-$_ACCOUNT_DISCOUNT-$_ORDER_DISCOUNT-$_BUNDLES_DISCOUNT+$_EXPRESS_CHARGES_PRICE-$_VOUCHER_DISCOUNT;
-       
+
         //Total = SubTotal inc Discount + Failed delivery + DeliveryNowFee
-      
+
 
         $_TOTAL=$_SUBTOTAL_WITH_DISCOUNT+$_FAILED_DELIVERY_PRICE+$_DELIVERY_NOW_FEE;
-        
-          //TotalDue = Total - SUM(payements) 
-        $_TOTAL_DUE=$_TOTAL-$_AMOUNT_PAID;  
+
+          //TotalDue = Total - SUM(payements)
+        $_TOTAL_DUE=$_TOTAL-$_AMOUNT_PAID;
 
         $_TOTAL_EXC_VAT=$_TOTAL/1.2;
 
@@ -1179,7 +1179,7 @@ class DetailingController extends Controller
         $order_id = $request->order_id;
         //$this->calculateCheckout($order_id);
         $this->recalculateDryCleaningPrice($order_id);
-       
+
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
         $days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
         $tranches = Tranche::getDeliveryPlanningTranchesForApi();
@@ -1799,7 +1799,7 @@ class DetailingController extends Controller
                 }
             }
 
-            $balance = $total_with_discount - $amount_paid;
+            $balance = number_format($total_with_discount,2) - number_format($amount_paid,2);
 
         }
 
