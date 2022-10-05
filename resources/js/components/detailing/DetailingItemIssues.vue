@@ -145,7 +145,7 @@ export default {
         detailingitem: {},
         typeitemPicto: ''
     },
-    emits: ['save-item-issues', 'go-to-step'],
+    emits: ['save-item-issues', 'go-to-step' , 'get-issues-Step'],
     setup(props, context) {
         const store = useStore();
         const stainZone = ref([]);
@@ -176,6 +176,10 @@ export default {
         damage_free_text.value = props.detailingitem.damagestext;
         stainTags.value = props.detailingitem.stainsissue != null ? JSON.parse(props.detailingitem.stainsissue) : [];
         damagTags.value = props.detailingitem.damagesissues != null ? JSON.parse(props.detailingitem.damagesissues) : [];
+
+        function setNewIssueValue(val){
+            issuesStep.value = val;
+        }
 
         context.emit("get-issues-Step", {
                    issuesStep:issuesStep.value,
@@ -430,7 +434,8 @@ export default {
             cur_zone_id,
             stainTags,
             damagTags,
-            submit
+            submit,
+            setNewIssueValue
         };
     },
 }

@@ -73,13 +73,17 @@
                             <div class="accordion-body">
                                 <div class="row">
                                     <div class="col-6">
-                                        <div class="description-title">Item type</div>
+                                        <div class="description-title">Item type
+                                           <a href="javascript:void(0)" @click="goToStep(1)" class="step_link">Edit</a>
+                                        </div>
                                         <div
                                             class="description-text"
                                         >{{ item_description.typeitem_name }}</div>
                                     </div>
                                     <div class="col-6">
-                                        <div class="description-title">Brand</div>
+                                        <div class="description-title">Brand
+                                            <a href="javascript:void(0)"  @click="goToStep(3 ,'brand')" class="step_link">Edit</a>
+                                        </div>
                                         <div
                                             v-if="item_description.brand_name"
                                             class="row description-box"
@@ -93,11 +97,15 @@
                                         </div>
                                     </div>
                                     <div class="col-6">
-                                        <div class="description-title">Size</div>
+                                        <div class="description-title">Size
+                                            <a href="javascript:void(0)"  @click="goToStep(4 , 'size')" class="step_link">Edit</a>
+                                        </div>
                                         <div class="description-text">{{ item_description.size }}</div>
                                     </div>
                                     <div class="col-6">
-                                        <div class="description-title">Item fabric</div>
+                                        <div class="description-title">Item fabric
+                                            <a href="javascript:void(0)"  @click="goToStep(5 , 'fabric')" class="step_link">Edit</a>
+                                        </div>
                                         <div
                                             v-if="item_description.fabrics_name"
                                             v-for="fab in item_description.fabrics_name"
@@ -111,7 +119,9 @@
                                         </div>
                                     </div>
                                     <div class="col-6">
-                                        <div class="description-title">Colour</div>
+                                        <div class="description-title">Colour
+                                            <a href="javascript:void(0)"  @click="goToStep(6 , 'colour')" class="step_link">Edit</a>
+                                        </div>
                                         <div
                                             class="d-flex description-text"
                                             v-if="item_description.colors_name != undefined && item_description.colors_name.length > 0"
@@ -128,19 +138,25 @@
                                         
                                     </div>
                                     <div class="col-6">
-                                        <div class="description-title">Condition</div>
+                                        <div class="description-title">Condition
+                                            <a href="javascript:void(0)"  @click="goToStep(7 , 'condition')" class="step_link">Edit</a>
+                                        </div>
                                         <div
                                             class="description-text"
                                         >{{ item_description.condition_name }}</div>
                                     </div>
                                     <div class="col-12">
-                                        <div class="description-title">pattern</div>
+                                        <div class="description-title">pattern
+                                            <a href="javascript:void(0)"  @click="goToStep(8)" class="step_link">Edit</a>
+                                        </div>
                                         <div
                                             class="description-text"
                                         >{{ item_description.pattern_name }}</div>
                                     </div>
                                     <div class="col-12">
-                                        <div class="description-title">Complexities</div>
+                                        <div class="description-title">Complexities
+                                            <a href="javascript:void(0)"  @click="goToStep(9)" class="step_link">Edit</a>
+                                        </div>
                                         <div
                                             v-for="comp in item_description.complexities_name"
                                             class="row description-box"
@@ -172,8 +188,12 @@
                         >
                             <div class="accordion-body">
                                 <div class="row">
-                                    <div class="col accordion-body-title">Stains</div>
-                                    <div class="col accordion-body-title">Damages</div>
+                                    <div class="col accordion-body-title">Stains
+                                        <a href="javascript:void(0)"  @click="goToStep(10 , 'stain' , 0)" class="step_link">Edit</a>
+                                    </div>
+                                    <div class="col accordion-body-title">Damages
+                                        <a href="javascript:void(0)"  @click="goToStep(10 , 'damages' ,  3)" class="step_link">Edit</a>
+                                    </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-6 stain-bloc">
@@ -674,6 +694,15 @@ export default {
                 showCustomerInstructions.value = true;
             }
         });
+   
+        function goToStep(etape ,type , issuesStep){
+            context.emit("get-step", {
+                            step: etape,
+                            type :type,
+                            issuesStep :issuesStep
+
+                        });
+        }
 
         return {
             progress_percent,
@@ -703,7 +732,8 @@ export default {
             getIssueStep,
             issuesStep,
             submit,
-            addFreeText
+            addFreeText,
+            goToStep
         };
     },
 }
@@ -796,7 +826,7 @@ export default {
 .accordion-body-title {
     display: flex;
     align-items: flex-end;
-    line-height: 140%;
+    line-height: 16px;
     color: #868686;
     font-family: Gotham Rounded;
 }
@@ -804,6 +834,7 @@ export default {
     color: #868686;
     padding: 5px;
     font-family: Gotham Rounded;
+    line-height: 16px;
 }
 .description-text {
     color: #47454b;
@@ -971,6 +1002,12 @@ export default {
     display: flex;
     align-items: center;
     color: #868686;
+}
+.step_link{
+    font:normal 12px "Gotham Rounded";
+    color:#42A71E;
+    padding-left: 8px;
+    line-height: 16px;
 }
 
 </style>
