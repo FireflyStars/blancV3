@@ -98,7 +98,7 @@
                                     </div>
                                     <div class="col-6">
                                         <div class="description-title">Size
-                                            <a href="javascript:void(0)"  @click="goToStep(4 , 'size')" class="step_link">Edit</a>
+                                            <a href="javascript:void(0)"  @click="goToStep( 6, 'size')" class="step_link">Edit</a>
                                         </div>
                                         <div class="description-text">{{ item_description.size }}</div>
                                     </div>
@@ -120,7 +120,7 @@
                                     </div>
                                     <div class="col-6">
                                         <div class="description-title">Colour
-                                            <a href="javascript:void(0)"  @click="goToStep(6 , 'colour')" class="step_link">Edit</a>
+                                            <a href="javascript:void(0)"  @click="goToStep(4 , 'colour')" class="step_link">Edit</a>
                                         </div>
                                         <div
                                             class="d-flex description-text"
@@ -139,7 +139,7 @@
                                     </div>
                                     <div class="col-6">
                                         <div class="description-title">Condition
-                                            <a href="javascript:void(0)"  @click="goToStep(7 , 'condition')" class="step_link">Edit</a>
+                                            <a href="javascript:void(0)"  @click="goToStep(8 , 'condition')" class="step_link">Edit</a>
                                         </div>
                                         <div
                                             class="description-text"
@@ -147,7 +147,7 @@
                                     </div>
                                     <div class="col-12">
                                         <div class="description-title">pattern
-                                            <a href="javascript:void(0)"  @click="goToStep(8 ,'pattern')" class="step_link">Edit</a>
+                                            <a href="javascript:void(0)"  @click="goToStep(7 ,'pattern')" class="step_link">Edit</a>
                                         </div>
                                         <div
                                             class="description-text"

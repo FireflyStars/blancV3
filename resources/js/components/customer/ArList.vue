@@ -441,7 +441,7 @@ export default {
     }
     .current_sel{
         position: relative;
-        z-index: 100;
+        z-index: 10000;
         background: rgb(247, 251, 246);
         box-shadow: inset 0px -1px 0px rgba(168, 168, 168, 0.25);
     }
