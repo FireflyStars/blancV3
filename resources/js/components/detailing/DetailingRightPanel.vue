@@ -147,7 +147,7 @@
                                     </div>
                                     <div class="col-12">
                                         <div class="description-title">pattern
-                                            <a href="javascript:void(0)"  @click="goToStep(8)" class="step_link">Edit</a>
+                                            <a href="javascript:void(0)"  @click="goToStep(8 ,'pattern')" class="step_link">Edit</a>
                                         </div>
                                         <div
                                             class="description-text"

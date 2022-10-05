@@ -402,7 +402,17 @@ export default {
                     })
                     
                 }else {
-                    backPreviousStep(value.step)
+                    store.dispatch(`${DETAILING_MODULE}${UPDATE_DETAILING}`, { detailingitem_id: detailingitem_id.value, step: value.step })
+                    .then((response) => {
+                        detailingitem.value = response.data.detailingitem;
+                        step.value = response.data.detailingitem.etape;
+                        item_description.value = response.data.item_description;
+                        detailingData.value = response.data.detailing_data;
+                            setTimeout(function(){  
+                                go_to_type.value.descTypeClick(value.type) 
+                            }  
+                            , 5)
+                    })
                 }      
         }
 
