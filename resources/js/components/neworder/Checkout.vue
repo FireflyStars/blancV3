@@ -704,6 +704,13 @@
         <template #bheader>
             <div class="bmodal-header py-5 text-center">Awaiting payment</div>
         </template>
+        <template #mbuttons>
+            <div class="row justify-content-center">
+                <div class="col-8">
+                    <button class="btn btn-outline-danger w-100" id="cancelTerminalBtn" @click="cancelTerminalRequest">Cancel Terminal request</button>
+                </div>
+            </div>
+        </template>
     </modal>
 
     <modal ref="remove_voucher_modal">
@@ -1206,7 +1213,7 @@ export default {
                 }).catch((err)=>{
 
                 }).finally(()=>{
-
+                    awaiting_payment_modal.value.closeModal();
                 })
         }
 

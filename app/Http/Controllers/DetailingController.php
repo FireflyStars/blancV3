@@ -30,7 +30,7 @@ class DetailingController extends Controller
         $count_has_invoices = 0;
 
         $detailingitemlist = DB::table('detailingitem')
-            ->select( 'detailingitem.pricecleaning as price','detailingitem.id as item_number','detailingitem.*',)
+            ->select( 'detailingitem.pricecleaning as price','detailingitem.id as item_number','detailingitem.*')
             //->join('typeitem', 'typeitem.id', 'detailingitem.typeitem_id')
             //->join('infoitems', 'infoitems.ItemTrackingKey', '=', 'detailingitem.item_id')
             //->join('infoInvoice', 'infoInvoice.SubOrderID', '=', 'infoitems.SubOrderID')
@@ -99,6 +99,48 @@ class DetailingController extends Controller
         );
     }
 
+    public function recalculateDryCleaningPrice($order_id){
+        //dry_cleaning_price = typeitem.pricecleaning +  typeitem.pricecleaning*brands.coefcleaning
+        //+  SUM (typeitem.pricecleaning*complexities.coefcleaning) + SUM(typeitem.pricecleaning*fabrics.coefcleaning )
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+        if($order->Status=="FULFILLED")
+        return;
+            $detailingitemlist = DB::table('detailingitem')->select(['detailingitem.id','typeitem.pricecleaning','brands.coefcleaning','detailingitem.complexities_id','detailingitem.fabric_id','detailingitem.cleaning_services','detailingitem.etape'])
+                ->join('typeitem', 'detailingitem.typeitem_id', 'typeitem.id')
+                ->join('brands', 'detailingitem.brand_id', 'brands.id')
+                ->where('detailingitem.order_id', '=', $order_id)
+                ->get();
+            foreach($detailingitemlist as $detailingitem){
+
+                $sum_complexites=0;
+                if($detailingitem->complexities_id!=null&&$detailingitem->complexities_id!=''){
+                    $complexitiesids=json_decode($detailingitem->complexities_id);
+                    foreach($complexitiesids as $complexity_id){
+                        $complexities_coefcleaning=DB::table('complexities')->where('id','=',$complexity_id)->value('coefcleaning');
+                        $sum_complexites+=$detailingitem->pricecleaning*$complexities_coefcleaning;
+                    }
+                }
+                $sum_fabrics=0;
+                if($detailingitem->fabric_id!=null&&$detailingitem->fabric_id!=''){
+                    $fabicsids=json_decode($detailingitem->fabric_id);
+                    foreach($fabicsids as $fabric_id){
+                        $fabrics_coefcleaning=DB::table('fabrics')->where('id','=',$fabric_id)->value('coefcleaning');
+                        $sum_fabrics+=$detailingitem->pricecleaning*$fabrics_coefcleaning;
+                    }
+                }
+
+                $dry_cleaning_price=$detailingitem->pricecleaning + $detailingitem->pricecleaning*$detailingitem->coefcleaning+ $sum_complexites + $sum_fabrics;
+
+                if(($detailingitem->cleaning_services==null||$detailingitem->cleaning_services==''||$detailingitem->cleaning_services=='[]')&&$detailingitem->etape==11)
+                $dry_cleaning_price=0;
+
+                DB::table('detailingitem')->where('id', $detailingitem->id)->update([
+                    'dry_cleaning_price'=>$dry_cleaning_price,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+            }
+
+    }
     public function initDetailing(Request $request)
     {
         $search = $request->post('search');
@@ -1026,8 +1068,117 @@ class DetailingController extends Controller
         ];
     }
 
+    public function calculateCheckout($order_id){
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+        if($order->Status=="FULFILLED")
+        return;
+
+        $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+        $_SUBTOTAL=0;
+        $_SUBTOTAL_WITH_DISCOUNT=0;
+
+        $items = DB::table('detailingitem')
+        ->select('detailingitem.*','detailingitem.id AS detailingitem_id','typeitem.pricecleaning as baseprice')
+        ->join('infoOrder','detailingitem.order_id','infoOrder.id')
+        ->join('typeitem','detailingitem.typeitem_id','typeitem.id')
+        ->where('infoOrder.id',$order_id)
+        ->get();
+            if(count($items) > 0)
+            foreach($items as $k=>$v){
+                $_SUBTOTAL += $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+            }
+
+
+        $_EXPRESS_CHARGES_PRICE = 0;
+        $_FAILED_DELIVERY_PRICE = 0;
+        $_DELIVERY_NOW_FEE=0;
+
+        if($order->FailedDelivery===1)
+            $_DELIVERY_NOW_FEE = 5;
+
+        $upcharges = DB::table('order_upcharges')->where('order_id',$order_id)->get();
+        if(count($upcharges) > 0){
+            foreach($upcharges as $k=>$v){
+                if($v->upcharges_id==3){
+                    $_FAILED_DELIVERY_PRICE = $v->amount;
+                }else{
+                    $_EXPRESS_CHARGES_PRICE += $v->amount;
+                }
+            }
+        }
+
+        $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL;
+
+        $_ORDER_DISCOUNT=($_SUBTOTAL+$_EXPRESS_CHARGES_PRICE)*($order->DiscountPerc/100);
+
+        $_BUNDLES_DISCOUNT=0;
+
+        $bundles_id = DetailingController::checkOrderBundles($order_id);
+
+        if(!empty($bundles_id)){
+            $bundles = DB::table('bundles')->whereIn('id',$bundles_id)->get();
+
+            foreach($bundles as $k=>$v){
+                $_BUNDLES_DISCOUNT += $v->discount;
+            }
+        }
+        $_VOUCHER_DISCOUNT=0;
+        $order_vouchers = DB::table('vouchers_histories')->where('order_id',$order_id)->get();
+        if(count($order_vouchers) > 0){
+            foreach($order_vouchers as $k=>$v){
+                $_VOUCHER_DISCOUNT+= $v->amount;
+            }
+        }
+
+        $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
+        $_AMOUNT_PAID=0;
+
+        if(count($payments) > 0)
+        foreach($payments as $k=>$v){
+            $_AMOUNT_PAID += $v->montant;
+        }
+
+       //SubTotal inc Discount = SubTotal (excl Discount) - Account Discount - Order Discount - Bundles + Express Charge - voucher
+
+        $_SUBTOTAL_WITH_DISCOUNT=$_SUBTOTAL-$_ACCOUNT_DISCOUNT-$_ORDER_DISCOUNT-$_BUNDLES_DISCOUNT+$_EXPRESS_CHARGES_PRICE-$_VOUCHER_DISCOUNT;
+
+        //Total = SubTotal inc Discount + Failed delivery + DeliveryNowFee
+
+
+        $_TOTAL=$_SUBTOTAL_WITH_DISCOUNT+$_FAILED_DELIVERY_PRICE+$_DELIVERY_NOW_FEE;
+
+          //TotalDue = Total - SUM(payements)
+        $_TOTAL_DUE=$_TOTAL-$_AMOUNT_PAID;
+
+        $_TOTAL_EXC_VAT=$_TOTAL/1.2;
+
+        $_TAX_AMOUNT=$_TOTAL-$_TOTAL_EXC_VAT;
+
+
+
+        $values=array(
+            'Subtotal'=>number_format($_SUBTOTAL,2),
+            'SubtotalWithDiscount'=>number_format($_SUBTOTAL_WITH_DISCOUNT,2),//
+            'AccountDiscount'=>number_format($_ACCOUNT_DISCOUNT,2),
+            'OrderDiscount'=>number_format($_ORDER_DISCOUNT,2),
+            'VoucherDiscount'=>number_format($_VOUCHER_DISCOUNT,2),//
+            'bundles'=>number_format($_BUNDLES_DISCOUNT,2),
+            'Total'=>number_format($_TOTAL,2),
+            'TotalDue'=>number_format($_TOTAL_DUE,2),
+            'DeliveryNowFee'=>number_format($_DELIVERY_NOW_FEE,2),
+            'ExpressCharge'=>number_format($_EXPRESS_CHARGES_PRICE,2),
+            'FailedDeliveryCharge'=>number_format($_FAILED_DELIVERY_PRICE,2),//
+            'TotalExcVat'=>number_format($_TOTAL_EXC_VAT,2),//
+            'TaxAmount'=> number_format($_TAX_AMOUNT,2),//
+        );
+        DB::table('infoOrder')->where('id',$order_id)->update($values);
+       return $values;
+    }
+
     public function getCheckoutItems(Request $request){
         $order_id = $request->order_id;
+        //$this->calculateCheckout($order_id);
+        $this->recalculateDryCleaningPrice($order_id);
 
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
         $days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -1648,7 +1799,7 @@ class DetailingController extends Controller
                 }
             }
 
-            $balance = $total_with_discount - $amount_paid;
+            $balance = number_format($total_with_discount,2) - number_format($amount_paid,2);
 
         }
 
