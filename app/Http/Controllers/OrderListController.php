@@ -1247,7 +1247,6 @@ class OrderListController extends Controller
     }
 
     public function getitemdetail(Request $request){
-        
         $itemInfo = DB::table('infoitems')
                       ->join('infoInvoice', 'infoitems.InvoiceID', '=', 'infoInvoice.InvoiceID')
                       ->join('infoCustomer', 'infoInvoice.CustomerID', '=', 'infoCustomer.CustomerID')
@@ -1331,7 +1330,7 @@ class OrderListController extends Controller
       
             $Issues = DB::table('detailingitem')->select('detailingitem.stainstext' , 'detailingitem.stains','detailingitem.damagestext' , 'detailingitem.damages')
             ->where('detailingitem.item_id', $request->item_id)
-            ->where('detailingitem.InvoiceID',$request->invoice_Id)
+            ->where('detailingitem.InvoiceID',$InvoiceId)
             ->first();
 
             if(!is_null($Issues)){
@@ -1347,9 +1346,9 @@ class OrderListController extends Controller
                 }
             }
             
-            $services = DB::table('detailingitem')->select('detailingitem.cleaning_services' , 'detailingitem.tailoring_services')
+            $services = DB::table('detailingitem')->select('detailingitem.cleaning_services' , 'detailingitem.tailoring_services' , 'detailingitem.describeprixnow' , 'detailingitem.describeprixnowtailoring')
             ->where('detailingitem.item_id', $request->item_id)
-            ->where('detailingitem.InvoiceID',$request->invoice_Id)
+            ->where('detailingitem.InvoiceID',$InvoiceId)
             ->first();
 
             if(!is_null($services)){

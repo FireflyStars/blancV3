@@ -157,13 +157,19 @@
                                 <span class="service-item-num service d-flex align-items-center justify-content-center"></span>
                                 <span class="issue-item-name ms-1">{{cleaning.name}} </span>
                             </div>
+                            <div class="issue-item stain d-flex align-items-center">
+                                <span class="issue-item-name ms-1 mt-3">{{ITEM.Services.describeprixnow}} </span>
+                            </div>
                         </div>
                         <div class="w-50">
                             <p class="m-0 sub-title mb-2">Tailoring</p>
                             <div class="issue-item stain d-flex align-items-center" v-for="(tailoring, index) in ITEM.Services.tailoring_services" :key="index">
                                 <span class="service-item-num d-flex align-items-center justify-content-center" ></span>
                                 <span class="issue-item-name ms-1">{{tailoring.name}}</span>                                
-                            </div>                                                        
+                            </div> 
+                            <div class="issue-item stain d-flex align-items-center">
+                                <span class="issue-item-name ms-1 mt-3">{{ITEM.Services.describeprixnowtailoring}} </span>
+                            </div>                                                       
                         </div>
                     </div>
                 </div>
