@@ -124,7 +124,21 @@ class ItemController extends Controller{
         $item = DB::table('infoitems')->where('ItemTrackingKey',$request->Barcode)->first();
 
         return response()->json([
-            'item'=>$item
+            'item_id'=>$item->id
+        ]);
+
+    }
+    public function getorderbyBarcode(Request $request){
+
+        $order = DB::table('infoInvoice')
+               ->join('infoOrder','infoOrder.OrderID','=','infoInvoice.OrderID')
+               ->where('NumInvoice',$request->Barcode)
+               ->where('infoInvoice.OrderID' ,'!=','')
+               ->orderByDesc('infoInvoice.date_add')
+               ->first();
+
+        return response()->json([
+            'order_id'=>$order->id
         ]);
 
     }

@@ -44,11 +44,11 @@ export default ({
                     Barcode: e.target.value
                }).then((res)=>{
 
-                if(res.data.item != null){
+                if(res.data.item_id != null){
                     router.push({
                         name:'ItemDetails',
                         params: {
-                            item_id:res.data.item.id,
+                            item_id:res.data.item_id,
                         },
                     })
                     close();
@@ -57,8 +57,23 @@ export default ({
                 }    
                });
             }
-            else if (e.target.value.length == 14){
+            else if (e.target.value.length == 9){
                 console.log(e.target.value )
+                axios.post('/get-order-barcode',{
+                    Barcode: e.target.value
+               }).then((res)=>{
+                if(res.data.order_id != null){
+                    router.push({
+                        name:'OrderDetails',
+                        params: {
+                            order_id:res.data.order_id,
+                        },
+                    })
+                  close();
+                } else {
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message: "Invalid Barcode",ttl:5, type:'danger'},{ root: true });
+                }    
+               });
             } else {
                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message: "Invalid Barcode",ttl:5, type:'danger'},{ root: true });
             }

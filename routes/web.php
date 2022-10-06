@@ -754,6 +754,7 @@ Route::post('update-zone-label-pos',[ItemController::class,'updateZoneLabelPos']
 /*  search  by barcode
 */
 Route::post('get-item-barcode',[ItemController::class,'getitembyBarcode'])->name('get-item-barcode')->middleware('auth');
+Route::post('get-order-barcode',[ItemController::class,'getorderbyBarcode'])->name('get-order-barcode')->middleware('auth');
 
 
 /*
