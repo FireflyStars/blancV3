@@ -851,7 +851,7 @@
                                             <div class="w-100 mt-3">
                                                 <div class="form-group m-0">
                                                     <label for="" class="form-label d-block m-0">Driver instructions</label>
-                                                    <textarea name="customer_note" rows="4" class="form-control" v-html="form.altDriverInstruction" :readonly="!delivery_instructions_edit" :class="{'bg-color':!delivery_instructions_edit,'border-none':!delivery_instructions_edit}"></textarea>
+                                                    <textarea name="customer_note" rows="4" class="form-control" v-model="form.altDriverInstruction" :readonly="!delivery_instructions_edit" :class="{'bg-color':!delivery_instructions_edit,'border-none':!delivery_instructions_edit}"></textarea>
                                                 </div>
                                             </div>
                                             <div class="w-100 pt-4" v-if="delivery_instructions_edit">
