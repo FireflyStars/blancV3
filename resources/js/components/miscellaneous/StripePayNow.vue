@@ -125,33 +125,43 @@ export default {
             context.emit('close-payment-modal');
             console.log('call start');
 
-            await listReaders();
+            if(props.amounttopay >= 0.3){
 
-            if(readers.value.length > 0){
-                let store_id = props.user.store;
+                await listReaders();
 
-                if(typeof(readers_id[store_id]) !='undefined'){
-                    let reader_id = readers_id[store_id];
+                if(readers.value.length > 0){
+                    let store_id = props.user.store;
 
-                    let selected_index = readers.value.findIndex((z) => { return z.id === reader_id});
-                    selected_reader.value = readers.value[selected_index];
+                    if(typeof(readers_id[store_id]) !='undefined'){
+                        let reader_id = readers_id[store_id];
 
-                    console.log('calling selectReader');
-                    await selectReader(selected_reader.value);
-                    console.log('End calling selectReader');
+                        let selected_index = readers.value.findIndex((z) => { return z.id === reader_id});
+                        selected_reader.value = readers.value[selected_index];
 
-                    if(typeof(selected_reader.value.id)!='undefined'){
-                        await createPaymentIntent(props.amounttopay,props.order.id);
+                        console.log('calling selectReader');
+                        await selectReader(selected_reader.value);
+                        console.log('End calling selectReader');
+
+                        if(typeof(selected_reader.value.id)!='undefined' && !err_terminal.value){
+                            await createPaymentIntent(props.amounttopay,props.order.id);
+                        }
+
+
+                    }else{
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                            message: 'Store reader not set for user '+props.user.name,
+                            ttl: 5,
+                            type: "danger",
+                        });
                     }
-
-
-                }else{
-                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
-                        message: 'Store reader not set for user '+props.user.name,
-                        ttl: 5,
-                        type: "danger",
-                    });
                 }
+            }else{
+                context.emit('close-awaiting-payment');
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                    message:"Minimum amount to pay is 30 pence",
+                    ttl:5,
+                    type:'danger',
+                });
             }
 
         }
