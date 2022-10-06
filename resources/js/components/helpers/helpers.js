@@ -30,7 +30,11 @@ export const usePermission=task=>new Promise((resolve,reject)=>{
         reject({allow:false});
     }
 });
-export const formatPrice=price=>`£${price !== 0 ? price.toFixed(2) : 0}`;
+export const formatPrice=price=>{
+    if(typeof price!="undefined")
+   return  `£${price !== 0 ? price.toFixed(2) : 0}`;
+   return '';
+};
 
 /**
     blanc date format helper

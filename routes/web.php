@@ -789,6 +789,7 @@ Route::post('/get-terminal-token',[DetailingController::class,'getTerminalToken'
 Route::post('/pay-from-credit',[OrderController::class,'payFromCredit'])->name('pay-from-credit')->middleware('auth');
 Route::post('/set-checkout-addon',[DetailingController::class,'setCheckoutAddon'])->name('set-checkout-addon')->middleware('auth');
 Route::post('/remove-order-voucher',[DetailingController::class,'removeCheckoutVoucher'])->name('remove-order-voucher')->middleware('auth');
+Route::post('/save-price-delivery-now',[DetailingController::class,'savePriceDeliveryNow'])->name('save-price-delivery-now')->middleware('auth');
 Route::post('/add-order-voucher',[DetailingController::class,'addCheckoutVoucher'])->name('add-order-voucher')->middleware('auth');
 
 /*
