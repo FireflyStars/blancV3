@@ -141,6 +141,16 @@ class DetailingController extends Controller
             }
 
     }
+
+    public function savePriceDeliveryNow(Request $request){
+        $order_id=$request->post('order_id');
+        $price=$request->post('price');
+
+        DB::table('infoOrder')->where('id',$order_id)->update([
+            'DeliveryNowFee'=>$price,
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
+    }
     public function initDetailing(Request $request)
     {
         $search = $request->post('search');
@@ -1091,25 +1101,24 @@ class DetailingController extends Controller
 
         $_EXPRESS_CHARGES_PRICE = 0;
         $_FAILED_DELIVERY_PRICE = 0;
-        $_DELIVERY_NOW_FEE=0;
+        $_DELIVERY_NOW_FEE=$order->DeliveryNowFee;
+        $_AUTO_DELIVERY_FEE=0;
 
         if($order->FailedDelivery===1)
-            $_DELIVERY_NOW_FEE = 5;
+            $_FAILED_DELIVERY_PRICE = 5;
 
         $upcharges = DB::table('order_upcharges')->where('order_id',$order_id)->get();
         if(count($upcharges) > 0){
             foreach($upcharges as $k=>$v){
-                if($v->upcharges_id==3){
-                    $_FAILED_DELIVERY_PRICE = $v->amount;
-                }else{
+                if($v->upcharges_id==1||$v->upcharges_id==2){
                     $_EXPRESS_CHARGES_PRICE += $v->amount;
                 }
             }
         }
 
         $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL;
-
-        $_ORDER_DISCOUNT=($_SUBTOTAL+$_EXPRESS_CHARGES_PRICE)*($order->DiscountPerc/100);
+        
+        $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
 
         $_BUNDLES_DISCOUNT=0;
 
@@ -1142,19 +1151,25 @@ class DetailingController extends Controller
 
         $_SUBTOTAL_WITH_DISCOUNT=$_SUBTOTAL-$_ACCOUNT_DISCOUNT-$_ORDER_DISCOUNT-$_BUNDLES_DISCOUNT+$_EXPRESS_CHARGES_PRICE-$_VOUCHER_DISCOUNT;
 
-        //Total = SubTotal inc Discount + Failed delivery + DeliveryNowFee
 
+        if($order->TypeDelivery=='DELIVERY'&&$_SUBTOTAL_WITH_DISCOUNT<25)
+            $_AUTO_DELIVERY_FEE=25-$_SUBTOTAL_WITH_DISCOUNT;
+        
+       
+        //Total = SubTotal inc Discount + Failed delivery + DeliveryNowFee + AutoDeliveryFee
+      
 
-        $_TOTAL=$_SUBTOTAL_WITH_DISCOUNT+$_FAILED_DELIVERY_PRICE+$_DELIVERY_NOW_FEE;
-
-          //TotalDue = Total - SUM(payements)
-        $_TOTAL_DUE=$_TOTAL-$_AMOUNT_PAID;
+        $_TOTAL=$_SUBTOTAL_WITH_DISCOUNT+$_FAILED_DELIVERY_PRICE+$_DELIVERY_NOW_FEE+$_AUTO_DELIVERY_FEE;
+        
+          //TotalDue = Total - SUM(payements) 
+        $_TOTAL_DUE=$_TOTAL-$_AMOUNT_PAID;  
 
         $_TOTAL_EXC_VAT=$_TOTAL/1.2;
 
         $_TAX_AMOUNT=$_TOTAL-$_TOTAL_EXC_VAT;
 
-
+      
+    
 
         $values=array(
             'Subtotal'=>number_format($_SUBTOTAL,2),
@@ -1165,19 +1180,20 @@ class DetailingController extends Controller
             'bundles'=>number_format($_BUNDLES_DISCOUNT,2),
             'Total'=>number_format($_TOTAL,2),
             'TotalDue'=>number_format($_TOTAL_DUE,2),
-            'DeliveryNowFee'=>number_format($_DELIVERY_NOW_FEE,2),
+            'AutoDeliveryFee'=>number_format($_AUTO_DELIVERY_FEE,2),//
             'ExpressCharge'=>number_format($_EXPRESS_CHARGES_PRICE,2),
             'FailedDeliveryCharge'=>number_format($_FAILED_DELIVERY_PRICE,2),//
             'TotalExcVat'=>number_format($_TOTAL_EXC_VAT,2),//
             'TaxAmount'=> number_format($_TAX_AMOUNT,2),//
         );
         DB::table('infoOrder')->where('id',$order_id)->update($values);
+        
        return $values;
     }
 
     public function getCheckoutItems(Request $request){
         $order_id = $request->order_id;
-        //$this->calculateCheckout($order_id);
+        $this->calculateCheckout($order_id);
         $this->recalculateDryCleaningPrice($order_id);
 
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
@@ -1835,11 +1851,11 @@ class DetailingController extends Controller
 
 
         //Mise a jour montant commande
-        DB::table('infoOrder')->where('id',$order_id)->update([
-            'Subtotal'=>$total_price,
-            'Total'=>$total_with_discount,
-            'OrderDiscount'=>number_format($order_discount+$cust_discount,2),
-        ]);
+        // DB::table('infoOrder')->where('id',$order_id)->update([
+        //     'Subtotal'=>$total_price,
+        //     'Total'=>$total_with_discount,
+        //     'OrderDiscount'=>number_format($order_discount+$cust_discount,2),
+        // ]);
 
 
         $stripe_security_key = 'STRIPE_LIVE_SECURITY_KEY';
@@ -1884,6 +1900,7 @@ class DetailingController extends Controller
             'booking_details'=>$booking_details,
             'address'=>$addr,
             'sub_total'=>number_format($total_price,2),
+            'bundles'=>$order->bundles,
             'total_with_discount'=>number_format($total_with_discount,2),
             'discount'=>number_format($order_discount,2),
             'vat'=>number_format($vat,2),
@@ -1947,7 +1964,7 @@ class DetailingController extends Controller
             $discount_price = 0;
         }
 
-        DB::table('infoOrder')->where('id',$order_id)->update(['OrderDiscount'=>$discount_price,'DiscountPerc'=>$discount]);
+        DB::table('infoOrder')->where('id',$order_id)->update(['DiscountPerc'=>$discount]);
 
         return response()->json([
             'post'=>$request->all(),
