@@ -639,6 +639,7 @@ Route::post('/ScanItemAndBag', [ScanController::class, 'ScanItemAndBag'])->name(
 
 Route::post('/get-statistics',[StatisticsController::class, 'getStatistics'])->name('get-statistics')->middleware('auth');
 Route::post('/get-prod-statistics',[StatisticsController::class, 'getProdStatistics'])->name('get.prod.statistics')->middleware('auth');
+Route::post('/get-report-data',[StatisticsController::class, 'getReportData'])->name('get.report.data')->middleware('auth');
 
 Route::post('/assembly-home-stats',[StatisticsController::class, 'getAssemblyHomeStats'])->name('get-assembly-home-stats')->middleware('auth');
 Route::post('/partner-details',[StatisticsController::class, 'getPartnerDetails'])->name('partner-details')->middleware('auth');

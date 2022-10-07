@@ -1038,6 +1038,54 @@ class StatisticsController extends Controller
             'bookingPOSPast'         => $bookingPOSPast,
         ]);
     }
+
+    /**
+     * Get report data for download
+     */
+    public function getReportData(Request $request){
+        $customFilter   =   $request->post('customFilter');
+        $startDate      =   $request->post('startDate');
+        $endDate        =   $request->post('endDate');
+        $dateRangeType  =   $request->post('dateRangeType');
+
+        $period         = [ Carbon::parse($startDate)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->endOfDay()->toDateTimeString() ];
+        
+        // new code added by YH
+        if( !$customFilter ){
+            $start_first_quarter_day = Carbon::now()->startOfYear();
+            $end_first_quarter_day = Carbon::parse($start_first_quarter_day)->lastOfQuarter();
+            if( $dateRangeType == 'Today' ){
+                $period = [Carbon::now()->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Yesterday' ){
+                $period = [Carbon::yesterday()->startOfDay()->toDateTimeString(), Carbon::yesterday()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Last 7 days' ){
+                $period = [Carbon::now()->subDays(7)->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Last 90 days' ){
+                $period = [Carbon::now()->subDays(90)->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Last Month' ){
+                $period = [Carbon::now()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Year to date' ){
+                $period = [Carbon::now()->startOfYear()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == '4th Quarter' ){
+                $period = [Carbon::parse($start_first_quarter_day)->addMonths(9)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->addMonths(9)->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == '3rd Quarter' ){
+                $period = [Carbon::parse($start_first_quarter_day)->addMonths(6)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->addMonths(6)->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == '2nd Quarter' ){
+                $period = [Carbon::parse($start_first_quarter_day)->addMonths(3)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->addMonths(3)->endOfDay()->toDateTimeString()];
+            }else{
+                $period = [$start_first_quarter_day->toDateTimeString(), $end_first_quarter_day->toDateTimeString()];
+            }
+        }
+        $reportData = InfoOrder::whereBetween('created_at', $period)
+                        ->join('infoCustomer', function($join){
+                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
+                        })
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->where('infoOrder.deliverymethod', '!=', '')
+                        ->get();
+        return response()->json($reportData);
+
+    }
     public static function getAssemblyHomeStats(Request $request){
         $grouped_postes = Poste::getAssemblyPostes();
         $main_stats = new \stdClass();
