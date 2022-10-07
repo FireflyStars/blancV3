@@ -902,7 +902,7 @@ class CustomerController extends Controller
             ->select('infoCustomer.id',
               DB::raw(' IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as type'),
               DB::raw(
-                'CASE WHEN infoCustomer.isMaster = 1  OR infoCustomer.CustomerIDMaster = "" THEN "Main"
+                'CASE WHEN (infoCustomer.isMaster = 1 OR infoCustomer.CustomerIDMaster = "") AND infoCustomer.isMasterAccount = 0  THEN "Main"
                       WHEN infoCustomer.isMasterAccount = 1 THEN "Master"
                       WHEN infoCustomer.CustomerIDMaster <> "" THEN "Sub"
                 END as level'
@@ -943,7 +943,7 @@ class CustomerController extends Controller
                             'infoCustomer.id',
                             DB::raw('IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as type'),
                             DB::raw(
-                                'CASE WHEN infoCustomer.isMaster = 1 OR infoCustomer.CustomerIDMaster = "" THEN "Main"
+                                'CASE WHEN (infoCustomer.isMaster = 1 OR infoCustomer.CustomerIDMaster = "") AND infoCustomer.isMasterAccount = 0  THEN "Main"
                                       WHEN infoCustomer.isMasterAccount = 1 THEN "Master"
                                       WHEN infoCustomer.CustomerIDMaster <> "" THEN "Sub"
                                 END as level'
@@ -2269,7 +2269,7 @@ class CustomerController extends Controller
         $final_cust_addr = DB::table('address')->whereIn('CustomerID',$final_cust_id)->where('status','BILLING')->get();
         $final_customers = [];
 
-
+ 
         if(count($final_cust) > 0){
             foreach($final_cust as $k=>$v){
                 if(isset($list[$v->CustomerID])){
@@ -2288,11 +2288,11 @@ class CustomerController extends Controller
                     $list[$v->CustomerID]['email'] = $v->EmailAddress;
                     $list[$v->CustomerID]['phone'] = $v->Phone;
 
-                    if($v->CustomerIDMaster=='' && $v->IsMaster==1){
+                    if(($v->CustomerIDMaster==''|| $v->IsMaster==1) && $v->IsMasterAccount== 0){
                         $list[$v->CustomerID]['level'] = "Main";
                     } else if ($v->CustomerIDMaster!=''){
                         $list[$v->CustomerID]['level'] = "Sub";
-                    } else if ($v->isMasterAccount = 1){
+                    } else if ($v->isMasterAccount== 1){
                         $list[$v->CustomerID]['level'] = "Master";
                     }
                 }
