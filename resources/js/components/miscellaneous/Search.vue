@@ -46,7 +46,7 @@
                              <b class ="email body_regular">{{customer.EmailAddress.toLowerCase()}}</b>   
                        </div>
                        <div class="col-2" style="text-align: end; padding:0">
-                            <tag   v-if="customer.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
+                            <tag   v-if="customer.cust_type=='B2C'" :name="'B2C'" ></tag>
                             <tag   v-else :name="'B2B'" ></tag>
                         </div>
                         </div>

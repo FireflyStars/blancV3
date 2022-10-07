@@ -139,7 +139,9 @@ public function SearchByCustomer(Request $request)
  {
     $query = $request['query'];
     $PerPage = $request['PerPage'];
-    $Customer = DB::table('infoCustomer')->select(['infoCustomer.Actif','infoCustomer.id','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CustomerID','infoCustomer.Phone','infoCustomer.EmailAddress'])
+    $Customer = DB::table('infoCustomer')->select(['infoCustomer.Actif','infoCustomer.id','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CustomerID','infoCustomer.Phone','infoCustomer.EmailAddress',
+    DB::raw('IF(btob = 0, "B2C", "B2B") as cust_type'),
+    ])
     ->where('infoCustomer.Actif', '=', 1)
     ->where(function($q) use ($query) {
         $q->where('Name', 'LIKE', '%' . $query . '%')
