@@ -618,7 +618,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="(item, index) in currentOrders" :key="index">
+                                        <tr v-for="(item, index) in currentOrders" :key="index" @click="selectrow(item)">
                                             <td valign="middle">{{ item.order_id }}</td>
                                             <td valign="middle">{{ item.destination }}</td>
                                             <td valign="middle">{{ item.items_received }}</td>
@@ -663,7 +663,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="(item, index) in pastOrders" :key="index">
+                                        <tr v-for="(item, index) in pastOrders" :key="index" @click="selectrow(item)">
                                             <td valign="middle">{{ item.order_id }}</td>
                                             <td valign="middle">{{ item.destination }}</td>
                                             <td valign="middle">{{ item.items_received }}</td>
@@ -2190,6 +2190,9 @@
             function goCustomerView(customerId){
                 window.location='/view-customer/'+customerId;
             }
+            function selectrow(order){
+                router.push('/checkout/'+ order.order_id);
+            }
 
             return {
                 fdate,
@@ -2246,7 +2249,8 @@
                 billing_address_edit,
                 validateAndSaveBillingAddress,
                 toggleCreditCard,
-                goCustomerView
+                goCustomerView,
+                selectrow
             }
 
         },

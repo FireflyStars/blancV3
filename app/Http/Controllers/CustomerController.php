@@ -2175,6 +2175,7 @@ class CustomerController extends Controller
                     ->where('infoOrder.CustomerID', $customer->CustomerID)
                     ->whereIn('infoOrder.Status', ['FULFILLED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
                     ->groupBy('infoOrder.id')
+                    ->orderBy('infoitems.PromisedDate', 'DESC')
                     ->get();
         //*/
 
