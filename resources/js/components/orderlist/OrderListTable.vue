@@ -114,7 +114,7 @@
                return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_SORT}`];
             });
             function loadMore(){
-                if(props.customer_id  || route.params.customerId){     
+                if((props.customer_id  || route.params.customerId) && (props.customer_id != "undefined" || route.params.customerId != "undefined")){     
                  store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading more, please wait...');
                  store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`,{customer:route.params.customerId = "" ? props.customer_id : route.params.customerId   , showmore:1}).finally(()=>{
                  window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
@@ -542,6 +542,7 @@
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,` please wait...`);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_SMSDELIVERY}`, listCustomers.value).then(()=>{
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Customers update successfully.',ttl:5,type:'success'});   
+                    window.location.reload();  
                 }).catch((error)=>{
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
                 });

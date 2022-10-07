@@ -79,6 +79,7 @@
                                     :item_description="item_description"
                                     @save-item-description="saveItemDetails"
                                     @go-to-step="backPreviousStep"
+                                    ref ="go_to_type"
                                 ></detailing-item-description>
                                 <detailing-item-complexities
                                     v-if="detailingitem.etape === 9"
@@ -95,6 +96,9 @@
                                     :typeitemPicto="item_description.typeitem_picto"
                                     @save-item-issues="saveItemDetails"
                                     @go-to-step="backPreviousStep"
+                                    @get-free-text="getFreeText"
+                                    @get-issues-Step ="getIssuesStep"
+                                    ref = "isuue_step"
                                 ></detailing-item-issues>
                                 <detailing-services
                                     v-if="detailingitem.etape == 11"
@@ -114,6 +118,9 @@
                             :detailingitem="detailingitem"
                             :cleaning_services="cust_cleaning_services"
                             :step="step"
+                            :IssueStep="IssueStep"
+                            @get-step ="getStep"
+                            @get-free-text="getFreeText"
                             @update-cleaning-price="saveItemDetails"
                             ref="right_panel_cmp"
                         ></detailing-right-panel>
@@ -195,6 +202,9 @@ export default {
         const main_services = ref({});
         const right_panel_cmp = ref();
         const tailoring_services = ref({});
+        const IssueStep = ref(0);
+        const isuue_step = ref();
+        const go_to_type = ref();
 
         store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Please wait....']);
 
@@ -359,6 +369,53 @@ export default {
                 });
 
         }
+        function getFreeText(issues){
+
+            if ([0,1,2].includes(issues.issuesStep)) {
+                detailingitem.value.stainstext = issues.text_stain
+            }
+            if ([3,4,5].includes(issues.issuesStep)) {
+                detailingitem.value.damagestext = issues.text_damage  
+            }
+
+        }
+        function getIssuesStep(issuesStep){
+            IssueStep.value = issuesStep
+        }
+
+        
+        function getStep(value){
+  
+                if(value.step == 10){
+                    store.dispatch(`${DETAILING_MODULE}${UPDATE_DETAILING}`, { detailingitem_id: detailingitem_id.value, step: value.step })
+                    .then((response) => {
+                        detailingitem.value = response.data.detailingitem;
+                        step.value = response.data.detailingitem.etape;
+                        item_description.value = response.data.item_description;
+                        detailingData.value = response.data.detailing_data;
+                            setTimeout(function(){  
+                                isuue_step.value.setNewIssueValue(value.issuesStep) 
+                                IssueStep.value = value.issuesStep
+                            }  
+                            , 500)
+        
+                    })
+                    
+                }else {
+                    store.dispatch(`${DETAILING_MODULE}${UPDATE_DETAILING}`, { detailingitem_id: detailingitem_id.value, step: value.step })
+                    .then((response) => {
+                        detailingitem.value = response.data.detailingitem;
+                        step.value = response.data.detailingitem.etape;
+                        item_description.value = response.data.item_description;
+                        detailingData.value = response.data.detailing_data;
+                            setTimeout(function(){  
+                                go_to_type.value.descTypeClick(value.type) 
+                            }  
+                            , 5)
+                    })
+                }      
+        }
+
         return {
             paths,
             user,
@@ -387,6 +444,13 @@ export default {
             right_panel_cmp,
             tailoring_services,
             initDetailing,
+            getFreeText,
+            IssueStep,
+            getIssuesStep,
+            getStep,
+            isuue_step,
+            go_to_type
+
         };
     },
 }

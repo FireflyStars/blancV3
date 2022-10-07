@@ -32,7 +32,7 @@
                     <!--
 (!detailingitem.cleaning_services && service.selected_default==1) ||
                         -->
-                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center position-relative" v-for="(service,id) in services" :class="{'sel_service': service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0,'mb-4':service.cleaning_group==2}" :id="'sub_service_'+service.id" @click="checkSubService(service.id)" :data-cleaning-service-id="service.id">
+                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center position-relative" v-for="(service,id) in services" :class="{'sel_service': service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0,'mb-4':service.cleaning_group==2, 'active_service': preference_customer && preference_customer.includes(service.id_preference)  && detailingitem.status != 'Completed' , 'cleaning': group=='Cleaning Add-on'}" :id="'sub_service_'+service.id" @click="checkSubService(service.id)" :data-cleaning-service-id="service.id">
                         <div class="d-block w-100 text-center">
                             {{service.name}}<span v-if="service.cleaning_group==2" class="text-center d-block w-100">(&#163;{{service.fixed_price}})</span>
 
@@ -60,7 +60,8 @@
                     <div class="col-2 d-flex text-center each-sub-service py-4 justify-content-center cleaning-subservice cleaning-prices" v-for="name in type_prices" :id="'sub_service_'+name.replace(' ','')" @click="toggleSubService(name.replace(' ',''))" :data-cleaning-price-type="name" :class="{'sel_service':detailingitem.cleaning_price_type==name}">
                        {{name}}
                     </div>
-                     <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" id="pricenow_cleaning" @click="loadPriceNowModal('cleaning')" :class="{'sel_service':detailingitem.cleaning_price_type=='PriceNow'}">Price now</div>
+                     <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" id="pricenow_cleaning" @click="loadPriceNowModal('cleaning')" :class="{'sel_service':detailingitem.cleaning_price_type=='PriceNow' && !detailingitem.describeprixnow}">Price now</div>
+                     <div class="col-2 d-flex text-center each-price-now-btn py-3 justify-content-center" id="pricenow_describe_cleaning" @click="loadPriceNowAndDescribeModal('cleaning')" :class="{'sel_service':detailingitem.cleaning_price_type=='PriceNow'  && detailingitem.describeprixnow != ''}">Describe & Price Now</div>
 
                 </div>
             </div>
@@ -108,10 +109,11 @@
                 id="acdpanel_tailoringpricetype" :class="{'show':detailingitem.tailoring_price_type!=null && detailingitem.tailoring_price_type!=''}"
             >
                 <div class="accordion-body row mt-3">
-                    <div class="col-2 d-flex text-center each-sub-service py-4 justify-content-center tailoring-subservice tailoring-price-type" :id="'sub_service_tailoring_'+type.replace(' ','')" :class="{'sel_service':detailingitem.tailoring_price_type==type}" v-for="type in type_prices" :data-tailoring-price-type="type" @click="toggleSubService('tailoring_'+type.replace(' ',''))">
+                    <div   class="col-2 d-flex text-center each-sub-service py-4 justify-content-center tailoring-subservice tailoring-price-type" :id="'sub_service_tailoring_'+type.replace(' ','')" :class="{'sel_service':detailingitem.tailoring_price_type==type}" :data-tailoring-price-type="type"  v-for="(type) in type_prices" @click="toggleSubService('tailoring_'+type.replace(' ',''))">
                         {{type}}
                     </div>
-                    <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" id="pricenow_tailoring" @click="loadPriceNowModal('tailoring')" :class="{'sel_service':detailingitem.tailoring_price_type=='PriceNow'}">Price now</div>
+                    <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" id="pricenow_describe_tailoring" @click="loadPriceNowModal('tailoring')" :class="{'sel_service':detailingitem.tailoring_price_type=='PriceNow' && !detailingitem.describeprixnowtailoring}">Price now</div>
+                    <div class="col-2 d-flex text-center each-price-now-btn py-3 justify-content-center" id="pricenow_tailoring" @click="loadPriceNowAndDescribeModal('tailoring')" :class="{'sel_service':detailingitem.tailoring_price_type=='PriceNow' && detailingitem.describeprixnowtailoring != ''}">Describe & Price Now</div>
 
                 </div>
             </div>
@@ -155,7 +157,7 @@
             </div>
         </template>
     </modal>
-
+<!-- //price now  -->
     <modal ref="pricenow_modal">
         <template #closebtn>
             <span class="close" id="pricenow_modal_close" @click="closePriceNowModal"></span>
@@ -164,12 +166,51 @@
             <div class="bmodal-header py-4 text-center">Enter price</div>
         </template>
         <template #bcontent>
+
             <div class="row justify-content-center pt-4">
                 <div class="col-4 form-group"><input type="text" class="form-control py-2" v-model="price_now_value"></div>
             </div>
-            <div class="row justify-content-center py-4">
+             <div class="row justify-content-center py-4">
                 <div class="col-3 form-group"><button class="btn btn-outline-success w-100" @click="priceNow">OK</button></div>
+             </div>
+           
+        </template>
+
+    </modal>
+<!-- //price now and describe   -->
+    <modal ref="pricenow_describe_modal">
+        <template #closebtn>
+            <span class="close" id="pricenow_describe_modal_close" @click="closePriceNowAndDescribeModal"></span>
+        </template>
+        <template #bheader>
+            <div class="bmodal-header py-4 text-center">Describe & Price Now</div>
+        </template>
+        <template #bcontent>
+            <div class="row justify-content-center pt-4">
+                <div class="Describe row justify-content-center d-block">
+                    <div class="form-group">
+                        <label for="exampleInputEmail1" class="form-label body_medium">Describe Job (50 characters max.)</label>
+                        <input type="text" class="form-control py-2" v-model="describe_job_value"  maxlength="50" placeholder="Type job description">
+                    </div>
+                    <div class="col-4 form-group pt-3">
+                        <label  class="form-label body_medium">Enter Price</label>
+                        <div class="input-group">
+                            <span class="input-group-text fw-bold" style="background: none;">£</span>
+                            <input style="border-left: none;" type="text" v-model="price_value" class="form-control"  placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+                <div class="row mx-0 justify-content-center mt-3 mb-5">
+                    <div class="col-4">
+                        <button class="btn btn-outline-danger body_medium w-100" @click="closePriceNowAndDescribeModal">Cancel</button>
+                    </div>
+                    <div class="col-1"></div>
+                    <div class="col-4">
+                        <button class="btn btn-dark body_medium w-100" @click="priceNowAndDescribe">Save</button>
+                    </div>
+                </div>
             </div>
+           
         </template>
 
     </modal>
@@ -216,7 +257,11 @@ export default {
         const sel_addon_id = ref(0);
         const price_now_type = ref('');
         const pricenow_modal = ref();
+        const pricenow_describe_modal = ref();
         const price_now_value = ref('');
+        const describe_job_value = ref('');
+        const preference_customer = ref([]);
+        const price_value = ref('');
 
         function toggleMainService(id){
             let el = document.getElementById('main_service_'+id);
@@ -342,6 +387,7 @@ export default {
 
                     if(classes.includes('sel_service')){
                         document.getElementById('pricenow_cleaning').classList.remove('sel_service');
+                        document.getElementById('pricenow_describe_cleaning').classList.remove('sel_service');
                     }
                 }
 
@@ -359,6 +405,7 @@ export default {
 
                     if(classes.includes('sel_service')){
                         document.getElementById('pricenow_tailoring').classList.remove('sel_service');
+                        document.getElementById('pricenow_describe_tailoring').classList.remove('sel_service');
                     }
                 }
 
@@ -508,6 +555,20 @@ export default {
 
 
         function checkCleaningGroup(){
+
+            if(props.detailingitem.status != 'Completed'){
+
+                axios.post('/getPreferenceCustomer',{
+                Customer_id: props.detailingitem.customer_id,
+                typeitem_id: props.detailingitem.typeitem_id
+               }).then((res)=>{
+                   preference_customer.value = res.data.prefrenceActive
+               }).catch((err)=>{
+
+               })
+            }
+
+
             let cs = props.cleaning_services;
             let gp = Object.keys(cs);
             let sel_cleaning_gp = [];
@@ -623,6 +684,10 @@ export default {
         }
 
         function loadPriceNowModal(type){
+
+            let pricedescribebtn= document.getElementById('pricenow_describe_'+type);
+               pricedescribebtn.classList.remove('sel_service');
+
             let el = document.getElementById('pricenow_'+type);
             el.classList.toggle('sel_service');
 
@@ -650,21 +715,105 @@ export default {
             }
         }
 
+        function loadPriceNowAndDescribeModal(type){
+
+            let pricebtn= document.getElementById('pricenow_'+type);
+                pricebtn.classList.remove('sel_service');
+
+            let el = document.getElementById('pricenow_describe_'+type);
+                el.classList.toggle('sel_service');
+
+            let classes = Object.values(el.classList);
+
+            if(classes.includes('sel_service')){
+                if(type=='tailoring'){
+                    sel_tailoring_price_type.value = 'PriceNow';
+                    let elt = Object.values(document.querySelectorAll('.tailoring-price-type'));
+                    elt.forEach(function(v,i){
+                        v.classList.remove('sel_service');
+                    });
+
+                }
+                else if(type=='cleaning'){
+                    sel_cleaning_price_type.value = 'PriceNow';
+                    let elc = Object.values(document.querySelectorAll('.cleaning-prices'));
+                    elc.forEach(function(v,i){
+                        v.classList.remove('sel_service');
+                    });
+                }
+                price_now_type.value = type;
+                pricenow_describe_modal.value.showModal();
+            }
+        }
+
+        function priceNowAndDescribe(){
+           let montant = price_value.value;
+           let describeprixnow = describe_job_value.value
+
+           if(describeprixnow == '' || montant=='' || parseFloat(montant)=='NaN'){
+                if(describeprixnow == ''){
+                    describe_job_value.value = '';
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                            message: 'Invalid describe',
+                            ttl: 5,
+                            type: 'danger'
+                        });
+                }
+                if(montant=='' || parseFloat(montant)=='NaN'){
+                    price_now_value.value = '';
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                            message: 'Invalid price now value',
+                            ttl: 5,
+                            type: 'danger'
+                        });
+                }
+           }else{
+                axios.post('/set-describe-price-now',{
+                    id:props.detailingitem.id,
+                    type:price_now_type.value,
+                    montant:montant,
+                    describeprixnow : describe_job_value.value
+                }).then((res)=>{
+                    //console.log(res);
+                    if(res.data.updated){
+                        price_now_value.value='';
+                        price_now_type.value = '';
+                        describe_job_value.value = '';
+                        closePriceNowAndDescribeModal();
+
+                        context.emit('init-detailing');
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                            message: 'Item describe and price updated',
+                            ttl: 5,
+                            type: 'success'
+                        });
+                    }
+                }).catch((err)=>{
+                    console.log(err);
+                }).finally(()=>{
+
+                });
+            }
+        }
+
         function priceNow(){
+            
            let montant = price_now_value.value;
 
-            if(montant=='' || !parseFloat(montant)){
-                price_now_value.value = '';
-                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
-                        message: 'Invalid price now value',
-                        ttl: 5,
-                        type: 'danger'
-                    });
-            }else{
+            if(montant=='' || parseFloat(montant)=='NaN'){
+                    price_now_value.value = '';
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                            message: 'Invalid price now value',
+                            ttl: 5,
+                            type: 'danger'
+            });
+                
+           }else{
                 axios.post('/set-price-now',{
                     id:props.detailingitem.id,
                     type:price_now_type.value,
                     montant:montant,
+                    describeprixnow : describe_job_value.value
                 }).then((res)=>{
                     //console.log(res);
                     if(res.data.updated){
@@ -703,6 +852,9 @@ export default {
         function closePriceNowModal(){
             pricenow_modal.value.closeModal();
         }
+        function closePriceNowAndDescribeModal(){
+            pricenow_describe_modal.value.closeModal();
+        }
 
         return {
             back,
@@ -727,9 +879,16 @@ export default {
             priceNow,
             price_now_type,
             pricenow_modal,
+            pricenow_describe_modal,
             loadPriceNowModal,
+            loadPriceNowAndDescribeModal,
             closePriceNowModal,
+            closePriceNowAndDescribeModal,
             price_now_value,
+            price_value,
+            preference_customer,
+            describe_job_value,
+            priceNowAndDescribe
         };
     },
 }
@@ -852,6 +1011,39 @@ export default {
     .each-sub-service:not(.is_pref_disabled) .pref-disable-icon{
         display:none;
     }
+    .each-sub-service.active_service {
+        cursor: pointer;
+        color: #fff;
+        background: #47454B;
+    }
+    .disabled_service{
+        pointer-events: none;
+        background: transparent;
+        color:rgba(0, 23, 84, 0.15);
+        box-shadow: none;
+        cursor: default;
+    }
+    .each-sub-service.sel_service.disabled_service{
+        background-color: #47454b;
+    }
+    .Describe{
+        padding: 3% 14%;
+    }
+    .form-control::placeholder {
+    color: #C3C3C3;
+    opacity: 1;
+    font-style: normal;
+    font-weight: 325;
+    font-size: 16px;
+    line-height: 140%;
+}
+.form-control:focus {
+    color: #000;
+    background-color: #fff;
+    border-color: #C3C3C3;
+    outline: 0;
+    box-shadow: none;
+}
 
 
 </style>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Customer;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\PermissionController;
@@ -60,6 +61,7 @@ Route::post('/getorderlistbysearch',[OrderListController::class, 'getorderlistby
 Route::post('/getOrdersByCustomerId',[OrderListController::class, 'getOrdersByCustomerId'])->middleware('auth')->name('ordersByCustomerId');
 Route::post('/cancelorders',[OrderController::class, 'cancelorders'])->middleware('auth')->name('cancelorders');
 Route::post('/voidSuborder',[OrderController::class, 'voidSuborder'])->middleware('auth')->name('voidSuborder');
+Route::post('/voidOrder',[OrderController::class, 'voidOrder'])->middleware('auth')->name('voidOrder');
 Route::post('/cancelBooking',[OrderController::class, 'cancelBooking'])->middleware('auth')->name('cancelBooking');
 Route::post('/create-new-order',[OrderController::class,'createNewOrder'])->name('create-new-order')->middleware('auth');
 Route::post('/markaslate',[OrderListController::class, 'markaslate'])->middleware('auth')->name('markaslate');
@@ -219,7 +221,7 @@ Route::get('tailoring-services-test',function(){
 */
 
 
-Route::get('stripe-test',function(){
+Route::get('stripe-test-card',function(){
     $id_customer = 	3428;
 
     $cust = DB::table('infoCustomer')->where('id',$id_customer)->first();
@@ -229,7 +231,7 @@ Route::get('stripe-test',function(){
     $stripe = new \Stripe\StripeClient(env('STRIPE_TEST_SECURITY_KEY'));
 
     $card_exp = '12/23';
-    $card_num =  '4850180100577561';
+    $card_num =  '4242424242424242';
     $cardholder_name = 'Franck Gavois';
 
     $stripe_customer = null;
@@ -261,7 +263,6 @@ Route::get('stripe-test',function(){
                     'cvc'         => 999,
                 ],
             ]);
-
 
             //create a customer object to stripe
             $stripe_customer = $stripe->customers->create([
@@ -298,7 +299,7 @@ Route::get('stripe-test',function(){
 
             DB::table('cards')->insert($credit_card);
         }
-        /*
+
         $payment_intent = $stripe->paymentIntents->create([
             'amount'            => 30, //100*0.01
             'currency'          => 'gbp',
@@ -311,8 +312,22 @@ Route::get('stripe-test',function(){
             "receipt_email"=>"rushdi@vpc-direct-service.com",
         ]);
 
+
+        $cardid = $payment_intent->charges->data[0]->payment_method;
+
+        /*
+        $stripe_cust  = $stripe->customers->retrieve(
+            $custid,
+            []
+          );
+        */
+        $card2 = $stripe->paymentMethods->retrieve($cardid);
+
         echo "<pre>";
-        print($payment_intent);
+        print_r($card2);
+
+
+        die();
 
         if($payment_intent->status == 'succeeded'){
             //Update order
@@ -539,34 +554,20 @@ Route::get('inv-pdf',function(Request $request){
         die('Facture not set');
     }
 
-    $details = DB::table('infoOrderPrint')->where('FactureID',$facture_id)->get();
-    $details_per_cust = [];
-
-    foreach($details as $key=>$details){
-        $details_per_cust[] = CustomerController::getArPDFData($details);
-    }
-
-    foreach($details_per_cust as $k=>$v){
-        if(empty($v['order_details'])){
-            unset($details_per_cust[$k]);
-        }
-    }
+    $details = DB::table('infoOrderPrint')->where('FactureID',$facture_id)->first();
 
 
-   if(!empty($details_per_cust)){
-        $data = [
-            'details_per_cust'=>$details_per_cust,
-        ];
+    $data = CustomerController::getArPDFData($details);
 
-        echo "<pre>";
-        print_r($data);
-        die();
+    if(!empty($data['order_details'])){
 
+
+        $pdf_data['v'] = $data;
 
         Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
 
 
-        $pdf = Pdf::loadView('pdf/ar_all_pdf', $data);
+        $pdf = Pdf::loadView('pdf/ar_pdf', $pdf_data);
 
         $pdf->output();
 
@@ -586,10 +587,11 @@ Route::get('inv-pdf',function(Request $request){
         $canvas->page_text($x, $y, $text , $font, 10, array(0, 0, 0));
 
         return $pdf->download('invoice'.$details->CustomerID.'.pdf');
+
+
     }else{
         die("Invoice has no valid items");
     }
-
 });
 
 Route::get('notify-test', function () {
@@ -626,6 +628,79 @@ Route::get('notify-test', function () {
 
     NotificationController::Notify('rushdi@vpc-direct-service.com', '+123456789', '3A_BOOKING_CONFIRM', '', $mail_vars, true, 0, '');
     */
+});
+
+
+/* A REFAIRE */
+
+Route::get('/test-pi',function(){
+    $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+    //pi_3LmbjTB2SbORtEDs0a096Bpx
+    //pi_3LmxCmB2SbORtEDs12rd08p0
+    $intent = $stripe->paymentIntents->retrieve('pi_3Lmae9B2SbORtEDs1otNXt3W',[]);
+
+
+
+    $cardid = $intent->charges->data[0]->payment_method;
+        $payment_method=$stripe->paymentMethods->retrieve($cardid,[]);
+        $custid=$payment_method->customer;
+
+        //$cardid = $intent->charges->data[0]->payment_method;
+        $card = $intent->charges->data[0]->payment_method_details['card_present'];
+        //$payment_method=$stripe->paymentMethods->retrieve($cardid,[]);
+
+
+        //$custid=$payment_method->customer;
+
+        $stripe_cust = false;
+        if($custid !=''){
+        $stripe_cust  = $stripe->customers->retrieve(
+            $custid,
+            []
+          );
+        }
+
+        echo "<pre>";
+        print_r($intent);
+
+/*
+        $exp_month=$card->exp_month;
+        if(strlen($exp_month)==1){
+            $exp_month='0'.$exp_month;
+        }
+        $exp_year=$card->exp_year;
+        $exp_year=date('yy',strtotime($exp_year.'-01-01'));
+
+        echo "<pre>";
+        print_r($payment_method);
+/*
+                $credit_card = [
+                    'CustomerID'        => 'xx',//$order->CustomerID,
+                    'cardHolderName'    => ($stripe_cust?$stripe_cust->name:""),
+                    'type'              => $payment_method->card->brand,
+                    'cardNumber'        => str_repeat('*',12).$payment_method->card->last4,
+                    'dateexpiration'    => $exp_month.'/'.$exp_year,
+                    'stripe_customer_id'=> $custid,
+                    'stripe_card_id'    => $payment_method->id,
+                    'created_at'        => now(),
+                    'updated_at'        => now(),
+                ];
+            */
+
+});
+
+Route::get('/merge-pdf',function(){
+    $path = storage_path('app/pdf/').'*.*';
+
+    $arrfiles = glob($path);
+    $files = implode(" ",$arrfiles);
+
+    $output_file = storage_path('app/pdf/').'test.pdf';
+
+    //print_r($files);
+
+    shell_exec("gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=$output_file -dBATCH $files");
 });
 
 
@@ -677,6 +752,11 @@ Route::post('get-suborder-and-print', [ PosteController::class, 'getSubOrderToPr
 */
 Route::post('update-zone-label-pos',[ItemController::class,'updateZoneLabelPos'])->name('update-zone-label-pos')->middleware('auth');
 
+/*  search  by barcode
+*/
+Route::post('get-item-barcode',[ItemController::class,'getitembyBarcode'])->name('get-item-barcode')->middleware('auth');
+Route::post('get-order-barcode',[ItemController::class,'getorderbyBarcode'])->name('get-order-barcode')->middleware('auth');
+
 
 /*
 * Detailing Services
@@ -687,6 +767,8 @@ Route::post('/complete-detailing-item',[DetailingController::class,'completeDeta
 Route::post('/update-cust-preference-from-service',[DetailingController::class,'updateCustomerServicePref'])->name('update-cust-preference-from-service')->middleware('auth');
 Route::post('/remove-detailing-item',[DetailingController::class,'removeDetailingItem'])->name('remove-detailing-item')->middleware('auth');
 Route::post('/set-price-now',[DetailingController::class,'setPriceNow'])->name('set-price-now')->middleware('auth');
+Route::post('/set-describe-price-now',[DetailingController::class,'setDescribeAndPriceNow'])->name('set-describe-price-now')->middleware('auth');
+Route::post('/getPreferenceCustomer',[DetailingController::class,'getPreferenceCustomer'])->name('getPreferenceCustomer')->middleware('auth');
 
 /*
 * Create items from detailing
@@ -709,6 +791,7 @@ Route::post('/get-terminal-token',[DetailingController::class,'getTerminalToken'
 Route::post('/pay-from-credit',[OrderController::class,'payFromCredit'])->name('pay-from-credit')->middleware('auth');
 Route::post('/set-checkout-addon',[DetailingController::class,'setCheckoutAddon'])->name('set-checkout-addon')->middleware('auth');
 Route::post('/remove-order-voucher',[DetailingController::class,'removeCheckoutVoucher'])->name('remove-order-voucher')->middleware('auth');
+Route::post('/save-price-delivery-now',[DetailingController::class,'savePriceDeliveryNow'])->name('save-price-delivery-now')->middleware('auth');
 Route::post('/add-order-voucher',[DetailingController::class,'addCheckoutVoucher'])->name('add-order-voucher')->middleware('auth');
 
 /*
@@ -768,6 +851,9 @@ Route::group(['prefix'=>'stripe-test'],function(){
             $json_obj = json_decode($json_str);
 
             $order_id = $json_obj->order_id;
+            //$savecardinfo=$json_obj->savecardinfo;
+            $savecardinfo = true;
+
             $order = DB::table('infoOrder')->where('id',$order_id)->first();
             $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
 
@@ -784,9 +870,43 @@ Route::group(['prefix'=>'stripe-test'],function(){
                                         ],
                 'capture_method' => 'manual',
                 'description'=>'Order: '.$order_id,
+                //'setup_future_usage'=>'off_season',
                 "receipt_email"=>$cust->EmailAddress,
             ]);
+/*
+            if($savecardinfo){
 
+        $cardid = $intent->charges->data[0]->payment_method;
+        $payment_method=$stripe->paymentMethods->retrieve($cardid,[]);
+        $custid=$payment_method->customer;
+
+
+        $stripe_cust  = $stripe->customers->retrieve(
+            $custid,
+            []
+          );
+                    $exp_month=$payment_method->card->exp_month;
+                    if(strlen($exp_month)==1){
+                        $exp_month='0'.$exp_month;
+                    }
+                    $exp_year=$payment_method->card->exp_year;
+                    $exp_year=date('yy',strtotime($exp_year.'-01-01'));
+
+                $credit_card = [
+                    'CustomerID'        => $order->CustomerID,
+                    'cardHolderName'    => $stripe_cust->name,
+                    'type'              => $payment_method->card->brand,
+                    'cardNumber'        => str_repeat('*',12).$payment_method->card->last4,
+                    'dateexpiration'    => $exp_month.'/'.$exp_year,
+                    'stripe_customer_id'=> $custid,
+                    'stripe_card_id'    => $payment_method->id,
+                    'created_at'        => now(),
+                    'updated_at'        => now(),
+                ];
+
+                $card_id = DB::table('cards')->insertGetId($credit_card);
+            }
+*/
             echo json_encode($intent);
         } catch (Throwable $e) {
             http_response_code(500);
@@ -852,11 +972,136 @@ Route::group(['prefix'=>'stripe-test'],function(){
         echo json_encode(['payment_id'=>$payment_id]);
     });
 
+    Route::post('/refund-payment',function(){
+        $json_str = file_get_contents('php://input');
+        $request = json_decode($json_str);
+
+        $payment_intent_id = $request->payment_intent_id;
+
+        $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+        $stripe->refunds->create(['payment_intent' => $payment_intent_id]);
+    });
+
+    Route::post('/save_payment_intent',function(){
+        $json_str = file_get_contents('php://input');
+        $request = json_decode($json_str);
+
+        $payment_intent = $request->payment_intent;
+
+        $customer = DB::table("infoCustomer")->where('id',3428)->first();
+
+
+    });
+});
+
+Route::post('/cancel-terminal-request',function(){
+    $user = Auth::user();
+
+    $readers_id = [];
+    $readers_id[1] = 'tmr_Eqz4ewJhXq5eu6'; //Atelier
+    $readers_id[2] = 'tmr_Eq0HXA4Oj7Yjqo'; //Marylebone
+    $readers_id[3] = 'tmr_EqzSAXwuoVzKs0'; //Chelsea
+    $readers_id[4] = 'tmr_Eqz9KQMTISyB47'; //South Ken
+    $readers_id[5] = 'tmr_EqzjQIwM2PjDQy'; //Notting Hill
+
+    $sel_reader = [];
+
+    $output = false;
+
+    if($user && isset($readers_id[$user->store])){
+        $sel_reader = $readers_id[$user->store];
+
+        $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+        $output = $stripe->terminal->readers->cancelAction(
+            $sel_reader,
+            []
+          );
+    }
+
+
+    return response()->json([
+        'user'=>$user,
+        'sel_reader'=>$sel_reader,
+        'output'=>$output,
+    ]);
 });
 
 /**
  * END - Route for Stripe Terminal
  */
+
+/**
+ * Route for stripe unpaid orders
+ */
+
+Route::get('/unpaid-orders',function(Request $request){
+    $start = microtime(true);
+
+    $token = $request->get('token');
+
+    $app_token = setting('admin.url_token');//EjD4L7tgrHxmCY3exnCE31b3
+
+    if(!isset($token)){
+        die('token not set');
+    }
+
+    if($app_token != $token){
+        die('invalid token');
+    }
+
+    $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+
+    $unpaid_orders = DB::table('unpaid_orders')
+        ->where('paid',0)
+        ->where('created_at','>=',date('Y-m-d H:i:s',strtotime('-15day')))
+        ->get();
+
+    $orders_to_update = [];
+    $lines_to_update = [];
+
+    if(count($unpaid_orders) > 0){
+        foreach($unpaid_orders as $k=>$v){
+            $payment_intent = $stripe->paymentIntents->retrieve(
+                $v->payment_intent_id,
+                []
+              );
+
+            if($payment_intent->status=='succeeded'){
+                $orders_to_update[] = $v->order_id;
+                $lines_to_update[] = $v->id;
+            }
+
+        }
+    }
+
+    if(!empty($orders_to_update)){
+
+        $orders = DB::table('infoOrder')->whereIn('id',$orders_to_update)->get();
+
+        $orders_ids = [];
+        foreach($orders as $k=>$v){
+            $orders_ids[] = $v->OrderID;
+        }
+
+        DB::table('infoInvoice')->where('OrderID',$orders_ids)->update(['Paid'=>1]);
+        DB::table('infoOrder')->where('id',$orders_to_update)->update(['Paid'=>1]);
+    }
+
+
+    if(!empty($lines_to_update)){
+        DB::table('unpaid_orders')->whereIn('id',$lines_to_update)->update(['paid'=>1]);
+    }
+
+    $end = microtime(true);
+    $timetaken = $end-$start;
+
+    echo "Time taken: ".gmdate('H:i:s',$timetaken)."<br/>";
+    echo count($lines_to_update)." lines updated";
+
+});
 
 
 /**

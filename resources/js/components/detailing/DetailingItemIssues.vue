@@ -80,18 +80,19 @@
         <div class="row">
             <div
                 class="stain-type"
-                :class="{ selected: stain.id === stainTag }"
+                :class="{ selected: stainTags.includes(stain.id) }"
                 v-for="(stain, index) in stainKind"
                 @click="addTag(stain.id)"
             >{{ stain.name }}</div>
         </div>
         <div class="row free-text">
-            <span class="free-text-label">Free text</span>
+            <span class="free-text-label">Stains - Additional Comments</span>
             <textarea
                 placeholder="Specification about stain"
                 class="free-text-input"
-                maxlength="30"
+                maxlength="140"
                 v-model="stain_free_text"
+                @keyup.prevent="submit"
                 @blur="addFreeText"
             ></textarea>
         </div>
@@ -102,18 +103,19 @@
         <div class="row">
             <div
                 class="stain-type"
-                :class="{ selected: dam.id === damageTag }"
+                :class="{ selected: damagTags.includes(dam.id) }"
                 v-for="(dam, index) in damageKind"
                 @click="addTag(dam.id)"
             >{{ dam.name }}</div>
         </div>
         <div class="row free-text">
-            <span class="free-text-label">Free text</span>
+            <span class="free-text-label">Damages - Additional Comments</span>
             <textarea
                 placeholder="Specification about damage"
                 class="free-text-input"
-                maxlength="30"
+                maxlength="140"
                 v-model="damage_free_text"
+                @keyup.prevent="submit"
                 @blur="addFreeText"
             ></textarea><!-- @keyup.enter="addFreeText" -->
         </div>
@@ -131,7 +133,7 @@
     </div>
 </template>
 <script>
-import { ref, watch } from 'vue';
+import { ref, watch , nextTick } from 'vue';
 import ItemPictoNew from '../miscellaneous/ItemPictoNew.vue'
 import {TOASTER_MODULE, TOASTER_MESSAGE} from '../../store/types/types';
 import {useStore} from 'vuex';
@@ -143,7 +145,7 @@ export default {
         detailingitem: {},
         typeitemPicto: ''
     },
-    emits: ['save-item-issues', 'go-to-step'],
+    emits: ['save-item-issues', 'go-to-step' , 'get-issues-Step'],
     setup(props, context) {
         const store = useStore();
         const stainZone = ref([]);
@@ -154,8 +156,11 @@ export default {
         const issuesSteps = ref([]);
         const issuesStep = ref([]);
         const stainTag = ref(0);
+        const stainTags = ref([]);
+        const damagTags = ref([]);
         const damageTag = ref(0);
         const cur_zone_id = ref(0);
+        const timeout =ref('');
 
         const stain_free_text = ref('');
         const damage_free_text = ref('');
@@ -169,7 +174,33 @@ export default {
         issuesStep.value = damageZone.value.length > 0 ? 5 : (stainZone.value.length > 0 ? 2 : 0);
         stain_free_text.value = props.detailingitem.stainstext;
         damage_free_text.value = props.detailingitem.damagestext;
+        stainTags.value = props.detailingitem.stainsissue != null ? JSON.parse(props.detailingitem.stainsissue) : [];
+        damagTags.value = props.detailingitem.damagesissues != null ? JSON.parse(props.detailingitem.damagesissues) : [];
 
+        function setNewIssueValue(val){
+            issuesStep.value = val;
+        }
+
+        context.emit("get-issues-Step", {
+                   issuesStep:issuesStep.value,
+            });
+
+        watch(() => issuesStep.value, (current_val,previous_val ) => { 
+            context.emit("get-issues-Step", {
+                   issuesStep:current_val,
+            });
+        });
+
+        watch(() => props.detailingitem.stainstext, (current_val,previous_val ) => {
+            stain_free_text.value = current_val
+            props.detailingitem.stainstext = current_val
+        });
+
+        watch(() => props.detailingitem.damagestext, (current_val,previous_val ) => {
+            damage_free_text.value = current_val
+            props.detailingitem.damagestext = current_val
+        });
+       
         //stainTag.value = stainZone.value.length > 0 ? stainZone.value[0].id_issue : 0;
 
         if(stainZone.value.length==1){
@@ -249,39 +280,69 @@ export default {
         }
         function addTag(tag_id) {
             if (issuesStep.value == 2 || issuesStep.value==0) {
-                stainTag.value = stainTag.value == tag_id ? 0 : tag_id;
 
-                if(stainZone.value.length==1){
-                    stainZone.value[0].id_issue = stainTag.value;
-                }else if(stainZone.value.length > 0){
-                    let index = stainZone.value.findIndex((z) => { return z.id_zone === cur_zone_id.value });
-
-                    stainZone.value[index].id_issue = stainTag.value;
+                if (!stainTags.value.includes(tag_id)) {
+                    stainTags.value.push(tag_id);
+                } else {
+                    stainTags.value.splice(stainTags.value.indexOf(tag_id), 1);
                 }
+
 
                 context.emit("save-item-issues", {
                     detailingitem_id: props.detailingitem.id,
-                    stains: JSON.stringify(stainZone.value)
+                    stains: JSON.stringify(stainZone.value),
+                    stainisssue : stainTags.value
                 });
             }
             if (issuesStep.value == 5 || issuesStep.value==3) {
-                damageTag.value = damageTag.value == tag_id ? 0 : tag_id;
+                //damageTag.value = damageTag.value == tag_id ? 0 : tag_id;
 
-                if(damageZone.value.length==1){
-                    damageZone.value[0].id_issue = damageTag.value;
+                if (!damagTags.value.includes(tag_id)) {
+                    damagTags.value.push(tag_id);
+                } else {
+                    damagTags.value.splice(damagTags.value.indexOf(tag_id), 1);
                 }
-                else if(damageZone.value.length > 1){
-                    let index = damageZone.value.findIndex((z) => { return z.id_zone === cur_zone_id.value });
 
-                    damageZone.value[index].id_issue = damageTag.value;
-                }
+                // if(damageZone.value.length==1){
+                //     damageZone.value[0].id_issue = damageTag.value;
+                // }
+                // else if(damageZone.value.length > 1){
+                //     let index = damageZone.value.findIndex((z) => { return z.id_zone === cur_zone_id.value });
+                //     console.log(damageZone.value , index , cur_zone_id.value)
+                //     damageZone.value[index].id_issue = damageTag.value;
+                // }
 
                 context.emit("save-item-issues", {
                     detailingitem_id: props.detailingitem.id,
-                    damages: JSON.stringify(damageZone.value)
+                    damages: JSON.stringify(damageZone.value),
+                    damagesissues : damagTags.value
                 });
             }
         }
+
+        function submit(e) { 
+
+               clearTimeout(timeout.value);
+               timeout.value = setTimeout(function(){
+                   nextTick(() => {
+                     if ([0,1,2].includes(issuesStep.value)) {
+
+                        context.emit("get-free-text", {
+                            text_stain : e.target.value,
+                            issuesStep :issuesStep.value
+                        });
+                    }
+                    if ([3,4,5].includes(issuesStep.value)) {
+
+                        context.emit("get-free-text", {
+                            text_damage: e.target.value,
+                            issuesStep :issuesStep.value
+                        });
+                    }
+                });
+               }  
+              , 500)
+            };
         function addFreeText(e) {
             let data = {};
             data['detailingitem_id'] = props.detailingitem.id;
@@ -371,6 +432,10 @@ export default {
             save,
             back,
             cur_zone_id,
+            stainTags,
+            damagTags,
+            submit,
+            setNewIssueValue
         };
     },
 }

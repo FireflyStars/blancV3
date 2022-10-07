@@ -13,9 +13,10 @@
         "laravel/framework": "^8.40",
         "laravel/tinker": "^2.5",
         "laravel/ui": "^3.3",
+        "niklasravnsborg/laravel-pdf": "^4.1",
+        "sendgrid/sendgrid": "^7.9",
         "stripe/stripe-php": "^7.121",
-        "tcg/voyager": "^1.5",
-        "sendgrid/sendgrid": "^7.9"
+        "tcg/voyager": "^1.5"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

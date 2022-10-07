@@ -154,7 +154,10 @@ import {
   GET_CUSTOMER_DETAIL,
   GET_LOADER_CLASS,
   TOASTER_MESSAGE,
-  TOASTER_MODULE
+  TOASTER_MODULE,
+  NEWORDER_PRELOAD_ORDER_CUSTOMER_SET,
+  NEWORDER_MODULE
+
 } from '../../store/types/types';
 import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -170,7 +173,7 @@ export default {
         const store = useStore();
         const route = useRoute();
         const router= useRouter();
-        const selected_panel = ref('');
+        const selected_panel = ref('current_orders');
         const selectPanel = (panelName)=>{
             if(selected_panel.value == panelName){
                 selected_panel.value = '';
@@ -222,6 +225,7 @@ export default {
             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'App SMS is not implemented yet.',ttl:5,type:'success'});
         }
         const newOrder =()=>{
+            store.commit(`${NEWORDER_MODULE}${NEWORDER_PRELOAD_ORDER_CUSTOMER_SET}`,null);
             router.push({
                 name: 'NewOrder'
             });

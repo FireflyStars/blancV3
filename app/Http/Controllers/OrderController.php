@@ -8,6 +8,7 @@ use App\Models\InfoCustomer;
 use App\Http\Controllers\BookingController;
 use App\Models\OrderRecurringCreator;
 use App\Models\Delivery;
+use Exception;
 use stdClass;
 
 class OrderController extends Controller
@@ -388,7 +389,7 @@ class OrderController extends Controller
             $card_id = $card->id;
 
         }else{
-            if($cust &&  $addr){
+            if($cust){
              //create a card object to stripe
              $card = $stripe->paymentMethods->create([
                 'type' => 'card',
@@ -411,12 +412,12 @@ class OrderController extends Controller
                                             'CustomerID' => $cust->CustomerID
                                     ],
                 'address'           => [
-                                        'city'          => $addr->Town,
-                                        'state'         => $addr->County,
-                                        'country'       => $addr->Country,
-                                        'postal_code'   => $addr->postcode,
-                                        'line1'         => $addr->address1,
-                                        'line2'         => $addr->address2,
+                                        'city'          => ($addr?$addr->Town:''),
+                                        'state'         => ($addr?$addr->County:''),
+                                        'country'       => ($addr?$addr->Country:''),
+                                        'postal_code'   => ($addr?$addr->postcode:''),
+                                        'line1'         => ($addr?$addr->address1:''),
+                                        'line2'         => ($addr?$addr->address2:''),
                                     ]
             ]);
 
@@ -437,10 +438,10 @@ class OrderController extends Controller
             $card_id = DB::table('cards')->insertGetId($credit_card);
             $card = DB::table('cards')->where('id',$card_id)->first();
             }else{
-
+                /*
                 if(is_null($addr)){
                     $err_txt = "No address for customer";
-                }
+                }*/
 
             }
         }
@@ -503,7 +504,7 @@ class OrderController extends Controller
 
             $card_id = 0;
 
-            if($cust && $addr){
+            if($cust){
                 $card = $stripe->paymentMethods->create([
                     'type' => 'card',
                     'card' => [
@@ -525,12 +526,12 @@ class OrderController extends Controller
                                                 'CustomerID' => $cust->CustomerID
                                         ],
                     'address'           => [
-                                            'city'          => $addr->Town,
-                                            'state'         => $addr->County,
-                                            'country'       => $addr->Country,
-                                            'postal_code'   => $addr->postcode,
-                                            'line1'         => $addr->address1,
-                                            'line2'         => $addr->address2,
+                                            'city'          => ($addr?$addr->Town:''),
+                                            'state'         => ($addr?$addr->County:''),
+                                            'country'       => ($addr?$addr->Country:''),
+                                            'postal_code'   => ($addr?$addr->postcode:''),
+                                            'line1'         => ($addr?$addr->address1:''),
+                                            'line2'         => ($addr?$addr->address2:''),
                                         ]
                 ]);
 
@@ -557,40 +558,61 @@ class OrderController extends Controller
 
         //Effecting payment
 
+        $amount_paid = 0;
+        $existing_payments = DB::table('payments')->where('order_id',$order->id)->where('status','=','succeeded')->get();
+        if(count($existing_payments) > 0){
+            foreach($existing_payments as $k=>$v){
+                $amount_paid += $v->montant;
+            }
+        }
 
-        if($payment_type !='Save' && $card && $order && $order->CustomerID==$card->CustomerID){
+        $amount_diff = $amount_to_pay - $amount_paid;
+
+        $card_pay = false;
+
+        if($payment_type !='Save' && $card && $order && $order->CustomerID==$card->CustomerID && $amount_diff > 0){
             $amount_two_dp = number_format($amount_to_pay,2);
+
+            $card_pay = true;
 
             $total_amount = 100*$amount_two_dp;
 
-            $payment_intent = $stripe->paymentIntents->create([
-                'amount'            => $total_amount, //100*0.01
-                'currency'          => 'gbp',
-                'confirm'           => true,
-                "payment_method"    => $card->stripe_card_id,
-                "customer"          => $card->stripe_customer_id,
-                "capture_method"    => "automatic",
-                'payment_method_types' => ['card'],
-                "description"=>"Order: ".$order_id,
-                "receipt_email"=>$cust->EmailAddress, //To change for customer email
-            ]);
+            try{
+                $payment_intent = $stripe->paymentIntents->create([
+                    'amount'            => $total_amount, //100*0.01
+                    'currency'          => 'gbp',
+                    'confirm'           => true,
+                    "payment_method"    => $card->stripe_card_id,
+                    "customer"          => $card->stripe_customer_id,
+                    "capture_method"    => "automatic",
+                    'payment_method_types' => ['card'],
+                    "description"=>"Order: ".$order_id,
+                    "receipt_email"=>$cust->EmailAddress, //To change for customer email
+                ]);
+            }catch(Exception $e){
+                return response([
+                    'error_stripe'=>$e,
+                ]);
+            }
 
 
             if($payment_intent && isset($payment_intent->status)){
-                $payment_arr = [
-                    'type'=>'card',
-                    'datepayment'=>date('Y-m-d H:i:s'),
-                    'status'=>$payment_intent->status,
-                    'montant'=>number_format($amount_two_dp,2),
-                    'order_id'=>$order_id,
-                    'card_id'=>$card->id,
-                    'CustomerID'=>$order->CustomerID,
-                    'created_at'=>date('Y-m-d H:i:s'),
-                ];
-
-                $payment_id = DB::table('payments')->insertGetId($payment_arr);
 
                 if($payment_intent->status == 'succeeded'){
+
+                    $payment_arr = [
+                        'type'=>'card',
+                        'datepayment'=>date('Y-m-d H:i:s'),
+                        'status'=>$payment_intent->status,
+                        'montant'=>number_format($amount_two_dp,2),
+                        'order_id'=>$order_id,
+                        'card_id'=>$card->id,
+                        'CustomerID'=>$order->CustomerID,
+                        'created_at'=>date('Y-m-d H:i:s'),
+                    ];
+
+                    $payment_id = DB::table('payments')->insertGetId($payment_arr);
+
                     //Update order
                     DB::table('infoOrder')->where('id',$order_id)->update([
                         //'Paid'=>1,
@@ -603,8 +625,16 @@ class OrderController extends Controller
 
 
                 }else{
-                    $err_payment = $payment_intent->status;
+                    DB::table('unpaid_orders')->insert([
+                        'payment_intent_id'=>$payment_intent->id,
+                        'order_id'=>$order_id,
+                        'created_at'=>date('Y-m-d H:i:s'),
+                    ]);
+
+                    $err_payment = $payment_intent;
                 }
+            }else{
+                $err_payment = "Payment unsuccessful";
             }
         }
 
@@ -619,6 +649,9 @@ class OrderController extends Controller
             'paid'=>$paid,
             'payment_type'=>$payment_type,
             'post'=>$request->all(),
+            'order'=>$order,
+            'card_pay'=>$card_pay,
+            'amount_diff'=>$amount_diff,
         ]);
     }
 
@@ -672,7 +705,8 @@ class OrderController extends Controller
                   ->update([
                     'Status' => 'VOID',
                     'Actif' => '0',
-                    'nextpost' => '34'
+                    'nextpost' => '34',
+                    'PromisedDate' => '2020-01-01'
                 ]);
 
             }
@@ -1083,7 +1117,7 @@ class OrderController extends Controller
                 }
             }
 
-            if($order && $amount_paid >= $order->Total){
+            if($order && number_format($amount_paid,2) >= number_format($order->Total,2)){
                 DB::table('infoOrder')->where('id',$order_id)->update(['Paid'=>1]);
 
                 if(!empty($invoices_id)){
@@ -1097,7 +1131,7 @@ class OrderController extends Controller
         }
         //*/
 
-        return $res;
+        return $content;
 
     }
 
@@ -1145,10 +1179,14 @@ class OrderController extends Controller
             ]);
         }
 
-        $order_res = OrderController::createOrderItems($order_id);
+        $content = OrderController::createOrderItems($order_id);
+        $order_res =  @json_decode($content);
+
 
         return response()->json([
+            'content'=>$content,
             'output'=>$order_res,
+
         ]);
     }
 
@@ -1195,11 +1233,63 @@ class OrderController extends Controller
     public function validateCheckOutOrder(Request $request){
         $order_id = $request->order_id;
 
-        $order_res = OrderController::createOrderItems($order_id);
+        $content = OrderController::createOrderItems($order_id);
+        $order_res = @json_decode($content);
 
         return response()->json([
             'output'=>$order_res,
         ]);
+    }
+
+    public function voidOrder(Request $request){
+
+       $order_id=$request->post('order_id');
+       $ListSubOrder=$request->post('items');
+       $ListInvoice=[];
+       $infoitemsIds=[];
+
+           $order =  DB::table('infoOrder')->where('infoOrder.id',$order_id)->update(['Status' => 'VOID',]);
+
+           foreach ($ListSubOrder as $suborder) {
+                foreach ($suborder as $key=>$invoice) {
+                       DB::table('infoInvoice')->where('infoInvoice.InvoiceID', $invoice['InvoiceID'] )
+                                ->update([
+                                    'Status'=>'VOID'
+                                ]);
+                $ListInvoice[] = DB::table('infoInvoice')->select('infoInvoice.NumInvoice' , 'infoInvoice.InvoiceID')->where('infoInvoice.InvoiceID',$invoice['InvoiceID'])->get();
+                }
+           };
+
+           if(!empty($ListInvoice)){
+
+                foreach ($ListInvoice as $key=>$invoice) {
+
+                        $infoitems=DB::table('infoitems')->select('infoitems.id')
+                                    ->where('infoitems.InvoiceID', '=' , $invoice[0]->InvoiceID)
+                                    ->get();
+
+                        $infoitems->each(function ($item, $key) use(&$infoitemsIds){
+                                $infoitemsIds[]=$item->id;
+                            });
+                };
+
+                $infoitemsIds= array_unique($infoitemsIds);
+
+                foreach ($infoitemsIds as $item) {
+
+                    $affected = DB::table('infoitems')
+                    ->where('id', $item)
+                    ->update([
+                        'Status' => 'VOID',
+                        'Actif' => '0',
+                        'nextpost' => '34',
+                        'PromisedDate' => '2020-01-01'
+                    ]);
+
+                }
+           }
+
+      return response()->json(['done'=>'ok']);
     }
 
 }

@@ -742,7 +742,7 @@
                                             </svg>
                                             Add Existing SubAccount
                                         </button>
-                                        <Search ref="searchpanel" @selectedSubAccount="selectedSubAccount"/>
+                                        <Search ref="searchpanel" :customerID = "form.customerID" @selectedSubAccount="selectedSubAccount"/>
                                     </div>
                                     <div class="d-flex" v-else>
                                         <button @click="showSearchPanel(1)" class="border-btn add-existing-account d-flex justify-content-between align-items-center">
@@ -1419,8 +1419,8 @@ import axios from 'axios';
                         store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Creating Customer...']);
                         axios.post('/create-customer', form.value).then((response)=>{
                             if(response.data.error){
-                                if(typeof response.data.error.isArray){
-                                    console.log(response.data.error);
+                                if(Array.isArray(response.data.error)){
+                       
                                     Object.values(response.data.error).forEach((item)=>{
                                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item[0], ttl:5, type:'danger' });
                                     })
@@ -1466,7 +1466,8 @@ import axios from 'axios';
                                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Creating Customer...']);
                                 axios.post('/create-customer', form.value).then((response)=>{
                                     if(response.data.error){
-                                        if(typeof response.data.error.isArray){
+                                 
+                                        if(Array.isArray(response.data.error)){
                                             Object.values(response.data.error).forEach((item)=>{
                                                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: item[0], ttl:5, type:'danger' });
                                             })

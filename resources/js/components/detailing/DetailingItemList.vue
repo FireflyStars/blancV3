@@ -198,6 +198,7 @@ export default {
         const cur_tracking_to_remove = ref("");
         const cur_item_to_remove = ref(0);
         const count_has_invoices = ref(0);
+        const order_invoices = ref({});
 
         store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
             true,
@@ -418,6 +419,18 @@ export default {
                 getDetailingList();
             });
 
+        }
+
+        function checkOrderInvoices(){
+            axios.post('/check-order-invoices',{
+                order_id:order_id.value
+            }).then((res)=>{
+                console.log(res);
+            }).catch((err)=>{
+
+            }).finally(()=>{
+
+            });
         }
 
 

@@ -101,13 +101,15 @@ class CustomerController extends Controller
                                 $info_customer_sub = [
                                     'CustomerID'    => '',
                                     'CustomerIDMaster'=> $CustomerUUID,
+                                    'OnAccount'     => $request->CustomerPayemenProfile,
+                                    'TypeDelivery'     => $request->typeDelivery,
                                     'isMaster'      => 0,
                                     'btob'          => 1,
                                     'FirstName'     => $account['firstname'],
                                     'LastName'      => $account['lastname'],
                                     'Name'          => $account['name'],
                                     'EmailAddress'  => $account['email'],
-                                    'Phone'        => $account['phone']!= '' ? '["'.$account['phoneCountryCode'].'|'.$account['phoneNumber'].']"' : '',
+                                    'Phone'         => $account['phoneNumber']!= '' ? '["'.$account['phoneCountryCode'].'|'.$account['phoneNumber'].']"' : '',
                                     'SignupDate'    => Carbon::now()->format('Y-m-d'),
                                 ];
                                 try {
@@ -275,8 +277,8 @@ class CustomerController extends Controller
                     'type' => 'card',
                     'card' => [
                         'number'      => $request->cardDetails,
-                        'exp_month'   => intval(explode('/', $request->cardExpDate)[0]),
-                        'exp_year'    => intval(explode('/', $request->cardExpDate)[1]),
+                        'exp_month'   => intval(explode('/', str_replace(' ','',$request->cardExpDate))[0]),
+                        'exp_year'    => intval(explode('/', str_replace(' ','',$request->cardExpDate))[1]),
                         'cvc'         => $request->cardCVC,
                     ],
                 ]);
@@ -304,7 +306,7 @@ class CustomerController extends Controller
                     'cardHolderName'    => $request->cardHolderName,
                     'type'              => $card->card->brand,
                     'cardNumber'        => substr_replace($request->cardDetails, str_repeat('*', strlen($request->cardDetails) - 6), 3, -3),
-                    'dateexpiration'    => $request->cardExpDate,
+                    'dateexpiration'    => str_replace(' ','',$request->cardExpDate),
                     'stripe_customer_id'=> $stripe_customer->id,
                     'stripe_card_id'    => $card->id,
                     'created_at'        => now(),
@@ -459,16 +461,22 @@ class CustomerController extends Controller
     }
 
     public function createCustomerSubAccount(Request $request){
-        dump($request->customer_id);
         $emailAddress = $request->customer_data['email'] !='' ? $request->customer_data['email'] : (Str::random(10).'@noemail.com');
 
         if($request->customer_data['customerId'] != "" && $request->customer_data['id'] != 0 ){
-            DB::table('infoCustomer')->where('id', $request->customer_data['id'])->update(['CustomerIDMaster' => $request->customer_id]);
+            DB::table('infoCustomer')->where('id', $request->customer_data['id'])
+            ->update([
+                'CustomerIDMaster' => $request->customer_id,
+                'OnAccount'        => $request->CustomerPayemenProfile,
+                'TypeDelivery'     => $request->typeDelivery
+            ]);
         }else {
 
             $info_customer_sub = [
                 'CustomerID'    => '',
                 'CustomerIDMaster'=> $request->customer_id,
+                'OnAccount'       => $request->CustomerPayemenProfile,
+                'TypeDelivery'    => $request->typeDelivery,
                 'isMaster'      => 0,
                 'btob'          => 1,
                 'FirstName'     => $request->customer_data['firstname'],
@@ -549,8 +557,8 @@ class CustomerController extends Controller
                 'type' => 'card',
                 'card' => [
                     'number'      => $request->cardDetails,
-                    'exp_month'   => explode('/', $request->cardExpDate)[0],
-                    'exp_year'    => explode('/', $request->cardExpDate)[1],
+                    'exp_month'   => explode('/', str_replace(' ','',$request->cardExpDate))[0],
+                    'exp_year'    => explode('/', str_replace(' ','',$request->cardExpDate))[1],
                     'cvc'         => $request->cardCVC,
                 ],
             ]);
@@ -893,6 +901,12 @@ class CustomerController extends Controller
             })
             ->select('infoCustomer.id',
               DB::raw(' IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as type'),
+              DB::raw(
+                'CASE WHEN (infoCustomer.isMaster = 1 OR infoCustomer.CustomerIDMaster = "") AND infoCustomer.isMasterAccount = 0  THEN "Main"
+                      WHEN infoCustomer.isMasterAccount = 1 THEN "Master"
+                      WHEN infoCustomer.CustomerIDMaster <> "" THEN "Sub"
+                END as level'
+                ),
               DB::raw('LCASE(infoCustomer.TypeDelivery) as active_in'),
               DB::raw('LCASE(infoCustomer.Name) as name'),
               DB::raw('IF(infoCustomer.Phone = "", "--", infoCustomer.Phone) as phone'),
@@ -903,7 +917,7 @@ class CustomerController extends Controller
               //DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
               'infoCustomer.TotalSpend as total_spent'
 
-             );
+             )->where('infoCustomer.Actif', '=', 1);
              foreach($keywords as $searchTerm){
                 $customers->where(function($q) use ($searchTerm){
                     $q->where('infoCustomer.FirstName', 'like', '%'.$searchTerm.'%')
@@ -913,7 +927,6 @@ class CustomerController extends Controller
                     // and so on
                 });
             }
-
             $customers = $customers->groupBy('infoCustomer.CustomerID')->orderBy('infoCustomer.id', 'DESC');
 
         }else {
@@ -929,6 +942,12 @@ class CustomerController extends Controller
                         ->select(
                             'infoCustomer.id',
                             DB::raw('IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as type'),
+                            DB::raw(
+                                'CASE WHEN (infoCustomer.isMaster = 1 OR infoCustomer.CustomerIDMaster = "") AND infoCustomer.isMasterAccount = 0  THEN "Main"
+                                      WHEN infoCustomer.isMasterAccount = 1 THEN "Master"
+                                      WHEN infoCustomer.CustomerIDMaster <> "" THEN "Sub"
+                                END as level'
+                            ),
                             DB::raw('LCASE(infoCustomer.TypeDelivery) as active_in'),
                             DB::raw('LCASE(infoCustomer.Name) as name'),
                             //DB::raw('CONCAT_WS(", ", CONCAT_WS(" ", address.address1, address.address2), address.Town, address.Country, address.postcode) as address'),
@@ -1025,7 +1044,7 @@ class CustomerController extends Controller
                        $company = DB::table('infoCustomer')->select('infoCustomer.CompanyName')->where('infoCustomer.CustomerID','=',$customer->CustomerID)->first();
                        $customer->CompanyName = $company->CompanyName;
                    }
-               
+
         $total = DB::table('infoOrder')->where('CustomerID', $customer->CustomerID)
                     ->select(
                         DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
@@ -1693,6 +1712,7 @@ class CustomerController extends Controller
             $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
         }
 
+        if(trim($request->cardHolderName)!=""&&trim($request->cardDetails)!=""&&trim($request->cardExpDate)!=""&&trim($request->cardCVV)!=""){
         $stripe = new \Stripe\StripeClient(env($stripe_key));
 
             //create a card object to stripe
@@ -1700,8 +1720,8 @@ class CustomerController extends Controller
                 'type' => 'card',
                 'card' => [
                     'number'      => $request->cardDetails,
-                    'exp_month'   => intval(explode('/', $request->cardExpDate)[0]),
-                    'exp_year'    => intval(explode('/', $request->cardExpDate)[1]),
+                    'exp_month'   => intval(explode('/', str_replace(' ','',$request->cardExpDate))[0]),
+                    'exp_year'    => intval(explode('/', str_replace(' ','',$request->cardExpDate))[1]),
                     'cvc'         => $request->cardCVC,
                 ],
             ]);
@@ -1723,6 +1743,7 @@ class CustomerController extends Controller
                                         'line2'         => $request->deliveryAddress2,
                                     ]
             ]);
+
             //add a new record to cards table
                 $credit_card = [
                     'CustomerID'        => $request->customerID,
@@ -1730,22 +1751,29 @@ class CustomerController extends Controller
                     'type'              => $card->card->brand,
                     'Actif'             => 1 ,
                     'cardNumber'        => substr_replace($request->cardDetails, str_repeat('*', strlen($request->cardDetails) - 6), 3, -3),
-                    'dateexpiration'    => $request->cardExpDate,
+                    'dateexpiration'    => str_replace(' ','',$request->cardExpDate),
                     'stripe_customer_id'=> $stripe_customer->id,
                     'stripe_card_id'    => $card->id,
                     'created_at'        => now(),
                     'updated_at'        => now(),
                 ];
-
                 $credit_card_id = DB::table('cards')->insertGetId($credit_card);
-                 return response()->json( $credit_card_id );
+                return response()->json( $credit_card_id );
+
+            }else{
+                DB::table('infoCustomer')->where('CustomerID','=',$request->customerID)->update(array('bycard'=>1));
+            }
+
+            return response()->json( 0 );
 
     }
 
     public function DeleteCreditCard(Request $request){
+        $c=  DB::table('cards')
+        ->where('cards.id', $request->id)->first();
 
         $card = DB::table('cards')
-        ->where('cards.id', $request->id)->update(['Actif' => 0]);
+        ->where('cards.CustomerID', $c->CustomerID)->update(['Actif' => 0]);
         $card2 = DB::table('cards')->where('cards.id', $request->id)->first();
         return response()->json( $card2 );
 
@@ -1966,7 +1994,7 @@ class CustomerController extends Controller
         $info_customer['DeliverySat'] = '';
         $info_customer['PauseDateTo'] = null;
         $info_customer['PauseDateFrom'] = null;
-      
+
         $has_recurring = [];
         $success = false;
 
@@ -1996,29 +2024,29 @@ class CustomerController extends Controller
 
             $mail_vars = [];
 
-        
+
                 $addr = DB::table('address')
                     ->where('CustomerID',$infocustomer->CustomerID)
                     ->where('status','DELIVERY')
                     ->first();
-    
+
                 $full_address = "";
-    
+
                 if($addr) {
                     $full_address = $addr->address1 . ($addr->address2 != '' ? ", " . $addr->address2 : "") . ", " . $addr->postcode . ", " . $addr->Town . (!is_null($addr->County) ? ", " . $addr->County : "") . (!is_null($addr->Country) ? ", " . $addr->Country : "") ;
                 }
-    
+
                 $pickups = [];
-    
+
                 foreach($arr as $k=>$v){
                     $part = explode("_",$v);
                     $tranche = Delivery::getTrancheByIndex($part[1]);
                     $day = $part[0];
-    
+
                     $pickups[] = ucfirst(strtolower($day))."s from ".Tranche::formatToAmPm($tranche['from'],$tranche['to']);
-    
+
                 }
-    
+
                 $mail_vars = [
                     'FirstName'=>$infocustomer->FirstName,
                     'CreatedOn'=>date('l d F @H:i:s'),
@@ -2027,9 +2055,9 @@ class CustomerController extends Controller
                     'Frequency'=>count($arr),
                     'PickUpSlot'=>(isset($pickups[0])?$pickups[0]:''),
                     'PickUpSlot2'=>(isset($pickups[1])?$pickups[1]:''),
-    
+
                 ];
-    
+
             NotificationController::Notify($infocustomer->EmailAddress, '+123456789', '4A_RECURRING_CONFIRM', '', $mail_vars, false, 0, $infocustomer->CustomerID);
 
             //Create recurring
@@ -2147,6 +2175,7 @@ class CustomerController extends Controller
                     ->where('infoOrder.CustomerID', $customer->CustomerID)
                     ->whereIn('infoOrder.Status', ['FULFILLED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
                     ->groupBy('infoOrder.id')
+                    ->orderBy('infoitems.PromisedDate', 'DESC')
                     ->get();
         //*/
 
@@ -2176,16 +2205,18 @@ class CustomerController extends Controller
         $master_cust = [];
 
         $orders = DB::table('infoOrder')
-            ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID')
+            ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID','infoOrder.OrderDiscount')
             ->join('detailingitem','infoOrder.id','detailingitem.order_id')
             ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
+            ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
             ->where('infoOrder.orderinvoiced',0)
+            ->whereNotIn('infoInvoice.Status',['DELETE','VOID'])
             ->whereIn('infoOrder.CustomerID',$bacs_cust_id)
             ->get();
 
 
         foreach($orders as $k=>$v){
-            $grouped_by_cust_id[$v->CustomerID][] = $v->Total;
+            $grouped_by_cust_id[$v->CustomerID][$v->order_id] = $v->Total;
             $grouped_by_cust_order_date[$v->CustomerID][] = $v->created_at;
 
             if(!in_array($v->CustomerID,$custid_with_orders)){
@@ -2220,6 +2251,7 @@ class CustomerController extends Controller
             }
         }
 
+
         foreach($grouped_by_cust_order_date as $k=>$v){
             if(isset($master_cust[$k])){
                 $list[$master_cust[$k]]['order_date'][] = (isset($v[0])?$v[0]:"");
@@ -2238,7 +2270,7 @@ class CustomerController extends Controller
         $final_cust_addr = DB::table('address')->whereIn('CustomerID',$final_cust_id)->where('status','BILLING')->get();
         $final_customers = [];
 
-
+ 
         if(count($final_cust) > 0){
             foreach($final_cust as $k=>$v){
                 if(isset($list[$v->CustomerID])){
@@ -2255,8 +2287,15 @@ class CustomerController extends Controller
                     $list[$v->CustomerID]['active_in'] = $v->TypeDelivery;
                     $list[$v->CustomerID]['name'] = $v->Name;
                     $list[$v->CustomerID]['email'] = $v->EmailAddress;
-
                     $list[$v->CustomerID]['phone'] = $v->Phone;
+
+                    if(($v->CustomerIDMaster==''|| $v->IsMaster==1) && $v->IsMasterAccount== 0){
+                        $list[$v->CustomerID]['level'] = "Main";
+                    } else if ($v->CustomerIDMaster!=''){
+                        $list[$v->CustomerID]['level'] = "Sub";
+                    } else if ($v->isMasterAccount== 1){
+                        $list[$v->CustomerID]['level'] = "Master";
+                    }
                 }
             }
         }
@@ -2296,7 +2335,23 @@ class CustomerController extends Controller
 
         foreach ($request->listCustomers as $customer) {
             try {
+
                   DB::table('infoCustomer')->where('CustomerID', $customer)->update(['SMS6I' => 1]);
+
+                  $ListItems = DB::table('infoInvoice')->select('infoInvoice.InvoiceID', 'infoitems.id' , 'infoitems.CCStatus')
+                  ->join('infoitems',function($join){
+                    $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
+                        ->where('infoitems.CCStatus','=','No Delivery Date');
+                    })
+                  ->where('infoInvoice.CustomerID' , $customer)->get();
+
+                  if(!empty($ListItems)){
+
+                    foreach($ListItems as $item){
+                        DB::table('infoitems')->where('infoitems.id', $item->id)->update(['CCStatus' => ""]);
+                      }
+                  }
+
             } catch (\Exception $e) {
                 return response()->json(['error'=> $e->getMessage()]);
             }
@@ -2341,6 +2396,8 @@ class CustomerController extends Controller
                     $map_sub_id[$v->CustomerID] = $v->CustomerIDMaster;
                 }
             }
+
+            $all_customer_ids = array_merge($all_customer_ids,$cust_master_ids);
         }
 
         $orders = DB::table('infoOrder')
@@ -2348,6 +2405,7 @@ class CustomerController extends Controller
                 ->join('detailingitem','infoOrder.id','detailingitem.order_id')
                 ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+                ->whereNotIn('infoInvoice.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
                 ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
                 ->where('infoOrder.orderinvoiced',0)
                 ->whereIn('infoOrder.CustomerID',$all_customer_ids)
@@ -2359,9 +2417,14 @@ class CustomerController extends Controller
         $total_per_order = [];
         $simplified_invoices_per_order = [];
 
+        $all_orders = [];
 
         foreach($orders as $k=>$v){
             $total_per_order[$v->order_id] = $v->Total;
+
+            if(!in_array($v->order_id,$all_orders)){
+                array_push($all_orders,$v->order_id);
+            }
 
            $invoices_per_order[$v->order_id][$v->InvoiceID][$v->ItemID] = [
                                                                                 'NumInvoice'=>$v->NumInvoice,
@@ -2445,6 +2508,8 @@ class CustomerController extends Controller
 
         }
 
+        DB::table('infoOrder')->where('id',$all_orders)->update(['orderinvoiced'=>1]);
+
         return $row_ids;
 
     }
@@ -2500,10 +2565,18 @@ class CustomerController extends Controller
             $order_vat = 0;
             $order_total = 0;
 
+            $orderid_per_customer = [];
+
            foreach($orders as $orderid=>$invoices){
+                if(!in_array($orderid,$orderid_per_customer)){
+                    array_push($orderid_per_customer,$orderid);
+                }
+
+
                 $orderids[] = $orderid;
 
                 foreach($invoices as $invoiceid=>$items){
+
                     $inv = DB::table('infoInvoice')->where('InvoiceID',$invoiceid)->first();
                     $order_details[$customerid][$invoiceid] = [];
 
@@ -2525,7 +2598,7 @@ class CustomerController extends Controller
                             $item_txt = $v->brand." ".str_replace(' ',' ',$v->Description);
 
                             $dept[$v->Department][] = $item_txt;
-                            $net += $v->priceTotal;
+                            $total += $v->priceTotal;
                         }
                         $items_per_dept[$v->Department] = array_count_values($dept[$v->Department]);
 
@@ -2533,10 +2606,10 @@ class CustomerController extends Controller
                             return strtotime($b) - strtotime($a);
                         });
 
-                        $order_net += $net;
+                        $order_total += $total;
+                        $net = $total/1.2;
 
-                        $vat = 0.2*$net;
-                        $total = 1.2*$net;
+                        $vat = $total - $net;
 
                         $order_details[$customerid][$invoiceid]['orderid'] = $orderid;
                         $order_details[$customerid][$invoiceid]['date'] = (isset($promised_dates[0]) && $promised_dates[0]!='0000-00-00'?date('d/m/y',strtotime($promised_dates[0])):"--");
@@ -2545,6 +2618,8 @@ class CustomerController extends Controller
                         $order_details[$customerid][$invoiceid]['vat'] = number_format($vat,2);
                         $order_details[$customerid][$invoiceid]['total'] = number_format($total,2);
                         $order_details[$customerid][$invoiceid]['numinvoice'] = $inv->NumInvoice;
+
+
                     }
                 }
            }
@@ -2561,33 +2636,48 @@ class CustomerController extends Controller
             }
            }
 
-           $facture_net[] = $order_net;
+           $discount_per_customer = 0;
 
-           $order_vat = 0.2*$order_net;
-           $order_total = 1.2*$order_net;
+           $orders_per_cust = DB::table('infoOrder')->whereIn('id',$orderid_per_customer)->get();
+
+           foreach($orders_per_cust as $ok=>$oc){
+            $discount_per_customer += $oc->OrderDiscount;
+           }
+
+           $order_total_exc_discount = $order_total;
+           $order_total = $order_total - $discount_per_customer;
+
+           $order_net = $order_total_exc_discount/1.2;
+           $facture_total[] = $order_total;
+
+
+           $order_vat = $order_total_exc_discount - $order_net;
 
 
 
            $order_totals[$customerid]['order_net'] = number_format($order_net,2);
            $order_totals[$customerid]['order_vat'] = number_format($order_vat,2);
            $order_totals[$customerid]['order_total'] = number_format($order_total,2);
+           $order_totals[$customerid]['discount'] = number_format($discount_per_customer,2);
+           $order_totals[$customerid]['order_without_discount'] = number_format($order_total_exc_discount,2);
 
         }
 
         $orders = DB::table('infoOrder')->whereIn('id',$orderids)->get();
         $discount = 0;
+        /*
         if(count($orders) > 0){
             foreach($orders as $k=>$v){
                 $discount += $v->OrderDiscount;
             }
         }
+        */
 
+        $facture_amount_total = array_sum($facture_total);
+        $discounted_amount = $facture_amount_total - $discount;
+        $facture_amount_net = $discounted_amount/1.2;
 
-        $facture_amount_net = array_sum($facture_net);
-        $discounted_amount = $facture_amount_net - $discount;
-
-        $facture_amount_vat = 0.2*$discounted_amount;
-        $facture_amount_total = 1.2*$discounted_amount;
+        $facture_amount_vat = $discounted_amount - $facture_amount_net;
 
         $data = [
            'customer'=>$customer,
@@ -2626,6 +2716,16 @@ class CustomerController extends Controller
         $details_per_cust = [];
 
         if($type=='pdf'){
+            $path = glob(storage_path('app/pdf/').'*.*');
+
+            //Remove previous files
+            if(!empty($path)){
+                foreach($path as $k=>$v){
+                    unlink($v);
+                }
+            }
+
+
             foreach($all_details as $key=>$details){
                 $details_per_cust[] = CustomerController::getArPDFData($details);
             }
@@ -2636,15 +2736,78 @@ class CustomerController extends Controller
                 }
             }
 
+
             if(!empty($details_per_cust)){
-                $data = [
-                    'details_per_cust'=>$details_per_cust,
-                ];
 
                 Pdf::setOptions(['dpi' => 300, 'defaultFont' => 'Helvetica']);
 
+                $arrfiles = [];
 
-                $pdf = Pdf::loadView('pdf/ar_all_pdf', $data);
+                foreach($details_per_cust as $k=>$v){
+                    $data['v'] = $v;
+                    $pdf = Pdf::loadView('pdf/ar_pdf', $data);
+
+                    $pdf->output();
+
+                    $canvas = $pdf->getDomPDF()->getCanvas();
+
+                    $fontMetrics = $pdf->getDomPDF()->getFontMetrics();
+                    $font = $fontMetrics->getFont('Times-Roman');
+
+                    $text = "Page {PAGE_NUM} of {PAGE_COUNT}";
+                    $size = 10;
+
+                    $width = $fontMetrics->getTextWidth($text, $font, $size) / 2;
+
+                    $x = $canvas->get_width() - $width;
+                    $y = $canvas->get_height() - 35;
+
+                    $canvas->page_text($x, $y, $text , $font, 10, array(0, 0, 0));
+
+                    //return $pdf->download('invoice'.$details->CustomerID.'.pdf');
+
+
+                    $filename = 'invoice_'.$k.'_'.strtotime('now').'.pdf';
+
+
+                    $pdfstr=$pdf->output();
+                    Storage::disk('local')->put('pdf'.DIRECTORY_SEPARATOR.$filename, $pdfstr);
+
+                    $arrfiles[] = storage_path('app/pdf/').$filename;
+                }
+
+                $files = implode(" ",$arrfiles);
+
+                $output_file = storage_path('app/pdf/').'invoices'.strtotime('now').'.pdf';
+
+                //print_r($files);
+
+                shell_exec("gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=$output_file -dBATCH $files");
+
+                //Remove individual files
+                foreach($arrfiles as $k=>$v){
+                    unlink($v);
+                }
+
+                $url = 'pdf'.DIRECTORY_SEPARATOR.basename($output_file);
+
+                return response()->json(
+                    ['url'=>route('download-ar-pdf',['filename'=>$url])]
+                );
+
+                /*
+                if(count($row_ids)==1){
+                    $data['v'] = $details_per_cust[0];
+                    $pdf = Pdf::loadView('pdf/ar_pdf', $data);
+
+                }else{
+
+                    $data = [
+                        'details_per_cust'=>$details_per_cust,
+                    ];
+
+                    $pdf = Pdf::loadView('pdf/ar_all_pdf', $data);
+                }
 
                 $pdf->output();
 
@@ -2678,6 +2841,7 @@ class CustomerController extends Controller
                 return response()->json(
                     ['url'=>route('download-ar-pdf',['filename'=>$url])]
                 );
+                */
             }
         }
 
@@ -2687,6 +2851,16 @@ class CustomerController extends Controller
 
             foreach($all_details as $k=>$v){
                 $cust = DB::table('infoCustomer')->where('CustomerID',$v->CustomerID)->first();
+
+                $addr = Delivery::getAddressByCustomerUUID($cust->CustomerID,true);
+
+                $contact = false;
+
+                if($addr){
+                    $contact = DB::table('contacts')->where('address_id',$addr->id)->first();
+                }
+
+
                 $info = @json_decode($v->info);
 
                 $orderid = 0;
@@ -2709,7 +2883,17 @@ class CustomerController extends Controller
                     ];
                 }
 
-                $sent = NotificationController::Notify('admin@vpc-direct-service.com', '+123456789', '5K_EMAIL_B2B_INVOICE', '', $mail_vars, true, 0, '');
+                $email = $cust->EmailAddress;
+                if($contact){
+                    if($contact->email!=''){
+                        $email = $contact->email;
+                    }
+                    else if($contact->email=='' && $contact->email2!=''){
+                        $email = $contact->email2;
+                    }
+                }
+
+                $sent = NotificationController::Notify($email, '+123456789', '5K_EMAIL_B2B_INVOICE', '', $mail_vars, true, 0, '');
             }
         }
 

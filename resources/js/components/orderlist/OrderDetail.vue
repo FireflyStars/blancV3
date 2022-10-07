@@ -288,9 +288,9 @@
              <div class="col-4" v-if="ORDER['items'].length === 0 && (ORDER['detail'].Status =='RECURRING' || ORDER['detail'].Status =='SCHEDULED' )">
                 <button class="btn btn-outline-danger body_medium" @click="CancelBooking">Cancel booking</button>
             </div>
-             <div class="col-1 options_btn"  v-if="ORDER['items'].length === 0">
+            <div class="col-1 options_btn">
                 <button @click="openOptions()" class="btn btn-outline-dark body_medium menu"><span>...</span></button>
-                <OrderOptions v-if="show_options_btn"></OrderOptions>
+                <OrderOptions v-if="show_options_btn" :user="ORDER['user']" :order="ORDER['detail']" :items="ORDER['items']"></OrderOptions>
             </div>
             </div>
 

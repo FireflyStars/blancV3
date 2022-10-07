@@ -30,7 +30,7 @@ class DetailingController extends Controller
         $count_has_invoices = 0;
 
         $detailingitemlist = DB::table('detailingitem')
-            ->select( 'detailingitem.pricecleaning as price','detailingitem.id as item_number','detailingitem.*',)
+            ->select( 'detailingitem.pricecleaning as price','detailingitem.id as item_number','detailingitem.*')
             //->join('typeitem', 'typeitem.id', 'detailingitem.typeitem_id')
             //->join('infoitems', 'infoitems.ItemTrackingKey', '=', 'detailingitem.item_id')
             //->join('infoInvoice', 'infoInvoice.SubOrderID', '=', 'infoitems.SubOrderID')
@@ -73,13 +73,21 @@ class DetailingController extends Controller
                     $detailingitemlist[$k]->price = $price;
                 }
 
+                /*
                 if($v->InvoiceID !=''){
                     $count_has_invoices += 1;
                 }
+                */
             }
 
             DetailingController::getVoucherAmount($order_id);
         }
+
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+
+        $invoices = DB::table('infoInvoice')->where('OrderID',$order->OrderID)->get();
+
+        $count_has_invoices = count($invoices);
 
         echo json_encode(
             [
@@ -91,6 +99,58 @@ class DetailingController extends Controller
         );
     }
 
+    public function recalculateDryCleaningPrice($order_id){
+        //dry_cleaning_price = typeitem.pricecleaning +  typeitem.pricecleaning*brands.coefcleaning
+        //+  SUM (typeitem.pricecleaning*complexities.coefcleaning) + SUM(typeitem.pricecleaning*fabrics.coefcleaning )
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+        if($order->Status=="FULFILLED")
+        return;
+            $detailingitemlist = DB::table('detailingitem')->select(['detailingitem.id','typeitem.pricecleaning','brands.coefcleaning','detailingitem.complexities_id','detailingitem.fabric_id','detailingitem.cleaning_services','detailingitem.etape'])
+                ->join('typeitem', 'detailingitem.typeitem_id', 'typeitem.id')
+                ->join('brands', 'detailingitem.brand_id', 'brands.id')
+                ->where('detailingitem.order_id', '=', $order_id)
+                ->get();
+            foreach($detailingitemlist as $detailingitem){
+
+                $sum_complexites=0;
+                if($detailingitem->complexities_id!=null&&$detailingitem->complexities_id!=''){
+                    $complexitiesids=json_decode($detailingitem->complexities_id);
+                    foreach($complexitiesids as $complexity_id){
+                        $complexities_coefcleaning=DB::table('complexities')->where('id','=',$complexity_id)->value('coefcleaning');
+                        $sum_complexites+=$detailingitem->pricecleaning*$complexities_coefcleaning;
+                    }
+                }
+                $sum_fabrics=0;
+                if($detailingitem->fabric_id!=null&&$detailingitem->fabric_id!=''){
+                    $fabicsids=json_decode($detailingitem->fabric_id);
+                    foreach($fabicsids as $fabric_id){
+                        $fabrics_coefcleaning=DB::table('fabrics')->where('id','=',$fabric_id)->value('coefcleaning');
+                        $sum_fabrics+=$detailingitem->pricecleaning*$fabrics_coefcleaning;
+                    }
+                }
+
+                $dry_cleaning_price=$detailingitem->pricecleaning + $detailingitem->pricecleaning*$detailingitem->coefcleaning+ $sum_complexites + $sum_fabrics;
+
+                if(($detailingitem->cleaning_services==null||$detailingitem->cleaning_services==''||$detailingitem->cleaning_services=='[]')&&$detailingitem->etape==11)
+                $dry_cleaning_price=0;
+
+                DB::table('detailingitem')->where('id', $detailingitem->id)->update([
+                    'dry_cleaning_price'=>$dry_cleaning_price,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+            }
+
+    }
+
+    public function savePriceDeliveryNow(Request $request){
+        $order_id=$request->post('order_id');
+        $price=$request->post('price');
+
+        DB::table('infoOrder')->where('id',$order_id)->update([
+            'DeliveryNowFee'=>$price,
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
+    }
     public function initDetailing(Request $request)
     {
         $search = $request->post('search');
@@ -300,7 +360,9 @@ class DetailingController extends Controller
         $status = $request->post('status');
         $step = $request->post('step');
         $stains = $request->post('stains');
+        $stainisssue = $request->post('stainisssue');
         $damages = $request->post('damages');
+        $damagesissues = $request->post('damagesissues');
         $brand_name = $request->post('brand_name');
         $cleaning_services = $request->post('cleaning_services');
         $cleaning_price_type = $request->post('cleaning_price_type');
@@ -440,8 +502,14 @@ class DetailingController extends Controller
         if (isset($stains)) {
             DB::table('detailingitem')->where('id', $detailingitem_id)->update(['stains' => $stains, 'updated_at' => date('Y-m-d H:i:s')]);
         }
+        if (isset($stainisssue)) {
+            DB::table('detailingitem')->where('id', $detailingitem_id)->update(['stainsissue' => $stainisssue, 'updated_at' => date('Y-m-d H:i:s')]);
+        }
         if (isset($damages)) {
             DB::table('detailingitem')->where('id', $detailingitem_id)->update(['damages' => $damages, 'updated_at' => date('Y-m-d H:i:s')]);
+        }
+        if (isset($damagesissues)) {
+            DB::table('detailingitem')->where('id', $detailingitem_id)->update(['damagesissues' => $damagesissues, 'updated_at' => date('Y-m-d H:i:s')]);
         }
         if (isset($step)) {
             if ($step == 3 && isset($typeitem_id)) {
@@ -745,16 +813,22 @@ class DetailingController extends Controller
         if($item){
             $inv = DB::table('infoInvoice')
                 ->where('InvoiceID',$item->InvoiceID)
-                ->where('CustomerID',$customer_id)
-                ->get();
+                ->latest('id')
+                ->first();
 
-            if(count($inv)==0){
-                $err = "HSL $tracking already linked with another customer.";
-            }else{
-                if(!in_array($item->nextpost,[28,34,39,47,43,44,46])){
-                    $err = "HSL $tracking is active. Please change its station";
+            $is_cust_inv = true;
+            if($inv){
+
+                if($cust->CustomerID != $inv->CustomerID){
+                    $err = "HSL $tracking already linked with another customer.";
+                    $is_cust_inv = false;
                 }
             }
+
+            if($is_cust_inv && !in_array($item->nextpost,[28,34,39,47,43,44,46])){
+                $err = "HSL $tracking is active. Please change its station";
+            }
+
         }
     $previous_detailed_item = false;
 
@@ -779,7 +853,7 @@ class DetailingController extends Controller
             $duplicate_detailing_item['status'] = 'In Process';
 
             $int_field_to_clear = ['dry_cleaning_price','cleaning_addon_price','tailoring_price'];
-            $fields_to_clear = ['stains','damages','cleaning_services','cleaning_price_type','tailoring_price_type'];
+            $fields_to_clear = ['stains','damages','cleaning_price_type','tailoring_price_type'];
 
             foreach($duplicate_detailing_item as $key=>$value){
                 if(in_array($key,$int_field_to_clear)){
@@ -789,6 +863,31 @@ class DetailingController extends Controller
                     $duplicate_detailing_item[$key] = null;
                 }
             }
+
+            $item_base_price = 0;
+
+            $prev_type_item = DB::table('typeitem')->where('id',$previous_detailed_item->typeitem_id)->first();
+
+            if($prev_type_item){
+                $item_base_price = $prev_type_item->pricecleaning;
+            }
+
+            $duplicate_detailing_item['pricecleaning'] = $item_base_price;
+
+            $pricecleaning = $item_base_price
+                + ($item_base_price * $previous_detailed_item->coefcleaningbrand)
+                + ($item_base_price * $previous_detailed_item->coefcleaningfabric)
+                + ($item_base_price * $previous_detailed_item->coefcleaningcomplexities);
+
+            $cs = @json_decode($previous_detailed_item->cleaning_services);
+
+            if(is_array($cs) && !empty($cs)){
+                $pricecleaning = DetailingController::calculateCleaningPrice($cs,$pricecleaning);
+            }
+
+            $duplicate_detailing_item['dry_cleaning_price'] = $pricecleaning;
+            $duplicate_detailing_item['tailoring_services'] = "[]";
+
 
             $detailingitem_id = DB::table('detailingitem')->insertGetId($duplicate_detailing_item);
 
@@ -979,8 +1078,123 @@ class DetailingController extends Controller
         ];
     }
 
+    public function calculateCheckout($order_id){
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+        if($order->Status=="FULFILLED")
+        return;
+
+        $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+        $_SUBTOTAL=0;
+        $_SUBTOTAL_WITH_DISCOUNT=0;
+
+        $items = DB::table('detailingitem')
+        ->select('detailingitem.*','detailingitem.id AS detailingitem_id','typeitem.pricecleaning as baseprice')
+        ->join('infoOrder','detailingitem.order_id','infoOrder.id')
+        ->join('typeitem','detailingitem.typeitem_id','typeitem.id')
+        ->where('infoOrder.id',$order_id)
+        ->get();
+            if(count($items) > 0)
+            foreach($items as $k=>$v){
+                $_SUBTOTAL += $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+            }
+
+
+        $_EXPRESS_CHARGES_PRICE = 0;
+        $_FAILED_DELIVERY_PRICE = 0;
+        $_DELIVERY_NOW_FEE=$order->DeliveryNowFee;
+        $_AUTO_DELIVERY_FEE=0;
+
+        if($order->FailedDelivery===1)
+            $_FAILED_DELIVERY_PRICE = 5;
+
+        $upcharges = DB::table('order_upcharges')->where('order_id',$order_id)->get();
+        if(count($upcharges) > 0){
+            foreach($upcharges as $k=>$v){
+                if($v->upcharges_id==1||$v->upcharges_id==2){
+                    $_EXPRESS_CHARGES_PRICE += $v->amount;
+                }
+            }
+        }
+
+        $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL;
+        
+        $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
+
+        $_BUNDLES_DISCOUNT=0;
+
+        $bundles_id = DetailingController::checkOrderBundles($order_id);
+
+        if(!empty($bundles_id)){
+            $bundles = DB::table('bundles')->whereIn('id',$bundles_id)->get();
+
+            foreach($bundles as $k=>$v){
+                $_BUNDLES_DISCOUNT += $v->discount;
+            }
+        }
+        $_VOUCHER_DISCOUNT=0;
+        $order_vouchers = DB::table('vouchers_histories')->where('order_id',$order_id)->get();
+        if(count($order_vouchers) > 0){
+            foreach($order_vouchers as $k=>$v){
+                $_VOUCHER_DISCOUNT+= $v->amount;
+            }
+        }
+
+        $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
+        $_AMOUNT_PAID=0;
+
+        if(count($payments) > 0)
+        foreach($payments as $k=>$v){
+            $_AMOUNT_PAID += $v->montant;
+        }
+
+       //SubTotal inc Discount = SubTotal (excl Discount) - Account Discount - Order Discount - Bundles + Express Charge - voucher
+
+        $_SUBTOTAL_WITH_DISCOUNT=$_SUBTOTAL-$_ACCOUNT_DISCOUNT-$_ORDER_DISCOUNT-$_BUNDLES_DISCOUNT+$_EXPRESS_CHARGES_PRICE-$_VOUCHER_DISCOUNT;
+
+
+        if($order->TypeDelivery=='DELIVERY'&&$_SUBTOTAL_WITH_DISCOUNT<25)
+            $_AUTO_DELIVERY_FEE=25-$_SUBTOTAL_WITH_DISCOUNT;
+        
+       
+        //Total = SubTotal inc Discount + Failed delivery + DeliveryNowFee + AutoDeliveryFee
+      
+
+        $_TOTAL=$_SUBTOTAL_WITH_DISCOUNT+$_FAILED_DELIVERY_PRICE+$_DELIVERY_NOW_FEE+$_AUTO_DELIVERY_FEE;
+        
+          //TotalDue = Total - SUM(payements) 
+        $_TOTAL_DUE=$_TOTAL-$_AMOUNT_PAID;  
+
+        $_TOTAL_EXC_VAT=$_TOTAL/1.2;
+
+        $_TAX_AMOUNT=$_TOTAL-$_TOTAL_EXC_VAT;
+
+      
+    
+
+        $values=array(
+            'Subtotal'=>number_format($_SUBTOTAL,2),
+            'SubtotalWithDiscount'=>number_format($_SUBTOTAL_WITH_DISCOUNT,2),//
+            'AccountDiscount'=>number_format($_ACCOUNT_DISCOUNT,2),
+            'OrderDiscount'=>number_format($_ORDER_DISCOUNT,2),
+            'VoucherDiscount'=>number_format($_VOUCHER_DISCOUNT,2),//
+            'bundles'=>number_format($_BUNDLES_DISCOUNT,2),
+            'Total'=>number_format($_TOTAL,2),
+            'TotalDue'=>number_format($_TOTAL_DUE,2),
+            'AutoDeliveryFee'=>number_format($_AUTO_DELIVERY_FEE,2),//
+            'ExpressCharge'=>number_format($_EXPRESS_CHARGES_PRICE,2),
+            'FailedDeliveryCharge'=>number_format($_FAILED_DELIVERY_PRICE,2),//
+            'TotalExcVat'=>number_format($_TOTAL_EXC_VAT,2),//
+            'TaxAmount'=> number_format($_TAX_AMOUNT,2),//
+        );
+        DB::table('infoOrder')->where('id',$order_id)->update($values);
+        
+       return $values;
+    }
+
     public function getCheckoutItems(Request $request){
         $order_id = $request->order_id;
+        $this->calculateCheckout($order_id);
+        $this->recalculateDryCleaningPrice($order_id);
 
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
         $days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -1601,7 +1815,7 @@ class DetailingController extends Controller
                 }
             }
 
-            $balance = $total_with_discount - $amount_paid;
+            $balance = number_format($total_with_discount,2) - number_format($amount_paid,2);
 
         }
 
@@ -1637,11 +1851,11 @@ class DetailingController extends Controller
 
 
         //Mise a jour montant commande
-        DB::table('infoOrder')->where('id',$order_id)->update([
-            'Subtotal'=>$total_price,
-            'Total'=>$total_with_discount,
-            'OrderDiscount'=>number_format($order_discount+$cust_discount,2),
-        ]);
+        // DB::table('infoOrder')->where('id',$order_id)->update([
+        //     'Subtotal'=>$total_price,
+        //     'Total'=>$total_with_discount,
+        //     'OrderDiscount'=>number_format($order_discount+$cust_discount,2),
+        // ]);
 
 
         $stripe_security_key = 'STRIPE_LIVE_SECURITY_KEY';
@@ -1686,6 +1900,7 @@ class DetailingController extends Controller
             'booking_details'=>$booking_details,
             'address'=>$addr,
             'sub_total'=>number_format($total_price,2),
+            'bundles'=>$order->bundles,
             'total_with_discount'=>number_format($total_with_discount,2),
             'discount'=>number_format($order_discount,2),
             'vat'=>number_format($vat,2),
@@ -1749,7 +1964,7 @@ class DetailingController extends Controller
             $discount_price = 0;
         }
 
-        DB::table('infoOrder')->where('id',$order_id)->update(['OrderDiscount'=>$discount_price,'DiscountPerc'=>$discount]);
+        DB::table('infoOrder')->where('id',$order_id)->update(['DiscountPerc'=>$discount]);
 
         return response()->json([
             'post'=>$request->all(),
@@ -1806,6 +2021,7 @@ class DetailingController extends Controller
         $type = $request->type;
         $id = $request->id;
         $montant = $request->montant;
+        $describeprixnow = $request->describeprixnow;
 
         $updated = false;
 
@@ -1820,6 +2036,37 @@ class DetailingController extends Controller
             $updated = DB::table('detailingitem')->where('id',$id)->update([
                 'cleaning_price_type'=>'PriceNow',
                 'dry_cleaning_price'=>$montant,
+                'cleaning_addon_price'=>0,
+                'updated_at'=>date('Y-m-d H:i:s')
+            ]);
+        }
+
+        return response()->json([
+            'updated'=>$updated,
+        ]);
+    }
+
+    public function setDescribeAndPriceNow(Request $request){
+        $type = $request->type;
+        $id = $request->id;
+        $montant = $request->montant;
+        $describeprixnow = $request->describeprixnow;
+
+        $updated = false;
+
+        if($type=='tailoring'){
+            $updated = DB::table('detailingitem')->where('id',$id)->update([
+                'tailoring_price_type'=>'PriceNow',
+                'tailoring_price'=>$montant,
+                'describeprixnowtailoring'=>$describeprixnow,
+                'updated_at'=>date('Y-m-d H:i:s')
+            ]);
+        }
+        if($type=='cleaning'){
+            $updated = DB::table('detailingitem')->where('id',$id)->update([
+                'cleaning_price_type'=>'PriceNow',
+                'dry_cleaning_price'=>$montant,
+                'describeprixnow'=>$describeprixnow,
                 'cleaning_addon_price'=>0,
                 'updated_at'=>date('Y-m-d H:i:s')
             ]);
@@ -1947,7 +2194,7 @@ class DetailingController extends Controller
         if($input_code){
             $code = $input_code;
         }else{
-            if($order->PickupID !=''){
+            if(isset($order->PickupID) && $order->PickupID !=''){
                 $pickup = DB::table('pickup')->where('PickupID',$order->PickupID)->first();
 
                 if($pickup){
@@ -2298,6 +2545,71 @@ class DetailingController extends Controller
         }
 
         return $sel_bundle_id;
+    }
+
+    public function getPreferenceCustomer(Request $request){
+
+        $prefrenceActive= null;
+        $cust = DB::table('infoCustomer')->where('infoCustomer.id' , '=' , $request->Customer_id)->first();
+
+        $prferenceIds = DB::table('InfoCustomerPreference')->select('InfoCustomerPreference.id_preference')
+        ->where('InfoCustomerPreference.CustomerID' , '=' , $cust->CustomerID)
+        ->where('InfoCustomerPreference.Value' , '=' , 1)
+        ->get();
+
+        if(!empty($prferenceIds)){
+
+            foreach($prferenceIds as $key=>$value){
+                $prference = DB::table('preferencetypitem')
+                                   ->where('preferencetypitem.customerpreferences_id','=' ,$value->id_preference )
+                                   ->where('preferencetypitem.typitem_id','=' , $request->typeitem_id )->first();
+                if($prference != null){
+                    $prefrenceActive [] = $prference->customerpreferences_id ;
+                }
+            }
+        }
+        return response()->json([
+            "prferenceIds" => $prferenceIds,
+            "prefrenceActive" =>$prefrenceActive
+        ]);
+
+    }
+
+    public static function calculateCleaningPrice($cs,$baseprice){
+        $cleaning_services = DB::table('cleaningservices')->whereIn('id',$cs)->get();
+        $services = [];
+
+        foreach($cleaning_services as $k=>$v){
+            $services[$v->id] = [
+                'perc'=>$v->perc,
+                'fixed_price'=>$v->fixed_price
+            ];
+        }
+
+        if(in_array(1,$cs) && in_array(3,$cs)){
+            //100%
+        }
+
+        if(in_array(1,$cs) && !in_array(3,$cs) && !in_array(2,$cs)){
+            $baseprice = $baseprice*($services[1]['perc']/100);
+        }
+        if(!in_array(1,$cs) && !in_array(3,$cs) && in_array(2,$cs)){
+            $baseprice = $baseprice*($services[2]['perc']/100);
+        }
+        if(!in_array(1,$cs) && in_array(3,$cs) && !in_array(2,$cs)){
+            $baseprice = $baseprice*($services[3]['perc']/100);
+        }
+
+
+        foreach($services as $k=>$v){
+            if(isset($services[$k])){
+                if($v['perc']==0){
+                    $baseprice += $v['fixed_price'];
+                }
+            }
+        }
+
+        return $baseprice;
     }
 
 }

@@ -49,6 +49,11 @@
                                         <button class="btn btn-outline-success w-100" @click="createPaymentIntent(payment_amount)">3. Create payment intent</button>
                                     </div>
                                 </div>
+                                <div class="row pt-2 mt-4">
+                                    <div class="col-5">
+                                        <button class="btn btn-outline-danger w-100" @click="cancelPaymentIntent">4. Cancel payment intent</button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-5"></div>
                         </div>
@@ -85,6 +90,7 @@ export default {
         const connected_reader = ref("");
         const payment_amount = ref(0.30);
         const paymentIntentId = ref("");
+        const paymentIntent = ref({});
 
         function getConnectionToken(){
             terminal.value = StripeTerminal.create({
@@ -190,6 +196,7 @@ export default {
 
 
             fetchPaymentIntentClientSecret(pay_amount).then((client_secret)=>{
+
                 //terminal.value.setSimulatorConfiguration({testCardNumber: '4242424242424242'});
 
 
@@ -220,6 +227,12 @@ export default {
                             } else{
                                 console.log('terminal.collectPaymentMethod', result.paymentIntent);
 
+                                const savePI = async ()=>{
+                                    await savePaymentIntent(result.paymentIntent);
+                                }
+
+                                savePI;
+
                                 paymentIntentId.value = result.paymentIntent.id;
                                 capture();
                                 //console.log('terminal.processPayment', result.paymentIntent);
@@ -241,7 +254,7 @@ export default {
 
 
         function fetchPaymentIntentClientSecret(amount) {
-            const bodyContent = JSON.stringify({ amount: amount });
+            const bodyContent = JSON.stringify({ amount: amount,order_id:0, });
             return fetch('/stripe-test/create_payment_intent', {
                 method: "POST",
                 headers: {
@@ -290,6 +303,45 @@ export default {
         }
 
 
+        async function savePaymentIntent(paymentIntent){
+            console.log('save payment intent started');
+
+             return fetch('/stripe-test/save_payment_intent', {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({"payment_intent": paymentIntent})
+                }).then(function(data){
+                    console.log(data);
+                }).finally(()=>{
+                    console.log('save payment intent ended');
+                })
+
+
+        }
+
+        function cancelPaymentIntent(){
+            //if(paymentIntentId.value !=''){
+             return fetch('/stripe-test/cancel_payment_intent', {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({"payment_intent_id": paymentIntentId.value})
+                }).then(function(data){
+                    console.log(data);
+                }).finally(()=>{
+                    console.log('save payment intent ended');
+                })
+           /* }else{
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                    message: "payment intent id is blanc",
+                    ttl:5,
+                    type:'danger',
+                });
+            }*/
+        }
 
 
 
@@ -304,6 +356,7 @@ export default {
             createPaymentIntent,
             paymentIntentId,
             capture,
+            cancelPaymentIntent,
         }
     }
 

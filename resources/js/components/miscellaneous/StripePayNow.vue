@@ -20,13 +20,14 @@ export default {
         order: Object || null,
         amounttopay: Number,
     },
-    emits:['complete-checkout','close-payment-modal'],
+    emits:['complete-checkout','close-payment-modal','set-terminal-pay','close-awaiting-payment'],
     setup(props,context) {
         const store = useStore();
         const terminal = ref();
         const readers = ref([]);
         const paymentIntentId = ref();
         const selected_reader = ref();
+        const err_terminal = ref(false);
 
         let readers_id = {};
         readers_id[1] = 'tmr_Eqz4ewJhXq5eu6'; //Atelier
@@ -103,6 +104,8 @@ export default {
                         ttl: 5,
                         type: "danger",
                     });
+                    err_terminal.value = true;
+               // context.emit('close-awaiting-payment');
                 } else {
                     selected_reader.value = connectResult.reader;
                     console.log('Connected to reader: ', connectResult.reader.label);
@@ -122,39 +125,50 @@ export default {
             context.emit('close-payment-modal');
             console.log('call start');
 
-            await listReaders();
+            if(props.amounttopay >= 0.3){
 
-            if(readers.value.length > 0){
-                let store_id = props.user.store;
+                await listReaders();
 
-                if(typeof(readers_id[store_id]) !='undefined'){
-                    let reader_id = readers_id[store_id];
+                if(readers.value.length > 0){
+                    let store_id = props.user.store;
 
-                    let selected_index = readers.value.findIndex((z) => { return z.id === reader_id});
-                    selected_reader.value = readers.value[selected_index];
+                    if(typeof(readers_id[store_id]) !='undefined'){
+                        let reader_id = readers_id[store_id];
 
-                    console.log('calling selectReader');
-                    await selectReader(selected_reader.value);
-                    console.log('End calling selectReader');
+                        let selected_index = readers.value.findIndex((z) => { return z.id === reader_id});
+                        selected_reader.value = readers.value[selected_index];
 
-                    if(typeof(selected_reader.value.id)!='undefined'){
-                        await createPaymentIntent(props.amounttopay,props.order.id);
+                        console.log('calling selectReader');
+                        await selectReader(selected_reader.value);
+                        console.log('End calling selectReader');
+
+                        if(typeof(selected_reader.value.id)!='undefined' && !err_terminal.value){
+                            await createPaymentIntent(props.amounttopay,props.order.id);
+                        }
+
+
+                    }else{
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                            message: 'Store reader not set for user '+props.user.name,
+                            ttl: 5,
+                            type: "danger",
+                        });
                     }
-
-
-                }else{
-                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
-                        message: 'Store reader not set for user '+props.user.name,
-                        ttl: 5,
-                        type: "danger",
-                    });
                 }
+            }else{
+                context.emit('close-awaiting-payment');
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                    message:"Minimum amount to pay is 30 pence",
+                    ttl:5,
+                    type:'danger',
+                });
             }
 
         }
 
 
         async function createPaymentIntent(amount,order_id) {
+            console.log(amount,order_id);
 
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
                 true,
@@ -168,7 +182,6 @@ export default {
                 console.log('client secret from fetch payment',client_secret);
                 console.log('collectPaymentMethod started');
 
-
                 terminal.value.collectPaymentMethod(client_secret).then((result)=>{
 
                     //console.log('collect payment',result);
@@ -179,6 +192,9 @@ export default {
                                     ttl: 5,
                                     type: "danger",
                                 });
+
+                        //To add Call for non payment
+
                     } else {
                         //console.log('client secret',client_secret);
 
@@ -186,7 +202,7 @@ export default {
 
                             context.emit('close-awaiting-payment');
                             if (result.error) {
-
+                                //context.emit('close-awaiting-payment');
 
                                  updateTerminalOrder(order_id,amount,'Failed',result);
                                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
@@ -195,6 +211,9 @@ export default {
                                     type: "danger",
                                 });
                             } else{
+                                //To add fetch for card details
+                                context.emit('set-terminal-pay');
+
                                 updateTerminalOrder(order_id,amount,'succeeded','');
                                 console.log('terminal.collectPaymentMethod', result.paymentIntent);
 
@@ -222,6 +241,7 @@ export default {
 
 
         async function fetchPaymentIntentClientSecret(amount) {
+            console.log('fetch amount',amount);
             const bodyContent = JSON.stringify({ amount: amount,order_id:props.order.id });
             return fetch('/stripe-test/create_payment_intent', {
                 method: "POST",
@@ -242,6 +262,7 @@ export default {
         async function capture() {
             console.log('capture started');
             if(paymentIntentId.value !=''){
+                console.log('payment_intnet_id',paymentIntentId.value);
                 return fetch('/stripe-test/capture_payment_intent', {
                     method: "POST",
                     headers: {
@@ -308,10 +329,32 @@ export default {
             });
         }
 
+        function refundPayment(){
+            console.log('Refund Started');
+
+            const bodyContent = JSON.stringify({
+                payment_intent_id:paymentIntentId.value,
+            });
+            /*
+            return fetch('/stripe-test/refund-payment',{
+                method:"POST",
+                headers: {
+                    'Content-Type':'application/json'
+                },
+                body: bodyContent
+            }).then(function(data){
+                console.log(data);
+            }).finally(()=>{
+                console.log('Refund finished');
+            })
+            */
+        }
 
         return {
             payNow,
             selected_reader,
+            refundPayment,
+            err_terminal,
         }
 
     },

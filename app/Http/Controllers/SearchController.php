@@ -25,8 +25,11 @@ public function SearchCustomer(Request $request)
     $PerPageEmails = $request['PerPageEmails'];
     $PerPageItems = $request['PerPageItems'];
 
-    $orders = DB::table('infoOrder')->select(['infoOrder.created_at' ,'infoOrder.id','infoOrder.Status','infoOrder.DateDeliveryAsk','infoCustomer.Name','infoOrder.TypeDelivery','infoCustomer.CustomerID',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate'])
-    ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
+    $orders = DB::table('infoOrder')->select(['infoOrder.created_at' ,'infoOrder.id','infoOrder.Status','infoOrder.DateDeliveryAsk','infoCustomer.Name','infoOrder.TypeDelivery','infoCustomer.Actif' , 'infoCustomer.CustomerID',DB::raw('IF(infoOrder.DateDeliveryAsk="2020-01-01" OR infoOrder.DateDeliveryAsk="2000-01-01" OR infoOrder.DateDeliveryAsk="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk, "%a %d/%m")) as PromisedDate'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate'])
+    ->join( 'infoCustomer', function ($join){
+        $join->on( 'infoCustomer.CustomerID', '=', 'infoOrder.CustomerID')
+        ->where('infoCustomer.Actif', '=' , 1);
+    })
     ->leftJoin('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
     ->leftJoin('infoitems',function($join){
     $join->on('infoInvoice.InvoiceID','=','infoitems.InvoiceID')
@@ -49,14 +52,15 @@ public function SearchCustomer(Request $request)
     ->orWhere('infoitems.id_items',$query)
     ->orWhere('infoInvoice.NumInvoice', 'LIKE', $query)
     ->orderBy('infoOrder.created_at', 'desc')
+    ->distinct('infoOrder.id')
     ->paginate($PerPageOrder);
 
 
     $users = DB::table('infoCustomer')
-    ->select('Name', 'EmailAddress', 'Phone','infoCustomer.id', 'infoCustomer.CustomerID' , 'infoCustomer.CustomerIDMaster',
+    ->select('Name', 'EmailAddress', 'Phone','infoCustomer.id', 'infoCustomer.CustomerID' , 'infoCustomer.Actif','infoCustomer.CustomerIDMaster',
     DB::raw(' IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as cust_type'),
     DB::raw(' IF(infoCustomer.CustomerIDMaster = "",  "Main", "Sub") as customer_account')
-    );
+    )->where('infoCustomer.Actif', '=', 1);
     foreach($keywords as $searchTerm){
         $users->where(function($q) use ($searchTerm){
             $q->where('FirstName', 'like', '%'.$searchTerm.'%')
@@ -97,13 +101,16 @@ public function SearchCustomer(Request $request)
     $items = DB::table('infoitems') 
     ->select( 
         'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey', 
-        'infoitems.typeitem as iteminfo', 'infoitems.id AS item_id','infoitems.brand',
+        'infoitems.typeitem as iteminfo', 'infoitems.id AS item_id','infoitems.brand','infoCustomer.Actif',
         'infoitems.nextpost', 'infoitems.store',  'postes.nom as location', 'postes.nominterface','infoCustomer.FirstName','infoCustomer.LastName', 
         'infoOrder.OrderID'
     )
     ->Join('infoInvoice','infoitems.InvoiceID','infoInvoice.InvoiceID')
     ->leftJoin('infoOrder','infoInvoice.OrderID','infoOrder.OrderID')
-    ->leftJoin('infoCustomer','infoCustomer.CustomerID','infoOrder.CustomerID')
+    ->leftJoin( 'infoCustomer', function ($join){
+        $join->on( 'infoCustomer.CustomerID', '=', 'infoOrder.CustomerID')
+        ->where('infoCustomer.Actif', '=' , 1);
+    })
     ->leftJoin('postes','postes.id','=','infoitems.nextpost');
 
      if(str_contains($query , "-")){
@@ -132,10 +139,15 @@ public function SearchByCustomer(Request $request)
  {
     $query = $request['query'];
     $PerPage = $request['PerPage'];
-    $Customer = DB::table('infoCustomer')->select(['infoCustomer.id','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CustomerID','infoCustomer.Phone','infoCustomer.EmailAddress'])
-    ->where('Name', 'LIKE', '%' . $query . '%')
-    ->orWhere('EmailAddress', 'LIKE', $query . '%')
-    ->orWhere('Phone', 'LIKE', '%' . $query . '%')
+    $Customer = DB::table('infoCustomer')->select(['infoCustomer.Actif','infoCustomer.id','infoCustomer.Name','infoCustomer.TypeDelivery','infoCustomer.CustomerID','infoCustomer.Phone','infoCustomer.EmailAddress',
+    DB::raw('IF(btob = 0, "B2C", "B2B") as cust_type'),
+    ])
+    ->where('infoCustomer.Actif', '=', 1)
+    ->where(function($q) use ($query) {
+        $q->where('Name', 'LIKE', '%' . $query . '%')
+        ->orWhere('EmailAddress', 'LIKE', $query . '%')
+        ->orWhere('Phone', 'LIKE', '%' . $query . '%');
+    })
     ->orderBy('Name')
     ->paginate($PerPage);
 
@@ -160,13 +172,13 @@ public function SearchByCustomer(Request $request)
                         'TotalSpend as spent',
                         'CustomerID as customerId'
                     )
-                    ->where(function($query){
-                        $query->where('SignupDate', '!=', '2000-01-01')->orWhere('SignupDateOnline', '!=', '2000-01-01');
-                    })
-                    ->where('IsMaster', $request->accountType)
+                    ->where('infoCustomer.Actif', '=', 1)
+                    ->where('infoCustomer.CustomerIDMaster','!=', $request->customerID)
                     ->where(function($query) use ($request) {
                         $query->where('Name', 'LIKE', '%' .$request['query']. '%')
                             ->orWhere('EmailAddress', 'LIKE', '%' . $request['query'] . '%')
+                            ->orWhere('FirstName', 'LIKE', '%' . $request['query'] . '%')
+                            ->orWhere('LastName', 'LIKE', '%' . $request['query'] . '%')
                             ->orWhere('Phone', 'LIKE', '%' . $request['query'] . '%');
                     })
                     ->orderByDesc('Name')->get();

@@ -54,7 +54,8 @@ import { useStore } from 'vuex';
 export default {
     name: 'Search',
     props: {
-        modelValue: Object
+        modelValue: Object,
+        customerID : String
     },
     emits: ['selectedSubAccount'],
     components:{
@@ -72,7 +73,7 @@ export default {
         const searchCustomer = async ()=>{
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Search '+ (accountType.value == 1 ? 'Master' : '') +' customers...']);
             await axios.post('/search-customer', {
-                query: query.value, accountType: accountType.value
+                query: query.value, accountType: accountType.value , customerID : props.customerID
             }).then((response)=>{
                 customers.value = response.data;
             }).catch((error)=>{

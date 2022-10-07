@@ -295,7 +295,7 @@
                                     <h3 class="title">Payment method <span v-if="!creditCardCustomer" class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="toggleCreditCard()">Edit</span></h3>
 
                                     <div class="page-section">
-                                          <img v-if="creditCardCustomer" src="/images/trash.svg" style="float: right;" @click="DeleteCreditCardCustomer()"/>
+                                          <img v-if="creditCardCustomer&&form.cardId!=null" src="/images/trash.svg" style="float: right;" @click="DeleteCreditCardCustomer()"/>
                                           <div class="credit-card d-flex justify-content-between">
                                             <div class="form-group col-3 cardholder mb-0">
                                                 <label for="">Payment method</label>
@@ -618,7 +618,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="(item, index) in currentOrders" :key="index">
+                                        <tr v-for="(item, index) in currentOrders" :key="index" @click="selectrow(item)">
                                             <td valign="middle">{{ item.order_id }}</td>
                                             <td valign="middle">{{ item.destination }}</td>
                                             <td valign="middle">{{ item.items_received }}</td>
@@ -663,7 +663,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="(item, index) in pastOrders" :key="index">
+                                        <tr v-for="(item, index) in pastOrders" :key="index" @click="selectrow(item)">
                                             <td valign="middle">{{ item.order_id }}</td>
                                             <td valign="middle">{{ item.destination }}</td>
                                             <td valign="middle">{{ item.items_received }}</td>
@@ -851,7 +851,7 @@
                                             <div class="w-100 mt-3">
                                                 <div class="form-group m-0">
                                                     <label for="" class="form-label d-block m-0">Driver instructions</label>
-                                                    <textarea name="customer_note" rows="4" class="form-control" v-html="form.altDriverInstruction" :readonly="!delivery_instructions_edit" :class="{'bg-color':!delivery_instructions_edit,'border-none':!delivery_instructions_edit}"></textarea>
+                                                    <textarea name="customer_note" rows="4" class="form-control" v-model="form.altDriverInstruction" :readonly="!delivery_instructions_edit" :class="{'bg-color':!delivery_instructions_edit,'border-none':!delivery_instructions_edit}"></textarea>
                                                 </div>
                                             </div>
                                             <div class="w-100 pt-4" v-if="delivery_instructions_edit">
@@ -911,7 +911,7 @@
                                         </thead>
                                         <tbody>
                                             <tr v-for="(item, index) in form.linkedAccounts" :key="index">
-                                                <td valign=middle class="text-nowrap">{{ item.name }}</td>
+                                                <td valign=middle class="text-nowrap link_account"><a href="javascript:void(0)" @click="goCustomerView(item.id)">{{ item.name }}</a></td>
                                                 <td valign=middle class="text-nowrap fw-bold">{{ item.accountType }}</td>
                                                 <td valign=middle class="text-nowrap">{{ formatPhone(item.phone) }}</td>
                                                 <td valign=middle class="text-nowrap">{{ item.email }}</td>
@@ -953,7 +953,7 @@
                                             </svg>
                                             Add existing SubAccount
                                         </button>
-                                        <Search ref="searchpanel"  @selectedSubAccount="selectedSubAccount"/>
+                                        <Search ref="searchpanel" :customerID = "form.customerID"  @selectedSubAccount="selectedSubAccount"/>
                                     </div>
                                 </div>
                             </div>
@@ -1245,6 +1245,7 @@
                     form.value.phoneNumber = phone.number;
                     form.value.email = res.data.customer.email;
                     // address part in account details tab
+                    if(res.data.customer.address!=null){
                     form.value.postCode = res.data.customer.address.postCode;
                     form.value.city = res.data.customer.address.city;
                     form.value.state = res.data.customer.address.state;
@@ -1252,6 +1253,7 @@
                     form.value.country = res.data.customer.address.country;
                     form.value.deliveryAddress1 = res.data.customer.address.address1;
                     form.value.deliveryAddress2 = res.data.customer.address.address2;
+                    }
                     form.value.customerNote = res.data.customer.CustomerNotes;
                     // payment tab
 
@@ -1499,7 +1501,9 @@
                 // add function create sub account
                 axios.post('/create-customer-sub-account',{
                          customer_data: data,
-                         customer_id : form.value.customerID
+                         customer_id : form.value.customerID,
+                         CustomerPayemenProfile : form.value.CustomerPayemenProfile,
+                         typeDelivery : form.value.typeDelivery
                     }).then((res)=>{
                     }).catch((error)=>{
                         console.log(error);
@@ -1522,7 +1526,7 @@
                     });
             }
             const formatPhone = (phoneString)=>{
-                if(phoneString != ""){
+                if(phoneString != "" && phoneString != undefined){
                     if(phoneString.split('"').length == 1){
                         return phoneString;
                     }else{
@@ -1624,12 +1628,14 @@
 
             function AddCreditCardCustomer(){
 
-                if(form.value.cardHolderName != "" && form.value.cardDetails != ""  && form.value.cardExpDate != "" &&  form.value.cardCVV != "" && form.value.paymentMethod != ""){
+                //if(form.value.cardHolderName != "" && form.value.cardDetails != ""  && form.value.cardExpDate != "" &&  form.value.cardCVV != "" && form.value.paymentMethod != ""){
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Add Card Customer...']);
                 axios.post('/add-credit-card', form.value ).then((res)=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                     form.value.cardId =  res.data
                     creditCardCustomer.value = true
+                    this.add_payement =false;
+                    window.location.reload();
                 }).catch((error)=>{
 
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
@@ -1641,14 +1647,14 @@
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 })
-                }else{
+             /*   }else{
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
                         message:"Credit card details missing",
                         ttl: 5,
                         type: 'danger'
                     });
                 }
-
+*/
 
 
             }
@@ -2180,6 +2186,14 @@
                 const month = date.toLocaleString('default', { month: 'long' });
                 return `${parseInt(datepart[2])} ${month} ${datepart[0]}`;
             }
+
+            function goCustomerView(customerId){
+                window.location='/view-customer/'+customerId;
+            }
+            function selectrow(order){
+                router.push('/checkout/'+ order.order_id);
+            }
+
             return {
                 fdate,
                 form,
@@ -2235,6 +2249,8 @@
                 billing_address_edit,
                 validateAndSaveBillingAddress,
                 toggleCreditCard,
+                goCustomerView,
+                selectrow
             }
 
         },
@@ -2671,5 +2687,8 @@ input.error:focus{
 }
 .form-control:disabled{
     background-color: #F8F8F8;
+}
+.link_account a{
+    text-decoration : none
 }
 </style>

@@ -346,7 +346,6 @@ export default {
         });
 
         function descTypeClick(type) {
-            
             desc_type.value = type;
             let step = props.detailingitem.etape;
             switch (desc_type.value) {

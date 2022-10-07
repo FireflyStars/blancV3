@@ -3,11 +3,11 @@
     <div class="options position-absolute">
         <div class="row">
           
-            <div  class="col-12 row-option"  >
+            <div  class="col-12 row-option" @click="goToCheckout()"  >
                 <img class="img-arrow" src="/images/payment.png" />
                 <span>Take payment</span>
             </div>
-            <div class="col-12 row-option" >
+            <!-- <div class="col-12 row-option" >
                 <img class="img-arrow" src="/images/offload.png" />
                 <span>Offload</span>
             </div>
@@ -22,8 +22,8 @@
              <div class="col-12 row-option" >
                 <img class="img-arrow" src="/images/garbage.png" />
                 <span>Delete</span>
-            </div>
-            <div class="col-12 row-option" >
+            </div> -->
+            <div class="col-12 row-option" v-if="user_id == 1 || user_id == 4" @click="VoidOrder()">
                 <img class="img-arrow" src="/images/erase.png" />
                 <span>Void</span>
             </div>
@@ -36,12 +36,46 @@
 <script>
 
     import {useStore} from 'vuex';
+    import { useRouter} from "vue-router";
+    import {
+        TOASTER_MODULE,
+        TOASTER_MESSAGE
+    } from "../../store/types/types";
     export default {
         name: "OrderOptions",
-        props:[],
-        setup(){
+        props:[
+            'user',
+            'order',
+            'items',
+        ],
+        setup(props){
            const store=useStore();
+           const router = useRouter();
+           const user_id = props.user
+
+           function goToCheckout(){
+            router.push('/checkout/'+props.order.order_id);
+           }
+
+           function VoidOrder(){
+            axios.post('/voidOrder',{
+                   order_id: props.order.order_id,
+                   items : props.items
+               }).then((res)=>{
+                          if( res.data.done == "ok"){
+                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
+                             location.reload();
+                        }
+                    })
+                    .catch((error)=>{
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
+                    })
+           }
+
             return {
+                user_id,
+                goToCheckout,
+                VoidOrder
             }
         }
     }

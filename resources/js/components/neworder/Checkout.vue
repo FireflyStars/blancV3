@@ -188,30 +188,34 @@
                                             <div class="col-4">Subtotal</div>
                                             <div class="col-5 sub-total-desc">{{order_items.length}} item<span v-if="order_items.length > 1">s</span> (Incl. VAT)</div>
 
-                                            <div class="col-3 text-align-right" v-if="upcharges > 0">&#163;{{order_without_upcharges.toFixed(2)}}</div>
-                                            <div class="col-3 text-align-right" v-else>&#163;{{sub_total}}</div>
+                                        
+                                            <div class="col-3 text-align-right">{{formatPrice(order.Subtotal)}}</div>
 
                                         </div>
 
 
-                                        <div class="row px-0 mt-2 sub-total-text">
+                                        <div class="row px-0 mt-2 sub-total-text align-items-center">
                                             <div class="col-4">Account Discount</div>
                                             <div class="col-5 sub-total-desc"> <span v-if="cust.discount > 0">{{cust.discount}}% (applied)</span></div>
-                                            <div class="col-3 text-align-right"><span v-if="discount > 0">-</span>&#163;{{cust_discount.toFixed(2)}}</div>
+                                            <div class="col-3 text-align-right"><span v-if="order.AccountDiscount > 0">-</span>{{formatPrice(order.AccountDiscount)}}</div>
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text">
                                             <div class="col-4">Order Discount</div>
-                                            <div class="col-5 sub-total-desc"> <span v-if="discount > 0">{{discount_perc.toFixed()}}% (applied)</span></div>
-                                            <div class="col-3 text-align-right"><span v-if="discount > 0">-</span>&#163;{{discount}}</div>
+                                            <div class="col-5 sub-total-desc"> <span v-if="order.DiscountPerc > 0">{{order.DiscountPerc.toFixed()}}% (applied)</span></div>
+                                            <div class="col-3 text-align-right"><span v-if="order.OrderDiscount > 0">-</span>{{formatPrice(order.OrderDiscount)}}</div>
                                         </div>
-                                        <div class="row px-0 mt-2 sub-total-text" v-if="discount_from_voucher > 0">
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.VoucherDiscount > 0">
                                             <div class="col-9">Voucher Discount</div>
-                                            <div class="col-3 text-align-right">-&#163;{{discount_from_voucher}}</div>
+                                            <div class="col-3 text-align-right">-{{formatPrice(order.VoucherDiscount)}}</div>
                                         </div>
 
-                                        <div class="row px-0 mt-2 sub-total-text" v-if="upcharges > 0">
-                                            <div class="col-9">Upcharges</div>
-                                            <div class="col-3 text-align-right">+&#163;{{upcharges.toFixed(2)}}</div>
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.ExpressCharge > 0">
+                                            <div class="col-9">Express Charges</div>
+                                            <div class="col-3 text-align-right">+{{formatPrice(order.ExpressCharge)}}</div>
+                                        </div>
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.bundles > 0">
+                                            <div class="col-9">Bundles</div>
+                                            <div class="col-3 text-align-right">+{{formatPrice(order.bundles)}}</div>
                                         </div>
 
                                         <div class="row px-0 sub-total-text" v-if="Object.keys(order_bundles).length > 0" id="bundles_bloc">
@@ -227,21 +231,37 @@
 
 
 
-                                        <div class="row px-0 mt-3 pb-4 total-text">
-                                            <div class="col-9">Total</div>
-                                            <div class="col-3 text-align-right">&#163;{{price_plus_delivery}}</div><!--total_inc_vat-->
+                                        <div class="row px-0 mt-1 mb-3 pt-2 total-text">
+                                            <div class="col-9">Total (inc discount)</div>
+                                            <div class="col-3 text-align-right">{{formatPrice(order.SubtotalWithDiscount)}}</div><!--total_inc_vat-->
                                         </div>
-                                         <div class="row px-0 mt-2 sub-total-text" v-if="failed_delivery_price > 0">
+                                         <div class="row px-0 mt-2 sub-total-text" v-if="order.FailedDelivery == 1">
                                             <div class="col-9">Failed delivery</div>
-                                            <div class="col-3 text-align-right">+&#163;{{failed_delivery_price}}</div>
+                                            <div class="col-3 text-align-right">+{{formatPrice(order.FailedDeliveryCharge)}}</div>
+                                        </div>
+                                            <div class="row px-0 mt-2 sub-total-text" v-if="order.DeliveryNowFee > 0">
+                                            <div class="col-9">Delivery now fee</div>
+                                            <div class="col-3 text-align-right">+{{formatPrice(order.DeliveryNowFee)}}</div>
+                                        </div>
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.AutoDeliveryFee > 0">
+                                            <div class="col-9">Auto delivery fee</div>
+                                            <div class="col-3 text-align-right">+{{formatPrice(order.AutoDeliveryFee)}}</div>
+                                        </div>
+                                        <div class="row px-0 mt-1 mb-3 pt-2  total-text">
+                                            <div class="col-9">Total (inc discount & delivery fees)</div>
+                                            <div class="col-3 text-align-right">{{formatPrice(order.Total)}}</div>
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text">
-                                            <div class="col-9">Total (excl. VAT)</div>
-                                            <div class="col-3 text-align-right">&#163;{{total_exc_vat}}</div>
+                                            <div class="col-9">Total (excl VAT)</div>
+                                            <div class="col-3 text-align-right">{{formatPrice(order.TotalExcVat)}}</div>
                                         </div>
-                                        <div class="row px-0 mt-2 sub-total-text">
-                                            <div class="col-9">Tax (20% VAT included in item prices)</div>
-                                            <div class="col-3 text-align-right">&#163;{{vat}}</div>
+                                          <div class="row px-0 mt-2 sub-total-text">
+                                            <div class="col-9">Tax</div>
+                                            <div class="col-3 text-align-right">{{formatPrice(order.TaxAmount)}}</div>
+                                        </div>
+                                             <div class="row px-0 mt-1 mb-3 pt-2  total-text">
+                                            <div class="col-9">Total (inc vat)</div>
+                                            <div class="col-3 text-align-right">{{formatPrice(order.Total)}}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -286,7 +306,7 @@
 
                                          <div class="row px-0 mt-4 py-2 balance-text">
                                             <div class="col-9">Order balance to pay by card</div>
-                                            <div class="col-3 text-align-right">&#163;{{order_balance.toFixed(2)}}</div>
+                                            <div class="col-3 text-align-right">{{formatPrice(order.TotalDue)}}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -638,7 +658,13 @@
                                         </div>
                                     </div>
                                 </transition>
-
+                                <!--
+                                <div class="row justify-content-center">
+                                    <div class="col-8">
+                                        <button class="btn btn-outline-danger w-100" id="cancelTerminalBtn" @click="cancelTerminalRequest">Cancel Terminal request</button>
+                                    </div>
+                                </div>
+                                -->
                             </div>
                         </div>
                         <div class="row justify-content-end py-4" id="last-row-btns">
@@ -675,7 +701,7 @@
                 <div class="col-10">
                     <div class="row justify-content-center mb-4">
                         <div class="col-6">
-                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="parseFloat(amount_to_pay)" @complete-checkout="completeCheckout" @close-payment-modal="closePaymentAndShowLoading" @close-awaiting-payment="closeAwaitingPaymentModal"></stripe-pay-now>
+                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="parseFloat(amount_to_pay)" @complete-checkout="completeCheckout" @close-payment-modal="closePaymentAndShowLoading" @close-awaiting-payment="closeAwaitingPaymentModal" @set-terminal-pay="setTerminalPay" ref="stripePay"></stripe-pay-now>
                         </div>
                         <div class="col-6">
                             <button class="pay-btn w-100 py-3" @click="completeCheckout">Pay later</button>
@@ -692,11 +718,18 @@
     </modal>
 
     <modal ref="awaiting_payment_modal">
-         <template #closebtn>
+        <template #closebtn>
             <span class="close" id="addon_modal_close" @click="closeAwaitingPaymentModal"></span>
         </template>
         <template #bheader>
             <div class="bmodal-header py-5 text-center">Awaiting payment</div>
+        </template>
+        <template #mbuttons>
+            <div class="row justify-content-center">
+                <div class="col-8">
+                    <button class="btn btn-outline-danger w-100" id="cancelTerminalBtn" @click="cancelTerminalRequest">Cancel Terminal request</button>
+                </div>
+            </div>
         </template>
     </modal>
 
@@ -718,6 +751,38 @@
     </modal>
 
 
+    <modal ref="price_delivery_now_modal">
+        <template #closebtn>
+            <span class="close" id="price_delivery_now_modal_close" @click="closePriceDeliveryNowModal"></span>
+        </template>
+        <template #bheader>
+            <div class="modal-header-deliverypricenow py-3 text-center">Price delivery now</div>
+        </template>
+        <template #bcontent>
+        <div class="row mb-5 justify-content-center">
+       
+                <div class="col-4 form-group pt-3">
+                        <label class="form-label body_medium">Enter Price</label>
+                    <div class="input-group"><span class="input-group-text fw-bold" style="background: none;">£</span>
+                        <input @keydown="handleAllowNumbers($event)" v-model="pricedeliverynow" style="border-left: medium none; fill: transparent;" type="number" step="0.1" class="form-control" placeholder="0.00"/>
+                    </div>
+                </div>
+           
+              
+        </div>
+        </template>
+        <template #mbuttons>
+            <div class="row justify-content-center gap-3 mb-5">
+                <div class="col-4">
+                    <button class="btn btn-outline-danger w-100"  @click="closePriceDeliveryNowModal">Close</button>
+                </div>
+                <div class="col-4">
+                    <button class="btn btn-dark body_medium w-100"  @click="savePriceDeliveryNow">Save</button>
+                </div>
+            </div>
+        </template>
+    </modal>
+
 </template>
 <script>
 
@@ -727,6 +792,7 @@ import SideBar from "../layout/SideBar";
 import { ref, onMounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useStore } from "vuex";
+import {formatPrice} from "../helpers/helpers";
 import {
     LOADER_MODULE,
     DISPLAY_LOADER,
@@ -780,6 +846,7 @@ export default {
         const credit_to_deduct = ref(0);
         const cust_discount = ref(0);
         const upcharges = ref(0);
+        const bundles = ref(0);
         const order_without_upcharges = ref(0);
         const amount_without_credit = ref(0);
         const amount_diff = ref(0);
@@ -790,14 +857,24 @@ export default {
         const voucher_discount = ref('');
 
         const remove_voucher_modal = ref();
+        const price_delivery_now_modal=ref();
         const cur_voucher_to_remove = ref('');
         const cur_id_voucher_to_remove = ref(0);
         const failed_delivery_price = ref(0);
         const price_plus_delivery = ref(0);
         const order_bundles = ref([]);
+        const pricedeliverynow=ref("");
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
+
+        const terminal_pay = ref(0);
+        const stripePay = ref();
+
+        const setTerminalPay = ()=>{
+            terminal_pay.value = 1;
+        }
+
 
         const paths = ref([
             { name: "Order", route: "LandingPage" },
@@ -820,6 +897,8 @@ export default {
                 issues.value = res.data.issues;
                 cust.value = res.data.cust;
                 order.value = res.data.order;
+                if(res.data.order.DeliveryNowFee!='')
+                pricedeliverynow.value=parseFloat(res.data.order.DeliveryNowFee).toFixed(2);
                 booking.value = res.data.booking_details;
                 address.value = res.data.address;
                 sub_total.value = res.data.sub_total;
@@ -844,6 +923,7 @@ export default {
                 order_discount.value = res.data.order.DiscountPerc;
                 cust_discount.value = res.data.cust_discount;
                 upcharges.value = res.data.order_addon;
+                bundles.value=res.data.bundles;
                 order_without_upcharges.value = res.data.order_without_upcharges;
                 amount_without_credit.value = res.data.amount_without_credit;
                 amount_diff.value = res.data.amount_diff;
@@ -970,6 +1050,10 @@ export default {
                     */
                    router.push('/order_details/'+order_id.value);
                 }else{
+                    if(terminal_pay.value==1){
+                        stripePay.value.refundPayment();
+                    }
+
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
                     {
                         message: "An error has occured during items creation",
@@ -992,29 +1076,33 @@ export default {
         }
 
         function validatePayment(){
-            if(editcard.value==true){
-                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
-                    {
-                        message: "Please save card details or cancel editing",
-                        ttl: 3,
-                        type: 'danger'
-                    });
+            if(cust.value.OnAccount==1){
+                completeCheckout();
             }else{
-                let err = false;
-                if(amount_to_pay.value > 0 && cust.value.bycard==1 && !custcard.value){
-                    err = true;
-                    no_payment_modal.value.showModal();
-                }
-
-                if(!err){
-
-                    if(custcard.value && cust.value.bycard==1 && typeof(custcard.value.id)!='undefined' && amount_to_pay.value > 0){
-                        console.log('by card',amount_to_pay.value);
-                        payment_comp.value.effectPayment('Pay')
+                if(editcard.value==true){
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                        {
+                            message: "Please save card details or cancel editing",
+                            ttl: 3,
+                            type: 'danger'
+                        });
+                }else{
+                    let err = false;
+                    if(amount_to_pay.value > 0 && cust.value.bycard==1 && !custcard.value){
+                        err = true;
+                        no_payment_modal.value.showModal();
                     }
-                    else{
-                        console.log('by credit',credit_to_deduct.value);
-                        completeCheckout();
+
+                    if(!err){
+
+                        if(custcard.value && cust.value.bycard==1 && typeof(custcard.value.id)!='undefined' && amount_to_pay.value > 0){
+                            console.log('by card',amount_to_pay.value);
+                            payment_comp.value.effectPayment('Pay')
+                        }
+                        else{
+                            console.log('by credit',credit_to_deduct.value);
+                            completeCheckout();
+                        }
                     }
                 }
             }
@@ -1073,6 +1161,11 @@ export default {
         }
 
         function setOrderUpcharge(id){
+
+            if(id==4){
+                price_delivery_now_modal.value.showModal();
+                return;
+            }
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
                 true,
                 "Setting upcharges....",
@@ -1177,6 +1270,57 @@ export default {
             });
         }
 
+        function cancelTerminalRequest(){
+             axios.post('/cancel-terminal-request',{})
+                .then((res)=>{
+                    console.log(res);
+                }).catch((err)=>{
+
+                }).finally(()=>{
+                    awaiting_payment_modal.value.closeModal();
+                })
+        }
+
+        const closePriceDeliveryNowModal=()=>{
+            price_delivery_now_modal.value.closeModal();
+        }
+
+        const savePriceDeliveryNow=()=>{
+               store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
+                true,
+                "Saving price delivery now....",
+            ]);
+
+            axios.post('/save-price-delivery-now',{
+                price:pricedeliverynow.value,
+                order_id:order_id.value
+            }).then((res)=>{
+                closePriceDeliveryNowModal();
+                getCheckoutItems();
+            }).catch((err)=>{
+
+            }).finally(()=>{
+                
+            });
+        }
+
+        const handleAllowNumbers = (e) => {//handle price format xxxxx.xx
+
+        let s=e.target.value.split('.');
+        if(typeof s[1]!="undefined"&&s[1].length==2){
+             if (e.target.type === "number" && ["Backspace","Delete"].includes(e.key)!=true) {
+                e.preventDefault();
+            }
+        }else if(e.target.value.includes('.')){
+            if (e.target.type === "number" && ["0","1","2","3","4","5","6","7","8","9","Backspace","Delete"].includes(e.key)!=true) {
+                e.preventDefault();
+            }
+        }else{    
+            if (e.target.type === "number" && ["0","1","2","3","4","5","6","7","8","9","Backspace","Delete","."].includes(e.key)!=true) {
+                e.preventDefault();
+            }
+        }
+        };
         return {
             order_id,
             paths,
@@ -1229,6 +1373,7 @@ export default {
             credit_to_deduct,
             cust_discount,
             upcharges,
+            bundles,
             order_without_upcharges,
             amount_without_credit,
             amount_diff,
@@ -1248,8 +1393,16 @@ export default {
             failed_delivery_price,
             price_plus_delivery,
             order_bundles,
+            setTerminalPay,
+            stripePay,
+            cancelTerminalRequest,
+            formatPrice,
+            price_delivery_now_modal,
+            closePriceDeliveryNowModal,
+            savePriceDeliveryNow,
+            pricedeliverynow,
+            handleAllowNumbers
         }
-
     },
 }
 </script>
@@ -1581,7 +1734,7 @@ export default {
 }
 
 .total-text{
-    border-bottom: thin solid #c3c3c3;
+    border-top: thin solid #c3c3c3;
 }
 
 .balance-text{
@@ -1723,4 +1876,32 @@ export default {
     */
 }
 
+#cancelTerminalBtn{
+    background:#fff;
+}
+
+#cancelTerminalBtn:hover{
+    background:#EB5757;
+}
+.modal-header-deliverypricenow{
+    background-color:#F8F8F8 ;
+    font:bold 22px "Gilroy";
+    color:#141414;
+}
+
+#price_delivery_now_modal_close{
+    top:23px;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
 </style>

@@ -145,7 +145,7 @@
                           name: formModal.value.lastName +','+ formModal.value.firstName, 
                           accountType: 'Sub',
                           phoneNumber: formModal.value.phoneNumber,
-                          phoneCountryCode: formModal.value.phoneCountryCode,
+                          phoneCountryCode: formModal.value.phoneNumber != '' ? formModal.value.phoneCountryCode : '',
                           email: formModal.value.email, 
                           date: '', 
                           spent: 0,
@@ -154,11 +154,12 @@
                     
                     props.form.linkedAccounts.push(data);
                     // add function create sub account in edit customer
-                    if(route.name = "ViewCustomer"){
-            
+                    if(route.name == "ViewCustomer"){
                         axios.post('/create-customer-sub-account',{
                                 customer_data: data,
-                                customer_id : props.form.customerID
+                                customer_id : props.form.customerID,
+                                CustomerPayemenProfile : props.form.CustomerPayemenProfile,
+                                typeDelivery : props.form.typeDelivery
                             }).then((res)=>{
                             close();
                             }).catch((error)=>{

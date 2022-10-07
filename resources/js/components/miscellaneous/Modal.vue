@@ -1,6 +1,6 @@
 <template>
 <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
-    <div v-if="show_modal" class="bmodal-overlay">
+    <div v-if="show_modal" class="bmodal-overlay" :class="{invisible:invisible}">
         <div class="bmodal-container" id="myModal" v-if="show_modal">
             <slot name="closebtn">
                  <span class="close" @click="closeModal"></span>
@@ -53,6 +53,7 @@ export default {
     },
     setup(props, context){
         const show_modal = ref(false);
+        const invisible=ref(false);
 
         const closeModal = ()=>{
             show_modal.value = false;
@@ -67,14 +68,32 @@ export default {
 
         }
 
+        const makeInvisible=()=>{
+            invisible.value=true;
+        }
+
+        const makeVisible=()=>{
+            invisible.value=false;
+        }
+
         return {
             show_modal,
             closeModal,
-            showModal
+            showModal,
+            invisible,
+            makeInvisible,
+            makeVisible
+
         }
     }
 };
 </script>
 <style scoped>
-
+.bmodal-overlay{
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;;
+}
+.invisible{
+ opacity: 0;
+}
 </style>
