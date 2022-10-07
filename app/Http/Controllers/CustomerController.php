@@ -902,7 +902,7 @@ class CustomerController extends Controller
             ->select('infoCustomer.id',
               DB::raw(' IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as type'),
               DB::raw(
-                'CASE WHEN infoCustomer.CustomerIDMaster = "" THEN "Main"
+                'CASE WHEN infoCustomer.isMaster = 1  OR infoCustomer.CustomerIDMaster = "" THEN "Main"
                       WHEN infoCustomer.isMasterAccount = 1 THEN "Master"
                       WHEN infoCustomer.CustomerIDMaster <> "" THEN "Sub"
                 END as level'
@@ -943,7 +943,7 @@ class CustomerController extends Controller
                             'infoCustomer.id',
                             DB::raw('IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as type'),
                             DB::raw(
-                                'CASE WHEN infoCustomer.CustomerIDMaster = "" THEN "Main"
+                                'CASE WHEN infoCustomer.isMaster = 1 OR infoCustomer.CustomerIDMaster = "" THEN "Main"
                                       WHEN infoCustomer.isMasterAccount = 1 THEN "Master"
                                       WHEN infoCustomer.CustomerIDMaster <> "" THEN "Sub"
                                 END as level'
