@@ -901,6 +901,12 @@ class CustomerController extends Controller
             })
             ->select('infoCustomer.id',
               DB::raw(' IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as type'),
+              DB::raw(
+                'CASE WHEN infoCustomer.CustomerIDMaster = "" THEN "Main"
+                      WHEN infoCustomer.isMasterAccount = 1 THEN "Master"
+                      WHEN infoCustomer.CustomerIDMaster <> "" THEN "Sub"
+                END as level'
+                ),
               DB::raw('LCASE(infoCustomer.TypeDelivery) as active_in'),
               DB::raw('LCASE(infoCustomer.Name) as name'),
               DB::raw('IF(infoCustomer.Phone = "", "--", infoCustomer.Phone) as phone'),
@@ -921,7 +927,6 @@ class CustomerController extends Controller
                     // and so on
                 });
             }
-
             $customers = $customers->groupBy('infoCustomer.CustomerID')->orderBy('infoCustomer.id', 'DESC');
 
         }else {
@@ -937,6 +942,12 @@ class CustomerController extends Controller
                         ->select(
                             'infoCustomer.id',
                             DB::raw('IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as type'),
+                            DB::raw(
+                                'CASE WHEN infoCustomer.CustomerIDMaster = "" THEN "Main"
+                                      WHEN infoCustomer.isMasterAccount = 1 THEN "Master"
+                                      WHEN infoCustomer.CustomerIDMaster <> "" THEN "Sub"
+                                END as level'
+                            ),
                             DB::raw('LCASE(infoCustomer.TypeDelivery) as active_in'),
                             DB::raw('LCASE(infoCustomer.Name) as name'),
                             //DB::raw('CONCAT_WS(", ", CONCAT_WS(" ", address.address1, address.address2), address.Town, address.Country, address.postcode) as address'),
@@ -2275,8 +2286,15 @@ class CustomerController extends Controller
                     $list[$v->CustomerID]['active_in'] = $v->TypeDelivery;
                     $list[$v->CustomerID]['name'] = $v->Name;
                     $list[$v->CustomerID]['email'] = $v->EmailAddress;
-
                     $list[$v->CustomerID]['phone'] = $v->Phone;
+
+                    if($v->CustomerIDMaster=='' && $v->IsMaster==1){
+                        $list[$v->CustomerID]['level'] = "Main";
+                    } else if ($v->CustomerIDMaster!=''){
+                        $list[$v->CustomerID]['level'] = "Sub";
+                    } else if ($v->isMasterAccount = 1){
+                        $list[$v->CustomerID]['level'] = "Master";
+                    }
                 }
             }
         }

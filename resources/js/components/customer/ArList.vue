@@ -22,6 +22,8 @@
                     <!-- Customer Type -->
                     <!--  -->
                     <td valign="middle"><span class="rounded-pill" :class="customer.type.toLowerCase()">{{ customer.type }}</span></td>
+                    <!-- Level -->
+                    <td class="fw-16" valign="middle">{{ customer.level }}</td>
                     <!-- active in -->
                     <td class="fw-16 text-capitalize" valign="middle"><span>{{ customer.active_in }}</span></td>
                     <!-- Customer Name -->
@@ -145,6 +147,11 @@ export default {
                     label: 'Type',
                     key: 'type',
                     thClass: 'customer-table-th text-center',
+                },
+                {
+                    label: 'Level',
+                    key: 'level',
+                    thClass: 'customer-table-th',
                 },
                 {
                     label: 'Active in',
