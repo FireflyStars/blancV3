@@ -105,7 +105,7 @@ class DetailingController extends Controller
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
         if($order->Status=="FULFILLED")
         return;
-            $detailingitemlist = DB::table('detailingitem')->select(['detailingitem.id','typeitem.pricecleaning','brands.coefcleaning','detailingitem.complexities_id','detailingitem.fabric_id','detailingitem.cleaning_services','detailingitem.etape','detailingitem.status','detailingitem.cleaning_price_type','detailingitem.dry_cleaning_price'])
+            $detailingitemlist = DB::table('detailingitem')->select(['detailingitem.id','typeitem.pricecleaning','brands.coefcleaning','detailingitem.complexities_id','detailingitem.fabric_id','detailingitem.cleaning_services','detailingitem.etape','detailingitem.status','detailingitem.cleaning_price_type','detailingitem.dry_cleaning_price','detailingitem.cleaning_addon_price'])
                 ->join('typeitem', 'detailingitem.typeitem_id', 'typeitem.id')
                 ->join('brands', 'detailingitem.brand_id', 'brands.id')
                 ->where('detailingitem.order_id', '=', $order_id)
@@ -158,7 +158,7 @@ class DetailingController extends Controller
         $order_id=$request->post('order_id');
         $price=$request->post('price');
 
-        $updated=DB::table('infoOrder')->where('id','=',$order_id)->where('Status','<>','FULFILLED')->update([
+        $updated=DB::table('infoOrder')->where('id','=',$order_id)->where('TypeDelivery','<>','DELIVERY')->where('Status','<>','FULFILLED')->update([
             'DeliveryNowFee'=>$price,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
