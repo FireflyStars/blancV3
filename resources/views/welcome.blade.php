@@ -8,7 +8,7 @@
               href="/images/icon.png">
 
         <title>Blanc &copy;</title>
-        <link  rel="stylesheet" href="{{ mix('css/app.css') }}">
+        <link  rel="stylesheet" href="{{ asset('css/app.css') }}">
         <script src="https://js.stripe.com/terminal/v1/"></script>
         <!--
         <script src="https://js.stripe.com/v3/"></script>
@@ -18,5 +18,5 @@
     </body>
 
     <script defer src="https://maps.googleapis.com/maps/api/js?&libraries=geometry,places&key=AIzaSyBzskMTlZlX35Ai_39lAq4lDJ7sQVWTFmY"></script>
-    <script src="{{ mix('js/app.js') }}"></script>
+    <script src="{{ asset('js/app.js') }}"></script>
 </html>

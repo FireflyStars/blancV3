@@ -10,6 +10,7 @@
                             <select class="form-select form-select-sm d-flex" v-model="pieChart1">
                                 <option>channel</option>
                                 <option>item type</option>
+                                <option>department</option>
                             </select>
                         </div>
                     </h3>
@@ -28,7 +29,13 @@
                                 <div class="col-5">£{{ channel.amount }}</div>
                             </div>
                         </div>
-                        <div class="col-5" id="saleByOrigin" style="height: 150px">
+                        <div class="col-5">
+                            <div id="saleByOrigin" style="height: 150px">
+                                
+                            </div>
+                            <div class="mt-3" v-if="pieChart1== 'item type'">
+                                Other: £{{ salesByTypeitemTotalOfItem - salesByTypeitemTotal }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -41,6 +48,7 @@
                             <select class="form-select form-select-sm d-flex" v-model="pieChart2">
                                 <option>channel</option>
                                 <option>item type</option>
+                                <option>department</option>
                             </select>
                         </div>
                     </h3>
@@ -281,6 +289,8 @@ export default {
         const pieChart1 = ref('channel');
         const pieChart2 = ref('item type');
         const salesByChannelTotal = ref(0);
+        const salesByTypeitemTotal = ref(0);
+        const salesByTypeitemTotalOfItem = ref(0);
         const salesByChannelTotalToCompare = ref(0);
         const salesByItemTotal = ref(0);
         const salesByItemTotalToCompare = ref(0);
@@ -358,6 +368,8 @@ export default {
                 salesByChannelChartData.value = res.data.salesByChannel;
                 salesByChannelTotal.value = res.data.salesByChannelTotal;
                 salesByChannelTotalToCompare.value = res.data.salesByChannelTotalToCompare;
+                salesByTypeitemTotal.value = res.data.salesByTypeitemTotal;
+                salesByTypeitemTotalOfItem.value = res.data.salesByTypeitemTotalOfItem;
 
                 piecesByItemChartData.value = res.data.piecesByItem;
                 salesByItemTotal.value = res.data.salesByItemTotal;
@@ -471,24 +483,24 @@ export default {
             if(salesByChannelTotal.value > salesByChannelTotalToCompare.value && salesByChannelTotalToCompare.value == 0){
                 percent = "--";
             }
-            let originLabel;
-            if(pieChart1.value == 'channel'){
-                originLabel = salesByChannelChartSeries.children.push(am5.Label.new(salesByChannelChartRoot, {
-                    text: "£{valueSum.formatNumber('#,###.')}\n   "+ percent,
-                    centerX: am5.percent(50),
-                    centerY: am5.percent(50),
-                    fontSize: 20,
-                    populateText: true
-                }));
-            }else{
-                originLabel = salesByChannelChartSeries.children.push(am5.Label.new(salesByChannelChartRoot, {
-                    text: "£{valueSum.formatNumber('#,###.')}\n   "+ percent,
-                    centerX: am5.percent(50),
-                    centerY: am5.percent(50),
-                    fontSize: 20,
-                    populateText: true
-                }));
-            }
+            // let originLabel;
+            let originLabel = salesByChannelChartSeries.children.push(am5.Label.new(salesByChannelChartRoot, {
+                text: "£{valueSum.formatNumber('#,###.')}\n   "+ percent,
+                centerX: am5.percent(50),
+                centerY: am5.percent(50),
+                fontSize: 20,
+                populateText: true
+            }));
+            // if(pieChart1.value == 'channel'){
+            // }else{
+            //     originLabel = salesByChannelChartSeries.children.push(am5.Label.new(salesByChannelChartRoot, {
+            //         text: "£{valueSum.formatNumber('#,###.')}\n   "+ percent,
+            //         centerX: am5.percent(50),
+            //         centerY: am5.percent(50),
+            //         fontSize: 20,
+            //         populateText: true
+            //     }));
+            // }
             // Set data
             salesByChannelChartSeries.data.setAll(salesByChannelChartData.value);
             salesByChannelChartSeries.onPrivate("valueSum", function(){
@@ -552,24 +564,24 @@ export default {
             if(salesByItemTotal.value > salesByItemTotalToCompare.value && salesByItemTotalToCompare.value == 0){
                 percent = "--";
             }
-            let clientLabel;
-            if(pieChart2.value == 'item type'){
-                clientLabel = piecesByItemChartSeries.children.push(am5.Label.new(piecesByItemChartRoot, {
-                    text: "{valueSum.formatNumber('#,###.')}\n   " + percent,
-                    centerX: am5.percent(50),
-                    centerY: am5.percent(50),
-                    fontSize: 20,
-                    populateText: true
-                }));
-            }else{
-                clientLabel = piecesByItemChartSeries.children.push(am5.Label.new(piecesByItemChartRoot, {
-                    text: "{valueSum.formatNumber('#,###.')}\n   " + percent,
-                    centerX: am5.percent(50),
-                    centerY: am5.percent(50),
-                    fontSize: 20,
-                    populateText: true
-                }));
-            }
+            // let clientLabel;
+            let clientLabel = piecesByItemChartSeries.children.push(am5.Label.new(piecesByItemChartRoot, {
+                text: "{valueSum.formatNumber('#,###.')}\n   " + percent,
+                centerX: am5.percent(50),
+                centerY: am5.percent(50),
+                fontSize: 20,
+                populateText: true
+            }));
+            // if(pieChart2.value == 'item type'){
+            // }else{
+            //     clientLabel = piecesByItemChartSeries.children.push(am5.Label.new(piecesByItemChartRoot, {
+            //         text: "{valueSum.formatNumber('#,###.')}\n   " + percent,
+            //         centerX: am5.percent(50),
+            //         centerY: am5.percent(50),
+            //         fontSize: 20,
+            //         populateText: true
+            //     }));
+            // }
             // Set data
             piecesByItemChartSeries.data.setAll(piecesByItemChartData.value);
             piecesByItemChartSeries.onPrivate("valueSum", function(){
@@ -862,6 +874,8 @@ export default {
 
             salesByChannelTotal,
             salesByChannelTotalToCompare,
+            salesByTypeitemTotal,
+            salesByTypeitemTotalOfItem,
             salesByItemTotal,
             salesByItemTotalToCompare,
 

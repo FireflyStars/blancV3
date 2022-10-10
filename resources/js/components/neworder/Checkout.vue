@@ -188,7 +188,7 @@
                                             <div class="col-4">Subtotal</div>
                                             <div class="col-5 sub-total-desc">{{order_items.length}} item<span v-if="order_items.length > 1">s</span> (Incl. VAT)</div>
 
-                                        
+
                                             <div class="col-3 text-align-right">{{formatPrice(order.Subtotal)}}</div>
 
                                         </div>
@@ -231,26 +231,26 @@
 
 
 
-                                        <div class="row px-0 mt-1 mb-3 pt-2 total-text">
+                                        <div class="row px-0 mt-1 pt-2 total-text" :class="{'mb-3':order.TypeDelivery=='DELIVERY'}">
                                             <div class="col-9">Total (inc discount)</div>
                                             <div class="col-3 text-align-right">{{formatPrice(order.SubtotalWithDiscount)}}</div><!--total_inc_vat-->
                                         </div>
-                                         <div class="row px-0 mt-2 sub-total-text" v-if="order.FailedDelivery == 1">
+                                         <div class="row px-0 mt-2 sub-total-text" v-if="order.FailedDelivery == 1 && order.TypeDelivery=='DELIVERY'">
                                             <div class="col-9">Failed delivery</div>
                                             <div class="col-3 text-align-right">+{{formatPrice(order.FailedDeliveryCharge)}}</div>
                                         </div>
-                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.DeliveryNowFee!=null">
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.DeliveryNowFee!=null && order.TypeDelivery=='DELIVERY'">
                                             <div class="col-9">Delivery fee</div>
                                             <div class="col-3 text-align-right">+{{formatPrice(order.DeliveryNowFee)}}</div>
                                         </div>
-                                        <div class="row px-0 mt-2 sub-total-text" v-else-if="order.AutoDeliveryFee > 0">
+                                        <div class="row px-0 mt-2 sub-total-text" v-else-if="order.AutoDeliveryFee > 0 && order.TypeDelivery=='DELIVERY'">
                                             <div class="col-9">Delivery fee</div>
                                             <div class="col-3 text-align-right">+{{formatPrice(order.AutoDeliveryFee)}}</div>
                                         </div>
-                                          <div class="row px-0 mt-2 sub-total-text" v-else>
+                                          <div class="row px-0 mt-2 sub-total-text" v-else :class="{'d-none':order.TypeDelivery!='DELIVERY'}">
                                             <div class="col-12">Free Delivery</div>
                                         </div>
-                                        <div class="row px-0 mt-1 mb-3 pt-2  total-text">
+                                        <div class="row px-0 mt-1 mb-3 pt-2  total-text" v-if="order.TypeDelivery=='DELIVERY'">
                                             <div class="col-9">Total (inc discount & delivery fees)</div>
                                             <div class="col-3 text-align-right">{{formatPrice(order.Total)}}</div>
                                         </div>
@@ -763,15 +763,15 @@
         </template>
         <template #bcontent>
         <div class="row mb-5 justify-content-center">
-       
+
                 <div class="col-4 form-group pt-3">
                         <label class="form-label body_medium">Enter Price</label>
                     <div class="input-group"><span class="input-group-text fw-bold" style="background: none;">£</span>
                         <input @keydown="handleAllowNumbers($event)" v-model="pricedeliverynow" style="border-left: medium none; fill: transparent;" type="number" step="0.1" class="form-control" placeholder="0.00"/>
                     </div>
                 </div>
-           
-              
+
+
         </div>
         </template>
         <template #mbuttons>
@@ -916,13 +916,13 @@ export default {
                 order_balance.value = res.data.order.balance;
                 cust_credit.value = res.data.cust.credit;
 
-                amount_to_pay.value = res.data.amount_to_pay;
+                amount_to_pay.value = res.data.order.TotalDue;//res.data.amount_to_pay;
                 amount_paid.value = res.data.amount_paid;
                 amount_paid_card.value = res.data.amount_paid_card;
                 amount_paid_credit.value = res.data.amount_paid_credit;
                 discount_perc.value = res.data.discount_perc;
                 created_date.value = res.data.created_date;
-                credit_to_deduct.value = res.data.credit_to_deduct;
+                credit_to_deduct.value = res.data.order.TotalDue;//res.data.credit_to_deduct;
                 order_discount.value = res.data.order.DiscountPerc;
                 cust_discount.value = res.data.cust_discount;
                 upcharges.value = res.data.order_addon;
@@ -1180,7 +1180,7 @@ export default {
             }).catch((err)=>{
 
             }).finally(()=>{
-                
+
             });
                 }else{
                     price_delivery_now_modal.value.showModal();
@@ -1321,7 +1321,7 @@ export default {
             }).catch((err)=>{
 
             }).finally(()=>{
-                
+
             });
         }
 
@@ -1336,7 +1336,7 @@ export default {
             if (e.target.type === "number" && ["0","1","2","3","4","5","6","7","8","9","Backspace","Delete"].includes(e.key)!=true) {
                 e.preventDefault();
             }
-        }else{    
+        }else{
             if (e.target.type === "number" && ["0","1","2","3","4","5","6","7","8","9","Backspace","Delete","."].includes(e.key)!=true) {
                 e.preventDefault();
             }
