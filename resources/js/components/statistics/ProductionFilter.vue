@@ -33,7 +33,7 @@
             <div class="col-6">
                 <h5>Date range</h5>
                 <div class="row mt-4">
-                    <switch-btn v-model="customFilter" label-left="Filtre" label-right="" ></switch-btn>
+                    <switch-btn v-model="customFilter" label-left="Use date picker" label-right="" ></switch-btn>
                 </div>
                 <div class="row mt-4"  v-if="!customFilter">
                     <div class="col-10">
@@ -43,12 +43,12 @@
                 <div v-if="customFilter">
                     <div class="row mt-4">
                         <div class="col-3">
-                            <date-picker v-model="startDate" @update:modelValue="newValue => startDate = newValue" name="start_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Début" :disabled-from-date="startDisabledtodate"></date-picker>
+                            <date-picker v-model="startDate" @update:modelValue="newValue => startDate = newValue" name="start_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Start" :disabled-from-date="startDisabledtodate"></date-picker>
                         </div>
                     </div>
                     <div class="row mt-4">
                         <div class="col-3">
-                            <date-picker v-model="endDate" @update:modelValue="newValue => endDate = newValue" name="end_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Fin" :disabled-from-date="endDisabledtodate"></date-picker>
+                            <date-picker v-model="endDate" @update:modelValue="newValue => endDate = newValue" name="end_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="End" :disabled-from-date="endDisabledtodate"></date-picker>
                         </div>
                     </div>
                 </div>
@@ -56,7 +56,7 @@
             <div class="col-6">
                 <h5>Previous range</h5>
                 <div class="row mt-4">
-                    <switch-btn v-model="compareCustomFilter" label-left="Filtre" label-right="" ></switch-btn>
+                    <switch-btn v-model="compareCustomFilter" label-left="Use date picker" label-right="" ></switch-btn>
                 </div>
                 <div class="row mt-4"  v-if="!compareCustomFilter">
                     <div class="col-10">
@@ -66,12 +66,12 @@
                 <div v-if="compareCustomFilter">
                     <div class="row mt-4">
                         <div class="col-3">
-                            <date-picker v-model="compareStartDate" @update:modelValue="newValue => compareStartDate = newValue" name="pre_start_date" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}" label="Début" :disabled-from-date="startDisabledtodate"></date-picker>
+                            <date-picker v-model="compareStartDate" @update:modelValue="newValue => compareStartDate = newValue" name="pre_start_date" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}" label="Start" :disabled-from-date="startDisabledtodate"></date-picker>
                         </div>
                     </div>
                     <div class="row mt-4">
                         <div class="col-3">
-                            <date-picker v-model="compareEndDate" @update:modelValue="newValue => compareEndDate = newValue" name="pre_end_date" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}" label="Fin" :disabled-from-date="endDisabledtodate"></date-picker>
+                            <date-picker v-model="compareEndDate" @update:modelValue="newValue => compareEndDate = newValue" name="pre_end_date" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}" label="End" :disabled-from-date="endDisabledtodate"></date-picker>
                         </div>
                     </div>
                 </div>
