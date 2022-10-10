@@ -9,7 +9,8 @@
                 :class="{ selected: complexities_id.includes(comp.id) }"
             >
                 <div class="complexity-name">{{ comp.name }}</div>
-                <div>(£{{ (comp.coefcleaning * item_description.base_price).toFixed(2) }})</div>
+                <div v-if="((comp.coefcleaning * item_description.base_price).toFixed(2)).includes('-')">(- £{{ (comp.coefcleaning * item_description.base_price).toFixed(2).replace("-","") }})</div>
+                <div v-else>(£{{ (comp.coefcleaning * item_description.base_price).toFixed(2) }})</div>
             </div>
             <div class="box complexity complexity-name"
                 @click="select(0)"
