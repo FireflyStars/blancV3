@@ -2671,12 +2671,12 @@ class StatisticsController extends Controller
         $invoices = Db::table('infoitems')
             ->select(
                 'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode',
-                'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%d/%m") as prod'), 'infoitems.id AS item_id',
+                'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%d/%m/%Y") as prod'), 'infoitems.id AS item_id',
                 'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
                 'infoitems.idPartner', 'TypePost.bg_color as location_color', 'TypePost.process','TypePost.circle_color',
-                DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),                    
+                DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%d/%m/%Y") as deliv'),                    
                 'infoitems.idPartner', 'TypePost.bg_color as location_color', 'TypePost.process','TypePost.circle_color',
-                DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),
+                DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%d/%m/%Y") as deliv'),
                 // DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as deliv')
                 )
             ->where('infoitems.PromisedDate', $operator, $date_stats);
