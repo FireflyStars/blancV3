@@ -231,26 +231,26 @@
 
 
 
-                                        <div class="row px-0 mt-1 mb-3 pt-2 total-text">
+                                        <div class="row px-0 mt-1 pt-2 total-text" :class="{'mb-3':order.TypeDelivery=='DELIVERY'}">
                                             <div class="col-9">Total (inc discount)</div>
                                             <div class="col-3 text-align-right">{{formatPrice(order.SubtotalWithDiscount)}}</div><!--total_inc_vat-->
                                         </div>
-                                         <div class="row px-0 mt-2 sub-total-text" v-if="order.FailedDelivery == 1">
+                                         <div class="row px-0 mt-2 sub-total-text" v-if="order.FailedDelivery == 1 && order.TypeDelivery=='DELIVERY'">
                                             <div class="col-9">Failed delivery</div>
                                             <div class="col-3 text-align-right">+{{formatPrice(order.FailedDeliveryCharge)}}</div>
                                         </div>
-                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.DeliveryNowFee!=null">
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.DeliveryNowFee!=null && order.TypeDelivery=='DELIVERY'">
                                             <div class="col-9">Delivery fee</div>
                                             <div class="col-3 text-align-right">+{{formatPrice(order.DeliveryNowFee)}}</div>
                                         </div>
-                                        <div class="row px-0 mt-2 sub-total-text" v-else-if="order.AutoDeliveryFee > 0">
+                                        <div class="row px-0 mt-2 sub-total-text" v-else-if="order.AutoDeliveryFee > 0 && order.TypeDelivery=='DELIVERY'">
                                             <div class="col-9">Delivery fee</div>
                                             <div class="col-3 text-align-right">+{{formatPrice(order.AutoDeliveryFee)}}</div>
                                         </div>
-                                          <div class="row px-0 mt-2 sub-total-text" v-else>
+                                          <div class="row px-0 mt-2 sub-total-text" v-else :class="{'d-none':order.TypeDelivery!='DELIVERY'}">
                                             <div class="col-12">Free Delivery</div>
                                         </div>
-                                        <div class="row px-0 mt-1 mb-3 pt-2  total-text">
+                                        <div class="row px-0 mt-1 mb-3 pt-2  total-text" v-if="order.TypeDelivery=='DELIVERY'">
                                             <div class="col-9">Total (inc discount & delivery fees)</div>
                                             <div class="col-3 text-align-right">{{formatPrice(order.Total)}}</div>
                                         </div>
