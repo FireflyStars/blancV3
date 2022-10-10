@@ -233,17 +233,17 @@
                                             <transition name="popinout">
                                                 <div class="row mt-3" v-if="deliverymethod=='home_delivery'&&!isRecurring">
                                                     <div class="col-3">
-                                                        <date-picker v-model="hd_pickup" name="hd_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Pick up" :disabledToDate="yesterday" :disabledFromDate="hd_delivery"  @loadtranche="loadtranche('hd_pickup')" ref="hd_pickup_datepicker" :disabledSunday="true" :available-days="available_days" :disabledDates="holidays"></date-picker>
+                                                        <date-picker v-model="hd_pickup" name="hd_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="date" :disabledToDate="yesterday" :disabledFromDate="hd_delivery"  @loadtranche="loadtranche('hd_pickup')" ref="hd_pickup_datepicker" :disabledSunday="true" :available-days="available_days" :disabledDates="holidays"></date-picker>
                                                     </div>
                                                     <div class="col-3">
-                                                        <time-slot-picker v-model="hd_pickup_timeslot"   name="hd_pickup_timeslot" :available-slots="hd_pickup_tranche"  label=" "></time-slot-picker>
+                                                        <time-slot-picker v-model="hd_pickup_timeslot"   name="hd_pickup_timeslot" :available-slots="hd_pickup_tranche"  label="Pick up time"></time-slot-picker>
                                                     </div>
 
                                                     <div class="col-3">
-                                                        <date-picker v-model="hd_delivery" name="hd_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="addRemoveDays('add',3,hd_pickup)"   @loadtranche="loadtranche('hd_delivery')" ref="hd_delivery_datepicker" :disabledSunday="true" :available-days="available_days" :disabledDates="holidays"></date-picker>
+                                                        <date-picker v-model="hd_delivery" name="hd_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="date" :disabledToDate="addRemoveDays('add',3,hd_pickup)"   @loadtranche="loadtranche('hd_delivery')" ref="hd_delivery_datepicker" :disabledSunday="true" :available-days="available_days" :disabledDates="holidays"></date-picker>
                                                     </div>
                                                     <div class="col-3">
-                                                        <time-slot-picker v-model="hd_delivery_timeslot"   name="hd_delivery_timeslot" :available-slots="hd_delivery_tranche"  label=" "></time-slot-picker>
+                                                        <time-slot-picker v-model="hd_delivery_timeslot"   name="hd_delivery_timeslot" :available-slots="hd_delivery_tranche"  label="Delivery time"></time-slot-picker>
                                                     </div>
                                                 </div>
                                             </transition>
