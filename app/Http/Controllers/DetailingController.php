@@ -1155,7 +1155,7 @@ class DetailingController extends Controller
 
         if($order->TypeDelivery=='DELIVERY'&&$_SUBTOTAL_WITH_DISCOUNT<25)
             $_AUTO_DELIVERY_FEE=25-$_SUBTOTAL_WITH_DISCOUNT;
-        if($_DELIVERY_NOW_FEE>=0)
+        if($_DELIVERY_NOW_FEE>=0&&$_DELIVERY_NOW_FEE!=null)
         $_AUTO_DELIVERY_FEE=0;// Si on a un price Delivery now >> cela efface le Auto Delivery
        
         //Total = SubTotal inc Discount + Failed delivery + DeliveryNowFee + AutoDeliveryFee

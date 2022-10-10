@@ -240,7 +240,7 @@
                                             <div class="col-3 text-align-right">+{{formatPrice(order.FailedDeliveryCharge)}}</div>
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text" v-if="order.DeliveryNowFee!=null">
-                                            <div class="col-9">Delivery now fee</div>
+                                            <div class="col-9">Delivery fee</div>
                                             <div class="col-3 text-align-right">+{{formatPrice(order.DeliveryNowFee)}}</div>
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text" v-else-if="order.AutoDeliveryFee > 0">
