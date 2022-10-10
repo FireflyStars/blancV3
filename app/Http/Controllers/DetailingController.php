@@ -1152,11 +1152,16 @@ class DetailingController extends Controller
 
         $_SUBTOTAL_WITH_DISCOUNT=$_SUBTOTAL-$_ACCOUNT_DISCOUNT-$_ORDER_DISCOUNT-$_BUNDLES_DISCOUNT+$_EXPRESS_CHARGES_PRICE-$_VOUCHER_DISCOUNT;
 
-
+       
+       
         if($order->TypeDelivery=='DELIVERY'&&$_SUBTOTAL_WITH_DISCOUNT<25)
             $_AUTO_DELIVERY_FEE=25-$_SUBTOTAL_WITH_DISCOUNT;
-        if($_DELIVERY_NOW_FEE>=0&&$_DELIVERY_NOW_FEE!=null)
-        $_AUTO_DELIVERY_FEE=0;// Si on a un price Delivery now >> cela efface le Auto Delivery
+        
+        
+        if($_DELIVERY_NOW_FEE>=0&&$_DELIVERY_NOW_FEE!==NULL)
+            $_AUTO_DELIVERY_FEE=0;// Si on a un price Delivery now >> cela efface le Auto Delivery
+        
+     
        
         //Total = SubTotal inc Discount + Failed delivery + DeliveryNowFee + AutoDeliveryFee
       
