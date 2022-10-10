@@ -633,7 +633,7 @@ class StatisticsController extends Controller
                             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                             ->select(
                                 'departments.name as channel', 
-                                DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
+                                DB::raw('IFNULL(ROUND(SUM(infoOrder.total)), 0) as amount')
                             )
                             ->groupBy('departments.name')->orderBy('amount', 'DESC')->get();
             $salesByChannelTotal = $salesByChannel->sum('amount');
@@ -643,7 +643,7 @@ class StatisticsController extends Controller
                             ->whereBetween('detailingitem.created_at', $past_period)
                             // ->where('detailingitem.status', 'Completed')
                             ->select(
-                                DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
+                                DB::raw('IFNULL(ROUND(SUM(infoOrder.total)), 0) as amount')
                             )
                             ->value('amount');
         }else{
@@ -654,7 +654,7 @@ class StatisticsController extends Controller
                             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                             ->select(
                                 'categories.name as channel', 
-                                DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
+                                DB::raw('IFNULL(ROUND(SUM(infoOrder.total)), 0) as amount')
                             )
                             ->groupBy('categories.name')->orderBy('amount', 'DESC')->get();
             $salesByChannelTotal = $salesByChannel->sum('amount');
@@ -662,7 +662,7 @@ class StatisticsController extends Controller
                             ->whereBetween('detailingitem.created_at', $past_period)
                             // ->where('detailingitem.status', 'Completed')
                             ->select(
-                                DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
+                                DB::raw('IFNULL(ROUND(SUM(infoOrder.total)), 0) as amount')
                             )
                             ->value('amount');
             $salesByTypeitemTotal = InfoOrder::whereBetween('created_at', $period)
