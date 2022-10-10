@@ -158,7 +158,7 @@ class DetailingController extends Controller
         $order_id=$request->post('order_id');
         $price=$request->post('price');
 
-        $updated=DB::table('infoOrder')->where('id','=',$order_id)->where('Status','<>','FULFILLED')->update([
+        $updated=DB::table('infoOrder')->where('id','=',$order_id)->where('TypeDelivery','<>','DELIVERY')->where('Status','<>','FULFILLED')->update([
             'DeliveryNowFee'=>$price,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
