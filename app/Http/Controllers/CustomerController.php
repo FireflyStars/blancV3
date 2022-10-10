@@ -105,8 +105,8 @@ class CustomerController extends Controller
                                     'TypeDelivery'     => $request->typeDelivery,
                                     'isMaster'      => 0,
                                     'btob'          => 1,
-                                    'FirstName'     => $account['firstname'],
-                                    'LastName'      => $account['lastname'],
+                                    'FirstName'     => $account['firstName'],
+                                    'LastName'      => $account['lastName'],
                                     'Name'          => $account['name'],
                                     'EmailAddress'  => $account['email'],
                                     'Phone'         => $account['phoneNumber']!= '' ? '["'.$account['phoneCountryCode'].'|'.$account['phoneNumber'].']"' : '',
@@ -479,8 +479,8 @@ class CustomerController extends Controller
                 'TypeDelivery'    => $request->typeDelivery,
                 'isMaster'      => 0,
                 'btob'          => 1,
-                'FirstName'     => $request->customer_data['firstname'],
-                'LastName'      => $request->customer_data['lastname'],
+                'FirstName'     => $request->customer_data['firstName'],
+                'LastName'      => $request->customer_data['lastName'],
                 'Name'          => $request->customer_data['name'],
                 'EmailAddress'  => $request->customer_data['email'],
                 'Phone'         => '["'.$request->customer_data['phoneCountryCode'].'|'.$request->customer_data['phoneNumber'].'"]' ,
@@ -1565,7 +1565,7 @@ class CustomerController extends Controller
                                               ->Where('CustomerID','!=',"");
                                     })
                                     ->select(
-                                        DB::raw('IF(isMaster = 1, "Main", "Sub") as accountType'),
+                                        DB::raw('IF(isMaster = 1, "Main", "Sub") as accountType'),'FirstName as firstName', 'LastName as lastName',
                                         'Name as name', 'Phone as phone', 'EmailAddress as email',
                                         DB::raw('IF(SignupDateOnline = "2000-01-01", DATE_FORMAT(SignupDate, "%d/%m/%Y"), DATE_FORMAT(SignupDateOnline, "%d/%m/%Y")) as date'),
                                         'TotalSpend as spent', 'id'

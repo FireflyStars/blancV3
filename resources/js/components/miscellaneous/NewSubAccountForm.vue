@@ -140,8 +140,8 @@
                         }
                     }
                     const data = { id: 0,
-                          lastname : formModal.value.lastName,
-                          firstname : formModal.value.firstName,
+                          lastName : formModal.value.lastName,
+                          firstName : formModal.value.firstName,
                           name: formModal.value.lastName +','+ formModal.value.firstName, 
                           accountType: 'Sub',
                           phoneNumber: formModal.value.phoneNumber,
