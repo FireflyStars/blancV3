@@ -40,7 +40,7 @@ export const invoicelist= {
             'DELIVERED',
             'FAILED DELIVERY',
             'FULFILLED',
-            'In process',
+            'IN PROCESS',
             'OFFLOADED',
             'ON VAN',
             'READY',

@@ -146,10 +146,11 @@ class DetailingController extends Controller
         $order_id=$request->post('order_id');
         $price=$request->post('price');
 
-        DB::table('infoOrder')->where('id',$order_id)->update([
+        $updated=DB::table('infoOrder')->where('id','=',$order_id)->where('Status','<>','FULFILLED')->update([
             'DeliveryNowFee'=>$price,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
+        return response()->json(['updated'=>$updated]);
     }
     public function initDetailing(Request $request)
     {
@@ -1151,10 +1152,16 @@ class DetailingController extends Controller
 
         $_SUBTOTAL_WITH_DISCOUNT=$_SUBTOTAL-$_ACCOUNT_DISCOUNT-$_ORDER_DISCOUNT-$_BUNDLES_DISCOUNT+$_EXPRESS_CHARGES_PRICE-$_VOUCHER_DISCOUNT;
 
-
+       
+       
         if($order->TypeDelivery=='DELIVERY'&&$_SUBTOTAL_WITH_DISCOUNT<25)
             $_AUTO_DELIVERY_FEE=25-$_SUBTOTAL_WITH_DISCOUNT;
         
+        
+        if($_DELIVERY_NOW_FEE>=0&&$_DELIVERY_NOW_FEE!==NULL)
+            $_AUTO_DELIVERY_FEE=0;// Si on a un price Delivery now >> cela efface le Auto Delivery
+        
+     
        
         //Total = SubTotal inc Discount + Failed delivery + DeliveryNowFee + AutoDeliveryFee
       
@@ -1175,6 +1182,7 @@ class DetailingController extends Controller
             'Subtotal'=>number_format($_SUBTOTAL,2),
             'SubtotalWithDiscount'=>number_format($_SUBTOTAL_WITH_DISCOUNT,2),//
             'AccountDiscount'=>number_format($_ACCOUNT_DISCOUNT,2),
+            'AccountDiscountPerc'=>$cust->discount,
             'OrderDiscount'=>number_format($_ORDER_DISCOUNT,2),
             'VoucherDiscount'=>number_format($_VOUCHER_DISCOUNT,2),//
             'bundles'=>number_format($_BUNDLES_DISCOUNT,2),
@@ -1964,7 +1972,7 @@ class DetailingController extends Controller
             $discount_price = 0;
         }
 
-        DB::table('infoOrder')->where('id',$order_id)->update(['DiscountPerc'=>$discount]);
+        DB::table('infoOrder')->where('id',$order_id)->where('Status','<>','FULFILLED')->update(['DiscountPerc'=>$discount]);
 
         return response()->json([
             'post'=>$request->all(),
@@ -2138,8 +2146,12 @@ class DetailingController extends Controller
                 'created_at'=>date('Y-m-d H:i:s'),
 
             ]);
+            if($addon_id==3)
+            DB::table('infoOrder')->where('id',$order_id)->where('Status','<>','FULFILLED')->update(['FailedDelivery'=>1]);
         }else{
-            $updated = DB::table('order_upcharges')->where('upcharges_id',$addon_id)->delete();
+            $updated = DB::table('order_upcharges')->where('order_id',$order_id)->where('upcharges_id',$addon_id)->delete();
+            if($addon_id==3)
+            DB::table('infoOrder')->where('id',$order_id)->where('Status','<>','FULFILLED')->update(['FailedDelivery'=>0]);
         }
 
         return response()->json([

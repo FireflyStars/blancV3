@@ -595,10 +595,10 @@ export default {
 }
 .colour-span {
     display: inline-block;
-    width: 15px !important;
-    height: 15px;
+    width: 20px !important;
+    height: 20px;
     border-radius: 50%;
-    margin: 0 2px;
+    margin: 0 2px 5px;
     border: 1px solid #f8f8f8;
     box-sizing: border-box;
     filter: drop-shadow(0px 0px 4px rgba(80, 80, 80, 0.2));
