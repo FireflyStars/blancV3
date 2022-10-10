@@ -105,7 +105,7 @@ class DetailingController extends Controller
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
         if($order->Status=="FULFILLED")
         return;
-            $detailingitemlist = DB::table('detailingitem')->select(['detailingitem.id','typeitem.pricecleaning','brands.coefcleaning','detailingitem.complexities_id','detailingitem.fabric_id','detailingitem.cleaning_services','detailingitem.etape'])
+            $detailingitemlist = DB::table('detailingitem')->select(['detailingitem.id','typeitem.pricecleaning','brands.coefcleaning','detailingitem.complexities_id','detailingitem.fabric_id','detailingitem.cleaning_services','detailingitem.etape','detailingitem.status','detailingitem.cleaning_price_type','detailingitem.dry_cleaning_price'])
                 ->join('typeitem', 'detailingitem.typeitem_id', 'typeitem.id')
                 ->join('brands', 'detailingitem.brand_id', 'brands.id')
                 ->where('detailingitem.order_id', '=', $order_id)
@@ -129,13 +129,25 @@ class DetailingController extends Controller
                     }
                 }
 
-                $dry_cleaning_price=$detailingitem->pricecleaning + $detailingitem->pricecleaning*$detailingitem->coefcleaning+ $sum_complexites + $sum_fabrics;
+                //Quote
+                $dry_cleaning_price=0;
+                $cleaning_addon_price=0;
+
+                if($detailingitem->cleaning_price_type=='Standard'){
+                    $dry_cleaning_price=$detailingitem->pricecleaning + $detailingitem->pricecleaning*$detailingitem->coefcleaning+ $sum_complexites + $sum_fabrics;
+                    $cleaning_addon_price = $detailingitem->cleaning_addon_price;
+                }else if($detailingitem->cleaning_price_type=='PriceNow'){
+                    $dry_cleaning_price=$detailingitem->dry_cleaning_price;
+                    $cleaning_addon_price = 0;
+                }
 
                 if(($detailingitem->cleaning_services==null||$detailingitem->cleaning_services==''||$detailingitem->cleaning_services=='[]')&&$detailingitem->etape==11)
                 $dry_cleaning_price=0;
 
+
                 DB::table('detailingitem')->where('id', $detailingitem->id)->update([
                     'dry_cleaning_price'=>$dry_cleaning_price,
+                    'cleaning_addon_price'=>$cleaning_addon_price,
                     'updated_at' => date('Y-m-d H:i:s')
                 ]);
             }
@@ -1118,7 +1130,7 @@ class DetailingController extends Controller
         }
 
         $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL;
-        
+
         $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
 
         $_BUNDLES_DISCOUNT=0;
@@ -1152,31 +1164,31 @@ class DetailingController extends Controller
 
         $_SUBTOTAL_WITH_DISCOUNT=$_SUBTOTAL-$_ACCOUNT_DISCOUNT-$_ORDER_DISCOUNT-$_BUNDLES_DISCOUNT+$_EXPRESS_CHARGES_PRICE-$_VOUCHER_DISCOUNT;
 
-       
-       
+
+
         if($order->TypeDelivery=='DELIVERY'&&$_SUBTOTAL_WITH_DISCOUNT<25)
             $_AUTO_DELIVERY_FEE=25-$_SUBTOTAL_WITH_DISCOUNT;
-        
-        
+
+
         if($_DELIVERY_NOW_FEE>=0&&$_DELIVERY_NOW_FEE!==NULL)
             $_AUTO_DELIVERY_FEE=0;// Si on a un price Delivery now >> cela efface le Auto Delivery
-        
-     
-       
+
+
+
         //Total = SubTotal inc Discount + Failed delivery + DeliveryNowFee + AutoDeliveryFee
-      
+
 
         $_TOTAL=$_SUBTOTAL_WITH_DISCOUNT+$_FAILED_DELIVERY_PRICE+$_DELIVERY_NOW_FEE+$_AUTO_DELIVERY_FEE;
-        
-          //TotalDue = Total - SUM(payements) 
-        $_TOTAL_DUE=$_TOTAL-$_AMOUNT_PAID;  
+
+          //TotalDue = Total - SUM(payements)
+        $_TOTAL_DUE=$_TOTAL-$_AMOUNT_PAID;
 
         $_TOTAL_EXC_VAT=$_TOTAL/1.2;
 
         $_TAX_AMOUNT=$_TOTAL-$_TOTAL_EXC_VAT;
 
-      
-    
+
+
 
         $values=array(
             'Subtotal'=>number_format($_SUBTOTAL,2),
@@ -1195,7 +1207,7 @@ class DetailingController extends Controller
             'TaxAmount'=> number_format($_TAX_AMOUNT,2),//
         );
         DB::table('infoOrder')->where('id',$order_id)->update($values);
-        
+
        return $values;
     }
 
