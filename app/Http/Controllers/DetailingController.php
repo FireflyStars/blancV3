@@ -158,7 +158,7 @@ class DetailingController extends Controller
         $order_id=$request->post('order_id');
         $price=$request->post('price');
 
-        $updated=DB::table('infoOrder')->where('id','=',$order_id)->where('Status','<>','FULFILLED')->update([
+        $updated=DB::table('infoOrder')->where('id','=',$order_id)->where('TypeDelivery','<>','DELIVERY')->where('Status','<>','FULFILLED')->update([
             'DeliveryNowFee'=>$price,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
@@ -1117,7 +1117,7 @@ class DetailingController extends Controller
         $_DELIVERY_NOW_FEE=$order->DeliveryNowFee;
         $_AUTO_DELIVERY_FEE=0;
 
-        if($order->FailedDelivery===1)
+        if($order->TypeDelivery=='DELIVERY' && $order->FailedDelivery===1)
             $_FAILED_DELIVERY_PRICE = 5;
 
         $upcharges = DB::table('order_upcharges')->where('order_id',$order_id)->get();
