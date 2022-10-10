@@ -6,13 +6,37 @@
             <div class="row">
                 <div class="mb-2 col-12" v-for="(filterItem, key) in filterDef" :key="key">
                     <div class="form-group" v-if="filterItem.id == 'sub_order_status'">
-                        <Multiselect :label="filterItem.label" style="font-size: 0.875rem !important" :placeholder="filterItem.label" v-model="filterItem.value" :mode="filterItem.mode" :options="orderStatus" />
+                        <Multiselect
+                        v-model="filterItem.value"
+                        :options="orderStatus"
+                        :multiple="false"
+                        :placeholder="filterItem.label"
+                        :show-labels="false"
+                        >
+                        </Multiselect>
                     </div>
                     <div class="form-group" v-if="filterItem.id == 'destination'">
-                        <Multiselect :label="filterItem.label" style="font-size: 0.875rem !important" :placeholder="filterItem.label" v-model="filterItem.value" :mode="filterItem.mode" :options="destinations" />
+                        <Multiselect
+                        v-model="filterItem.value"
+                        :options="destinations"
+                        :multiple="true"
+                        :placeholder="filterItem.label"
+                        :mode="filterItem.mode"
+                        :show-labels="false"
+                        >
+                        </Multiselect>
                     </div>
                     <div class="form-group" v-if="filterItem.id == 'location'">
-                        <Multiselect :label="filterItem.label" style="font-size: 0.875rem !important" :placeholder="filterItem.label" v-model="filterItem.value" :mode="filterItem.mode" :options="locations" />
+
+                        <Multiselect
+                        v-model="filterItem.value"
+                        :options="locations"
+                        :multiple="true"
+                        :placeholder="filterItem.label"
+                        :mode="filterItem.mode"
+                        :show-labels="false"
+                        >
+                        </Multiselect>
                     </div>
                     <div class="form-group " v-if="filterItem.type == 'datepicker'">
                         <KeepAlive>
@@ -48,7 +72,7 @@
     import CheckBox from '../miscellaneous/CheckBox';
     import { useStore } from 'vuex';
     import DateRangePicker from '../miscellaneous/DateRangePicker';
-    import Multiselect from '@vueform/multiselect';
+    import Multiselect from 'vue-multiselect'
     export default {
         name: "Filters",
         props:['filterDef'],
@@ -267,4 +291,4 @@
     }
 
 </style>
-<style src="@vueform/multiselect/themes/default.css"></style>
+<style src="vue-multiselect/dist/vue-multiselect.css"></style>
