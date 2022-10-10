@@ -33,8 +33,8 @@
                             <div id="saleByOrigin" style="height: 150px">
                                 
                             </div>
-                            <div v-if="pieChart1== 'item type'">
-                                £{{ salesByTypeitemTotalOfItem - salesByTypeitemTotal }}
+                            <div class="mt-3" v-if="pieChart1== 'item type'">
+                                Other: £{{ salesByTypeitemTotalOfItem - salesByTypeitemTotal }}
                             </div>
                         </div>
                     </div>
