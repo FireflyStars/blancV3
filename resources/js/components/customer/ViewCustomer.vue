@@ -153,13 +153,13 @@
                                     <div class="d-flex mt-3">
                                         <div class="customer-contact w-55 d-flex justify-content-between">
                                             <div class="form-group m-0">
-                                                <label class="form-label d-block m-0" for="first_name">Representative last name</label>
+                                                <label class="form-label d-block m-0" for="last_name">{{ form.customerType == 'B2C' ? 'Last name *' : 'Representative last name *' }}</label>
                                                 <input v-if="contact_details_edit" type="text" v-model="form.lastName" class="form-control customer-type custom-input" placeholder="Last name">
                                                 <div v-else class="customer-type py-2 rounded-3 bg-color px-3" v-html="form.lastName == '' ? '&nbsp;' : form.lastName">
                                                 </div>
                                             </div>
                                             <div class="form-group m-0">
-                                                <label class="form-label d-block m-0" for="first_name"> Representative first name </label>
+                                                <label class="form-label d-block m-0" for="first_name">{{ form.customerType == 'B2C' ? 'First name  *' : 'Representative first name' }}</label>
                                                 <input v-if="contact_details_edit" type="text" v-model="form.firstName" class="form-control custom-input" placeholder="First name">
                                                 <div v-else style="min-height: 40px;" class="customer-type py-2 rounded-3 bg-color px-3" v-html="form.firstName == '' ? '&nbsp;' : form.firstName">
                                                 </div>
