@@ -175,18 +175,18 @@
                                                 <div class="col-12 mb-4">
                                                     <div class="row">
                                                         <div class="col">
-                                                            <select-options v-model="store_name" id="isc_store_name" :disabled="store_name_disabled" :options="storenames" label="Store" placeholder="Choose store" classnames="storenames"></select-options>
+                                                            <select-options v-model="store_name" id="isc_store_name" :disabled="store_name_disabled" :options="storenames" label="Choose a store" placeholder="Choose store" classnames="storenames"></select-options>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="col-3">
                                                     <!--<date-picker v-model="isc_dropoff" name="isc_dropoff" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Drop off" :disabledToDate="yesterday"></date-picker>
                                                     -->
-                                                    <label for="isc_dropoff">Drop off</label>
+                                                    <label for="isc_dropoff">date</label>
                                                     <input type="text" class="form-control" :value="getCurDateTime('date')" readonly id="isc_dropoff"/>
                                                 </div>
                                                 <div class="col-3">
-                                                    <label for="isc_dropoff_time"></label>
+                                                    <label for="isc_dropoff_time">Drop off time</label>
                                                     <input type="text" class="form-control" :value="getCurDateTime('time')" readonly id="isc_dropoff_time"/>
 
                                                     <!--
@@ -195,7 +195,7 @@
                                                 </div>
 
                                                 <div class="col-3">
-                                                    <date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Collection" :disabledToDate="getCurDateTime('datedb')" @loadtranche="checkStorePickup" :disabledSunday="true" :disabled="isc_pickup_disabled" :disabledDates="holidays"></date-picker>
+                                                    <date-picker v-model="isc_pickup" name="isc_pickup" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="date" :disabledToDate="getCurDateTime('datedb')" @loadtranche="checkStorePickup" :disabledSunday="true" :disabled="isc_pickup_disabled" :disabledDates="holidays"></date-picker>
                                                 </div>
                                                 <div class="col-3">
                                                     <time-slot-picker v-model="isc_pickup_timeslot" :disabled="isc_pickup_timeslot_disabled"   name="isc_pickup_timeslot" :available-slots="[11]"  label="Collection Time" :isStore="true"></time-slot-picker>
