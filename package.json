@@ -32,6 +32,7 @@
         "bootstrap-icons": "^1.5.0",
         "child_process": "^1.0.2",
         "eslint-plugin-vue": "^7.0.0-beta.4",
+        "export-from-json": "^1.7.0",
         "jsbarcode": "^3.11.5",
         "jsrsasign": "^10.5.8",
         "path": "^0.12.7",

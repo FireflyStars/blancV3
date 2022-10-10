@@ -31,7 +31,7 @@ export const usePermission=task=>new Promise((resolve,reject)=>{
     }
 });
 export const formatPrice=price=>{
-    if(typeof price!="undefined")
+    if(typeof price!="undefined" && price!=null)
    return  `£${price !== 0 ? price.toFixed(2) : 0}`;
    return '';
 };

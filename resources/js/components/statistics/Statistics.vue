@@ -569,8 +569,8 @@ export default {
             dateRangeType:'Last Month',
             compareMode: 'month',
             compareCustomFilter: false,
-            compareStartDate: `${today.getFullYear()-1}-${today.getMonth()+1}-${today.getDate()}`,
-            compareEndDate: `${today.getFullYear()-1}-${today.getMonth()+1}-${today.getDate()}`,
+            compareStartDate: `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`,
+            compareEndDate: `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`,
         };
         const router = useRouter();
         const route = useRoute();

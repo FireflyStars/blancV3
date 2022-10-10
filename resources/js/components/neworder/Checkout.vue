@@ -239,13 +239,16 @@
                                             <div class="col-9">Failed delivery</div>
                                             <div class="col-3 text-align-right">+{{formatPrice(order.FailedDeliveryCharge)}}</div>
                                         </div>
-                                            <div class="row px-0 mt-2 sub-total-text" v-if="order.DeliveryNowFee > 0">
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.DeliveryNowFee!=null">
                                             <div class="col-9">Delivery now fee</div>
                                             <div class="col-3 text-align-right">+{{formatPrice(order.DeliveryNowFee)}}</div>
                                         </div>
-                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.AutoDeliveryFee > 0">
-                                            <div class="col-9">Auto delivery fee</div>
+                                        <div class="row px-0 mt-2 sub-total-text" v-else-if="order.AutoDeliveryFee > 0">
+                                            <div class="col-9">Delivery fee</div>
                                             <div class="col-3 text-align-right">+{{formatPrice(order.AutoDeliveryFee)}}</div>
+                                        </div>
+                                          <div class="row px-0 mt-2 sub-total-text" v-else>
+                                            <div class="col-12">Free Delivery</div>
                                         </div>
                                         <div class="row px-0 mt-1 mb-3 pt-2  total-text">
                                             <div class="col-9">Total (inc discount & delivery fees)</div>
@@ -534,7 +537,7 @@
                                                                 <div class="col-12">
                                                                     <div class="row">
                                                                         <div class="col-6" v-for="a in items">
-                                                                            <button class="each-addon-btn w-100 py-2" @click="setOrderUpcharge(a.id)" :id="'upcharge_btn_'+a.id" :class="{'addon-selected':order_upcharges.includes(a.id),'is-express-upcharge':a.category_id==1}" :data-id="a.id">{{a.name}}
+                                                                            <button class="each-addon-btn w-100 py-2"  @click="setOrderUpcharge(a.id)" :id="'upcharge_btn_'+a.id" :class="{'addon-selected':order_upcharges.includes(a.id)||(a.id==4&&order.DeliveryNowFee!=null),'is-express-upcharge':a.category_id==1}" :data-id="a.id">{{a.name}}
                                                                                 <span v-if="a.type=='perc'">(+{{a.amount}}%)</span>
                                                                                 <span v-else-if="a.type=='fixed'">(&#163;{{a.amount}})</span>
                                                                             </button>
@@ -1163,7 +1166,25 @@ export default {
         function setOrderUpcharge(id){
 
             if(id==4){
-                price_delivery_now_modal.value.showModal();
+                if(order.value.DeliveryNowFee!=null){
+                    store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
+                true,
+                "Delete price delivery now....",
+            ]);
+
+            axios.post('/save-price-delivery-now',{
+                price:null,
+                order_id:order_id.value
+            }).then((res)=>{
+                getCheckoutItems();
+            }).catch((err)=>{
+
+            }).finally(()=>{
+                
+            });
+                }else{
+                    price_delivery_now_modal.value.showModal();
+                }
                 return;
             }
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
@@ -1292,7 +1313,7 @@ export default {
             ]);
 
             axios.post('/save-price-delivery-now',{
-                price:pricedeliverynow.value,
+                price:parseFloat(pricedeliverynow.value),
                 order_id:order_id.value
             }).then((res)=>{
                 closePriceDeliveryNowModal();

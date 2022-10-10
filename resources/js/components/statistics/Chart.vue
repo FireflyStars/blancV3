@@ -113,7 +113,7 @@
                     <div class="d-flex align-items-center p-2">
                         <h3 class="font-20 gotham-rounded-medium m-0">Total sales over time</h3>
                         <TotalPercent class="ms-5" :amount="salesByChannelTotal" :pastAmount="salesByChannelTotalToCompare"></TotalPercent>
-                        <h4 class="mb-0 ms-auto font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View report</em></h4>
+                        <h4 @click="downloadReport" class="mb-0 ms-auto font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View report</em></h4>
                     </div>
                     <div class="legends bg-white p-2">
                         <div class="d-flex">
@@ -261,6 +261,7 @@ import * as am5percent from "@amcharts/amcharts5/percent";
 import * as am5xy from "@amcharts/amcharts5/xy";
 import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
 import axios from 'axios';
+import exportFromJSON from "export-from-json";
 
 export default {
     components:{
@@ -322,13 +323,13 @@ export default {
         const today = new Date();
         const filterVal = ref({
             customFilter: 0,
-            startDate: `${today.getFullYear()}-${today.getMonth().toString().padStart(2, '0')}-${today.getDate()}`,
-            endDate:`${today.getFullYear()}-${today.getMonth().toString().padStart(2, '0')}-${today.getDate()}`,
-            dateRangeType:'Last Month',
+            startDate: `${today.getFullYear()}-${(today.getMonth()+1).toString().padStart(2, '0')}-${today.getDate()}`,
+            endDate:`${today.getFullYear()}-${(today.getMonth()+1).toString().padStart(2, '0')}-${today.getDate()}`,
+            dateRangeType:'Today',
             compareMode: 'month',
             compareCustomFilter: false,
-            compareStartDate: `${today.getFullYear()-1}-${(today.getMonth()-1).toString().padStart(2, 0)}-${today.getDate()}`,
-            compareEndDate: `${today.getFullYear()-1}-${(today.getMonth()-1).toString().padStart(2, 0)}-${today.getDate()}`,
+            compareStartDate: `${today.getFullYear()-1}-${today.getMonth().toString().padStart(2, 0)}-${today.getDate()}`,
+            compareEndDate: `${today.getFullYear()-1}-${today.getMonth().toString().padStart(2, 0)}-${today.getDate()}`,
         });
         onMounted(()=>{
             getProdStats();
@@ -822,6 +823,21 @@ export default {
                 removeSeries(SKSale);
             }
         });
+
+        const downloadReport = ()=>{
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading data...']);
+            axios.post('/get-report-data', filterVal.value).then((res) => {
+                const data = res.data;
+                const fileName = "report";
+                const exportType = exportFromJSON.types.csv;
+
+                if (data) exportFromJSON({ data, fileName, exportType });
+            }).catch((error)=>{
+                console.log(error);
+            }).finally(()=>{
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            })
+        }
         return {
             allSaleByDateLegend,
             corpDelByDateLegend,
@@ -883,6 +899,8 @@ export default {
             signupPOSPast,
             totalSignUpCount,
             totalSignUpCountPast,
+
+            downloadReport
         }
     }
 }
