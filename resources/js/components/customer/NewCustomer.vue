@@ -704,7 +704,7 @@
                                         </thead>
                                         <tbody>
                                             <tr v-for="(item, index) in form.linkedAccounts" :key="index">
-                                                <td valign=middle class="text-nowrap">{{ item.name }}</td>
+                                                <td valign=middle class="text-nowrap">{{ item.lastName }}, {{item.firstName}}</td>
                                                 <td valign=middle class="text-nowrap fw-bold">{{ item.accountType }}</td>
                                                 <td valign=middle class="text-nowrap">{{ formatPhone(item.phone) }}</td>
                                                 <td valign=middle class="text-nowrap">{{ item.email }}</td>
@@ -987,14 +987,14 @@ import axios from 'axios';
                         form.value.linkedAccounts = [...form.value.linkedAccounts, JSON.parse(localStorage.getItem('subCustomerInfo'))]
                         if(form.value.linkedAccounts.length == 0){
                             form.value.linkedAccounts = [
-                                { id: 0, name: form.value.firstName + ', '+ form.value.lastName, accountType: 'Main', phone: '', email: '', date: '', spent: '' }
+                                { id: 0, name: form.value.firstName + ', '+ form.value.lastName, firstName:form.value.firstName, lastName: form.value.lastName, accountType: 'Main', phone: '', email: '', date: '', spent: '' }
                             ];
                         }
                         localStorage.removeItem('subCustomerInfo');
                     }
                 }else{
                     form.value.linkedAccounts = [
-                        { id: 0, name: '', accountType: 'Main', phone: '', email: '', date: '', spent: 0 }
+                        { id: 0, name: '', accountType: 'Main',firstName:'' ,lastName:'', phone: '', email: '', date: '', spent: 0 }
                     ];
                     setTimeout(() => {
                         const customerAddress = new google.maps.places.Autocomplete(postcode.value,
@@ -1399,9 +1399,11 @@ import axios from 'axios';
             // updating for linked_account tab when firstName and lastName changes
             watch(()=>form.value.firstName, (cur_val, pre_val)=>{
                 form.value.linkedAccounts[0].name = cur_val + ', '+ form.value.lastName;
+                form.value.linkedAccounts[0].firstName = cur_val;
             });
             watch(()=>form.value.lastName, (cur_val, pre_val)=>{
                 form.value.linkedAccounts[0].name = form.value.firstName + ', '+ cur_val;
+                form.value.linkedAccounts[0].lastName = cur_val;
             });
             watch(()=>form.value.email, (cur_val, pre_val)=>{
                 form.value.linkedAccounts[0].email = cur_val;
@@ -1519,6 +1521,8 @@ import axios from 'axios';
                         {
                             id:     data.id,
                             name:   data.name,
+                            firstName : data.firstName,
+                            lastName : data.lastName,
                             accountType: data.accountType,
                             phone:  data.phone,
                             email:  data.email,
