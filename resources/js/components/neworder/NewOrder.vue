@@ -349,7 +349,7 @@
 
                                             </div>
                                             <div class="col" v-if="deliverymethod=='in_store_collection'">
-                                                <span class="float-right each-summary-delivery-type">{{firstLetterToUppercase(store_name)}}</span>
+                                                <span class="float-right each-summary-delivery-type">{{CapitalizeString(store_name)}}</span>
                                                 <img class="float-right each-summary-icon" src="/images/picto_store.svg" />
                                             </div>
 
@@ -722,7 +722,7 @@ import axios from 'axios';
                 let key = {};
 
                 key['value'] = v;
-                key['display'] =  firstLetterToUppercase(v);
+                key['display'] =  CapitalizeString(v);
                 storenames.value.push(key);
             });
 
@@ -732,6 +732,13 @@ import axios from 'axios';
                 return str.charAt(0).toUpperCase() + str.slice(1);
             }
 
+            function CapitalizeString(str2){
+                const str = str2.toString().toLowerCase().split(" ");
+                    for (var i = 0; i < str.length; i++) {
+                        str[i] = str[i].charAt(0).toUpperCase() + str[i].slice(1);
+                    }   
+                return str.join(" ");
+            }
             const showRecurring = ref(true);
             const process_step = ref(1);
 
@@ -1797,6 +1804,7 @@ import axios from 'axios';
                 storenames,
                 store_name,
                 firstLetterToUppercase,
+                CapitalizeString,
                 new_order_obj,
                 checkStorePickup,
                 shp_min_date,
