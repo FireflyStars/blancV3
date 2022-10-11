@@ -302,7 +302,7 @@
                                             <div class="col-8">
                                                 <div class="row">
                                                     <div class="col-9 px-0 payment-desc-text"></div>
-                                                    <div class="col-3 text-align-right"><span v-if="credit_to_deduct > 0">-</span>&#163;{{credit_to_deduct}}</div>
+                                                    <div class="col-3 text-align-right"><span v-if="credit_to_deduct > 0">-</span>&#163;{{cust.credit_to_deduct}}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -922,7 +922,7 @@ export default {
                 amount_paid_credit.value = res.data.amount_paid_credit;
                 discount_perc.value = res.data.discount_perc;
                 created_date.value = res.data.created_date;
-                credit_to_deduct.value = res.data.order.TotalDue;//res.data.credit_to_deduct;
+                credit_to_deduct.value = res.data.credit_to_deduct;
                 order_discount.value = res.data.order.DiscountPerc;
                 cust_discount.value = res.data.cust_discount;
                 upcharges.value = res.data.order_addon;

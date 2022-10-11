@@ -1191,6 +1191,13 @@ class DetailingController extends Controller
         $_TAX_AMOUNT=$_TOTAL-$_TOTAL_EXC_VAT;
 
 
+        if($cust->credit > 0){
+            if($cust->credit >= $_TOTAL_DUE){
+                $_TOTAL_DUE = 0;
+            }else{
+                $_TOTAL_DUE = $_TOTAL_DUE - $cust->credit;
+            }
+        }
 
 
         $values=array(
@@ -1910,6 +1917,10 @@ class DetailingController extends Controller
             foreach($ou as $k=>$v){
                 $order_upcharges[] = $v->upcharges_id;
             }
+        }
+
+        if($cust){
+            $cust->credit_to_deduct = number_format($credit_to_deduct,2);
         }
 
 
