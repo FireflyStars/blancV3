@@ -911,7 +911,7 @@
                                         </thead>
                                         <tbody>
                                             <tr v-for="(item, index) in form.linkedAccounts" :key="index">
-                                                <td valign=middle class="text-nowrap link_account"><a href="javascript:void(0)" @click="goCustomerView(item.id)">{{ item.name }}</a></td>
+                                                <td valign=middle class="text-nowrap link_account"><a href="javascript:void(0)" @click="goCustomerView(item.id)">{{ item.lastName }}, {{item.firstName}}</a></td>
                                                 <td valign=middle class="text-nowrap fw-bold">{{ item.accountType }}</td>
                                                 <td valign=middle class="text-nowrap">{{ formatPhone(item.phone) }}</td>
                                                 <td valign=middle class="text-nowrap">{{ item.email }}</td>
@@ -1491,6 +1491,8 @@
                     {
                         id:     data.id,
                         name:   data.name,
+                        firstName : data.firstName,
+                        lastName : data.lastName,
                         accountType: 'Sub',
                         phone:  data.phone,
                         email:  data.email,

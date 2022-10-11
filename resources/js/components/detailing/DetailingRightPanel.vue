@@ -162,9 +162,8 @@
                                             class="row description-box"
                                         >
                                             <div class="col description-text">{{ comp.name }}</div>
-                                            <div
-                                                class="col comp-coefcleaning"
-                                            >£{{ (comp.coefcleaning * item_description.base_price).toFixed(2) }}</div>
+                                            <div class="col comp-coefcleaning" v-if="((comp.coefcleaning * item_description.base_price).toFixed(2)).includes('-')">- £{{ (comp.coefcleaning * item_description.base_price).toFixed(2).replace("-","") }}</div>
+                                            <div class="col comp-coefcleaning" v-else>£{{ (comp.coefcleaning * item_description.base_price).toFixed(2) }}</div>
                                         </div>
                                         <p class="description-text" v-if ="detailingitem.complexities_id == '[0]' ">None</p>
                                     </div>

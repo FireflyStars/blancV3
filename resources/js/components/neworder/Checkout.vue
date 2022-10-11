@@ -531,10 +531,10 @@
                                                         <div class="accordion-content p-4 mt-3">
                                                             <div class="sidebar_title text-white">Order Add Ons</div>
                                                             <div class="row" v-for="(items,category) in addons">
-                                                                <div class="col-12 addon-catname mt-3 mb-1">
+                                                                <div class="col-12 addon-catname mt-3 mb-1" v-if="(order.TypeDelivery=='DELIVERY'&&category=='Delivery')||category!='Delivery'" >
                                                                     {{category}} Charges
                                                                 </div>
-                                                                <div class="col-12">
+                                                                <div class="col-12" v-if="(order.TypeDelivery=='DELIVERY'&&category=='Delivery')||category!='Delivery'" >
                                                                     <div class="row">
                                                                         <div class="col-6" v-for="a in items">
                                                                             <button class="each-addon-btn w-100 py-2"  @click="setOrderUpcharge(a.id)" :id="'upcharge_btn_'+a.id" :class="{'addon-selected':order_upcharges.includes(a.id)||(a.id==4&&order.DeliveryNowFee!=null),'is-express-upcharge':a.category_id==1}" :data-id="a.id">{{a.name}}
