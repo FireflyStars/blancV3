@@ -34,7 +34,7 @@
                                 
                             </div>
                             <div class="mt-3" v-if="pieChart1== 'item type'">
-                                Other: £{{ salesByTypeitemTotalOfItem - salesByTypeitemTotal }}
+                                <span class="fw-bold text-danger">Other :</span> £{{ salesByTypeitemTotalOfItem - salesByTypeitemTotal }}
                             </div>
                         </div>
                     </div>
@@ -485,7 +485,8 @@ export default {
             }
             // let originLabel;
             let originLabel = salesByChannelChartSeries.children.push(am5.Label.new(salesByChannelChartRoot, {
-                text: "£{valueSum.formatNumber('#,###.')}\n   "+ percent,
+                text: "£"+ salesByChannelTotal.value + "\n" + percent,
+                textAlign: "center",
                 centerX: am5.percent(50),
                 centerY: am5.percent(50),
                 fontSize: 20,
@@ -566,7 +567,8 @@ export default {
             }
             // let clientLabel;
             let clientLabel = piecesByItemChartSeries.children.push(am5.Label.new(piecesByItemChartRoot, {
-                text: "{valueSum.formatNumber('#,###.')}\n   " + percent,
+                text: "{valueSum.formatNumber('#,###.')}\n" + percent,
+                textAlign: "center",
                 centerX: am5.percent(50),
                 centerY: am5.percent(50),
                 fontSize: 20,
