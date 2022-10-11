@@ -13,7 +13,8 @@
                             </template>
                         </div>
                         <template v-for="(tab,tab_index) in tabs" :key="tab_index">
-                            <order-list-table :tabledef="allordertablefields" :tab="tab" :id="tab_index" :customer_id ="customerID" :search_value ="searchValue" v-if="tab.active && tab.name != 'Customer Care'"></order-list-table>
+                            <order-list-table :tabledef="allordertablefields" :tab="tab" :id="tab_index" :customer_id ="customerID" :search_value ="searchValue" v-if="tab.active && tab.name != 'Customer Care' && tab.name =='All orders'"></order-list-table>
+                            <order-list-table :tabledef="allordertablefieldsWithoutType" :tab="tab" :id="tab_index" :customer_id ="customerID" v-if="tab.active && tab.name != 'Customer Care' && tab.name !='All orders'"></order-list-table>
                             <order-list-table :tabledef="customercaretablefields" :tab="tab" :id="tab_index" :customer_id ="customerID" v-if="tab.active && tab.name == 'Customer Care'"></order-list-table>
                         </template>
                         <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
@@ -119,6 +120,101 @@
                     sortable:false,
                     type:'express'
                 },
+                type:{
+                    name:"Type",
+                    width:"7%",
+                    sortable:false
+                },
+                Name:{
+                    name:"Customer",
+                    width:"28%",
+                    sortable:false
+                },
+                TypeDelivery:{
+                    name:"Destination",
+                    width:"14%",
+                    css:"text-align:left",
+                    sortable:false,
+                    header_align:"left"
+                },
+                // PromisedDate:{
+                //     name:"Promised Date",
+                //     width:"13%",
+                //     sortable:true,
+                //     css:"font-weight:bold;text-align:left",
+                //     header_align:""
+                // },
+                // numitems:{
+                //     name:"Items",
+                //     width:"7%",
+                //     sortable:true,
+                //     css:"text-align:left",
+                //     header_align:""
+                // },
+                Status:{
+                    name:"Order Status",
+                    width:"14%",
+                    sortable:false,
+                    type:'tag',
+                    header_align:"left",
+                    css:"text-align:left",
+                },
+                subOrderCount:{
+                    name:"Sub Order Ready",
+                    width:"12%",
+                    sortable:false,
+                    type:'percent',
+                    header_align:"left",
+                    css:"text-align:left",
+                },
+                // paid:{
+                //     name:"Payment",
+                //     width:"13%",
+                //     sortable:true,
+                //     type:'tag',
+                //     header_align:"left"
+                // },
+                Total:{
+                    name:"Total",
+                    width:"10%",
+                    sortable:false,
+                    type:'price',
+                    css:"font-weight:bold;text-align:left;"
+                },
+                Prod:{
+                    name:"Prod",
+                    width:"6%",
+                    sortable:false,
+                    css:"font-weight:bold;text-align:left;",
+                    header_align:"left"
+                },
+                Deliv:{
+                    name:"Deliv",
+                    width:"6%",
+                    sortable:false,
+                    css:"font-weight:bold;text-align:left",
+                    header_align:"left"
+                }
+            });
+            const allordertablefieldsWithoutType=ref({
+                line_select:{
+                    name:" ",
+                    width:"3%",
+                    sortable:false,
+                    identifier:"id",
+                    type:'checkbox',
+                },
+                id:{
+                   name:"Order N°",
+                    width:"5%",
+                   sortable:false
+               },
+                express:{
+                    name:" ",
+                    width:"2%",
+                    sortable:false,
+                    type:'express'
+                },
                 Name:{
                     name:"Customer",
                     width:"28%",
@@ -200,14 +296,19 @@
                 },
                 id:{
                     name:"Order N°",
-                    width:"8%",
+                    width:"5%",
                     sortable:false
                },
-                express:{
+               express:{
                     name:" ",
-                    width:"3%",
+                    width:"2%",
                     sortable:false,
                     type:'express'
+                },
+               type:{
+                    name:"Type",
+                    width:"7%",
+                    sortable:false
                 },
                 Customer:{
                     name:"Customer",
@@ -358,6 +459,7 @@
                 showcontainer,
                 allordertablefields,
                 customercaretablefields,
+                allordertablefieldsWithoutType,
                 customerID,
                 searchValue,
                 showlayer:computed(()=>{return (route.params.order_id>0&&store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_CURRENT_SELECTED}`]);}),
