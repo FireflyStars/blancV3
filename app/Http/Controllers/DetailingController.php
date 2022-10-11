@@ -625,7 +625,7 @@ class DetailingController extends Controller
         $detailing_data['steps'] = $query->select('id', 'name')->get();
         $detailing_data['departements'] = DB::table('departments')->where('deleted_at', NULL)->get();
         $detailing_data['categories'] = DB::table('categories')->where('department_id', $department_id)->where('deleted_at', NULL)->get();
-        $detailing_data['typeitems'] = DB::table('typeitem')->where('department_id', $department_id)->where('deleted_at', NULL)->get();
+        $detailing_data['typeitems'] = DB::table('typeitem')->where('department_id', $department_id)->where('deleted_at', NULL)->orderBy('typeitem.Order' , 'ASC')->get();
 
         $steps = $query->get()->pluck('id')->toArray();
         if (in_array(6, $steps)) {

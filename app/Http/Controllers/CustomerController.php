@@ -403,8 +403,6 @@ class CustomerController extends Controller
                     return response()->json(['error'=> $e->getMessage()]);
                 }
 
-                dump($billing_address);
-
                 $contact = [
                     'CustomerID'    => $CustomerUUID,
                     'address_id'    => $billing_address_id,
