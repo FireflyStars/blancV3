@@ -33,8 +33,10 @@
                             <div id="saleByOrigin" style="height: 150px">
                                 
                             </div>
-                            <div class="mt-3" v-if="pieChart1== 'item type'">
-                                <span class="fw-bold text-danger">Other :</span> £{{ salesByTypeitemTotalOfItem - salesByTypeitemTotal }}
+                            <div class="mt-3" v-if="pieChart1== 'item type' || pieChart1== 'department'">
+                                <span class="fw-bold text-danger">Other :</span> 
+                                <span v-if="salesByTypeitemTotal > salesByTypeitemTotalOfItem">£{{ salesByTypeitemTotal - salesByTypeitemTotalOfItem }}</span>
+                                <span class="fw-bold text-danger" v-else> - £{{ salesByTypeitemTotalOfItem - salesByTypeitemTotal }}</span>
                             </div>
                         </div>
                     </div>
@@ -567,7 +569,7 @@ export default {
             }
             // let clientLabel;
             let clientLabel = piecesByItemChartSeries.children.push(am5.Label.new(piecesByItemChartRoot, {
-                text: "{valueSum.formatNumber('#,###.')}\n" + percent,
+                text: salesByItemTotal.value + "\n" + percent,
                 textAlign: "center",
                 centerX: am5.percent(50),
                 centerY: am5.percent(50),
