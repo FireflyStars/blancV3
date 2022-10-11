@@ -221,15 +221,18 @@ class DetailingController extends Controller
         if ($search) {
             $searched_item = DB::table('typeitem')
                 ->where('typeitem.name', 'LIKE', '%' . $search . '%')
+                ->where('deleted_at' , '=' , NULL)
                 ->first();
-            DB::table('detailingitem')->where('id', $detailingitem_id)->update([
-                'department_id' => $searched_item->department_id,
-                'category_id' => $searched_item->category_id,
-                'typeitem_id' => $searched_item->id,
-                'size_id' => null,
-                'etape' => 2,
-                'updated_at' => date('Y-m-d H:i:s')
-            ]);
+                if($searched_item){
+                    DB::table('detailingitem')->where('id', $detailingitem_id)->update([
+                        'department_id' => $searched_item->department_id,
+                        'category_id' => $searched_item->category_id,
+                        'typeitem_id' => $searched_item->id,
+                        'size_id' => null,
+                        'etape' => 2,
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ]);
+                } 
         }
 
 
