@@ -535,6 +535,11 @@ class OrderController extends Controller
                                         ]
                 ]);
 
+                $si = $stripe->setupIntents->create([
+                    'customer' => $stripe_customer->id,
+                    'payment_method_types' => ['card'],
+                ]);
+
 
 
                 $credit_card = [
@@ -588,6 +593,8 @@ class OrderController extends Controller
                     'payment_method_types' => ['card'],
                     "description"=>"Order: ".$order_id,
                     "receipt_email"=>$cust->EmailAddress, //To change for customer email
+                    'off_session' => true,
+                    'confirm' => true,
                 ]);
             }catch(Exception $e){
                 return response([

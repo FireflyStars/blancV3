@@ -300,6 +300,14 @@ class CustomerController extends Controller
                                             'line2'         => $request->deliveryAddress2,
                                         ]
                 ]);
+
+
+                $si = $stripe->setupIntents->create([
+                    'customer' => $stripe_customer->id,
+                    'payment_method_types' => ['card'],
+                ]);
+
+
                 //add a new record to cards table
                 $credit_card = [
                     'CustomerID'        => $CustomerUUID,
@@ -2270,7 +2278,7 @@ class CustomerController extends Controller
         $final_cust_addr = DB::table('address')->whereIn('CustomerID',$final_cust_id)->where('status','BILLING')->get();
         $final_customers = [];
 
- 
+
         if(count($final_cust) > 0){
             foreach($final_cust as $k=>$v){
                 if(isset($list[$v->CustomerID])){
