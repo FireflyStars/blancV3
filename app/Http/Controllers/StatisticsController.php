@@ -10,6 +10,8 @@ use App\Models\InfoCustomer;
 use App\Models\Infoitem;
 use App\Poste;
 use App\Models\Item;
+use App\Exports\ReportExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StatisticsController extends Controller
 {
@@ -2995,5 +2997,13 @@ class StatisticsController extends Controller
             'invoices'      =>  $invoices,
             'total_count'   =>  $total_invoice_count
         ]);
+    }
+
+    /**
+     * Download excel file
+     */
+    public function downloadExcel(Request $request){
+        $period = [ '2022-09-01 00:00:00', '2022-09-30 00:00:00' ];
+        return new ReportExport($period);
     }
 }
