@@ -677,7 +677,7 @@
                                         <a href="javascript:void(0)" @click="redirectToDetailingList">Previous</a>
                                     </div>
                                     <div class="col-6 px-4">
-                                        <button id="closeBtn" @click="redirectToOrderDetail" class="w-100 py-3" v-if="amount_diff<=0">Close</button>
+                                        <button id="closeBtn" @click="redirectToOrderDetail" class="w-100 py-3" v-if="amount_diff<=0 && Object.keys(has_invoices).length > 0">Close</button>
                                         <button v-else id="completeBtn" class="w-100 py-3" @click="validatePayment" :disabled="editcard">Proceed</button>
                                     </div>
                                 </div>
@@ -867,6 +867,7 @@ export default {
         const price_plus_delivery = ref(0);
         const order_bundles = ref([]);
         const pricedeliverynow=ref("");
+        const has_invoices = ref([]);
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
@@ -937,6 +938,7 @@ export default {
                 failed_delivery_price.value = res.data.failed_delivery_price;
                 price_plus_delivery.value = res.data.price_plus_delivery;
                 order_bundles.value = res.data.order_bundles;
+                has_invoices.value = res.data.has_invoices;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -1422,7 +1424,8 @@ export default {
             closePriceDeliveryNowModal,
             savePriceDeliveryNow,
             pricedeliverynow,
-            handleAllowNumbers
+            handleAllowNumbers,
+            has_invoices,
         }
     },
 }

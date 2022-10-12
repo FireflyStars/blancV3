@@ -232,7 +232,7 @@ class DetailingController extends Controller
                         'etape' => 2,
                         'updated_at' => date('Y-m-d H:i:s')
                     ]);
-                } 
+                }
         }
 
 
@@ -1923,6 +1923,11 @@ class DetailingController extends Controller
             $cust->credit_to_deduct = number_format($credit_to_deduct,2);
         }
 
+        $has_invoices = [];
+
+        if($order){
+            $has_invoices = DB::table('infoInvoice')->where('OrderID',$order->OrderID)->get();
+        }
 
         return response()->json([
             'post'=>$request->all(),
@@ -1964,6 +1969,7 @@ class DetailingController extends Controller
             'failed_delivery_price'=>number_format($failed_delivery_price,2),
             'price_plus_delivery'=>number_format($price_plus_delivery,2),
             'order_bundles'=>$order_bundles,
+            'has_invoices'=>$has_invoices,
         ]);
     }
 
