@@ -3003,7 +3003,8 @@ class StatisticsController extends Controller
      * Download excel file
      */
     public function downloadExcel(Request $request){
-        $period = [ '2022-09-01 00:00:00', '2022-09-30 00:00:00' ];
+        $period = [ '2022-09-01 00:00:00', '2022-09-30 23:59:59' ];
+        ini_set('max_execution_time', 600);
         return new ReportExport($period);
     }
 }

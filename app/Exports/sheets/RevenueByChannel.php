@@ -13,10 +13,13 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use Carbon\Carbon;
+use App\Models\InfoOrder;
+use Illuminate\Support\Facades\DB;
 
 class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, WithCustomStartCell, WithHeadings, WithStyles
 {
     private $period;
+    public $cnt;
 
     public function __construct(array $period)
     {
@@ -28,30 +31,75 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
      */
     public function collection()
     {
-        return collect([
-            ['', '', ''],
-            [  Carbon::parse($this->period[0])->format('d/m/Y').' To '.Carbon::parse($this->period[1])->format('d/m/Y'), '£ incl. VAT', '# of pieces'],
-            ['', '', ''],
-            ['MB', '', ''],
-            ['NH', '', ''],
-            ['CH', '', ''],
-            ['SK', '', ''],
-            ['Store 5', '', ''],
-            ['Store 6', '', ''],
-            ['Store 7', '', ''],
-            ['Store 8', '', ''],
-            ['Store 9', '', ''],
-            ['Store 10', '', ''],
-            ['Total Store Revenue', '', ''],
-            ['Business Deliveries Revenue', '', ''],
-            ['Home Deliveries Revenue', '', ''],
-            ['Atelier Revenue', '', ''],
-            ['Other sales (Shopify etc.)', '', ''],
-            ['Other Revenue', '', ''],
-            ['Total Sales', '', ''],
-            ['growth % vs prev year', '', ''],
-            ['growth % vs prev month', '', ''],
-        ]);
+        $data =[];
+        $data[] = ['', '', ''];
+        $data[] = [  Carbon::parse($this->period[0])->format('d/m/Y').' To '.Carbon::parse($this->period[1])->format('d/m/Y'), '£ incl. VAT', '# of pieces'];
+        $data[] = ['', '', ''];
+
+        $salesData = InfoOrder::whereBetween('created_at', $this->period)
+                                ->where('deliverymethod', '!=','')
+                                ->select(
+                                    DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount'), 'TypeDelivery as channel'
+                                )
+                                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                                ->groupBy('TypeDelivery')->orderBy('amount', 'DESC')->get();
+        $salesTotal = $salesData->sum('amount');
+        $this->cnt = $salesData->count();
+        $month_period = [ Carbon::parse($this->period[0])->subMonth()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::parse($this->period[1])->subMonth()->endOfMonth()->endOfDay()->toDateTimeString()];
+        $year_period = [ Carbon::parse($this->period[0])->subYear()->startOfYear()->startOfDay()->toDateTimeString(), Carbon::parse($this->period[1])->subYear()->endOfYear()->endOfDay()->toDateTimeString()];
+        $salesTotalToCompareYearMode =  InfoOrder::whereBetween('created_at', $year_period)
+                    ->where('deliverymethod', '!=','')
+                    ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                    ->select(
+                        DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount')
+                    )->value('amount');
+        $salesTotalToCompareMonthMode =  InfoOrder::whereBetween('created_at', $month_period)
+                    ->where('deliverymethod', '!=','')
+                    ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                    ->select(
+                        DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount')
+                    )->value('amount');
+        $salesItemTotal = DB::table('detailingitem')
+                        ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
+                        ->whereBetween('infoOrder.created_at', $this->period)
+                        // ->where('detailingitem.status', 'Completed')
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->select(
+                            DB::raw('count(*) as amount')
+                        )->value('amount');
+        $salesItemTotalToCompareYearMode = DB::table('detailingitem')
+                        ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
+                        ->whereBetween('infoOrder.created_at', $year_period)
+                        // ->where('detailingitem.status', 'Completed')
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->select(
+                            DB::raw('count(*) as amount')
+                        )->value('amount');
+        $salesItemTotalToCompareMonthMode = DB::table('detailingitem')
+                        ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
+                        ->whereBetween('infoOrder.created_at', $month_period)
+                        // ->where('detailingitem.status', 'Completed')
+                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->select(
+                            DB::raw('count(*) as amount')
+                        )->value('amount');
+        foreach ($salesData as  $item) {
+            $data[] = [ $item->channel, $item->amount, DB::table('detailingitem')->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
+            ->whereBetween('infoOrder.created_at', $this->period)
+            ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+            ->where('infoOrder.TypeDelivery', $item->channel)->count() ];
+        }
+        $data[] = ['Total Store Revenue', $salesTotal, $salesItemTotal];
+        $data[] = ['Business Deliveries Revenue', '', ''];
+        $data[] = ['Home Deliveries Revenue', '', ''];
+        $data[] = ['Atelier Revenue', '', ''];
+        $data[] = ['Other sales (Shopify etc.)', '', ''];
+        $data[] = ['Other Revenue', '', ''];
+        $data[] = ['Total Sales', $salesTotal, $salesItemTotal];
+        $data[] = ['growth % vs prev year', ($salesTotalToCompareYearMode != 0 ? ($salesTotal/$salesTotalToCompareYearMode - 1)*100 : '--'), ($salesItemTotalToCompareYearMode != 0 ? ($salesItemTotal/$salesItemTotalToCompareYearMode -1)*100 : '--')];
+        $data[] = ['growth % vs prev month', ($salesItemTotalToCompareMonthMode != 0 ? ($salesTotal/$salesTotalToCompareMonthMode - 1)*100 : '--'), ($salesItemTotalToCompareMonthMode != 0 ? ($salesItemTotal/$salesItemTotalToCompareMonthMode -1)*100 : '--')];
+
+        return collect([ $data ]);
     }
 
     /**
@@ -142,9 +190,9 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
                 'vertical' => Alignment::VERTICAL_BOTTOM,
             ],
         ];
-        $sheet->getStyle('C6:D15')->applyFromArray($yellowFieldStyle);
-        $sheet->getStyle('C17:D18')->applyFromArray($yellowFieldStyle);
-        $sheet->getStyle('C20:D20')->applyFromArray($yellowFieldStyle);
+        $sheet->getStyle('C6:D'.(5 + $this->cnt))->applyFromArray($yellowFieldStyle);
+        $sheet->getStyle('C'.(7 + $this->cnt).':D'.(8 + $this->cnt))->applyFromArray($yellowFieldStyle);
+        $sheet->getStyle('C'.(10 + $this->cnt).':D'.(10 + $this->cnt))->applyFromArray($yellowFieldStyle);
 
         $sheet->getStyle('C6:D15')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_DOTTED);
         $subTotalCellStyle = [
@@ -157,13 +205,13 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
                 'vertical' => Alignment::VERTICAL_BOTTOM,
             ],
         ];
-        $sheet->getStyle('B16:D16')->applyFromArray($subTotalCellStyle);
-        $sheet->getStyle('B19:D19')->applyFromArray($subTotalCellStyle);
-        $sheet->getStyle('B21:D21')->applyFromArray($subTotalCellStyle);
+        $sheet->getStyle('B'.(6 + $this->cnt).':D'.(6 + $this->cnt))->applyFromArray($subTotalCellStyle);
+        $sheet->getStyle('B'.(9 + $this->cnt).':D'.(9 + $this->cnt))->applyFromArray($subTotalCellStyle);
+        $sheet->getStyle('B'.(11 + $this->cnt).':D'.(11 + $this->cnt))->applyFromArray($subTotalCellStyle);
 
-        $sheet->getStyle('C17:D18')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_DOTTED);
-        $sheet->getStyle('C20:D20')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_DOTTED);
-        $sheet->getStyle('B22:D22')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
+        $sheet->getStyle('C'.(7 + $this->cnt).':D'.(8 + $this->cnt))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_DOTTED);
+        $sheet->getStyle('C'.(10 + $this->cnt).':D'.(10 + $this->cnt))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_DOTTED);
+        $sheet->getStyle('B'.(12 + $this->cnt).':D'.(12 + $this->cnt))->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
         $lastRowStyle = [
             'font'  =>[
                 'bold'  => true,
@@ -178,6 +226,6 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
                 'vertical' => Alignment::VERTICAL_BOTTOM,
             ],
         ];
-        $sheet->getStyle('B22:D22')->applyFromArray($lastRowStyle);
+        $sheet->getStyle('B'.(12 + $this->cnt).':D'.(12 + $this->cnt))->applyFromArray($lastRowStyle);
     }
 }
