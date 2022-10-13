@@ -27,6 +27,7 @@ class DetailingServices extends Model
             ->join('typeitem','tailoring_services.category_id','typeitem.tailoring_category_id')
             ->join('tailoring_type_services','tailoring_services.type_service_id','tailoring_type_services.id')
             ->where('typeitem.id',$typeitem_id)
+            ->where('tailoring_services.deleted_at', NULL)
             ->get();
 
         if(count($services) > 0){
