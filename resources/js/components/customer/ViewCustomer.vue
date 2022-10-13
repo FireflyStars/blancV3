@@ -754,7 +754,6 @@
                                                 </div>
                                                 <div class="item-block p-3 border-bottom" v-if="form.deliveryByday == '1'">
                                                     <h4 class="sub-title col-12">Pickup & delivery slots </h4>
-                                                   <p>{{form.pickupSlots}}</p>
                                                     <div class="d-flex flex-wrap" v-if="timeslots.length > 0 ">
                                                         <div class="col-4 px-1 mt-2" v-for="(slot, index) in form.pickupSlots" :key="index">
                                                             <select-options
