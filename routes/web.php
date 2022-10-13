@@ -920,7 +920,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
             $amount_two_dp = number_format($json_obj->amount,2);
 
             //BEGIN Saving
-
+        if($savecardinfo){
             $stripe_customer = $stripe->customers->create([
                 'name'              => $cust->Name,
                 'email'             => $cust->EmailAddress,
@@ -946,7 +946,14 @@ Route::group(['prefix'=>'stripe-test'],function(){
             ]);
 
             //To add call for saving in cards table
-
+            DB::table('cards')->insert([
+                'CustomerID'=>$cust->CustomerID,
+                'stripe_customer_id'=>$stripe_customer->id,
+                'setup_intent_id'=>$si->id,
+                'created_at'=>date('Y-m-d H:i:s'),
+                'updated_at'=>date('Y-m-d H:i:s'),
+            ]);
+        }
 
             $intent = $stripe->paymentIntents->create([
                 'amount' => 100*$amount_two_dp,

@@ -562,7 +562,7 @@ class OrderController extends Controller
 
 
         //Effecting payment
-
+/*
         $amount_paid = 0;
         $existing_payments = DB::table('payments')->where('order_id',$order->id)->where('status','=','succeeded')->get();
         if(count($existing_payments) > 0){
@@ -572,7 +572,9 @@ class OrderController extends Controller
         }
 
         $amount_diff = $amount_to_pay - $amount_paid;
+*/
 
+        $amount_diff = DetailingController::getAmountToPay($order_id);
         $card_pay = false;
 
         if($payment_type !='Save' && $card && $order && $order->CustomerID==$card->CustomerID && $amount_diff > 0){
