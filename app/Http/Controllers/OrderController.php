@@ -562,7 +562,7 @@ class OrderController extends Controller
 
 
         //Effecting payment
-
+/*
         $amount_paid = 0;
         $existing_payments = DB::table('payments')->where('order_id',$order->id)->where('status','=','succeeded')->get();
         if(count($existing_payments) > 0){
@@ -572,7 +572,9 @@ class OrderController extends Controller
         }
 
         $amount_diff = $amount_to_pay - $amount_paid;
+*/
 
+        $amount_diff = DetailingController::getAmountToPay($order_id);
         $card_pay = false;
 
         if($payment_type !='Save' && $card && $order && $order->CustomerID==$card->CustomerID && $amount_diff > 0){
@@ -1147,8 +1149,14 @@ class OrderController extends Controller
         $balance = number_format($request->balance,2);
         $amount_to_pay = number_format($request->amount_to_pay,2);
         $credit_to_deduct = number_format($request->credit_to_deduct,2);
+        $paylater = $request->paylater;
 
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
+
+        if($order && $paylater==1){
+            DB::table('infoOrder')->where('id',$order_id)->update(['Paid'=>0]);
+            DB::table('infoInvoice')->where('OrderID',$order->OrderID)->update(['Paid'=>0]);
+        }
         $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
 
         $credit_remaining = $cust->credit;
@@ -1174,16 +1182,18 @@ class OrderController extends Controller
 
             $stamp = date('Y-m-d H:i:s');
 
-            DB::table('payments')->insert([
-                'type'=>'cust_credit',
-                'order_id'=>$order_id,
-                'datepayment'=>$stamp,
-                'status'=>'succeeded',
-                'montant'=>$credit_to_deduct,
-                'CustomerID'=>$order->CustomerID,
-                'created_at'=>$stamp,
-                'info'=>'',
-            ]);
+            if($credit_to_deduct > 0){
+                DB::table('payments')->insert([
+                    'type'=>'cust_credit',
+                    'order_id'=>$order_id,
+                    'datepayment'=>$stamp,
+                    'status'=>'succeeded',
+                    'montant'=>$credit_to_deduct,
+                    'CustomerID'=>$order->CustomerID,
+                    'created_at'=>$stamp,
+                    'info'=>'',
+                ]);
+            }
         }
 
         $content = OrderController::createOrderItems($order_id);

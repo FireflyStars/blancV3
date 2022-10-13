@@ -1845,7 +1845,7 @@ class DetailingController extends Controller
                 }
             }
 
-            $balance = number_format($total_with_discount,2) - number_format($amount_paid,2);
+            $balance = $order->Total;//number_format($total_with_discount,2) - number_format($amount_paid,2);
 
         }
 
@@ -1921,6 +1921,8 @@ class DetailingController extends Controller
 
         if($cust){
             $cust->credit_to_deduct = number_format($credit_to_deduct,2);
+            $cust_amount_diff =  DetailingController::getAmountToPay($order_id);
+            $cust->amount_diff =number_format($cust_amount_diff,2);
         }
 
         $has_invoices = [];

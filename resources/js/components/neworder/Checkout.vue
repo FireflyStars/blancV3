@@ -309,7 +309,7 @@
 
                                          <div class="row px-0 mt-4 py-2 balance-text">
                                             <div class="col-9">Order balance to pay by card</div>
-                                            <div class="col-3 text-align-right">{{formatPrice(order.TotalDue)}}</div>
+                                            <div class="col-3 text-align-right">&#163;{{cust.amount_diff}}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -650,7 +650,7 @@
                                                                     <span class="sidebar_title text-white mb-3">Card details <a href="javascript:void(0)" v-if="custcard" id="editcard" @click="setEditCard" :class="{'canceleditcard':editcard}"><span v-if="!editcard">Edit</span><span v-else>Cancel</span></a></span>
                                                                 </div>
 
-                                                                <payment ref="payment_comp" :custcard="custcard" :order_id="order_id" :cust="cust" :amounttopay="parseFloat(amount_to_pay)" @reload-checkout="closeEditCardAndReload" @complete-checkout="completeCheckout"></payment>
+                                                                <payment ref="payment_comp" :custcard="custcard" :order_id="order_id" :cust="cust" :amounttopay="parseFloat(amount_to_pay)" @reload-checkout="closeEditCardAndReload" @complete-checkout="completeCheckout(false)"></payment>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -704,10 +704,10 @@
                 <div class="col-10">
                     <div class="row justify-content-center mb-4">
                         <div class="col-6">
-                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="parseFloat(amount_to_pay)" @complete-checkout="completeCheckout" @close-payment-modal="closePaymentAndShowLoading" @close-awaiting-payment="closeAwaitingPaymentModal" @set-terminal-pay="setTerminalPay" ref="stripePay"></stripe-pay-now>
+                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="parseFloat(amount_to_pay)" @complete-checkout="completeCheckout(false)" @close-payment-modal="closePaymentAndShowLoading" @close-awaiting-payment="closeAwaitingPaymentModal" @set-terminal-pay="setTerminalPay" ref="stripePay"></stripe-pay-now>
                         </div>
                         <div class="col-6">
-                            <button class="pay-btn w-100 py-3" @click="completeCheckout">Pay later</button>
+                            <button class="pay-btn w-100 py-3" @click="completeCheckout(true)">Pay later</button>
                         </div>
                     </div>
                     <div class="row">
@@ -1031,7 +1031,7 @@ export default {
             router.push('/order-content/'+order_id.value);
         }
 
-        function completeCheckout(){
+        function completeCheckout(paylater){
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
                 true,
                 "creating items....",
@@ -1042,6 +1042,7 @@ export default {
                 amount_to_pay:amount_to_pay.value,
                 balance:order_balance.value,
                 credit_to_deduct:credit_to_deduct.value,
+                paylater:(paylater?1:0),
             }).then((res)=>{
 
                 if(res.data.output && res.data.output.result=='ok'){
@@ -1082,7 +1083,7 @@ export default {
 
         function validatePayment(){
             if(cust.value.OnAccount==1){
-                completeCheckout();
+                completeCheckout(true);
             }else{
                 if(editcard.value==true){
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
@@ -1106,7 +1107,12 @@ export default {
                         }
                         else{
                             console.log('by credit',credit_to_deduct.value);
-                            completeCheckout();
+
+                            if(parseFloat(credit_to_deduct.value)==0){
+                                no_payment_modal.value.showModal();
+                            }else{
+                                completeCheckout(false);
+                            }
                         }
                     }
                 }
