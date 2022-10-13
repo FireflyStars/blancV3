@@ -309,7 +309,7 @@
 
                                          <div class="row px-0 mt-4 py-2 balance-text">
                                             <div class="col-9">Order balance to pay by card</div>
-                                            <div class="col-3 text-align-right">{{formatPrice(order.TotalDue)}}</div>
+                                            <div class="col-3 text-align-right">{{cust.amount_diff}}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -1106,7 +1106,12 @@ export default {
                         }
                         else{
                             console.log('by credit',credit_to_deduct.value);
-                            completeCheckout();
+
+                            if(parseFloat(credit_to_deduct.value)==0){
+                                no_payment_modal.value.showModal();
+                            }else{
+                                completeCheckout();
+                            }
                         }
                     }
                 }

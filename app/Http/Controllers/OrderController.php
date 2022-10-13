@@ -1174,16 +1174,18 @@ class OrderController extends Controller
 
             $stamp = date('Y-m-d H:i:s');
 
-            DB::table('payments')->insert([
-                'type'=>'cust_credit',
-                'order_id'=>$order_id,
-                'datepayment'=>$stamp,
-                'status'=>'succeeded',
-                'montant'=>$credit_to_deduct,
-                'CustomerID'=>$order->CustomerID,
-                'created_at'=>$stamp,
-                'info'=>'',
-            ]);
+            if($credit_to_deduct > 0){
+                DB::table('payments')->insert([
+                    'type'=>'cust_credit',
+                    'order_id'=>$order_id,
+                    'datepayment'=>$stamp,
+                    'status'=>'succeeded',
+                    'montant'=>$credit_to_deduct,
+                    'CustomerID'=>$order->CustomerID,
+                    'created_at'=>$stamp,
+                    'info'=>'',
+                ]);
+            }
         }
 
         $content = OrderController::createOrderItems($order_id);

@@ -748,6 +748,10 @@ Route::get('setup-intent-test',function(){
         'payment_method_types' => ['card'],
     ]);
 
+    DB::table('cards')->insert([
+        'setup_intent_id'=>$si->id,
+    ]);
+
 
     echo "<pre>";
     print_r($si);
