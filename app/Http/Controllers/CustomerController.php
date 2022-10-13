@@ -1616,10 +1616,19 @@ class CustomerController extends Controller
                 }
             }
         }
+
+        $RecurringDate = DB::table('infoOrder')->select('infoOrder.PickupID' , 'infoOrder.DeliveryaskID' , 'deliveryask.trancheFrom' , 'pickup.trancheFrom' , 'deliveryask.trancheto' , 'pickup.trancheto')
+            ->leftJoin('pickup', 'pickup.PickupID', '=', 'infoOrder.PickupID')
+            ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
+            ->where('infoOrder.CustomerID', $customer->CustomerID)
+            ->where('infoOrder.Status', "RECURRING")
+            ->orderby('infoOrder.created_at' , "DESC")->first();
+
         return response()->json([
             'customer'          => $customer,
             'available_slots'   => $available_slots,
             'available_days'    => $available_days,
+            'Recurring_date'       => $RecurringDate,
         ]);
     }
 

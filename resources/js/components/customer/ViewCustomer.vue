@@ -754,7 +754,8 @@
                                                 </div>
                                                 <div class="item-block p-3 border-bottom" v-if="form.deliveryByday == '1'">
                                                     <h4 class="sub-title col-12">Pickup & delivery slots </h4>
-                                                    <div class="d-flex flex-wrap">
+                                                   <p>{{form.pickupSlots}}</p>
+                                                    <div class="d-flex flex-wrap" v-if="timeslots.length > 0 ">
                                                         <div class="col-4 px-1 mt-2" v-for="(slot, index) in form.pickupSlots" :key="index">
                                                             <select-options
                                                                 v-model="slot.value"
@@ -765,8 +766,11 @@
                                                             </select-options>
                                                         </div>
                                                     </div>
+                                                    <div v-else>
+                                                        <p v-if="form.pickupSlots.length > 0">Date de Recurring : {{form.pickupSlots[0].day}}</p>
+                                                    </div>
                                                 </div>
-                                                <div class="w-100 p-3"  v-if="form.deliveryByday == '1'">
+                                                <div class="w-100 p-3"  v-if="form.deliveryByday == '1' && timeslots.length > 0">
                                                     <button class="btn btn-success each-save-btn" @click="saveRecurring">Save Recurring</button>
                                                 </div>
                                             </div>
