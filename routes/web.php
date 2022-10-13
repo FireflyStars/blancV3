@@ -738,7 +738,7 @@ Route::get('setup-intent-test',function(){
                             ]
     ]);
     */
-
+    /*
     $cust_id = 'cus_ManMb6lCXWfNQu';
 
     $stripe_customer = $stripe->customers->retrieve($cust_id,[]);
@@ -756,7 +756,15 @@ Route::get('setup-intent-test',function(){
     echo "<pre>";
     print_r($si);
 
+    */
 
+    $si = $stripe->setupIntents->retrieve('seti_1LsMYWB2SbORtEDsHr7iSIRr',[]);
+
+    $cust = $stripe->customers->retrieve($si->customer);
+
+
+    echo "<pre>";
+    print_r($cust);
 });
 
 
@@ -903,12 +911,14 @@ Route::group(['prefix'=>'stripe-test'],function(){
         $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
 
         try {
+
+            $user = Auth::user();
             $json_str = file_get_contents('php://input');
             $json_obj = json_decode($json_str);
 
             $order_id = $json_obj->order_id;
             //$savecardinfo=$json_obj->savecardinfo;
-            $savecardinfo = true;
+            $savecardinfo = false;
 
             $order = DB::table('infoOrder')->where('id',$order_id)->first();
             $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
@@ -919,8 +929,42 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
             $amount_two_dp = number_format($json_obj->amount,2);
 
+            $readers_id = [];
+            $readers_id[1] = 'tmr_Eqz4ewJhXq5eu6'; //Atelier
+            $readers_id[2] = 'tmr_Eq0HXA4Oj7Yjqo'; //Marylebone
+            $readers_id[3] = 'tmr_EqzSAXwuoVzKs0'; //Chelsea
+            $readers_id[4] = 'tmr_Eqz9KQMTISyB47'; //South Ken
+            $readers_id[5] = 'tmr_EqzjQIwM2PjDQy'; //Notting Hill
+
+            $sel_reader = "";
+
+            if($user && isset($readers_id[$user->store])){
+                $sel_reader = $readers_id[$user->store];
+            }
+
+            $intent = $stripe->paymentIntents->create([
+                'amount' => 100*$amount_two_dp,
+                'currency' => 'gbp',
+                'payment_method_types' => [
+                                'card_present',
+                                        ],
+                'capture_method' => 'manual',
+                'description'=>'Order: '.$order_id,
+                "receipt_email"=>$cust->EmailAddress,
+                //'off_session' => true, //For Saving
+            ]);
+
+
+            /**/
+
             //BEGIN Saving
         if($savecardinfo){
+            if($sel_reader !=''){
+                $stripe->terminal->readers->processPaymentIntent($sel_reader,[
+                    'payment_intnet'=>$intent->id,
+                ]);
+            }
+
             $stripe_customer = $stripe->customers->create([
                 'name'              => $cust->Name,
                 'email'             => $cust->EmailAddress,
@@ -945,6 +989,18 @@ Route::group(['prefix'=>'stripe-test'],function(){
                 'customer' => $stripe_customer->id,
             ]);
 
+
+
+            if($sel_reader !=''){
+                $stripe->terminal->readers->processSetupIntent($sel_reader,
+                    [
+                        'setup_intent' => $si->id,
+                        'customer_consent_collected' => 'true',
+                    ]
+                );
+            }
+
+
             //To add call for saving in cards table
             DB::table('cards')->insert([
                 'CustomerID'=>$cust->CustomerID,
@@ -955,17 +1011,6 @@ Route::group(['prefix'=>'stripe-test'],function(){
             ]);
         }
 
-            $intent = $stripe->paymentIntents->create([
-                'amount' => 100*$amount_two_dp,
-                'currency' => 'gbp',
-                'payment_method_types' => [
-                                'card_present',
-                                        ],
-                'capture_method' => 'manual',
-                'description'=>'Order: '.$order_id,
-                "receipt_email"=>$cust->EmailAddress,
-                'off_session' => true, //For Saving
-            ]);
 
             echo json_encode($intent);
         } catch (Throwable $e) {
@@ -1065,7 +1110,7 @@ Route::post('/cancel-terminal-request',function(){
     $readers_id[4] = 'tmr_Eqz9KQMTISyB47'; //South Ken
     $readers_id[5] = 'tmr_EqzjQIwM2PjDQy'; //Notting Hill
 
-    $sel_reader = [];
+    $sel_reader = "";
 
     $output = false;
 
