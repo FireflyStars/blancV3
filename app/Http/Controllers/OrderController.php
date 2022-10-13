@@ -1147,8 +1147,14 @@ class OrderController extends Controller
         $balance = number_format($request->balance,2);
         $amount_to_pay = number_format($request->amount_to_pay,2);
         $credit_to_deduct = number_format($request->credit_to_deduct,2);
+        $paylater = $request->paylater;
 
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
+
+        if($order && $paylater==1){
+            DB::table('infoOrder')->where('id',$order_id)->update(['Paid'=>0]);
+            DB::table('infoInvoice')->where('OrderID',$order->OrderID)->update(['Paid'=>0]);
+        }
         $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
 
         $credit_remaining = $cust->credit;
