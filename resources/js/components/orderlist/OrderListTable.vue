@@ -161,9 +161,9 @@
                 if(def.name=="Name" || def.name=="Destination"){
                     return val.toLowerCase();
                 }
-                // if(def.name=="Customer" || def.name=="Prod" || def.name=="Deliv" || def.name=="Action"){
-                //     return val
-                // }
+                if(def.name=="Type"){
+                    return order.deliverymethod
+                }
                 return val;
             }
 

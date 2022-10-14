@@ -300,6 +300,14 @@ class CustomerController extends Controller
                                             'line2'         => $request->deliveryAddress2,
                                         ]
                 ]);
+
+
+                $si = $stripe->setupIntents->create([
+                    'customer' => $stripe_customer->id,
+                    'payment_method_types' => ['card'],
+                ]);
+
+
                 //add a new record to cards table
                 $credit_card = [
                     'CustomerID'        => $CustomerUUID,
@@ -394,8 +402,6 @@ class CustomerController extends Controller
                 } catch (\Exception $e) {
                     return response()->json(['error'=> $e->getMessage()]);
                 }
-
-                dump($billing_address);
 
                 $contact = [
                     'CustomerID'    => $CustomerUUID,
@@ -1610,10 +1616,19 @@ class CustomerController extends Controller
                 }
             }
         }
+
+        $RecurringDate = DB::table('infoOrder')->select('infoOrder.PickupID' , 'infoOrder.DeliveryaskID' , 'deliveryask.trancheFrom' , 'pickup.trancheFrom' , 'deliveryask.trancheto' , 'pickup.trancheto')
+            ->leftJoin('pickup', 'pickup.PickupID', '=', 'infoOrder.PickupID')
+            ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
+            ->where('infoOrder.CustomerID', $customer->CustomerID)
+            ->where('infoOrder.Status', "RECURRING")
+            ->orderby('infoOrder.created_at' , "DESC")->first();
+
         return response()->json([
             'customer'          => $customer,
             'available_slots'   => $available_slots,
             'available_days'    => $available_days,
+            'Recurring_date'       => $RecurringDate,
         ]);
     }
 
@@ -2270,7 +2285,7 @@ class CustomerController extends Controller
         $final_cust_addr = DB::table('address')->whereIn('CustomerID',$final_cust_id)->where('status','BILLING')->get();
         $final_customers = [];
 
- 
+
         if(count($final_cust) > 0){
             foreach($final_cust as $k=>$v){
                 if(isset($list[$v->CustomerID])){

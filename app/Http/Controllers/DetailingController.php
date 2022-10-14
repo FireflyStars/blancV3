@@ -221,15 +221,18 @@ class DetailingController extends Controller
         if ($search) {
             $searched_item = DB::table('typeitem')
                 ->where('typeitem.name', 'LIKE', '%' . $search . '%')
+                ->where('deleted_at' , '=' , NULL)
                 ->first();
-            DB::table('detailingitem')->where('id', $detailingitem_id)->update([
-                'department_id' => $searched_item->department_id,
-                'category_id' => $searched_item->category_id,
-                'typeitem_id' => $searched_item->id,
-                'size_id' => null,
-                'etape' => 2,
-                'updated_at' => date('Y-m-d H:i:s')
-            ]);
+                if($searched_item){
+                    DB::table('detailingitem')->where('id', $detailingitem_id)->update([
+                        'department_id' => $searched_item->department_id,
+                        'category_id' => $searched_item->category_id,
+                        'typeitem_id' => $searched_item->id,
+                        'size_id' => null,
+                        'etape' => 2,
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ]);
+                }
         }
 
 
@@ -622,7 +625,7 @@ class DetailingController extends Controller
         $detailing_data['steps'] = $query->select('id', 'name')->get();
         $detailing_data['departements'] = DB::table('departments')->where('deleted_at', NULL)->get();
         $detailing_data['categories'] = DB::table('categories')->where('department_id', $department_id)->where('deleted_at', NULL)->get();
-        $detailing_data['typeitems'] = DB::table('typeitem')->where('department_id', $department_id)->where('deleted_at', NULL)->get();
+        $detailing_data['typeitems'] = DB::table('typeitem')->where('department_id', $department_id)->where('deleted_at', NULL)->orderBy('typeitem.Order' , 'ASC')->get();
 
         $steps = $query->get()->pluck('id')->toArray();
         if (in_array(6, $steps)) {
@@ -1188,6 +1191,13 @@ class DetailingController extends Controller
         $_TAX_AMOUNT=$_TOTAL-$_TOTAL_EXC_VAT;
 
 
+        if($cust->credit > 0){
+            if($cust->credit >= $_TOTAL_DUE){
+                $_TOTAL_DUE = 0;
+            }else{
+                $_TOTAL_DUE = $_TOTAL_DUE - $cust->credit;
+            }
+        }
 
 
         $values=array(
@@ -1835,7 +1845,7 @@ class DetailingController extends Controller
                 }
             }
 
-            $balance = number_format($total_with_discount,2) - number_format($amount_paid,2);
+            $balance = $order->Total;//number_format($total_with_discount,2) - number_format($amount_paid,2);
 
         }
 
@@ -1909,6 +1919,17 @@ class DetailingController extends Controller
             }
         }
 
+        if($cust){
+            $cust->credit_to_deduct = number_format($credit_to_deduct,2);
+            $cust_amount_diff =  DetailingController::getAmountToPay($order_id);
+            $cust->amount_diff =number_format($cust_amount_diff,2);
+        }
+
+        $has_invoices = [];
+
+        if($order){
+            $has_invoices = DB::table('infoInvoice')->where('OrderID',$order->OrderID)->get();
+        }
 
         return response()->json([
             'post'=>$request->all(),
@@ -1950,6 +1971,7 @@ class DetailingController extends Controller
             'failed_delivery_price'=>number_format($failed_delivery_price,2),
             'price_plus_delivery'=>number_format($price_plus_delivery,2),
             'order_bundles'=>$order_bundles,
+            'has_invoices'=>$has_invoices,
         ]);
     }
 

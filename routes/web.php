@@ -701,6 +701,70 @@ Route::get('/merge-pdf',function(){
     shell_exec("gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=$output_file -dBATCH $files");
 });
 
+Route::get('setup-intent-test',function(){
+    $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+    /*
+    $card = $stripe->paymentMethods->create([
+        'type' => 'card',
+        'card' => [
+            'number'      => 4850180100577561,
+            'exp_month'   => 03,
+            'exp_year'    => 23,
+            'cvc'         => 999,
+        ],
+    ]);
+
+    $cust = DB::table('infoCustomer')->where('id',22783)->first(); //B2BMain
+    $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->first();
+
+    $stripe_customer = $stripe->customers->create([
+        'name'              => $cust->Name,
+        'email'             => $cust->EmailAddress,
+        'payment_method'    => $card->id,
+        'invoice_settings'  => ['default_payment_method' => $card->id],
+        'metadata'          => [
+                                    'CustomerID' => $cust->CustomerID
+                            ],
+        'address'           => [
+                                'city'          => ($addr?$addr->Town:''),
+                                'state'         => ($addr?$addr->County:''),
+                                'country'       => ($addr?$addr->Country:''),
+                                'postal_code'   => ($addr?$addr->postcode:''),
+                                'line1'         => ($addr?$addr->address1:''),
+                                'line2'         => ($addr?$addr->address2:''),
+                            ]
+    ]);
+    */
+    /*
+    $cust_id = 'cus_ManMb6lCXWfNQu';
+
+    $stripe_customer = $stripe->customers->retrieve($cust_id,[]);
+
+    $si = $stripe->setupIntents->create([
+        'customer' => $cust_id,
+        'payment_method_types' => ['card'],
+    ]);
+
+    DB::table('cards')->insert([
+        'setup_intent_id'=>$si->id,
+    ]);
+
+
+    echo "<pre>";
+    print_r($si);
+
+    */
+
+    $si = $stripe->setupIntents->retrieve('seti_1LsMYWB2SbORtEDsHr7iSIRr',[]);
+
+    $cust = $stripe->customers->retrieve($si->customer);
+
+
+    echo "<pre>";
+    print_r($cust);
+});
+
 
 /* END TEST ROUTES */
 // added by yonghuan to search customers to be linked
@@ -846,20 +910,36 @@ Route::group(['prefix'=>'stripe-test'],function(){
         $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
 
         try {
+
+            $user = Auth::user();
             $json_str = file_get_contents('php://input');
             $json_obj = json_decode($json_str);
 
             $order_id = $json_obj->order_id;
             //$savecardinfo=$json_obj->savecardinfo;
-            $savecardinfo = true;
+            $savecardinfo = false;
 
             $order = DB::table('infoOrder')->where('id',$order_id)->first();
             $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+            $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->first();
 
             // For Terminal payments, the 'payment_method_types' parameter must include
             // 'card_present' and the 'capture_method' must be set to 'manual'
 
             $amount_two_dp = number_format($json_obj->amount,2);
+
+            $readers_id = [];
+            $readers_id[1] = 'tmr_Eqz4ewJhXq5eu6'; //Atelier
+            $readers_id[2] = 'tmr_Eq0HXA4Oj7Yjqo'; //Marylebone
+            $readers_id[3] = 'tmr_EqzSAXwuoVzKs0'; //Chelsea
+            $readers_id[4] = 'tmr_Eqz9KQMTISyB47'; //South Ken
+            $readers_id[5] = 'tmr_EqzjQIwM2PjDQy'; //Notting Hill
+
+            $sel_reader = "";
+
+            if($user && isset($readers_id[$user->store])){
+                $sel_reader = $readers_id[$user->store];
+            }
 
             $intent = $stripe->paymentIntents->create([
                 'amount' => 100*$amount_two_dp,
@@ -869,43 +949,56 @@ Route::group(['prefix'=>'stripe-test'],function(){
                                         ],
                 'capture_method' => 'manual',
                 'description'=>'Order: '.$order_id,
-                //'setup_future_usage'=>'off_season',
                 "receipt_email"=>$cust->EmailAddress,
+                //'off_session' => true, //For Saving
             ]);
-        /*
-            if($savecardinfo){
-
-        $cardid = $intent->charges->data[0]->payment_method;
-        $payment_method=$stripe->paymentMethods->retrieve($cardid,[]);
-        $custid=$payment_method->customer;
 
 
-        $stripe_cust  = $stripe->customers->retrieve(
-            $custid,
-            []
-          );
-                    $exp_month=$payment_method->card->exp_month;
-                    if(strlen($exp_month)==1){
-                        $exp_month='0'.$exp_month;
-                    }
-                    $exp_year=$payment_method->card->exp_year;
-                    $exp_year=date('yy',strtotime($exp_year.'-01-01'));
+            /**/
 
-                $credit_card = [
-                    'CustomerID'        => $order->CustomerID,
-                    'cardHolderName'    => $stripe_cust->name,
-                    'type'              => $payment_method->card->brand,
-                    'cardNumber'        => str_repeat('*',12).$payment_method->card->last4,
-                    'dateexpiration'    => $exp_month.'/'.$exp_year,
-                    'stripe_customer_id'=> $custid,
-                    'stripe_card_id'    => $payment_method->id,
-                    'created_at'        => now(),
-                    'updated_at'        => now(),
-                ];
-
-                $card_id = DB::table('cards')->insertGetId($credit_card);
+            //BEGIN Saving
+        if($savecardinfo){
+            if($sel_reader !=''){
+                $stripe->terminal->readers->processPaymentIntent($sel_reader,[
+                    'payment_intnet'=>$intent->id,
+                ]);
             }
-        */
+
+            $stripe_customer = $stripe->customers->create([
+                'name'              => $cust->Name,
+                'email'             => $cust->EmailAddress,
+                //'payment_method'    => $card->id,
+                //'invoice_settings'  => ['default_payment_method' => $card->id],
+                'metadata'          => [
+                                            'CustomerID' => $cust->CustomerID
+                                    ],
+                'address'           => [
+                                        'city'          => ($addr?$addr->Town:''),
+                                        'state'         => ($addr?$addr->County:''),
+                                        'country'       => ($addr?$addr->Country:''),
+                                        'postal_code'   => ($addr?$addr->postcode:''),
+                                        'line1'         => ($addr?$addr->address1:''),
+                                        'line2'         => ($addr?$addr->address2:''),
+                                    ]
+            ]);
+
+
+            $si = $stripe->setupIntents->create([
+                'payment_method_types' => ['card_present'],
+                'customer' => $stripe_customer->id,
+            ]);
+
+
+
+            if($sel_reader !=''){
+                $stripe->terminal->readers->processSetupIntent($sel_reader,
+                    [
+                        'setup_intent' => $si->id,
+                        'customer_consent_collected' => 'true',
+                    ]
+                );
+            }
+*/
             echo json_encode($intent);
         } catch (Throwable $e) {
             http_response_code(500);
@@ -1109,10 +1202,10 @@ Route::get('/unpaid-orders',function(Request $request){
 
 Route::group(['prefix' => 'admin'], function () {
     Voyager::routes();
-    /*
+/*
     Route::get('category-tailoring',[CategoryTailoringController::class,'index'])->name('category-tailoring')->middleware('auth');
     Route::get('client-poste', 'ClientPosteController@index')->name('client-poste');
-    */
+*/
     Route::get('supervision', [SupervisionController::class,'index'])->name('supervision')->middleware('auth');
     Route::get('supervisiondata', [SupervisionController::class,'supervisionData'])->name('supervisiondata')->middleware('auth');
 
