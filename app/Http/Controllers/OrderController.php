@@ -550,6 +550,7 @@ class OrderController extends Controller
                     'dateexpiration'    => $card_exp,
                     'stripe_customer_id'=> $stripe_customer->id,
                     'stripe_card_id'    => $card->id,
+                    'setup_intent_id'   => $si->id,
                     'created_at'        => now(),
                     'updated_at'        => now(),
                 ];

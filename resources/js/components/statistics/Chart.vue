@@ -11,6 +11,8 @@
                                 <option>channel</option>
                                 <option>item type</option>
                                 <option>department</option>
+                                <option>service</option>
+                                <option>payment</option>
                             </select>
                         </div>
                     </h3>
@@ -33,7 +35,7 @@
                             <div id="saleByOrigin" style="height: 150px">
                                 
                             </div>
-                            <div class="mt-3" v-if="pieChart1== 'item type' || pieChart1== 'department'">
+                            <div class="mt-3" v-if="pieChart1== 'item type' || pieChart1== 'department' ||  pieChart1== 'service'">
                                 <span class="fw-bold text-danger">Other :</span> 
                                 <span v-if="salesByTypeitemTotal > salesByTypeitemTotalOfItem">£{{ salesByTypeitemTotal - salesByTypeitemTotalOfItem }}</span>
                                 <span class="fw-bold text-danger" v-else> - £{{ salesByTypeitemTotalOfItem - salesByTypeitemTotal }}</span>
@@ -123,7 +125,10 @@
                     <div class="d-flex align-items-center p-2">
                         <h3 class="font-20 gotham-rounded-medium m-0">Total sales over time</h3>
                         <TotalPercent class="ms-5" :amount="salesByChannelTotal" :pastAmount="salesByChannelTotalToCompare"></TotalPercent>
-                        <h4 @click="downloadReport" class="mb-0 ms-auto font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View report</em></h4>
+                        <div class="d-flex ms-auto">
+                            <h4 @click="downloadExcel" class="mb-0 me-4 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Report</em></h4>
+                            <h4 @click="downloadOrderCSV" class="mb-0 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Order</em></h4>
+                        </div>
                     </div>
                     <div class="legends bg-white p-2">
                         <div class="d-flex">
@@ -840,11 +845,11 @@ export default {
             }
         });
 
-        const downloadReport = ()=>{
-            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading data...']);
-            axios.post('/get-report-data', filterVal.value).then((res) => {
-                const data = res.data;
-                const fileName = "report";
+        const downloadOrderCSV = ()=>{
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading order...']);
+            axios.post('/get-order-csv', filterVal.value).then((res) => {
+                const data = res.data.data;
+                const fileName = res.data.fileName;
                 const exportType = exportFromJSON.types.csv;
 
                 if (data) exportFromJSON({ data, fileName, exportType });
@@ -853,6 +858,25 @@ export default {
             }).finally(()=>{
                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
             })
+        }
+        const downloadExcel = ()=>{
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading report...']);
+            axios({
+                    url: 'get-excel-report', // File URL Goes Here
+                    method: 'post',
+                    data: filterVal.value,
+                    responseType: 'blob',
+                }).then((res) => {
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    const url = window.URL.createObjectURL(new Blob([res.data]))
+                     
+                    const link = document.createElement('a')
+                    link.href = url
+                    var filename = res.headers['content-disposition'].split(';')[1].split('=')[1].replace('"', '').replace('"', '');                    
+                    link.setAttribute('download', filename)
+                    document.body.appendChild(link)
+                    link.click()
+                });
         }
         return {
             allSaleByDateLegend,
@@ -918,7 +942,8 @@ export default {
             totalSignUpCount,
             totalSignUpCountPast,
 
-            downloadReport
+            downloadOrderCSV,
+            downloadExcel,
         }
     }
 }
