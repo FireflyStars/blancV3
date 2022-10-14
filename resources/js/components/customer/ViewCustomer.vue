@@ -753,8 +753,8 @@
                                                     </div>
                                                 </div>
                                                 <div class="item-block p-3 border-bottom" v-if="form.deliveryByday == '1'">
-                                                    <h4 class="sub-title col-12">Pickup & delivery slots </h4>
-                                                    <div class="d-flex flex-wrap" v-if="timeslots.length > 0 ">
+                                                    <h4 class="sub-title col-12" v-if="!Array.isArray(timeslots)">Pickup & delivery slots </h4>
+                                                    <div class="d-flex flex-wrap" v-if="Array.isArray(timeslots) == false">
                                                         <div class="col-4 px-1 mt-2" v-for="(slot, index) in form.pickupSlots" :key="index">
                                                             <select-options
                                                                 v-model="slot.value"
@@ -765,11 +765,15 @@
                                                             </select-options>
                                                         </div>
                                                     </div>
-                                                    <div v-else>
-                                                        <p v-if="form.pickupSlots.length > 0">Date de Recurring : {{form.pickupSlots[0].day}}</p>
+                                                    <div v-if="form.pickupSlots.length > 0 && Array.isArray(timeslots) == true">
+                                                        <p v-if="form.pickupSlots.length > 0">Dates Recurring :</p>
+                                                        <div  class="item-block d-flex py-3 px-5 border-bottom bg-color" :class="{ 'border-bottom': (index < form.pickupSlots) }" v-for="(slot, index) in form.pickupSlots" :key="index">
+                                                            <div class="col-6 fw-bold"> {{ slot.day }} </div>
+                                                            <div class="col-6 fw-bold text-end"> {{  getSlotDisplay(slot.value) }} </div>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div class="w-100 p-3"  v-if="form.deliveryByday == '1' && timeslots.length > 0">
+                                                <div class="w-100 p-3"  v-if="form.deliveryByday == '1' && Array.isArray(timeslots) == false ">
                                                     <button class="btn btn-success each-save-btn" @click="saveRecurring">Save Recurring</button>
                                                 </div>
                                             </div>
@@ -1158,6 +1162,44 @@
             const credit_to_add = ref(0);
             const billing_address_edit = ref(false);
 
+            const timeslot_def=ref([
+                {
+                    value:1,
+                    display:'8-10 am',
+                    available:false
+                },
+                {
+                    value:3,
+                    display:'10-12 pm',
+                    available:false
+                },
+                {
+                    value:5,
+                    display:'12-2 pm',
+                    available:false
+                },
+                {
+                    value:7,
+                    display:'2-4 pm',
+                    available:false
+                },
+                {
+                    value:9,
+                    display:'4-6 pm',
+                    available:false
+                },
+                {
+                    value:11,
+                    display:'6-8 pm',
+                    available:false
+                },
+                {
+                    value:13,
+                    display:'8-8 pm',
+                    available:true
+                }
+            ]);
+
 
             onMounted(()=>{
                 nextTick(()=>{
@@ -1336,7 +1378,9 @@
                                 key: 'DeliveryMon',
                                 label: 'Select Mon slot',
                             })
-                            pickupDays.value[0].active = true
+                            if(pickupDays.value.length > 0){
+                                pickupDays.value[0].active = true
+                            } 
                         }
                         if(res.data.customer.DeliveryTu){
                             form.value.pickupSlots.push({
@@ -1345,7 +1389,9 @@
                                 key: 'DeliveryTu',
                                 label: 'Select Tue slot',
                             })
-                            pickupDays.value[1].active = true
+                            if(pickupDays.value.length > 0){
+                                pickupDays.value[1].active = true
+                            }
                         }
                         if(res.data.customer.DeliveryWed){
                             form.value.pickupSlots.push({
@@ -1354,7 +1400,9 @@
                                 key: 'DeliveryWed',
                                 label: 'Select Wed slot',
                             })
-                            pickupDays.value[2].active = true
+                            if(pickupDays.value.length > 0){
+                                pickupDays.value[2].active = true
+                            }
                         }
                         if(res.data.customer.DeliveryTh){
                             form.value.pickupSlots.push({
@@ -1363,7 +1411,9 @@
                                 key: 'DeliveryTh',
                                 label: 'Select Thu slot',
                             })
-                            pickupDays.value[3].active = true
+                            if(pickupDays.value.length > 0){
+                                pickupDays.value[3].active = true
+                            }
                         }
                         if(res.data.customer.DeliveryFri){
                             form.value.pickupSlots.push({
@@ -1372,7 +1422,9 @@
                                 key: 'DeliveryFri',
                                 label: 'Select Fri slot',
                             })
-                            pickupDays.value[4].active = true
+                            if(pickupDays.value.length > 0){
+                                pickupDays.value[4].active = true
+                            }
                         }
                         if(res.data.customer.DeliverySat){
                             form.value.pickupSlots.push({
@@ -1381,7 +1433,9 @@
                                 key: 'DeliverySat',
                                 label: 'Select Sat slot',
                             })
-                            pickupDays.value[5].active = true
+                            if(pickupDays.value.length > 0){
+                                pickupDays.value[5].active = true
+                            }
                         }
                     }else{
                         viewRecurring.value = false;
@@ -1397,6 +1451,16 @@
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 })
+            }
+
+            const getSlotDisplay = (value)=>{
+                console.log(value[0])
+                const temp = timeslot_def.value.filter((item) => { return item.value == value[0]})[0];
+                if( temp ){
+                    return temp.display;
+                }else{
+                    return '';
+                }
             }
 
             const getSlotDisplayByValue = (key, value)=>{
@@ -2255,7 +2319,9 @@
                 validateAndSaveBillingAddress,
                 toggleCreditCard,
                 goCustomerView,
-                selectrow
+                selectrow,
+                timeslot_def,
+                getSlotDisplay
             }
 
         },
