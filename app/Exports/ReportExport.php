@@ -11,6 +11,7 @@ use App\Exports\Sheets\RevenueByCategory;
 use App\Exports\Sheets\RevenueByServiceType;
 use App\Exports\Sheets\RevenueByDepartment;
 use App\Exports\Sheets\RevenueByLane;
+use Carbon\Carbon;
 
 class ReportExport implements WithMultipleSheets, Responsable
 {
@@ -20,7 +21,7 @@ class ReportExport implements WithMultipleSheets, Responsable
     * It's required to define the fileName within
     * the export class when making use of Responsable.
     */
-    private $fileName = 'Reports.xlsx';
+    private $fileName = 'All-sales.xlsx';
     
     /**
     * Optional Writer Type
@@ -38,6 +39,7 @@ class ReportExport implements WithMultipleSheets, Responsable
     public function __construct(array $period)
     {
         $this->period = $period;
+        $this->fileName = sprintf("All-sales-%s-%s.xlsx", Carbon::parse($period[0])->format('Ymd'), Carbon::parse($period[1])->format('Ymd'));
     }    
     /**
      * @return array

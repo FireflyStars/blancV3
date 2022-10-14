@@ -11,6 +11,8 @@
                                 <option>channel</option>
                                 <option>item type</option>
                                 <option>department</option>
+                                <option>service</option>
+                                <option>payment</option>
                             </select>
                         </div>
                     </h3>
@@ -33,7 +35,7 @@
                             <div id="saleByOrigin" style="height: 150px">
                                 
                             </div>
-                            <div class="mt-3" v-if="pieChart1== 'item type' || pieChart1== 'department'">
+                            <div class="mt-3" v-if="pieChart1== 'item type' || pieChart1== 'department' ||  pieChart1== 'service'">
                                 <span class="fw-bold text-danger">Other :</span> 
                                 <span v-if="salesByTypeitemTotal > salesByTypeitemTotalOfItem">£{{ salesByTypeitemTotal - salesByTypeitemTotalOfItem }}</span>
                                 <span class="fw-bold text-danger" v-else> - £{{ salesByTypeitemTotalOfItem - salesByTypeitemTotal }}</span>
@@ -844,10 +846,10 @@ export default {
         });
 
         const downloadOrderCSV = ()=>{
-            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading data...']);
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading order...']);
             axios.post('/get-order-csv', filterVal.value).then((res) => {
-                const data = res.data;
-                const fileName = "report";
+                const data = res.data.data;
+                const fileName = res.data.fileName;
                 const exportType = exportFromJSON.types.csv;
 
                 if (data) exportFromJSON({ data, fileName, exportType });
@@ -858,7 +860,7 @@ export default {
             })
         }
         const downloadExcel = ()=>{
-            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading data...']);
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading report...']);
             axios({
                     url: 'get-excel-report', // File URL Goes Here
                     method: 'post',
@@ -870,7 +872,8 @@ export default {
                      
                     const link = document.createElement('a')
                     link.href = url
-                    link.setAttribute('download', 'Reports.xlsx')
+                    var filename = res.headers['content-disposition'].split(';')[1].split('=')[1].replace('"', '').replace('"', '');                    
+                    link.setAttribute('download', filename)
                     document.body.appendChild(link)
                     link.click()
                 });

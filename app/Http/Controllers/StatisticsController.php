@@ -35,7 +35,7 @@ class StatisticsController extends Controller
         }else{
             $last_period = [ Carbon::parse($compareStartDate)->startOfDay()->toDateTimeString(), Carbon::parse($compareEndDate)->endOfDay()->toDateTimeString() ];
         }
-        
+
         // new code added by YH
         if( !$customFilter ){
             $start_first_quarter_day = Carbon::now()->startOfYear();
@@ -367,7 +367,7 @@ class StatisticsController extends Controller
                                             $query->whereBetween('SignupDateOnline', $last_period);
                                         })
                                         ->select(DB::raw('count(*) as count'))->value('count');
-        
+
         $statistique['total_new_signup'] = $total_new_signup;
         $statistique['last_total_new_signup'] = $last_total_new_signup;
 
@@ -509,7 +509,7 @@ class StatisticsController extends Controller
 
     /**
      * Get Prodution statistic information
-     * 
+     *
      */
     public function getProdStatistics(Request $request){
         $customFilter   =   $request->post('customFilter');
@@ -533,7 +533,7 @@ class StatisticsController extends Controller
         }else{
             $past_period = [ Carbon::parse($compareStartDate)->startOfDay()->toDateTimeString(), Carbon::parse($compareEndDate)->endOfDay()->toDateTimeString() ];
         }
-        
+
         // new code added by YH
         if( !$customFilter ){
             $start_first_quarter_day = Carbon::now()->startOfYear();
@@ -609,7 +609,7 @@ class StatisticsController extends Controller
                     $past_period = [Carbon::now()->subMonth()->startOfMonth()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
             }
         }
-        
+
         $salesByTypeitemTotal = 0;
         $salesByTypeitemTotalOfItem = 0;
         if($salesType == 'channel'){
@@ -634,7 +634,7 @@ class StatisticsController extends Controller
                             // ->where('detailingitem.status', 'Completed')
                             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                             ->select(
-                                'departments.name as channel', 
+                                'departments.name as channel',
                                 DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
                             )
                             ->groupBy('departments.name')->orderBy('amount', 'DESC')->get();
@@ -661,7 +661,66 @@ class StatisticsController extends Controller
                             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                             ->select(
                                 DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
-                            )->value('amount');                            
+                            )->value('amount');
+        }else if($salesType == 'service'){
+            $salesByChannel[] = ['channel'=> 'Cleaning', 'amount'=> DB::table('detailingitem')
+                                ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
+                                ->whereBetween('infoOrder.created_at', $period)
+                                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                                ->select(
+                                    DB::raw('IFNULL(ROUND(SUM(detailingitem.dry_cleaning_price)), 0) as amount')
+                                )->value('amount')];
+            $salesByChannel[] = ['channel'=> 'Addons', 'amount'=> DB::table('detailingitem')
+                                ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
+                                ->whereBetween('infoOrder.created_at', $period)
+                                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                                ->select(
+                                    DB::raw('IFNULL(ROUND(SUM(detailingitem.cleaning_addon_price)), 0) as amount')
+                                )->value('amount')];
+            $salesByChannel[] = ['channel'=> 'Tailoring', 'amount'=> DB::table('detailingitem')
+                                ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
+                                ->whereBetween('infoOrder.created_at', $period)
+                                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                                ->select(
+                                    DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price)), 0) as amount')
+                                )->value('amount')];
+            $salesByChannelTotal = $salesByTypeitemTotal = InfoOrder::whereBetween('created_at', $period)
+                            ->where('deliverymethod', '!=','')
+                            ->select(
+                                DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
+                            )
+                            ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING', 'VOID', 'VOIDED', 'CANCEL', 'PENDING', 'DELETED'])
+                            ->value('amount');
+            $salesByTypeitemTotalOfItem = DB::table('detailingitem')
+                            ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
+                            ->whereBetween('infoOrder.created_at', $period)
+                            // ->where('detailingitem.status', 'Completed')
+                            ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                            ->select(
+                                DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
+                            )->value('amount');
+        }else if($salesType == 'payment'){
+            $salesByChannel = DB::table('payments')->join('infoOrder', 'infoOrder.id', '=', 'payments.order_id')
+                                ->whereBetween('infoOrder.created_at', $period)
+                                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                                ->select(
+                                    DB::raw('IFNULL(ROUND(SUM(payments.montant)), 0) as amount'),
+                                    'payments.type as channel'
+                                )->groupBy('payments.type')->orderByDesc('amount')->get();
+            $salesByChannelTotal = $salesByTypeitemTotal = InfoOrder::whereBetween('created_at', $period)
+                            ->where('deliverymethod', '!=','')
+                            ->select(
+                                DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
+                            )
+                            ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING', 'VOID', 'VOIDED', 'CANCEL', 'PENDING', 'DELETED'])
+                            ->value('amount');
+            $salesByTypeitemTotalOfItem = DB::table('detailingitem')
+                            ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
+                            ->whereBetween('infoOrder.created_at', $period)
+                            ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                            ->select(
+                                DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
+                            )->value('amount');
         }else{
             $salesByChannel = DB::table('detailingitem')->leftJoin('categories', 'categories.id', '=', 'detailingitem.category_id')
                             ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
@@ -704,7 +763,7 @@ class StatisticsController extends Controller
                             // ->where('detailingitem.status', 'Completed')
                             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                             ->select(
-                                'categories.name', 
+                                'categories.name',
                                 DB::raw('count(*) as amount')
                             )
                             ->groupBy('categories.name')->orderBy('amount', 'DESC')->get();
@@ -731,7 +790,7 @@ class StatisticsController extends Controller
                             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                             // ->where('detailingitem.status', 'Completed')
                             ->select(
-                                'departments.name', 
+                                'departments.name',
                                 DB::raw('count(*) as amount')
                             )
                             ->groupBy('departments.name')->orderBy('amount', 'DESC')->get();
@@ -750,9 +809,9 @@ class StatisticsController extends Controller
                             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                             ->select(
                                 DB::raw('count(*) as amount')
-                            )->value('amount');       
+                            )->value('amount');
         }else{
-            $piecesByItem = DB::table('detailingitem')->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')            
+            $piecesByItem = DB::table('detailingitem')->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
                             ->whereBetween('infoOrder.created_at', $period)
                             ->select(
                                 DB::raw('count(*) as amount'), 'infoOrder.TypeDelivery as name'
@@ -846,7 +905,7 @@ class StatisticsController extends Controller
                             $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                 ->where('infoOrder.CustomerID', '!=', '');
                                 // ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
-                        })            
+                        })
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', '!=', 'in_store_collection')
                         ->where('infoOrder.total', '!=', 0)
@@ -861,7 +920,7 @@ class StatisticsController extends Controller
                             $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                 ->where('infoOrder.CustomerID', '!=', '');
                                 // ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
-                        })             
+                        })
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', '!=','in_store_collection')
                         ->where('infoOrder.total', '!=', 0)
@@ -876,7 +935,7 @@ class StatisticsController extends Controller
                             $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                 ->where('infoOrder.CustomerID', '!=', '')
                                 ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
-                        })        
+                        })
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', 'in_store_collection')
                         ->where('infoOrder.TypeDelivery', 'MARYLEBONE')
@@ -892,7 +951,7 @@ class StatisticsController extends Controller
                             $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                 ->where('infoOrder.CustomerID', '!=', '')
                                 ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
-                        })        
+                        })
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', 'in_store_collection')
                         ->where('infoOrder.TypeDelivery', 'NOTTING HILL')
@@ -908,7 +967,7 @@ class StatisticsController extends Controller
                             $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                 ->where('infoOrder.CustomerID', '!=', '')
                                 ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
-                        })        
+                        })
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', 'in_store_collection')
                         ->where('infoOrder.TypeDelivery', 'CHELSEA')
@@ -923,7 +982,7 @@ class StatisticsController extends Controller
                             $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
                                 ->where('infoOrder.CustomerID', '!=', '')
                                 ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
-                        })        
+                        })
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', 'in_store_collection')
                         ->where('infoOrder.TypeDelivery', 'SOUTH KEN')
@@ -1095,7 +1154,7 @@ class StatisticsController extends Controller
             'salesByChannelTotalToCompare'=> $salesByChannelTotalToCompare,
             'salesByTypeitemTotal'=> $salesByTypeitemTotal,
             'salesByTypeitemTotalOfItem'=> $salesByTypeitemTotalOfItem,
-            
+
             'piecesByItem'          => $piecesByItem,
             'salesByItemTotal'      => $salesByItemTotal,
             'salesByItemTotalToCompare'=> $salesByItemTotalToCompare,
@@ -1152,7 +1211,7 @@ class StatisticsController extends Controller
         $dateRangeType  =   $request->post('dateRangeType');
 
         $period         = [ Carbon::parse($startDate)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->endOfDay()->toDateTimeString() ];
-        
+
         // new code added by YH
         if( !$customFilter ){
             $start_first_quarter_day = Carbon::now()->startOfYear();
@@ -1187,7 +1246,10 @@ class StatisticsController extends Controller
                         ->where('infoOrder.deliverymethod', '!=', '')
                         ->where('infoOrder.Total', '!=', 0)
                         ->get();
-        return response()->json($reportData);
+        return response()->json([
+            'data'=>$reportData,
+            'fileName'=>sprintf("All-orders-%s-%s.csv", Carbon::parse($period[0])->format('Ymd'), Carbon::parse($period[1])->format('Ymd'))
+        ]);
 
     }
     public static function getAssemblyHomeStats(Request $request){
@@ -2778,7 +2840,7 @@ class StatisticsController extends Controller
                 'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%d/%m/%Y") as prod'), 'infoitems.id AS item_id',
                 'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
                 'infoitems.idPartner', 'TypePost.bg_color as location_color', 'TypePost.process','TypePost.circle_color',
-                DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%d/%m/%Y") as deliv'),                    
+                DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%d/%m/%Y") as deliv'),
                 'infoitems.idPartner', 'TypePost.bg_color as location_color', 'TypePost.process','TypePost.circle_color',
                 DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%d/%m/%Y") as deliv'),
                 // DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as deliv')
@@ -2882,7 +2944,7 @@ class StatisticsController extends Controller
                             /* DB::raw('DATE_FORMAT(deliveryask.date, "%m/%d") as deliveryask_date') */
                         );
         $arr = [0, 1, 2, 3, 4, 5, 6];
-        
+
         if($request->search != ''){
             $invoices   =  $invoices->Join('infoInvoice','infoitems.InvoiceID','infoInvoice.InvoiceID')
             ->join('infoOrder','infoInvoice.OrderID','infoOrder.OrderID')
@@ -2918,7 +2980,7 @@ class StatisticsController extends Controller
                                 ->whereIN('pickup.status', ['NEW', 'API', 'PMS', 'DONE', 'PMS-DONE', 'API-DONE', 'REC', 'REC-DONE', 'REC-NOK', 'PMS-NOK', 'API-NOK','OP'])
                                 ->whereNotIn('infoOrder.Status',['VOID', 'DELETE'])
                                 ->orderBy('item_id');
-        } 
+        }
         if($request->status != ''){
             $invoices   = $invoices->where('infoitems.Status', $request->status);
         }
@@ -3009,7 +3071,7 @@ class StatisticsController extends Controller
         $dateRangeType  =   $request->post('dateRangeType');
 
         $period         = [ Carbon::parse($startDate)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->endOfDay()->toDateTimeString() ];
-        
+
         if( !$customFilter ){
             $start_first_quarter_day = Carbon::now()->startOfYear();
             $end_first_quarter_day = Carbon::parse($start_first_quarter_day)->lastOfQuarter();
@@ -3034,7 +3096,7 @@ class StatisticsController extends Controller
             }else{
                 $period = [$start_first_quarter_day->toDateTimeString(), $end_first_quarter_day->toDateTimeString()];
             }
-        }        
+        }
         return new ReportExport($period);
     }
 }
