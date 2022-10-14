@@ -255,7 +255,7 @@
                 toPrint += document.querySelector('#barcode_div').innerHTML;
                 toPrint += '<p>';
 
-                toPrint += '<span style="font-size:14pt;">'+inv.Client+'</span><br/>';
+                toPrint += '<span style="font-size:14pt;">'+inv.customer_name+'</span><br/>';
 
                 if(inv.phone_num) {
                     toPrint += '<span style="font-size:10pt">Tel: '+inv.phone_num[0].replace("|","")+'</span>';

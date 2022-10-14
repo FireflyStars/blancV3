@@ -37,28 +37,28 @@ class PosteController extends Controller
 
         if($route_name=='item-qc'){
             $inv = DB::table('infoInvoice')
-                    ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
+                    ->select('infoInvoice.Client','infoCustomer.Name as customer_name' , 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
                     ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
                     ->where('infoInvoice.id', $invoice_id)
                     ->first();
         }
         if($route_name == 'CustomerDetail'){
             $inv = DB::table('infoInvoice')
-                    ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
+                    ->select('infoInvoice.Client', 'infoCustomer.Name as customer_name' ,'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
                     ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
                     ->where('infoInvoice.id',$invoice_id)
                     ->first();
         }
         if($route_name == 'OrderDetails'){
             $inv = DB::table('infoInvoice')
-                    ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
+                    ->select('infoInvoice.Client','infoCustomer.Name as customer_name' ,  'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
                     ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
                     ->where('infoInvoice.InvoiceID',$invoice_id)
                     ->first();
         }
         if($route_name == 'ItemDetails'){
             $inv = DB::table('infoInvoice')
-                    ->select('infoInvoice.Client', 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
+                    ->select('infoInvoice.Client','infoCustomer.Name as customer_name' , 'infoInvoice.NumInvoice','infoCustomer.Phone','infoInvoice.SubOrderID','infoInvoice.OrderID', 'infoInvoice.StoreName','infoInvoice.InvoiceID','infoInvoice.CustomerID')
                     ->join('infoCustomer','infoInvoice.CustomerID','infoCustomer.CustomerID')
                     ->where('infoInvoice.InvoiceID',$invoice_id)
                     ->first();
