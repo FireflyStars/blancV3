@@ -466,12 +466,10 @@ Route::get('create-invoice-test',function(){
 
             echo "<br/><h2>Invoices by PERC</h2>";
             print_r($grouped_by_perc);
-/*
+            /*
             echo "<br/><h2>Invoices by TYPE and PERC</h2>";
             print_r($grouped_by_inv);
-*/
-
-
+            */
         }
     }
 
@@ -534,12 +532,12 @@ Route::get('test-stripe-terminal',function(Request $request){
             'capture_method' => 'manual',
           ]);
 
-/*
+    /*
           $stripe->terminal->readers->processPaymentIntent(
             $reader_id,
             ['payment_intent' => $payment_intent->id]
           );
-*/
+    */
 
     }
 
@@ -664,7 +662,7 @@ Route::get('/test-pi',function(){
         echo "<pre>";
         print_r($intent);
 
-/*
+    /*
         $exp_month=$card->exp_month;
         if(strlen($exp_month)==1){
             $exp_month='0'.$exp_month;
@@ -674,7 +672,7 @@ Route::get('/test-pi',function(){
 
         echo "<pre>";
         print_r($payment_method);
-/*
+    /*
                 $credit_card = [
                     'CustomerID'        => 'xx',//$order->CustomerID,
                     'cardHolderName'    => ($stripe_cust?$stripe_cust->name:""),
@@ -714,7 +712,8 @@ Route::post('/ScanItemAndBag', [ScanController::class, 'ScanItemAndBag'])->name(
 
 Route::post('/get-statistics',[StatisticsController::class, 'getStatistics'])->name('get-statistics')->middleware('auth');
 Route::post('/get-prod-statistics',[StatisticsController::class, 'getProdStatistics'])->name('get.prod.statistics')->middleware('auth');
-Route::post('/get-report-data',[StatisticsController::class, 'getReportData'])->name('get.report.data')->middleware('auth');
+Route::post('/get-order-csv',[StatisticsController::class, 'getOrderCSV'])->name('get.order.csv')->middleware('auth');
+Route::post('/get-excel-report', [ StatisticsController::class, 'downloadExcel' ])->name('get.report.excel')->middleware('auth');
 
 Route::post('/assembly-home-stats',[StatisticsController::class, 'getAssemblyHomeStats'])->name('get-assembly-home-stats')->middleware('auth');
 Route::post('/partner-details',[StatisticsController::class, 'getPartnerDetails'])->name('partner-details')->middleware('auth');
@@ -873,7 +872,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
                 //'setup_future_usage'=>'off_season',
                 "receipt_email"=>$cust->EmailAddress,
             ]);
-/*
+        /*
             if($savecardinfo){
 
         $cardid = $intent->charges->data[0]->payment_method;
@@ -906,7 +905,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
                 $card_id = DB::table('cards')->insertGetId($credit_card);
             }
-*/
+        */
             echo json_encode($intent);
         } catch (Throwable $e) {
             http_response_code(500);
@@ -1110,10 +1109,10 @@ Route::get('/unpaid-orders',function(Request $request){
 
 Route::group(['prefix' => 'admin'], function () {
     Voyager::routes();
-/*
+    /*
     Route::get('category-tailoring',[CategoryTailoringController::class,'index'])->name('category-tailoring')->middleware('auth');
     Route::get('client-poste', 'ClientPosteController@index')->name('client-poste');
-*/
+    */
     Route::get('supervision', [SupervisionController::class,'index'])->name('supervision')->middleware('auth');
     Route::get('supervisiondata', [SupervisionController::class,'supervisionData'])->name('supervisiondata')->middleware('auth');
 

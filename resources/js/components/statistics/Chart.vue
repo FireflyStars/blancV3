@@ -123,7 +123,10 @@
                     <div class="d-flex align-items-center p-2">
                         <h3 class="font-20 gotham-rounded-medium m-0">Total sales over time</h3>
                         <TotalPercent class="ms-5" :amount="salesByChannelTotal" :pastAmount="salesByChannelTotalToCompare"></TotalPercent>
-                        <h4 @click="downloadReport" class="mb-0 ms-auto font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View report</em></h4>
+                        <div class="d-flex ms-auto">
+                            <h4 @click="downloadExcel" class="mb-0 me-4 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Report</em></h4>
+                            <h4 @click="downloadOrderCSV" class="mb-0 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Order</em></h4>
+                        </div>
                     </div>
                     <div class="legends bg-white p-2">
                         <div class="d-flex">
@@ -840,9 +843,9 @@ export default {
             }
         });
 
-        const downloadReport = ()=>{
+        const downloadOrderCSV = ()=>{
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading data...']);
-            axios.post('/get-report-data', filterVal.value).then((res) => {
+            axios.post('/get-order-csv', filterVal.value).then((res) => {
                 const data = res.data;
                 const fileName = "report";
                 const exportType = exportFromJSON.types.csv;
@@ -853,6 +856,24 @@ export default {
             }).finally(()=>{
                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
             })
+        }
+        const downloadExcel = ()=>{
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading data...']);
+            axios({
+                    url: 'get-excel-report', // File URL Goes Here
+                    method: 'post',
+                    data: filterVal.value,
+                    responseType: 'blob',
+                }).then((res) => {
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    const url = window.URL.createObjectURL(new Blob([res.data]))
+                     
+                    const link = document.createElement('a')
+                    link.href = url
+                    link.setAttribute('download', 'Reports.xlsx')
+                    document.body.appendChild(link)
+                    link.click()
+                });
         }
         return {
             allSaleByDateLegend,
@@ -918,7 +939,8 @@ export default {
             totalSignUpCount,
             totalSignUpCountPast,
 
-            downloadReport
+            downloadOrderCSV,
+            downloadExcel,
         }
     }
 }

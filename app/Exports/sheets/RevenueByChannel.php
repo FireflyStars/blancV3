@@ -62,7 +62,6 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
         $salesItemTotal = DB::table('detailingitem')
                         ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
                         ->whereBetween('infoOrder.created_at', $this->period)
-                        // ->where('detailingitem.status', 'Completed')
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->select(
                             DB::raw('count(*) as amount')
@@ -70,7 +69,6 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
         $salesItemTotalToCompareYearMode = DB::table('detailingitem')
                         ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
                         ->whereBetween('infoOrder.created_at', $year_period)
-                        // ->where('detailingitem.status', 'Completed')
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->select(
                             DB::raw('count(*) as amount')
@@ -78,7 +76,6 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
         $salesItemTotalToCompareMonthMode = DB::table('detailingitem')
                         ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
                         ->whereBetween('infoOrder.created_at', $month_period)
-                        // ->where('detailingitem.status', 'Completed')
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->select(
                             DB::raw('count(*) as amount')
