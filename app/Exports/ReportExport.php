@@ -11,6 +11,7 @@ use App\Exports\Sheets\RevenueByCategory;
 use App\Exports\Sheets\RevenueByServiceType;
 use App\Exports\Sheets\RevenueByDepartment;
 use App\Exports\Sheets\RevenueByLane;
+
 class ReportExport implements WithMultipleSheets, Responsable
 {
     use Exportable;

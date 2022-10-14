@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Exports\Sheets;
 
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\DB;
 class RevenueByCategory implements FromCollection, WithTitle, WithColumnWidths, WithCustomStartCell, WithHeadings, WithStyles
 {
     private $period;
-    public $dataCnt;
+    private $dataCnt;
 
     public function __construct(array $period)
     {
@@ -171,11 +172,6 @@ class RevenueByCategory implements FromCollection, WithTitle, WithColumnWidths, 
         
         $sheet->getRowDimension(5)->setRowHeight(10, 'px');
         $sheet->getStyle('B5:D5')->getBorders()->getInside()->setBorderStyle(Border::BORDER_NONE);
-        // for ($i=1; $i <= $this->dataCnt ; $i++) { 
-        //     $sheet->getRowDimension(5 + $i)->setRowHeight(40, 'px');
-        //     $sheet->getStyle('B'.(5 + $i).':D'.(5 + $i))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_NONE);
-        //     $sheet->getStyle('B'.(5 + $i).':D'.(5 + $i))->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
-        // }
         $subTotalCellStyle = [
             'font'  =>[
                 'bold'  => true,
