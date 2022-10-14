@@ -135,6 +135,18 @@ class DetailingController extends Controller
 
                 if($detailingitem->cleaning_price_type=='Standard'){
                     $dry_cleaning_price=$detailingitem->pricecleaning + $detailingitem->pricecleaning*$detailingitem->coefcleaning+ $sum_complexites + $sum_fabrics;
+                    $cs = @json_decode($detailingitem->cleaning_services);
+
+                    if(is_array($cs)){
+                        foreach($cs as $keycs=>$idcs){
+                            if(!in_array($idcs,[1,2,3])){
+                                unset($cs[$keycs]);
+                            }
+                        }
+                    }
+
+                    $dry_cleaning_price = DetailingController::calculateCleaningPrice($cs,$dry_cleaning_price);
+
                     $cleaning_addon_price = $detailingitem->cleaning_addon_price;
                 }else if($detailingitem->cleaning_price_type=='PriceNow'){
                     $dry_cleaning_price=$detailingitem->dry_cleaning_price;
