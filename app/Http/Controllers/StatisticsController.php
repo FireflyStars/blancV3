@@ -691,6 +691,12 @@ class StatisticsController extends Controller
                             )
                             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING', 'VOID', 'VOIDED', 'CANCEL', 'PENDING', 'DELETED'])
                             ->value('amount');
+            $salesByChannelTotalToCompare =  InfoOrder::whereBetween('created_at', $past_period)
+                            ->where('deliverymethod', '!=','')
+                            ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                            ->select(
+                                DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
+                            )->value('amount');                            
             $salesByTypeitemTotalOfItem = DB::table('detailingitem')
                             ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
                             ->whereBetween('infoOrder.created_at', $period)
@@ -714,6 +720,12 @@ class StatisticsController extends Controller
                             )
                             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING', 'VOID', 'VOIDED', 'CANCEL', 'PENDING', 'DELETED'])
                             ->value('amount');
+            $salesByChannelTotalToCompare =  InfoOrder::whereBetween('created_at', $past_period)
+                            ->where('deliverymethod', '!=','')
+                            ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                            ->select(
+                                DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
+                            )->value('amount');                                  
             $salesByTypeitemTotalOfItem = DB::table('detailingitem')
                             ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
                             ->whereBetween('infoOrder.created_at', $period)
