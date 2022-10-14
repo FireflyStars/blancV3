@@ -10,6 +10,8 @@ use App\Models\InfoCustomer;
 use App\Models\Infoitem;
 use App\Poste;
 use App\Models\Item;
+use App\Exports\ReportExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StatisticsController extends Controller
 {
@@ -661,13 +663,13 @@ class StatisticsController extends Controller
                                 DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
                             )->value('amount');                            
         }else{
-            $salesByChannel = DB::table('detailingitem')->join('categories', 'categories.id', '=', 'detailingitem.category_id')
+            $salesByChannel = DB::table('detailingitem')->leftJoin('categories', 'categories.id', '=', 'detailingitem.category_id')
                             ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
                             ->whereBetween('infoOrder.created_at', $period)
                             // ->where('detailingitem.status', 'Completed')
                             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                             ->select(
-                                'categories.name as channel', 
+                                DB::raw('IFNULL(categories.name, "Other")  as channel'),
                                 DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
                             )
                             ->groupBy('categories.name')->orderBy('amount', 'DESC')->get();
@@ -1143,7 +1145,7 @@ class StatisticsController extends Controller
     /**
      * Get report data for download
      */
-    public function getReportData(Request $request){
+    public function getOrderCSV(Request $request){
         $customFilter   =   $request->post('customFilter');
         $startDate      =   $request->post('startDate');
         $endDate        =   $request->post('endDate');
@@ -2995,5 +2997,44 @@ class StatisticsController extends Controller
             'invoices'      =>  $invoices,
             'total_count'   =>  $total_invoice_count
         ]);
+    }
+
+    /**
+     * Download excel file
+     */
+    public function downloadExcel(Request $request){
+        $customFilter   =   $request->post('customFilter');
+        $startDate      =   $request->post('startDate');
+        $endDate        =   $request->post('endDate');
+        $dateRangeType  =   $request->post('dateRangeType');
+
+        $period         = [ Carbon::parse($startDate)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->endOfDay()->toDateTimeString() ];
+        
+        if( !$customFilter ){
+            $start_first_quarter_day = Carbon::now()->startOfYear();
+            $end_first_quarter_day = Carbon::parse($start_first_quarter_day)->lastOfQuarter();
+            if( $dateRangeType == 'Today' ){
+                $period = [Carbon::now()->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Yesterday' ){
+                $period = [Carbon::yesterday()->startOfDay()->toDateTimeString(), Carbon::yesterday()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Last 7 days' ){
+                $period = [Carbon::now()->subDays(7)->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Last 90 days' ){
+                $period = [Carbon::now()->subDays(90)->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Last Month' ){
+                $period = [Carbon::now()->subMonth()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->subMonth()->endOfMonth()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Year to date' ){
+                $period = [Carbon::now()->startOfYear()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == '4th Quarter' ){
+                $period = [Carbon::parse($start_first_quarter_day)->addMonths(9)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->addMonths(9)->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == '3rd Quarter' ){
+                $period = [Carbon::parse($start_first_quarter_day)->addMonths(6)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->addMonths(6)->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == '2nd Quarter' ){
+                $period = [Carbon::parse($start_first_quarter_day)->addMonths(3)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->addMonths(3)->endOfDay()->toDateTimeString()];
+            }else{
+                $period = [$start_first_quarter_day->toDateTimeString(), $end_first_quarter_day->toDateTimeString()];
+            }
+        }        
+        return new ReportExport($period);
     }
 }
