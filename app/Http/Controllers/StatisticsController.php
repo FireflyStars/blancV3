@@ -575,6 +575,13 @@ class StatisticsController extends Controller
                 }else{
                     $past_period = [Carbon::now()->subMonth(2)->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->subMonth(2)->endOfMonth()->endOfDay()->toDateTimeString()];
                 }
+            }else if ( $dateRangeType == 'This Month' ){
+                $period = [Carbon::now()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->toDateTimeString()];
+                if(!$compareCustomFilter && $compareMode == 'year'){
+                    $past_period = [Carbon::now()->subYear()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->subYear()->toDateTimeString()];
+                }else{
+                    $past_period = [Carbon::now()->subMonth()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->subMonth()->toDateTimeString()];
+                }
             }else if ( $dateRangeType == 'Year to date' ){
                 $period = [Carbon::now()->startOfYear()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
                 if(!$compareCustomFilter && $compareMode == 'year'){
@@ -700,7 +707,6 @@ class StatisticsController extends Controller
             $salesByTypeitemTotalOfItem = DB::table('detailingitem')
                             ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
                             ->whereBetween('infoOrder.created_at', $period)
-                            // ->where('detailingitem.status', 'Completed')
                             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                             ->select(
                                 DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount')
@@ -1244,6 +1250,8 @@ class StatisticsController extends Controller
                 $period = [Carbon::now()->subDays(90)->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
             }else if ( $dateRangeType == 'Last Month' ){
                 $period = [Carbon::now()->subMonth()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->subMonth()->endOfMonth()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'This Month' ){
+                $period = [Carbon::now()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->toDateTimeString()];                
             }else if ( $dateRangeType == 'Year to date' ){
                 $period = [Carbon::now()->startOfYear()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
             }else if ( $dateRangeType == '4th Quarter' ){
@@ -3103,6 +3111,8 @@ class StatisticsController extends Controller
                 $period = [Carbon::now()->subDays(90)->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
             }else if ( $dateRangeType == 'Last Month' ){
                 $period = [Carbon::now()->subMonth()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->subMonth()->endOfMonth()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'This Month' ){
+                $period = [Carbon::now()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->toDateTimeString()];
             }else if ( $dateRangeType == 'Year to date' ){
                 $period = [Carbon::now()->startOfYear()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
             }else if ( $dateRangeType == '4th Quarter' ){

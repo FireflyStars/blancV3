@@ -16,9 +16,10 @@ use Carbon\Carbon;
 use App\Models\InfoOrder;
 use Illuminate\Support\Facades\DB;
 
-class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidths, WithCustomStartCell, WithHeadings, WithStyles
+class RevenueByPayment implements FromCollection, WithTitle, WithColumnWidths, WithCustomStartCell, WithHeadings, WithStyles
 {
     private $period;
+    private $cnt;
 
     public function __construct(array $period)
     {
@@ -34,36 +35,27 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
         $data[] = ['', '', ''];
         $data[] = [  Carbon::parse($this->period[0])->format('d/m/Y').' To '.Carbon::parse($this->period[1])->format('d/m/Y'), '£ incl. VAT', '# of pieces'];
         $data[] = ['', '', ''];
-        $data[] = ['Cleaning', DB::table('detailingitem')
-                ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                ->whereBetween('infoOrder.created_at', $this->period)
-                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                ->select(
-                    DB::raw('IFNULL(ROUND(SUM(detailingitem.dry_cleaning_price)), 0) as amount')
-                )->value('amount'), ''];
-        $data[] = ['Addons', DB::table('detailingitem')
-                ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                ->whereBetween('infoOrder.created_at', $this->period)
-                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                ->select(
-                    DB::raw('IFNULL(ROUND(SUM(detailingitem.cleaning_addon_price)), 0) as amount')
-                )->value('amount'), ''];
-        $data[] = ['Tailoring', DB::table('detailingitem')
-                ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                ->whereBetween('infoOrder.created_at', $this->period)
-                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                ->select(
-                    DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price)), 0) as amount')
-                )->value('amount'), ''];
+        $salesByPayment = DB::table('payments')->join('infoOrder', 'infoOrder.id', '=', 'payments.order_id')
+            ->whereBetween('infoOrder.created_at', $this->period)
+            ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+            ->select(
+                DB::raw('IFNULL(ROUND(SUM(payments.montant)), 0) as amount'),
+                'payments.type as channel',
+                DB::raw('count(*) as count'),
+            )->groupBy('payments.type')->orderByDesc('amount')->get();
+        foreach ($salesByPayment as $item) {
+            $data[] = [$item->channel, $item->amount, $item->amount];
+        }
+        $this->cnt = $salesByPayment->count();
+        $salesByPaymentTotal = InfoOrder::whereBetween('created_at', $this->period)
+            ->where('deliverymethod', '!=','')
+            ->select(
+                DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
+            )
+            ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING', 'VOID', 'VOIDED', 'CANCEL', 'PENDING', 'DELETED'])
+            ->value('amount');
         $month_period = [ Carbon::parse($this->period[0])->subMonth()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::parse($this->period[1])->subMonth()->endOfMonth()->endOfDay()->toDateTimeString()];
-        $year_period = [ Carbon::parse($this->period[0])->subYear()->startOfYear()->startOfDay()->toDateTimeString(), Carbon::parse($this->period[1])->subYear()->endOfYear()->endOfDay()->toDateTimeString()];
-        $salesTotal = InfoOrder::whereBetween('created_at', $this->period)
-                ->where('deliverymethod', '!=','')
-                ->select(
-                    DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
-                )
-                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING', 'VOID', 'VOIDED', 'CANCEL', 'PENDING', 'DELETED'])
-                ->value('amount');
+        $year_period = [ Carbon::parse($this->period[0])->subYear()->startOfYear()->startOfDay()->toDateTimeString(), Carbon::parse($this->period[1])->subYear()->endOfYear()->endOfDay()->toDateTimeString()];            
         $salesTotalToCompareMonthMode =  InfoOrder::whereBetween('created_at', $month_period)
                 ->where('deliverymethod', '!=','')
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
@@ -103,9 +95,9 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
         $data[] = ['Order discounts', '', ''];
         $data[] = ['Delivery Fees', '', ''];
         $data[] = ['Failed Delivery Fees', '', ''];
-        $data[] = ['Total Sales', $salesTotal, $salesItemTotal->count];
-        $data[] = ['growth % vs prev year', ($salesTotalToCompareYearMode != 0 ? ($salesTotal/$salesTotalToCompareYearMode - 1)*100 : '--'), ($salesItemTotalToCompareYearMode != 0 ? ($salesItemTotal->count/$salesItemTotalToCompareYearMode -1)*100 : '--')];
-        $data[] = ['growth % vs prev month', ($salesItemTotalToCompareMonthMode != 0 ? ($salesTotal/$salesTotalToCompareMonthMode - 1)*100 : '--'), ($salesItemTotalToCompareMonthMode != 0 ? ($salesItemTotal->count/$salesItemTotalToCompareMonthMode -1)*100 : '--')];
+        $data[] = ['Total Sales', $salesByPaymentTotal, $salesItemTotal->count];
+        $data[] = ['growth % vs prev year', ($salesTotalToCompareYearMode != 0 ? ($salesByPaymentTotal/$salesTotalToCompareYearMode - 1)*100 : '--'), ($salesItemTotalToCompareYearMode != 0 ? ($salesItemTotal->count/$salesItemTotalToCompareYearMode -1)*100 : '--')];
+        $data[] = ['growth % vs prev month', ($salesItemTotalToCompareMonthMode != 0 ? ($salesByPaymentTotal/$salesTotalToCompareMonthMode - 1)*100 : '--'), ($salesItemTotalToCompareMonthMode != 0 ? ($salesItemTotal->count/$salesItemTotalToCompareMonthMode -1)*100 : '--')];
         return collect([ $data ]);
     }
 
@@ -114,7 +106,7 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
      */
     public function title(): string
     {
-        return 'Revenue By Service Type';
+        return 'Revenue By Payment Type';
     }
     public function startCell(): string
     {
@@ -131,7 +123,7 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
     }
     public function headings(): array
     {
-        return [ 'Revenue By Service Type', '', ''];
+        return [ 'Revenue By Payment Type', '', ''];
     }
     public function styles(Worksheet $sheet)
     {
@@ -160,7 +152,7 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
 
         $sheet->getRowDimension(3)->setRowHeight(10, 'px');
         $sheet->getStyle('B3:D3')->getBorders()->getInside()->setBorderStyle(Border::BORDER_NONE);
-
+        
         $headerStyle = [
             'font'  =>[
                 'bold'  => true,
@@ -175,14 +167,14 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
                 'vertical' => Alignment::VERTICAL_BOTTOM,
             ],
         ];
-
+        
         $sheet->getRowDimension(4)->setRowHeight(40, 'px');
         $sheet->getStyle('B4:D4')->applyFromArray($headerStyle);
         $sheet->getStyle('B4:D4')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
-
+        
         $sheet->getRowDimension(5)->setRowHeight(10, 'px');
         $sheet->getStyle('B5:D5')->getBorders()->getInside()->setBorderStyle(Border::BORDER_NONE);
-
+        
         $yellowFieldStyle = [
             'font'  =>[
                 'bold'  => false,
@@ -197,11 +189,11 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
                 'vertical' => Alignment::VERTICAL_BOTTOM,
             ],
         ];
-        $sheet->getStyle('C6:D8')->applyFromArray($yellowFieldStyle);
-        $sheet->getStyle('C6:D8')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_DOTTED);
+        $sheet->getStyle('C6:D'.(5 + $this->cnt))->applyFromArray($yellowFieldStyle);
+        $sheet->getStyle('C6:D'.(5 + $this->cnt))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_DOTTED);        
 
-        $sheet->getStyle('C10:D13')->applyFromArray($yellowFieldStyle);
-        $sheet->getStyle('C10:D13')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_DOTTED);
+        $sheet->getStyle('C'.(7 + $this->cnt).':D'.(10 + $this->cnt))->applyFromArray($yellowFieldStyle);
+        $sheet->getStyle('C'.(7 + $this->cnt).':D'.(10 + $this->cnt))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_DOTTED);        
         $subTotalCellStyle = [
             'font'  =>[
                 'bold'  => true,
@@ -211,16 +203,16 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
             'fill'  =>[
                 'fillType' => Fill::FILL_SOLID,
                 'color' => ['rgb' => 'd9e2f3'],
-            ],
+            ],            
             'alignment' => [
                 'vertical' => Alignment::VERTICAL_BOTTOM,
             ],
         ];
-        $sheet->getStyle('B9:D9')->applyFromArray($subTotalCellStyle);
-        $sheet->getStyle('B9:D9')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
+        $sheet->getStyle('B'.(6 + $this->cnt).':D'.(6 + $this->cnt))->applyFromArray($subTotalCellStyle);
+        $sheet->getStyle('B'.(6 + $this->cnt).':D'.(6 + $this->cnt))->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
 
-        $sheet->getStyle('B14:D14')->applyFromArray($subTotalCellStyle);
-        $sheet->getStyle('B14:D14')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
+        $sheet->getStyle('B'.(11 + $this->cnt).':D'.(11 + $this->cnt))->applyFromArray($subTotalCellStyle);
+        $sheet->getStyle('B'.(11 + $this->cnt).':D'.(11 + $this->cnt))->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
 
     }
 }

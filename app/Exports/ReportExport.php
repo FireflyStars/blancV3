@@ -11,6 +11,7 @@ use App\Exports\Sheets\RevenueByCategory;
 use App\Exports\Sheets\RevenueByServiceType;
 use App\Exports\Sheets\RevenueByDepartment;
 use App\Exports\Sheets\RevenueByLane;
+use App\Exports\Sheets\RevenueByPayment;
 use Carbon\Carbon;
 
 class ReportExport implements WithMultipleSheets, Responsable
@@ -52,6 +53,7 @@ class ReportExport implements WithMultipleSheets, Responsable
         $sheets[] = new RevenueByCategory($this->period);
         $sheets[] = new RevenueByDepartment($this->period);
         $sheets[] = new RevenueByServiceType($this->period);
+        $sheets[] = new RevenueByPayment($this->period);
         $sheets[] = new RevenueByLane($this->period);
 
         return $sheets;
