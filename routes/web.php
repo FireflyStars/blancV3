@@ -868,7 +868,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
                                 'card_present',
                                         ],
                 'capture_method' => 'manual',
-                'description'=>'Order: '.$order_id,
+                'description'=>$order_id,
                 //'setup_future_usage'=>'off_season',
                 "receipt_email"=>$cust->EmailAddress,
             ]);
