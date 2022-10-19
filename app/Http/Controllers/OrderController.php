@@ -594,7 +594,7 @@ class OrderController extends Controller
                     "customer"          => $card->stripe_customer_id,
                     "capture_method"    => "automatic",
                     'payment_method_types' => ['card'],
-                    "description"=>"Order: ".$order_id,
+                    "description"=>$order_id,
                     "receipt_email"=>$cust->EmailAddress, //To change for customer email
                     'off_session' => true,
                     'confirm' => true,

@@ -713,6 +713,7 @@ Route::post('/ScanItemAndBag', [ScanController::class, 'ScanItemAndBag'])->name(
 Route::post('/get-statistics',[StatisticsController::class, 'getStatistics'])->name('get-statistics')->middleware('auth');
 Route::post('/get-prod-statistics',[StatisticsController::class, 'getProdStatistics'])->name('get.prod.statistics')->middleware('auth');
 Route::post('/get-order-csv',[StatisticsController::class, 'getOrderCSV'])->name('get.order.csv')->middleware('auth');
+Route::post('/get-void-order-csv',[StatisticsController::class, 'getVoidOrderCSV'])->name('get.void.order.csv')->middleware('auth');
 Route::post('/get-excel-report', [ StatisticsController::class, 'downloadExcel' ])->name('get.report.excel')->middleware('auth');
 
 Route::post('/assembly-home-stats',[StatisticsController::class, 'getAssemblyHomeStats'])->name('get-assembly-home-stats')->middleware('auth');
@@ -869,7 +870,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
                                 'card_present',
                                         ],
                 'capture_method' => 'manual',
-                'description'=>'Order: '.$order_id,
+                'description'=>$order_id,
                 //'setup_future_usage'=>'off_season',
                 "receipt_email"=>$cust->EmailAddress,
             ]);

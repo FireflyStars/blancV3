@@ -127,7 +127,8 @@
                         <TotalPercent class="ms-5" :amount="salesByChannelTotal" :pastAmount="salesByChannelTotalToCompare"></TotalPercent>
                         <div class="d-flex ms-auto">
                             <h4 @click="downloadExcel" class="mb-0 me-4 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Report</em></h4>
-                            <h4 @click="downloadOrderCSV" class="mb-0 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Order</em></h4>
+                            <h4 @click="downloadOrderCSV" class="mb-0 me-4 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Order</em></h4>
+                            <h4 @click="downloadVoidOrderCSV" class="mb-0 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Void Order</em></h4>
                         </div>
                     </div>
                     <div class="legends bg-white p-2">
@@ -859,6 +860,21 @@ export default {
                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
             })
         }
+
+        const downloadVoidOrderCSV = ()=>{
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading order...']);
+            axios.post('/get-void-order-csv', filterVal.value).then((res) => {
+                const data = res.data.data;
+                const fileName = res.data.fileName;
+                const exportType = exportFromJSON.types.csv;
+
+                if (data) exportFromJSON({ data, fileName, exportType });
+            }).catch((error)=>{
+                console.log(error);
+            }).finally(()=>{
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            })
+        }
         const downloadExcel = ()=>{
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading report...']);
             axios({
@@ -943,6 +959,7 @@ export default {
             totalSignUpCountPast,
 
             downloadOrderCSV,
+            downloadVoidOrderCSV,
             downloadExcel,
         }
     }

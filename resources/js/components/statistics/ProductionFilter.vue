@@ -136,6 +136,7 @@
                     { value: "Last 7 days", display: "Last 7 days" },
                     { value: "Last 90 days", display: "Last 90 days" },
                     { value: "Last Month", display: "Last Month" },
+                    { value: "This Month", display: "This Month" },
                     { value: "Year to date", display: "Year to date" },
                     { value: "4th Quarter", display: "4th Quarter ("+`${current.getFullYear()-1}`+")" },
                     { value: "3rd Quarter", display: "3rd Quarter ("+`${current.getFullYear()-1}`+")" },
