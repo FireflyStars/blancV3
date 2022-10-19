@@ -701,6 +701,42 @@ Route::get('/merge-pdf',function(){
     shell_exec("gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=$output_file -dBATCH $files");
 });
 
+Route::get('/3d-secure',function(Request $request){
+    $token = $request->get('token');
+
+    $app_token = setting('admin.url_token');//EjD4L7tgrHxmCY3exnCE31b3
+
+    if(!isset($token)){
+        die('token not set');
+    }
+
+    $custid = $request->customer_id;
+
+    $cust = DB::table('infoCustomer')->where('id',$custid)->first();
+
+    if($cust){
+        $card = DB::table('cards')->where('CustomerID',$cust->CustomerID)->where('Actif',1)->latest('id')->first();
+
+        if($card){
+            $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+            $si = $stripe->setupIntents->create([
+                'customer' => $card->stripe_customer_id,
+                'payment_method_types' => ['card'],
+            ]);
+
+            if($si->id){
+                echo "Setup intent created";
+            }
+        }else{
+            die('card not found');
+        }
+    }else{
+        die('Customer not found');
+    }
+
+});
+
 
 /* END TEST ROUTES */
 // added by yonghuan to search customers to be linked
