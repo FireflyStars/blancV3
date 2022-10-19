@@ -36,7 +36,7 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
         $data[] = [  Carbon::parse($this->period[0])->format('d/m/Y').' To '.Carbon::parse($this->period[1])->format('d/m/Y'), '£ incl. VAT', '# of pieces'];
         $data[] = ['', '', ''];
 
-        $salesData = InfoOrder::whereBetween('created_at', $this->period)
+        $salesData = InfoOrder::whereBetween('detailed_at', $this->period)
                                 ->where('deliverymethod', '!=','')
                                 ->select(
                                     DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount'), 'TypeDelivery as channel'
@@ -47,13 +47,13 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
         $this->cnt = $salesData->count();
         $month_period = [ Carbon::parse($this->period[0])->subMonth()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::parse($this->period[1])->subMonth()->endOfMonth()->endOfDay()->toDateTimeString()];
         $year_period = [ Carbon::parse($this->period[0])->subYear()->startOfYear()->startOfDay()->toDateTimeString(), Carbon::parse($this->period[1])->subYear()->endOfYear()->endOfDay()->toDateTimeString()];
-        $salesTotalToCompareYearMode =  InfoOrder::whereBetween('created_at', $year_period)
+        $salesTotalToCompareYearMode =  InfoOrder::whereBetween('detailed_at', $year_period)
                     ->where('deliverymethod', '!=','')
                     ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                     ->select(
                         DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount')
                     )->value('amount');
-        $salesTotalToCompareMonthMode =  InfoOrder::whereBetween('created_at', $month_period)
+        $salesTotalToCompareMonthMode =  InfoOrder::whereBetween('detailed_at', $month_period)
                     ->where('deliverymethod', '!=','')
                     ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                     ->select(
@@ -61,28 +61,28 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
                     )->value('amount');
         $salesItemTotal = DB::table('detailingitem')
                         ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                        ->whereBetween('infoOrder.created_at', $this->period)
+                        ->whereBetween('infoOrder.detailed_at', $this->period)
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->select(
                             DB::raw('count(*) as amount')
                         )->value('amount');
         $salesItemTotalToCompareYearMode = DB::table('detailingitem')
                         ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                        ->whereBetween('infoOrder.created_at', $year_period)
+                        ->whereBetween('infoOrder.detailed_at', $year_period)
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->select(
                             DB::raw('count(*) as amount')
                         )->value('amount');
         $salesItemTotalToCompareMonthMode = DB::table('detailingitem')
                         ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                        ->whereBetween('infoOrder.created_at', $month_period)
+                        ->whereBetween('infoOrder.detailed_at', $month_period)
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->select(
                             DB::raw('count(*) as amount')
                         )->value('amount');
         foreach ($salesData as  $item) {
             $data[] = [ $item->channel, $item->amount, DB::table('detailingitem')->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-            ->whereBetween('infoOrder.created_at', $this->period)
+            ->whereBetween('infoOrder.detailed_at', $this->period)
             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
             ->where('infoOrder.TypeDelivery', $item->channel)->count() ];
         }

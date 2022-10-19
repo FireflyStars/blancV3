@@ -37,7 +37,7 @@ class RevenueByDepartment implements FromCollection, WithTitle, WithColumnWidths
         $data[] = ['', '', ''];
         $salesByDep = DB::table('detailingitem')->join('departments', 'departments.id', '=', 'detailingitem.department_id')
                 ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                ->whereBetween('infoOrder.created_at', $this->period)
+                ->whereBetween('infoOrder.detailed_at', $this->period)
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
                     'departments.name as channel',
@@ -49,7 +49,7 @@ class RevenueByDepartment implements FromCollection, WithTitle, WithColumnWidths
         foreach ($salesByDep as $item) {
             $data[] = [$item->channel, $item->amount, $item->count];
         }
-        $salesByDepTotal = InfoOrder::whereBetween('created_at', $this->period)
+        $salesByDepTotal = InfoOrder::whereBetween('detailed_at', $this->period)
                 ->where('deliverymethod', '!=','')
                 ->select(
                     DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount')
@@ -58,7 +58,7 @@ class RevenueByDepartment implements FromCollection, WithTitle, WithColumnWidths
                 ->value('amount');
         $salesTotalOfItem = DB::table('detailingitem')
                 ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                ->whereBetween('infoOrder.created_at', $this->period)
+                ->whereBetween('infoOrder.detailed_at', $this->period)
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
                     DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price), 2), 0) as amount')
@@ -67,7 +67,7 @@ class RevenueByDepartment implements FromCollection, WithTitle, WithColumnWidths
         $year_period = [ Carbon::parse($this->period[0])->subYear()->startOfYear()->startOfDay()->toDateTimeString(), Carbon::parse($this->period[1])->subYear()->endOfYear()->endOfDay()->toDateTimeString()];
         $salesTotalToCompareYearMode =  DB::table('detailingitem')
                     ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                    ->whereBetween('infoOrder.created_at', $year_period)
+                    ->whereBetween('infoOrder.detailed_at', $year_period)
                     ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                     ->select(
                         DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount'),
@@ -75,7 +75,7 @@ class RevenueByDepartment implements FromCollection, WithTitle, WithColumnWidths
                     )->first();
         $salesTotalToCompareMonthMode =  DB::table('detailingitem')
                     ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                    ->whereBetween('infoOrder.created_at', $month_period)
+                    ->whereBetween('infoOrder.detailed_at', $month_period)
                     ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                     ->select(
                         DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount'),
