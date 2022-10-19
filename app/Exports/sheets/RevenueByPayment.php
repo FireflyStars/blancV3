@@ -39,7 +39,7 @@ class RevenueByPayment implements FromCollection, WithTitle, WithColumnWidths, W
             ->whereBetween('infoOrder.detailed_at', $this->period)
             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
             ->select(
-                DB::raw('IFNULL(ROUND(SUM(payments.montant)), 0) as amount'),
+                DB::raw('IFNULL(ROUND(SUM(payments.montant), 2), 0) as amount'),
                 'payments.type as channel',
                 DB::raw('count(*) as count'),
             )->groupBy('payments.type')->orderByDesc('amount')->get();
@@ -50,7 +50,7 @@ class RevenueByPayment implements FromCollection, WithTitle, WithColumnWidths, W
         $salesByPaymentTotal = InfoOrder::whereBetween('detailed_at', $this->period)
             ->where('deliverymethod', '!=','')
             ->select(
-                DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
+                DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount')
             )
             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING', 'VOID', 'VOIDED', 'CANCEL', 'PENDING', 'DELETED'])
             ->value('amount');
@@ -60,13 +60,13 @@ class RevenueByPayment implements FromCollection, WithTitle, WithColumnWidths, W
                 ->where('deliverymethod', '!=','')
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
-                    DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
+                    DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount')
                 )->value('amount');
         $salesTotalToCompareYearMode =  InfoOrder::whereBetween('detailed_at', $year_period)
                 ->where('deliverymethod', '!=','')
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
-                    DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
+                    DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount')
                 )->value('amount');
         $salesItemTotal = DB::table('detailingitem')
                 ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')

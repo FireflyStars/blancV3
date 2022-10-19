@@ -41,7 +41,7 @@ class RevenueByDepartment implements FromCollection, WithTitle, WithColumnWidths
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
                     'departments.name as channel',
-                    DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price)), 0) as amount'),
+                    DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price), 2), 0) as amount'),
                     DB::raw('IFNULL(COUNT(*), 0) as count')
                 )
                 ->groupBy('departments.name')->orderBy('amount', 'DESC')->get();

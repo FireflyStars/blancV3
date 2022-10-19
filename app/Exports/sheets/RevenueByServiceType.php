@@ -39,21 +39,21 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
                 ->whereBetween('infoOrder.detailed_at', $this->period)
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
-                    DB::raw('IFNULL(ROUND(SUM(detailingitem.dry_cleaning_price)), 0) as amount')
+                    DB::raw('IFNULL(ROUND(SUM(detailingitem.dry_cleaning_price), 2), 0) as amount')
                 )->value('amount'), ''];
         $data[] = ['Addons', DB::table('detailingitem')
                 ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
                 ->whereBetween('infoOrder.detailed_at', $this->period)
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
-                    DB::raw('IFNULL(ROUND(SUM(detailingitem.cleaning_addon_price)), 0) as amount')
+                    DB::raw('IFNULL(ROUND(SUM(detailingitem.cleaning_addon_price), 2), 0) as amount')
                 )->value('amount'), ''];
         $data[] = ['Tailoring', DB::table('detailingitem')
                 ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
                 ->whereBetween('infoOrder.detailed_at', $this->period)
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
-                    DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price)), 0) as amount')
+                    DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price), 2), 0) as amount')
                 )->value('amount'), ''];
         $month_period = [ Carbon::parse($this->period[0])->subMonth()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::parse($this->period[1])->subMonth()->endOfMonth()->endOfDay()->toDateTimeString()];
         $year_period = [ Carbon::parse($this->period[0])->subYear()->startOfYear()->startOfDay()->toDateTimeString(), Carbon::parse($this->period[1])->subYear()->endOfYear()->endOfDay()->toDateTimeString()];
