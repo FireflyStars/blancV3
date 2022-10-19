@@ -50,7 +50,7 @@
         <!-- <transition name="trans-batch-actions">
             <div class=" batch-actions" v-if="Object.entries(MULTI_CHECKED).length !== 0"><button class="btn btn-outline-dark body_medium"  @click="show_split_conf">Split</button><button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Delete items')">Delete</button></div>
         </transition> -->
-         <FulfillConfirmation  :invoice_id= "invoiceId" :show_conf="show_model_Fulfil" @close="show_model_Fulfil=false"></FulfillConfirmation>
+         <FulfillConfirmation  :invoice_id= [invoiceId] :show_conf="show_model_Fulfil" @close="show_model_Fulfil=false"></FulfillConfirmation>
     </div>
     <ItemDetail @close="OpenitemDetails = false" class="modal-item" v-if = "OpenitemDetails" :item_id = ItemId :invoiceId = invoiceId ></ItemDetail>
     <qz-print ref="qz_printer"></qz-print>

@@ -9,7 +9,7 @@
             <div class="confirmation-title">
                 <span class="subtitle">Fulfill</span>
             </div>
-            <div class="confirmation-msg body_regular"><p>Do you want to Fulfill Sub Order </p></div>
+            <div class="confirmation-msg body_regular"><p>Do you want to Fulfill Sub-Order(s) </p></div>
             <div class="confirmation-btn">
                 <button class="btn btn-outline-danger body_medium" style="margin-right: 59px" @click="close">No, cancel</button>
                 <button class="btn btn-dark body_medium" style="" @click="Fulfill">Yes, fulfill</button>
@@ -27,14 +27,8 @@
     import {TOASTER_MODULE, TOASTER_MESSAGE} from "../../store/types/types";
     export default {
         name: "FulfillConfirmation",
-        props:{
-            show_conf:{
-                type:Boolean
-            },
-            invoice_id :{
-               type:String
-            }
-        },
+        props:["show_conf",
+            "invoice_id"],
         setup(props,context){
             const show=ref(false);
             const store=useStore();
@@ -47,15 +41,16 @@
             }
 
             function Fulfill(){
-
+                props.invoice_id.forEach(function(invoice,i) {
                    axios.post('/setInvoiceFulfilled',{
-                   invoice_id: props.invoice_id,
+                   invoice_id: invoice,
                    nextpost:28
                     }).then((res)=>{
-                        console.log(res.status_message , res.data.status_message  )
                         if( res.data.status_message == "ok"){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
-                             location.reload();
+                            if(i ==  props.invoice_id.length -1){
+                                location.reload();
+                            }
                         }else {
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${res.data.status_message}`,ttl:5,type:'danger'});
                         }
@@ -64,6 +59,7 @@
                     }).catch((error)=>{
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
                     })
+                });
                 close()
             }
             return {

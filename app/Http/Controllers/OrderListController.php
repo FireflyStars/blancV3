@@ -1170,6 +1170,7 @@ class OrderListController extends Controller
 
         $invoice_id = $request->post('invoice_id');
         $endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v2.php";
+        //$endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v2-test.php";
         $client = new \GuzzleHttp\Client();
         $content = "";
 
