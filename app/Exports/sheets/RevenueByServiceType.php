@@ -31,30 +31,30 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
     public function collection()
     {
         $data = [];
-        $data[] = ['', '', ''];
-        $data[] = [  Carbon::parse($this->period[0])->format('d/m/Y').' To '.Carbon::parse($this->period[1])->format('d/m/Y'), '£ incl. VAT', '# of pieces'];
-        $data[] = ['', '', ''];
+        $data[] = ['', ''];
+        $data[] = [  Carbon::parse($this->period[0])->format('d/m/Y').' To '.Carbon::parse($this->period[1])->format('d/m/Y'), '£ incl. VAT'];
+        $data[] = ['', ''];
         $data[] = ['Cleaning', DB::table('detailingitem')
                 ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
                 ->whereBetween('infoOrder.detailed_at', $this->period)
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
                     DB::raw('IFNULL(ROUND(SUM(detailingitem.dry_cleaning_price), 2), 0) as amount')
-                )->value('amount'), ''];
+                )->value('amount')];
         $data[] = ['Addons', DB::table('detailingitem')
                 ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
                 ->whereBetween('infoOrder.detailed_at', $this->period)
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
                     DB::raw('IFNULL(ROUND(SUM(detailingitem.cleaning_addon_price), 2), 0) as amount')
-                )->value('amount'), ''];
+                )->value('amount')];
         $data[] = ['Tailoring', DB::table('detailingitem')
                 ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
                 ->whereBetween('infoOrder.detailed_at', $this->period)
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
                     DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price), 2), 0) as amount')
-                )->value('amount'), ''];
+                )->value('amount')];
         $month_period = [ Carbon::parse($this->period[0])->subMonth()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::parse($this->period[1])->subMonth()->endOfMonth()->endOfDay()->toDateTimeString()];
         $year_period = [ Carbon::parse($this->period[0])->subYear()->startOfYear()->startOfDay()->toDateTimeString(), Carbon::parse($this->period[1])->subYear()->endOfYear()->endOfDay()->toDateTimeString()];
         $salesTotal = InfoOrder::whereBetween('detailed_at', $this->period)
@@ -98,14 +98,14 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
                         ->select(
                             DB::raw('count(*) as amount')
                         )->value('amount');
-        $data[] = ['Sub-Total (Item Sales)', $salesItemTotal->amount, $salesItemTotal->count];
-        $data[] = ['Account discounts', '', ''];
-        $data[] = ['Order discounts', '', ''];
-        $data[] = ['Delivery Fees', '', ''];
-        $data[] = ['Failed Delivery Fees', '', ''];
+        $data[] = ['Sub-Total (Item Sales)', $salesItemTotal->amount];
+        $data[] = ['Account discounts', ''];
+        $data[] = ['Order discounts', ''];
+        $data[] = ['Delivery Fees', ''];
+        $data[] = ['Failed Delivery Fees', ''];
         $data[] = ['Total Sales', $salesTotal, $salesItemTotal->count];
-        $data[] = ['growth % vs prev year', ($salesTotalToCompareYearMode != 0 ? ($salesTotal/$salesTotalToCompareYearMode - 1)*100 : '--'), ($salesItemTotalToCompareYearMode != 0 ? ($salesItemTotal->count/$salesItemTotalToCompareYearMode -1)*100 : '--')];
-        $data[] = ['growth % vs prev month', ($salesItemTotalToCompareMonthMode != 0 ? ($salesTotal/$salesTotalToCompareMonthMode - 1)*100 : '--'), ($salesItemTotalToCompareMonthMode != 0 ? ($salesItemTotal->count/$salesItemTotalToCompareMonthMode -1)*100 : '--')];
+        $data[] = ['growth % vs prev year', ($salesTotalToCompareYearMode != 0 ? ($salesTotal/$salesTotalToCompareYearMode - 1)*100 : '--')];
+        $data[] = ['growth % vs prev month', ($salesItemTotalToCompareMonthMode != 0 ? ($salesTotal/$salesTotalToCompareMonthMode - 1)*100 : '--')];
         return collect([ $data ]);
     }
 
@@ -156,10 +156,10 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
                 'vertical' => Alignment::VERTICAL_BOTTOM,
             ],
         ];
-        $sheet->getStyle('B2:D2')->applyFromArray($headerStyle);
+        $sheet->getStyle('B2')->applyFromArray($headerStyle);
 
         $sheet->getRowDimension(3)->setRowHeight(10, 'px');
-        $sheet->getStyle('B3:D3')->getBorders()->getInside()->setBorderStyle(Border::BORDER_NONE);
+        $sheet->getStyle('B3')->getBorders()->getInside()->setBorderStyle(Border::BORDER_NONE);
 
         $headerStyle = [
             'font'  =>[
@@ -177,11 +177,11 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
         ];
 
         $sheet->getRowDimension(4)->setRowHeight(40, 'px');
-        $sheet->getStyle('B4:D4')->applyFromArray($headerStyle);
-        $sheet->getStyle('B4:D4')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
+        $sheet->getStyle('B4')->applyFromArray($headerStyle);
+        $sheet->getStyle('B4')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
 
         $sheet->getRowDimension(5)->setRowHeight(10, 'px');
-        $sheet->getStyle('B5:D5')->getBorders()->getInside()->setBorderStyle(Border::BORDER_NONE);
+        $sheet->getStyle('B5')->getBorders()->getInside()->setBorderStyle(Border::BORDER_NONE);
 
         $yellowFieldStyle = [
             'font'  =>[
@@ -197,11 +197,11 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
                 'vertical' => Alignment::VERTICAL_BOTTOM,
             ],
         ];
-        $sheet->getStyle('C6:D8')->applyFromArray($yellowFieldStyle);
-        $sheet->getStyle('C6:D8')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_DOTTED);
+        $sheet->getStyle('C6:C8')->applyFromArray($yellowFieldStyle);
+        $sheet->getStyle('C6:C8')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_DOTTED);
 
-        $sheet->getStyle('C10:D13')->applyFromArray($yellowFieldStyle);
-        $sheet->getStyle('C10:D13')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_DOTTED);
+        $sheet->getStyle('C10:C13')->applyFromArray($yellowFieldStyle);
+        $sheet->getStyle('C10:C13')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_DOTTED);
         $subTotalCellStyle = [
             'font'  =>[
                 'bold'  => true,
@@ -216,11 +216,11 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
                 'vertical' => Alignment::VERTICAL_BOTTOM,
             ],
         ];
-        $sheet->getStyle('B9:D9')->applyFromArray($subTotalCellStyle);
-        $sheet->getStyle('B9:D9')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
+        $sheet->getStyle('B9')->applyFromArray($subTotalCellStyle);
+        $sheet->getStyle('B9')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
 
-        $sheet->getStyle('B14:D14')->applyFromArray($subTotalCellStyle);
-        $sheet->getStyle('B14:D14')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
+        $sheet->getStyle('B14')->applyFromArray($subTotalCellStyle);
+        $sheet->getStyle('B14')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
 
     }
 }
