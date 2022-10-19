@@ -1257,6 +1257,101 @@ class StatisticsController extends Controller
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', '!=', '')
                         ->where('infoOrder.Total', '!=', 0)
+                        ->select('infoOrder.*', 'infoCustomer.OnAccount', 'infoCustomer.Actif', 'infoCustomer.SMS6I', 
+                            'infoCustomer.PaymentMethod', 'infoCustomer.PaymentMethodExpiryDate', 'infoCustomer.opt_out', 'infoCustomer.AcceptSMSMarketing',
+                            'infoCustomer.spendlimit', 'infoCustomer.cardvip', 'infoCustomer.opt_out', 'infoCustomer.CustomerOrigin',
+                            'infoCustomer.btob', 'infoCustomer.OrderFulfield', 'infoCustomer.EmailActif', 'infoCustomer.MonthlyVATRec',
+                            'infoCustomer.invoicepreference', 'infoCustomer.InProcessOrderCount', 'infoCustomer.FulfieldOrderCount', 'infoCustomer.ReadyOrderCount',
+                            'infoCustomer.TotalSpendBedlinen', 'infoCustomer.NbBooking', 'infoCustomer.LoginPreference', 'infoCustomer.CustomerCategory',
+                            'infoCustomer.LastOrderDate', 'infoCustomer.LastOrderStatUp', 'infoCustomer.AverageSpend', 'infoCustomer.TotalSpendLTM',
+                            'infoCustomer.TotalSpend', 'infoCustomer.TotalOrderCount', 'infoCustomer.discount', 'infoCustomer.bycard',
+                            'infoCustomer.credit', 'infoCustomer.CustomerNotes', 'infoCustomer.RevenueLocation', 'infoCustomer.InvoiceEmail',
+                            'infoCustomer.ErrorSpot', 'infoCustomer.IsConnectToSpot', 'infoCustomer.MainService', 'infoCustomer.AvOrder',
+                            'infoCustomer.FreqBooking', 'infoCustomer.FreqVisit', 'infoCustomer.ReferralSource', 'infoCustomer.IsMasterAccount',
+                            'infoCustomer.CustomerIDMasterAccount', 'infoCustomer.OrderRecurring', 'infoCustomer.CustomerID', 'infoCustomer.SignupDateOnline',
+                            'infoCustomer.SignupDate', 'infoCustomer.CompanyName', 'infoCustomer.AcceptPrivacy', 'infoCustomer.AcceptTerms',
+                            'infoCustomer.AcceptMarketing', 'infoCustomer.AccountInApp', 'infoCustomer.TransactioCom', 'infoCustomer.MarketingValidation',
+                            'infoCustomer.PauseDateTo', 'infoCustomer.PauseDateFrom', 'infoCustomer.CustomerIDMaster', 'infoCustomer.IsMaster',
+                            'infoCustomer.TypeDelivery', 'infoCustomer.PassWordAPI', 'infoCustomer.DeliveryMon', 'infoCustomer.DeliveryTu',
+                            'infoCustomer.DeliveryWed', 'infoCustomer.DeliveryTh', 'infoCustomer.DeliveryFri', 'infoCustomer.DeliverySat',
+                            'infoCustomer.DeliverybyDay', 'infoCustomer.tranchetoDelivery', 'infoCustomer.tranchefromDelivery', 'infoCustomer.commentDelivery',
+                            'infoCustomer.Phone', 'infoCustomer.Name', 'infoCustomer.EmailAddress', 'infoCustomer.LastName',
+                            'infoCustomer.FirstName', 'infoCustomer.id_customer', 'infoCustomer.Title', 'infoCustomer.id_address_invoice',                            
+                        )
+                        ->get();
+        return response()->json([
+            'data'=>$reportData,
+            'fileName'=>sprintf("All-orders-%s-%s.csv", Carbon::parse($period[0])->format('Ymd'), Carbon::parse($period[1])->format('Ymd'))
+        ]);
+
+    }
+    /**
+     * Get void order report data for download
+     */
+    public function getVoidOrderCSV(Request $request){
+        $customFilter   =   $request->post('customFilter');
+        $startDate      =   $request->post('startDate');
+        $endDate        =   $request->post('endDate');
+        $dateRangeType  =   $request->post('dateRangeType');
+
+        $period         = [ Carbon::parse($startDate)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->endOfDay()->toDateTimeString() ];
+
+        // new code added by YH
+        if( !$customFilter ){
+            $start_first_quarter_day = Carbon::now()->startOfYear();
+            $end_first_quarter_day = Carbon::parse($start_first_quarter_day)->lastOfQuarter();
+            if( $dateRangeType == 'Today' ){
+                $period = [Carbon::now()->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Yesterday' ){
+                $period = [Carbon::yesterday()->startOfDay()->toDateTimeString(), Carbon::yesterday()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Last 7 days' ){
+                $period = [Carbon::now()->subDays(7)->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Last 90 days' ){
+                $period = [Carbon::now()->subDays(90)->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Last Month' ){
+                $period = [Carbon::now()->subMonth()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->subMonth()->endOfMonth()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'This Month' ){
+                $period = [Carbon::now()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->toDateTimeString()];                
+            }else if ( $dateRangeType == 'Year to date' ){
+                $period = [Carbon::now()->startOfYear()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == '4th Quarter' ){
+                $period = [Carbon::parse($start_first_quarter_day)->addMonths(9)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->addMonths(9)->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == '3rd Quarter' ){
+                $period = [Carbon::parse($start_first_quarter_day)->addMonths(6)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->addMonths(6)->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == '2nd Quarter' ){
+                $period = [Carbon::parse($start_first_quarter_day)->addMonths(3)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->addMonths(3)->endOfDay()->toDateTimeString()];
+            }else{
+                $period = [$start_first_quarter_day->toDateTimeString(), $end_first_quarter_day->toDateTimeString()];
+            }
+        }
+        $reportData = InfoOrder::whereBetween('detailed_at', $period)
+                        ->join('infoCustomer', function($join){
+                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
+                        })
+                        ->whereIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->where('infoOrder.deliverymethod', '!=', '')
+                        ->where('infoOrder.Total', '!=', 0)
+                        ->select('infoOrder.*', 'infoCustomer.OnAccount', 'infoCustomer.Actif', 'infoCustomer.SMS6I', 
+                        'infoCustomer.PaymentMethod', 'infoCustomer.PaymentMethodExpiryDate', 'infoCustomer.opt_out', 'infoCustomer.AcceptSMSMarketing',
+                        'infoCustomer.spendlimit', 'infoCustomer.cardvip', 'infoCustomer.opt_out', 'infoCustomer.CustomerOrigin',
+                        'infoCustomer.btob', 'infoCustomer.OrderFulfield', 'infoCustomer.EmailActif', 'infoCustomer.MonthlyVATRec',
+                        'infoCustomer.invoicepreference', 'infoCustomer.InProcessOrderCount', 'infoCustomer.FulfieldOrderCount', 'infoCustomer.ReadyOrderCount',
+                        'infoCustomer.TotalSpendBedlinen', 'infoCustomer.NbBooking', 'infoCustomer.LoginPreference', 'infoCustomer.CustomerCategory',
+                        'infoCustomer.LastOrderDate', 'infoCustomer.LastOrderStatUp', 'infoCustomer.AverageSpend', 'infoCustomer.TotalSpendLTM',
+                        'infoCustomer.TotalSpend', 'infoCustomer.TotalOrderCount', 'infoCustomer.discount', 'infoCustomer.bycard',
+                        'infoCustomer.credit', 'infoCustomer.CustomerNotes', 'infoCustomer.RevenueLocation', 'infoCustomer.InvoiceEmail',
+                        'infoCustomer.ErrorSpot', 'infoCustomer.IsConnectToSpot', 'infoCustomer.MainService', 'infoCustomer.AvOrder',
+                        'infoCustomer.FreqBooking', 'infoCustomer.FreqVisit', 'infoCustomer.ReferralSource', 'infoCustomer.IsMasterAccount',
+                        'infoCustomer.CustomerIDMasterAccount', 'infoCustomer.OrderRecurring', 'infoCustomer.CustomerID', 'infoCustomer.SignupDateOnline',
+                        'infoCustomer.SignupDate', 'infoCustomer.CompanyName', 'infoCustomer.AcceptPrivacy', 'infoCustomer.AcceptTerms',
+                        'infoCustomer.AcceptMarketing', 'infoCustomer.AccountInApp', 'infoCustomer.TransactioCom', 'infoCustomer.MarketingValidation',
+                        'infoCustomer.PauseDateTo', 'infoCustomer.PauseDateFrom', 'infoCustomer.CustomerIDMaster', 'infoCustomer.IsMaster',
+                        'infoCustomer.TypeDelivery', 'infoCustomer.PassWordAPI', 'infoCustomer.DeliveryMon', 'infoCustomer.DeliveryTu',
+                        'infoCustomer.DeliveryWed', 'infoCustomer.DeliveryTh', 'infoCustomer.DeliveryFri', 'infoCustomer.DeliverySat',
+                        'infoCustomer.DeliverybyDay', 'infoCustomer.tranchetoDelivery', 'infoCustomer.tranchefromDelivery', 'infoCustomer.commentDelivery',
+                        'infoCustomer.Phone', 'infoCustomer.Name', 'infoCustomer.EmailAddress', 'infoCustomer.LastName',
+                        'infoCustomer.FirstName', 'infoCustomer.id_customer', 'infoCustomer.Title', 'infoCustomer.id_address_invoice',
+                        )
                         ->get();
         return response()->json([
             'data'=>$reportData,
