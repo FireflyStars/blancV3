@@ -39,7 +39,7 @@ class RevenueByCategory implements FromCollection, WithTitle, WithColumnWidths, 
 
         $salesData = DB::table('detailingitem')->leftJoin('categories', 'categories.id', '=', 'detailingitem.category_id')
                     ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                    ->whereBetween('infoOrder.created_at', $this->period)
+                    ->whereBetween('infoOrder.detailed_at', $this->period)
                     ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                     ->select(
                         DB::raw('IFNULL(categories.name, "Other")  as channel'),
@@ -55,7 +55,7 @@ class RevenueByCategory implements FromCollection, WithTitle, WithColumnWidths, 
         
         $salesTotalToCompareYearMode =  DB::table('detailingitem')
                     ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                    ->whereBetween('infoOrder.created_at', $year_period)
+                    ->whereBetween('infoOrder.detailed_at', $year_period)
                     ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                     ->select(
                         DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount'),
@@ -63,7 +63,7 @@ class RevenueByCategory implements FromCollection, WithTitle, WithColumnWidths, 
                     )->first();
         $salesTotalToCompareMonthMode =  DB::table('detailingitem')
                     ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                    ->whereBetween('infoOrder.created_at', $month_period)
+                    ->whereBetween('infoOrder.detailed_at', $month_period)
                     ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                     ->select(
                         DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount'),
@@ -72,7 +72,7 @@ class RevenueByCategory implements FromCollection, WithTitle, WithColumnWidths, 
         foreach ($salesData as  $item) {
             $data[] = [ $item->channel, $item->amount, $item->count ];
         }
-        $salesByTypeitemTotal = InfoOrder::whereBetween('created_at', $this->period)
+        $salesByTypeitemTotal = InfoOrder::whereBetween('detailed_at', $this->period)
             ->where('deliverymethod', '!=','')
             ->select(
                 DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount')
@@ -81,7 +81,7 @@ class RevenueByCategory implements FromCollection, WithTitle, WithColumnWidths, 
             ->value('amount');
         $salesByTypeitemTotalOfItem = DB::table('detailingitem')
             ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-            ->whereBetween('infoOrder.created_at', $this->period)
+            ->whereBetween('infoOrder.detailed_at', $this->period)
             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
             ->select(
                 DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price), 2), 0) as amount')

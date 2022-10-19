@@ -36,41 +36,41 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
         $data[] = ['', '', ''];
         $data[] = ['Cleaning', DB::table('detailingitem')
                 ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                ->whereBetween('infoOrder.created_at', $this->period)
+                ->whereBetween('infoOrder.detailed_at', $this->period)
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
                     DB::raw('IFNULL(ROUND(SUM(detailingitem.dry_cleaning_price)), 0) as amount')
                 )->value('amount'), ''];
         $data[] = ['Addons', DB::table('detailingitem')
                 ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                ->whereBetween('infoOrder.created_at', $this->period)
+                ->whereBetween('infoOrder.detailed_at', $this->period)
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
                     DB::raw('IFNULL(ROUND(SUM(detailingitem.cleaning_addon_price)), 0) as amount')
                 )->value('amount'), ''];
         $data[] = ['Tailoring', DB::table('detailingitem')
                 ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                ->whereBetween('infoOrder.created_at', $this->period)
+                ->whereBetween('infoOrder.detailed_at', $this->period)
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
                     DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price)), 0) as amount')
                 )->value('amount'), ''];
         $month_period = [ Carbon::parse($this->period[0])->subMonth()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::parse($this->period[1])->subMonth()->endOfMonth()->endOfDay()->toDateTimeString()];
         $year_period = [ Carbon::parse($this->period[0])->subYear()->startOfYear()->startOfDay()->toDateTimeString(), Carbon::parse($this->period[1])->subYear()->endOfYear()->endOfDay()->toDateTimeString()];
-        $salesTotal = InfoOrder::whereBetween('created_at', $this->period)
+        $salesTotal = InfoOrder::whereBetween('detailed_at', $this->period)
                 ->where('deliverymethod', '!=','')
                 ->select(
                     DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
                 )
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING', 'VOID', 'VOIDED', 'CANCEL', 'PENDING', 'DELETED'])
                 ->value('amount');
-        $salesTotalToCompareMonthMode =  InfoOrder::whereBetween('created_at', $month_period)
+        $salesTotalToCompareMonthMode =  InfoOrder::whereBetween('detailed_at', $month_period)
                 ->where('deliverymethod', '!=','')
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
                     DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
                 )->value('amount');
-        $salesTotalToCompareYearMode =  InfoOrder::whereBetween('created_at', $year_period)
+        $salesTotalToCompareYearMode =  InfoOrder::whereBetween('detailed_at', $year_period)
                 ->where('deliverymethod', '!=','')
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
@@ -78,7 +78,7 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
                 )->value('amount');
         $salesItemTotal = DB::table('detailingitem')
                 ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                ->whereBetween('infoOrder.created_at', $this->period)
+                ->whereBetween('infoOrder.detailed_at', $this->period)
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
                     DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price), 2), 0) as amount'),
@@ -86,14 +86,14 @@ class RevenueByServiceType implements FromCollection, WithTitle, WithColumnWidth
                 )->first();
         $salesItemTotalToCompareYearMode = DB::table('detailingitem')
                 ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                ->whereBetween('infoOrder.created_at', $year_period)
+                ->whereBetween('infoOrder.detailed_at', $year_period)
                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                 ->select(
                     DB::raw('count(*) as amount')
                 )->value('amount');
         $salesItemTotalToCompareMonthMode = DB::table('detailingitem')
                         ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-                        ->whereBetween('infoOrder.created_at', $month_period)
+                        ->whereBetween('infoOrder.detailed_at', $month_period)
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->select(
                             DB::raw('count(*) as amount')
