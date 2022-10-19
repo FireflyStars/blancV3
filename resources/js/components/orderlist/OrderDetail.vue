@@ -280,10 +280,14 @@
         </div>
         <div class="mt-3 mb-3 row" v-if="(typeof ORDER['detail']!='undefined')">
             <div class="col-4" v-if="ORDER['items'].length !== 0">
+                <button class="btn btn-outline-dark body_medium" @click="openModal(ORDER['detail'].order_id)">Print ticket(s)</button>
+            </div>
+
+            <div class="col-4" v-if="ORDER['items'].length !== 0">
                 <button class="btn btn-outline-danger body_medium" @click="markaslate" v-if="ORDER['detail'].Status!='LATE'">Mark as late</button>
             </div>
              <div class="col-4" v-if="ORDER['items'].length === 0">
-                <button class="btn btn-outline-dark body_medium">Print ticket(s)</button>
+                <button class="btn btn-outline-dark body_medium" @click="openModal(ORDER['detail'].order_id)">Print ticket(s)</button>
             </div>
              <div class="col-4" v-if="ORDER['items'].length === 0 && (ORDER['detail'].Status =='RECURRING' || ORDER['detail'].Status =='SCHEDULED' )">
                 <button class="btn btn-outline-danger body_medium" @click="CancelBooking">Cancel booking</button>
@@ -296,7 +300,7 @@
 
         <split-confirmation :show_conf="show_split_conf" @close="show_split_conf=false"></split-confirmation>
         <CancelBookingConfirmation v-if= "showModelCancelBooking" :show_modal="showModelCancelBooking" @close="showModelCancelBooking=false" :order = ORDER.detail></CancelBookingConfirmation>
-
+        <qz-print ref="qz_printer"></qz-print>
     </div>
 </template>
 
@@ -312,7 +316,8 @@
     import {formatPrice,hasRoles,formatDate} from "../helpers/helpers";
     import SplitConfirmation from '../miscellaneous/SplitConfirmation';
     import CancelBookingConfirmation from '../miscellaneous/CancelBookingConfirmation';
-     import OrderOptions from '../miscellaneous/OrderOptions'
+    import OrderOptions from '../miscellaneous/OrderOptions';
+    import QzPrint from "../QzPrint";
     import {
         ORDERLIST_MODULE,
         ORDERLIST_GET_CURRENT_SELECTED,
@@ -343,7 +348,7 @@
 
     export default {
         name: "OrderDetail",
-        components:{Tag,AddressFormat,OrderDetailSubOrderItemsTable,DatePicker,TimeSlotPicker,SplitConfirmation ,OrderOptions , CancelBookingConfirmation},
+        components:{Tag,AddressFormat,OrderDetailSubOrderItemsTable,DatePicker,TimeSlotPicker,SplitConfirmation ,OrderOptions , CancelBookingConfirmation , QzPrint},
         setup(){
             const route =useRoute();
             const router=useRouter();
@@ -789,7 +794,12 @@
                 formatOrderDate,
                 removeLinkedAccount
             }
+        },
+        methods:{
+        openModal(order_id){
+            this.$refs.qz_printer.loadPrinterOrderModal(order_id)
         }
+    }
     }
 </script>
 
