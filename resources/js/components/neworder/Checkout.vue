@@ -194,12 +194,12 @@
                                         </div>
 
 
-                                        <div class="row px-0 mt-2 sub-total-text align-items-center">
+                                        <div class="row px-0 mt-2 sub-total-text align-items-center" v-if="parseFloat(cust.discount) > 0 || parseFloat(order.AccountDiscount) > 0">
                                             <div class="col-4">Account Discount</div>
                                             <div class="col-5 sub-total-desc"> <span v-if="cust.discount > 0">{{cust.discount}}% (applied)</span></div>
                                             <div class="col-3 text-align-right"><span v-if="order.AccountDiscount > 0">-</span>{{formatPrice(order.AccountDiscount)}}</div>
                                         </div>
-                                        <div class="row px-0 mt-2 sub-total-text">
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="parseFloat(order.DiscountPerc) > 0 || parseFloat(order.OrderDiscount) > 0">
                                             <div class="col-4">Order Discount</div>
                                             <div class="col-5 sub-total-desc"> <span v-if="order.DiscountPerc > 0">{{order.DiscountPerc.toFixed()}}% (applied)</span></div>
                                             <div class="col-3 text-align-right"><span v-if="order.OrderDiscount > 0">-</span>{{formatPrice(order.OrderDiscount)}}</div>
@@ -215,7 +215,7 @@
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text" v-if="order.bundles > 0">
                                             <div class="col-9">Bundles</div>
-                                            <div class="col-3 text-align-right">+{{formatPrice(order.bundles)}}</div>
+                                            <div class="col-3 text-align-right">-{{formatPrice(order.bundles)}}</div>
                                         </div>
 
                                         <div class="row px-0 sub-total-text" v-if="Object.keys(order_bundles).length > 0" id="bundles_bloc">
@@ -792,7 +792,7 @@
 import MainHeader from "../layout/MainHeader";
 import BreadCrumb from "../layout/BreadCrumb";
 import SideBar from "../layout/SideBar";
-import { ref, onMounted, watch } from "vue";
+import { ref, onUpdated, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useStore } from "vuex";
 import {formatPrice} from "../helpers/helpers";

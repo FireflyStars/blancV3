@@ -445,6 +445,7 @@ class CustomerController extends Controller
             'updated_at' => now(),
         ];
         try {
+            DB::table('InfoCustomerPreference')->where('CustomerID', '=', $CustomerUUID)->update(['Delete' => 1,'updated_at'=>date('Y-m-d H:i:s')]);
             DB::table('InfoCustomerPreference')->insert($customer_preferences);
         } catch (\Throwable $e) {
             return response()->json(['error'=> $e->getMessage()]);
