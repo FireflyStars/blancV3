@@ -782,6 +782,7 @@ Route::post('/validate-checkout-order',[OrderController::class,'validateCheckOut
  * */
 Route::post('get-site-keys', [ PosteController::class, 'getSiteKeys'])->name('get-site-keys')->middleware('auth');
 Route::post('get-suborder-and-print', [ PosteController::class, 'getSubOrderToPrint'])->name('get-suborder-and-print')->middleware('auth');
+Route::post('get-order-and-print', [ PosteController::class, 'getOrderToPrint'])->name('get-order-and-print')->middleware('auth');
 
 
 /* Update svg zone label position

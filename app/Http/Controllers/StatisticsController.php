@@ -1281,7 +1281,7 @@ class StatisticsController extends Controller
                         ->get();
         return response()->json([
             'data'=>$reportData,
-            'fileName'=>sprintf("All-orders-%s-%s.csv", Carbon::parse($period[0])->format('Ymd'), Carbon::parse($period[1])->format('Ymd'))
+            'fileName'=>sprintf("All-Orders-%s-%s", Carbon::parse($period[0])->format('Ymd'), Carbon::parse($period[1])->format('Ymd'))
         ]);
 
     }
@@ -1355,7 +1355,7 @@ class StatisticsController extends Controller
                         ->get();
         return response()->json([
             'data'=>$reportData,
-            'fileName'=>sprintf("All-orders-%s-%s.csv", Carbon::parse($period[0])->format('Ymd'), Carbon::parse($period[1])->format('Ymd'))
+            'fileName'=>sprintf("All-Void-Orders-%s-%s", Carbon::parse($period[0])->format('Ymd'), Carbon::parse($period[1])->format('Ymd'))
         ]);
 
     }
