@@ -17,6 +17,19 @@
                     </transition>
                 </div>
             </div>
+            <div class="col" v-if="select.type == 'datepicker' && select.id == 'det_date'">
+                <div class="from-group mb-3">
+                    <date-range-picker 
+                        v-model="detDate" 
+                        :name="select.id"
+                        :placeholder="select.name"
+                        :droppos="{ top:'auto', right: 0, bottom:'auto', left:'auto', transformOrigin:'top right'}"
+                        :color="'#000000'"
+                        :font="'16px'"
+                        >
+                    </date-range-picker>
+                </div>
+            </div>
             <div class="col" v-if="select.type == 'datepicker' && select.id == 'prod_date'">
                 <div class="from-group mb-3">
                     <date-range-picker 
@@ -44,7 +57,7 @@
                 </div>
             </div>
         </div>
-        <div class="row buttons">
+        <div class="row buttons mb-3">
             <div class="col text-center"><button class="btn btn-link  body_regular" @click="cancel">Cancel</button></div>
             <div class="col text-right"><button class="btn btn-dark body_medium" @click="applyFilter">Apply</button></div>
         </div>
@@ -66,6 +79,10 @@
         setup(props){
             const showfilter=ref(false);
             const current_filter=ref('');
+            const detDate=ref({
+                start: '',
+                end: '',
+            });
             const prodDate=ref({
                 start: '',
                 end: '',
@@ -127,6 +144,10 @@
                     preselection.value['infoitems.DelivDate'] = [delivDate.value.start, delivDate.value.end];
                 else
                     delete preselection.value['infoitems.DelivDate']
+                if(detDate.value.start !='' && detDate.value.end !='')                    
+                    preselection.value['infoOrder.DetDate'] = [detDate.value.start, detDate.value.end];
+                else
+                    delete preselection.value['infoitems.DetDate']    
                 console.log(preselection);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,{ customer: route.params.customerId , search:route.params.value , filter:preselection.value});
@@ -156,7 +177,8 @@
                 prodDate,
                 delivDate,
                 removefilter,
-                data
+                data,
+                detDate
             }
         }
     }
