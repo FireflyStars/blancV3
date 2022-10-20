@@ -125,7 +125,7 @@ export default {
             context.emit('close-payment-modal');
             console.log('call start');
 
-            if(props.amounttopay >= 0.3){
+        //    if(props.amounttopay >= 0.3){
 
                 await listReaders();
 
@@ -155,7 +155,7 @@ export default {
                         });
                     }
                 }
-            }else{
+         /*   }else{
                 context.emit('close-awaiting-payment');
                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
                     message:"Minimum amount to pay is 30 pence",
@@ -163,6 +163,7 @@ export default {
                     type:'danger',
                 });
             }
+        */
 
         }
 
