@@ -948,6 +948,20 @@ Route::group(['prefix'=>'stripe-test'],function(){
                   );
                 }
 
+                DB::table('cards')->insert([
+                    'CustomerID'        => $order->CustomerID,
+                    'cardHolderName'    => $cust->Name,
+                    'type'              => '',
+                    'cardNumber'        => '',
+                    'dateexpiration'    => '',
+                    'stripe_customer_id'=> $stripe_customer->id,
+                    'stripe_card_id'    => '',
+                    'setup_intent_id'   => $si->id,
+                    'created_at'        => now(),
+                    'updated_at'        => now(),
+                    'Actif'             =>0,
+                ]);
+
 
             }
 
