@@ -164,8 +164,20 @@ export default {
          router.push('/checkout/'+order_id);
        }
        function FulfillSubOrder(){
-        ListInvoice.value =  selectedSubOrders.value
-        show_model_Fulfil.value = true
+
+            show_model_Fulfil.value = true
+            if(selectedSubOrders.value.length > 0){
+                ListInvoice.value =  selectedSubOrders.value
+            }else {
+                Object.values(props.subOrders).filter(item=> 
+                        item.forEach(invoice => {
+                          selectedSubOrders.value.push(invoice.InvoiceID)
+                        })  
+                );
+                ListInvoice.value = selectedSubOrders.value.filter(function(item, pos, self) {
+                    return self.indexOf(item) == pos;
+                })
+            }
        }
         return {
             show,
