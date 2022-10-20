@@ -889,15 +889,68 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
             $order_id = $json_obj->order_id;
             //$savecardinfo=$json_obj->savecardinfo;
-            $savecardinfo = true;
+            $savecardinfo = false;
 
             $order = DB::table('infoOrder')->where('id',$order_id)->first();
             $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
+            $user = Auth::user();
 
             // For Terminal payments, the 'payment_method_types' parameter must include
             // 'card_present' and the 'capture_method' must be set to 'manual'
 
             $amount_two_dp = number_format($json_obj->amount,2);
+
+
+            if($savecardinfo){
+                $stripe_customer = $stripe->customers->create([
+                    'name'              => $cust->Name,//$cardholder_name,
+                    'email'             => $cust->EmailAddress,
+                    //'payment_method'    => $card->id,
+                    //'invoice_settings'  => ['default_payment_method' => $card->id],
+                    'metadata'          => [
+                                                'CustomerID' => $cust->CustomerID
+                                        ],
+/*
+                    'address'           => [
+                                            'city'          => ($addr?$addr->Town:''),
+                                            'state'         => ($addr?$addr->County:''),
+                                            'country'       => ($addr?$addr->Country:''),
+                                            'postal_code'   => ($addr?$addr->postcode:''),
+                                            'line1'         => ($addr?$addr->address1:''),
+                                            'line2'         => ($addr?$addr->address2:''),
+                                        ]
+                    */
+                ]);
+
+
+                $si = $stripe->setupIntents->create([
+                    'customer' => $stripe_customer->id,
+                    'payment_method_types' => ['card_present'],
+                ]);
+
+
+                $readers_id = [];
+                $readers_id[1] = 'tmr_Eqz4ewJhXq5eu6'; //Atelier
+                $readers_id[2] = 'tmr_Eq0HXA4Oj7Yjqo'; //Marylebone
+                $readers_id[3] = 'tmr_EqzSAXwuoVzKs0'; //Chelsea
+                $readers_id[4] = 'tmr_Eqz9KQMTISyB47'; //South Ken
+                $readers_id[5] = 'tmr_EqzjQIwM2PjDQy'; //Notting Hill
+
+                $sel_reader = "";
+
+                if($user && isset($readers_id[$user->store])){
+                    $sel_reader = $readers_id[$user->store];
+
+                    $stripe->terminal->readers->processSetupIntent(
+                    $sel_reader,
+                    ['setup_intent' => $si->id, 'customer_consent_collected' => true]
+                  );
+                }
+
+
+            }
+
 
             $intent = $stripe->paymentIntents->create([
                 'amount' => 100*$amount_two_dp,
@@ -910,6 +963,10 @@ Route::group(['prefix'=>'stripe-test'],function(){
                 //'setup_future_usage'=>'off_season',
                 "receipt_email"=>$cust->EmailAddress,
             ]);
+
+
+
+
         /*
             if($savecardinfo){
 
@@ -1042,7 +1099,7 @@ Route::post('/cancel-terminal-request',function(){
     $readers_id[4] = 'tmr_Eqz9KQMTISyB47'; //South Ken
     $readers_id[5] = 'tmr_EqzjQIwM2PjDQy'; //Notting Hill
 
-    $sel_reader = [];
+    $sel_reader = "";
 
     $output = false;
 
