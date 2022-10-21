@@ -712,7 +712,7 @@ Route::get('/3d-secure',function(Request $request){
 
     $custid = $request->customer_id;
 
-    $cust = DB::table('infoCustomer')->where('id',$custid)->first();
+    $cust = DB::table('infoCustomer')->where('CustomerID',$custid)->first();
 
     if($cust){
         $card = DB::table('cards')->where('CustomerID',$cust->CustomerID)->where('Actif',1)->latest('id')->first();
