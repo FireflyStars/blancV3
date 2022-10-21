@@ -868,6 +868,7 @@ export default {
         const order_bundles = ref([]);
         const pricedeliverynow=ref("");
         const has_invoices = ref([]);
+        const btn_disabled = ref(false);
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
@@ -1276,27 +1277,35 @@ export default {
             remove_voucher_modal.value.closeModal();
         }
 
-        function addVoucher(){
-            axios.post('/add-order-voucher',{
-                voucher:voucher_discount.value,
-                order_id:order_id.value,
-            }).then((res)=>{
-                let output = res.data.output;
+        async function addVoucher(){
 
-                if(output.err !=''){
-                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
-                        message: output.err,
-                        ttl: 3,
-                        type: 'danger'
+            if(!btn_disabled.value){
+                btn_disabled.value = true;
+                try {
+                    await axios.post('/add-order-voucher',{
+                        voucher:voucher_discount.value,
+                        order_id:order_id.value,
+                    }).then((res)=>{
+                        let output = res.data.output;
+
+                        if(output.err !=''){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                message: output.err,
+                                ttl: 3,
+                                type: 'danger'
+                            });
+                        }else{
+                            getCheckoutItems();
+                        }
+                    }).catch(err=>{
+
+                    }).finally(()=>{
                     });
-                }else{
-                    getCheckoutItems();
+                } finally {
+                    btn_disabled.value = false;
                 }
-            }).catch(err=>{
+            }
 
-            }).finally(()=>{
-
-            });
         }
 
         function cancelTerminalRequest(){
@@ -1432,6 +1441,7 @@ export default {
             pricedeliverynow,
             handleAllowNumbers,
             has_invoices,
+            btn_disabled,
         }
     },
 }
