@@ -162,7 +162,7 @@
                     return val.toLowerCase();
                 }
                 if(def.name=="Type"){
-                    return order.deliverymethod
+                    return order.delivery_method
                 }
                 if(def.name=="Det"){
                     return order.DET

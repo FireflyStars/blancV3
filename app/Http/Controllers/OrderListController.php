@@ -75,7 +75,7 @@ class OrderListController extends Controller
                 DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
                 DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                 DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as deliverymethod')
+                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
             ])
             ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID)'))
             ->leftJoin('pickup', 'infoOrder.id', '=', 'pickup.order_id')
@@ -101,7 +101,7 @@ class OrderListController extends Controller
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
                     DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                     DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as deliverymethod')
+                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID)'))
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -502,7 +502,7 @@ class OrderListController extends Controller
                 DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
                 DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                 DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as deliverymethod')
+                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
             ])
             ->join( 'infoCustomer', function ($join){
                 $join->on( 'infoCustomer.CustomerID', '=', 'infoOrder.CustomerID')
@@ -549,7 +549,7 @@ class OrderListController extends Controller
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
                     DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                     DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as deliverymethod')
+                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster = "", infoCustomer.CustomerID , infoCustomer.CustomerIDMaster)'))
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -1817,7 +1817,7 @@ class OrderListController extends Controller
                 DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
                 DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                 DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as deliverymethod')
+                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
             ])
             ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
             ->leftJoin('pickup', 'infoOrder.id', '=', 'pickup.order_id')
@@ -1846,7 +1846,7 @@ class OrderListController extends Controller
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
                     DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                     DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as deliverymethod')
+                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
