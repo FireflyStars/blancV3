@@ -2330,7 +2330,7 @@ class DetailingController extends Controller
 
                     if(count($items) > 0){
                         foreach($items as $k=>$v){
-                            $price = ($v->etape==11?$v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price:$v->pricecleaning);
+                            $price = ($v->etape==11?$v->dry_cleaning_price:$v->pricecleaning)+$v->cleaning_addon_price+$v->tailoring_price;
                             $montant += ($voucher->pourcentrage/100)*$price;
                         }
                     }
@@ -2343,7 +2343,7 @@ class DetailingController extends Controller
 
                 if(count($items) > 0){
                     foreach($items as $k=>$v){
-                        $price = ($v->etape==11?$v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price:$v->pricecleaning);
+                        $price = ($v->etape==11?$v->dry_cleaning_price:$v->pricecleaning)+$v->cleaning_addon_price+$v->tailoring_price;
                         $montant += ($voucher->pourcentrage/100)*$price;
                     }
                 }
@@ -2355,7 +2355,7 @@ class DetailingController extends Controller
 
                     if(count($items) > 0){
                         foreach($items as $k=>$v){
-                            $price = ($v->etape==11?$v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price:$v->pricecleaning);
+                            $price = ($v->etape==11?$v->dry_cleaning_price:$v->pricecleaning)+$v->cleaning_addon_price+$v->tailoring_price;
                             $montant += ($voucher->pourcentrage/100)*$price;
                         }
                     }
