@@ -30,7 +30,7 @@
             <div class="col-6 body_regular mediumgrey">Email</div><div class="col-6 body_regular mediumgrey">Phone number</div>
         </div>
         <div class="row">
-            <div class="col-6 body_medium">{{order.infoCustomer.EmailAddress.toLowerCase()}}</div><div class="col-6 body_medium" v-html="formatPhone(order.infoCustomer.Phone)"></div>
+            <div class="col-6 body_medium customer_email ">{{order.infoCustomer.EmailAddress.toLowerCase()}}</div><div class="col-6 body_medium" v-html="formatPhone(order.infoCustomer.Phone)"></div>
         </div>
     </div>
 
@@ -89,9 +89,10 @@ import { useRouter } from 'vue-router';
                 if(phone.split("|").length > 1){
                     var area_code = phone.split("|")[0];
                     var number = phone.split("|")[1];
-                    return '+' + area_code.replace(/\D/g, '') + ' ' + number.replace(/ /g, '').replace(/(\d{3})(\d{3})(\d{3,4})/, "$1 $2 $3");
+                    console.log("number" , number)
+                    return '+' + area_code.replace(/\D/g, '') + ' ' + number.replace(/ /g, '').replace(/(\d{3})(\d{3})(\d{3,4})/, "$1 $2 $3").replace(']' , '');
                 }else
-                    return phone.replace(/\D/g, '').replace(/(\d{2})(\d{3})(\d{3})(\d{3,4})/, "+$1 $2 $3 $3");
+                    return phone.replace(/\D/g, '').replace(/(\d{2})(\d{3})(\d{3})(\d{3,4})/, "+$1 $2 $3 $3").replace(']' , '');
             }else{
                 return '--';
             }
@@ -128,4 +129,9 @@ import { useRouter } from 'vue-router';
     .popinout-leave-active{
         position: absolute;
     }
+    .customer_email{
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  
 </style>
