@@ -915,7 +915,7 @@ class OrderController extends Controller
                     $item->Fabrics = $fabric_text;
 
                     //Colors
-
+                    $color_text = "";
                     if($v->color_id!='' && !is_null($v->color_id)){
                         $color_id_arr = @json_decode($v->color_id);
                         $color_names = [];

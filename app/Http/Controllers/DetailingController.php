@@ -1010,7 +1010,17 @@ class DetailingController extends Controller
             ->where('detailingitem.id',$detailing_item_id)
             ->first();
 
+        $tailoring = @json_decode($detailing_item->tailoring_services);
+        $cleaning = @json_decode($detailing_item->cleaning_services);
         $process = @json_decode($detailing_item->process);
+
+        if( empty($tailoring) && empty($cleaning) ){
+            $nextpost = 5;
+        }
+        dump(!empty($tailoring) , $detailing_item->describeprixnow , $detailing_item->describeprixnowtailoring );
+        if(!empty($tailoring) || ($detailing_item->describeprixnow != null ||$detailing_item->describeprixnowtailoring != null )){
+            $nextpost = 1;
+        }
 
         //Tailoring
         if($detailing_item->tailoring_services !='' && !is_null($detailing_item->tailoring_services)){
