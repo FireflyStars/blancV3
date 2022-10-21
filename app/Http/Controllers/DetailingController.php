@@ -1158,9 +1158,13 @@ class DetailingController extends Controller
             }
         }
 
-        $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL;
+        $_ACCOUNT_DISCOUNT  = 0;
+        $_ORDER_DISCOUNT = 0;
 
-        $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
+        if($order->detailed_at=='0000-00-00 00:00:00'){
+            $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL;
+            $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
+        }
 
         $_BUNDLES_DISCOUNT=0;
 
@@ -1247,10 +1251,6 @@ class DetailingController extends Controller
         $values=array(
             'Subtotal'=>number_format($_SUBTOTAL,2),
             'SubtotalWithDiscount'=>number_format($_SUBTOTAL_WITH_DISCOUNT,2),//
-            'AccountDiscount'=>number_format($_ACCOUNT_DISCOUNT,2),
-            'AccountDiscountPerc'=>$cust->discount,
-            'OrderDiscount'=>number_format($_ORDER_DISCOUNT,2),
-            'VoucherDiscount'=>number_format($_VOUCHER_DISCOUNT,2),//
             'bundles'=>number_format($_BUNDLES_DISCOUNT,2),
             'Total'=>number_format($_TOTAL,2),
             'TotalDue'=>number_format($_TOTAL_DUE,2),
@@ -1260,6 +1260,13 @@ class DetailingController extends Controller
             'TotalExcVat'=>number_format($_TOTAL_EXC_VAT,2),//
             'TaxAmount'=> number_format($_TAX_AMOUNT,2),//
         );
+
+        if($order->detailed_at=='0000-00-00 00:00:00'){
+            $values['AccountDiscount'] = number_format($_ACCOUNT_DISCOUNT,2);
+            $values['AccountDiscountPerc'] = $cust->discount;
+            $values['OrderDiscount'] = number_format($_ORDER_DISCOUNT,2);
+            $values['VoucherDiscount'] = number_format($_VOUCHER_DISCOUNT,2);//
+        }
 
         DB::table('infoOrder')->where('id',$order_id)->update($values);
 
@@ -2302,11 +2309,15 @@ class DetailingController extends Controller
             }
         }
 
+        if($order->TotalDue==0){
+            $err = "Order amount is 0";
+        }
+
         if($code !=''){
             $voucher = DB::table('vouchers')->where('Actif',1)->where('CodeCustomer',$code)->first();
         }
 
-        if($voucher){
+        if($err =="" && $voucher){
             if($voucher->StartDate <= $today && $voucher->EndDate >= $today){
 
                 if($voucher->VoucherValidOnce==1){
@@ -2372,7 +2383,7 @@ class DetailingController extends Controller
                 }
 
                 if($user){
-                    if($montant > 0){
+                    if($montant > 0 && $montant > $order->TotalDue){
                         if($insert){
                             $inserted = DB::table('vouchers_histories')->insertGetId([
                                 'vouchers_id'=>$voucher->id,
