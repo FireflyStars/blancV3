@@ -1345,7 +1345,7 @@ class OrderListController extends Controller
                                     'TypePost.bg_color as location_color', 'postes.nom as location',
                                     'TypePost.process', 'TypePost.circle_color',
                                     // DB::raw('DATE_FORMAT(production.date_add,"%a") as day'),
-                                    DB::raw('DATE_FORMAT(production.date_add,"%a %d/%m/%Y %H:%i") as date'),
+                                    DB::raw('DATE_FORMAT(DATE_ADD(production.date_add , INTERVAL 1 HOUR),"%a %d/%m/%Y %H:%i") as date'),
                                     // DB::raw('DATE_FORMAT(production.date_add,"%H:%i") as time'),
                                     'users.name'
                                 )
@@ -1362,7 +1362,7 @@ class OrderListController extends Controller
                                     'TypePost.bg_color as location_color', 'postes.nom as location',
                                     'TypePost.process', 'TypePost.circle_color',
                                     // DB::raw('DATE_FORMAT(production.date_add,"%a") as day'),
-                                    DB::raw('DATE_FORMAT(production.date_add,"%a %d/%m/%Y %H:%i") as date'),
+                                    DB::raw('DATE_FORMAT(DATE_ADD(production.date_add , INTERVAL 1 HOUR),"%a %d/%m/%Y %H:%i") as date'),
                                     // DB::raw('DATE_FORMAT(production.date_add,"%H:%i") as time'),
                                     'users.name'
                                 )
