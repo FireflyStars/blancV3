@@ -125,7 +125,7 @@
                     <div class="d-flex align-items-center p-2">
                         <h3 class="font-20 gotham-rounded-medium m-0">Total sales over time</h3>
                         <TotalPercent class="ms-5" :amount="salesByChannelTotal" :pastAmount="salesByChannelTotalToCompare"></TotalPercent>
-                        <div class="d-flex ms-auto">
+                        <div class="d-flex ms-auto" v-if="userRole == 1">
                             <h4 @click="downloadExcel" class="mb-0 me-4 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Report</em></h4>
                             <h4 @click="downloadOrderCSV" class="mb-0 me-4 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Order</em></h4>
                             <h4 @click="downloadVoidOrderCSV" class="mb-0 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Void Order</em></h4>
@@ -287,6 +287,7 @@ export default {
     },
     setup(){
         const store = useStore();
+        const userRole = ref(0);
         const allSaleByDateLegend = ref(true);
         const corpDelByDateLegend = ref(false);
         const homeDelByDateLegend = ref(false);
@@ -425,7 +426,7 @@ export default {
                 signupPOSPast.value = res.data.signupPOSPast
                 totalSignUpCount.value = res.data.totalSignUpCount;
                 totalSignUpCountPast.value = res.data.totalSignUpCountPast;
-
+                userRole.value = res.data.userRole;
                 initSalesByChannelChart();
                 initPiecesByItemChart();
                 initTotalChart();
@@ -895,6 +896,7 @@ export default {
                 });
         }
         return {
+            userRole,
             allSaleByDateLegend,
             corpDelByDateLegend,
             homeDelByDateLegend,

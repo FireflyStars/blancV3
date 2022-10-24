@@ -1208,6 +1208,7 @@ class StatisticsController extends Controller
             'bookingAPPPast'         => $bookingAPPPast,
             'bookingPOS'             => $bookingPOS,
             'bookingPOSPast'         => $bookingPOSPast,
+            'userRole'               => auth()->user()->role_id
         ]);
     }
 
@@ -1257,7 +1258,16 @@ class StatisticsController extends Controller
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', '!=', '')
                         ->where('infoOrder.Total', '!=', 0)
-                        ->select('infoOrder.*', 'infoCustomer.OnAccount', 'infoCustomer.Actif', 'infoCustomer.SMS6I', 
+                        ->select(
+                            'infoOrder.id', 'infoOrder.deliverymethod', 'infoOrder.datesold', 'infoOrder.datevoid', 'infoOrder.OrderRevenueLocation',
+                            'infoOrder.suggestedDeliveryDate', 'infoOrder.Paid', 'infoOrder.express', 'infoOrder.SumItemUpcharges', 'infoOrder.SumItemDiscounts',
+                            'infoOrder.Subtotal', 'infoOrder.SubtotalWithDiscount', 'infoOrder.AccountDiscount', 'infoOrder.AccountDiscountPerc', 'infoOrder.VoucherDiscount',
+                            'infoOrder.DeliveryNowFee', 'infoOrder.AutoDeliveryFee', 'infoOrder.bundles', 'infoOrder.ExpressCharge', 'infoOrder.FailedDeliveryCharge',
+                            'infoOrder.Total', 'infoOrder.TotalDue', 'infoOrder.TotalExcVat', 'infoOrder.TaxAmount', 'infoOrder.OrderUpcharge',
+                            'infoOrder.OrderDiscount', 'infoOrder.DiscountPerc', 'infoOrder.Split', 'infoOrder.FailedDelivery', 'infoOrder.TypeDelivery',
+                            'infoOrder.DateDeliveryAsk', 'infoOrder.DatePickup', 'infoOrder.CustomerID', 'infoOrder.created_at', 'infoOrder.detailed_at',
+                            'infoOrder.updated_at', 'infoOrder.OrderID', 'infoOrder.Status',
+                            'infoCustomer.OnAccount', 'infoCustomer.Actif', 'infoCustomer.SMS6I', 
                             'infoCustomer.PaymentMethod', 'infoCustomer.PaymentMethodExpiryDate', 'infoCustomer.opt_out', 'infoCustomer.AcceptSMSMarketing',
                             'infoCustomer.spendlimit', 'infoCustomer.cardvip', 'infoCustomer.opt_out', 'infoCustomer.CustomerOrigin',
                             'infoCustomer.btob', 'infoCustomer.OrderFulfield', 'infoCustomer.EmailActif', 'infoCustomer.MonthlyVATRec',
@@ -1331,7 +1341,16 @@ class StatisticsController extends Controller
                         ->whereIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('infoOrder.deliverymethod', '!=', '')
                         ->where('infoOrder.Total', '!=', 0)
-                        ->select('infoOrder.*', 'infoCustomer.OnAccount', 'infoCustomer.Actif', 'infoCustomer.SMS6I', 
+                        ->select(
+                        'infoOrder.id', 'infoOrder.deliverymethod', 'infoOrder.datesold', 'infoOrder.datevoid', 'infoOrder.OrderRevenueLocation',
+                        'infoOrder.suggestedDeliveryDate', 'infoOrder.Paid', 'infoOrder.express', 'infoOrder.SumItemUpcharges', 'infoOrder.SumItemDiscounts',
+                        'infoOrder.Subtotal', 'infoOrder.SubtotalWithDiscount', 'infoOrder.AccountDiscount', 'infoOrder.AccountDiscountPerc', 'infoOrder.VoucherDiscount',
+                        'infoOrder.DeliveryNowFee', 'infoOrder.AutoDeliveryFee', 'infoOrder.bundles', 'infoOrder.ExpressCharge', 'infoOrder.FailedDeliveryCharge',
+                        'infoOrder.Total', 'infoOrder.TotalDue', 'infoOrder.TotalExcVat', 'infoOrder.TaxAmount', 'infoOrder.OrderUpcharge',
+                        'infoOrder.OrderDiscount', 'infoOrder.DiscountPerc', 'infoOrder.Split', 'infoOrder.FailedDelivery', 'infoOrder.TypeDelivery',
+                        'infoOrder.DateDeliveryAsk', 'infoOrder.DatePickup', 'infoOrder.CustomerID', 'infoOrder.created_at', 'infoOrder.detailed_at',
+                        'infoOrder.updated_at', 'infoOrder.OrderID', 'infoOrder.Status',                            
+                        'infoCustomer.OnAccount', 'infoCustomer.Actif', 'infoCustomer.SMS6I', 
                         'infoCustomer.PaymentMethod', 'infoCustomer.PaymentMethodExpiryDate', 'infoCustomer.opt_out', 'infoCustomer.AcceptSMSMarketing',
                         'infoCustomer.spendlimit', 'infoCustomer.cardvip', 'infoCustomer.opt_out', 'infoCustomer.CustomerOrigin',
                         'infoCustomer.btob', 'infoCustomer.OrderFulfield', 'infoCustomer.EmailActif', 'infoCustomer.MonthlyVATRec',
