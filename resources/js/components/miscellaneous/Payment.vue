@@ -26,9 +26,11 @@
      <div class="col-12" v-else-if="cust.OnAccount==0 && (cust.bycard==1 && !custcard) || editcard">
             <div class="row" id="credit_card_div">
             <div class="credit-card col-12">
+                <!--
                 <div class="row mb-3">
                     <div class="col">  <button id="save_card_details_terminal" class="w-100 py-2" :class="{sel:save_card_details_terminal}" @click="toggleSaveCardDetailsInTerminal">Save Card Details In Terminal</button></div>
                 </div>
+                -->
                 <div class="row mb-3">
                     <div class="form-group col-6 cardholder">
                         <label for="" class="payment-subtitle">Cardholder name</label>

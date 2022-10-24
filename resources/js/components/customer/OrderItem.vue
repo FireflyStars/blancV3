@@ -40,7 +40,7 @@
         <div  class="sub-order-section mt-2" v-for="(subOrder, index) in subOrders" :key="index">
             <div class="sub-order-header">
                 <label class="custom-checkbox">Sub order {{ getSubOrder(subOrder).key }}
-                    <input type="checkbox" @change="subOrderCheck($event, getSubOrder(subOrder).id)">
+                    <input type="checkbox" @change="subOrderCheck($event, getSubOrder(subOrder).InvoiceId)">
                     <span class="checkmark"></span>
                 </label>
             </div>
@@ -101,7 +101,7 @@
         <div class="d-flex justify-content-between">
             <div class="col-6 d-flex">
                 <button class="border-btn" @click="redirectToCheckOut(Order.order_id)">View Order</button>
-                <button class="border-btn ms-2" @click="openModal(Order.sub_order_id)">Print Ticket(s)</button>
+                <button class="border-btn ms-2" @click="openModal(Order.order_id)">Print Ticket(s)</button>
             </div>
             <div class="col-6 text-end">
                 <button class="fullfil-btn" @click="FulfillSubOrder">
@@ -110,7 +110,7 @@
             </div>
         </div>
     </div>
-    <FulfillConfirmation  :show_conf="show_model_Fulfil" @close="show_model_Fulfil=false"></FulfillConfirmation>
+    <FulfillConfirmation :invoice_id= "ListInvoice" :show_conf="show_model_Fulfil" @close="show_model_Fulfil=false"></FulfillConfirmation>
     <qz-print ref="qz_printer"></qz-print>
 </template>
 <script>
@@ -129,7 +129,8 @@ export default {
         const show = ref(false);
         const Order = ref({});
         const selectedSubOrders = ref([]);
-        const show_model_Fulfil = ref(false)
+        const show_model_Fulfil = ref(false);
+        const ListInvoice = ref([]);
         show.value = props.show;
         const type_order = ref('');
         type_order.value = props.type_order
@@ -144,10 +145,12 @@ export default {
             var subOrderValue = {
                 id: '',
                 key: '',
+                InvoiceId:'',
             };
             Object.values(subOrder).forEach(item => {
                 subOrderValue.id = item.sub_order_id;
                 subOrderValue.key = item.sub_order;
+                subOrderValue.InvoiceId = item.InvoiceID;
             });
             return subOrderValue;
         }
@@ -161,7 +164,20 @@ export default {
          router.push('/checkout/'+order_id);
        }
        function FulfillSubOrder(){
-         //show_model_Fulfil.value = true
+
+            show_model_Fulfil.value = true
+            if(selectedSubOrders.value.length > 0){
+                ListInvoice.value =  selectedSubOrders.value
+            }else {
+                Object.values(props.subOrders).filter(item=> 
+                        item.forEach(invoice => {
+                          selectedSubOrders.value.push(invoice.InvoiceID)
+                        })  
+                );
+                ListInvoice.value = selectedSubOrders.value.filter(function(item, pos, self) {
+                    return self.indexOf(item) == pos;
+                })
+            }
        }
         return {
             show,
@@ -172,12 +188,13 @@ export default {
             FulfillSubOrder,
             show_model_Fulfil,
             type_order,
-            selectedSubOrders
+            selectedSubOrders,
+            ListInvoice
         }
     },
     methods:{
-        openModal(suborder){
-            this.$refs.qz_printer.loadPrinterModal(suborder , ".detail-panel")
+        openModal(order_id){
+            this.$refs.qz_printer.loadPrinterOrderModal(order_id);
         }
     },
     props:{

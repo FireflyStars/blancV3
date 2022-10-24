@@ -445,6 +445,7 @@ class CustomerController extends Controller
             'updated_at' => now(),
         ];
         try {
+            DB::table('InfoCustomerPreference')->where('CustomerID', '=', $CustomerUUID)->update(['Delete' => 1,'updated_at'=>date('Y-m-d H:i:s')]);
             DB::table('InfoCustomerPreference')->insert($customer_preferences);
         } catch (\Throwable $e) {
             return response()->json(['error'=> $e->getMessage()]);
@@ -1066,7 +1067,7 @@ class CustomerController extends Controller
 
         $current_orders = DB::table('infoOrder')
                                         ->select(
-                                            'infoOrder.id as order_id', 'infoInvoice.NumInvoice as sub_order', 'infoInvoice.id as sub_order_id', 'infoOrder.Status',
+                                            'infoOrder.id as order_id', 'infoInvoice.NumInvoice as sub_order', 'infoInvoice.id as sub_order_id','infoInvoice.InvoiceID','infoOrder.Status',
                                             DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
                                             // DB::raw('DATE_FORMAT(infoOrder.created_at, "%d %b %Y") as order_date'),
                                             'infoitems.priceTotal as price', 'infoitems.id as item_id',
@@ -1189,7 +1190,7 @@ class CustomerController extends Controller
 
         $past_orders = DB::table('infoOrder')
                                         ->select(
-                                            'infoOrder.id as order_id', 'infoInvoice.NumInvoice as sub_order', 'infoInvoice.id as sub_order_id','infoOrder.Status',
+                                            'infoOrder.id as order_id', 'infoInvoice.NumInvoice as sub_order','infoInvoice.InvoiceID', 'infoInvoice.id as sub_order_id','infoOrder.Status',
                                             DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
                                             // DB::raw('DATE_FORMAT(infoOrder.created_at, "%d %b %Y") as order_date'),
                                             'infoitems.priceTotal as price', 'infoitems.id as item_id',

@@ -915,7 +915,7 @@ class OrderController extends Controller
                     $item->Fabrics = $fabric_text;
 
                     //Colors
-
+                    $color_text = "";
                     if($v->color_id!='' && !is_null($v->color_id)){
                         $color_id_arr = @json_decode($v->color_id);
                         $color_names = [];
@@ -1266,8 +1266,7 @@ class OrderController extends Controller
        $ListInvoice=[];
        $infoitemsIds=[];
 
-           $order =  DB::table('infoOrder')->where('infoOrder.id',$order_id)->update(['Status' => 'VOID',]);
-
+           $order =  DB::table('infoOrder')->where('infoOrder.id',$order_id)->update([ 'datevoid' =>date('Y-m-d H:i:s'), ]);
            foreach ($ListSubOrder as $suborder) {
                 foreach ($suborder as $key=>$invoice) {
                        DB::table('infoInvoice')->where('infoInvoice.InvoiceID', $invoice['InvoiceID'] )

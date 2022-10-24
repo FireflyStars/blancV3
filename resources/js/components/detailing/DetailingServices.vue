@@ -20,7 +20,7 @@
                     type="button"
                     @click="openAccordionclick(group.replace(' ',''))"
                     :class="{ opened: main_service==1 && group=='Dry cleaning'}"
-                >{{group}}</button>
+                >{{group.replace('Dry cleaning','Services').replace('Cleaning Add-on' , 'Service Add-ons')}}</button>
             </h2>
             <div
                 class="accordion-collapse collapse"
@@ -50,7 +50,7 @@
                     id="acdbtn_otherpricings"
                     type="button"
                     @click="openAccordionclick('otherpricings')"
-                >Other pricings</button>
+                >Pricing Type</button>
             </h2>
             <div
                 class="accordion-collapse collapse"
@@ -102,7 +102,7 @@
                     id="acdbtn_tailoringpricetype"
                     type="button"
                     @click="openAccordionclick('tailoringpricetype')"
-                >Other pricings</button>
+                >Pricing Type</button>
             </h2>
             <div
                 class="accordion-collapse collapse"
@@ -112,8 +112,8 @@
                     <div   class="col-2 d-flex text-center each-sub-service py-4 justify-content-center tailoring-subservice tailoring-price-type" :id="'sub_service_tailoring_'+type.replace(' ','')" :class="{'sel_service':detailingitem.tailoring_price_type==type}" :data-tailoring-price-type="type"  v-for="(type) in type_prices" @click="toggleSubService('tailoring_'+type.replace(' ',''))">
                         {{type}}
                     </div>
-                    <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" id="pricenow_describe_tailoring" @click="loadPriceNowModal('tailoring')" :class="{'sel_service':detailingitem.tailoring_price_type=='PriceNow' && !detailingitem.describeprixnowtailoring}">Price now</div>
-                    <div class="col-2 d-flex text-center each-price-now-btn py-3 justify-content-center" id="pricenow_tailoring" @click="loadPriceNowAndDescribeModal('tailoring')" :class="{'sel_service':detailingitem.tailoring_price_type=='PriceNow' && detailingitem.describeprixnowtailoring != ''}">Describe & Price Now</div>
+                    <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" id="pricenow_tailoring" @click="loadPriceNowModal('tailoring')" :class="{'sel_service':detailingitem.tailoring_price_type=='PriceNow' && !detailingitem.describeprixnowtailoring}">Price now</div>
+                    <div class="col-2 d-flex text-center each-price-now-btn py-3 justify-content-center" id="pricenow_describe_tailoring" @click="loadPriceNowAndDescribeModal('tailoring')" :class="{'sel_service':detailingitem.tailoring_price_type=='PriceNow' && detailingitem.describeprixnowtailoring}">Describe & Price Now</div>
 
                 </div>
             </div>
@@ -163,16 +163,28 @@
             <span class="close" id="pricenow_modal_close" @click="closePriceNowModal"></span>
         </template>
         <template #bheader>
-            <div class="bmodal-header py-4 text-center">Enter price</div>
+            <div class="bmodal-header py-4 text-center">Price Now</div>
         </template>
         <template #bcontent>
 
             <div class="row justify-content-center pt-4">
-                <div class="col-4 form-group"><input type="text" class="form-control py-2" v-model="price_now_value"></div>
+                <div class="col-4 form-group ">
+                        <label  class="form-label body_medium">Enter Price</label>
+                        <div class="input-group">
+                            <span class="input-group-text fw-bold" style="background: none;">£</span>
+                            <input style="border-left: none;" type="text" v-model="price_now_value" class="form-control"  placeholder="0.00">
+                        </div>
+                    </div>
             </div>
-             <div class="row justify-content-center py-4">
-                <div class="col-3 form-group"><button class="btn btn-outline-success w-100" @click="priceNow">OK</button></div>
-             </div>
+             <div class="row mx-0 justify-content-center mt-5 mb-5">
+                    <div class="col-4">
+                        <button class="btn btn-outline-danger body_medium w-100" @click="closePriceNowModal">Cancel</button>
+                    </div>
+                    <div class="col-1"></div>
+                    <div class="col-4">
+                        <button class="btn btn-dark body_medium w-100" @click="priceNow">Save</button>
+                    </div>
+                </div>
            
         </template>
 
@@ -262,6 +274,11 @@ export default {
         const describe_job_value = ref('');
         const preference_customer = ref([]);
         const price_value = ref('');
+        const sel_tailoring_describe = ref('');
+        const sel_clean_describe = ref('');
+
+        sel_tailoring_describe.value = props.detailingitem.describeprixnowtailoring;
+        sel_clean_describe.value = props.detailingitem.describeprixnow;
 
         function toggleMainService(id){
             let el = document.getElementById('main_service_'+id);
@@ -367,10 +384,13 @@ export default {
         }
 
         function toggleSubService(id){
+            console.log("toggleSubService" , id)
             let el = document.getElementById('sub_service_'+id);
             el.classList.toggle('sel_service');
+          
 
              let classes = Object.values(el.classList);
+             console.log("classes" , classes)
 
                 //TO optimize
                 if(classes.includes('cleaning-prices')){
@@ -636,9 +656,10 @@ export default {
 
 
 
-            console.log('cleaning price_type',sel_cleaning_price_type.value);
+            console.log('cleaning price_type' ,  sel_cleaning_service_id.value.length==0 ,sel_tailoring_service_id.value.length==0 , sel_tailoring_describe.value , sel_clean_describe.value);
 
-            if(sel_cleaning_service_id.value.length==0 && sel_tailoring_service_id.value.length==0){
+            if(sel_cleaning_service_id.value.length==0 && sel_tailoring_service_id.value.length==0 && (sel_tailoring_describe.value== null || sel_tailoring_describe.value=='' ) 
+            && (sel_clean_describe.value == null || sel_clean_describe.value == '') ){
                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
                         message: 'No services selected',
                         ttl: 5,
@@ -775,8 +796,13 @@ export default {
                     describeprixnow : describe_job_value.value
                 }).then((res)=>{
                     //console.log(res);
+                    if(price_now_type.value == "cleaning" ){
+                        sel_clean_describe.value = describe_job_value.value
+                    }else if(price_now_type.value == "tailoring" ){
+                        sel_tailoring_describe.value = describe_job_value.value
+                    }
                     if(res.data.updated){
-                        price_now_value.value='';
+                        price_value.value='';
                         price_now_type.value = '';
                         describe_job_value.value = '';
                         closePriceNowAndDescribeModal();
@@ -816,6 +842,11 @@ export default {
                     describeprixnow : describe_job_value.value
                 }).then((res)=>{
                     //console.log(res);
+                    if(price_now_type.value == "cleaning" ){
+                        sel_clean_describe.value = describe_job_value.value
+                    }else if(price_now_type.value == "tailoring" ){
+                        sel_tailoring_describe.value = describe_job_value.value
+                    }
                     if(res.data.updated){
                         price_now_value.value='';
                         price_now_type.value = '';
@@ -888,7 +919,9 @@ export default {
             price_value,
             preference_customer,
             describe_job_value,
-            priceNowAndDescribe
+            priceNowAndDescribe,
+            sel_tailoring_describe,
+            sel_clean_describe
         };
     },
 }

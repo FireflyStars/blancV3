@@ -181,6 +181,13 @@
                     type:'price',
                     css:"font-weight:bold;text-align:left;"
                 },
+                Det:{
+                    name:"Det",
+                    width:"6%",
+                    sortable:false,
+                    css:"font-weight:bold;text-align:left;",
+                    header_align:"left"
+                },
                 Prod:{
                     name:"Prod",
                     width:"6%",
@@ -270,6 +277,13 @@
                     sortable:false,
                     type:'price',
                     css:"font-weight:bold;text-align:left;"
+                },
+                Det:{
+                    name:"Det",
+                    width:"6%",
+                    sortable:false,
+                    css:"font-weight:bold;text-align:left;",
+                    header_align:"left"
                 },
                 Prod:{
                     name:"Prod",
@@ -364,6 +378,13 @@
                     sortable:false,
                     type:'price',
                     css:"font-weight:bold;text-align:left;"
+                },
+                Det:{
+                    name:"Det",
+                    width:"6%",
+                    sortable:false,
+                    css:"font-weight:bold;text-align:left;",
+                    header_align:"left"
                 },
                 Prod:{
                     name:"Prod",

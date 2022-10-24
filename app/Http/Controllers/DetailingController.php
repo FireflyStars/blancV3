@@ -105,7 +105,7 @@ class DetailingController extends Controller
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
         if($order->Status=="FULFILLED")
         return;
-            $detailingitemlist = DB::table('detailingitem')->select(['detailingitem.id','typeitem.pricecleaning','brands.coefcleaning','detailingitem.complexities_id','detailingitem.fabric_id','detailingitem.cleaning_services','detailingitem.etape','detailingitem.status','detailingitem.cleaning_price_type','detailingitem.dry_cleaning_price','detailingitem.cleaning_addon_price'])
+            $detailingitemlist = DB::table('detailingitem')->select(['detailingitem.id','detailingitem.pricecleaning','brands.coefcleaning','detailingitem.complexities_id','detailingitem.fabric_id','detailingitem.cleaning_services','detailingitem.etape','detailingitem.status','detailingitem.cleaning_price_type','detailingitem.dry_cleaning_price','detailingitem.cleaning_addon_price','detailingitem.etape'])
                 ->join('typeitem', 'detailingitem.typeitem_id', 'typeitem.id')
                 ->join('brands', 'detailingitem.brand_id', 'brands.id')
                 ->where('detailingitem.order_id', '=', $order_id)
@@ -117,7 +117,7 @@ class DetailingController extends Controller
                     $complexitiesids=json_decode($detailingitem->complexities_id);
                     foreach($complexitiesids as $complexity_id){
                         $complexities_coefcleaning=DB::table('complexities')->where('id','=',$complexity_id)->value('coefcleaning');
-                        $sum_complexites+=$detailingitem->pricecleaning*$complexities_coefcleaning;
+                        //$sum_complexites+=$detailingitem->pricecleaning*$complexities_coefcleaning;
                     }
                 }
                 $sum_fabrics=0;
@@ -125,7 +125,7 @@ class DetailingController extends Controller
                     $fabicsids=json_decode($detailingitem->fabric_id);
                     foreach($fabicsids as $fabric_id){
                         $fabrics_coefcleaning=DB::table('fabrics')->where('id','=',$fabric_id)->value('coefcleaning');
-                        $sum_fabrics+=$detailingitem->pricecleaning*$fabrics_coefcleaning;
+                        //$sum_fabrics+=$detailingitem->pricecleaning*$fabrics_coefcleaning;
                     }
                 }
 
@@ -134,20 +134,24 @@ class DetailingController extends Controller
                 $cleaning_addon_price=0;
 
                 if($detailingitem->cleaning_price_type=='Standard'){
-                    $dry_cleaning_price=$detailingitem->pricecleaning + $detailingitem->pricecleaning*$detailingitem->coefcleaning+ $sum_complexites + $sum_fabrics;
-                    $cs = @json_decode($detailingitem->cleaning_services);
+                    //$dry_cleaning_price=$detailingitem->pricecleaning + $detailingitem->pricecleaning*$detailingitem->coefcleaning+ $sum_complexites + $sum_fabrics;
+                    $dry_cleaning_price = $detailingitem->pricecleaning;
 
-                    if(is_array($cs)){
-                        foreach($cs as $keycs=>$idcs){
-                            if(!in_array($idcs,[1,2,3])){
-                                unset($cs[$keycs]);
+                    if($detailingitem->etape==11){
+                        $cs = @json_decode($detailingitem->cleaning_services);
+
+                        if(is_array($cs)){
+                            foreach($cs as $keycs=>$idcs){
+                                if(!in_array($idcs,[1,2,3])){
+                                    unset($cs[$keycs]);
+                                }
                             }
                         }
+
+                        $dry_cleaning_price = DetailingController::calculateCleaningPrice($cs,$dry_cleaning_price);
+
+                        $cleaning_addon_price = $detailingitem->cleaning_addon_price;
                     }
-
-                    $dry_cleaning_price = DetailingController::calculateCleaningPrice($cs,$dry_cleaning_price);
-
-                    $cleaning_addon_price = $detailingitem->cleaning_addon_price;
                 }else if($detailingitem->cleaning_price_type=='PriceNow'){
                     $dry_cleaning_price=$detailingitem->dry_cleaning_price;
                     $cleaning_addon_price = 0;
@@ -1006,7 +1010,17 @@ class DetailingController extends Controller
             ->where('detailingitem.id',$detailing_item_id)
             ->first();
 
+        $tailoring = @json_decode($detailing_item->tailoring_services);
+        $cleaning = @json_decode($detailing_item->cleaning_services);
         $process = @json_decode($detailing_item->process);
+
+        if( empty($tailoring) && empty($cleaning) ){
+            $nextpost = 5;
+        }
+        dump(!empty($tailoring) , $detailing_item->describeprixnow , $detailing_item->describeprixnowtailoring );
+        if(!empty($tailoring) || ($detailing_item->describeprixnow != null ||$detailing_item->describeprixnowtailoring != null )){
+            $nextpost = 1;
+        }
 
         //Tailoring
         if($detailing_item->tailoring_services !='' && !is_null($detailing_item->tailoring_services)){
@@ -1144,9 +1158,13 @@ class DetailingController extends Controller
             }
         }
 
-        $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL;
+        $_ACCOUNT_DISCOUNT  = 0;
+        $_ORDER_DISCOUNT = 0;
 
-        $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
+        if($order->detailed_at=='0000-00-00 00:00:00'){
+            $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL;
+            $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
+        }
 
         $_BUNDLES_DISCOUNT=0;
 
@@ -1160,12 +1178,30 @@ class DetailingController extends Controller
             }
         }
         $_VOUCHER_DISCOUNT=0;
+        $voucher_codes = [];
+
         $order_vouchers = DB::table('vouchers_histories')->where('order_id',$order_id)->get();
+
         if(count($order_vouchers) > 0){
             foreach($order_vouchers as $k=>$v){
-                $_VOUCHER_DISCOUNT+= $v->amount;
+                $voucher_codes[$v->id] = $v->code;
+                //$_VOUCHER_DISCOUNT+= $v->amount;
             }
+
+            //Recalculate vouchers
+
+            foreach($voucher_codes as $k=>$v){
+                $arr = DetailingController::getVoucherAmount($order_id,$v,false);
+                $new_voucher_amount = $arr['montant'];
+                $_VOUCHER_DISCOUNT += $new_voucher_amount;
+                DB::table('vouchers_histories')->where('id',$k)->update(['amount'=>$new_voucher_amount]);
+            }
+
+
         }
+
+
+
 
         $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
         $_AMOUNT_PAID=0;
@@ -1215,10 +1251,6 @@ class DetailingController extends Controller
         $values=array(
             'Subtotal'=>number_format($_SUBTOTAL,2),
             'SubtotalWithDiscount'=>number_format($_SUBTOTAL_WITH_DISCOUNT,2),//
-            'AccountDiscount'=>number_format($_ACCOUNT_DISCOUNT,2),
-            'AccountDiscountPerc'=>$cust->discount,
-            'OrderDiscount'=>number_format($_ORDER_DISCOUNT,2),
-            'VoucherDiscount'=>number_format($_VOUCHER_DISCOUNT,2),//
             'bundles'=>number_format($_BUNDLES_DISCOUNT,2),
             'Total'=>number_format($_TOTAL,2),
             'TotalDue'=>number_format($_TOTAL_DUE,2),
@@ -1228,6 +1260,14 @@ class DetailingController extends Controller
             'TotalExcVat'=>number_format($_TOTAL_EXC_VAT,2),//
             'TaxAmount'=> number_format($_TAX_AMOUNT,2),//
         );
+
+        if($order->detailed_at=='0000-00-00 00:00:00'){
+            $values['AccountDiscount'] = number_format($_ACCOUNT_DISCOUNT,2);
+            $values['AccountDiscountPerc'] = $cust->discount;
+            $values['OrderDiscount'] = number_format($_ORDER_DISCOUNT,2);
+            $values['VoucherDiscount'] = number_format($_VOUCHER_DISCOUNT,2);//
+        }
+
         DB::table('infoOrder')->where('id',$order_id)->update($values);
 
        return $values;
@@ -2236,7 +2276,7 @@ class DetailingController extends Controller
         ]);
     }
 
-    public static function getVoucherAmount($order_id,$input_code=false){
+    public static function getVoucherAmount($order_id,$input_code=false,$insert=true){
         $user = Auth::user();
         $code = "";
         $voucher = false;
@@ -2269,11 +2309,15 @@ class DetailingController extends Controller
             }
         }
 
+        if($order->TotalDue==0){
+            $err = "Order amount is 0";
+        }
+
         if($code !=''){
             $voucher = DB::table('vouchers')->where('Actif',1)->where('CodeCustomer',$code)->first();
         }
 
-        if($voucher){
+        if($err =="" && $voucher){
             if($voucher->StartDate <= $today && $voucher->EndDate >= $today){
 
                 if($voucher->VoucherValidOnce==1){
@@ -2302,15 +2346,28 @@ class DetailingController extends Controller
                 if(!is_null($voucher->typeitem) && is_array(@json_decode($voucher->typeitem))){
                     $items = DB::table('detailingitem')
                         ->where('order_id',$order_id)
-                        ->whereIn('typeitem',$voucher->typeitem)
+                        ->whereIn('typeitem_id',@json_decode($voucher->typeitem))
                         ->get();
 
                     if(count($items) > 0){
                         foreach($items as $k=>$v){
-                            $price = $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
-                            $montant += ($voucher->typeitem/100)*$price;
+                            $price = ($v->etape==11?$v->dry_cleaning_price:$v->pricecleaning)+$v->cleaning_addon_price+$v->tailoring_price;
+                            $montant += ($voucher->pourcentrage/100)*$price;
                         }
                     }
+                }
+                else if(!is_null($voucher->brand) && is_array(@json_decode($voucher->brand))){
+                    $items = DB::table('detailingitem')
+                    ->where('order_id',$order_id)
+                    ->whereIn('brand_id',@json_decode($voucher->brand))
+                    ->get();
+
+                if(count($items) > 0){
+                    foreach($items as $k=>$v){
+                        $price = ($v->etape==11?$v->dry_cleaning_price:$v->pricecleaning)+$v->cleaning_addon_price+$v->tailoring_price;
+                        $montant += ($voucher->pourcentrage/100)*$price;
+                    }
+                }
                 }
                 else{
                     $items = DB::table('detailingitem')
@@ -2319,23 +2376,25 @@ class DetailingController extends Controller
 
                     if(count($items) > 0){
                         foreach($items as $k=>$v){
-                            $price = $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+                            $price = ($v->etape==11?$v->dry_cleaning_price:$v->pricecleaning)+$v->cleaning_addon_price+$v->tailoring_price;
                             $montant += ($voucher->pourcentrage/100)*$price;
                         }
                     }
                 }
 
                 if($user){
-                    if($montant > 0){
-                        $inserted = DB::table('vouchers_histories')->insertGetId([
-                            'vouchers_id'=>$voucher->id,
-                            'CustomerID'=>$order->CustomerID,
-                            'order_id'=>$order_id,
-                            'code'=>$code,
-                            'amount'=>number_format($montant,2),
-                            'user_id'=>$user->id,
-                            'created_at'=>date('Y-m-d H:i:s')
-                        ]);
+                    if($montant > 0 && $montant > $order->TotalDue){
+                        if($insert){
+                            $inserted = DB::table('vouchers_histories')->insertGetId([
+                                'vouchers_id'=>$voucher->id,
+                                'CustomerID'=>$order->CustomerID,
+                                'order_id'=>$order_id,
+                                'code'=>$code,
+                                'amount'=>number_format($montant,2),
+                                'user_id'=>$user->id,
+                                'created_at'=>date('Y-m-d H:i:s')
+                            ]);
+                        }
                     }else{
                         $err = "Voucher not applicable for this order";
                     }

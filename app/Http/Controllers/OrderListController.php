@@ -69,12 +69,13 @@ class OrderListController extends Controller
                     'infoOrder.DateDeliveryAsk','infoInvoice.datesold','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold', 'infoOrder.deliverymethod','pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask',
                 DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
                 DB::raw('GROUP_CONCAT(infoitems.express) as express'),
+                DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%d/%m/%Y") as DET'),
                 DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
                 DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
                 DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
                 DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                 DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as deliverymethod')
+                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
             ])
             ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID)'))
             ->leftJoin('pickup', 'infoOrder.id', '=', 'pickup.order_id')
@@ -95,11 +96,12 @@ class OrderListController extends Controller
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
                     DB::raw('IF(infoOrder.Paid = 0, "unpaid", "paid") as paid'),
                     'infoitems.CCStatus as Action',
+                    DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%d/%m/%Y") as DET'),
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
                     DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                     DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as deliverymethod')
+                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID)'))
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -166,13 +168,15 @@ class OrderListController extends Controller
                     }
                     if(!empty($express))
                         $orderlist=$orderlist->whereIn($colname,$express);
-                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate'){
+                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate'){
                     if(!empty($values))
                     $orderlist=$orderlist->whereIn($colname, $values);
                 }else if($colname == 'infoitems.ProdDate' && !empty($values)){
                     $orderlist=$orderlist->whereBetween('infoitems.PromisedDate', [ $values[0], $values[1]]);
                 }else if($colname == 'infoitems.DelivDate' && !empty($values)){
                     $orderlist=$orderlist->whereBetween('infoitems.PromisedDate', [ $values[0], $values[1]]);
+                }else if($colname == 'infoOrder.DetDate' && !empty($values)){
+                    $orderlist=$orderlist->whereBetween('infoOrder.detailed_at', [ $values[0], $values[1]]);
                 }else{
 
                 }
@@ -209,7 +213,7 @@ class OrderListController extends Controller
              
             //Booking Only
             if($order->TypeDelivery == "DELIVERY" && ($order->Status == "RECURRING" || $order->Status == "SCHEDULED")  && $order->deliverymethod == '' ){
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
                     
                     $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
@@ -234,7 +238,7 @@ class OrderListController extends Controller
             //Store New
             else if($order->deliverymethod == 'in_store_collection' ){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
+                if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
                                        
                     $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                     //dateProd
@@ -270,7 +274,7 @@ class OrderListController extends Controller
             //Delivery New
             else if($order->deliverymethod == 'home_delivery' ){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                if($order->DateDeliveryAsk != "2020-01-01"   && !is_null($order->DateDeliveryAsk) ){
                     
                     $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));;
                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
@@ -305,7 +309,7 @@ class OrderListController extends Controller
              //Delivery Only New
             else if($order->deliverymethod == 'delivery_only'){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                if($order->DateDeliveryAsk != "2020-01-01"   && !is_null($order->DateDeliveryAsk) ){
                     
                     $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
@@ -339,7 +343,7 @@ class OrderListController extends Controller
             //Store Old
             else if($order->TypeDelivery != "DELIVERY" && $order->deliverymethod == ''){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                if($order->DateDeliveryAsk != "2020-01-01"   && !is_null($order->DateDeliveryAsk) ){
                    
                             $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                             $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
@@ -365,7 +369,7 @@ class OrderListController extends Controller
             //Delivery Old
             else if($order->TypeDelivery == "DELIVERY" && $order->deliverymethod == ''){
 
-                if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
                     
                     $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)); ;
                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
@@ -400,10 +404,23 @@ class OrderListController extends Controller
             //Fulfiled
             else if($order->Status == "FULFILLED" ){
 
-                if($order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
+                if($order->deliverymethod != '' && $order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
+                    $order->Deliv = date('d/m/Y',strtotime($order->Orderdatesold)) ;
+                    $order->Prod  = date('d/m/Y',strtotime($order->Orderdatesold));
+                }else{
+                    if($order->DateDeliveryAsk != null){
+                            $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                            $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                        }else {
+                            $order->Deliv = '--' ;
+                            $order->Prod  = '--';
+                        }
+                }
+
+                if($order->deliverymethod == '' && $order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
                             
-                        $order->Deliv = date('d/m/Y',strtotime($order->Orderdatesold)) ;
-                        $order->Prod  = date('d/m/Y',strtotime($order->Orderdatesold));
+                    $order->Deliv = date('d/m/Y',strtotime($order->Orderdatesold)) ;
+                    $order->Prod  = date('d/m/Y',strtotime($order->Orderdatesold));
 
                     } else {
                         if($order->PromisedDate != null){
@@ -439,15 +456,19 @@ class OrderListController extends Controller
             
             if($order->Deliv != "--" && !is_null($order->Deliv) && $order->Status != "FULFILLED"){
                 $date = str_replace('/', '-', $order->Deliv);
-                if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
-                    $order->Deliv = '--';
-                }      
+                // if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
+                //     $order->Deliv = '--';
+                // }      
             }
             if($order->Prod != "--" && !is_null($order->Prod) && $order->Status != "FULFILLED"){
                 $date = str_replace('/', '-', $order->Prod);
-                if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
-                    $order->Prod = '--';
-                }      
+                // if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
+                //     $order->Prod = '--';
+                // }      
+            }
+            
+            if($order->DET == null || $order->DET == "00/00/0000"){
+                $order->DET = '--';
             }
     }
 
@@ -475,12 +496,13 @@ class OrderListController extends Controller
                 'infoOrder.DateDeliveryAsk','infoInvoice.datesold','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold', 'infoOrder.deliverymethod','pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask',
                 DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
                 DB::raw('GROUP_CONCAT(infoitems.express) as express'),
+                DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%d/%m/%Y") as DET'),
                 DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
                 DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
                 DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
                 DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                 DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as deliverymethod')
+                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
             ])
             ->join( 'infoCustomer', function ($join){
                 $join->on( 'infoCustomer.CustomerID', '=', 'infoOrder.CustomerID')
@@ -522,11 +544,12 @@ class OrderListController extends Controller
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
                     DB::raw('IF(infoOrder.Paid = 0, "unpaid", "paid") as paid'),
                     'infoitems.CCStatus as Action',
+                    DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%d/%m/%Y") as DET'),
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
                     DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                     DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as deliverymethod')
+                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster = "", infoCustomer.CustomerID , infoCustomer.CustomerIDMaster)'))
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -607,13 +630,15 @@ class OrderListController extends Controller
                     }
                     if(!empty($express))
                         $orderlist=$orderlist->whereIn($colname,$express);
-                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate'){
+                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate'){
                     if(!empty($values))
                     $orderlist=$orderlist->whereIn($colname, $values);
                 }else if($colname == 'infoitems.ProdDate' && !empty($values)){
                     $orderlist=$orderlist->whereBetween('infoitems.PromisedDate', [ $values[0], $values[1]]);
                 }else if($colname == 'infoitems.DelivDate' && !empty($values)){
                     $orderlist=$orderlist->whereBetween('infoitems.PromisedDate', [ $values[0], $values[1]]);
+                }else if($colname == 'infoOrder.DetDate' && !empty($values)){
+                    $orderlist=$orderlist->whereBetween('infoOrder.detailed_at', [ $values[0], $values[1]]);
                 }else{
 
                 }
@@ -650,7 +675,7 @@ class OrderListController extends Controller
                  
                 //Booking Only
                 if($order->TypeDelivery == "DELIVERY" && ($order->Status == "RECURRING" || $order->Status == "SCHEDULED")  && $order->deliverymethod == '' ){
-                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                    if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
                         
                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
@@ -675,7 +700,7 @@ class OrderListController extends Controller
                 //Store New
                 else if($order->deliverymethod == 'in_store_collection' ){
     
-                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
+                    if($order->DateDeliveryAsk != "2020-01-01" && !is_null($order->DateDeliveryAsk) ){
                                            
                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                         //dateProd
@@ -711,7 +736,7 @@ class OrderListController extends Controller
                 //Delivery New
                 else if($order->deliverymethod == 'home_delivery' ){
     
-                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                    if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
                         
                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));;
                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
@@ -746,7 +771,7 @@ class OrderListController extends Controller
                  //Delivery Only New
                 else if($order->deliverymethod == 'delivery_only'){
     
-                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                    if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
                         
                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
@@ -780,7 +805,7 @@ class OrderListController extends Controller
                 //Store Old
                 else if($order->TypeDelivery != "DELIVERY" && $order->deliverymethod == ''){
     
-                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                    if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
                        
                                 $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                 $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
@@ -806,7 +831,7 @@ class OrderListController extends Controller
                 //Delivery Old
                 else if($order->TypeDelivery == "DELIVERY" && $order->deliverymethod == ''){
     
-                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                    if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
                         
                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)); ;
                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
@@ -840,11 +865,24 @@ class OrderListController extends Controller
     
                 //Fulfiled
                 else if($order->Status == "FULFILLED" ){
+
+                    if($order->deliverymethod != '' && $order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
+                        $order->Deliv = date('d/m/Y',strtotime($order->Orderdatesold)) ;
+                        $order->Prod  = date('d/m/Y',strtotime($order->Orderdatesold));
+                    }else{
+                        if($order->DateDeliveryAsk != null){
+                                $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                                $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                            }else {
+                                $order->Deliv = '--' ;
+                                $order->Prod  = '--';
+                            }
+                    }
     
-                    if($order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
+                    if($order->deliverymethod == '' && $order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
                                 
-                            $order->Deliv = date('d/m/Y',strtotime($order->Orderdatesold)) ;
-                            $order->Prod  = date('d/m/Y',strtotime($order->Orderdatesold));
+                        $order->Deliv = date('d/m/Y',strtotime($order->Orderdatesold)) ;
+                        $order->Prod  = date('d/m/Y',strtotime($order->Orderdatesold));
     
                         } else {
                             if($order->PromisedDate != null){
@@ -880,15 +918,18 @@ class OrderListController extends Controller
                 
                 if($order->Deliv != "--" && !is_null($order->Deliv) && $order->Status != "FULFILLED"){
                     $date = str_replace('/', '-', $order->Deliv);
-                    if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
-                        $order->Deliv = '--';
-                    }      
+                    // if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
+                    //     $order->Deliv = '--';
+                    // }      
                 }
                 if($order->Prod != "--" && !is_null($order->Prod) && $order->Status != "FULFILLED"){
                     $date = str_replace('/', '-', $order->Prod);
-                    if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
-                        $order->Prod = '--';
-                    }      
+                    // if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
+                    //     $order->Prod = '--';
+                    // }      
+                }
+                if($order->DET == null || $order->DET == "00/00/0000"){
+                    $order->DET = '--';
                 }
         }
         return response()->json($orderlist);
@@ -1170,6 +1211,7 @@ class OrderListController extends Controller
 
         $invoice_id = $request->post('invoice_id');
         $endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v2.php";
+        //$endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v2-test.php";
         $client = new \GuzzleHttp\Client();
         $content = "";
 
@@ -1769,12 +1811,13 @@ class OrderListController extends Controller
                 'infoOrder.DateDeliveryAsk','infoInvoice.datesold','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold', 'infoOrder.deliverymethod','pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask',
                 DB::raw('count(distinct(infoInvoice.id)) as subOrderCount'),
                 DB::raw('GROUP_CONCAT(infoitems.express) as express'),
+                DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%d/%m/%Y") as DET'),
                 DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
                 DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
                 DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
                 DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                 DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as deliverymethod')
+                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
             ])
             ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
             ->leftJoin('pickup', 'infoOrder.id', '=', 'pickup.order_id')
@@ -1798,11 +1841,12 @@ class OrderListController extends Controller
                     DB::raw('GROUP_CONCAT(infoitems.express) as express'),
                     DB::raw('IF(infoOrder.Paid = 0, "unpaid", "paid") as paid'),
                     'infoitems.CCStatus as Action',
+                    DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%d/%m/%Y") as DET'),
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
                     DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                     DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as deliverymethod')
+                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -1871,13 +1915,15 @@ class OrderListController extends Controller
                     }
                     if(!empty($express))
                         $orderlist=$orderlist->whereIn($colname,$express);
-                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate'){
+                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate'){
                     if(!empty($values))
                     $orderlist=$orderlist->whereIn($colname, $values);
                 }else if($colname == 'infoitems.ProdDate' && !empty($values)){
                     $orderlist=$orderlist->whereBetween('infoitems.PromisedDate', [ $values[0], $values[1]]);
                 }else if($colname == 'infoitems.DelivDate' && !empty($values)){
                     $orderlist=$orderlist->whereBetween('infoitems.PromisedDate', [ $values[0], $values[1]]);
+                }else if($colname == 'infoOrder.DetDate' && !empty($values)){
+                    $orderlist=$orderlist->whereBetween('infoOrder.detailed_at', [ $values[0], $values[1]]);
                 }else{
 
                 }
@@ -1914,7 +1960,7 @@ class OrderListController extends Controller
                  
                 //Booking Only
                 if($order->TypeDelivery == "DELIVERY" && ($order->Status == "RECURRING" || $order->Status == "SCHEDULED")  && $order->deliverymethod == '' ){
-                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                    if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
                         
                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
@@ -1938,7 +1984,7 @@ class OrderListController extends Controller
                 //Store New
                 else if($order->deliverymethod == 'in_store_collection' ){
     
-                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d') && !is_null($order->DateDeliveryAsk) ){
+                    if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
                                            
                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                         //dateProd
@@ -1974,7 +2020,7 @@ class OrderListController extends Controller
                 //Delivery New
                 else if($order->deliverymethod == 'home_delivery' ){
     
-                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                    if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
                         
                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));;
                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
@@ -2009,7 +2055,7 @@ class OrderListController extends Controller
                  //Delivery Only New
                 else if($order->deliverymethod == 'delivery_only'){
     
-                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                    if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
                         
                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
@@ -2043,7 +2089,7 @@ class OrderListController extends Controller
                 //Store Old
                 else if($order->TypeDelivery != "DELIVERY" && $order->deliverymethod == ''){
     
-                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                    if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
                        
                                 $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                 $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
@@ -2069,7 +2115,7 @@ class OrderListController extends Controller
                 //Delivery Old
                 else if($order->TypeDelivery == "DELIVERY" && $order->deliverymethod == ''){
     
-                    if($order->DateDeliveryAsk != "2020-01-01" && $order->DateDeliveryAsk > date('Y-m-d')  && !is_null($order->DateDeliveryAsk) ){
+                    if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
                         
                         $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)); ;
                         $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
@@ -2103,11 +2149,24 @@ class OrderListController extends Controller
     
                 //Fulfiled
                 else if($order->Status == "FULFILLED" ){
+
+                    if($order->deliverymethod != '' && $order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
+                        $order->Deliv = date('d/m/Y',strtotime($order->Orderdatesold)) ;
+                        $order->Prod  = date('d/m/Y',strtotime($order->Orderdatesold));
+                    }else{
+                        if($order->DateDeliveryAsk != null){
+                                $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                                $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                            }else {
+                                $order->Deliv = '--' ;
+                                $order->Prod  = '--';
+                            }
+                    }
     
-                    if($order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
+                    if($order->deliverymethod == '' && $order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
                                 
-                            $order->Deliv = date('d/m/Y',strtotime($order->Orderdatesold)) ;
-                            $order->Prod  = date('d/m/Y',strtotime($order->Orderdatesold));
+                        $order->Deliv = date('d/m/Y',strtotime($order->Orderdatesold)) ;
+                        $order->Prod  = date('d/m/Y',strtotime($order->Orderdatesold));
     
                         } else {
                             if($order->PromisedDate != null){
@@ -2143,15 +2202,18 @@ class OrderListController extends Controller
                 
                 if($order->Deliv != "--" && !is_null($order->Deliv) && $order->Status != "FULFILLED"){
                     $date = str_replace('/', '-', $order->Deliv);
-                    if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
-                        $order->Deliv = '--';
-                    }      
+                    // if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
+                    //     $order->Deliv = '--';
+                    // }      
                 }
                 if($order->Prod != "--" && !is_null($order->Prod) && $order->Status != "FULFILLED"){
                     $date = str_replace('/', '-', $order->Prod);
-                    if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
-                        $order->Prod = '--';
-                    }      
+                    // if(date('Y-m-d',strtotime($date)) < date('Y-m-d')) {
+                    //     $order->Prod = '--';
+                    // }      
+                }
+                if($order->DET == null || $order->DET == "00/00/0000"){
+                    $order->DET = '--';
                 }
         }
         return response()->json($orderlist);

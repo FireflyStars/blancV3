@@ -162,7 +162,10 @@
                     return val.toLowerCase();
                 }
                 if(def.name=="Type"){
-                    return order.deliverymethod
+                    return order.delivery_method
+                }
+                if(def.name=="Det"){
+                    return order.DET
                 }
                 return val;
             }
@@ -308,6 +311,11 @@
                             }
     
                         },
+                        'infoOrder.DET': {
+                            name: 'Detailied Date',
+                            id: 'det_date',
+                            type: 'datepicker',
+                        },
                         'infoitems.prod': {
                             name: 'Production Date',
                             id: 'prod_date',
@@ -416,6 +424,11 @@
                             }
 
                         },
+                        'infoOrder.DET': {
+                            name: 'Detailied Date',
+                            id: 'det_date',
+                            type: 'datepicker',
+                        },
                         'infoitems.prod': {
                             name: 'Production Date',
                             id: 'prod_date',
@@ -501,6 +514,11 @@
                                 exp48:"Express 48h"
                             }
 
+                        },
+                        'infoOrder.DET': {
+                            name: 'Detailied Date',
+                            id: 'det_date',
+                            type: 'datepicker',
                         },
                         'infoitems.prod': {
                             name: 'Production Date',
