@@ -1266,8 +1266,7 @@ class OrderController extends Controller
        $ListInvoice=[];
        $infoitemsIds=[];
 
-           $order =  DB::table('infoOrder')->where('infoOrder.id',$order_id)->update(['Status' => 'VOID',]);
-
+           $order =  DB::table('infoOrder')->where('infoOrder.id',$order_id)->update([ 'datevoid' =>date('Y-m-d H:i:s'), ]);
            foreach ($ListSubOrder as $suborder) {
                 foreach ($suborder as $key=>$invoice) {
                        DB::table('infoInvoice')->where('infoInvoice.InvoiceID', $invoice['InvoiceID'] )
