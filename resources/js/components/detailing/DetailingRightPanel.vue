@@ -291,7 +291,7 @@
                                         </span>
                                     </div>
                                 </div>
-                                <div class="row mb-3 description-service " v-if="detailingitem.cleaning_price_type=='PriceNow'">
+                                <div class="row mb-3 description-service ">
                                     <span>{{detailingitem.describeprixnow}}</span>
                                 </div>
 
@@ -310,7 +310,7 @@
                                         <p v-for="service in sel_tailoring_services" class="mb-2">{{service}}</p>
                                     </div>
                                 </div>
-                                <div v-if="detailingitem.tailoring_price_type=='PriceNow'" class="row description-service"><span>{{detailingitem.describeprixnowtailoring}}</span></div> 
+                                <div class="row description-service"><span>{{detailingitem.describeprixnowtailoring}}</span></div> 
                             </div>
                         </div>
                     </div>

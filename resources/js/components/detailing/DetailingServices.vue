@@ -112,8 +112,8 @@
                     <div   class="col-2 d-flex text-center each-sub-service py-4 justify-content-center tailoring-subservice tailoring-price-type" :id="'sub_service_tailoring_'+type.replace(' ','')" :class="{'sel_service':detailingitem.tailoring_price_type==type}" :data-tailoring-price-type="type"  v-for="(type) in type_prices" @click="toggleSubService('tailoring_'+type.replace(' ',''))">
                         {{type}}
                     </div>
-                    <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" id="pricenow_tailoring" @click="loadPriceNowModal('tailoring')" :class="{'sel_service':detailingitem.tailoring_price_type=='PriceNow' && !detailingitem.describeprixnow}">Price now</div>
-                    <div class="col-2 d-flex text-center each-price-now-btn py-3 justify-content-center" id="pricenow_describe_tailoring" @click="loadPriceNowAndDescribeModal('tailoring')" :class="{'sel_service':detailingitem.tailoring_price_type=='PriceNow' && detailingitem.describeprixnow != ''}">Describe & Price Now</div>
+                    <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" id="pricenow_tailoring" @click="loadPriceNowModal('tailoring')" :class="{'sel_service':detailingitem.tailoring_price_type=='PriceNow' && !detailingitem.describeprixnowtailoring}">Price now</div>
+                    <div class="col-2 d-flex text-center each-price-now-btn py-3 justify-content-center" id="pricenow_describe_tailoring" @click="loadPriceNowAndDescribeModal('tailoring')" :class="{'sel_service':detailingitem.tailoring_price_type=='PriceNow' && detailingitem.describeprixnowtailoring}">Describe & Price Now</div>
 
                 </div>
             </div>
@@ -384,10 +384,13 @@ export default {
         }
 
         function toggleSubService(id){
+            console.log("toggleSubService" , id)
             let el = document.getElementById('sub_service_'+id);
             el.classList.toggle('sel_service');
+          
 
              let classes = Object.values(el.classList);
+             console.log("classes" , classes)
 
                 //TO optimize
                 if(classes.includes('cleaning-prices')){
@@ -653,10 +656,10 @@ export default {
 
 
 
-            console.log('cleaning price_type',sel_cleaning_price_type.value);
+            console.log('cleaning price_type' ,  sel_cleaning_service_id.value.length==0 ,sel_tailoring_service_id.value.length==0 , sel_tailoring_describe.value , sel_clean_describe.value);
 
             if(sel_cleaning_service_id.value.length==0 && sel_tailoring_service_id.value.length==0 && (sel_tailoring_describe.value== null || sel_tailoring_describe.value=='' ) 
-            && (sel_clean_describe == null || sel_clean_describe == '') ){
+            && (sel_clean_describe.value == null || sel_clean_describe.value == '') ){
                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
                         message: 'No services selected',
                         ttl: 5,
