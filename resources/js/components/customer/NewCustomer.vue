@@ -1350,7 +1350,8 @@ import axios from 'axios';
                 }
             }
             const emailValidation = (email)=>{
-                return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
+                var re =  /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/g;
+                return re.test(email);
             }
             // validation when the card detail changes
             watch(()=>form.value.cardDetails,(current_value, previous_value)=>{
