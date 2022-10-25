@@ -980,10 +980,10 @@
                 <p class="fw-bold mt-3 text-center">Simply enter the dates when you'd like the recurring booking to be paused here below:</p>
                 <div class="d-flex mt-3">
                     <div class="form-group col-6">
-                        <date-picker v-model="form.pauseDateFrom" name="start_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Pause Starts"></date-picker>
+                        <date-picker v-model="form.pauseDateFrom" name="start_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Pause Starts" :disabledToDate="getCurDateTime()"></date-picker>
                     </div>
                     <div class="form-group col-6">
-                        <date-picker v-model="form.pauseDateTo" name="end_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Pause Ends"></date-picker>
+                        <date-picker v-model="form.pauseDateTo" name="end_date" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top right'}" label="Pause Ends" :disabledToDate="getCurDateTime()"></date-picker>
                     </div>
                 </div>
             </div>
@@ -1366,7 +1366,7 @@
                     form.value.pauseDateTo = res.data.customer.pauseDateTo ?? "";
                     form.value.pauseDateFrom = res.data.customer.pauseDateFrom ?? "";
                     if(form.value.deliveryByday == '1'){
-                        if(form.value.pauseDateFrom != '' || form.value.pauseDateTo != ''){
+                        if((form.value.pauseDateFrom != '' && (new Date(form.value.pauseDateFrom) > new Date() ))|| (form.value.pauseDateTo != '' && (new Date(form.value.pauseDateTo) > new Date()))){       
                             pauseRecurring.value = true;
                         }
                         pickupDays.value = res.data.available_days;
@@ -2199,6 +2199,13 @@
                 });
             }
             const openPauseRecurringModal = ()=>{
+
+                if((form.value.pauseDateTo != '' && (new Date(form.value.pauseDateTo) < new Date()))){       
+                            form.value.pauseDateTo = ''
+                }
+                if((form.value.pauseDateFrom != '' && (new Date(form.value.pauseDateFrom) < new Date()))){       
+                            form.value.pauseDateFrom = ''
+                }
                 pauseRecurringModal.value.showModal();
             }
             const closePauseRecurringModal = ()=>{
@@ -2262,6 +2269,15 @@
             function selectrow(order){
                 router.push('/checkout/'+ order.order_id);
             }
+            function getCurDateTime(){
+
+                let cur_dt = new Date();
+                let dd = String(cur_dt.getDate()). padStart(2, '0');
+                let mm = String(cur_dt.getMonth() + 1). padStart(2, '0');
+                let yyyy = String(cur_dt.getFullYear());
+                return yyyy+'-'+mm+'-'+dd;
+
+            }
 
             return {
                 fdate,
@@ -2321,7 +2337,8 @@
                 goCustomerView,
                 selectrow,
                 timeslot_def,
-                getSlotDisplay
+                getSlotDisplay,
+                getCurDateTime
             }
 
         },
