@@ -174,7 +174,7 @@ class DetailingController extends Controller
         $order_id=$request->post('order_id');
         $price=$request->post('price');
 
-        $updated=DB::table('infoOrder')->where('id','=',$order_id)->where('TypeDelivery','<>','DELIVERY')->where('Status','<>','FULFILLED')->update([
+        $updated=DB::table('infoOrder')->where('id','=',$order_id)->where('TypeDelivery','DELIVERY')->where('Status','<>','FULFILLED')->update([
             'DeliveryNowFee'=>$price,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
@@ -1165,9 +1165,10 @@ class DetailingController extends Controller
 
         if($order->detailed_at=='0000-00-00 00:00:00'){
             $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL;
-            $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
         }
 
+
+        $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
         $_BUNDLES_DISCOUNT=0;
 
         $bundles_id = DetailingController::checkOrderBundles($order_id);
@@ -1261,13 +1262,13 @@ class DetailingController extends Controller
             'FailedDeliveryCharge'=>number_format($_FAILED_DELIVERY_PRICE,2),//
             'TotalExcVat'=>number_format($_TOTAL_EXC_VAT,2),//
             'TaxAmount'=> number_format($_TAX_AMOUNT,2),//
+            'OrderDiscount' => number_format($_ORDER_DISCOUNT,2),
+            'VoucherDiscount' => number_format($_VOUCHER_DISCOUNT,2),
         );
 
         if($order->detailed_at=='0000-00-00 00:00:00'){
             $values['AccountDiscount'] = number_format($_ACCOUNT_DISCOUNT,2);
             $values['AccountDiscountPerc'] = $cust->discount;
-            $values['OrderDiscount'] = number_format($_ORDER_DISCOUNT,2);
-            $values['VoucherDiscount'] = number_format($_VOUCHER_DISCOUNT,2);//
         }
 
         DB::table('infoOrder')->where('id',$order_id)->update($values);
