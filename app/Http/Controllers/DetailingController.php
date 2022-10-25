@@ -1017,7 +1017,9 @@ class DetailingController extends Controller
         if( empty($tailoring) && empty($cleaning) ){
             $nextpost = 5;
         }
-        dump(!empty($tailoring) , $detailing_item->describeprixnow , $detailing_item->describeprixnowtailoring );
+
+       // dump(!empty($tailoring) , $detailing_item->describeprixnow , $detailing_item->describeprixnowtailoring );
+
         if(!empty($tailoring) || ($detailing_item->describeprixnow != null ||$detailing_item->describeprixnowtailoring != null )){
             $nextpost = 1;
         }
