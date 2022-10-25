@@ -128,12 +128,12 @@
                                                     { display:'Pay As You Go', value: 0 },
                                                     { display:'On Account', value: 1 },
                                                 ]"
-                                                :label="'Customer payement profile'"
+                                                :label="'Customer payment profile'"
                                                 :name="'CustomerPayemenProfile'">
                                              </select-options>
                                            </div>
                                            <div class="from-group" v-else>
-                                                <label for="">Customer payement profile</label>
+                                                <label for="">Customer payment profile</label>
                                                 <div class="customer-type py-2 bg-color rounded-3">
                                                     <span class="d-flex align-items-center justify-content-center rounded-pill  ms-3" v-html="form.CustomerPayemenProfile == '0' ? 'Pay As You Go' : 'On Account'">
                                                     </span>
