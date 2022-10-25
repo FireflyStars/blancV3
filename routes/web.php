@@ -854,7 +854,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
             $order_id = $json_obj->order_id;
             //$savecardinfo=$json_obj->savecardinfo;
-            $savecardinfo = true;
+            $savecardinfo = false;
 
             $order = DB::table('infoOrder')->where('id',$order_id)->first();
             $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
@@ -866,29 +866,27 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
             $amount_two_dp = number_format($json_obj->amount,2);
 
-            $stripe_customer = $stripe->customers->create([
-                'name'              => $cust->Name,//$cardholder_name,
-                'email'             => $cust->EmailAddress,
-                //'payment_method'    => $card->id,
-                //'invoice_settings'  => ['default_payment_method' => $card->id],
-                'metadata'          => [
-                                            'CustomerID' => $cust->CustomerID
-                                    ],
-/*
-                'address'           => [
-                                        'city'          => ($addr?$addr->Town:''),
-                                        'state'         => ($addr?$addr->County:''),
-                                        'country'       => ($addr?$addr->Country:''),
-                                        'postal_code'   => ($addr?$addr->postcode:''),
-                                        'line1'         => ($addr?$addr->address1:''),
-                                        'line2'         => ($addr?$addr->address2:''),
-                                    ]
-                */
-            ]);
-
-
-
             if($savecardinfo){
+                $stripe_customer = $stripe->customers->create([
+                    'name'              => $cust->Name,//$cardholder_name,
+                    'email'             => $cust->EmailAddress,
+                    //'payment_method'    => $card->id,
+                    //'invoice_settings'  => ['default_payment_method' => $card->id],
+                    'metadata'          => [
+                                                'CustomerID' => $cust->CustomerID
+                                        ],
+    /*
+                    'address'           => [
+                                            'city'          => ($addr?$addr->Town:''),
+                                            'state'         => ($addr?$addr->County:''),
+                                            'country'       => ($addr?$addr->Country:''),
+                                            'postal_code'   => ($addr?$addr->postcode:''),
+                                            'line1'         => ($addr?$addr->address1:''),
+                                            'line2'         => ($addr?$addr->address2:''),
+                                        ]
+                    */
+                ]);
+
 
 
 
@@ -933,7 +931,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
                 ]);
 
             }
-            /*
+
 
             $pi = [
                 'amount' => 100*$amount_two_dp,
@@ -944,17 +942,17 @@ Route::group(['prefix'=>'stripe-test'],function(){
                 'capture_method' => 'manual',
                 'description'=>$order_id,
                 "receipt_email"=>$cust->EmailAddress,
-                'customer'=>$stripe_customer->id,
+                //'customer'=>$stripe_customer->id,
             ];
 
 
             $intent = $stripe->paymentIntents->create($pi);
 
 
-            */
 
 
-            echo json_encode($si);
+
+            echo json_encode($intent);
         } catch (Throwable $e) {
             http_response_code(500);
             echo json_encode(['error' => $e->getMessage()]);
@@ -1115,7 +1113,9 @@ Route::get('/unpaid-orders',function(Request $request){
 
 
     $unpaid_orders = DB::table('unpaid_orders')
-        ->where('paid',0)
+        ->join('infoOrder','unpaid_orders.order_id','infoOrder.id')
+        ->where('unpaid_orders.paid',0)
+        ->where('infoOrder.Paid',0)
         ->where('created_at','>=',date('Y-m-d H:i:s',strtotime('-5day')))
         ->get();
 
@@ -1124,6 +1124,8 @@ Route::get('/unpaid-orders',function(Request $request){
 
     if(count($unpaid_orders) > 0){
         foreach($unpaid_orders as $k=>$v){
+
+
             $payment_intent = $stripe->paymentIntents->retrieve(
                 $v->payment_intent_id,
                 []
