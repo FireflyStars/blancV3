@@ -213,10 +213,12 @@
                                             <div class="col-9">Express Charges</div>
                                             <div class="col-3 text-align-right">+{{formatPrice(order.ExpressCharge)}}</div>
                                         </div>
+                                        <!--
                                         <div class="row px-0 mt-2 sub-total-text" v-if="order.bundles > 0">
                                             <div class="col-9">Bundles</div>
                                             <div class="col-3 text-align-right">-{{formatPrice(order.bundles)}}</div>
                                         </div>
+                                        -->
 
                                         <div class="row px-0 sub-total-text" v-if="Object.keys(order_bundles).length > 0" id="bundles_bloc">
                                             <div class="col-12">

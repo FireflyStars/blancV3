@@ -9,7 +9,12 @@
                 <div class="col main-view p-5">
                     <h2>Component library</h2>
                     <div class="row my-4">
-                        <div class="col-3"><button class="btn btn-outline-success" @click="router.push({name:'VueStripeTest'})">Stripe test</button></div>
+                        <div class="col-3">
+                            <setup-intent></setup-intent>
+                            <!--
+                            <button class="btn btn-outline-success" @click="router.push({name:'VueStripeTest'})">Stripe test</button>
+                            -->
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-3">
@@ -271,11 +276,12 @@
     import Modal from '../miscellaneous/Modal.vue';
     import { useRouter, useRoute } from "vue-router";
     import InvoicePdf from '../miscellaneous/InvoicePdf.vue';
+    import SetupIntent from  '../miscellaneous/SetupIntent.vue';
 
 
     export default {
         name: "ComponentTest",
-        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,SwitchBtn,OrderBarcode, RecurringForm,ItemPictoNew,DetailingRightPanel,Modal,InvoicePdf},
+        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,SwitchBtn,OrderBarcode, RecurringForm,ItemPictoNew,DetailingRightPanel,Modal,InvoicePdf, SetupIntent},
         setup(props,context){
             const showcontainer=ref(false);
             const show_barcode= ref(false);
