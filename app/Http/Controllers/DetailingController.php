@@ -1127,6 +1127,12 @@ class DetailingController extends Controller
         if($order->Status=="FULFILLED")
         return;
 
+
+        if($order->PickupID !=''){
+            $this->getVoucherAmount($order_id);
+        }
+
+
         $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
         $_SUBTOTAL=0;
         $_SUBTOTAL_WITH_DISCOUNT=0;
@@ -2289,6 +2295,7 @@ class DetailingController extends Controller
         $err = "";
         $montant = 0;
         $inserted = 0;
+        $is_booking_voucher = false;
 
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
@@ -2299,18 +2306,21 @@ class DetailingController extends Controller
                 $pickup = DB::table('pickup')->where('PickupID',$order->PickupID)->first();
 
                 if($pickup){
+
                     $gi = $pickup->GarmentInstruction;
 
                     if(@json_decode($gi) && is_object(@json_decode($gi))){
                         $garment_instruction = @json_decode($gi);
 
                         if(isset($garment_instruction->Voucher)){
-                            $code = $garment_instruction->Voucher;
+                            $code = strtoupper($garment_instruction->Voucher);
+                            $is_booking_voucher = true;
                         }
                     }
                 }
             }
         }
+
 
         if($order->TotalDue==0){
             $err = "Order amount is 0";
@@ -2319,7 +2329,6 @@ class DetailingController extends Controller
         if($code !=''){
             $voucher = DB::table('vouchers')->where('Actif',1)->where('CodeCustomer',$code)->first();
         }
-
         if($err =="" && $voucher){
             if($voucher->StartDate <= $today && $voucher->EndDate >= $today){
 
@@ -2344,6 +2353,7 @@ class DetailingController extends Controller
                 //Date range error
                 $err = "Voucher date not valid";
             }
+
 
             if($voucher_valid){
                 if(!is_null($voucher->typeitem) && is_array(@json_decode($voucher->typeitem))){
@@ -2386,17 +2396,28 @@ class DetailingController extends Controller
                 }
 
                 if($user){
-                    if($montant > 0 && $montant > $order->TotalDue){
+                    if($montant > 0 && $order->TotalDue > $montant){
+
                         if($insert){
-                            $inserted = DB::table('vouchers_histories')->insertGetId([
-                                'vouchers_id'=>$voucher->id,
-                                'CustomerID'=>$order->CustomerID,
-                                'order_id'=>$order_id,
-                                'code'=>$code,
-                                'amount'=>number_format($montant,2),
-                                'user_id'=>$user->id,
-                                'created_at'=>date('Y-m-d H:i:s')
-                            ]);
+                            $has_voucher = DB::table('vouchers_histories')
+                                ->where('vouchers_id',$voucher->id)
+                                ->where('CustomerID',$order->CustomerID)
+                                ->where('order_id',$order->id)
+                                ->where('code',$code)
+                                ->first();
+
+                            if(!$has_voucher){
+                                $inserted = DB::table('vouchers_histories')->insertGetId([
+                                    'vouchers_id'=>$voucher->id,
+                                    'CustomerID'=>$order->CustomerID,
+                                    'order_id'=>$order_id,
+                                    'code'=>$code,
+                                    'amount'=>number_format($montant,2),
+                                    'user_id'=>($user?$user->id:0),
+                                    'created_at'=>date('Y-m-d H:i:s')
+                                ]);
+                            }
+
                         }
                     }else{
                         $err = "Voucher not applicable for this order";
