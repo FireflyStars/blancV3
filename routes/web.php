@@ -37,6 +37,8 @@ use App\Models\Delivery;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\NotificationController;
+use Stripe\Exception\InvalidRequestException as ExceptionInvalidRequestException;
+use Stripe\Exception\OAuth\InvalidRequestException;
 
 /*
 |--------------------------------------------------------------------------
@@ -666,6 +668,8 @@ Route::get('/merge-pdf',function(){
     shell_exec("gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=$output_file -dBATCH $files");
 });
 
+/* END TEST ROUTES */
+
 Route::get('/3d-secure',function(Request $request){
     $token = $request->get('token');
 
@@ -699,11 +703,47 @@ Route::get('/3d-secure',function(Request $request){
     }else{
         die('Customer not found');
     }
+});
+
+Route::get('/batch-si',function(Request $request){
+    $token = $request->get('token');
+
+    $app_token = setting('admin.url_token');//EjD4L7tgrHxmCY3exnCE31b3
+
+    if(!isset($token)){
+        //die('token not set');
+    }
+
+    $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+    DB::table('cards')->where('cardNumber','424**********242')->update(['test'=>1,'checked'=>1]);
+
+    $cards = DB::table('cards')->where('Actif',1)
+        ->where('checked',0)
+        ->where('setup_intent_id','')
+        ->get();
+
+    $i = 0;
+
+    while($i<count($cards)){
+        $cust_id =  $cards[$i]->stripe_customer_id;
+
+        try{
+            $cust = $stripe->customers->retrieve($cust_id);
+            $si = $stripe->setupIntents->create([
+                'customer'=>$cust_id,
+                'payment_method_types' => ['card'],
+            ]);
+            DB::table('cards')->where('id',$cards[$i]->id)->update(['checked'=>1]);
+        }catch(ExceptionInvalidRequestException $e){
+            DB::table('cards')->where('id',$cards[$i]->id)->update(['test'=>1]);
+        }
+
+        $i++;
+    }
 
 });
 
-
-/* END TEST ROUTES */
 // added by yonghuan to search customers to be linked
 Route::post('/search-customer', [SearchController::class, 'SearchCustomersToLink'])->name('SearchCustomersToLink');
 
