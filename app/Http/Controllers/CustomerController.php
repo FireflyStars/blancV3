@@ -1752,6 +1752,12 @@ class CustomerController extends Controller
                                     ]
             ]);
 
+            $si = $stripe->setupIntents->create([
+                'customer' => $stripe_customer->id,
+                'payment_method_types' => ['card'],
+            ]);
+
+
             //add a new record to cards table
                 $credit_card = [
                     'CustomerID'        => $request->customerID,
@@ -1762,6 +1768,7 @@ class CustomerController extends Controller
                     'dateexpiration'    => str_replace(' ','',$request->cardExpDate),
                     'stripe_customer_id'=> $stripe_customer->id,
                     'stripe_card_id'    => $card->id,
+                    'setup_intnet_id'   => $si->id,
                     'created_at'        => now(),
                     'updated_at'        => now(),
                 ];
