@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 class Tranche extends Model
 {
 
-    public static function getAvailableSlotAndDates($day,$tranche,$returnBySlotKey=false,$weeks=6){
+    public static function getAvailableSlotAndDates($day,$tranche,$returnBySlotKey=false,$weeks=3){
 
         $NbrDeliverySlotMax=DB::table('settings')->select('value')->where('key','=','site.NbrDeliverySlotMax')->value('value');
         $NbrSlot=count($tranche);
