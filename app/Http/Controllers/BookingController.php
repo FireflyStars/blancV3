@@ -46,7 +46,7 @@ class BookingController extends Controller {
                 $details = json_decode($v->tranche);
                 //$tranche_details[$k]->detail_tranche = $details;
                 $formatted_tranche[$v->day] = $details;
-                $slot_dates=Tranche::getAvailableSlotAndDates($v->day,$details,true,6);
+                $slot_dates=Tranche::getAvailableSlotAndDates($v->day,$details,true,3);
                 foreach ($slot_dates as $slot_key=>$dates){
                         foreach ($dates as $date)
                     $available_slots[$slot_key][]=$date;

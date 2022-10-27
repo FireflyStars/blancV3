@@ -138,7 +138,7 @@ class Tranche extends Model
 
         return false;
     }
-    public static function getAvailableSlotAndDates($day,$tranche,$returnBySlotKey=false,$weeks=6){
+    public static function getAvailableSlotAndDates($day,$tranche,$returnBySlotKey=false,$weeks=3){
 
         $NbrDeliverySlotMax=setting('site.NbrDeliverySlotMax');
         $NbrSlot=count($tranche);
