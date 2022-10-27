@@ -449,7 +449,7 @@
                                             <div class="customer-contact w-55 d-flex justify-content-between">
                                                 <div class="form-group m-0">
                                                     <label class="form-label d-block m-0" for="first_name">Invoice recipient*</label>
-                                                    <input type="text" v-model="form.invoicename" class="form-control custom-input" placeholder="Name">
+                                                    <input type="text" v-model="form.invoiceName" class="form-control custom-input" placeholder="Name">
                                                 </div>
                                                 <div class="form-group m-0">
                                                     <label class="form-label d-block m-0" for="first_name">&nbsp;</label>
@@ -860,7 +860,7 @@ import axios from 'axios';
                 invoiceAddressEmail1:'',
                 invoiceAddressEmail2:'',
                 invoiceFirstname:'',
-                invoicename:'',
+                invoiceName:'',
                 companyPostCode: '',
                 companyCity: '',
                 companyCounty: '',
@@ -1125,40 +1125,7 @@ import axios from 'axios';
                     }
                     step.value = nav;
                 }else if( step.value == 'payment' ){
-                    if(form.value.paymentMethod == 'BACS'){
-                        form.value.companyRepLastName = form.value.lastName;
-                        if(form.value.companyLegalName == ''){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Company Legal Name', ttl:5, type:'danger' });
-                            return;
-                        }
-                        if(form.value.invoiceEmail1 == ''){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Email Address 1', ttl:5, type:'danger' });
-                        }
-                        if(form.value.invoiceEmail1 != ''){
-                            if( !emailValidation(form.value.invoiceEmail1) ){
-                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 1', ttl:5, type:'danger' });
-                                return;
-                            }
-                        }
-                        if(form.value.invoiceEmail2 != ''){
-                            if( !emailValidation(form.value.invoiceEmail2) ){
-                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 2', ttl:5, type:'danger' });
-                                return;
-                            }
-                        }
-                        if(form.value.companyAddress1 == ''){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter address for company', ttl:5, type:'danger' });
-                            return;
-                        }
-                        if(form.value.companyPostCode == ''){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter post code for company', ttl:5, type:'danger' });
-                            return;
-                        }
-                        if(form.value.companyCity == ''){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter city for company', ttl:5, type:'danger' });
-                            return;
-                        }
-                    }
+                    let error = false;
                     if(form.value.paymentMethod == 'Credit Card'){
                         if(form.value.cardHolderName == ''){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Cardholder name', ttl:5, type:'danger' });
@@ -1177,7 +1144,56 @@ import axios from 'axios';
                             return;
                         }
                     }
-                    step.value = nav;
+                    if(form.value.CustomerPayemenProfile == 1 && form.value.accountType != "Sub" ){
+                       //invoce details
+                       if(form.value.invoiceAddressEmail1 != '' || form.value.invoiceAddressEmail2 != '' || form.value.invoiceFirstname != '' || form.value.invoiceName != '' ||  form.value.companyPhoneNumber != '' || form.value.companyLegalName){
+
+                            if(form.value.invoiceAddressEmail1 != ''){
+                                if( !emailValidation(form.value.invoiceAddressEmail1) ){
+                                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 1', ttl:5, type:'danger' });
+                                        error = true;
+                                        return;
+                                }
+                            }else{
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Email Address 1', ttl:5, type:'danger' });
+                                error = true;
+                            }  
+                            
+                            if(form.value.invoiceName == ''){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Invoice Recipient', ttl:5, type:'danger' });
+                                error = true;
+                            }
+                   
+                            if(form.value.invoiceAddressEmail2 != ''){
+                                if( !emailValidation(form.value.invoiceAddressEmail2) ){
+                                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 2', ttl:5, type:'danger' });
+                                        error = true;
+                                        return;
+                                }
+                            } 
+                        }
+
+                        //Billing address
+                        if(form.value.billingAddress1 != '' || form.value.billingAddress2 != '' || form.value.billingCity != '' || form.value.billingPostcode != '' ){
+                        if(form.value.billingAddress1 == ''){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Address 1', ttl:5, type:'danger' });
+                                error = true;
+                                return;
+                            }
+                            if(form.value.billingCity == ''){
+                                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter city ', ttl:5, type:'danger' });
+                                    error = true;
+                                    return;
+                            }
+                            if(form.value.billingPostcode == ''){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Postcode ', ttl:5, type:'danger' });
+                                error = true;
+                                return;
+                            } 
+                        }
+                    }
+                    if(!error)
+                     step.value = nav;
                 }else if( step.value == 'preferences' ){
                     let error = false;
                     if(form.value.pickupSlots.length){
@@ -1249,34 +1265,7 @@ import axios from 'axios';
                     }
                     step.value = 'payment';
                 }else if( step.value == 'payment' ){
-                    if(form.value.paymentMethod == 'BACS'){
-                        form.value.companyRepLastName = form.value.lastName;
-                        if(form.value.companyLegalName == ''){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Company Legal Name', ttl:5, type:'danger' });
-                            return;
-                        }
-                        if(form.value.invoiceEmail1 == ''){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Email Address 1', ttl:5, type:'danger' });
-                        }                        
-                        if(form.value.invoiceEmail1 != ''){
-                            if( !emailValidation(form.value.invoiceEmail1) ){
-                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 1', ttl:5, type:'danger' });
-                                return;
-                            }
-                        }
-                        if(form.value.companyAddress1 == ''){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter address for company', ttl:5, type:'danger' });
-                            return;
-                        }
-                        if(form.value.companyPostCode == ''){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter post code for company', ttl:5, type:'danger' });
-                            return;
-                        }
-                        if(form.value.companyCity == ''){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter city for company', ttl:5, type:'danger' });
-                            return;
-                        }
-                    }
+                    let error = false;
                     if(form.value.paymentMethod == 'Credit Card'){
                         if(form.value.cardHolderName == ''){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Cardholder name', ttl:5, type:'danger' });
@@ -1296,40 +1285,56 @@ import axios from 'axios';
                         }
                     }
                     if(form.value.CustomerPayemenProfile == 1 && form.value.accountType != "Sub" ){
+                       //invoce details
+                       if(form.value.invoiceAddressEmail1 != '' || form.value.invoiceAddressEmail2 != '' || form.value.invoiceFirstname != '' || form.value.invoiceName != '' ||  form.value.companyPhoneNumber != '' || form.value.companyLegalName){
 
-                    //invoce details
-                    if(form.value.invoiceAddressEmail1 != ''){
-                        if( !emailValidation(form.value.invoiceAddressEmail1) ){
-                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 1', ttl:5, type:'danger' });
+                            if(form.value.invoiceAddressEmail1 != ''){
+                                if( !emailValidation(form.value.invoiceAddressEmail1) ){
+                                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 1', ttl:5, type:'danger' });
+                                        error = true;
+                                        return;
+                                }
+                            }else{
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Email Address 1', ttl:5, type:'danger' });
+                                error = true;
+                            }  
+                            
+                            if(form.value.invoiceName == ''){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Invoice Recipient', ttl:5, type:'danger' });
+                                error = true;
+                            }
+                   
+                            if(form.value.invoiceAddressEmail2 != ''){
+                                if( !emailValidation(form.value.invoiceAddressEmail2) ){
+                                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 2', ttl:5, type:'danger' });
+                                        error = true;
+                                        return;
+                                }
+                            } 
+                        }
+
+                        //Billing address
+                        if(form.value.billingAddress1 != '' || form.value.billingAddress2 != '' || form.value.billingCity != '' || form.value.billingPostcode != '' ){
+                        if(form.value.billingAddress1 == ''){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Address 1', ttl:5, type:'danger' });
+                                error = true;
                                 return;
+                            }
+                            if(form.value.billingCity == ''){
+                                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter city ', ttl:5, type:'danger' });
+                                    error = true;
+                                    return;
+                            }
+                            if(form.value.billingPostcode == ''){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Postcode ', ttl:5, type:'danger' });
+                                error = true;
+                                return;
+                            } 
                         }
                     }
-                    if(form.value.invoiceAddressEmail2 != ''){
-                        if( !emailValidation(form.value.invoiceAddressEmail2) ){
-                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 2', ttl:5, type:'danger' });
-                                return;
-                        }
-                    }
-                    if(form.value.invoiceAddressEmail1 == ''){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Email Address 1', ttl:5, type:'danger' });
-                    }  
 
-                    //Billing address
-                    if(form.value.billingAddress1 == ''){
-                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Address 1', ttl:5, type:'danger' });
-                        return;
-                    }
-                    if(form.value.billingCity == ''){
-                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter city ', ttl:5, type:'danger' });
-                        return;
-                    }
-                    if(form.value.billingPostcode == ''){
-                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter Postcode ', ttl:5, type:'danger' });
-                    return;
-                    } 
-
-                    }
-                    step.value = 'preferences';
+                    if(!error)
+                     step.value = 'preferences';
                 }else if( step.value == 'preferences' ){
                     let error = false;                   
                     if(form.value.pickupSlots.length){
