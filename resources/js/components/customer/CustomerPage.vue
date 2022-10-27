@@ -9,6 +9,7 @@
                     <div class="nav-panel d-flex justify-content-between mb-1">
                         <ul class="tab-nav list-inline mb-0">
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" v-if="current_user && current_user.role_id==1" :class="selected_nav == 'AR' ? 'active' : ''" @click="setNav('AR')">A/R</li>
+                            <li class="tab-nav-item font-16 list-inline-item px-3 py-2" v-if="current_user && current_user.role_id==1" :class="selected_nav == 'ARInvoiced' ? 'active' : ''" @click="setNav('ARInvoiced')">A/R invoiced</li>
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'CustomerList' ? 'active' : ''" @click="setNav('CustomerList')">All Customers</li>
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'B2B' ? 'active' : ''" @click="setNav('B2B')">B2B</li>
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'B2C' ? 'active' : ''" @click="setNav('B2C')">B2C</li>
@@ -33,6 +34,7 @@ import MainHeader from "../layout/MainHeader";
 import CustomerFilter from '../test/CustomerFilter';
 import CustomerList from './CustomerList';
 import ArList from './ArList';
+import ArInvoiced from './ArInvoiced.vue';
 
 import { CUSTOMER_MODULE, SET_CUSTOMER_SELECTED_TAB, SET_CUSTOMER_LIST } from '../../store/types/types';
 export default {
@@ -43,6 +45,7 @@ export default {
         MainHeader,
         CustomerList,
         ArList,
+        ArInvoiced,
     },
     setup(){
         const store = useStore();
@@ -58,6 +61,8 @@ export default {
                 component.value = 'CustomerList';
             }else if(nav=='AR'){
                 component.value = 'ArList';
+            }else if(nav=='ARInvoiced'){
+                component.value = 'ArInvoiced';
             }else{
                 component.value = nav;
             }

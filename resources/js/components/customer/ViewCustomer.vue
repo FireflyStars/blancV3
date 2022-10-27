@@ -485,22 +485,32 @@
                                 <!-- <div class="invoice-details-panel" v-if="form.accountType !='Main' && form.CustomerPayemenProfile == 1 "> -->
                                     <h3 class="title d-flex">
                                         Invoice details
+                                         <span class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="invoice_details_edit = !invoice_details_edit">Edit</span>
                                         <CheckBox  v-model="form.receiptToVatInvoice" class="ms-5"><slot>Attach e-Receipts to VAT Invoice</slot></CheckBox>
                                     </h3>
                                     <div class="page-section bacs">
                                         <div class="form-group mb-0 company-legal-name">
                                             <label for="company_legal_name">Company legal name</label>
-                                            <input type="text" v-model="form.companyName" class="form-control">
+                                            <input v-if="invoice_details_edit" type="text" v-model="form.invoiceCompanyName" class="form-control">
+                                            <div v-else class="customer-type py-2 bg-color px-3 rounded-3">
+                                                        {{ form.invoiceCompanyName }} &nbsp;
+                                            </div>
                                         </div>
                                         <div class="d-flex mt-3">
                                             <div class="customer-contact w-55 d-flex justify-content-between">
                                                 <div class="form-group m-0">
                                                     <label class="form-label d-block m-0" for="first_name">Invoice recipient*</label>
-                                                    <input type="text" v-model="form.invoiceName " class="form-control custom-input" placeholder="First name">
+                                                    <input v-if="invoice_details_edit" type="text" v-model="form.invoiceName " class="form-control custom-input" placeholder="First name">
+                                                    <div v-else class="customer-type py-2 bg-color px-3 rounded-3">
+                                                        {{ form.invoiceName }} &nbsp;
+                                                    </div>
                                                 </div>
                                                 <div class="form-group m-0">
                                                     <label class="form-label d-block m-0" for="first_name">&nbsp;</label>
-                                                    <input type="text" v-model="form.invoiceFirstName " class="form-control custom-input" placeholder="Last name">
+                                                    <input v-if="invoice_details_edit" type="text" v-model="form.invoiceFirstName " class="form-control custom-input" placeholder="Last name">
+                                                    <div v-else class="customer-type py-2 bg-color px-3 rounded-3">
+                                                        {{ form.invoiceFirstName }} &nbsp;
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="customer-phone w-45">
@@ -508,8 +518,8 @@
                                                     <label>Phone Number</label>
                                                 </div>
                                                 <div class="d-flex">
-                                                    <div class="phone-country-code">
-                                                        <select-options
+                                                    <div class="phone-country-code" v-if="invoice_details_edit">
+                                                        <select-options 
                                                             v-model="form.companyPhoneCountryCode"
                                                             :modelValue="form.companyPhoneCountryCode"
                                                             :options="phoneCodesSorted"
@@ -517,8 +527,15 @@
                                                             :name="'phoneCountryCode'">
                                                         </select-options>
                                                     </div>
+                                                    <div v-else style="width: 80px;" class="phone-country-code py-2 rounded-3 bg-color text-center">
+                                                    {{ form.companyPhoneCountryCode }}&nbsp;
+                                                    </div>
+                             
                                                     <div class="form-group ms-2">
-                                                        <input type="text" v-model="form.companyPhoneNumber" class="form-control custom-input">
+                                                        <input v-if="invoice_details_edit" type="text" v-model="form.companyPhoneNumber" class="form-control custom-input">
+                                                        <div v-else class="customer-type py-2 bg-color px-3 rounded-3">
+                                                        {{ form.companyPhoneNumber }} &nbsp;
+                                                       </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -527,16 +544,25 @@
                                         <div class="d-flex mt-3">
                                             <div class="customer-contact w-55 justify-content-between">
                                                     <label class="form-label d-block m-0" for="first_name">Invoice Email address 1*</label>
-                                                    <input type="text" v-model="form.invoiceAddressEmail1 " class="form-control custom-input" placeholder="Invoice Email address 1">
+                                                    <input v-if="invoice_details_edit" type="text" v-model="form.invoiceAddressEmail1 " class="form-control custom-input" placeholder="Invoice Email address 1">
+                                                    <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
+                                                        {{ form.invoiceAddressEmail1 }} &nbsp;
+                                                    </div>
                                             </div>
                                         </div>
                                         <div class="d-flex mt-3">
                                             <div class="customer-contact w-55 justify-content-between">
                                                     <label class="form-label d-block m-0" for="first_name">Invoice Email address 2</label>
-                                                    <input type="text" v-model="form.invoiceAddressEmail2" class="form-control custom-input" placeholder="Invoice Email address 2">
+                                                    <input v-if="invoice_details_edit" type="text" v-model="form.invoiceAddressEmail2" class="form-control custom-input" placeholder="Invoice Email address 2">
+                                                    <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
+                                                        {{ form.invoiceAddressEmail2 }} &nbsp;
+                                                    </div>
                                             </div>
 
                                         </div>
+                                        <div class="d-flex justify-content-end mt-3" v-if="invoice_details_edit">
+                                                <button style="height:46px" class="btn btn btn-success each-save-btn" @click="validateAndSaveInvoiceDetails">Save</button>
+                                            </div>
                                         <!-- /////// -->
                                     </div>
                                 </div>
@@ -1107,7 +1133,7 @@
                 billingPostcode:'',
                 billingCity:'',
                 //invoice details
-                companyNme:'',
+                invoiceCompanyName:'',
                 invoiceAddressEmail1:'',
                 invoiceAddressEmail2:'',
                 invoiceFirstName:'',
@@ -1136,6 +1162,7 @@
             const postcode = ref();
             const cardBrand = ref('cc-unknown');
             const contact_details_edit = ref(false);
+            const invoice_details_edit = ref(false);
             const pauseRecurringModal = ref(null);
             const add_payement = ref(false);
             const address_edit = ref(false);
@@ -1259,11 +1286,19 @@
                             form.value.billingPostcode = res.data.customer.billing.postcode;
                     };
                     if( res.data.customer.invoice){
-                            form.value.companyNme =  res.data.customer.invoice.company;
+                            form.value.invoiceCompanyName =  res.data.customer.invoice.company;
                             form.value.invoiceName = res.data.customer.invoice.name;
                             form.value.invoiceFirstName = res.data.customer.invoice.firstname;
                             form.value.invoiceAddressEmail1 =  res.data.customer.invoice.email;
-                            form.value.invoiceAddressEmail2 = res.data.customer.invoice.email;
+                            form.value.invoiceAddressEmail2 = res.data.customer.invoice.email2;
+                            var phone = getPhone(res.data.customer.invoice.Phone);
+                  
+                            if(phone.code.includes('+')){
+                                form.value.companyPhoneCountryCode = phone.code;
+                            }else {
+                                form.value.companyPhoneCountryCode = "+"+phone.code;
+                            }
+                            form.value.companyPhoneNumber = phone.number;
                     };
 
                     form.value.discountCredit = res.data.customer.credit;
@@ -1956,6 +1991,50 @@
 
                 }
             }
+            function validateAndSaveInvoiceDetails(){
+                let err = [];
+
+                if(form.value.invoiceName ==''){
+                    err.push("Please enter Invoice recipient");
+                }
+                if(form.value.invoiceAddressEmail1 ==''){
+                    err.push("Please enter Email address 1");
+                }
+                if(err.length > 0){
+                    err.forEach(function(v,i){
+                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                            message: v,
+                            ttl: 5,
+                            type: 'danger'
+                        });
+                    });
+                }else{
+                    axios.post('/update-invoice-details',{
+                        customer_id:route.params.customer_id,
+                        company:form.value.invoiceCompanyName,
+                        email:form.value.invoiceAddressEmail1,
+                        email2:form.value.invoiceAddressEmail2,
+                        firstname:form.value.invoiceFirstName,
+                        name:form.value.invoiceName,
+                        companyPhoneCountryCode:form.value.companyPhoneCountryCode,
+                        companyPhoneNumber:form.value.companyPhoneNumber
+                    }).then((res)=>{
+                        if(res.data){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                message: 'Customer invoice details updated',
+                                ttl: 5,
+                                type: 'success'
+                            });
+                            invoice_details_edit.value = false;
+                        }
+                    }).catch((err)=>{
+                        console.log(err);
+                    }).finally(()=>{
+
+                    });
+
+                }
+            }
 
             function saveCustomerNote(){
                 axios.post('/update-customer-note',{
@@ -2284,6 +2363,7 @@
                 form,
                 step,
                 contact_details_edit,
+                invoice_details_edit,
                 address_edit,
                 showcontainer,
                 searchCustomer,
@@ -2338,7 +2418,8 @@
                 selectrow,
                 timeslot_def,
                 getSlotDisplay,
-                getCurDateTime
+                getCurDateTime,
+                validateAndSaveInvoiceDetails
             }
 
         },
