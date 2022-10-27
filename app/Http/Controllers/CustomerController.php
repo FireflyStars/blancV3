@@ -1752,6 +1752,12 @@ class CustomerController extends Controller
                                     ]
             ]);
 
+            $si = $stripe->setupIntents->create([
+                'customer' => $stripe_customer->id,
+                'payment_method_types' => ['card'],
+            ]);
+
+
             //add a new record to cards table
                 $credit_card = [
                     'CustomerID'        => $request->customerID,
@@ -1762,6 +1768,7 @@ class CustomerController extends Controller
                     'dateexpiration'    => str_replace(' ','',$request->cardExpDate),
                     'stripe_customer_id'=> $stripe_customer->id,
                     'stripe_card_id'    => $card->id,
+                    'setup_intnet_id'   => $si->id,
                     'created_at'        => now(),
                     'updated_at'        => now(),
                 ];
@@ -2374,7 +2381,7 @@ class CustomerController extends Controller
         ]);
     }
 
-    public static function logInfoOrderPrint($customer_ids){
+    public static function logInfoOrderPrint($customer_ids,$emailed=false){
         $all_customer_ids = [];
         $cust_master_ids = [];
         $map_master_id = [];
@@ -2484,7 +2491,6 @@ class CustomerController extends Controller
 
         $to_insert = [];
 
-
         foreach($simplified_grouped_by_customer as $k=>$v){
             $total = 0;
             $info = [];
@@ -2501,6 +2507,7 @@ class CustomerController extends Controller
                 'infoOrder_id'=>json_encode($orders),
                 'montant'=>$total,
                 'info'=>json_encode($info),
+                'emailed'=>($emailed?1:0),
                 'created_at'=>date('Y-m-d H:i:s'),
             ];
 
@@ -2516,7 +2523,9 @@ class CustomerController extends Controller
 
         }
 
-        DB::table('infoOrder')->where('id',$all_orders)->update(['orderinvoiced'=>1]);
+        if($emailed){
+            DB::table('infoOrder')->where('id',$all_orders)->update(['orderinvoiced'=>1]);
+        }
 
         return $row_ids;
 
@@ -2717,7 +2726,7 @@ class CustomerController extends Controller
 
         $customer_ids = @json_decode($request->customer_ids);
         $type = $request->type;
-        $row_ids = CustomerController::logInfoOrderPrint($customer_ids);
+        $row_ids = CustomerController::logInfoOrderPrint($customer_ids,($type=='mail'?true:false));
 
 
         $all_details = DB::table('infoOrderPrint')->whereIn('id',$row_ids)->get();

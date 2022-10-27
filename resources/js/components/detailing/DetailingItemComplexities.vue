@@ -21,7 +21,7 @@
                     <button class="btn btn-link btn-previous" @click="back">Previous</button>
                 </div>
                 <div class="col-2 text-align-right">
-                    <button class="btn btn-next text-white" :disabled="!valid" @click="save">Next</button>
+                    <button class="btn btn-next text-white" @click="save">Next</button>
                 </div>
             </div>
         </div>

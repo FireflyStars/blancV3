@@ -37,6 +37,8 @@ use App\Models\Delivery;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\NotificationController;
+use Stripe\Exception\InvalidRequestException as ExceptionInvalidRequestException;
+use Stripe\Exception\OAuth\InvalidRequestException;
 
 /*
 |--------------------------------------------------------------------------
@@ -632,61 +634,26 @@ Route::get('notify-test', function () {
 /* A REFAIRE */
 
 Route::get('/test-pi',function(){
+
     $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
 
-    //pi_3LmbjTB2SbORtEDs0a096Bpx
-    //pi_3LmxCmB2SbORtEDs12rd08p0
-    $intent = $stripe->paymentIntents->retrieve('pi_3Lmae9B2SbORtEDs1otNXt3W',[]);
+    $reader = $stripe->terminal->readers->retrieve('tmr_Eqz4ewJhXq5eu6',[]);
 
+    $customer = $stripe->customers->retrieve('cus_MeaLJ5cY4usxnq',[]);
 
+    $si = $stripe->setupIntents->create([
+        'customer'=>$customer->id,
+        'payment_method_types' => ['card_present'],
+    ]);
 
-    $cardid = $intent->charges->data[0]->payment_method;
-        $payment_method=$stripe->paymentMethods->retrieve($cardid,[]);
-        $custid=$payment_method->customer;
+    $res = $stripe->terminal->readers->processSetupIntent('tmr_Eqz4ewJhXq5eu6',
+        ['setup_intent' => $si->id, 'customer_consent_collected' => true]
+    );
 
-        //$cardid = $intent->charges->data[0]->payment_method;
-        $card = $intent->charges->data[0]->payment_method_details['card_present'];
-        //$payment_method=$stripe->paymentMethods->retrieve($cardid,[]);
-
-
-        //$custid=$payment_method->customer;
-
-        $stripe_cust = false;
-        if($custid !=''){
-        $stripe_cust  = $stripe->customers->retrieve(
-            $custid,
-            []
-          );
-        }
-
-        echo "<pre>";
-        print_r($intent);
-
-    /*
-        $exp_month=$card->exp_month;
-        if(strlen($exp_month)==1){
-            $exp_month='0'.$exp_month;
-        }
-        $exp_year=$card->exp_year;
-        $exp_year=date('yy',strtotime($exp_year.'-01-01'));
-
-        echo "<pre>";
-        print_r($payment_method);
-    /*
-                $credit_card = [
-                    'CustomerID'        => 'xx',//$order->CustomerID,
-                    'cardHolderName'    => ($stripe_cust?$stripe_cust->name:""),
-                    'type'              => $payment_method->card->brand,
-                    'cardNumber'        => str_repeat('*',12).$payment_method->card->last4,
-                    'dateexpiration'    => $exp_month.'/'.$exp_year,
-                    'stripe_customer_id'=> $custid,
-                    'stripe_card_id'    => $payment_method->id,
-                    'created_at'        => now(),
-                    'updated_at'        => now(),
-                ];
-            */
-
+    echo "<pre>";
+    print_r($res);
 });
+
 
 Route::get('/merge-pdf',function(){
     $path = storage_path('app/pdf/').'*.*';
@@ -700,6 +667,8 @@ Route::get('/merge-pdf',function(){
 
     shell_exec("gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=$output_file -dBATCH $files");
 });
+
+/* END TEST ROUTES */
 
 Route::get('/3d-secure',function(Request $request){
     $token = $request->get('token');
@@ -734,11 +703,47 @@ Route::get('/3d-secure',function(Request $request){
     }else{
         die('Customer not found');
     }
+});
+
+Route::get('/batch-si',function(Request $request){
+    $token = $request->get('token');
+
+    $app_token = setting('admin.url_token');//EjD4L7tgrHxmCY3exnCE31b3
+
+    if(!isset($token)){
+        //die('token not set');
+    }
+
+    $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+    DB::table('cards')->where('cardNumber','424**********242')->update(['test'=>1,'checked'=>1]);
+
+    $cards = DB::table('cards')->where('Actif',1)
+        ->where('checked',0)
+        ->where('setup_intent_id','')
+        ->get();
+
+    $i = 0;
+
+    while($i<count($cards)){
+        $cust_id =  $cards[$i]->stripe_customer_id;
+
+        try{
+            $cust = $stripe->customers->retrieve($cust_id);
+            $si = $stripe->setupIntents->create([
+                'customer'=>$cust_id,
+                'payment_method_types' => ['card'],
+            ]);
+            DB::table('cards')->where('id',$cards[$i]->id)->update(['checked'=>1]);
+        }catch(ExceptionInvalidRequestException $e){
+            DB::table('cards')->where('id',$cards[$i]->id)->update(['test'=>1]);
+        }
+
+        $i++;
+    }
 
 });
 
-
-/* END TEST ROUTES */
 // added by yonghuan to search customers to be linked
 Route::post('/search-customer', [SearchController::class, 'SearchCustomersToLink'])->name('SearchCustomersToLink');
 
@@ -901,7 +906,6 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
             $amount_two_dp = number_format($json_obj->amount,2);
 
-
             if($savecardinfo){
                 $stripe_customer = $stripe->customers->create([
                     'name'              => $cust->Name,//$cardholder_name,
@@ -911,7 +915,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
                     'metadata'          => [
                                                 'CustomerID' => $cust->CustomerID
                                         ],
-/*
+    /*
                     'address'           => [
                                             'city'          => ($addr?$addr->Town:''),
                                             'state'         => ($addr?$addr->County:''),
@@ -924,10 +928,13 @@ Route::group(['prefix'=>'stripe-test'],function(){
                 ]);
 
 
+
+
                 $si = $stripe->setupIntents->create([
                     'customer' => $stripe_customer->id,
                     'payment_method_types' => ['card_present'],
                 ]);
+
 
 
                 $readers_id = [];
@@ -948,6 +955,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
                   );
                 }
 
+
                 DB::table('cards')->insert([
                     'CustomerID'        => $order->CustomerID,
                     'cardHolderName'    => $cust->Name,
@@ -962,11 +970,10 @@ Route::group(['prefix'=>'stripe-test'],function(){
                     'Actif'             =>0,
                 ]);
 
-
             }
 
 
-            $intent = $stripe->paymentIntents->create([
+            $pi = [
                 'amount' => 100*$amount_two_dp,
                 'currency' => 'gbp',
                 'payment_method_types' => [
@@ -974,47 +981,17 @@ Route::group(['prefix'=>'stripe-test'],function(){
                                         ],
                 'capture_method' => 'manual',
                 'description'=>$order_id,
-                //'setup_future_usage'=>'off_season',
                 "receipt_email"=>$cust->EmailAddress,
-            ]);
+                //'customer'=>$stripe_customer->id,
+            ];
+
+
+            $intent = $stripe->paymentIntents->create($pi);
 
 
 
 
-        /*
-            if($savecardinfo){
 
-        $cardid = $intent->charges->data[0]->payment_method;
-        $payment_method=$stripe->paymentMethods->retrieve($cardid,[]);
-        $custid=$payment_method->customer;
-
-
-        $stripe_cust  = $stripe->customers->retrieve(
-            $custid,
-            []
-          );
-                    $exp_month=$payment_method->card->exp_month;
-                    if(strlen($exp_month)==1){
-                        $exp_month='0'.$exp_month;
-                    }
-                    $exp_year=$payment_method->card->exp_year;
-                    $exp_year=date('yy',strtotime($exp_year.'-01-01'));
-
-                $credit_card = [
-                    'CustomerID'        => $order->CustomerID,
-                    'cardHolderName'    => $stripe_cust->name,
-                    'type'              => $payment_method->card->brand,
-                    'cardNumber'        => str_repeat('*',12).$payment_method->card->last4,
-                    'dateexpiration'    => $exp_month.'/'.$exp_year,
-                    'stripe_customer_id'=> $custid,
-                    'stripe_card_id'    => $payment_method->id,
-                    'created_at'        => now(),
-                    'updated_at'        => now(),
-                ];
-
-                $card_id = DB::table('cards')->insertGetId($credit_card);
-            }
-        */
             echo json_encode($intent);
         } catch (Throwable $e) {
             http_response_code(500);
@@ -1091,13 +1068,26 @@ Route::group(['prefix'=>'stripe-test'],function(){
         $stripe->refunds->create(['payment_intent' => $payment_intent_id]);
     });
 
-    Route::post('/save_payment_intent',function(){
+    Route::post('/save_terminal_detail',function(){
+        $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
         $json_str = file_get_contents('php://input');
         $request = json_decode($json_str);
 
-        $payment_intent = $request->payment_intent;
+        //$reader = $stripe->terminal->readers->retrieve('tmr_Eqz4ewJhXq5eu6',[]);
 
-        $customer = DB::table("infoCustomer")->where('id',3428)->first();
+        $customer = $stripe->customers->retrieve('cus_MeaLJ5cY4usxnq',[]);
+
+        $si = $stripe->setupIntents->create([
+            'customer'=>$customer->id,
+            'payment_method_types' => ['card_present'],
+        ]);
+
+    /*
+    $res = $stripe->terminal->readers->processSetupIntent('tmr_Eqz4ewJhXq5eu6',
+        ['setup_intent' => $si->id, 'customer_consent_collected' => true]
+    );
+    */
 
 
     });
@@ -1163,8 +1153,10 @@ Route::get('/unpaid-orders',function(Request $request){
 
 
     $unpaid_orders = DB::table('unpaid_orders')
-        ->where('paid',0)
-        ->where('created_at','>=',date('Y-m-d H:i:s',strtotime('-15day')))
+        ->join('infoOrder','unpaid_orders.order_id','infoOrder.id')
+        ->where('unpaid_orders.paid',0)
+        ->where('infoOrder.Paid',0)
+        ->where('created_at','>=',date('Y-m-d H:i:s',strtotime('-5day')))
         ->get();
 
     $orders_to_update = [];
@@ -1172,6 +1164,8 @@ Route::get('/unpaid-orders',function(Request $request){
 
     if(count($unpaid_orders) > 0){
         foreach($unpaid_orders as $k=>$v){
+
+
             $payment_intent = $stripe->paymentIntents->retrieve(
                 $v->payment_intent_id,
                 []

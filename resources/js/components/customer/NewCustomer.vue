@@ -157,7 +157,7 @@
                                                     { display:'Pay As You Go', value: 0 },
                                                     { display:'On Account', value: 1 },
                                                 ]"
-                                                :label="'Customer payement profile'"
+                                                :label="'Customer payment profile'"
                                                 :name="'CustomerPayemenProfile'">
                                             </select-options>
                                         </div>                                          
