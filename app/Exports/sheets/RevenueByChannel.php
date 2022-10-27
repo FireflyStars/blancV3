@@ -137,8 +137,8 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
                         DB::raw('count(*) as amount')
                     )->value('amount');        
         $data[] = ['Total Store Revenue', $salesTotal, $salesItemTotal];
-        $data[] = ['Business Deliveries Revenue', '', ''];
-        $data[] = ['Home Deliveries Revenue', '', ''];
+        $data[] = ['Business Deliveries Revenue', $b2bSales, $b2bItemTotal];
+        $data[] = ['Home Deliveries Revenue', $b2cSales, $b2cItemTotal];
         $data[] = ['Atelier Revenue', '', ''];
         $data[] = ['Other sales (Shopify etc.)', '', ''];
         $data[] = ['Other Revenue', '', ''];
