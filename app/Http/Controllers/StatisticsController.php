@@ -1287,7 +1287,8 @@ class StatisticsController extends Controller
                         ->where('infoOrder.deliverymethod', '!=', '')
                         ->where('infoOrder.Total', '!=', 0)
                         ->select(
-                            'infoOrder.id', 'infoOrder.deliverymethod', 'infoOrder.datesold', 'infoOrder.datevoid', 'infoOrder.OrderRevenueLocation',
+                            'infoOrder.id',  DB::raw("0 as CashPayment"), DB::raw("0 as CardPayment"), DB::raw("0 as BACSPayment"), DB::raw("0 as CashCreditPayment"), 
+                            'infoOrder.deliverymethod', 'infoOrder.datesold', 'infoOrder.datevoid', 'infoOrder.OrderRevenueLocation',
                             'infoOrder.suggestedDeliveryDate', 'infoOrder.Paid', 'infoOrder.express', 'infoOrder.SumItemUpcharges', 'infoOrder.SumItemDiscounts',
                             'infoOrder.Subtotal', 'infoOrder.SubtotalWithDiscount', 'infoOrder.AccountDiscount', 'infoOrder.AccountDiscountPerc', 'infoOrder.VoucherDiscount',
                             'infoOrder.DeliveryNowFee', 'infoOrder.AutoDeliveryFee', 'infoOrder.bundles', 'infoOrder.ExpressCharge', 'infoOrder.FailedDeliveryCharge',
