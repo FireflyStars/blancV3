@@ -12,6 +12,7 @@ use App\Poste;
 use App\Models\Item;
 use App\Exports\ReportExport;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpParser\Node\Stmt\Foreach_;
 
 class StatisticsController extends Controller
 {
@@ -625,8 +626,35 @@ class StatisticsController extends Controller
                                     ->select(
                                         DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount'), 'TypeDelivery as channel'
                                     )
+                                    ->where('infoOrder.TypeDelivery', '!=', 'DELIVERY')
                                     ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                                     ->groupBy('TypeDelivery')->orderBy('amount', 'DESC')->get();
+            $b2bDelivery = InfoOrder::join('infoCustomer', function($join){
+                                    $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
+                                })    
+                                ->whereBetween('detailed_at', $period)            
+                                ->where('infoOrder.deliverymethod', '!=','')
+                                ->where('infoOrder.TypeDelivery', 'DELIVERY')
+                                ->where('infoCustomer.btob', 1)
+                                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                                ->select(
+                                    DB::raw('IFNULL(ROUND(SUM(infoOrder.total)), 0) as amount')
+                                )
+                                ->value('amount');
+            $salesByChannel->push(collect(['channel'=> 'B2B Deliveries', 'amount'=>$b2bDelivery]));
+            $b2cDelivery = InfoOrder::join('infoCustomer', function($join){
+                                    $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
+                                })    
+                                ->whereBetween('infoOrder.detailed_at', $period)            
+                                ->where('infoOrder.deliverymethod', '!=','')
+                                ->where('infoOrder.TypeDelivery', 'DELIVERY')
+                                ->where('infoCustomer.btob', 0)
+                                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                                ->select(
+                                    DB::raw('IFNULL(ROUND(SUM(infoOrder.total)), 0) as amount')
+                                )
+                                ->value('amount');
+            $salesByChannel->push(collect(['channel'=> 'B2C Deliveries', 'amount'=>$b2cDelivery]));
             $salesByChannelTotal = $salesByChannel->sum('amount');
             $salesByChannelTotalToCompare =  InfoOrder::whereBetween('detailed_at', $past_period)
                                                 ->where('deliverymethod', '!=','')
