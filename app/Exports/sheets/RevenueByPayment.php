@@ -96,7 +96,7 @@ class RevenueByPayment implements FromCollection, WithTitle, WithColumnWidths, W
         $data[] = ['Failed Delivery Fees', ''];
         $data[] = ['Total Sales', $salesByPaymentTotal];
         $data[] = ['growth % vs prev year', ($salesTotalToCompareYearMode != 0 ? ($salesByPaymentTotal/$salesTotalToCompareYearMode - 1)*100 : '--')];
-        $data[] = ['growth % vs prev month', ($salesItemTotalToCompareMonthMode != 0 ? ($salesByPaymentTotal/$salesTotalToCompareMonthMode - 1)*100 : '--')];
+        $data[] = ['growth % vs prev month', ($salesTotalToCompareMonthMode != 0 ? ($salesByPaymentTotal/$salesTotalToCompareMonthMode - 1)*100 : '--')];
         return collect([ $data ]);
     }
 
