@@ -19,6 +19,7 @@
                     <td valign="middle" align="center">
                         <check-box :id="customer.id" @checkbox-clicked="checkboxclicked"></check-box>
                     </td>
+                    <td>{{customer.NumFact}}</td>
                     <!-- Customer Type -->
                     <!--  -->
                     <td valign="middle"><span class="rounded-pill" :class="customer.type.toLowerCase()">{{ customer.type }}</span></td>
@@ -28,18 +29,16 @@
                     <td class="fw-16 text-capitalize" valign="middle"><span>{{ customer.active_in }}</span></td>
                     <!-- Customer Name -->
                     <td class="text-capitalize fw-16" valign="middle">{{ customer.name }}</td>
-                    <!-- address -->
-                    <td class="fw-14" valign="middle">{{ customer.address1 }}<span v-if="customer.address2 && customer.address2 !=''">,&nbsp; {{customer.address2}}</span></td>
-                    <!-- Postcode -->
-                    <th class="fw-14">{{customer.postcode}}</th>
+
                     <!-- Email -->
                     <td class="fw-16" valign="middle">{{ customer.email }}</td>
                     <!-- Phone -->
-                    <td class="text-nowrap fw-16" valign="middle">{{ formatPhone(customer.phone) }}</td>
-                    <!-- last order -->
-                    <td class="fw-16" valign="middle">{{ customer.last_order_date ? customer.last_order_date : "--" }}</td>
+                    <td class="text-nowrap fw-16" valign="middle">{{customer.orders}}</td>
                     <!--  total spent-->
                     <td class="fw-16 fw-bold" valign="middle">{{ customer.order_total ? ('-£'+customer.order_total.toFixed(2)) : "--" }}</td>
+                    <td valign="middle" align="center">
+                        <a :href="customer.url_invoice" target="_blank"><img src="/images/pdficon.svg" style="width:20px;"/></a>
+                    </td>
                 </tr>
             </transition-group>
             <tr v-if="customerList.length == 0">
@@ -52,40 +51,8 @@
                 </tr>
             </tfoot>
         </table>
-
     </transition>
-
-
-    <button class="ar-btn" v-if="Object.values(customerList).length > 0" @click="loadInvoiceModal">Batch invoice</button>
-
-    <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
-        <div v-if="showlayer" class="back-layer"></div>
-    </transition>
-
-    <modal ref="invoice_modal">
-    <template #closebtn>
-            <span class="close" id="addon_modal_close" @click="closeBatchInvoiceModal"></span>
-        </template>
-        <template #bheader>
-            <div class="bmodal-header py-4 text-center">Batch invoice</div>
-        </template>
-        <template #bcontent>
-
-        </template>
-        <template #mbuttons>
-            <div class="row mx-0 justify-content-center mt-3 mb-5">
-                <div class="col-5">
-                    <button class="btn btn-outline-dark w-100" @click="generateInvoice('mail')">Mail</button>
-                </div>
-                <div class="col-1"></div>
-                <div class="col-5">
-                    <button class="btn btn-outline-dark w-100" @click="generateInvoice('pdf')">Pdf</button>
-                </div>
-            </div>
-        </template>
-    </modal>
-
-
+    <button class="ar-btn" v-if="Object.values(customerList).length > 0" @click="batchPdf">Batch Pdf</button>
 </template>
 <script>
 import { ref, onMounted, computed } from "vue";
@@ -115,7 +82,7 @@ import CheckBox from '../miscellaneous/CheckBox';
 import Modal from '../miscellaneous/Modal.vue';
 
 export default {
-    name: 'ArList',
+    name: 'ArInvoiced',
     components:{
         CheckBox,
         Modal
@@ -144,6 +111,12 @@ export default {
                     key: 'checkbox',
                 },
                 {
+                   label: 'Ref',
+                    key: 'NumFact',
+                    thClass: 'customer-table-th',
+                    tdClass: 'text-nowrap fw-16',
+                },
+                {
                     label: 'Type',
                     key: 'type',
                     thClass: 'customer-table-th text-center',
@@ -165,6 +138,7 @@ export default {
                     thClass: 'customer-table-th',
                     tdClass: 'text-capitalize fw-16',
                 },
+                /*
                 {
                     label: 'Address',
                     key: 'address1',
@@ -177,47 +151,32 @@ export default {
                     thClass: 'customer-table-th',
                     tdClass: 'fw-16',
                 },
-
+*/
                 {
                     label: 'Email',
                     key: 'email',
                     thClass: 'customer-table-th',
                     tdClass: 'fw-16',
                 },
+
                 {
-                    label: 'Phone',
-                    key: 'phone',
-                    thClass: 'customer-table-th',
-                    tdClass: 'text-nowrap fw-16',
-                },
-                {
-                    label: 'Last Order',
-                    key: 'last_order_date',
+                    label: 'Orders',
+                    key: 'orders',
                     thClass: 'customer-table-th text-nowrap',
                     tdClass: 'fw-16',
                 },
                 {
-                    label: 'Uninvoiced',
+                    label: 'Invoice Total',
                     key: 'order_total',
                     thClass: 'customer-table-th text-nowrap',
                     tdClass: 'fw-16',
                 },
+                {
+                    label: 'PDF',
+                    key: 'pdf_link',
+                },
             ];
-        /*
-        const customerList = computed(()=>{
-            return store.getters[`${CUSTOMER_MODULE}${GET_CUSTOMER_LIST}`];
-        });
 
-        const totalCustomerCount = computed(()=>{
-            return store.getters[`${CUSTOMER_MODULE}${GET_TOTAL_CUSTOMER_COUNT}`];
-        })
-
-
-        const currentLoadedCustomerCount = computed(()=>{
-            return store.getters[`${CUSTOMER_MODULE}${GET_LOADED_CUSTOMER_COUNT}`];
-        });
-
-        */
 
         const CURRENT_SELECTED=computed(()=>{
             return store.getters[`${CUSTOMER_MODULE}${GET_CURRENT_SELECTED_CUSTOMER}`];
@@ -230,17 +189,6 @@ export default {
         }
         onMounted(()=>{
             loadCustomer();
-
-
-            /*
-            if(route.params != null){
-              store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_FILTER}`, _.cloneDeep(filterDef.value))
-              store.dispatch(`${CUSTOMER_MODULE}${FILTER_CUSTOMER_LIST}`)
-            } else {
-             store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_LIST}`);
-            }
-            */
-
         })
 
         function loadCustomer(){
@@ -249,7 +197,7 @@ export default {
                 "Loading Customer data....",
             ]);
 
-            axios.post('/get-ar-customers',{})
+            axios.post('/get-ar-invoiced-customers',{})
                 .then((res)=>{
                     customerList.value = res.data.list;
                     totalCustomerCount.value = Object.values(res.data.list).length;
@@ -273,6 +221,7 @@ export default {
             }
             return phoneString;
         }
+
         const checkboxclicked = ( check, id)=>{
             let row = document.getElementById('row_'+id);
 
@@ -281,17 +230,8 @@ export default {
             }else{
                 row.classList.remove('current_sel');
             }
-
-            /*
-            if(CURRENT_SELECTED.value == id && check == false){
-                store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`,'');
-                store.commit(`${CUSTOMER_MODULE}${SET_CUSTOMER_DETAIL}`, {
-                    name: ''
-                });
-                router.back();
-            }
-            */
         }
+
         const selectrow = (customerID)=>{
             let el = document.getElementById('row_'+customerID);
             el.classList.toggle('current_sel');
@@ -305,20 +245,11 @@ export default {
             }else{
                 checkbox.classList.remove('checked');
             }
-
         }
 
-        function loadInvoiceModal(){
-            invoice_modal.value.showModal();
-        }
-
-        function closeBatchInvoiceModal(){
-            invoice_modal.value.closeModal();
-        }
-
-        function generateInvoice(type){
+        function batchPdf(){
             let els = Object.values(document.querySelectorAll('.current_sel'));
-            let customer_ids = [];
+            let row_ids = [];
 
             if(els.length==0){
                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
@@ -329,31 +260,20 @@ export default {
             }else{
                 els.forEach((v,i)=>{
                     let id = v.getAttribute('id').replace('row_','');
-                    customer_ids.push(id);
+                    row_ids.push(id);
                 });
-
-                closeBatchInvoiceModal();
-                let load_text = "";
-
-                if(type=='pdf'){
-                   load_text = "Generating PDF....";
-                }
-                if(type=='mail'){
-                    load_text = 'Sending mail....';
-                }
 
                  store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
                         true,
-                        load_text,
+                        "Generating PDF....",
                     ]);
 
                 axios.post('/generate-ar-invoice',{
-                    customer_ids:JSON.stringify(customer_ids),
-                    type:type,
-                    has_rows:0,
-                    row_ids:JSON.stringify([]),
+                    customer_ids:JSON.stringify([]),
+                    type:'pdf',
+                    has_rows:1,
+                    row_ids:JSON.stringify(row_ids),
                 }).then((res)=>{
-                    if(type=='pdf'){
                         if(res.data.url){
                             window.location = res.data.url;
                         }else{
@@ -365,43 +285,11 @@ export default {
                                 });
                             }
                         }
-                    }
-                    if(type=='mail'){
-                        if(res.data.sent){
-                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
-                                    message:"Mail sent",
-                                    ttl:5,
-                                    type:'success'
-                                });
-                        }
-                    }
                 }).catch((err)=>{
-
+                    console.log(err);
                 }).finally(()=>{
-                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 });
-
-            }
-        }
-
-
-        function batchInvoice(){
-            let els = Object.values(document.querySelectorAll('.current_sel'));
-            let customer_ids = [];
-
-            if(els.length==0){
-                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
-                    message:"No customer selected",
-                    ttl:5,
-                    type:'danger'
-                });
-            }else{
-                els.forEach((v,i)=>{
-                    let id = v.getAttribute('id').replace('row_','');
-                    customer_ids.push(id);
-                });
-
-
             }
 
         }
@@ -422,11 +310,7 @@ export default {
                 return (route.params.customer_id > 0 && CURRENT_SELECTED.value != '');
                 // return false;
             }),
-            batchInvoice,
-            invoice_modal,
-            loadInvoiceModal,
-            closeBatchInvoiceModal,
-            generateInvoice,
+            batchPdf,
         }
     }
 }

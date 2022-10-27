@@ -2224,8 +2224,9 @@ class CustomerController extends Controller
             ->join('detailingitem','infoOrder.id','detailingitem.order_id')
             ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
             ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
+            ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
             ->where('infoOrder.orderinvoiced',0)
-            ->whereNotIn('infoInvoice.Status',['DELETE','VOID'])
+            ->whereNotIn('infoInvoice.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
             ->whereIn('infoOrder.CustomerID',$bacs_cust_id)
             ->get();
 
@@ -2308,7 +2309,7 @@ class CustomerController extends Controller
                         $list[$v->CustomerID]['level'] = "Main";
                     } else if ($v->CustomerIDMaster!=''){
                         $list[$v->CustomerID]['level'] = "Sub";
-                    } else if ($v->isMasterAccount== 1){
+                    } else if ($v->IsMasterAccount== 1){
                         $list[$v->CustomerID]['level'] = "Master";
                     }
                 }
@@ -2415,17 +2416,18 @@ class CustomerController extends Controller
             $all_customer_ids = array_merge($all_customer_ids,$cust_master_ids);
         }
 
+
         $orders = DB::table('infoOrder')
-                ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*')
+                ->select('infoCustomer.Name','infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*')
                 ->join('detailingitem','infoOrder.id','detailingitem.order_id')
                 ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
-                ->whereNotIn('infoInvoice.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
+                ->join('infoCustomer','infoOrder.CustomerID','infoCustomer.CustomerID')
                 ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
+                ->whereNotIn('infoInvoice.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
                 ->where('infoOrder.orderinvoiced',0)
                 ->whereIn('infoOrder.CustomerID',$all_customer_ids)
                 ->get();
-
 
         $invoices_per_order = [];
         $grouped_by_customer = [];
@@ -2510,7 +2512,6 @@ class CustomerController extends Controller
                 'emailed'=>($emailed?1:0),
                 'created_at'=>date('Y-m-d H:i:s'),
             ];
-
 
             $row_id = DB::table('infoOrderPrint')->insertGetId($to_insert);
             $row_ids[] = $row_id;
@@ -2726,7 +2727,13 @@ class CustomerController extends Controller
 
         $customer_ids = @json_decode($request->customer_ids);
         $type = $request->type;
-        $row_ids = CustomerController::logInfoOrderPrint($customer_ids,($type=='mail'?true:false));
+        $has_rows = $request->has_rows;
+
+        $row_ids = @json_decode($request->row_ids);
+
+        if($has_rows==0){
+            $row_ids = CustomerController::logInfoOrderPrint($customer_ids,($type=='mail'?true:false));
+        }
 
 
         $all_details = DB::table('infoOrderPrint')->whereIn('id',$row_ids)->get();
@@ -3019,6 +3026,72 @@ class CustomerController extends Controller
         return response()->json([
             'post'=>$request->all(),
             'updated'=>$updated,
+        ]);
+    }
+
+    public function getArInvoicedCustomers(Request $request){
+        $customers = DB::table('infoOrderPrint')
+            ->select('*','infoOrderPrint.id as row_id')
+            ->join('infoCustomer','infoOrderPrint.CustomerID','infoCustomer.CustomerID')
+            ->where('infoOrderPrint.emailed',1)->get();
+
+        $list = [];
+
+        $customer_ids = [];
+        $addr = [];
+
+        if(count($customers) > 0){
+            foreach($customers as $k=>$v){
+                if(!in_array($v->CustomerID,$customer_ids)){
+                    array_push($customer_ids,$v->CustomerID);
+                }
+            }
+
+            $addresses = DB::table('address')->where('status','BILLING')->whereIn('CustomerID',$customer_ids)->get();
+
+            foreach($addresses as $k=>$v){
+                $addr[$v->CustomerID] = $v;
+            }
+
+            foreach($customers as $k=>$v){
+
+
+                $level = "";
+                if(($v->CustomerIDMaster==''|| $v->IsMaster==1) && $v->IsMasterAccount== 0){
+                    $level = "Main";
+                } else if ($v->CustomerIDMaster!=''){
+                    $level = "Sub";
+                } else if ($v->IsMasterAccount== 1){
+                    $level = "Master";
+                }
+
+                $orders = @json_decode($v->infoOrder_id);
+
+                $list[] = [
+                    'id'=>$v->row_id,
+                    'NumFact'=>$v->NumFact,
+                    'type'=>($v->btob==0?"B2C":"B2B"),
+                    'active_in'=>$v->TypeDelivery,
+                    'name'=>$v->Name,
+                    'email'=>$v->EmailAddress,
+                    'phone'=>$v->Phone,
+                    'level'=>$level,
+                    'orders'=>implode(",",$orders),
+                    'order_total'=>$v->montant,
+                    'url_invoice'=>\Illuminate\Support\Facades\URL::to("/inv-pdf")."?id=".$v->FactureID,
+                ];
+
+            }
+        }
+
+        return response()->json([
+            'list'=>$list,
+        ]);
+    }
+
+    public function generateInvoicedPdf(Request $request){
+        return response()->json([
+            'post'=>$request->all(),
         ]);
     }
 }

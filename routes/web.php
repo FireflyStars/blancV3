@@ -840,6 +840,7 @@ Route::post('/add-order-voucher',[DetailingController::class,'addCheckoutVoucher
 * AR List
 */
 Route::post('/get-ar-customers',[CustomerController::class,'getArCustomers'])->name('get-ar-customers')->middleware('auth');
+Route::post('/get-ar-invoiced-customers',[CustomerController::class,'getArInvoicedCustomers'])->name('get-ar-invoiced-customers')->middleware('auth');
 Route::post('/mail-invoice-customer',[CustomerController::class,'mailInvoiceCustomer'])->name('mail-invoice-customer')->middleware('auth');
 Route::post('/generate-ar-invoice',[CustomerController::class,'generateArInvoice'])->name('generate-ar-invoice')->middleware('auth');
 Route::get('/download-ar-pdf',[CustomerController::class,'downloadArPdf'])->name('download-ar-pdf');
