@@ -27,16 +27,16 @@
                   <div class="container">
                     <div class="row">
                        <div class="col-3">
-                          <span class="body_medium"><a href="javascript:void(0)" @click="goCustomerView(customer.id)" >{{customer.Name}}</a></span>
+                          <span class="body_medium"><a class = "text_wrap" href="javascript:void(0)" @click="goCustomerView(customer.id)" >{{customer.Name}}</a></span>
                           <div class="col-2">
                             <tag   v-if="customer.cust_type=='B2C'" :name="'B2C'" ></tag>
                             <tag   v-else :name="'B2B'" ></tag>
                           </div>
                        </div>
-                      <div class="col-5">
+                      <div class="col-3">
                             <div  v-if="customer.Phone!=''&&customer.Phone!=null" >
                               <div v-for="phone in customer.Phone.slice(0,1)" :key="phone">
-                               <b class ="body_regular">+{{phone.replace('|',' ')}}</b>
+                               <b class ="body_regular">+{{phone.replace('|',' ').replace(']' , '')}}</b>
                               </div>
                             </div>
                             <div v-else>
@@ -46,6 +46,9 @@
 
                              <b class ="body_regular">{{customer.EmailAddress}}</b>
                        </div>
+                       <div class="col-2" >
+                           <b class ="body_regular text_wrap">{{customer.CompanyName}}</b>
+                        </div>
                        <div class="col-2" style="text-align: end;" >
                             <!-- <tag   :name="'Orders'" ></tag> -->
                             <button v-if="customer.Pickup.length > 0"  class="btn btn-white body_medium text-nowrap btn-new-orders"> New order</button>
@@ -682,5 +685,15 @@ input[type="search"]::-webkit-search-cancel-button {
       size: 16px;
       color: #FFFFFF;
     }
+    .text_wrap{
+      overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    line-height: 21px;
+    max-height: 79px;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    }
+  
 
 </style>
