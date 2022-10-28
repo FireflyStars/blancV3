@@ -379,6 +379,7 @@ export default {
 
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    loadCustomer();
                 });
 
             }
