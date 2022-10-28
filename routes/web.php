@@ -676,7 +676,7 @@ Route::get('/3d-secure',function(Request $request){
     $app_token = setting('admin.url_token');//EjD4L7tgrHxmCY3exnCE31b3
 
     if(!isset($token)){
-        die('token not set');
+       // die('token not set');
     }
 
     $custid = $request->customer_id;
@@ -686,12 +686,14 @@ Route::get('/3d-secure',function(Request $request){
     if($cust){
         $card = DB::table('cards')->where('CustomerID',$cust->CustomerID)->where('Actif',1)->latest('id')->first();
 
+
         if($card){
             $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
 
             $si = $stripe->setupIntents->create([
                 'customer' => $card->stripe_customer_id,
                 'payment_method_types' => ['card'],
+                'usage'=>'off_session',
             ]);
 
             if($si->id){
@@ -733,6 +735,7 @@ Route::get('/batch-si',function(Request $request){
             $si = $stripe->setupIntents->create([
                 'customer'=>$cust_id,
                 'payment_method_types' => ['card'],
+                'usage'=>'off_session',
             ]);
             DB::table('cards')->where('id',$cards[$i]->id)->update(['checked'=>1]);
         }catch(ExceptionInvalidRequestException $e){

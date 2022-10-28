@@ -310,6 +310,7 @@ class CustomerController extends Controller
                 $si = $stripe->setupIntents->create([
                     'customer' => $stripe_customer->id,
                     'payment_method_types' => ['card'],
+                    'usage'=>'off_session',
                 ]);
 
 
@@ -1771,6 +1772,7 @@ class CustomerController extends Controller
             $si = $stripe->setupIntents->create([
                 'customer' => $stripe_customer->id,
                 'payment_method_types' => ['card'],
+                'usage'=>'off_session',
             ]);
 
 
