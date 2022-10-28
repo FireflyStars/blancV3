@@ -42,6 +42,7 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
                                     DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount'), 'TypeDelivery as channel'
                                 )
                                 ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                                ->where('infoOrder.TypeDelivery', '!=', 'DELIVERY')
                                 ->groupBy('TypeDelivery')->orderBy('amount', 'DESC')->get();
         $salesTotal = $salesData->sum('amount');
         $this->cnt = $salesData->count();
@@ -62,6 +63,7 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
         $salesItemTotal = DB::table('detailingitem')
                         ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
                         ->whereBetween('infoOrder.detailed_at', $this->period)
+                        ->where('infoOrder.TypeDelivery', '!=', 'DELIVERY')
                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->select(
                             DB::raw('count(*) as amount')
@@ -86,15 +88,63 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
             ->where('infoOrder.TypeDelivery', $item->channel)->count() ];
         }
+        $b2bSales = InfoOrder::join('infoCustomer', function($join){
+                        $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
+                    })    
+                    ->whereBetween('detailed_at', $this->period)            
+                    ->where('infoOrder.deliverymethod', '!=','')
+                    ->where('infoOrder.TypeDelivery', 'DELIVERY')
+                    ->where('infoCustomer.btob', 1)
+                    ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                    ->select(
+                        DB::raw('IFNULL(ROUND(SUM(infoOrder.total)), 0) as amount')
+                    )
+                    ->value('amount');
+        $b2cSales = InfoOrder::join('infoCustomer', function($join){
+                        $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
+                    })    
+                    ->whereBetween('detailed_at', $this->period)            
+                    ->where('infoOrder.deliverymethod', '!=','')
+                    ->where('infoOrder.TypeDelivery', 'DELIVERY')
+                    ->where('infoCustomer.btob', 0)
+                    ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                    ->select(
+                        DB::raw('IFNULL(ROUND(SUM(infoOrder.total)), 0) as amount')
+                    )
+                    ->value('amount');
+        $b2bItemTotal = DB::table('detailingitem')
+                    ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
+                    ->join('infoCustomer', function($join){
+                        $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
+                    }) 
+                    ->whereBetween('infoOrder.detailed_at', $this->period)
+                    ->where('infoOrder.TypeDelivery', 'DELIVERY')
+                    ->where('infoCustomer.btob', 1)
+                    ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                    ->select(
+                        DB::raw('count(*) as amount')
+                    )->value('amount');        
+        $b2cItemTotal = DB::table('detailingitem')
+                    ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
+                    ->join('infoCustomer', function($join){
+                        $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
+                    }) 
+                    ->whereBetween('infoOrder.detailed_at', $this->period)
+                    ->where('infoOrder.TypeDelivery', 'DELIVERY')
+                    ->where('infoCustomer.btob', 0)
+                    ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                    ->select(
+                        DB::raw('count(*) as amount')
+                    )->value('amount');        
         $data[] = ['Total Store Revenue', $salesTotal, $salesItemTotal];
-        $data[] = ['Business Deliveries Revenue', '', ''];
-        $data[] = ['Home Deliveries Revenue', '', ''];
+        $data[] = ['Business Deliveries Revenue', $b2bSales, $b2bItemTotal];
+        $data[] = ['Home Deliveries Revenue', $b2cSales, $b2cItemTotal];
         $data[] = ['Atelier Revenue', '', ''];
         $data[] = ['Other sales (Shopify etc.)', '', ''];
         $data[] = ['Other Revenue', '', ''];
-        $data[] = ['Total Sales', $salesTotal, $salesItemTotal];
-        $data[] = ['growth % vs prev year', ($salesTotalToCompareYearMode != 0 ? ($salesTotal/$salesTotalToCompareYearMode - 1)*100 : '--'), ($salesItemTotalToCompareYearMode != 0 ? ($salesItemTotal/$salesItemTotalToCompareYearMode -1)*100 : '--')];
-        $data[] = ['growth % vs prev month', ($salesItemTotalToCompareMonthMode != 0 ? ($salesTotal/$salesTotalToCompareMonthMode - 1)*100 : '--'), ($salesItemTotalToCompareMonthMode != 0 ? ($salesItemTotal/$salesItemTotalToCompareMonthMode -1)*100 : '--')];
+        $data[] = ['Total Sales', $salesTotal + $b2bSales + $b2cSales, $salesItemTotal + $b2bItemTotal + $b2cItemTotal];
+        $data[] = ['growth % vs prev year', ($salesTotalToCompareYearMode != 0 ? (($salesTotal + $b2bSales + $b2cSales)/$salesTotalToCompareYearMode - 1)*100 : '--'), ($salesItemTotalToCompareYearMode != 0 ? (($salesItemTotal + $b2bItemTotal + $b2cItemTotal)/$salesItemTotalToCompareYearMode -1)*100 : '--')];
+        $data[] = ['growth % vs prev month', ($salesItemTotalToCompareMonthMode != 0 ? (($salesTotal + $b2bSales + $b2cSales)/$salesTotalToCompareMonthMode - 1)*100 : '--'), ($salesItemTotalToCompareMonthMode != 0 ? (($salesItemTotal + $b2bItemTotal + $b2cItemTotal)/$salesItemTotalToCompareMonthMode -1)*100 : '--')];
 
         return collect([ $data ]);
     }
