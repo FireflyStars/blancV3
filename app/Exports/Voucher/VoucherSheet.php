@@ -9,7 +9,6 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 use Illuminate\Support\Facades\DB;
 
@@ -59,15 +58,18 @@ class VoucherSheet implements FromCollection, WithTitle, WithHeadings, WithStyle
     }
     public function styles(Worksheet $sheet)
     {
+        $headerStyle = [
+            'font'  =>[
+                'bold'  => true,
+            ],
+            'alignment' => [
+                'vertical' => Alignment::VERTICAL_BOTTOM,
+            ],
+        ];
+        $sheet->getStyle('A1:H1')->applyFromArray($headerStyle);
         $yellowFieldStyle = [
             'font'  =>[
-                'bold'  => false,
                 'color' => ['argb' => Color::COLOR_BLACK],
-                'size' => 10
-            ],
-            'fill'  =>[
-                'fillType' => Fill::FILL_SOLID,
-                'color' => ['rgb' => 'ffff99'],
             ],
             'alignment' => [
                 'vertical' => Alignment::VERTICAL_BOTTOM,
