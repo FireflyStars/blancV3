@@ -1127,12 +1127,6 @@ class DetailingController extends Controller
         if($order->Status=="FULFILLED")
         return;
 
-
-        if($order->PickupID !=''){
-            $this->getVoucherAmount($order_id);
-        }
-
-
         $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
         $_SUBTOTAL=0;
         $_SUBTOTAL_WITH_DISCOUNT=0;
@@ -1194,9 +1188,10 @@ class DetailingController extends Controller
         if(count($order_vouchers) > 0){
             foreach($order_vouchers as $k=>$v){
                 $voucher_codes[$v->id] = $v->code;
-                //$_VOUCHER_DISCOUNT+= $v->amount;
+                $_VOUCHER_DISCOUNT+= $v->amount;
             }
 
+            /*
             //Recalculate vouchers
 
             foreach($voucher_codes as $k=>$v){
@@ -1205,7 +1200,7 @@ class DetailingController extends Controller
                 $_VOUCHER_DISCOUNT += $new_voucher_amount;
                 DB::table('vouchers_histories')->where('id',$k)->update(['amount'=>$new_voucher_amount]);
             }
-
+            */
 
         }
 
@@ -1284,10 +1279,19 @@ class DetailingController extends Controller
 
     public function getCheckoutItems(Request $request){
         $order_id = $request->order_id;
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+
+
+
+        if($order->PickupID !=''){
+            $this->getVoucherAmount($order_id);
+        }
+
+
+
         $this->calculateCheckout($order_id);
         $this->recalculateDryCleaningPrice($order_id);
 
-        $order = DB::table('infoOrder')->where('id',$order_id)->first();
         $days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
         $tranches = Tranche::getDeliveryPlanningTranchesForApi();
 
@@ -2321,14 +2325,18 @@ class DetailingController extends Controller
             }
         }
 
-
-        if($order->TotalDue==0){
+        if($order->Total==0){
             $err = "Order amount is 0";
         }
 
         if($code !=''){
             $voucher = DB::table('vouchers')->where('Actif',1)->where('CodeCustomer',$code)->first();
+
+            if(!$voucher){
+                $err = "Invalid voucher code";
+            }
         }
+
         if($err =="" && $voucher){
             if($voucher->StartDate <= $today && $voucher->EndDate >= $today){
 
@@ -2395,8 +2403,8 @@ class DetailingController extends Controller
                     }
                 }
 
-                if($user){
-                    if($montant > 0 && $order->TotalDue > $montant){
+            //if($user){
+                    if($montant > 0 && $order->Total > $montant){
 
                         if($insert){
                             $has_voucher = DB::table('vouchers_histories')
@@ -2422,14 +2430,12 @@ class DetailingController extends Controller
                     }else{
                         $err = "Voucher not applicable for this order";
                     }
-                }else{
+             /*   }else{
                     $err = "No user logged";
-                }
+                }*/
 
             }
 
-        }else{
-            $err = "Invalid voucher code";
         }
 
         $arr = [
@@ -2438,6 +2444,7 @@ class DetailingController extends Controller
             'voucher_valid'=>$voucher_valid,
             'code'=>$code,
             'inserted'=>$inserted,
+            'voucher'=>$voucher,
         ];
 
         return $arr;
