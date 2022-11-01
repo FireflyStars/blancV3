@@ -697,6 +697,7 @@ Route::get('/3d-secure',function(Request $request){
             ]);
 
             if($si->id){
+                DB::table('cards')->where('id',$card->id)->update(['setup_intent_id'=>$si->id]);
                 echo "Setup intent created";
             }
         }else{
