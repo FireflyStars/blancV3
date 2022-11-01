@@ -280,26 +280,27 @@
                                             <span class="summary-title" v-else>Pending payments</span>
                                         </div>
                                         <div class="row mt-4 px-0 py-1 sub-total-text">
-                                            <div class="col-4">Paid by customer</div>
-                                            <div class="col-8" v-if="amount_paid_card.length > 0">
-                                                <div class="row" v-for="a in amount_paid_card">
-                                                    <div class="col-9 px-0 payment-desc-text">Paid: {{a.date}}</div>
+                                        
+                                            <div class="col-12" v-if="amount_paid_card.length > 0">
+                                                <div class="row" v-for="a,i in amount_paid_card" :key="i">
+                                                    <div class="col-9 px-0 payment-desc-text">Paid by Card ({{ a.type[0].toUpperCase() + a.type.slice(1)}} {{a.cardNumber.slice(-7)}}):</div>
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
                                                 </div>
                                             </div>
-                                            <div class="col-8 text-align-right" v-else>&#163;0.00</div>
+                                            <div class="col-12 text-align-right" v-else>&#163;0.00</div>
                                         </div>
 
-                                        <div class="row px-0 py-1 sub-total-text" v-if="amount_paid_credit.length > 0">
-                                            <div class="col-4">Minus cash credit</div>
-                                            <div class="col-8">
-                                                <div class="row" v-for="a in amount_paid_credit">
-                                                    <div class="col-9 px-0 payment-desc-text">Used: {{a.date}}</div>
+                                        <div class="row px-0 py-1 sub-total-text" v-if="amountPaidCredit(amount_paid_credit) > 0">
+                                            <div class="col-12">
+                                                <template v-for="a,i in amount_paid_credit" :key="i">
+                                                <div class="row" v-if="a.montant>0">
+                                                    <div class="col-9 px-0 payment-desc-text">Paid by cash credit:</div>
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
                                                 </div>
+                                                </template>
                                             </div>
                                         </div>
-                                        <div class="row px-0 py-1 sub-total-text" v-if="amount_without_credit > 0">
+                                        <div class="row px-0 py-1 sub-total-text" v-if="amount_without_credit > 0&&cust.credit_to_deduct!=0">
                                             <div class="col-4">Minus cash credit</div>
                                             <div class="col-8">
                                                 <div class="row">
@@ -1361,7 +1362,19 @@ export default {
             }
         }
         };
+
+        const amountPaidCredit=(amount_paid_credit)=>{
+            let x=_.cloneDeep(amount_paid_credit);
+            let total=0;
+
+            if(typeof x=="object")
+            total= x.reduce((accumulator,a)=>{
+                return accumulator+a.montant;
+            },0);
+           return total;
+        }
         return {
+            amountPaidCredit,
             order_id,
             paths,
             order_items,

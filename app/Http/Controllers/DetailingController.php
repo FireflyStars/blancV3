@@ -1886,7 +1886,9 @@ class DetailingController extends Controller
         $total_with_discount = $total_inc_vat;
         $price_plus_delivery = $total_inc_vat + $failed_delivery_price;
 
-        $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
+        $payments = DB::table('payments')->leftJoin('cards',function($join){
+            $join->on('cards.id','=','payments.card_id');
+        })->where('order_id',$order->id)->whereNotNull('cards.type')->where('status','succeeded')->get();
 
         $balance = $total_with_discount;
 
@@ -1906,6 +1908,9 @@ class DetailingController extends Controller
                     $amount_paid_card[] = [
                         'montant'=> number_format($v->montant,2),
                         'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
+                        'cardNumber'=>$v->cardNumber,
+                        'type'=>$v->type,
+                        'card_id'=>$v->card_id
                     ];
                 }
             }
