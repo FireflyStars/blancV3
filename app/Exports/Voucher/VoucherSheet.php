@@ -33,14 +33,16 @@ class VoucherSheet implements FromCollection, WithTitle, WithHeadings, WithStyle
                 ->where('pickup.GarmentInstruction', 'Not Like', '%"Voucher":""%')
                 ->where('pickup.GarmentInstruction', 'Like', '%"Voucher":"%')
                 ->select(
-                    'pickup.id', 'pickup.GarmentInstruction', DB::raw("0 as Voucher"), 'pickup.created_at', 'infoCustomer.Name', 
+                    'pickup.id', 'pickup.GarmentInstruction', DB::raw("0 as Voucher"), 'pickup.created_at', 'infoCustomer.Name',
                     'infoCustomer.EmailAddress', 'infoCustomer.LastName', 'infoCustomer.FirstName'
                 )->get();
         $this->dataCnt = $data->count();
         foreach ($data as $item) {
-            $item->Voucher = json_decode($item->GarmentInstruction)->Voucher;
+            if( gettype(json_decode($item->GarmentInstruction)) == 'object'){
+                $item->Voucher = json_decode($item->GarmentInstruction)->Voucher;
+            }
         }
-        return collect([ $data ]);
+        return $data;
     }
 
     /**
@@ -70,7 +72,7 @@ class VoucherSheet implements FromCollection, WithTitle, WithHeadings, WithStyle
             'alignment' => [
                 'vertical' => Alignment::VERTICAL_BOTTOM,
             ],
-        ];        
-        $sheet->getStyle('C0C'.$this->dataCnt)->applyFromArray($yellowFieldStyle);
-    }    
+        ];
+        $sheet->getStyle('C1:C'.$this->dataCnt)->applyFromArray($yellowFieldStyle);
+    }
 }

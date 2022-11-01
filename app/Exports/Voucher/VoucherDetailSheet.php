@@ -32,7 +32,7 @@ class VoucherDetailSheet implements FromCollection, WithTitle, WithHeadings
                         ->whereNotIn('infoOrder.status', [ 'DELETE', 'IN DETAILING', 'VOID'])
                         ->whereBetween('vouchers_histories.created_at', $this->period)
                         ->get();
-        return collect([ $data ]);
+        return $data;
     }
 
     /**
