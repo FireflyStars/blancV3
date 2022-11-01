@@ -756,6 +756,7 @@ Route::post('/get-prod-statistics',[StatisticsController::class, 'getProdStatist
 Route::post('/get-order-csv',[StatisticsController::class, 'getOrderCSV'])->name('get.order.csv')->middleware('auth');
 Route::post('/get-void-order-csv',[StatisticsController::class, 'getVoidOrderCSV'])->name('get.void.order.csv')->middleware('auth');
 Route::post('/get-excel-report', [ StatisticsController::class, 'downloadExcel' ])->name('get.report.excel')->middleware('auth');
+Route::post('/get-voucher-excel-report', [ StatisticsController::class, 'downloadVoucherExcel' ])->name('get.voucher.report.excel')->middleware('auth');
 
 Route::post('/assembly-home-stats',[StatisticsController::class, 'getAssemblyHomeStats'])->name('get-assembly-home-stats')->middleware('auth');
 Route::post('/partner-details',[StatisticsController::class, 'getPartnerDetails'])->name('partner-details')->middleware('auth');
