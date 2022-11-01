@@ -31,7 +31,11 @@
                     <td class="text-capitalize fw-16" valign="middle">{{ customer.name }}</td>
 
                     <!-- Email -->
-                    <td class="fw-16" valign="middle">{{ customer.email }}</td>
+                    <td class="fw-16" valign="middle">
+                        <div v-if="customer.email.length > 0">
+                            <p v-for="email in customer.email" style="margin:0;">{{email}}</p>
+                        </div>
+                    </td>
                     <!-- Phone -->
                     <td class="text-nowrap fw-16" valign="middle">{{customer.orders}}</td>
                     <!--  total spent-->

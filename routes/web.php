@@ -1161,7 +1161,7 @@ Route::get('/unpaid-orders',function(Request $request){
         ->join('infoOrder','unpaid_orders.order_id','infoOrder.id')
         ->where('unpaid_orders.paid',0)
         ->where('infoOrder.Paid',0)
-        ->where('created_at','>=',date('Y-m-d H:i:s',strtotime('-5day')))
+        ->where('unpaid_orders.created_at','>=',date('Y-m-d H:i:s',strtotime('-5day')))
         ->get();
 
     $orders_to_update = [];
