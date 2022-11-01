@@ -1166,7 +1166,7 @@ class DetailingController extends Controller
             }
         }
 
-        $_ACCOUNT_DISCOUNT  = 0;
+        $_ACCOUNT_DISCOUNT  =  $order->AccountDiscount;
         $_ORDER_DISCOUNT = 0;
 
         if($order->detailed_at=='0000-00-00 00:00:00'){

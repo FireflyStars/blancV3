@@ -310,7 +310,7 @@
                                         </div>
 
                                          <div class="row px-0 mt-4 py-2 balance-text">
-                                            <div class="col-9">Order balance to pay by card</div>
+                                            <div class="col-9">Outstanding order balance to pay</div>
                                             <div class="col-3 text-align-right">&#163;{{cust.amount_diff}}</div>
                                         </div>
                                     </div>
