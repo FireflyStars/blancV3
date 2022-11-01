@@ -57,7 +57,7 @@ public function SearchCustomer(Request $request)
 
 
     $users = DB::table('infoCustomer')
-    ->select('Name', 'EmailAddress', 'Phone','infoCustomer.id', 'infoCustomer.CustomerID' , 'infoCustomer.Actif','infoCustomer.CustomerIDMaster',
+    ->select('Name', 'EmailAddress', 'Phone','infoCustomer.id', 'infoCustomer.CustomerID' , 'infoCustomer.Actif','infoCustomer.CustomerIDMaster','CompanyName',
     DB::raw(' IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as cust_type'),
     DB::raw(' IF(infoCustomer.CustomerIDMaster = "",  "Main", "Sub") as customer_account')
     )->where('infoCustomer.Actif', '=', 1);
@@ -66,7 +66,8 @@ public function SearchCustomer(Request $request)
             $q->where('FirstName', 'like', '%'.$searchTerm.'%')
             ->orWhere('LastName', 'like', '%'.$searchTerm.'%')
             ->orWhere('Name', 'like', '%'.$searchTerm.'%')
-            ->orWhere('EmailAddress', 'like', '%'.$searchTerm.'%');
+            ->orWhere('EmailAddress', 'like', '%'.$searchTerm.'%')
+            ->orWhere('CompanyName', 'like', '%'.$searchTerm.'%');
             // and so on
         });
     };

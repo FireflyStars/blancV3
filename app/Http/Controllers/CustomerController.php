@@ -16,6 +16,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use App\Models\OrderRecurringCreator;
 use App\Http\Controllers\NotificationController;
+use App\Notification;
 
 class CustomerController extends Controller
 {
@@ -310,6 +311,7 @@ class CustomerController extends Controller
                 $si = $stripe->setupIntents->create([
                     'customer' => $stripe_customer->id,
                     'payment_method_types' => ['card'],
+                    'usage'=>'off_session',
                 ]);
 
 
@@ -436,7 +438,7 @@ class CustomerController extends Controller
                         return response()->json(['error'=> $e->getMessage()]);
                  }
                 }
-                
+
 
             }
 
@@ -1771,6 +1773,7 @@ class CustomerController extends Controller
             $si = $stripe->setupIntents->create([
                 'customer' => $stripe_customer->id,
                 'payment_method_types' => ['card'],
+                'usage'=>'off_session',
             ]);
 
 
@@ -2525,7 +2528,7 @@ class CustomerController extends Controller
                 'infoOrder_id'=>json_encode($orders),
                 'montant'=>$total,
                 'info'=>json_encode($info),
-                'emailed'=>($emailed?1:0),
+                'email'=>'',
                 'created_at'=>date('Y-m-d H:i:s'),
             ];
 
@@ -2541,7 +2544,7 @@ class CustomerController extends Controller
         }
 
         if($emailed){
-            DB::table('infoOrder')->where('id',$all_orders)->update(['orderinvoiced'=>1]);
+           DB::table('infoOrder')->where('id',$all_orders)->update(['orderinvoiced'=>1]);
         }
 
         return $row_ids;
@@ -2888,7 +2891,6 @@ class CustomerController extends Controller
         $sent = false;
 
         if($type=='mail'){
-
             foreach($all_details as $k=>$v){
                 $cust = DB::table('infoCustomer')->where('CustomerID',$v->CustomerID)->first();
 
@@ -2924,16 +2926,58 @@ class CustomerController extends Controller
                 }
 
                 $email = $cust->EmailAddress;
+                $email2 = "";
+                $recipients = [];
+                $notification_ids = [];
+
                 if($contact){
                     if($contact->email!=''){
                         $email = $contact->email;
+                        $recipients[] = $email;
                     }
                     else if($contact->email=='' && $contact->email2!=''){
                         $email = $contact->email2;
+                        $recipients[] = $email;
+                    }
+
+                    if($contact->email!='' && $contact->email2!=''){
+                        $email2 = $contact->email2;
+                        $recipients[] = $email2;
+                    }
+                }else{
+                    $recipients[] = $email;
+                }
+
+
+
+                if(!empty($recipients)){
+                    foreach($recipients as $key=>$val){
+                        $notification = new Notification();
+                        $notification->Template = '5K_EMAIL_B2B_INVOICE';
+                        $notification->Parametres = json_encode($mail_vars);
+                        $notification->Email = $val;
+                        $notification->Phone = '';
+                        $notification->TypeNotification ='EMAIL';
+                        $notification->InfoOrder_id = $order_id;
+                        $notification->CustomerID = $cust->CustomerID;
+                        if($notification->save()){
+                            $sent = true;
+                        }
+
+                        $notification->send();
+
+                        $notification_ids[] = $notification->id;
                     }
                 }
 
-                $sent = NotificationController::Notify($email, '+123456789', '5K_EMAIL_B2B_INVOICE', '', $mail_vars, true, 0, '');
+                DB::table('infoOrderPrint')
+                    ->where('id',$v->id)
+                    ->update([
+                        'email'=>json_encode($recipients),
+                        'notification_id'=>json_encode($notification_ids)
+                    ]);
+
+                //$sent = NotificationController::Notify($email, '+123456789', '5K_EMAIL_B2B_INVOICE', '', $mail_vars, true, 0, '');
             }
         }
 
@@ -3054,7 +3098,7 @@ class CustomerController extends Controller
         $customers = DB::table('infoOrderPrint')
             ->select('*','infoOrderPrint.id as row_id')
             ->join('infoCustomer','infoOrderPrint.CustomerID','infoCustomer.CustomerID')
-            ->where('infoOrderPrint.emailed',1)->get();
+            ->where('infoOrderPrint.email','!=','')->get();
 
         $list = [];
 
@@ -3088,13 +3132,14 @@ class CustomerController extends Controller
 
                 $orders = @json_decode($v->infoOrder_id);
 
+
                 $list[] = [
                     'id'=>$v->row_id,
                     'NumFact'=>$v->NumFact,
                     'type'=>($v->btob==0?"B2C":"B2B"),
                     'active_in'=>$v->TypeDelivery,
                     'name'=>$v->Name,
-                    'email'=>$v->EmailAddress,
+                    'email'=>@json_decode($v->email),
                     'phone'=>$v->Phone,
                     'level'=>$level,
                     'orders'=>implode(",",$orders),
@@ -3107,12 +3152,6 @@ class CustomerController extends Controller
 
         return response()->json([
             'list'=>$list,
-        ]);
-    }
-
-    public function generateInvoicedPdf(Request $request){
-        return response()->json([
-            'post'=>$request->all(),
         ]);
     }
 }
