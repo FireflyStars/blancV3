@@ -1787,7 +1787,7 @@ class CustomerController extends Controller
                     'dateexpiration'    => str_replace(' ','',$request->cardExpDate),
                     'stripe_customer_id'=> $stripe_customer->id,
                     'stripe_card_id'    => $card->id,
-                    'setup_intnet_id'   => $si->id,
+                    'setup_intent_id'   => $si->id,
                     'created_at'        => now(),
                     'updated_at'        => now(),
                 ];

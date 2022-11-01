@@ -1205,8 +1205,6 @@ class DetailingController extends Controller
         }
 
 
-
-
         $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
         $_AMOUNT_PAID=0;
 
@@ -2462,6 +2460,8 @@ class DetailingController extends Controller
         $voucher_id = $request->voucher_id;
 
         $deleted = DB::table('vouchers_histories')->where('order_id',$order_id)->where('vouchers_id',$voucher_id)->delete();
+
+        $this->calculateCheckout($order_id);
 
         return response()->json([
             'deleted'=>$deleted,

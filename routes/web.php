@@ -79,6 +79,7 @@ Route::get('/getpermissions',[PermissionController::class,'getPermissions'])->mi
 Route::post('/setpermission',[PermissionController::class,'setPermission'])->middleware('superadmin')->name('setpermission');
 Route::post('/setprofile',[PermissionController::class,'setProfile'])->middleware('superadmin')->name('setprofile');
 Route::get('/preload-order-form-info',[OrderController::class, 'preloadOrderFormInfo'])->middleware('auth')->name('preload-order-form-info');
+Route::get('/get_status_orders',[OrderListController::class, 'getStatusOrders'])->middleware('auth')->name('get_status_orders');
 
 
 Route::post('/create-customer',[CustomerController::class, 'createCustomer'])->middleware('auth')->name('create-customer');
@@ -697,6 +698,7 @@ Route::get('/3d-secure',function(Request $request){
             ]);
 
             if($si->id){
+                DB::table('cards')->where('id',$card->id)->update(['setup_intent_id'=>$si->id]);
                 echo "Setup intent created";
             }
         }else{

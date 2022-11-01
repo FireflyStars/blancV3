@@ -225,12 +225,12 @@
             if(props.tab.name == 'All orders'){
                 filterDef.value={
                     def:{
-                        'CustomerType':{
+                        'infoCustomer.btob':{
                             name:"Customer Type",
                             type: 'select',
                             options:{
-                                0:"B2B",
-                                1:"B2C",
+                                '1' :'B2B',
+                                '0' :'B2C',
                             }
                         },
                         'infoOrder.Status':{
@@ -285,12 +285,21 @@
                             }
     
                         },
-                        'infoOrder.paytype':{
+                        'infoOrder.deliverymethod':{
+                            name:"Type",
+                            type: 'select',
+                            options:{
+                                0:"POS3",
+                                1:"SPOT",
+                            }
+    
+                        },
+                        'infoCustomer.OnAccount':{
                             name:"Payment type",
                             type: 'select',
                             options:{
-                                0:"On Account",
-                                1:"By Card",
+                                0:"Pay As You Go",
+                                1:"On Account",
                             }
                         },
                         'infoOrder.paid':{
@@ -312,7 +321,7 @@
     
                         },
                         'infoOrder.DET': {
-                            name: 'Detailied Date',
+                            name: 'Detailed Date',
                             id: 'det_date',
                             type: 'datepicker',
                         },
@@ -414,6 +423,14 @@
                             }
 
                         },
+                        'infoOrder.deliverymethod':{
+                            name:"Type",
+                            type: 'select',
+                            options:{
+                                0:"POS3",
+                                1:"SPOT",
+                            }
+                        },
                         'infoitems.express':{
                             name: "Turnaround time",
                             type: 'select',
@@ -425,7 +442,7 @@
 
                         },
                         'infoOrder.DET': {
-                            name: 'Detailied Date',
+                            name: 'Detailed Date',
                             id: 'det_date',
                             type: 'datepicker',
                         },
@@ -516,7 +533,7 @@
 
                         },
                         'infoOrder.DET': {
-                            name: 'Detailied Date',
+                            name: 'Detailed Date',
                             id: 'det_date',
                             type: 'datepicker',
                         },
