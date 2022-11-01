@@ -597,12 +597,12 @@ class OrderController extends Controller
                     'amount'            => $total_amount, //100*0.01
                     'currency'          => 'gbp',
                     'confirm'           => true,
-                    "payment_method"    => $card->stripe_card_id,
-                    "customer"          => $card->stripe_customer_id,
+                    "payment_method"    => ($stripe_test?'pm_1LnoA2B2SbORtEDspPBXGNAJ':$card->stripe_card_id),
+                    "customer"          => ($stripe_test?'cus_MWrt7Gggau7yrE':$card->stripe_customer_id),
                     "capture_method"    => "automatic",
                     'payment_method_types' => ['card'],
                     "description"=>$order_id,
-                    "receipt_email"=>$cust->EmailAddress, //To change for customer email
+                    "receipt_email"=>($stripe_test?'rushdi@vpc-direct-service.com':$cust->EmailAddress), //To change for customer email
                     'off_session' => true,
                     'confirm' => true,
                 ]);
