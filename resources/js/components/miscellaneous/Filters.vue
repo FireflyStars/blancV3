@@ -26,6 +26,7 @@
                         :droppos="{ top:'auto', right: 0, bottom:'auto', left:'auto', transformOrigin:'top right'}"
                         :color="'#000000'"
                         :font="'16px'"
+                        ref="date_picker_det"
                         >
                     </date-range-picker>
                 </div>
@@ -39,6 +40,7 @@
                         :droppos="{ top:'auto', right: 0, bottom:'auto', left:'auto', transformOrigin:'top right'}" 
                         :color="'#000000'"
                         :font="'16px'"
+                        ref="date_picker_prod"
                         >
                     </date-range-picker>
                 </div>
@@ -52,6 +54,7 @@
                         :droppos="{ top:'auto', right: 0, bottom:'auto', left:'auto', transformOrigin:'top right'}"
                         :color="'#000000'"
                         :font="'16px'"
+                        ref="date_picker_deliv"
                         >
                     </date-range-picker>
                 </div>
@@ -113,12 +116,6 @@
                 return !allEmpty;
             });
 
-            // watch(() =>prodDate.value, (current_val, previous_val) => {
-            //     preselection.value['infoitems.ProdDate'] = [current_val.start, current_val.end];
-            // });
-            // watch(() => delivDate.value, (current_val, previous_val) => {
-            //     preselection.value['infoitems.DelivDate'] = [current_val.start, current_val.end];
-            // });
 
             function checkboxclicked(check,id,name) {
                 console.log(check,id,name);
@@ -147,7 +144,7 @@
                 if(detDate.value.start !='' && detDate.value.end !='')                    
                     preselection.value['infoOrder.DetDate'] = [detDate.value.start, detDate.value.end];
                 else
-                    delete preselection.value['infoitems.DetDate']    
+                    delete preselection.value['infoOrder.DetDate']    
                 console.log(preselection);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,{ customer: route.params.customerId , search:route.params.value , filter:preselection.value});
@@ -161,8 +158,8 @@
                 toggleShow();
 
             }
-            function removefilter(){
-              preselection.value = {}
+            function removedata(){
+                preselection.value = {}
             }
             return {
                 showfilter,
@@ -176,10 +173,20 @@
                 hasActiveFilters,
                 prodDate,
                 delivDate,
-                removefilter,
                 data,
-                detDate
+                detDate,
+                removedata
             }
+            
+        },
+        methods:{
+            removefilter(){
+                this.$refs.date_picker_deliv.resetFilter()
+                this.$refs.date_picker_det.resetFilter()
+                this.$refs.date_picker_prod.resetFilter()
+                this.removedata()
+                this.applyFilter()
+           }
         }
     }
 </script>

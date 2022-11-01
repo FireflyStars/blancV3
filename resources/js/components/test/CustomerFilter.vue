@@ -18,7 +18,7 @@
                                 :name="key"
                                 :placeholder="filterItem.label"
                                 :droppos="{ top:'auto', right: 0, bottom:'auto', left:'auto', transformOrigin:'top right'}"
-                                :disabled-from-date="startDisabledtodate">
+                                :disabled-from-date="startDisabledtodate" ref='order_date'>
                             </date-range-picker>
                         </KeepAlive>
                     </div>
@@ -74,7 +74,7 @@
             const toggleShow = ()=>{
                 showfilter.value =! showfilter.value;
             }
-            function removefilter(){
+            function removedata(){
                  if(props.nav=='AR'){
 
                 }else{
@@ -90,12 +90,17 @@
                 applyFilter,
                 cancel,
                 toggleShow,
-                removefilter
+                removedata
 
 
             }
         },
         methods:{
+            removefilter(){
+                this.$refs.order_date.resetFilter()
+                //this.$refs.option_order.changecurrentvalue()
+                this.removedata()
+           }
         }
     }
 </script>

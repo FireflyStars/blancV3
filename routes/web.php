@@ -79,6 +79,7 @@ Route::get('/getpermissions',[PermissionController::class,'getPermissions'])->mi
 Route::post('/setpermission',[PermissionController::class,'setPermission'])->middleware('superadmin')->name('setpermission');
 Route::post('/setprofile',[PermissionController::class,'setProfile'])->middleware('superadmin')->name('setprofile');
 Route::get('/preload-order-form-info',[OrderController::class, 'preloadOrderFormInfo'])->middleware('auth')->name('preload-order-form-info');
+Route::get('/get_status_orders',[OrderListController::class, 'getStatusOrders'])->middleware('auth')->name('get_status_orders');
 
 
 Route::post('/create-customer',[CustomerController::class, 'createCustomer'])->middleware('auth')->name('create-customer');

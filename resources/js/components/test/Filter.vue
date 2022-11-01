@@ -291,3 +291,4 @@
     }
 
 </style>
+<style src="vue-multiselect/dist/vue-multiselect.css"></style>

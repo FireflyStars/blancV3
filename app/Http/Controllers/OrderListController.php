@@ -75,7 +75,9 @@ class OrderListController extends Controller
                 DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
                 DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                 DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
+                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method'),
+                DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'),
+                DB::raw('IF(infoCustomer.OnAccount = 1, "On Account", "Pay As You Go") as payementType')
             ])
             ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID)'))
             ->leftJoin('pickup', 'infoOrder.id', '=', 'pickup.order_id')
@@ -101,7 +103,9 @@ class OrderListController extends Controller
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
                     DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                     DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
+                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method'),
+                    DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'),
+                    DB::raw('IF(infoCustomer.OnAccount = 1, "On Account", "Pay As You Go") as payementType')
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID)'))
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -168,7 +172,7 @@ class OrderListController extends Controller
                     }
                     if(!empty($express))
                         $orderlist=$orderlist->whereIn($colname,$express);
-                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate'){
+                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod'){
                     if(!empty($values))
                     $orderlist=$orderlist->whereIn($colname, $values);
                 }else if($colname == 'infoitems.ProdDate' && !empty($values)){
@@ -177,7 +181,21 @@ class OrderListController extends Controller
                     $orderlist=$orderlist->whereBetween('infoitems.PromisedDate', [ $values[0], $values[1]]);
                 }else if($colname == 'infoOrder.DetDate' && !empty($values)){
                     $orderlist=$orderlist->whereBetween('infoOrder.detailed_at', [ $values[0], $values[1]]);
-                }else{
+                }else if($colname == 'infoOrder.deliverymethod'){
+
+                    if(count($values) < 2){
+                        foreach ($values as $k){     
+                            if($k == 0){
+                                $orderlist=$orderlist->where($colname,'!=' , '');
+                            }
+                            if($k == 1){
+                                $orderlist=$orderlist->where($colname , '');
+                            }
+                        }
+                    }
+                    
+                }
+                else{
 
                 }
             }
@@ -502,7 +520,9 @@ class OrderListController extends Controller
                 DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
                 DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                 DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
+                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method'),
+                DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'),
+                DB::raw('IF(infoCustomer.OnAccount = 1, "On Account", "Pay As You Go") as payementType')
             ])
             ->join( 'infoCustomer', function ($join){
                 $join->on( 'infoCustomer.CustomerID', '=', 'infoOrder.CustomerID')
@@ -549,7 +569,9 @@ class OrderListController extends Controller
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
                     DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                     DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
+                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method'),
+                    DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'),
+                    DB::raw('IF(infoCustomer.OnAccount = 1, "On Account", "Pay As You Go") as payementType')
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster = "", infoCustomer.CustomerID , infoCustomer.CustomerIDMaster)'))
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -630,7 +652,7 @@ class OrderListController extends Controller
                     }
                     if(!empty($express))
                         $orderlist=$orderlist->whereIn($colname,$express);
-                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate'){
+                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod'){
                     if(!empty($values))
                     $orderlist=$orderlist->whereIn($colname, $values);
                 }else if($colname == 'infoitems.ProdDate' && !empty($values)){
@@ -639,6 +661,19 @@ class OrderListController extends Controller
                     $orderlist=$orderlist->whereBetween('infoitems.PromisedDate', [ $values[0], $values[1]]);
                 }else if($colname == 'infoOrder.DetDate' && !empty($values)){
                     $orderlist=$orderlist->whereBetween('infoOrder.detailed_at', [ $values[0], $values[1]]);
+                }else if($colname == 'infoOrder.deliverymethod'){
+
+                    if(count($values) < 2){
+                        foreach ($values as $k){     
+                            if($k == 0){
+                                $orderlist=$orderlist->where($colname,'!=' , '');
+                            }
+                            if($k == 1){
+                                $orderlist=$orderlist->where($colname , '');
+                            }
+                        }
+                    }
+                    
                 }else{
 
                 }
@@ -1817,7 +1852,9 @@ class OrderListController extends Controller
                 DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),
                 DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                 DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
+                DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method'),
+                DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'),
+                DB::raw('IF(infoCustomer.OnAccount = 1, "On Account", "Pay As You Go") as payementType')
             ])
             ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
             ->leftJoin('pickup', 'infoOrder.id', '=', 'pickup.order_id')
@@ -1846,7 +1883,9 @@ class OrderListController extends Controller
                     DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
                     DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate'),
                     DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID) as CustomerID'),
-                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method')
+                    DB::raw('if(infoOrder.deliverymethod != "", "POS3" , "SPOT") as delivery_method'),
+                    DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'),
+                    DB::raw('IF(infoCustomer.OnAccount = 1, "On Account", "Pay As You Go") as payementType')
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -1915,7 +1954,7 @@ class OrderListController extends Controller
                     }
                     if(!empty($express))
                         $orderlist=$orderlist->whereIn($colname,$express);
-                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate'){
+                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod'){
                     if(!empty($values))
                     $orderlist=$orderlist->whereIn($colname, $values);
                 }else if($colname == 'infoitems.ProdDate' && !empty($values)){
@@ -1924,6 +1963,19 @@ class OrderListController extends Controller
                     $orderlist=$orderlist->whereBetween('infoitems.PromisedDate', [ $values[0], $values[1]]);
                 }else if($colname == 'infoOrder.DetDate' && !empty($values)){
                     $orderlist=$orderlist->whereBetween('infoOrder.detailed_at', [ $values[0], $values[1]]);
+                }else if($colname == 'infoOrder.deliverymethod'){
+
+                    if(count($values) < 2){
+                        foreach ($values as $k){     
+                            if($k == 0){
+                                $orderlist=$orderlist->where($colname,'!=' , '');
+                            }
+                            if($k == 1){
+                                $orderlist=$orderlist->where($colname , '');
+                            }
+                        }
+                    }
+                    
                 }else{
 
                 }
@@ -2217,6 +2269,19 @@ class OrderListController extends Controller
                 }
         }
         return response()->json($orderlist);
+    }
+
+    public function getStatusOrders(Request $request){
+
+        $Status= [] ;
+        $orderstatus=DB::table('infoOrder')->select('infoOrder.Status')->distinct('infoOrder.Status')->get();
+            foreach ($orderstatus as $k => $v) {
+                $Status[$k] = $v->Status;
+            }
+            $result = json_decode(json_encode(array_combine($Status,$Status)), FALSE);
+            return response()->json(
+                ['Status'=>$result]
+            );
     }
 
 }
