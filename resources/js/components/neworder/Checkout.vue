@@ -280,7 +280,7 @@
                                             <span class="summary-title" v-else>Pending payments</span>
                                         </div>
                                         <div class="row mt-4 px-0 py-1 sub-total-text">
-                                        
+
                                             <div class="col-12" v-if="amount_paid_card.length > 0">
                                                 <div class="row" v-for="a,i in amount_paid_card" :key="i">
                                                     <div class="col-9 px-0 payment-desc-text">Paid by Card ({{ a.type[0].toUpperCase() + a.type.slice(1)}} {{a.cardNumber.slice(-7)}}):</div>
@@ -1207,6 +1207,8 @@ export default {
             let el = document.getElementById('upcharge_btn_'+id);
             el.classList.toggle('addon-selected');
 
+
+
             let classes = Object.values(el.classList);
             let selected = false;
             let other_exp_ids = [];
@@ -1226,8 +1228,14 @@ export default {
                             v.classList.remove('addon-selected');
                         });
                     }
+                }else{
+                    if(id!=4){//DeliveryNow
+                        document.getElementById('upcharge_btn_4').classList.remove('addon-selected');
+                    }
                 }
             }
+
+
 
             axios.post('/set-checkout-addon',{
                 order_id:order_id.value,
@@ -1297,8 +1305,6 @@ export default {
                                 ttl: 3,
                                 type: 'danger'
                             });
-                        }else{
-                            getCheckoutItems();
                         }
                     }).catch(err=>{
 
@@ -1306,6 +1312,7 @@ export default {
                     });
                 } finally {
                     btn_disabled.value = false;
+                    getCheckoutItems();
                 }
             }
 
