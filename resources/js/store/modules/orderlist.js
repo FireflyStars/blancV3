@@ -38,7 +38,9 @@ import {
     ORDERLIST_MARK_AS_LATE,
     ORDERLIST_UPDATE_SUGGESTED_DELIVERY_DATE, ORDERLIST_NEW_DELIVERY_DATE,
     ORDERLIST_CUSTOMER_ORDERS,
-    ORDERLIST_CUSTOMER_SMSDELIVERY
+    ORDERLIST_CUSTOMER_SMSDELIVERY,
+    ORDER_GET_STATUS,
+    ORDER_SET_STATUS
 } from "../types/types";
 import {PERMISSIONS} from "../types/permission_types";
 import {usePermission} from "../../components/helpers/helpers";
@@ -114,6 +116,7 @@ export const orderlist= {
                 sort:[],//sort col
                 filters:{},//filters
             },
+            status:{}
     },
     mutations: {
          [ORDERLIST_ADD_TO_LIST]: (state, payload) => state[state.current_tab].order_list=state[state.current_tab].order_list.concat(payload),
@@ -427,6 +430,12 @@ export const orderlist= {
             });
 
         },
+        [ORDER_SET_STATUS]:async({state})=>{
+              axios.get('/get_status_orders'
+               ).then((res)=>{
+                  state.status = res.data.Status
+              });
+        }
     },
     getters: {
 
@@ -436,5 +445,6 @@ export const orderlist= {
         [ORDERLIST_GET_LIST]:state =>state[state.current_tab].order_list,
         [ORDERLIST_GET_SORT]:state =>state[state.current_tab].sort,
         [ORDERLIST_GET_FILTER]:state=> state[state.current_tab].filters,
+        [ORDER_GET_STATUS]:state =>state.status,
     }
 }
