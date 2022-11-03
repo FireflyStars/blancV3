@@ -2512,6 +2512,8 @@ class CustomerController extends Controller
 
         $to_insert = [];
 
+        $user = Auth::user();
+
         foreach($simplified_grouped_by_customer as $k=>$v){
             $total = 0;
             $info = [];
@@ -2530,6 +2532,7 @@ class CustomerController extends Controller
                 'info'=>json_encode($info),
                 'email'=>'',
                 'created_at'=>date('Y-m-d H:i:s'),
+                'user_id'=>$user->id,
             ];
 
             $row_id = DB::table('infoOrderPrint')->insertGetId($to_insert);
