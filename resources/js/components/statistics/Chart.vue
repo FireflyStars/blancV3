@@ -126,6 +126,7 @@
                         <h3 class="font-20 gotham-rounded-medium m-0">Total sales over time</h3>
                         <TotalPercent class="ms-5" :amount="salesByChannelTotal" :pastAmount="salesByChannelTotalToCompare"></TotalPercent>
                         <div class="d-flex ms-auto" v-if="userRole == 1">
+                            <h4 @click="downloadVoucherExcel" class="mb-0 me-4 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Voucher</em></h4>
                             <h4 @click="downloadExcel" class="mb-0 me-4 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Report</em></h4>
                             <h4 @click="downloadOrderCSV" class="mb-0 me-4 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Order</em></h4>
                             <h4 @click="downloadVoidOrderCSV" class="mb-0 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Void Order</em></h4>
@@ -895,6 +896,25 @@ export default {
                     link.click()
                 });
         }
+        const downloadVoucherExcel = ()=>{
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading voucher...']);
+            axios({
+                    url: 'get-voucher-excel-report', // File URL Goes Here
+                    method: 'post',
+                    data: filterVal.value,
+                    responseType: 'blob',
+                }).then((res) => {
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    const url = window.URL.createObjectURL(new Blob([res.data]))
+                     
+                    const link = document.createElement('a')
+                    link.href = url
+                    var filename = res.headers['content-disposition'].split(';')[1].split('=')[1].replace('"', '').replace('"', '');                    
+                    link.setAttribute('download', filename)
+                    document.body.appendChild(link)
+                    link.click()
+                });
+        }
         return {
             userRole,
             allSaleByDateLegend,
@@ -963,6 +983,7 @@ export default {
             downloadOrderCSV,
             downloadVoidOrderCSV,
             downloadExcel,
+            downloadVoucherExcel
         }
     }
 }

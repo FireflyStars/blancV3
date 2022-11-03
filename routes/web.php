@@ -79,6 +79,7 @@ Route::get('/getpermissions',[PermissionController::class,'getPermissions'])->mi
 Route::post('/setpermission',[PermissionController::class,'setPermission'])->middleware('superadmin')->name('setpermission');
 Route::post('/setprofile',[PermissionController::class,'setProfile'])->middleware('superadmin')->name('setprofile');
 Route::get('/preload-order-form-info',[OrderController::class, 'preloadOrderFormInfo'])->middleware('auth')->name('preload-order-form-info');
+Route::get('/get_status_orders',[OrderListController::class, 'getStatusOrders'])->middleware('auth')->name('get_status_orders');
 
 
 Route::post('/create-customer',[CustomerController::class, 'createCustomer'])->middleware('auth')->name('create-customer');
@@ -697,6 +698,7 @@ Route::get('/3d-secure',function(Request $request){
             ]);
 
             if($si->id){
+                DB::table('cards')->where('id',$card->id)->update(['setup_intent_id'=>$si->id]);
                 echo "Setup intent created";
             }
         }else{
@@ -759,6 +761,7 @@ Route::post('/get-prod-statistics',[StatisticsController::class, 'getProdStatist
 Route::post('/get-order-csv',[StatisticsController::class, 'getOrderCSV'])->name('get.order.csv')->middleware('auth');
 Route::post('/get-void-order-csv',[StatisticsController::class, 'getVoidOrderCSV'])->name('get.void.order.csv')->middleware('auth');
 Route::post('/get-excel-report', [ StatisticsController::class, 'downloadExcel' ])->name('get.report.excel')->middleware('auth');
+Route::post('/get-voucher-excel-report', [ StatisticsController::class, 'downloadVoucherExcel' ])->name('get.voucher.report.excel')->middleware('auth');
 
 Route::post('/assembly-home-stats',[StatisticsController::class, 'getAssemblyHomeStats'])->name('get-assembly-home-stats')->middleware('auth');
 Route::post('/partner-details',[StatisticsController::class, 'getPartnerDetails'])->name('partner-details')->middleware('auth');

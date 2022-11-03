@@ -212,7 +212,7 @@
                     typeof end_date.value[0]!="undefined" &&
                     typeof end_date.value[1]!="undefined" &&
                     typeof end_date.value[2]!="undefined" ){
-                    formated_date.value = `${start_date.value[1].toString().padStart(2, "0")}/${start_date.value[2].toString().padStart(2, "0")}/${start_date.value[0]} ~ ${end_date.value[1].toString().padStart(2, "0")}/${end_date.value[2].toString().padStart(2, "0")}/${end_date.value[0]}`;
+                    formated_date.value = `${start_date.value[2].toString().padStart(2, "0")}/${start_date.value[1].toString().padStart(2, "0")}/${start_date.value[0]} ~ ${end_date.value[2].toString().padStart(2, "0")}/${end_date.value[1].toString().padStart(2, "0")}/${end_date.value[0]}`;
                 }
                 displayed_dates_rows.value = {0: [], 1: [], 2: [], 3: [], 4: [], 5: []};
                 displayed_dates.value = [];
@@ -396,7 +396,7 @@
             watch(() => _.cloneDeep(start_date), (current_val, previous_val) => {
                 renderPicker();
             });
-            const resetFilter = ()=>{
+            function resetFilter(){
                 start_date.value = [];
                 end_date.value = [];
                 formated_date.value = '';

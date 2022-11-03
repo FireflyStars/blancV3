@@ -180,6 +180,7 @@ class DetailingController extends Controller
         ]);
         return response()->json(['updated'=>$updated]);
     }
+
     public function initDetailing(Request $request)
     {
         $search = $request->post('search');
@@ -1142,6 +1143,20 @@ class DetailingController extends Controller
                 $_SUBTOTAL += $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
             }
 
+        $_BUNDLES_DISCOUNT=0;
+
+        $bundles_id = DetailingController::checkOrderBundles($order_id);
+
+        if(!empty($bundles_id)){
+            $bundles = DB::table('bundles')->whereIn('id',$bundles_id)->get();
+
+            foreach($bundles as $k=>$v){
+                $_BUNDLES_DISCOUNT += $v->discount;
+            }
+        }
+
+
+        $_SUBTOTAL_WITH_DISCOUNT = $_SUBTOTAL - $_BUNDLES_DISCOUNT;
 
         $_EXPRESS_CHARGES_PRICE = 0;
         $_FAILED_DELIVERY_PRICE = 0;
@@ -1164,22 +1179,12 @@ class DetailingController extends Controller
         $_ORDER_DISCOUNT = 0;
 
         if($order->detailed_at=='0000-00-00 00:00:00'){
-            $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL;
+            $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL_WITH_DISCOUNT;
         }
 
 
-        $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
-        $_BUNDLES_DISCOUNT=0;
+        $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL_WITH_DISCOUNT;
 
-        $bundles_id = DetailingController::checkOrderBundles($order_id);
-
-        if(!empty($bundles_id)){
-            $bundles = DB::table('bundles')->whereIn('id',$bundles_id)->get();
-
-            foreach($bundles as $k=>$v){
-                $_BUNDLES_DISCOUNT += $v->discount;
-            }
-        }
         $_VOUCHER_DISCOUNT=0;
         $voucher_codes = [];
 
@@ -1205,8 +1210,6 @@ class DetailingController extends Controller
         }
 
 
-
-
         $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
         $_AMOUNT_PAID=0;
 
@@ -1217,12 +1220,15 @@ class DetailingController extends Controller
 
        //SubTotal inc Discount = SubTotal (excl Discount) - Account Discount - Order Discount - Bundles + Express Charge - voucher
 
-        $_SUBTOTAL_WITH_DISCOUNT=$_SUBTOTAL-$_ACCOUNT_DISCOUNT-$_ORDER_DISCOUNT-$_BUNDLES_DISCOUNT+$_EXPRESS_CHARGES_PRICE-$_VOUCHER_DISCOUNT;
+        $_SUBTOTAL_WITH_DISCOUNT=$_SUBTOTAL_WITH_DISCOUNT-$_ACCOUNT_DISCOUNT-$_ORDER_DISCOUNT+$_EXPRESS_CHARGES_PRICE-$_VOUCHER_DISCOUNT;
 
 
 
-        if($order->TypeDelivery=='DELIVERY'&&$_SUBTOTAL_WITH_DISCOUNT<25)
-            $_AUTO_DELIVERY_FEE=25-$_SUBTOTAL_WITH_DISCOUNT;
+        if($order->TypeDelivery=='DELIVERY'&&$_SUBTOTAL_WITH_DISCOUNT<25){
+            if(is_null($order->DeliveryNowFee)){
+                $_AUTO_DELIVERY_FEE=25-$_SUBTOTAL_WITH_DISCOUNT;
+            }
+        }
 
 
         if($_DELIVERY_NOW_FEE>=0&&$_DELIVERY_NOW_FEE!==NULL)
@@ -1230,10 +1236,11 @@ class DetailingController extends Controller
 
 
 
+
         //Total = SubTotal inc Discount + Failed delivery + DeliveryNowFee + AutoDeliveryFee
 
 
-        $_TOTAL=$_SUBTOTAL_WITH_DISCOUNT+$_FAILED_DELIVERY_PRICE+$_DELIVERY_NOW_FEE+$_AUTO_DELIVERY_FEE;
+        $_TOTAL=$_SUBTOTAL_WITH_DISCOUNT+$_FAILED_DELIVERY_PRICE+(is_null($_DELIVERY_NOW_FEE)?$_DELIVERY_NOW_FEE:0)+$_AUTO_DELIVERY_FEE;
 
           //TotalDue = Total - SUM(payements)
         $_TOTAL_DUE=$_TOTAL-$_AMOUNT_PAID;
@@ -1267,11 +1274,17 @@ class DetailingController extends Controller
             'VoucherDiscount' => number_format($_VOUCHER_DISCOUNT,2),
         );
 
+
+
         if($order->detailed_at=='0000-00-00 00:00:00'){
             $values['AccountDiscount'] = number_format($_ACCOUNT_DISCOUNT,2);
             $values['AccountDiscountPerc'] = $cust->discount;
         }
-
+/*
+        echo "<pre>";
+        print_r($values);
+        die();
+*/
         DB::table('infoOrder')->where('id',$order_id)->update($values);
 
        return $values;
@@ -2251,7 +2264,11 @@ class DetailingController extends Controller
 
             ]);
             if($addon_id==3)
-            DB::table('infoOrder')->where('id',$order_id)->where('Status','<>','FULFILLED')->update(['FailedDelivery'=>1]);
+                DB::table('infoOrder')->where('id',$order_id)->where('Status','<>','FULFILLED')->update(['FailedDelivery'=>1]);
+
+            if($addon_id !=4){
+                DB::table('infoOrder')->where('id',$order_id)->update(['DeliveryNowFee'=>null]);
+            }
         }else{
             $updated = DB::table('order_upcharges')->where('order_id',$order_id)->where('upcharges_id',$addon_id)->delete();
             if($addon_id==3)
@@ -2462,6 +2479,8 @@ class DetailingController extends Controller
         $voucher_id = $request->voucher_id;
 
         $deleted = DB::table('vouchers_histories')->where('order_id',$order_id)->where('vouchers_id',$voucher_id)->delete();
+
+        $this->calculateCheckout($order_id);
 
         return response()->json([
             'deleted'=>$deleted,
