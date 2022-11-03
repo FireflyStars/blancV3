@@ -669,6 +669,14 @@ Route::get('/merge-pdf',function(){
     shell_exec("gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=$output_file -dBATCH $files");
 });
 
+Route::get('/test-calcul-checkout',function(){
+    $ct = new DetailingController();
+
+    $ct->calculateCheckout(129653);
+
+
+});
+
 /* END TEST ROUTES */
 
 Route::get('/3d-secure',function(Request $request){
@@ -841,7 +849,7 @@ Route::post('/set-checkout-addon',[DetailingController::class,'setCheckoutAddon'
 Route::post('/remove-order-voucher',[DetailingController::class,'removeCheckoutVoucher'])->name('remove-order-voucher')->middleware('auth');
 Route::post('/save-price-delivery-now',[DetailingController::class,'savePriceDeliveryNow'])->name('save-price-delivery-now')->middleware('auth');
 Route::post('/add-order-voucher',[DetailingController::class,'addCheckoutVoucher'])->name('add-order-voucher')->middleware('auth');
-
+Route::post('/pre-calculate-checkout',[DetailingController::class,'preCalculateCheckout'])->name('pre-calculate-checkout')->middleware('auth');
 /*
 * AR List
 */
