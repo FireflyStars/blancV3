@@ -291,7 +291,6 @@
                                             <div class="col-12 text-align-right" v-else>&#163;0.00</div>
                                             -->
                                         </div>
-
                                         <div class="row px-0 py-1 sub-total-text" v-if="amountPaidCredit(amount_paid_credit) > 0">
                                             <div class="col-12">
                                                 <template v-for="a,i in amount_paid_credit" :key="i">
