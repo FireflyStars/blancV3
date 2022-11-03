@@ -1240,7 +1240,7 @@ class DetailingController extends Controller
         //Total = SubTotal inc Discount + Failed delivery + DeliveryNowFee + AutoDeliveryFee
 
 
-        $_TOTAL=$_SUBTOTAL_WITH_DISCOUNT+$_FAILED_DELIVERY_PRICE+(is_null($_DELIVERY_NOW_FEE)?$_DELIVERY_NOW_FEE:0)+$_AUTO_DELIVERY_FEE;
+        $_TOTAL=$_SUBTOTAL_WITH_DISCOUNT+$_FAILED_DELIVERY_PRICE+(!is_null($_DELIVERY_NOW_FEE)?$_DELIVERY_NOW_FEE:0)+$_AUTO_DELIVERY_FEE;
 
           //TotalDue = Total - SUM(payements)
         $_TOTAL_DUE=$_TOTAL-$_AMOUNT_PAID;
@@ -1851,6 +1851,7 @@ class DetailingController extends Controller
         }
         */
 
+        /*
         $total_price = $total_price + $order_addon;
 
         $total_with_discount = $total_price;
@@ -1870,6 +1871,8 @@ class DetailingController extends Controller
         if($order_discount > 0){
             $total_with_discount = $total_with_discount - $order_discount;
         }
+        */
+        $total_with_discount = $order->Total;
 
 
 
@@ -1886,6 +1889,7 @@ class DetailingController extends Controller
                 $bundles_discount += $v->discount;
             }
         }
+
 
         $total_with_discount = $total_with_discount - $bundles_discount;
 
@@ -1963,14 +1967,6 @@ class DetailingController extends Controller
         }
 
 
-        //Mise a jour montant commande
-        // DB::table('infoOrder')->where('id',$order_id)->update([
-        //     'Subtotal'=>$total_price,
-        //     'Total'=>$total_with_discount,
-        //     'OrderDiscount'=>number_format($order_discount+$cust_discount,2),
-        // ]);
-
-
         $stripe_security_key = 'STRIPE_LIVE_SECURITY_KEY';
         $stripe_public_key = 'STRIPE_LIVE_PUBLIC_KEY';
 
@@ -2023,13 +2019,13 @@ class DetailingController extends Controller
             'order'=>$order,
             'booking_details'=>$booking_details,
             'address'=>$addr,
-            'sub_total'=>number_format($total_price,2),
+            //'sub_total'=>number_format($total_price,2),
             'bundles'=>$order->bundles,
-            'total_with_discount'=>number_format($total_with_discount,2),
-            'discount'=>number_format($order_discount,2),
-            'vat'=>number_format($vat,2),
-            'total_inc_vat'=>number_format($total_inc_vat,2),
-            'total_exc_vat'=>number_format($total_exc_vat,2),
+            //'total_with_discount'=>number_format($total_with_discount,2),
+            //'discount'=>number_format($order_discount,2),
+            //'vat'=>number_format($vat,2),
+            //'total_inc_vat'=>number_format($total_inc_vat,2),
+            //'total_exc_vat'=>number_format($total_exc_vat,2),
             'custcard'=>$cust_card,
             'stripe_public_key'=>env($stripe_public_key),
             'stripe_security_key'=>env($stripe_security_key),
