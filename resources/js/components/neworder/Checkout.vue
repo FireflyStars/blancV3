@@ -283,7 +283,7 @@
                                         
                                             <div class="col-12" v-if="amount_paid_card.length > 0">
                                                 <div class="row" v-for="a,i in amount_paid_card" :key="i">
-                                                    <div class="col-9 px-0 payment-desc-text">Paid by Card ({{ a.type[0].toUpperCase() + a.type.slice(1)}} {{a.cardNumber.slice(-7)}}):</div>
+                                                    <div class="col-9 px-0 payment-desc-text">Paid by Card ({{ a.type[0].toUpperCase() + a.type.slice(1)}} {{a.cardNumber.slice(-7)}}) on <small>{{a.date}}</small>:</div>
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
                                                 </div>
                                             </div>
@@ -294,7 +294,7 @@
                                             <div class="col-12">
                                                 <template v-for="a,i in amount_paid_credit" :key="i">
                                                 <div class="row" v-if="a.montant>0">
-                                                    <div class="col-9 px-0 payment-desc-text">Paid by cash credit:</div>
+                                                    <div class="col-9 px-0 payment-desc-text">Paid by cash credit on <small>{{a.date}}</small>:</div>
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
                                                 </div>
                                                 </template>
