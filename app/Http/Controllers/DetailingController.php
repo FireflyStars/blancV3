@@ -103,8 +103,10 @@ class DetailingController extends Controller
         //dry_cleaning_price = typeitem.pricecleaning +  typeitem.pricecleaning*brands.coefcleaning
         //+  SUM (typeitem.pricecleaning*complexities.coefcleaning) + SUM(typeitem.pricecleaning*fabrics.coefcleaning )
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
-        if($order->Status=="FULFILLED")
-        return;
+
+        if($order->Status=="FULFILLED"){
+            return;
+        }
             $detailingitemlist = DB::table('detailingitem')->select(['detailingitem.id','detailingitem.pricecleaning','brands.coefcleaning','detailingitem.complexities_id','detailingitem.fabric_id','detailingitem.cleaning_services','detailingitem.etape','detailingitem.status','detailingitem.cleaning_price_type','detailingitem.dry_cleaning_price','detailingitem.cleaning_addon_price','detailingitem.etape'])
                 ->join('typeitem', 'detailingitem.typeitem_id', 'typeitem.id')
                 ->join('brands', 'detailingitem.brand_id', 'brands.id')
@@ -1294,16 +1296,16 @@ class DetailingController extends Controller
         $order_id = $request->order_id;
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
-
-
+        /*
         if($order->PickupID !=''){
-            $this->getVoucherAmount($order_id);
+            $this->getVoucherAmount($order_id,false,true,true);
         }
 
 
 
         $this->calculateCheckout($order_id);
         $this->recalculateDryCleaningPrice($order_id);
+        */
 
         $days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
         $tranches = Tranche::getDeliveryPlanningTranchesForApi();
@@ -1871,10 +1873,10 @@ class DetailingController extends Controller
         if($order_discount > 0){
             $total_with_discount = $total_with_discount - $order_discount;
         }
-        */
+
         $total_with_discount = $order->Total;
 
-
+*/
 
         //Bundles
         $order_bundles = [];
@@ -1890,7 +1892,7 @@ class DetailingController extends Controller
             }
         }
 
-
+/*
         $total_with_discount = $total_with_discount - $bundles_discount;
 
         $total_inc_vat = $total_with_discount;
@@ -1902,12 +1904,12 @@ class DetailingController extends Controller
 
         $total_with_discount = $total_inc_vat;
         $price_plus_delivery = $total_inc_vat + $failed_delivery_price;
-
+*/
         $payments = DB::table('payments')->leftJoin('cards',function($join){
             $join->on('cards.id','=','payments.card_id');
         })->where('order_id',$order->id)->whereNotNull('cards.type')->where('status','succeeded')->get();
 
-        $balance = $total_with_discount;
+        $balance = $order->Total;
 
 
         $amount_paid = 0;
@@ -2048,7 +2050,7 @@ class DetailingController extends Controller
             'discount_from_voucher'=>$discount_from_voucher,
             'master_account'=>$master_account,
             'failed_delivery_price'=>number_format($failed_delivery_price,2),
-            'price_plus_delivery'=>number_format($price_plus_delivery,2),
+            //'price_plus_delivery'=>number_format($price_plus_delivery,2),
             'order_bundles'=>$order_bundles,
             'has_invoices'=>$has_invoices,
         ]);
@@ -2307,7 +2309,7 @@ class DetailingController extends Controller
         ]);
     }
 
-    public static function getVoucherAmount($order_id,$input_code=false,$insert=true){
+    public static function getVoucherAmount($order_id,$input_code=false,$insert=true,$pre_checkout=false){
         $user = Auth::user();
         $code = "";
         $voucher = false;
@@ -2465,7 +2467,8 @@ class DetailingController extends Controller
             'voucher'=>$voucher,
         ];
 
-        return $arr;
+        if(!$pre_checkout)
+            return $arr;
 
     }
 
@@ -2778,6 +2781,24 @@ class DetailingController extends Controller
         }
 
         return $baseprice;
+    }
+
+    public function preCalculateCheckout(Request $request){
+        $order_id = $request->order_id;
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+
+
+        if($order->PickupID !=''){
+            $this->getVoucherAmount($order_id);
+        }
+
+        $this->calculateCheckout($order_id);
+        $this->recalculateDryCleaningPrice($order_id);
+
+
+        return response()->json([
+            'post'=>$request->all(),
+        ]);
     }
 
 }

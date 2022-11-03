@@ -314,7 +314,7 @@
 
                                          <div class="row px-0 mt-4 py-2 balance-text">
                                             <div class="col-9">Outstanding order balance to pay</div>
-                                            <div class="col-3 text-align-right">&#163;{{cust.amount_diff}}</div>
+                                            <div class="col-3 text-align-right">{{formatPrice(order.TotalDue)}}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -894,15 +894,31 @@ export default {
 
 
         const getCheckoutItems =  async()=>{
-            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
-                true,
-                "Loading details....",
-            ]);
 
             try{
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
+                    true,
+                    "Loading details....",
+                ]);
+
+                console.log('pre-calculate-checkout');
+
+                await axios.post('/pre-calculate-checkout',{
+                        order_id:order_id.value,
+                }).then((res)=>{
+
+                }).catch((err)=>{
+
+                }).finally(()=>{
+
+                });
+
+            }finally{
+                console.log('end pre-calculate-checkout');
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 console.log('start get items');
 
-                await axios.post('/get-checkout-items',{
+            axios.post('/get-checkout-items',{
                 order_id:order_id.value,
             }).then((res)=>{
                 order_items.value = res.data.items;
@@ -953,9 +969,7 @@ export default {
             }).finally(()=>{
 
             });
-            }finally{
-                console.log('end get items');
-                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+
             }
         }
         getCheckoutItems();
