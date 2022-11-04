@@ -17,9 +17,9 @@ class VoucherSheet implements FromCollection, WithTitle, WithHeadings, WithStyle
     private $period;
     private $dataCnt;
 
-    public function __construct(array $period)
+    public function __construct()
     {
-        $this->period = $period;
+        // $this->period = $period;
     }
 
     /**
