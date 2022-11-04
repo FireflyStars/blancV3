@@ -384,13 +384,11 @@ export default {
         }
 
         function toggleSubService(id){
-            console.log("toggleSubService" , id)
             let el = document.getElementById('sub_service_'+id);
             el.classList.toggle('sel_service');
           
 
              let classes = Object.values(el.classList);
-             console.log("classes" , classes)
 
                 //TO optimize
                 if(classes.includes('cleaning-prices')){
@@ -624,7 +622,6 @@ export default {
                        preference_customer.value.forEach(function(v,i){
                         if(list!= null){
                             if(!list.includes(v)){
-                                console.log("vvvv" , v)
                                 toggleSubService(v)
                             }
 
@@ -853,8 +850,7 @@ export default {
                 axios.post('/set-price-now',{
                     id:props.detailingitem.id,
                     type:price_now_type.value,
-                    montant:montant,
-                    describeprixnow : describe_job_value.value
+                    montant:montant
                 }).then((res)=>{
                     //console.log(res);
                     if(price_now_type.value == "cleaning" ){
