@@ -669,17 +669,6 @@ Route::get('/merge-pdf',function(){
     shell_exec("gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=$output_file -dBATCH $files");
 });
 
-Route::get('/test-calcul-checkout',function(){
-    $payments = DB::table('payments')
-    ->rightJoin('cards',function($join){
-        $join->on('cards.id','=','payments.card_id');
-    })
-    ->where('payments.order_id',129653)->whereNotNull('cards.type')->where('payments.status','succeeded')->get();
-
-    echo "<pre>";
-    print_r($payments);
-
-});
 
 /* END TEST ROUTES */
 

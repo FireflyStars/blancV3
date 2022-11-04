@@ -1087,7 +1087,7 @@ export default {
                 order_id:order_id.value,
                 amount_to_pay:amount_to_pay.value,
                 balance:order_balance.value,
-                credit_to_deduct:credit_to_deduct.value,
+                credit_to_deduct:parseFloat(credit_to_deduct.value),
                 paylater:(paylater?1:0),
             }).then((res)=>{
 
