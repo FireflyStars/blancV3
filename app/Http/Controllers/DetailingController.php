@@ -577,6 +577,10 @@ class DetailingController extends Controller
                         'dry_cleaning_price'=>$request->montant,
                         'cleaning_addon_price'=>0,
                     ]);
+                }else{
+                    DB::table('detailingitem')->where('id',$detailingitem_id)->update([
+                        'describeprixnow' => null
+                    ]);
                 }
 
 
@@ -584,6 +588,7 @@ class DetailingController extends Controller
                     DB::table('detailingitem')->where('id',$detailingitem_id)->update([
                         'dry_cleaning_price'=>0,
                         'cleaning_addon_price'=>0,
+                        'describeprixnow' => null
                     ]);
                 }
 
@@ -593,6 +598,11 @@ class DetailingController extends Controller
                         'tailoring_services'=>$tailoring_services,
                         'tailoring_price'=>$tailoring_price,
                         'tailoring_price_type'=>$tailoring_price_type,
+                    ]);
+                }
+                if($tailoring_price_type!='PriceNow'){
+                    DB::table('detailingitem')->where('id',$detailingitem_id)->update([
+                        'describeprixnowtailoring' => null
                     ]);
                 }
             }
@@ -2153,7 +2163,6 @@ class DetailingController extends Controller
         $type = $request->type;
         $id = $request->id;
         $montant = $request->montant;
-        $describeprixnow = $request->describeprixnow;
 
         $updated = false;
 
@@ -2161,7 +2170,8 @@ class DetailingController extends Controller
             $updated = DB::table('detailingitem')->where('id',$id)->update([
                 'tailoring_price_type'=>'PriceNow',
                 'tailoring_price'=>$montant,
-                'updated_at'=>date('Y-m-d H:i:s')
+                'updated_at'=>date('Y-m-d H:i:s'),
+                'describeprixnowtailoring'=> null
             ]);
         }
         if($type=='cleaning'){
@@ -2169,7 +2179,8 @@ class DetailingController extends Controller
                 'cleaning_price_type'=>'PriceNow',
                 'dry_cleaning_price'=>$montant,
                 'cleaning_addon_price'=>0,
-                'updated_at'=>date('Y-m-d H:i:s')
+                'updated_at'=>date('Y-m-d H:i:s'),
+                'describeprixnow'=> null
             ]);
         }
 
