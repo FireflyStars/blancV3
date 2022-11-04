@@ -1923,9 +1923,6 @@ class DetailingController extends Controller
 */
         $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
 
-        $balance = $order->Total;
-
-
         $amount_paid = 0;
 
         if(count($payments) > 0){
@@ -1953,9 +1950,12 @@ class DetailingController extends Controller
                 }
             }
 
-            $balance = $order->Total;//number_format($total_with_discount,2) - number_format($amount_paid,2);
+            //$balance = $order->Total;//number_format($total_with_discount,2) - number_format($amount_paid,2);
 
         }
+
+
+        $balance = $order->Total - $amount_paid;
 
         $amount_without_credit = $balance;
         $amount_to_pay = $balance;

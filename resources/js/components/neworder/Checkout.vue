@@ -184,7 +184,7 @@
                                 <div class="row justify-content-end mt-3 mx-0">
                                     <div class="col-8 py-3" id="summary_div">
                                         <span class="summary-title">Order Total</span><span id="summary_item_count" v-if="created_date !=''">Placed on {{created_date}}</span>
-                                        <div class="row px-0 mt-4 sub-total-text">
+                                        <div class="row px-0 mt-4 sub-total-text" v-if="order.itemsTotal > 0">
                                             <div class="col-4">Items total</div>
                                             <div class="col-5 sub-total-desc">{{order_items.length}} item<span v-if="order_items.length > 1">s</span> (Incl. VAT)</div>
 
@@ -257,7 +257,7 @@
                                           <div class="row px-0 mt-2 sub-total-text" v-else :class="{'d-none':order.TypeDelivery!='DELIVERY'}">
                                             <div class="col-12">Free Delivery</div>
                                         </div>
-                                        <div class="row px-0 mt-1 mb-3 pt-2  total-text" v-if="order.TypeDelivery=='DELIVERY'">
+                                        <div class="row px-0 mt-1 mb-3 pt-2  total-text">
                                             <div class="col-9">Total</div>
                                             <div class="col-3 text-align-right">{{formatPrice(order.Total)}}</div>
                                         </div>
@@ -308,7 +308,7 @@
                                                 </template>
                                             </div>
                                         </div>
-                                        <div class="row px-0 py-1 sub-total-text" v-if="amount_without_credit > 0&&cust.credit_to_deduct!=0">
+                                        <div class="row px-0 py-1 sub-total-text" v-if="amount_without_credit > 0 && cust.credit_to_deduct!=0">
                                             <div class="col-4">Minus cash credit</div>
                                             <div class="col-8">
                                                 <div class="row">
