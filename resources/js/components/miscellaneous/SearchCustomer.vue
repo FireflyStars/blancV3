@@ -51,7 +51,7 @@
                         </div>
                        <div class="col-2" style="text-align: end;" >
                             <!-- <tag   :name="'Orders'" ></tag> -->
-                            <button  class="btn btn-white body_medium text-nowrap btn-new-orders" @click="goToNewOrder(customer.CustomerID)"> New order</button>
+                            <button v-if="customer.Pickup.length > 0"  class="btn btn-white body_medium text-nowrap btn-new-orders" @click="goToNewOrder(customer.CustomerID)"> New order</button>
                         </div>
                         <div class="col-2" style="text-align: end;">
                             <button class="btn btn-white body_medium text-nowrap btn-all-orders"  @click="goToOrderList(customer.CustomerID)"> All Orders</button>
@@ -408,14 +408,12 @@ export default({
 
           function goToNewOrder(customerId){
             // this.clearSearch()
-
             // router.push({
             //         name:'NewOrder',
             //         params: {
             //            customerId,
             //         },
             //     })
-                
           }
 
           function goCustomerView(customerId){
