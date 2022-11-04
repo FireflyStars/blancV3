@@ -184,41 +184,15 @@
                                 <div class="row justify-content-end mt-3 mx-0">
                                     <div class="col-8 py-3" id="summary_div">
                                         <span class="summary-title">Order Total</span><span id="summary_item_count" v-if="created_date !=''">Placed on {{created_date}}</span>
-                                        <div class="row px-0 mt-4 sub-total-text">
-                                            <div class="col-4">Subtotal</div>
+                                        <div class="row px-0 mt-4 sub-total-text" v-if="order.itemsTotal > 0">
+                                            <div class="col-4">Items total</div>
                                             <div class="col-5 sub-total-desc">{{order_items.length}} item<span v-if="order_items.length > 1">s</span> (Incl. VAT)</div>
 
 
-                                            <div class="col-3 text-align-right">{{formatPrice(order.Subtotal)}}</div>
+                                            <div class="col-3 text-align-right">{{formatPrice(order.itemsTotal)}}</div>
 
                                         </div>
 
-
-                                        <div class="row px-0 mt-2 sub-total-text align-items-center" v-if="parseFloat(cust.discount) > 0 || parseFloat(order.AccountDiscount) > 0">
-                                            <div class="col-4">Account Discount</div>
-                                            <div class="col-5 sub-total-desc"> <span v-if="cust.discount > 0">{{cust.discount}}% (applied)</span></div>
-                                            <div class="col-3 text-align-right"><span v-if="order.AccountDiscount > 0">-</span>{{formatPrice(order.AccountDiscount)}}</div>
-                                        </div>
-                                        <div class="row px-0 mt-2 sub-total-text" v-if="parseFloat(order.DiscountPerc) > 0 || parseFloat(order.OrderDiscount) > 0">
-                                            <div class="col-4">Order Discount</div>
-                                            <div class="col-5 sub-total-desc"> <span v-if="order.DiscountPerc > 0">{{order.DiscountPerc.toFixed()}}% (applied)</span></div>
-                                            <div class="col-3 text-align-right"><span v-if="order.OrderDiscount > 0">-</span>{{formatPrice(order.OrderDiscount)}}</div>
-                                        </div>
-                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.VoucherDiscount > 0">
-                                            <div class="col-9">Voucher Discount</div>
-                                            <div class="col-3 text-align-right">-{{formatPrice(order.VoucherDiscount)}}</div>
-                                        </div>
-
-                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.ExpressCharge > 0">
-                                            <div class="col-9">Express Charges</div>
-                                            <div class="col-3 text-align-right">+{{formatPrice(order.ExpressCharge)}}</div>
-                                        </div>
-                                        <!--
-                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.bundles > 0">
-                                            <div class="col-9">Bundles</div>
-                                            <div class="col-3 text-align-right">-{{formatPrice(order.bundles)}}</div>
-                                        </div>
-                                        -->
 
                                         <div class="row px-0 sub-total-text" v-if="Object.keys(order_bundles).length > 0" id="bundles_bloc">
                                             <div class="col-12">
@@ -231,12 +205,43 @@
                                             </div>
                                         </div>
 
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.VoucherDiscount > 0">
+                                            <div class="col-9">Voucher Discount</div>
+                                            <div class="col-3 text-align-right">-{{formatPrice(order.VoucherDiscount)}}</div>
+                                        </div>
+
+
+
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.ExpressCharge > 0">
+                                            <div class="col-9">Express Charges</div>
+                                            <div class="col-3 text-align-right">+{{formatPrice(order.ExpressCharge)}}</div>
+                                        </div>
+                                        <!--
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.bundles > 0">
+                                            <div class="col-9">Bundles</div>
+                                            <div class="col-3 text-align-right">-{{formatPrice(order.bundles)}}</div>
+                                        </div>
+                                        -->
 
 
                                         <div class="row px-0 mt-1 pt-2 total-text" :class="{'mb-3':order.TypeDelivery=='DELIVERY'}">
-                                            <div class="col-9">Total (inc discount)</div>
-                                            <div class="col-3 text-align-right">{{formatPrice(order.SubtotalWithDiscount)}}</div><!--total_inc_vat-->
+                                            <div class="col-9">Sub-total</div>
+                                            <div class="col-3 text-align-right">{{formatPrice(order.Subtotal)}}</div><!--total_inc_vat-->
                                         </div>
+
+                                          <div class="row px-0 mt-2 sub-total-text" v-if="parseFloat(order.DiscountPerc) > 0 || parseFloat(order.OrderDiscount) > 0">
+                                            <div class="col-4">Order Discount</div>
+                                            <div class="col-5 sub-total-desc"> <span v-if="order.DiscountPerc > 0">{{order.DiscountPerc.toFixed()}}% (applied)</span></div>
+                                            <div class="col-3 text-align-right"><span v-if="order.OrderDiscount > 0">-</span>{{formatPrice(order.OrderDiscount)}}</div>
+                                        </div>
+
+                                        <div class="row px-0 mt-2 sub-total-text align-items-center" v-if="parseFloat(cust.discount) > 0 || parseFloat(order.AccountDiscount) > 0">
+                                            <div class="col-4">Account Discount</div>
+                                            <div class="col-5 sub-total-desc"> <span v-if="cust.discount > 0">{{cust.discount}}% (applied)</span></div>
+                                            <div class="col-3 text-align-right"><span v-if="order.AccountDiscount > 0">-</span>{{formatPrice(order.AccountDiscount)}}</div>
+                                        </div>
+
+
                                          <div class="row px-0 mt-2 sub-total-text" v-if="order.FailedDelivery == 1 && order.TypeDelivery=='DELIVERY'">
                                             <div class="col-9">Failed delivery</div>
                                             <div class="col-3 text-align-right">+{{formatPrice(order.FailedDeliveryCharge)}}</div>
@@ -252,8 +257,8 @@
                                           <div class="row px-0 mt-2 sub-total-text" v-else :class="{'d-none':order.TypeDelivery!='DELIVERY'}">
                                             <div class="col-12">Free Delivery</div>
                                         </div>
-                                        <div class="row px-0 mt-1 mb-3 pt-2  total-text" v-if="order.TypeDelivery=='DELIVERY'">
-                                            <div class="col-9">Total (inc discount & delivery fees)</div>
+                                        <div class="row px-0 mt-1 mb-3 pt-2  total-text">
+                                            <div class="col-9">Total</div>
                                             <div class="col-3 text-align-right">{{formatPrice(order.Total)}}</div>
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text">
@@ -264,10 +269,12 @@
                                             <div class="col-9">Tax</div>
                                             <div class="col-3 text-align-right">{{formatPrice(order.TaxAmount)}}</div>
                                         </div>
-                                             <div class="row px-0 mt-1 mb-3 pt-2  total-text">
+                                        <!--
+                                        <div class="row px-0 mt-1 mb-3 pt-2  total-text">
                                             <div class="col-9">Total (inc vat)</div>
                                             <div class="col-3 text-align-right">{{formatPrice(order.Total)}}</div>
                                         </div>
+                                        -->
                                     </div>
                                 </div>
                                 <!-- Credit / Balance -->
@@ -280,27 +287,28 @@
                                             <span class="summary-title" v-else>Pending payments</span>
                                         </div>
                                         <div class="row mt-4 px-0 py-1 sub-total-text">
-                                        
+
                                             <div class="col-12" v-if="amount_paid_card.length > 0">
                                                 <div class="row" v-for="a,i in amount_paid_card" :key="i">
-                                                    <div class="col-9 px-0 payment-desc-text">Paid by Card ({{ a.type[0].toUpperCase() + a.type.slice(1)}} {{a.cardNumber.slice(-7)}}):</div>
+                                                    <div class="col-9 px-0 payment-desc-text">Paid by Card ({{ a.type[0].toUpperCase() + a.type.slice(1)}} {{a.cardNumber.slice(-7)}}) on <small>{{a.date}}</small>:</div>
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
                                                 </div>
                                             </div>
+                                            <!--
                                             <div class="col-12 text-align-right" v-else>&#163;0.00</div>
+                                            -->
                                         </div>
-
                                         <div class="row px-0 py-1 sub-total-text" v-if="amountPaidCredit(amount_paid_credit) > 0">
                                             <div class="col-12">
                                                 <template v-for="a,i in amount_paid_credit" :key="i">
                                                 <div class="row" v-if="a.montant>0">
-                                                    <div class="col-9 px-0 payment-desc-text">Paid by cash credit:</div>
+                                                    <div class="col-9 px-0 payment-desc-text">Paid by cash credit on <small>{{a.date}}</small>:</div>
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
                                                 </div>
                                                 </template>
                                             </div>
                                         </div>
-                                        <div class="row px-0 py-1 sub-total-text" v-if="amount_without_credit > 0&&cust.credit_to_deduct!=0">
+                                        <div class="row px-0 py-1 sub-total-text" v-if="amount_without_credit > 0 && cust.credit_to_deduct!=0">
                                             <div class="col-4">Minus cash credit</div>
                                             <div class="col-8">
                                                 <div class="row">
@@ -312,7 +320,7 @@
 
                                          <div class="row px-0 mt-4 py-2 balance-text">
                                             <div class="col-9">Outstanding order balance to pay</div>
-                                            <div class="col-3 text-align-right">&#163;{{cust.amount_diff}}</div>
+                                            <div class="col-3 text-align-right">{{formatPrice(order.TotalDue)}}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -891,11 +899,30 @@ export default {
         ]);
 
 
-        function getCheckoutItems(){
-            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
-                true,
-                "Loading details....",
-            ]);
+        const getCheckoutItems =  async()=>{
+
+            try{
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
+                    true,
+                    "Loading details....",
+                ]);
+
+                console.log('pre-calculate-checkout');
+
+                await axios.post('/pre-calculate-checkout',{
+                        order_id:order_id.value,
+                }).then((res)=>{
+
+                }).catch((err)=>{
+
+                }).finally(()=>{
+
+                });
+
+            }finally{
+                console.log('end pre-calculate-checkout');
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                console.log('start get items');
 
             axios.post('/get-checkout-items',{
                 order_id:order_id.value,
@@ -946,8 +973,10 @@ export default {
             }).catch((err)=>{
 
             }).finally(()=>{
-                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+
             });
+
+            }
         }
         getCheckoutItems();
 
@@ -1176,73 +1205,92 @@ export default {
         }
 
         function setOrderUpcharge(id){
+            let el = document.getElementById('upcharge_btn_'+id);
+            el.classList.toggle('addon-selected');
+            let classes = Object.values(el.classList);
+
 
             if(id==4){
-                if(order.value.DeliveryNowFee!=null){
+
+                if(!classes.includes('addon-selected')){
                     store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
-                true,
-                "Delete price delivery now....",
-            ]);
+                        true,
+                        "Delete price delivery now....",
+                    ]);
 
-            axios.post('/save-price-delivery-now',{
-                price:null,
-                order_id:order_id.value
-            }).then((res)=>{
-                getCheckoutItems();
-            }).catch((err)=>{
+                    const deletePriceNow = async()=>{
+                        try{
+                            await axios.post('/save-price-delivery-now',{
+                                price:null,
+                                order_id:order_id.value
+                            }).then((res)=>{
 
-            }).finally(()=>{
+                            }).catch((err)=>{
 
-            });
+                            }).finally(()=>{
+
+                            });
+                        }finally{
+                            getCheckoutItems();
+                        }
+                    }
+
+                    deletePriceNow();
                 }else{
                     price_delivery_now_modal.value.showModal();
                 }
                 return;
-            }
-            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
-                true,
-                "Setting upcharges....",
-            ]);
+            }else{
 
-            let el = document.getElementById('upcharge_btn_'+id);
-            el.classList.toggle('addon-selected');
-
-            let classes = Object.values(el.classList);
-            let selected = false;
-            let other_exp_ids = [];
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
+                    true,
+                    "Setting upcharges....",
+                ]);
 
 
 
-            if(classes.includes('addon-selected')){
-                selected = true;
 
-                if(classes.includes('is-express-upcharge')){
-                    let other_exp_els = Object.values(document.querySelectorAll('.is-express-upcharge:not(#upcharge_btn_'+id+')'));
 
-                    if(other_exp_els.length > 0){
-                        other_exp_els.forEach((v,i)=>{
-                            let other_id = v.getAttribute('data-id');
-                            other_exp_ids.push(other_id);
-                            v.classList.remove('addon-selected');
-                        });
+                let selected = false;
+                let other_exp_ids = [];
+
+
+
+                if(classes.includes('addon-selected')){
+                    selected = true;
+
+                    if(classes.includes('is-express-upcharge')){
+                        let other_exp_els = Object.values(document.querySelectorAll('.is-express-upcharge:not(#upcharge_btn_'+id+')'));
+
+                        if(other_exp_els.length > 0){
+                            other_exp_els.forEach((v,i)=>{
+                                let other_id = v.getAttribute('data-id');
+                                other_exp_ids.push(other_id);
+                                v.classList.remove('addon-selected');
+                            });
+                        }
+                    }else{
+
+                            document.getElementById('upcharge_btn_4').classList.remove('addon-selected');
+
                     }
                 }
+
+                axios.post('/set-checkout-addon',{
+                    order_id:order_id.value,
+                    addon_id:id,
+                    exp_addons_to_remove:JSON.stringify(other_exp_ids),
+                    selected:selected,
+                }).then((res)=>{
+                    console.log(res);
+                }).catch((err)=>{
+
+                }).finally(()=>{
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    getCheckoutItems();
+
+                });
             }
-
-            axios.post('/set-checkout-addon',{
-                order_id:order_id.value,
-                addon_id:id,
-                exp_addons_to_remove:JSON.stringify(other_exp_ids),
-                selected:selected,
-            }).then((res)=>{
-                console.log(res);
-            }).catch((err)=>{
-
-            }).finally(()=>{
-                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                getCheckoutItems();
-
-            });
         }
 
         function promptRemoveVoucher(id,code){
@@ -1297,8 +1345,6 @@ export default {
                                 ttl: 3,
                                 type: 'danger'
                             });
-                        }else{
-                            getCheckoutItems();
                         }
                     }).catch(err=>{
 
@@ -1306,6 +1352,7 @@ export default {
                     });
                 } finally {
                     btn_disabled.value = false;
+                    getCheckoutItems();
                 }
             }
 
@@ -1332,17 +1379,26 @@ export default {
                 "Saving price delivery now....",
             ]);
 
-            axios.post('/save-price-delivery-now',{
-                price:parseFloat(pricedeliverynow.value),
-                order_id:order_id.value
-            }).then((res)=>{
-                closePriceDeliveryNowModal();
-                getCheckoutItems();
-            }).catch((err)=>{
+            const savePriceDeliveryNow = async() =>{
+                try{
+                    console.log('before save price');
+                    await axios.post('/save-price-delivery-now',{
+                        price:parseFloat(pricedeliverynow.value),
+                        order_id:order_id.value
+                    }).then((res)=>{
 
-            }).finally(()=>{
+                    }).catch((err)=>{
 
-            });
+                    }).finally(()=>{
+
+                    });
+                }finally{
+                    console.log('finally called');
+                    closePriceDeliveryNowModal();
+                    getCheckoutItems();
+                }
+            }
+            savePriceDeliveryNow();
         }
 
         const handleAllowNumbers = (e) => {//handle price format xxxxx.xx

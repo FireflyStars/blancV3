@@ -45,7 +45,7 @@
     import {featureUnavailable} from "../helpers/helpers";
     import {formatPrice} from '../helpers/helpers';
     import {NEWORDER_GET_CUSTOMER, NEWORDER_MODULE, NEWORDER_PRELOAD_ORDER_GET} from "../../store/types/types";
-import { useRouter } from 'vue-router';
+    import { useRouter, useRoute } from 'vue-router';
     export default {
         name: "CustomerDetailsPanel",
         components:{Search},
@@ -54,6 +54,18 @@ import { useRouter } from 'vue-router';
             const edit_customer=ref(false);
             const store=useStore();
             const router = useRouter();
+            const route=useRoute();
+
+            if(route.params.customerId != null){
+
+                store.dispatch(`${NEWORDER_MODULE}${NEWORDER_GET_CUSTOMER}`,{CustomerID:route.params.customerId}).then((res)=>{
+                    console.log('res',res);
+                    edit_customer.value=false;
+
+                }).finally(()=>{
+                   context.emit('setcustomerid',route.params.customerId);
+                });
+            }
 
             watch(()=>CustomerID.value,(current_val,previous_val)=>{
 

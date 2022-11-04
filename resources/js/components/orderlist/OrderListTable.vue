@@ -81,6 +81,7 @@
         ORDERLIST_MARK_AS_LATE,
         ORDERLIST_CUSTOMER_ORDERS,
         ORDERLIST_CUSTOMER_SMSDELIVERY,
+        ORDER_GET_STATUS
     } from '../../store/types/types';
     import Tag from  '../miscellaneous/Tag'
     import CheckBox from '../miscellaneous/CheckBox'
@@ -101,6 +102,10 @@
             const listCustomers = ref([]);
             const NoDeliveryDate = ref(true)
             data.value = route.params.value;
+
+            const Status_LIST=computed(()=>{
+                return store.getters[`${ORDERLIST_MODULE}${ORDER_GET_STATUS}`];
+            });
             const ORDER_LIST=computed(()=>{
                 return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_LIST}`];
             });
@@ -236,7 +241,8 @@
                         'infoOrder.Status':{
                             name:"Order status",
                             type: 'select',
-                            options:{
+                            options:Status_LIST
+                            /*{
                                 'ASSEMBLING':'ASSEMBLING',
                                 'AWAITING REDELIVERY':'AWAITING REDELIVERY',
                                 'AWAITING SALE':'AWAITING SALE',
@@ -271,7 +277,7 @@
                                 'SOLD':'SOLD',
                                 'VOID':'VOID',
     
-                            }
+                            }*/
                         },
                         'infoCustomer.TypeDelivery':{
                             name:"Destination",
@@ -374,42 +380,7 @@
                         'infoOrder.Status':{
                             name:"Order status",
                             type: 'select',
-                            options:{
-                                'ASSEMBLING':'ASSEMBLING',
-                                'AWAITING REDELIVERY':'AWAITING REDELIVERY',
-                                'AWAITING SALE':'AWAITING SALE',
-                                'CANCELLED':'CANCELLED',
-                                'CHECK IN ATELIER':'CHECK IN ATELIER',
-                                'COLLECTED':'COLLECTED',
-                                'DELETE':'DELETE',
-                                'DELIVERED':'DELIVERED',
-                                'DELIVERED TO STORE':'DELIVERED TO STORE',
-                                'DELIVERY IN STORE':'DELIVERY IN STORE',
-                                'DONATED TO CHARITY':'DONATED TO CHARITY',
-                                'DROPPED OFF':'DROPPED OFF',
-                                'FAILED DELIVERY':'FAILED DELIVERY',
-                                'FAILED PAYMENT':'FAILED PAYMENT',
-                                'FULFILLED':'FULFILLED',
-                                'IN PROCESS':'IN PROCESS',
-                                'IN STORAGE':'IN STORAGE',
-                                'LATE':'LATE',
-                                'LATE DELIVERY':'LATE DELIVERY',
-                                'MISSED PICKUP':'MISSED PICKUP',
-                                'OFFLOADED':'OFFLOADED',
-                                'ON VAN':'ON VAN',
-                                'OVERDUE FOR COLLECTION':'OVERDUE FOR COLLECTION',
-                                'OVERDUE STORE':'OVERDUE STORE',
-                                'PART ON HOLD':'PART ON HOLD',
-                                'PART PENDING':'PART PENDING',
-                                'PICKED UP':'PICKED UP',
-                                'READY':'READY',
-                                'RECURRING':'RECURRING',
-                                'READY IN STORE':'READY IN STORE',
-                                'SCHEDULED':'SCHEDULED',
-                                'SOLD':'SOLD',
-                                'VOID':'VOID',
-
-                            }
+                            options: Status_LIST
                         },
                         'infoCustomer.TypeDelivery':{
                             name:"Destination",
@@ -473,42 +444,7 @@
                         'infoOrder.Status':{
                             name:"Order status",
                             type: 'select',
-                            options:{
-                                'ASSEMBLING':'ASSEMBLING',
-                                'AWAITING REDELIVERY':'AWAITING REDELIVERY',
-                                'AWAITING SALE':'AWAITING SALE',
-                                'CANCELLED':'CANCELLED',
-                                'CHECK IN ATELIER':'CHECK IN ATELIER',
-                                'COLLECTED':'COLLECTED',
-                                'DELETE':'DELETE',
-                                'DELIVERED':'DELIVERED',
-                                'DELIVERED TO STORE':'DELIVERED TO STORE',
-                                'DELIVERY IN STORE':'DELIVERY IN STORE',
-                                'DONATED TO CHARITY':'DONATED TO CHARITY',
-                                'DROPPED OFF':'DROPPED OFF',
-                                'FAILED DELIVERY':'FAILED DELIVERY',
-                                'FAILED PAYMENT':'FAILED PAYMENT',
-                                'FULFILLED':'FULFILLED',
-                                'IN PROCESS':'IN PROCESS',
-                                'IN STORAGE':'IN STORAGE',
-                                'LATE':'LATE',
-                                'LATE DELIVERY':'LATE DELIVERY',
-                                'MISSED PICKUP':'MISSED PICKUP',
-                                'OFFLOADED':'OFFLOADED',
-                                'ON VAN':'ON VAN',
-                                'OVERDUE FOR COLLECTION':'OVERDUE FOR COLLECTION',
-                                'OVERDUE STORE':'OVERDUE STORE',
-                                'PART ON HOLD':'PART ON HOLD',
-                                'PART PENDING':'PART PENDING',
-                                'PICKED UP':'PICKED UP',
-                                'READY':'READY',
-                                'RECURRING':'RECURRING',
-                                'READY IN STORE':'READY IN STORE',
-                                'SCHEDULED':'SCHEDULED',
-                                'SOLD':'SOLD',
-                                'VOID':'VOID',
-
-                            }
+                            options: Status_LIST                      
                         },
                         'infoCustomer.TypeDelivery':{
                             name:"Destination",

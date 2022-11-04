@@ -91,7 +91,7 @@ class BookingController extends Controller {
             $trancheto='20:00:00';
         }
         if($timeslot==13){
-            $tranchefrom='20:00:00';
+            $tranchefrom='08:00:00';
             $trancheto='20:00:00';
         }
 

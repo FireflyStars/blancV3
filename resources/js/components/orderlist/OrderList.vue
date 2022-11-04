@@ -50,8 +50,8 @@
         LOADER_MODULE,
         HIDE_LOADER,
         ORDERLIST_FILTER,
-        DISPLAY_LOADER
-
+        DISPLAY_LOADER,
+        ORDER_SET_STATUS
     } from '../../store/types/types';
     import {useRoute} from 'vue-router';
 
@@ -428,6 +428,7 @@
                        store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`, {search:route.params.value});
                     }
                 });
+                store.dispatch(`${ORDERLIST_MODULE}${ORDER_SET_STATUS}`);
             });
 
 
