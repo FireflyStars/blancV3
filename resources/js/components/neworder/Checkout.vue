@@ -185,40 +185,14 @@
                                     <div class="col-8 py-3" id="summary_div">
                                         <span class="summary-title">Order Total</span><span id="summary_item_count" v-if="created_date !=''">Placed on {{created_date}}</span>
                                         <div class="row px-0 mt-4 sub-total-text">
-                                            <div class="col-4">Subtotal</div>
+                                            <div class="col-4">Items total</div>
                                             <div class="col-5 sub-total-desc">{{order_items.length}} item<span v-if="order_items.length > 1">s</span> (Incl. VAT)</div>
 
 
-                                            <div class="col-3 text-align-right">{{formatPrice(order.Subtotal)}}</div>
+                                            <div class="col-3 text-align-right">{{formatPrice(order.itemsTotal)}}</div>
 
                                         </div>
 
-
-                                        <div class="row px-0 mt-2 sub-total-text align-items-center" v-if="parseFloat(cust.discount) > 0 || parseFloat(order.AccountDiscount) > 0">
-                                            <div class="col-4">Account Discount</div>
-                                            <div class="col-5 sub-total-desc"> <span v-if="cust.discount > 0">{{cust.discount}}% (applied)</span></div>
-                                            <div class="col-3 text-align-right"><span v-if="order.AccountDiscount > 0">-</span>{{formatPrice(order.AccountDiscount)}}</div>
-                                        </div>
-                                        <div class="row px-0 mt-2 sub-total-text" v-if="parseFloat(order.DiscountPerc) > 0 || parseFloat(order.OrderDiscount) > 0">
-                                            <div class="col-4">Order Discount</div>
-                                            <div class="col-5 sub-total-desc"> <span v-if="order.DiscountPerc > 0">{{order.DiscountPerc.toFixed()}}% (applied)</span></div>
-                                            <div class="col-3 text-align-right"><span v-if="order.OrderDiscount > 0">-</span>{{formatPrice(order.OrderDiscount)}}</div>
-                                        </div>
-                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.VoucherDiscount > 0">
-                                            <div class="col-9">Voucher Discount</div>
-                                            <div class="col-3 text-align-right">-{{formatPrice(order.VoucherDiscount)}}</div>
-                                        </div>
-
-                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.ExpressCharge > 0">
-                                            <div class="col-9">Express Charges</div>
-                                            <div class="col-3 text-align-right">+{{formatPrice(order.ExpressCharge)}}</div>
-                                        </div>
-                                        <!--
-                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.bundles > 0">
-                                            <div class="col-9">Bundles</div>
-                                            <div class="col-3 text-align-right">-{{formatPrice(order.bundles)}}</div>
-                                        </div>
-                                        -->
 
                                         <div class="row px-0 sub-total-text" v-if="Object.keys(order_bundles).length > 0" id="bundles_bloc">
                                             <div class="col-12">
@@ -231,12 +205,43 @@
                                             </div>
                                         </div>
 
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.VoucherDiscount > 0">
+                                            <div class="col-9">Voucher Discount</div>
+                                            <div class="col-3 text-align-right">-{{formatPrice(order.VoucherDiscount)}}</div>
+                                        </div>
+
+
+
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.ExpressCharge > 0">
+                                            <div class="col-9">Express Charges</div>
+                                            <div class="col-3 text-align-right">+{{formatPrice(order.ExpressCharge)}}</div>
+                                        </div>
+                                        <!--
+                                        <div class="row px-0 mt-2 sub-total-text" v-if="order.bundles > 0">
+                                            <div class="col-9">Bundles</div>
+                                            <div class="col-3 text-align-right">-{{formatPrice(order.bundles)}}</div>
+                                        </div>
+                                        -->
 
 
                                         <div class="row px-0 mt-1 pt-2 total-text" :class="{'mb-3':order.TypeDelivery=='DELIVERY'}">
-                                            <div class="col-9">Total (inc discount)</div>
-                                            <div class="col-3 text-align-right">{{formatPrice(order.SubtotalWithDiscount)}}</div><!--total_inc_vat-->
+                                            <div class="col-9">Sub-total</div>
+                                            <div class="col-3 text-align-right">{{formatPrice(order.Subtotal)}}</div><!--total_inc_vat-->
                                         </div>
+
+                                          <div class="row px-0 mt-2 sub-total-text" v-if="parseFloat(order.DiscountPerc) > 0 || parseFloat(order.OrderDiscount) > 0">
+                                            <div class="col-4">Order Discount</div>
+                                            <div class="col-5 sub-total-desc"> <span v-if="order.DiscountPerc > 0">{{order.DiscountPerc.toFixed()}}% (applied)</span></div>
+                                            <div class="col-3 text-align-right"><span v-if="order.OrderDiscount > 0">-</span>{{formatPrice(order.OrderDiscount)}}</div>
+                                        </div>
+
+                                        <div class="row px-0 mt-2 sub-total-text align-items-center" v-if="parseFloat(cust.discount) > 0 || parseFloat(order.AccountDiscount) > 0">
+                                            <div class="col-4">Account Discount</div>
+                                            <div class="col-5 sub-total-desc"> <span v-if="cust.discount > 0">{{cust.discount}}% (applied)</span></div>
+                                            <div class="col-3 text-align-right"><span v-if="order.AccountDiscount > 0">-</span>{{formatPrice(order.AccountDiscount)}}</div>
+                                        </div>
+
+
                                          <div class="row px-0 mt-2 sub-total-text" v-if="order.FailedDelivery == 1 && order.TypeDelivery=='DELIVERY'">
                                             <div class="col-9">Failed delivery</div>
                                             <div class="col-3 text-align-right">+{{formatPrice(order.FailedDeliveryCharge)}}</div>
@@ -253,7 +258,7 @@
                                             <div class="col-12">Free Delivery</div>
                                         </div>
                                         <div class="row px-0 mt-1 mb-3 pt-2  total-text" v-if="order.TypeDelivery=='DELIVERY'">
-                                            <div class="col-9">Total (inc discount & delivery fees)</div>
+                                            <div class="col-9">Total</div>
                                             <div class="col-3 text-align-right">{{formatPrice(order.Total)}}</div>
                                         </div>
                                         <div class="row px-0 mt-2 sub-total-text">
@@ -264,10 +269,12 @@
                                             <div class="col-9">Tax</div>
                                             <div class="col-3 text-align-right">{{formatPrice(order.TaxAmount)}}</div>
                                         </div>
-                                             <div class="row px-0 mt-1 mb-3 pt-2  total-text">
+                                        <!--
+                                        <div class="row px-0 mt-1 mb-3 pt-2  total-text">
                                             <div class="col-9">Total (inc vat)</div>
                                             <div class="col-3 text-align-right">{{formatPrice(order.Total)}}</div>
                                         </div>
+                                        -->
                                     </div>
                                 </div>
                                 <!-- Credit / Balance -->
@@ -291,7 +298,6 @@
                                             <div class="col-12 text-align-right" v-else>&#163;0.00</div>
                                             -->
                                         </div>
-
                                         <div class="row px-0 py-1 sub-total-text" v-if="amountPaidCredit(amount_paid_credit) > 0">
                                             <div class="col-12">
                                                 <template v-for="a,i in amount_paid_credit" :key="i">

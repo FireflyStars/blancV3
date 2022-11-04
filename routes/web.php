@@ -670,10 +670,14 @@ Route::get('/merge-pdf',function(){
 });
 
 Route::get('/test-calcul-checkout',function(){
-    $ct = new DetailingController();
+    $payments = DB::table('payments')
+    ->rightJoin('cards',function($join){
+        $join->on('cards.id','=','payments.card_id');
+    })
+    ->where('payments.order_id',129653)->whereNotNull('cards.type')->where('payments.status','succeeded')->get();
 
-    $ct->calculateCheckout(129653);
-
+    echo "<pre>";
+    print_r($payments);
 
 });
 
