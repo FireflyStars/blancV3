@@ -2120,7 +2120,31 @@ class CustomerController extends Controller
             'PauseDateTo'   => $request->pauseDateTo,
             'PauseDateFrom' => $request->pauseDateFrom,
         ]);
+        $full_address = "";
         $infocustomer = DB::table('infoCustomer')->where('id',$request->customerId)->first();
+        $addr = DB::table('infoCustomer')
+            ->select('infoCustomer.FirstName','infoCustomer.EmailAddress','infoCustomer.Name as custname','address.*')
+            ->join('address','infoCustomer.CustomerID','address.CustomerID')
+            ->where('address.CustomerID', $infocustomer->CustomerID)
+            ->where('address.status','DELIVERY')
+            ->first();
+
+        if($addr) {
+            $full_address = $addr->address1 . ($addr->address2 != '' ? ", " . $addr->address2 : "") . ", " . $addr->postcode . ", " . $addr->Town . (!is_null($addr->County) ? ", " . $addr->County : "") . ", " . $addr->Country;
+
+            $mail_vars = [
+                'FirstName' => $addr->FirstName,
+                'FullName' => $addr->custname,
+                'UserAddress' => $full_address,
+                'PauseStart' => date('d/m/Y', strtotime($request->pauseDateFrom)),
+                'PauseEnd' => date('d/m/Y', strtotime($request->pauseDateTo)),
+                'AppAddToCalendarLink' =>'',
+             ];
+
+            NotificationController::Notify($addr->EmailAddress, '+123456789', '4B_RECURRING_PAUSE', '', $mail_vars, false, 0, $infocustomer->CustomerID);
+        
+        }
+
         OrderRecurringCreator::processRecurringOrders('PAUSE RECCURING BOOKING',$infocustomer->CustomerID);
         return response()->json($success);
     }
@@ -2512,6 +2536,8 @@ class CustomerController extends Controller
 
         $to_insert = [];
 
+        $user = Auth::user();
+
         foreach($simplified_grouped_by_customer as $k=>$v){
             $total = 0;
             $info = [];
@@ -2530,6 +2556,7 @@ class CustomerController extends Controller
                 'info'=>json_encode($info),
                 'email'=>'',
                 'created_at'=>date('Y-m-d H:i:s'),
+                'user_id'=>$user->id,
             ];
 
             $row_id = DB::table('infoOrderPrint')->insertGetId($to_insert);

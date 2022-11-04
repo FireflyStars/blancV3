@@ -103,8 +103,10 @@ class DetailingController extends Controller
         //dry_cleaning_price = typeitem.pricecleaning +  typeitem.pricecleaning*brands.coefcleaning
         //+  SUM (typeitem.pricecleaning*complexities.coefcleaning) + SUM(typeitem.pricecleaning*fabrics.coefcleaning )
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
-        if($order->Status=="FULFILLED")
-        return;
+
+        if($order->Status=="FULFILLED"){
+            return;
+        }
             $detailingitemlist = DB::table('detailingitem')->select(['detailingitem.id','detailingitem.pricecleaning','brands.coefcleaning','detailingitem.complexities_id','detailingitem.fabric_id','detailingitem.cleaning_services','detailingitem.etape','detailingitem.status','detailingitem.cleaning_price_type','detailingitem.dry_cleaning_price','detailingitem.cleaning_addon_price','detailingitem.etape'])
                 ->join('typeitem', 'detailingitem.typeitem_id', 'typeitem.id')
                 ->join('brands', 'detailingitem.brand_id', 'brands.id')
@@ -180,6 +182,7 @@ class DetailingController extends Controller
         ]);
         return response()->json(['updated'=>$updated]);
     }
+
     public function initDetailing(Request $request)
     {
         $search = $request->post('search');
@@ -1142,6 +1145,20 @@ class DetailingController extends Controller
                 $_SUBTOTAL += $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
             }
 
+        $_BUNDLES_DISCOUNT=0;
+
+        $bundles_id = DetailingController::checkOrderBundles($order_id);
+
+        if(!empty($bundles_id)){
+            $bundles = DB::table('bundles')->whereIn('id',$bundles_id)->get();
+
+            foreach($bundles as $k=>$v){
+                $_BUNDLES_DISCOUNT += $v->discount;
+            }
+        }
+
+
+        $_SUBTOTAL_WITH_DISCOUNT = $_SUBTOTAL - $_BUNDLES_DISCOUNT;
 
         $_EXPRESS_CHARGES_PRICE = 0;
         $_FAILED_DELIVERY_PRICE = 0;
@@ -1164,22 +1181,12 @@ class DetailingController extends Controller
         $_ORDER_DISCOUNT = 0;
 
         if($order->detailed_at=='0000-00-00 00:00:00'){
-            $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL;
+            $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL_WITH_DISCOUNT;
         }
 
 
-        $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
-        $_BUNDLES_DISCOUNT=0;
+        $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL_WITH_DISCOUNT;
 
-        $bundles_id = DetailingController::checkOrderBundles($order_id);
-
-        if(!empty($bundles_id)){
-            $bundles = DB::table('bundles')->whereIn('id',$bundles_id)->get();
-
-            foreach($bundles as $k=>$v){
-                $_BUNDLES_DISCOUNT += $v->discount;
-            }
-        }
         $_VOUCHER_DISCOUNT=0;
         $voucher_codes = [];
 
@@ -1215,12 +1222,15 @@ class DetailingController extends Controller
 
        //SubTotal inc Discount = SubTotal (excl Discount) - Account Discount - Order Discount - Bundles + Express Charge - voucher
 
-        $_SUBTOTAL_WITH_DISCOUNT=$_SUBTOTAL-$_ACCOUNT_DISCOUNT-$_ORDER_DISCOUNT-$_BUNDLES_DISCOUNT+$_EXPRESS_CHARGES_PRICE-$_VOUCHER_DISCOUNT;
+        $_SUBTOTAL_WITH_DISCOUNT=$_SUBTOTAL_WITH_DISCOUNT-$_ACCOUNT_DISCOUNT-$_ORDER_DISCOUNT+$_EXPRESS_CHARGES_PRICE-$_VOUCHER_DISCOUNT;
 
 
 
-        if($order->TypeDelivery=='DELIVERY'&&$_SUBTOTAL_WITH_DISCOUNT<25)
-            $_AUTO_DELIVERY_FEE=25-$_SUBTOTAL_WITH_DISCOUNT;
+        if($order->TypeDelivery=='DELIVERY'&&$_SUBTOTAL_WITH_DISCOUNT<25){
+            if(is_null($order->DeliveryNowFee)){
+                $_AUTO_DELIVERY_FEE=25-$_SUBTOTAL_WITH_DISCOUNT;
+            }
+        }
 
 
         if($_DELIVERY_NOW_FEE>=0&&$_DELIVERY_NOW_FEE!==NULL)
@@ -1228,10 +1238,11 @@ class DetailingController extends Controller
 
 
 
+
         //Total = SubTotal inc Discount + Failed delivery + DeliveryNowFee + AutoDeliveryFee
 
 
-        $_TOTAL=$_SUBTOTAL_WITH_DISCOUNT+$_FAILED_DELIVERY_PRICE+$_DELIVERY_NOW_FEE+$_AUTO_DELIVERY_FEE;
+        $_TOTAL=$_SUBTOTAL_WITH_DISCOUNT+$_FAILED_DELIVERY_PRICE+(!is_null($_DELIVERY_NOW_FEE)?$_DELIVERY_NOW_FEE:0)+$_AUTO_DELIVERY_FEE;
 
           //TotalDue = Total - SUM(payements)
         $_TOTAL_DUE=$_TOTAL-$_AMOUNT_PAID;
@@ -1265,11 +1276,17 @@ class DetailingController extends Controller
             'VoucherDiscount' => number_format($_VOUCHER_DISCOUNT,2),
         );
 
+
+
         if($order->detailed_at=='0000-00-00 00:00:00'){
             $values['AccountDiscount'] = number_format($_ACCOUNT_DISCOUNT,2);
             $values['AccountDiscountPerc'] = $cust->discount;
         }
-
+/*
+        echo "<pre>";
+        print_r($values);
+        die();
+*/
         DB::table('infoOrder')->where('id',$order_id)->update($values);
 
        return $values;
@@ -1279,16 +1296,16 @@ class DetailingController extends Controller
         $order_id = $request->order_id;
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
-
-
+        /*
         if($order->PickupID !=''){
-            $this->getVoucherAmount($order_id);
+            $this->getVoucherAmount($order_id,false,true,true);
         }
 
 
 
         $this->calculateCheckout($order_id);
         $this->recalculateDryCleaningPrice($order_id);
+        */
 
         $days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
         $tranches = Tranche::getDeliveryPlanningTranchesForApi();
@@ -1836,6 +1853,7 @@ class DetailingController extends Controller
         }
         */
 
+        /*
         $total_price = $total_price + $order_addon;
 
         $total_with_discount = $total_price;
@@ -1856,7 +1874,9 @@ class DetailingController extends Controller
             $total_with_discount = $total_with_discount - $order_discount;
         }
 
+        $total_with_discount = $order->Total;
 
+*/
 
         //Bundles
         $order_bundles = [];
@@ -1872,6 +1892,7 @@ class DetailingController extends Controller
             }
         }
 
+/*
         $total_with_discount = $total_with_discount - $bundles_discount;
 
         $total_inc_vat = $total_with_discount;
@@ -1883,12 +1904,10 @@ class DetailingController extends Controller
 
         $total_with_discount = $total_inc_vat;
         $price_plus_delivery = $total_inc_vat + $failed_delivery_price;
+*/
+        $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
 
-        $payments = DB::table('payments')->leftJoin('cards',function($join){
-            $join->on('cards.id','=','payments.card_id');
-        })->where('order_id',$order->id)->whereNotNull('cards.type')->where('status','succeeded')->get();
-
-        $balance = $total_with_discount;
+        $balance = $order->Total;
 
 
         $amount_paid = 0;
@@ -1903,13 +1922,18 @@ class DetailingController extends Controller
                         'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
                     ];
                 }else{
-                    $amount_paid_card[] = [
-                        'montant'=> number_format($v->montant,2),
-                        'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
-                        'cardNumber'=>$v->cardNumber,
-                        'type'=>$v->type,
-                        'card_id'=>$v->card_id
-                    ];
+                    if($v->card_id != 0){
+                        $card = DB::table('cards')->where('id',$v->card_id)->whereNotNull('cards.type')->first();
+                        if($card){
+                            $amount_paid_card[] = [
+                                'montant'=> number_format($v->montant,2),
+                                'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
+                                'cardNumber'=>$card->cardNumber,
+                                'type'=>$card->type,
+                                'card_id'=>$v->card_id
+                            ];
+                        }
+                    }
                 }
             }
 
@@ -1946,14 +1970,6 @@ class DetailingController extends Controller
         if($has_new_inv){
             $created_date = date('F d, Y',strtotime($has_new_inv->created_at))." at ".date('g:i A',strtotime($has_new_inv->created_at));
         }
-
-
-        //Mise a jour montant commande
-        // DB::table('infoOrder')->where('id',$order_id)->update([
-        //     'Subtotal'=>$total_price,
-        //     'Total'=>$total_with_discount,
-        //     'OrderDiscount'=>number_format($order_discount+$cust_discount,2),
-        // ]);
 
 
         $stripe_security_key = 'STRIPE_LIVE_SECURITY_KEY';
@@ -2008,13 +2024,13 @@ class DetailingController extends Controller
             'order'=>$order,
             'booking_details'=>$booking_details,
             'address'=>$addr,
-            'sub_total'=>number_format($total_price,2),
+            //'sub_total'=>number_format($total_price,2),
             'bundles'=>$order->bundles,
-            'total_with_discount'=>number_format($total_with_discount,2),
-            'discount'=>number_format($order_discount,2),
-            'vat'=>number_format($vat,2),
-            'total_inc_vat'=>number_format($total_inc_vat,2),
-            'total_exc_vat'=>number_format($total_exc_vat,2),
+            //'total_with_discount'=>number_format($total_with_discount,2),
+            //'discount'=>number_format($order_discount,2),
+            //'vat'=>number_format($vat,2),
+            //'total_inc_vat'=>number_format($total_inc_vat,2),
+            //'total_exc_vat'=>number_format($total_exc_vat,2),
             'custcard'=>$cust_card,
             'stripe_public_key'=>env($stripe_public_key),
             'stripe_security_key'=>env($stripe_security_key),
@@ -2037,7 +2053,7 @@ class DetailingController extends Controller
             'discount_from_voucher'=>$discount_from_voucher,
             'master_account'=>$master_account,
             'failed_delivery_price'=>number_format($failed_delivery_price,2),
-            'price_plus_delivery'=>number_format($price_plus_delivery,2),
+            //'price_plus_delivery'=>number_format($price_plus_delivery,2),
             'order_bundles'=>$order_bundles,
             'has_invoices'=>$has_invoices,
         ]);
@@ -2249,7 +2265,11 @@ class DetailingController extends Controller
 
             ]);
             if($addon_id==3)
-            DB::table('infoOrder')->where('id',$order_id)->where('Status','<>','FULFILLED')->update(['FailedDelivery'=>1]);
+                DB::table('infoOrder')->where('id',$order_id)->where('Status','<>','FULFILLED')->update(['FailedDelivery'=>1]);
+
+            if($addon_id !=4){
+                DB::table('infoOrder')->where('id',$order_id)->update(['DeliveryNowFee'=>null]);
+            }
         }else{
             $updated = DB::table('order_upcharges')->where('order_id',$order_id)->where('upcharges_id',$addon_id)->delete();
             if($addon_id==3)
@@ -2292,7 +2312,7 @@ class DetailingController extends Controller
         ]);
     }
 
-    public static function getVoucherAmount($order_id,$input_code=false,$insert=true){
+    public static function getVoucherAmount($order_id,$input_code=false,$insert=true,$pre_checkout=false){
         $user = Auth::user();
         $code = "";
         $voucher = false;
@@ -2450,7 +2470,8 @@ class DetailingController extends Controller
             'voucher'=>$voucher,
         ];
 
-        return $arr;
+        if(!$pre_checkout)
+            return $arr;
 
     }
 
@@ -2764,6 +2785,24 @@ class DetailingController extends Controller
         }
 
         return $baseprice;
+    }
+
+    public function preCalculateCheckout(Request $request){
+        $order_id = $request->order_id;
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+
+
+        if($order->PickupID !=''){
+            $this->getVoucherAmount($order_id);
+        }
+
+        $this->calculateCheckout($order_id);
+        $this->recalculateDryCleaningPrice($order_id);
+
+
+        return response()->json([
+            'post'=>$request->all(),
+        ]);
     }
 
 }

@@ -280,21 +280,22 @@
                                             <span class="summary-title" v-else>Pending payments</span>
                                         </div>
                                         <div class="row mt-4 px-0 py-1 sub-total-text">
-                                        
+
                                             <div class="col-12" v-if="amount_paid_card.length > 0">
                                                 <div class="row" v-for="a,i in amount_paid_card" :key="i">
-                                                    <div class="col-9 px-0 payment-desc-text">Paid by Card ({{ a.type[0].toUpperCase() + a.type.slice(1)}} {{a.cardNumber.slice(-7)}}):</div>
+                                                    <div class="col-9 px-0 payment-desc-text">Paid by Card ({{ a.type[0].toUpperCase() + a.type.slice(1)}} {{a.cardNumber.slice(-7)}}) on <small>{{a.date}}</small>:</div>
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
                                                 </div>
                                             </div>
+                                            <!--
                                             <div class="col-12 text-align-right" v-else>&#163;0.00</div>
+                                            -->
                                         </div>
-
                                         <div class="row px-0 py-1 sub-total-text" v-if="amountPaidCredit(amount_paid_credit) > 0">
                                             <div class="col-12">
                                                 <template v-for="a,i in amount_paid_credit" :key="i">
                                                 <div class="row" v-if="a.montant>0">
-                                                    <div class="col-9 px-0 payment-desc-text">Paid by cash credit:</div>
+                                                    <div class="col-9 px-0 payment-desc-text">Paid by cash credit on <small>{{a.date}}</small>:</div>
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
                                                 </div>
                                                 </template>
@@ -312,7 +313,7 @@
 
                                          <div class="row px-0 mt-4 py-2 balance-text">
                                             <div class="col-9">Outstanding order balance to pay</div>
-                                            <div class="col-3 text-align-right">&#163;{{cust.amount_diff}}</div>
+                                            <div class="col-3 text-align-right">{{formatPrice(order.TotalDue)}}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -891,11 +892,30 @@ export default {
         ]);
 
 
-        function getCheckoutItems(){
-            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
-                true,
-                "Loading details....",
-            ]);
+        const getCheckoutItems =  async()=>{
+
+            try{
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
+                    true,
+                    "Loading details....",
+                ]);
+
+                console.log('pre-calculate-checkout');
+
+                await axios.post('/pre-calculate-checkout',{
+                        order_id:order_id.value,
+                }).then((res)=>{
+
+                }).catch((err)=>{
+
+                }).finally(()=>{
+
+                });
+
+            }finally{
+                console.log('end pre-calculate-checkout');
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                console.log('start get items');
 
             axios.post('/get-checkout-items',{
                 order_id:order_id.value,
@@ -946,8 +966,10 @@ export default {
             }).catch((err)=>{
 
             }).finally(()=>{
-                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+
             });
+
+            }
         }
         getCheckoutItems();
 
@@ -1176,73 +1198,92 @@ export default {
         }
 
         function setOrderUpcharge(id){
+            let el = document.getElementById('upcharge_btn_'+id);
+            el.classList.toggle('addon-selected');
+            let classes = Object.values(el.classList);
+
 
             if(id==4){
-                if(order.value.DeliveryNowFee!=null){
+
+                if(!classes.includes('addon-selected')){
                     store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
-                true,
-                "Delete price delivery now....",
-            ]);
+                        true,
+                        "Delete price delivery now....",
+                    ]);
 
-            axios.post('/save-price-delivery-now',{
-                price:null,
-                order_id:order_id.value
-            }).then((res)=>{
-                getCheckoutItems();
-            }).catch((err)=>{
+                    const deletePriceNow = async()=>{
+                        try{
+                            await axios.post('/save-price-delivery-now',{
+                                price:null,
+                                order_id:order_id.value
+                            }).then((res)=>{
 
-            }).finally(()=>{
+                            }).catch((err)=>{
 
-            });
+                            }).finally(()=>{
+
+                            });
+                        }finally{
+                            getCheckoutItems();
+                        }
+                    }
+
+                    deletePriceNow();
                 }else{
                     price_delivery_now_modal.value.showModal();
                 }
                 return;
-            }
-            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
-                true,
-                "Setting upcharges....",
-            ]);
+            }else{
 
-            let el = document.getElementById('upcharge_btn_'+id);
-            el.classList.toggle('addon-selected');
-
-            let classes = Object.values(el.classList);
-            let selected = false;
-            let other_exp_ids = [];
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
+                    true,
+                    "Setting upcharges....",
+                ]);
 
 
 
-            if(classes.includes('addon-selected')){
-                selected = true;
 
-                if(classes.includes('is-express-upcharge')){
-                    let other_exp_els = Object.values(document.querySelectorAll('.is-express-upcharge:not(#upcharge_btn_'+id+')'));
 
-                    if(other_exp_els.length > 0){
-                        other_exp_els.forEach((v,i)=>{
-                            let other_id = v.getAttribute('data-id');
-                            other_exp_ids.push(other_id);
-                            v.classList.remove('addon-selected');
-                        });
+                let selected = false;
+                let other_exp_ids = [];
+
+
+
+                if(classes.includes('addon-selected')){
+                    selected = true;
+
+                    if(classes.includes('is-express-upcharge')){
+                        let other_exp_els = Object.values(document.querySelectorAll('.is-express-upcharge:not(#upcharge_btn_'+id+')'));
+
+                        if(other_exp_els.length > 0){
+                            other_exp_els.forEach((v,i)=>{
+                                let other_id = v.getAttribute('data-id');
+                                other_exp_ids.push(other_id);
+                                v.classList.remove('addon-selected');
+                            });
+                        }
+                    }else{
+
+                            document.getElementById('upcharge_btn_4').classList.remove('addon-selected');
+
                     }
                 }
+
+                axios.post('/set-checkout-addon',{
+                    order_id:order_id.value,
+                    addon_id:id,
+                    exp_addons_to_remove:JSON.stringify(other_exp_ids),
+                    selected:selected,
+                }).then((res)=>{
+                    console.log(res);
+                }).catch((err)=>{
+
+                }).finally(()=>{
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                    getCheckoutItems();
+
+                });
             }
-
-            axios.post('/set-checkout-addon',{
-                order_id:order_id.value,
-                addon_id:id,
-                exp_addons_to_remove:JSON.stringify(other_exp_ids),
-                selected:selected,
-            }).then((res)=>{
-                console.log(res);
-            }).catch((err)=>{
-
-            }).finally(()=>{
-                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                getCheckoutItems();
-
-            });
         }
 
         function promptRemoveVoucher(id,code){
@@ -1297,8 +1338,6 @@ export default {
                                 ttl: 3,
                                 type: 'danger'
                             });
-                        }else{
-                            getCheckoutItems();
                         }
                     }).catch(err=>{
 
@@ -1306,6 +1345,7 @@ export default {
                     });
                 } finally {
                     btn_disabled.value = false;
+                    getCheckoutItems();
                 }
             }
 
@@ -1332,17 +1372,26 @@ export default {
                 "Saving price delivery now....",
             ]);
 
-            axios.post('/save-price-delivery-now',{
-                price:parseFloat(pricedeliverynow.value),
-                order_id:order_id.value
-            }).then((res)=>{
-                closePriceDeliveryNowModal();
-                getCheckoutItems();
-            }).catch((err)=>{
+            const savePriceDeliveryNow = async() =>{
+                try{
+                    console.log('before save price');
+                    await axios.post('/save-price-delivery-now',{
+                        price:parseFloat(pricedeliverynow.value),
+                        order_id:order_id.value
+                    }).then((res)=>{
 
-            }).finally(()=>{
+                    }).catch((err)=>{
 
-            });
+                    }).finally(()=>{
+
+                    });
+                }finally{
+                    console.log('finally called');
+                    closePriceDeliveryNowModal();
+                    getCheckoutItems();
+                }
+            }
+            savePriceDeliveryNow();
         }
 
         const handleAllowNumbers = (e) => {//handle price format xxxxx.xx
