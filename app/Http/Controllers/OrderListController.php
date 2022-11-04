@@ -180,7 +180,9 @@ class OrderListController extends Controller
                 }else if($colname == 'infoitems.DelivDate' && !empty($values)){
                     $orderlist=$orderlist->whereBetween('infoitems.PromisedDate', [ $values[0], $values[1]]);
                 }else if($colname == 'infoOrder.DetDate' && !empty($values)){
-                    $orderlist=$orderlist->whereBetween('infoOrder.detailed_at', [ $values[0], $values[1]]);
+                    $start_first_day = Carbon::parse($values[0])->startOfDay()->toDateTimeString();
+                    $end_first_day = Carbon::parse($values[1])->endOfDay()->toDateTimeString();
+                    $orderlist=$orderlist->whereBetween('infoOrder.detailed_at', [ $start_first_day , $end_first_day]);
                 }else if($colname == 'infoOrder.deliverymethod'){
 
                     if(count($values) < 2){
@@ -660,7 +662,9 @@ class OrderListController extends Controller
                 }else if($colname == 'infoitems.DelivDate' && !empty($values)){
                     $orderlist=$orderlist->whereBetween('infoitems.PromisedDate', [ $values[0], $values[1]]);
                 }else if($colname == 'infoOrder.DetDate' && !empty($values)){
-                    $orderlist=$orderlist->whereBetween('infoOrder.detailed_at', [ $values[0], $values[1]]);
+                    $start_first_day = Carbon::parse($values[0])->startOfDay()->toDateTimeString();
+                    $end_first_day = Carbon::parse($values[1])->endOfDay()->toDateTimeString();
+                    $orderlist=$orderlist->whereBetween('infoOrder.detailed_at', [ $start_first_day , $end_first_day]);
                 }else if($colname == 'infoOrder.deliverymethod'){
 
                     if(count($values) < 2){
@@ -1962,7 +1966,9 @@ class OrderListController extends Controller
                 }else if($colname == 'infoitems.DelivDate' && !empty($values)){
                     $orderlist=$orderlist->whereBetween('infoitems.PromisedDate', [ $values[0], $values[1]]);
                 }else if($colname == 'infoOrder.DetDate' && !empty($values)){
-                    $orderlist=$orderlist->whereBetween('infoOrder.detailed_at', [ $values[0], $values[1]]);
+                    $start_first_day = Carbon::parse($values[0])->startOfDay()->toDateTimeString();
+                    $end_first_day = Carbon::parse($values[1])->endOfDay()->toDateTimeString();
+                    $orderlist=$orderlist->whereBetween('infoOrder.detailed_at', [ $start_first_day , $end_first_day]);
                 }else if($colname == 'infoOrder.deliverymethod'){
 
                     if(count($values) < 2){
