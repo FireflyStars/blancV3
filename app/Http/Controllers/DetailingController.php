@@ -1143,6 +1143,7 @@ class DetailingController extends Controller
         $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
         $_SUBTOTAL=0;
         $_SUBTOTAL_WITH_DISCOUNT=0;
+        $_ITEMS_TOTAL = 0;
 
         $items = DB::table('detailingitem')
         ->select('detailingitem.*','detailingitem.id AS detailingitem_id','typeitem.pricecleaning as baseprice')
@@ -1152,8 +1153,12 @@ class DetailingController extends Controller
         ->get();
             if(count($items) > 0)
             foreach($items as $k=>$v){
-                $_SUBTOTAL += $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+                $_ITEMS_TOTAL += $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
             }
+
+
+
+        $_SUBTOTAL = $_ITEMS_TOTAL;
 
         $_BUNDLES_DISCOUNT=0;
 
@@ -1166,36 +1171,6 @@ class DetailingController extends Controller
                 $_BUNDLES_DISCOUNT += $v->discount;
             }
         }
-
-
-        $_SUBTOTAL_WITH_DISCOUNT = $_SUBTOTAL - $_BUNDLES_DISCOUNT;
-
-        $_EXPRESS_CHARGES_PRICE = 0;
-        $_FAILED_DELIVERY_PRICE = 0;
-        $_DELIVERY_NOW_FEE=$order->DeliveryNowFee;
-        $_AUTO_DELIVERY_FEE=0;
-
-        if($order->TypeDelivery=='DELIVERY' && $order->FailedDelivery===1)
-            $_FAILED_DELIVERY_PRICE = 5;
-
-        $upcharges = DB::table('order_upcharges')->where('order_id',$order_id)->get();
-        if(count($upcharges) > 0){
-            foreach($upcharges as $k=>$v){
-                if($v->upcharges_id==1||$v->upcharges_id==2){
-                    $_EXPRESS_CHARGES_PRICE += $v->amount;
-                }
-            }
-        }
-
-        $_ACCOUNT_DISCOUNT  =  $order->AccountDiscount;
-        $_ORDER_DISCOUNT = 0;
-
-        if($order->detailed_at=='0000-00-00 00:00:00'){
-            $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL_WITH_DISCOUNT;
-        }
-
-
-        $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL_WITH_DISCOUNT;
 
         $_VOUCHER_DISCOUNT=0;
         $voucher_codes = [];
@@ -1221,6 +1196,36 @@ class DetailingController extends Controller
 
         }
 
+        $_EXPRESS_CHARGES_PRICE = 0;
+        $_FAILED_DELIVERY_PRICE = 0;
+        $_DELIVERY_NOW_FEE=$order->DeliveryNowFee;
+        $_AUTO_DELIVERY_FEE=0;
+
+        if($order->TypeDelivery=='DELIVERY' && $order->FailedDelivery===1)
+            $_FAILED_DELIVERY_PRICE = 5;
+
+        $upcharges = DB::table('order_upcharges')->where('order_id',$order_id)->get();
+        if(count($upcharges) > 0){
+            foreach($upcharges as $k=>$v){
+                if($v->upcharges_id==1||$v->upcharges_id==2){
+                    $_EXPRESS_CHARGES_PRICE += $v->amount;
+                }
+            }
+        }
+
+
+        $_SUBTOTAL = $_SUBTOTAL - $_BUNDLES_DISCOUNT-$_VOUCHER_DISCOUNT+$_EXPRESS_CHARGES_PRICE;
+
+        $_ACCOUNT_DISCOUNT  =  $order->AccountDiscount;
+        $_ORDER_DISCOUNT = 0;
+
+        if($order->detailed_at=='0000-00-00 00:00:00'){
+            $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL;
+        }
+
+
+        $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
+
 
         $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
         $_AMOUNT_PAID=0;
@@ -1232,7 +1237,7 @@ class DetailingController extends Controller
 
        //SubTotal inc Discount = SubTotal (excl Discount) - Account Discount - Order Discount - Bundles + Express Charge - voucher
 
-        $_SUBTOTAL_WITH_DISCOUNT=$_SUBTOTAL_WITH_DISCOUNT-$_ACCOUNT_DISCOUNT-$_ORDER_DISCOUNT+$_EXPRESS_CHARGES_PRICE-$_VOUCHER_DISCOUNT;
+        $_SUBTOTAL_WITH_DISCOUNT=$_SUBTOTAL-$_ACCOUNT_DISCOUNT-$_ORDER_DISCOUNT;
 
 
 
@@ -1275,6 +1280,7 @@ class DetailingController extends Controller
             'Subtotal'=>number_format($_SUBTOTAL,2),
             'SubtotalWithDiscount'=>number_format($_SUBTOTAL_WITH_DISCOUNT,2),//
             'bundles'=>number_format($_BUNDLES_DISCOUNT,2),
+            'itemsTotal'=>number_format($_ITEMS_TOTAL,2),
             'Total'=>number_format($_TOTAL,2),
             'TotalDue'=>number_format($_TOTAL_DUE,2),
             'AutoDeliveryFee'=>number_format($_AUTO_DELIVERY_FEE,2),//
