@@ -61,7 +61,7 @@
                        {{name}}
                     </div>
                      <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" id="pricenow_cleaning" @click="loadPriceNowModal('cleaning')" :class="{'sel_service':detailingitem.cleaning_price_type=='PriceNow' && !detailingitem.describeprixnow}">Price now</div>
-                     <div class="col-2 d-flex text-center each-price-now-btn py-3 justify-content-center" id="pricenow_describe_cleaning" @click="loadPriceNowAndDescribeModal('cleaning')" :class="{'sel_service':detailingitem.cleaning_price_type=='PriceNow'  && detailingitem.describeprixnow != ''}">Describe & Price Now</div>
+                     <div class="col-2 d-flex text-center each-price-now-btn py-3 justify-content-center" id="pricenow_describe_cleaning" @click="loadPriceNowAndDescribeModal('cleaning')" :class="{'sel_service':detailingitem.cleaning_price_type=='PriceNow'  && detailingitem.describeprixnow}">Describe & Price Now</div>
 
                 </div>
             </div>
@@ -527,7 +527,7 @@ export default {
 
 
         function checkSelectedCleaning(on_click){
-            let selected_services = document.querySelectorAll('.cleaning-subservice.sel_service:not(.cleaning-prices)');
+            let selected_services = document.querySelectorAll('.cleaning-subservice.sel_service:not(.cleaning-prices), .active_service');
             let keys = Object.values(selected_services);
             let cleaning_services_id = [];
             let cleaning_pricing_type = "";
@@ -574,21 +574,7 @@ export default {
         }
 
 
-        function checkCleaningGroup(){
-
-            if(props.detailingitem.status != 'Completed'){
-
-                axios.post('/getPreferenceCustomer',{
-                Customer_id: props.detailingitem.customer_id,
-                typeitem_id: props.detailingitem.typeitem_id
-               }).then((res)=>{
-                   preference_customer.value = res.data.prefrenceActive
-               }).catch((err)=>{
-
-               })
-            }
-
-
+        function checkCleaningGroup(){           
             let cs = props.cleaning_services;
             let gp = Object.keys(cs);
             let sel_cleaning_gp = [];
@@ -622,6 +608,38 @@ export default {
             context.emit("go-to-step", 10);
         }
 
+        function getPreference(){
+            const list = [];
+            if(props.detailingitem.status != 'Completed'){
+
+                axios.post('/getPreferenceCustomer',{
+                Customer_id: props.detailingitem.customer_id,
+                typeitem_id: props.detailingitem.typeitem_id
+               }).then((res)=>{
+                   preference_customer.value = res.data.prefrenceActive
+                   const clean_array = JSON.parse(props.detailingitem.cleaning_services)
+                   clean_array.map(function(value, key) {
+                        list.push(value)
+                    });
+                       preference_customer.value.forEach(function(v,i){
+                        if(list!= null){
+                            if(!list.includes(v)){
+                                console.log("vvvv" , v)
+                                toggleSubService(v)
+                            }
+
+                        }else{
+                            toggleSubService(v)
+                        }
+                            
+                        })      
+               }).catch((err)=>{
+
+               })
+            }
+            checkSelectedCleaning(false);
+        }
+
         onMounted(()=>{
             sel_cleaning_price_type.value = 'Standard';
             sel_tailoring_price_type.value = 'Standard';
@@ -648,15 +666,12 @@ export default {
             if(props.detailingitem.cleaning_services==null){
                checkSelectedCleaning(true);
             }
+            getPreference()
         });
 
 
         function validateServices(){
             let is_err = false;
-
-
-
-            console.log('cleaning price_type' ,  sel_cleaning_service_id.value.length==0 ,sel_tailoring_service_id.value.length==0 , sel_tailoring_describe.value , sel_clean_describe.value);
 
             if(sel_cleaning_service_id.value.length==0 && sel_tailoring_service_id.value.length==0 && (sel_tailoring_describe.value== null || sel_tailoring_describe.value=='' ) 
             && (sel_clean_describe.value == null || sel_clean_describe.value == '') ){
@@ -921,7 +936,8 @@ export default {
             describe_job_value,
             priceNowAndDescribe,
             sel_tailoring_describe,
-            sel_clean_describe
+            sel_clean_describe,
+            getPreference
         };
     },
 }

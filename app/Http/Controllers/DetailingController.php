@@ -2717,7 +2717,8 @@ class DetailingController extends Controller
                                    ->where('preferencetypitem.customerpreferences_id','=' ,$value->id_preference )
                                    ->where('preferencetypitem.typitem_id','=' , $request->typeitem_id )->first();
                 if($prference != null){
-                    $prefrenceActive [] = $prference->customerpreferences_id ;
+                    $pref = DB::table('cleaningservices')->select("cleaningservices.id")->where('id_preference', $prference->customerpreferences_id)->first();
+                    $prefrenceActive [] =(string)$pref->id ;
                 }
             }
         }
