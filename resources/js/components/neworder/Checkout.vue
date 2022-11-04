@@ -318,6 +318,17 @@
                                             </div>
                                         </div>
 
+                                        <div class="row px-0 py-1 sub-total-text" v-if="Object.values(amount_paid_other).length > 0">
+                                            <template v-for="a,i in amount_paid_other" :key="i">
+                                                <div class="col-12">
+                                                <div class="row">
+                                                    <div class="col-9 px-0 payment-desc-text">{{a.name}} on <small>{{a.date}}</small>:</div>
+                                                    <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
+                                                </div>
+                                                </div>
+                                            </template>
+                                        </div>
+
                                          <div class="row px-0 mt-4 py-2 balance-text">
                                             <div class="col-9">Outstanding order balance to pay</div>
                                             <div class="col-3 text-align-right">{{formatPrice(order.TotalDue)}}</div>
@@ -855,6 +866,7 @@ export default {
         const awaiting_payment_modal = ref();
         const amount_paid_card = ref(0);
         const amount_paid_credit = ref(0);
+        const amount_paid_other = ref([]);
         const discount_perc = ref(0);
         const created_date = ref("");
         const credit_to_deduct = ref(0);
@@ -970,6 +982,7 @@ export default {
                 price_plus_delivery.value = res.data.price_plus_delivery;
                 order_bundles.value = res.data.order_bundles;
                 has_invoices.value = res.data.has_invoices;
+                amount_paid_other.value = res.data.amount_paid_other;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -1513,6 +1526,7 @@ export default {
             handleAllowNumbers,
             has_invoices,
             btn_disabled,
+            amount_paid_other,
         }
     },
 }
