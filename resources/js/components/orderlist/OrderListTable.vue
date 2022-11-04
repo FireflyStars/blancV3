@@ -279,7 +279,7 @@
     
                             }*/
                         },
-                        'infoCustomer.TypeDelivery':{
+                        'infoOrder.TypeDelivery':{
                             name:"Destination",
                             type: 'select',
                             options:{
@@ -382,7 +382,7 @@
                             type: 'select',
                             options: Status_LIST
                         },
-                        'infoCustomer.TypeDelivery':{
+                        'infoOrder.TypeDelivery':{
                             name:"Destination",
                             type: 'select',
                             options:{
@@ -446,7 +446,7 @@
                             type: 'select',
                             options: Status_LIST                      
                         },
-                        'infoCustomer.TypeDelivery':{
+                        'infoOrder.TypeDelivery':{
                             name:"Destination",
                             type: 'select',
                             options:{
