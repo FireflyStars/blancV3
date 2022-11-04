@@ -184,7 +184,7 @@
                                 <div class="row justify-content-end mt-3 mx-0">
                                     <div class="col-8 py-3" id="summary_div">
                                         <span class="summary-title">Order Total</span><span id="summary_item_count" v-if="created_date !=''">Placed on {{created_date}}</span>
-                                        <div class="row px-0 mt-4 sub-total-text">
+                                        <div class="row px-0 mt-4 sub-total-text" v-if="order.itemsTotal > 0">
                                             <div class="col-4">Items total</div>
                                             <div class="col-5 sub-total-desc">{{order_items.length}} item<span v-if="order_items.length > 1">s</span> (Incl. VAT)</div>
 
@@ -257,7 +257,7 @@
                                           <div class="row px-0 mt-2 sub-total-text" v-else :class="{'d-none':order.TypeDelivery!='DELIVERY'}">
                                             <div class="col-12">Free Delivery</div>
                                         </div>
-                                        <div class="row px-0 mt-1 mb-3 pt-2  total-text" v-if="order.TypeDelivery=='DELIVERY'">
+                                        <div class="row px-0 mt-1 mb-3 pt-2  total-text">
                                             <div class="col-9">Total</div>
                                             <div class="col-3 text-align-right">{{formatPrice(order.Total)}}</div>
                                         </div>
@@ -308,7 +308,7 @@
                                                 </template>
                                             </div>
                                         </div>
-                                        <div class="row px-0 py-1 sub-total-text" v-if="amount_without_credit > 0&&cust.credit_to_deduct!=0">
+                                        <div class="row px-0 py-1 sub-total-text" v-if="amount_without_credit > 0 && cust.credit_to_deduct!=0">
                                             <div class="col-4">Minus cash credit</div>
                                             <div class="col-8">
                                                 <div class="row">
@@ -316,6 +316,17 @@
                                                     <div class="col-3 text-align-right"><span v-if="credit_to_deduct > 0">-</span>&#163;{{cust.credit_to_deduct}}</div>
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        <div class="row px-0 py-1 sub-total-text" v-if="Object.values(amount_paid_other).length > 0">
+                                            <template v-for="a,i in amount_paid_other" :key="i">
+                                                <div class="col-12">
+                                                <div class="row">
+                                                    <div class="col-9 px-0 payment-desc-text">{{a.name}} on <small>{{a.date}}</small>:</div>
+                                                    <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
+                                                </div>
+                                                </div>
+                                            </template>
                                         </div>
 
                                          <div class="row px-0 mt-4 py-2 balance-text">
@@ -855,6 +866,7 @@ export default {
         const awaiting_payment_modal = ref();
         const amount_paid_card = ref(0);
         const amount_paid_credit = ref(0);
+        const amount_paid_other = ref([]);
         const discount_perc = ref(0);
         const created_date = ref("");
         const credit_to_deduct = ref(0);
@@ -970,6 +982,7 @@ export default {
                 price_plus_delivery.value = res.data.price_plus_delivery;
                 order_bundles.value = res.data.order_bundles;
                 has_invoices.value = res.data.has_invoices;
+                amount_paid_other.value = res.data.amount_paid_other;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -1513,6 +1526,7 @@ export default {
             handleAllowNumbers,
             has_invoices,
             btn_disabled,
+            amount_paid_other,
         }
     },
 }
