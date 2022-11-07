@@ -8,6 +8,7 @@ use App\Models\InfoCustomer;
 use App\Http\Controllers\BookingController;
 use App\Models\OrderRecurringCreator;
 use App\Models\Delivery;
+use App\Http\Controllers\DetailingController;
 use Exception;
 use stdClass;
 
@@ -1184,7 +1185,7 @@ class OrderController extends Controller
 
             $credit_remaining = $cust->credit - $credit_to_deduct;
 
-            $credit_remaining = number_format($credit_remaining,2);
+            //$credit_remaining = number_format($credit_remaining,2);
 
             DB::table('infoCustomer')->where('id',$cust->id)->update(['credit'=>($credit_remaining>0?$credit_remaining:0)]);
 
