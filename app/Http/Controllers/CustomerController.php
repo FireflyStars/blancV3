@@ -1444,7 +1444,13 @@ class CustomerController extends Controller
 
         $customer->scheduled_orders = $scheduled_orders;
 
-
+        $customer->first_order = DB::table('infoOrder')->select('id as orde_id', 'DateDeliveryAsk as date')
+        ->where('infoOrder.CustomerID','=',$customer->CustomerID)
+        ->whereIn('infoOrder.status',['RECRURRING' , 'SCHEDULED'])
+        ->whereDate('infoOrder.DateDeliveryAsk', '>=', date('Y-m-d'))
+        ->orderBy('infoOrder.DateDeliveryAsk', 'asc')
+        ->first();
+        
         return response()->json( $customer );
     }
 

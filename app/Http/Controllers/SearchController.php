@@ -91,7 +91,13 @@ public function SearchCustomer(Request $request)
             ->where('pickup.status','not LIKE', '%DEL%')
             ->whereDate('pickup.date', '>=', date('Y-m-d'))
             ->get();
-        }    
+        }
+        $item->LastOrder = DB::table('infoOrder')->select('id as orde_id', 'DateDeliveryAsk as date')
+            ->where('infoOrder.CustomerID','=',$item->CustomerID)
+            ->whereIn('infoOrder.status',['RECRURRING' , 'SCHEDULED'])
+            ->whereDate('infoOrder.DateDeliveryAsk', '>=', date('Y-m-d'))
+            ->orderBy('infoOrder.DateDeliveryAsk', 'asc')
+            ->first();
     }
 
     $emails = DB::table('infoCustomer')
