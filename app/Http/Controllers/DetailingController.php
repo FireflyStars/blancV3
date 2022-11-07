@@ -1334,6 +1334,7 @@ class DetailingController extends Controller
         $balance = 0;
         $amount_paid_card = [];
         $amount_paid_credit = [];
+        $amount_paid_other = [];
         $discount_perc = 0;
         $credit_to_deduct = 0;
         $cust_discount = 0;
@@ -1923,9 +1924,6 @@ class DetailingController extends Controller
 */
         $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
 
-        $balance = $order->Total;
-
-
         $amount_paid = 0;
 
         if(count($payments) > 0){
@@ -1949,13 +1947,22 @@ class DetailingController extends Controller
                                 'card_id'=>$v->card_id
                             ];
                         }
+                    }else{
+                        $amount_paid_other[] = [
+                            'montant'=> number_format($v->montant,2),
+                            'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
+                            'name'=>ucfirst($v->type),
+                        ];
                     }
                 }
             }
 
-            $balance = $order->Total;//number_format($total_with_discount,2) - number_format($amount_paid,2);
+            //$balance = $order->Total;//number_format($total_with_discount,2) - number_format($amount_paid,2);
 
         }
+
+
+        $balance = $order->Total - $amount_paid;
 
         $amount_without_credit = $balance;
         $amount_to_pay = $balance;
@@ -2072,6 +2079,7 @@ class DetailingController extends Controller
             //'price_plus_delivery'=>number_format($price_plus_delivery,2),
             'order_bundles'=>$order_bundles,
             'has_invoices'=>$has_invoices,
+            'amount_paid_other'=>$amount_paid_other,
         ]);
     }
 
