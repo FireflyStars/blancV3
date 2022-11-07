@@ -1316,4 +1316,34 @@ class OrderController extends Controller
       return response()->json(['done'=>'ok']);
     }
 
+    public function deleteorder(Request $request){
+
+        $orderid=$request->post('order_id');
+
+            $infoOrder=DB::table('infoOrder')->where('infoOrder.id',$orderid)->first();
+            
+            if($infoOrder){
+                $pickup = DB::table('pickup')->where('pickup.order_id',$orderid)->first();
+
+                    if(empty($pickup)){
+                        DB::table('infoOrder')->where('infoOrder.id',$orderid)->update([
+                            'Status'=>'DELETE'
+                        ]);
+                    }else if(!empty($pickup)){
+
+                        $items=DB::table('detailingitem')->where('detailingitem.order_id',$infoOrder->id)->get();
+                        if(!empty($items)){
+                            foreach($items as $k=>$v){
+                                $deleted = DB::table('detailingitem')->where('id',$v->id)->delete();
+                            }
+                        }
+                        
+                        DB::table('infoOrder')->where('infoOrder.id',$orderid)->update([
+                            'Status'=>'SCHEDULED'
+                        ]);
+                    }
+            }
+        return response()->json(['done'=>'ok']);
+    }
+
 }
