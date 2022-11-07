@@ -1145,16 +1145,38 @@ class DetailingController extends Controller
         $_SUBTOTAL_WITH_DISCOUNT=0;
         $_ITEMS_TOTAL = 0;
 
+        $all_typeitems = [];
+        $count_by_typeitem = [];
+
+        $all_services = [];
+        $count_by_service = [];
+
         $items = DB::table('detailingitem')
         ->select('detailingitem.*','detailingitem.id AS detailingitem_id','typeitem.pricecleaning as baseprice')
         ->join('infoOrder','detailingitem.order_id','infoOrder.id')
         ->join('typeitem','detailingitem.typeitem_id','typeitem.id')
         ->where('infoOrder.id',$order_id)
         ->get();
-            if(count($items) > 0)
+
+        if(count($items) > 0){
             foreach($items as $k=>$v){
                 $_ITEMS_TOTAL += $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+                $all_typeitems[] = $v->typeitem_id;
+
+                $services = @json_decode($v->cleaning_services);
+
+                if(is_array($services) && !empty($services)){
+                    foreach($services as $index=>$service){
+                        $all_services[] = $service;
+                    }
+                }
             }
+
+            $count_by_typeitem = array_count_values($all_typeitems);
+            $count_by_service = array_count_values($all_services);
+
+            dump($count_by_service);
+        }
 
 
 
@@ -1168,7 +1190,13 @@ class DetailingController extends Controller
             $bundles = DB::table('bundles')->whereIn('id',$bundles_id)->get();
 
             foreach($bundles as $k=>$v){
-                $_BUNDLES_DISCOUNT += $v->discount;
+                $bundle_type = $v->type;
+                if(isset(${"count_by_".$bundle_type}[$v->bundles_id]) && ${"count_by_".$bundle_type}[$v->bundles_id]>=$v->qty)
+                    $_BUNDLES_DISCOUNT += $v->discountbyitem*${"count_by_".$bundle_type}[$v->bundles_id];
+
+               /* if($v->type=='service' && isset($count_by_service[$v->bundles_id]) && $count_by_service[$v->bundles_id]>=$v->qty)
+                    $_BUNDLES_DISCOUNT += $v->discountbyitem*$count_by_service[$v->bundles_id];
+                    */
             }
         }
 
@@ -1550,6 +1578,11 @@ class DetailingController extends Controller
 
         }
 
+        $all_typeitem = [];
+        $count_by_typeitem = [];
+        $all_services = [];
+        $count_by_service = [];
+
         $items = DB::table('detailingitem')
             ->select('detailingitem.*','detailingitem.id AS detailingitem_id','typeitem.pricecleaning as baseprice')
             ->join('infoOrder','detailingitem.order_id','infoOrder.id')
@@ -1670,6 +1703,16 @@ class DetailingController extends Controller
 
         if(count($items) > 0){
             foreach($items as $k=>$v){
+
+                $all_typeitem[] = $v->typeitem_id;
+
+                $allservices = @json_decode($v->cleaning_services);
+
+                if(is_array($allservices) && !empty($allservices)){
+                    foreach($allservices as $id=>$serv){
+                        $all_services[] = $serv;
+                    }
+                }
 
                 $services = [];
                 //Tailoring
@@ -1845,6 +1888,8 @@ class DetailingController extends Controller
 
             }
 
+            $count_by_typeitem = array_count_values($all_typeitem);
+            $count_by_service = array_count_values($all_services);
         }
 
         $order_without_upcharges = $total_price;
@@ -1904,8 +1949,21 @@ class DetailingController extends Controller
             $bundles = DB::table('bundles')->whereIn('id',$bundles_id)->get();
 
             foreach($bundles as $k=>$v){
-                $order_bundles[$v->name] = number_format($v->discount,2);
-                $bundles_discount += $v->discount;
+                $bundle_type =  $v->type;
+
+                if(isset(${"count_by_".$bundle_type}[$v->bundles_id]) && ${"count_by_".$bundle_type}[$v->bundles_id]>=$v->qty){
+                    $order_bundles[$v->name] = number_format($v->discountbyitem*${"count_by_".$bundle_type}[$v->bundles_id],2);
+                    $bundles_discount += $v->discountbyitem*${"count_by_".$bundle_type}[$v->bundles_id];
+                }
+
+                /*
+                if($v->type=='service' && isset($count_by_service[$v->bundles_id]) && $count_by_service[$v->bundles_id]>=$v->qty){
+                    $order_bundles[$v->name] = number_format($v->discountbyitem,2);
+                    $bundles_discount += $v->discountbyitem;
+                }
+                */
+
+                //To add for service
             }
         }
 
