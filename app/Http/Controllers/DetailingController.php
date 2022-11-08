@@ -1685,7 +1685,7 @@ class DetailingController extends Controller
         $issues = DB::table('issues_tag')->get();
         if(count($issues) > 0){
             foreach($issues as $k=>$v){
-                $issue_names[$v->id][$v->type] = $v->name;
+                $issue_names[$v->id] = $v->name;
             }
         }
 
@@ -1827,6 +1827,9 @@ class DetailingController extends Controller
 
                 $items[$k]->stains = @json_decode($v->stains);
                 $items[$k]->damages = @json_decode($v->damages);
+                $items[$k]->damagesissues = @json_decode($v->damagesissues);
+                $items[$k]->stainsissue = @json_decode($v->stainsissue);
+                
 
 
                 $items[$k]->detailed_services = [];

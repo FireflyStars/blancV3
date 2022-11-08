@@ -131,7 +131,7 @@
                                 <span class="issue-item-name issue-tag ms-1">Stain - {{stain.name}} </span>
                             </div>
                             <div class="issue-item stain d-flex align-items-center" >
-                                <span class="issue-item-name ms-1 pt-2">{{ITEM.Issues.stainstext}} </span>
+                                <span class="issue-item-name issue-tag ms-1">Stain - {{ITEM.Issues.stainstext}} </span>
                             </div>
                             
                         </div>
@@ -145,7 +145,7 @@
                                 <span class="issue-item-name issue-tag ms-1">Damage - {{damage.name}} </span>
                             </div> 
                             <div class="issue-item stain d-flex align-items-center" >
-                                <span class="issue-item-name ms-1 pt-2">{{ITEM.Issues.damagestext}} </span>
+                                <span class="issue-item-name issue-tag ms-1">Damage - {{ITEM.Issues.damagestext}} </span>
                             </div>                                                       
                         </div>
                     </div>
@@ -317,7 +317,7 @@ export default {
         }
         function getStainZone(zone) {
             if(typeof(zone !='undefined')){
-                return zone.description+" - "+ zone.face + (zone.position!=""&&zone.position!='na'?" - "+zone.position:"")+ (zone.side!=""&&zone.side!='na'?" - "+zone.side:"");
+                return zone.description;
             }
         }
         return{

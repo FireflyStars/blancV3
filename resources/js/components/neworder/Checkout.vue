@@ -135,6 +135,18 @@
                                                                 <span v-if="zones[stain.id_zone]">{{zones[stain.id_zone]}}</span>
                                                             </div>
                                                         </div>
+                                                        <div class="row justify-content-center mb-1" v-for="(stain,index) in item.stainsissue">
+                                                            <div class="col-1"></div>
+                                                            <div class="col-11">
+                                                                <span v-if="issues[stain]">Stain {{issues[stain]}}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row justify-content-center mb-1" >
+                                                            <div class="col-1"></div>
+                                                            <div class="col-11">
+                                                                <span v-if="item.stainstext">Stain {{item.stainstext}}</span>
+                                                            </div>
+                                                        </div>
                                                     </div>
 
                                                     <div class="col-6" v-if="item.damages && item.damages.length > 0">
@@ -150,6 +162,18 @@
                                                                     {{issues[damage.id_issue].damage}}&nbsp;
                                                                 </span>
                                                                 <span v-if="zones[damage.id_zone]">{{zones[damage.id_zone]}}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row justify-content-center mb-1" v-for="(damg,index) in item.damagesissues">
+                                                            <div class="col-1"></div>
+                                                            <div class="col-11">
+                                                                <span v-if="issues[damg]">Damage {{issues[damg]}}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row justify-content-center mb-1" >
+                                                            <div class="col-1"></div>
+                                                            <div class="col-11">
+                                                                <span v-if="item.damagestext">Stain {{item.damagestext}}</span>
                                                             </div>
                                                         </div>
                                                     </div>
