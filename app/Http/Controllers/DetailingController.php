@@ -738,14 +738,15 @@ class DetailingController extends Controller
         $damages_zones=collect();
         if (isset($detailingitem['stains']) && $detailingitem['stains'] != null) {
             $stains=json_decode($detailingitem['stains'],true);
-            $stains_tags = DB::table('issues_tag')->select('id','name')->whereIn('id', array_column($stains, 'id_issue'))->get();
+            $stains_tags_decode=json_decode($detailingitem['stainsissue'],true);
+            $stains_tags = DB::table('issues_tag')->select('id','name')->whereIn('id',$stains_tags_decode)->get();
             $stains_zones = DB::table('itemzones')->whereIn('id', array_column($stains, 'id_zone'))->get();
         }
         if (isset($detailingitem['damages']) && $detailingitem['damages'] != null) {
             $damages=json_decode($detailingitem['damages'],true);
-            $damages_tags = DB::table('issues_tag')->select('id','name')->whereIn('id', array_column($damages, 'id_issue'))->get();
+            $damages_tags_decode=json_decode($detailingitem['damagesissues'],true);
+            $damages_tags = DB::table('issues_tag')->select('id','name')->whereIn('id', $damages_tags_decode)->get();
             $damages_zones = DB::table('itemzones')->whereIn('id', array_column($damages, 'id_zone'))->get();
-
         }
         return  array(
             'typeitem_name' => isset($typeitem) ? $typeitem['name'] : '',
@@ -764,6 +765,8 @@ class DetailingController extends Controller
             'damages' => isset($detailingitem['damages']) ? json_decode($detailingitem['damages']) : array(),
             'issues_zones' => $stains_zones->merge($damages_zones) ,
             'issues_tags' => $stains_tags->merge($damages_tags) ,
+            'stains_tags' => $stains_tags,
+            'damages_tags' => $damages_tags
         );
     }
 
