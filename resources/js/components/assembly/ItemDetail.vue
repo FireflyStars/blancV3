@@ -131,7 +131,7 @@
                                 <span class="issue-item-name issue-tag ms-1">Stain - {{stain.name}} </span>
                             </div>
                             <div class="issue-item stain d-flex align-items-center" >
-                                <span class="issue-item-name issue-tag ms-1">Stain - {{ITEM.Issues.stainstext}} </span>
+                                <span class="issue-item-name issue-tag ms-1" v-if="ITEM.Issues.stainstext" >Stain - {{ITEM.Issues.stainstext}} </span>
                             </div>
                             
                         </div>
@@ -145,7 +145,7 @@
                                 <span class="issue-item-name issue-tag ms-1">Damage - {{damage.name}} </span>
                             </div> 
                             <div class="issue-item stain d-flex align-items-center" >
-                                <span class="issue-item-name issue-tag ms-1">Damage - {{ITEM.Issues.damagestext}} </span>
+                                <span class="issue-item-name issue-tag ms-1" v-if="ITEM.Issues.damagestext">Damage - {{ITEM.Issues.damagestext}} </span>
                             </div>                                                       
                         </div>
                     </div>
