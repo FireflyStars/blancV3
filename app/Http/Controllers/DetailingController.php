@@ -104,7 +104,7 @@ class DetailingController extends Controller
         //+  SUM (typeitem.pricecleaning*complexities.coefcleaning) + SUM(typeitem.pricecleaning*fabrics.coefcleaning )
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
-        if($order->Status=="FULFILLED"){
+        if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED'])){
             return;
         }
 
@@ -1140,7 +1140,7 @@ class DetailingController extends Controller
 
     public function calculateCheckout($order_id){
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
-        if($order->Status=="FULFILLED")
+        if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED']))
         return;
 
         $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
