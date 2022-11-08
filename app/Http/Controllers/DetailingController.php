@@ -104,9 +104,10 @@ class DetailingController extends Controller
         //+  SUM (typeitem.pricecleaning*complexities.coefcleaning) + SUM(typeitem.pricecleaning*fabrics.coefcleaning )
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
-        if($order->Status=="FULFILLED"){
+        if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED'])){
             return;
         }
+
             $detailingitemlist = DB::table('detailingitem')->select(['detailingitem.id','detailingitem.pricecleaning','brands.coefcleaning','detailingitem.complexities_id','detailingitem.fabric_id','detailingitem.cleaning_services','detailingitem.etape','detailingitem.status','detailingitem.cleaning_price_type','detailingitem.dry_cleaning_price','detailingitem.cleaning_addon_price','detailingitem.etape'])
                 ->join('typeitem', 'detailingitem.typeitem_id', 'typeitem.id')
                 ->join('brands', 'detailingitem.brand_id', 'brands.id')
@@ -144,9 +145,11 @@ class DetailingController extends Controller
 
                         if(is_array($cs)){
                             foreach($cs as $keycs=>$idcs){
+                                /*
                                 if(!in_array($idcs,[1,2,3])){
                                     unset($cs[$keycs]);
                                 }
+                                */
                             }
                         }
 
@@ -1140,7 +1143,7 @@ class DetailingController extends Controller
 
     public function calculateCheckout($order_id){
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
-        if($order->Status=="FULFILLED")
+        if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED']))
         return;
 
         $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
@@ -1177,8 +1180,6 @@ class DetailingController extends Controller
 
             $count_by_typeitem = array_count_values($all_typeitems);
             $count_by_service = array_count_values($all_services);
-
-            dump($count_by_service);
         }
 
 
@@ -2847,30 +2848,42 @@ class DetailingController extends Controller
             ];
         }
 
-        if(in_array(1,$cs) && in_array(3,$cs)){
-            //100%
-        }
-
-        if(in_array(1,$cs) && !in_array(3,$cs) && !in_array(2,$cs)){
-            $baseprice = $baseprice*($services[1]['perc']/100);
-        }
-        if(!in_array(1,$cs) && !in_array(3,$cs) && in_array(2,$cs)){
-            $baseprice = $baseprice*($services[2]['perc']/100);
-        }
-        if(!in_array(1,$cs) && in_array(3,$cs) && !in_array(2,$cs)){
-            $baseprice = $baseprice*($services[3]['perc']/100);
-        }
+        $price_std = 0;
+        $price_ozone = 0;
 
 
-        foreach($services as $k=>$v){
-            if(isset($services[$k])){
-                if($v['perc']==0){
-                    $baseprice += $v['fixed_price'];
+        if(in_array(1,$cs) || in_array(2,$cs) || in_array(3,$cs)){
+
+            if(in_array(1,$cs) && in_array(3,$cs)){
+                //100%
+                $price_std = $baseprice;
+            }
+
+            if(in_array(1,$cs) && !in_array(3,$cs) && !in_array(2,$cs)){
+                $price_std = $baseprice*($services[1]['perc']/100);
+            }
+            if(!in_array(1,$cs) && !in_array(3,$cs) && in_array(2,$cs)){
+                $price_std = $baseprice*($services[2]['perc']/100);
+            }
+            if(!in_array(1,$cs) && in_array(3,$cs) && !in_array(2,$cs)){
+                $price_std = $baseprice*($services[3]['perc']/100);
+            }
+
+        }else{
+            foreach($services as $k=>$v){
+                if(isset($services[$k])){
+                    if($v['perc']==0){
+                        $price_ozone += $v['fixed_price'];
+                    }
                 }
             }
         }
 
-        return $baseprice;
+
+
+        $total = $price_std + $price_ozone;
+
+        return $total;
     }
 
     public function preCalculateCheckout(Request $request){
