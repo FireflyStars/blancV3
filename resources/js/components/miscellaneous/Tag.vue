@@ -17,6 +17,8 @@
 
             const statuses={
                 inprogress:'In process', // if we want to show  In progress as in process
+                'invoicepaid':'Paid',
+                'invoiceunpaid':'Unpaid',
                 //donatedtocharity:'Donated'
             };
             if(css_class.value in statuses){
@@ -165,6 +167,44 @@
 .tag.paid{
     background:rgba(66, 167, 30, 0.2);
     color: #42A71E;
+}
+.tag.invoiceunpaid{
+    background:#EEEEEE;
+    color: #868686;
+    position:relative;
+    text-align: left;
+    padding-left: 24px;
+    width: 96px!important;
+}
+.tag.invoiceunpaid::before{
+         content: " ";
+        background-color:  #868686;
+        width: 12px;
+        height:12px;
+        display: inline-block;
+        position: absolute;
+        left: 8px;
+        top:6px;
+        border-radius: 8px;
+}
+.tag.invoicepaid{
+    background:#D0E9C7;
+    color: #42A71E;
+    position:relative;
+    text-align: left;
+    padding-left: 24px;
+    width: 96px!important;
+}
+.tag.invoicepaid::before{
+         content: " ";
+        background-color:  #42A71E;
+        width: 12px;
+        height:12px;
+        display: inline-block;
+        position: absolute;
+        left: 8px;
+        top:6px;
+        border-radius: 8px;
 }
     .tag.instorage,.tag.donatedtocharity{
         background: #FFFFFF;

@@ -81,7 +81,8 @@
                 <div class="col" style="padding-left:32px;">
                     <b>This order is late</b>
                     <br/>
-                    <span class="f14">Please suggest a delivery date</span>
+                    <span class="f14" v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.TypeDelivery=='DELIVERY'">Please enter new delivery date</span>
+                    <span class="f14" v-else>Please enter new collection date</span>
                 </div>
                 <div class="col-5">
 
@@ -102,27 +103,31 @@
                     <b style="margin-left: 0">This order is late</b>
                     <br/>
                     </span>
-                    <span class="f14">Please suggest a delivery date</span>
+                    <span class="f14" v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.TypeDelivery=='DELIVERY'">Please enter new delivery date</span>
+                    <span class="f14" v-else>Please enter new collection date</span>
                 </div>
                 <div class="col-6  p-0 d-flex justify-content-evenly">
                     <date-picker v-model="cc_new_delivery_date" name="cc_new_delivery_date" :disabled-to-date="disabledtodate" :available-dates="availabledates" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
-                    <time-slot-picker placeholder="00-00 AM" v-model="suggest_timeslot"   name="suggest_timeslot" :available-slots="availabletimeslot"></time-slot-picker>
+                    <time-slot-picker  v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.TypeDelivery=='DELIVERY'" placeholder="00-00 AM" v-model="suggest_timeslot"   name="suggest_timeslot" :available-slots="availabletimeslot"></time-slot-picker>
                 </div>
                 <div class="col-1 p-0">
                     <button class="btn btn-dark btn-black" @click="setNewDeliveryDate">OK</button>
                 </div>
             </div>
             <div v-else-if="showNewDeliveryDateMsg" class="section-late-production-op date-suggested date-suggested-ok row" :class="{cc:hasRoles(['cc'])}">
-                <div class="col"><b>New delivery date: {{ORDER.detail.PromisedDate}}</b></div>
+                <div class="col">
+                    <b v-if="ORDER.detail.TypeDelivery=='DELIVERY'">New delivery date: {{ORDER.detail.PromisedDate}}</b>
+                    <b v-else>New collection date: {{ORDER.detail.PromisedDate}}</b>
+                    </div>
             </div>
         </transition>
 
         <transition name="popinout">
-            <div v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate==null&&!hasRoles(['cc'])" class="section-late-production-op row">
+            <div v-if="typeof ORDER['detail']!='undefined'&&!ORDER.detail.alreadypickuped&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate==null&&!hasRoles(['cc'])" class="section-late-production-op row">
                 <div class="col" style="padding-left:32px;">
                     <b>This order is late</b>
                     <br/>
-                    <span class="f14">Please suggest a pickup date</span>
+                    <span class="f14">Please enter new pickup date</span>
                 </div>
                 <div class="col-5">
 
@@ -132,7 +137,7 @@
                     <button class="btn btn-dark btn-black" @click="setSuggestedDate">OK</button>
                 </div>
             </div>
-            <div v-else-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate!=null&&!showslots" class="section-late-production-op date-suggested row" :class="{cc:hasRoles(['cc','admin','Blanc Admin'])}">
+            <div v-else-if="typeof ORDER['detail']!='undefined'&&!ORDER.detail.alreadypickuped&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate!=null&&!showslots" class="section-late-production-op date-suggested row" :class="{cc:hasRoles(['cc','admin','Blanc Admin'])}">
                 <div class="col">
                     <b style="vertical-align: middle">New pickup date suggested: {{formatDate(ORDER.detail.suggestedDeliveryDate)}}</b> <button v-if="hasRoles(['cc','admin','Blanc Admin'])" class="btn btn-outline-dark body_medium" @click="chooseSlot">Choose new slot</button>
                 </div>
@@ -143,7 +148,7 @@
                     <b style="margin-left: 0">This order is late</b>
                     <br/>
                     </span>
-                    <span class="f14">Please suggest a pickup date</span>
+                    <span class="f14">Please enter new pickup date</span>
                 </div>
                 <div class="col-6  p-0 d-flex justify-content-evenly">
                     <date-picker v-model="cc_new_pickup_date" name="cc_new_pickup_date" :disabled-to-date="disabledtodate" :available-dates="availabledates" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
@@ -169,7 +174,7 @@
                     </div>
                     <div class="col-6 ps-5 border-left">
                         <p class="order-sub-title m-0">
-                            {{ORDER.detail.order_right_text}} <span  class="ms-2 cursor-pointer text-underline" @click="showDeliverySlots">Edit</span>
+                            {{ORDER.detail.order_right_text}} <span  class="ms-2 cursor-pointer text-underline" v-if=" (ORDER['detail'].Status !='FULFILLED'&&ORDER['detail'].Status !='DELETE'&&ORDER['detail'].Status !='VOID' )" @click="showDeliverySlots">Edit</span>
                         </p>
                          <p class="mb-0" v-if="!updatedelverydate">{{ORDER.detail.order_right_date }}</p>
                          <p class="mb-0" v-if="updatedelverydate">{{formatOrderDate(cc_new_delivery_date)}}</p>
@@ -549,14 +554,14 @@
                         type: 'danger'
                     });
                 }
-                if(suggest_timeslot.value=="") {
+                if(suggest_timeslot.value==""&&typeof ORDER.value.detail!='undefined'&&ORDER.value.detail.TypeDelivery=='DELIVERY') {
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
                         message: `Please choose a timeslot.`,
                         ttl: 5,
                         type: 'danger'
                     });
                 }
-                if(cc_new_delivery_date.value==""||suggest_timeslot.value=="")
+                if(cc_new_delivery_date.value==""||(suggest_timeslot.value==""&&typeof ORDER.value.detail!='undefined'&&ORDER.value.detail.TypeDelivery=='DELIVERY'))
                     return false;
                 store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_NEW_DELIVERY_DATE}`,{PromisedDate:cc_new_delivery_date.value,timeslot:suggest_timeslot.value}).then((response)=>{
 
@@ -595,7 +600,7 @@
                         type: 'danger'
                     });
                 }
-                if(suggest_timeslot_pickup.value=="") {
+                if(suggest_timeslot_pickup.value==""&&typeof ORDER.value.detail!='undefined'&&ORDER.value.detail.TypeDelivery=='DELIVERY') {
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
                         message: `Please choose a timeslot.`,
                         ttl: 5,
@@ -611,7 +616,7 @@
                 //     //showDeliverySlots();
                 // }
 
-                if(cc_new_pickup_date.value==""||suggest_timeslot_pickup.value=="")
+                if(cc_new_pickup_date.value==""||(suggest_timeslot_pickup.value==""&&typeof ORDER.value.detail!='undefined'&&ORDER.value.detail.TypeDelivery=='DELIVERY'))
                     return false;
 
                     if(cc_new_delivery_date.value != ""){

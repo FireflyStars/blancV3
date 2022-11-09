@@ -1192,6 +1192,11 @@ class OrderListController extends Controller
 
         });
 
+        $order->alreadypickuped=false;
+        $pkdate=Carbon::parse($order->DatePickup);
+        if($pkdate->isPast()||$pkdate->isToday())
+        $order->alreadypickuped=true;
+
 
         if($order->Phone!=""){
             $order->Phone=json_decode($order->Phone);
@@ -1495,11 +1500,28 @@ class OrderListController extends Controller
         // if($user->hasRoles(['admin','Blanc Admin','cc'])){
         if(in_array($user->role_id,[1,4])){ // Production operator cannot set a new delivery date
 
-                $infoOrder=DB::table('infoOrder')->select(['CustomerID','DeliveryaskID'])->where('id','=',$infoOrder_id)->first();
+                $infoOrder=DB::table('infoOrder')->select(['CustomerID','DeliveryaskID','TypeDelivery'])->where('id','=',$infoOrder_id)->first();
 
                 if($infoOrder==null)
                     return response()->json(['updated'=>$update,'message'=>'Order not found.']);
 
+                if($infoOrder->TypeDelivery!='DELIVERY'){
+                    $pickupTimeTranche=Tranche::getFormattedTranche(11);
+                    DB::table('infoOrder')->where('id',$infoOrder_id)->update(
+                        [
+                            'DateDeliveryAsk'=>$PromisedDate,
+                            'Status'=>'In process'
+                        ]
+                    );
+                    DB::table('booking_store')->where('order_id',$infoOrder_id)->update(
+                        [
+                            'pickup_date'=>$PromisedDate,
+                            'pickup_timeslot'=>11,
+                            'pickup_time'=>$pickupTimeTranche['tranchefrom']
+                        ]
+                    );
+                    $update=true;
+                }else{    
 
                 $cust_details =  DB::table('infoCustomer')
                     ->select('infoCustomer.id AS customer_id','infoCustomer.*','address.*')
@@ -1571,6 +1593,7 @@ class OrderListController extends Controller
                     //*/
                     $update=true;
                 }
+            }
         }
         return response()->json(['updated'=>$update,'message'=>'','post'=>$request->all()]);
     }
