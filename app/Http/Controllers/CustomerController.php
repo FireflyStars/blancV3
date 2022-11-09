@@ -485,7 +485,33 @@ class CustomerController extends Controller
         }
         return response()->json($custId);
     }
+    public function getInvoiceHistories(Request $request){
+        
+        $skip=$request->post('skip');
+        $take=$request->post('take');
+        $CustomerID=$request->post('CustomerID');
 
+    
+            $invoiceHistorylist=DB::table('infoOrderPrint')
+                ->select( [
+                    'infoOrderPrint.FactureID','infoOrderPrint.id','infoOrderPrint.NumFact','infoOrderPrint.montant as Total','infoOrderPrint.created_at as issue_date','users.name AS issuer',
+                    DB::raw('DATE_ADD(infoOrderPrint.created_at, INTERVAL 15 DAY) as due_date'),
+                    DB::raw('(infoOrderPrint.montant/1.2) as net'),
+                    DB::raw('(infoOrderPrint.montant-infoOrderPrint.montant/1.2) as vat'),
+                    DB::raw('IF(infoOrderPrint.Paid= 1, "invoicePaid", "invoiceUnpaid") as Paid')
+                ])->leftJoin('users',function($join){
+                    $join->on('users.id','=','infoOrderPrint.user_id');
+                })
+                ->where('infoOrderPrint.CustomerID','=',$CustomerID);
+        
+
+    
+
+
+        $invoiceHistorylist=$invoiceHistorylist->skip($skip)->take($take);
+        $invoiceHistorylist=$invoiceHistorylist->get();
+        return response()->json($invoiceHistorylist);
+    }
     public function createCustomerSubAccount(Request $request){
         $emailAddress = $request->customer_data['email'] !='' ? $request->customer_data['email'] : (Str::random(10).'@noemail.com');
 

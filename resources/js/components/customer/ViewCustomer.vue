@@ -290,6 +290,8 @@
                             </div>
                         </transition>
                         <transition name="list" appear v-if="step =='payment'">
+                                <div>
+                                    <customer-invoice-history :CustomerID="form.customerID"/>
                             <div class="payment cust-page-content m-auto pt-5">
                                 <div class="payment-method-section" v-if="form.accountType !='Master'">
                                     <h3 class="title">Payment method <span v-if="!creditCardCustomer" class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="toggleCreditCard()">Edit</span></h3>
@@ -625,6 +627,7 @@
                                     </div>
                                 </div>
                             </div>
+                                </div>
                         </transition>
                         <transition name="list" appear v-if="step == 'order_management'">
                             <div class="cust-page-content mt-5 m-auto order-panel">
@@ -1039,6 +1042,7 @@
     import Modal from '../miscellaneous/Modal.vue';
     import DatePicker from '../miscellaneous/DatePicker.vue';
     import NewSubAccountForm from '../miscellaneous/NewSubAccountForm.vue';
+    import CustomerInvoiceHistory from './CustomerInvoiceHistory.vue'
     import {
         TOASTER_MODULE,
         TOASTER_MESSAGE,
@@ -1062,7 +1066,8 @@
             Search,
             Modal,
             DatePicker,
-            NewSubAccountForm
+            NewSubAccountForm,
+            CustomerInvoiceHistory
         },
         setup(props,context){
             const route = useRoute();
