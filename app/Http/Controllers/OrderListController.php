@@ -1421,7 +1421,8 @@ class OrderListController extends Controller
             $location_history = $history;
             }
 
-            $Issues = DB::table('detailingitem')->select('detailingitem.stainstext' , 'detailingitem.stains','detailingitem.damagestext' , 'detailingitem.damages')
+            $Issues = DB::table('detailingitem')->select('detailingitem.stainstext' , 'detailingitem.stains','detailingitem.damagestext' , 'detailingitem.damages',
+            'detailingitem.damagesissues' ,'detailingitem.stainsissue' )
             ->where('detailingitem.item_id', $request->item_id)
             ->where('detailingitem.InvoiceID',$InvoiceId)
             ->first();
@@ -1430,12 +1431,16 @@ class OrderListController extends Controller
 
                 if(!is_null($Issues->stains)){
                 $stains_decode =json_decode($Issues->stains);
-                $Issues->stains = DB::table('issues_tag')->select('id','name')->whereIn('id', array_column($stains_decode, 'id_issue'))->get();
+                $stains_stainsissue_decode =json_decode($Issues->stainsissue);
+                $Issues->stains = DB::table('itemzones')->whereIn('id', array_column($stains_decode, 'id_zone'))->get();
+                $Issues->stainsissue = DB::table('issues_tag')->select('id','name')->whereIn('id', $stains_stainsissue_decode)->get();
                 }
 
                 if(!is_null($Issues->damages)){
                     $damages_decode =json_decode($Issues->damages);
-                    $Issues->damages = DB::table('issues_tag')->select('id','name')->whereIn('id', array_column($damages_decode, 'id_issue'))->get();
+                    $stains_damagesissues_decode =json_decode($Issues->damagesissues);
+                    $Issues->damages =  DB::table('itemzones')->whereIn('id', array_column($damages_decode, 'id_zone'))->get();
+                    $Issues->damagesissues = DB::table('issues_tag')->select('id','name')->whereIn('id', $stains_damagesissues_decode)->get();
                 }
             }
 

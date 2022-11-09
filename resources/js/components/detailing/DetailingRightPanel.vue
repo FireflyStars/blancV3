@@ -196,27 +196,24 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-6 stain-bloc">
-                                        <div
-                                            class="stain-row"
-                                            v-for="(stain, index) in item_description.stains"
-                                        >
+                                        <div class="stain-row" v-for="(stain, index) in item_description.stains" :key="index">
                                             <span class="stain eclipse-number">{{ index + 1 }}</span>
                                             <span
                                                 v-if="stain.id_issue != 0"
                                             >{{ getStainName(stain.id_issue) }} &nbsp;-&nbsp; {{ getStainZone(stain.id_zone) }}</span>
                                             <span
-                                                v-else-if="stain.description != ''"
+                                                v-if="stain.description != ''"
                                             >{{ stain.description }} &nbsp;-&nbsp; {{ getStainZone(stain.id_zone) }}</span>
                                             <span
                                                 v-else
                                             >Stain &nbsp;-&nbsp; {{ getStainZone(stain.id_zone) }}</span>
                                         </div>
+                                        <div class="stain-row"  v-for="( stain, index ) in item_description.stains_tags"  :key="index">
+                                            <span class="issue-tag">Stain - {{ stain.name }}</span>
+                                        </div>
                                     </div>
                                     <div class="col-6">
-                                        <div
-                                            class="stain-row"
-                                            v-for="(dam, index) in item_description.damages"
-                                        >
+                                        <div class="stain-row" v-for="(dam, index) in item_description.damages" :key="index" >
                                             <span class="damage eclipse-number">{{ index + 1 }}</span>
                                             <span
                                                 v-if="dam.id_issue != 0"
@@ -227,6 +224,9 @@
                                             <span
                                                 v-else
                                             >Damage&nbsp;-&nbsp; {{ getStainZone(dam.id_zone) }}</span>
+                                        </div>
+                                        <div class="stain-row"  v-for="( damage, index ) in item_description.damages_tags"  :key="index">
+                                            <span class="issue-tag"> Damage - {{ damage.name }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1007,6 +1007,9 @@ export default {
     color:#42A71E;
     padding-left: 8px;
     line-height: 16px;
+}
+.issue-tag{
+    padding-left: 28px;
 }
 
 </style>

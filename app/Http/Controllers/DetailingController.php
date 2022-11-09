@@ -104,9 +104,10 @@ class DetailingController extends Controller
         //+  SUM (typeitem.pricecleaning*complexities.coefcleaning) + SUM(typeitem.pricecleaning*fabrics.coefcleaning )
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
-        if($order->Status=="FULFILLED"){
+        if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED'])){
             return;
         }
+
             $detailingitemlist = DB::table('detailingitem')->select(['detailingitem.id','detailingitem.pricecleaning','brands.coefcleaning','detailingitem.complexities_id','detailingitem.fabric_id','detailingitem.cleaning_services','detailingitem.etape','detailingitem.status','detailingitem.cleaning_price_type','detailingitem.dry_cleaning_price','detailingitem.cleaning_addon_price','detailingitem.etape'])
                 ->join('typeitem', 'detailingitem.typeitem_id', 'typeitem.id')
                 ->join('brands', 'detailingitem.brand_id', 'brands.id')
@@ -144,9 +145,11 @@ class DetailingController extends Controller
 
                         if(is_array($cs)){
                             foreach($cs as $keycs=>$idcs){
+                                /*
                                 if(!in_array($idcs,[1,2,3])){
                                     unset($cs[$keycs]);
                                 }
+                                */
                             }
                         }
 
@@ -738,14 +741,15 @@ class DetailingController extends Controller
         $damages_zones=collect();
         if (isset($detailingitem['stains']) && $detailingitem['stains'] != null) {
             $stains=json_decode($detailingitem['stains'],true);
-            $stains_tags = DB::table('issues_tag')->select('id','name')->whereIn('id', array_column($stains, 'id_issue'))->get();
+            $stains_tags_decode=json_decode($detailingitem['stainsissue'],true);
+            $stains_tags = DB::table('issues_tag')->select('id','name')->whereIn('id',$stains_tags_decode)->get();
             $stains_zones = DB::table('itemzones')->whereIn('id', array_column($stains, 'id_zone'))->get();
         }
         if (isset($detailingitem['damages']) && $detailingitem['damages'] != null) {
             $damages=json_decode($detailingitem['damages'],true);
-            $damages_tags = DB::table('issues_tag')->select('id','name')->whereIn('id', array_column($damages, 'id_issue'))->get();
+            $damages_tags_decode=json_decode($detailingitem['damagesissues'],true);
+            $damages_tags = DB::table('issues_tag')->select('id','name')->whereIn('id', $damages_tags_decode)->get();
             $damages_zones = DB::table('itemzones')->whereIn('id', array_column($damages, 'id_zone'))->get();
-
         }
         return  array(
             'typeitem_name' => isset($typeitem) ? $typeitem['name'] : '',
@@ -764,6 +768,8 @@ class DetailingController extends Controller
             'damages' => isset($detailingitem['damages']) ? json_decode($detailingitem['damages']) : array(),
             'issues_zones' => $stains_zones->merge($damages_zones) ,
             'issues_tags' => $stains_tags->merge($damages_tags) ,
+            'stains_tags' => $stains_tags,
+            'damages_tags' => $damages_tags
         );
     }
 
@@ -1137,7 +1143,7 @@ class DetailingController extends Controller
 
     public function calculateCheckout($order_id){
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
-        if($order->Status=="FULFILLED")
+        if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED']))
         return;
 
         $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
@@ -1174,8 +1180,6 @@ class DetailingController extends Controller
 
             $count_by_typeitem = array_count_values($all_typeitems);
             $count_by_service = array_count_values($all_services);
-
-            dump($count_by_service);
         }
 
 
@@ -1681,7 +1685,7 @@ class DetailingController extends Controller
         $issues = DB::table('issues_tag')->get();
         if(count($issues) > 0){
             foreach($issues as $k=>$v){
-                $issue_names[$v->id][$v->type] = $v->name;
+                $issue_names[$v->id] = $v->name;
             }
         }
 
@@ -1823,6 +1827,9 @@ class DetailingController extends Controller
 
                 $items[$k]->stains = @json_decode($v->stains);
                 $items[$k]->damages = @json_decode($v->damages);
+                $items[$k]->damagesissues = @json_decode($v->damagesissues);
+                $items[$k]->stainsissue = @json_decode($v->stainsissue);
+                
 
 
                 $items[$k]->detailed_services = [];
@@ -2844,30 +2851,42 @@ class DetailingController extends Controller
             ];
         }
 
-        if(in_array(1,$cs) && in_array(3,$cs)){
-            //100%
-        }
-
-        if(in_array(1,$cs) && !in_array(3,$cs) && !in_array(2,$cs)){
-            $baseprice = $baseprice*($services[1]['perc']/100);
-        }
-        if(!in_array(1,$cs) && !in_array(3,$cs) && in_array(2,$cs)){
-            $baseprice = $baseprice*($services[2]['perc']/100);
-        }
-        if(!in_array(1,$cs) && in_array(3,$cs) && !in_array(2,$cs)){
-            $baseprice = $baseprice*($services[3]['perc']/100);
-        }
+        $price_std = 0;
+        $price_ozone = 0;
 
 
-        foreach($services as $k=>$v){
-            if(isset($services[$k])){
-                if($v['perc']==0){
-                    $baseprice += $v['fixed_price'];
+        if(in_array(1,$cs) || in_array(2,$cs) || in_array(3,$cs)){
+
+            if(in_array(1,$cs) && in_array(3,$cs)){
+                //100%
+                $price_std = $baseprice;
+            }
+
+            if(in_array(1,$cs) && !in_array(3,$cs) && !in_array(2,$cs)){
+                $price_std = $baseprice*($services[1]['perc']/100);
+            }
+            if(!in_array(1,$cs) && !in_array(3,$cs) && in_array(2,$cs)){
+                $price_std = $baseprice*($services[2]['perc']/100);
+            }
+            if(!in_array(1,$cs) && in_array(3,$cs) && !in_array(2,$cs)){
+                $price_std = $baseprice*($services[3]['perc']/100);
+            }
+
+        }else{
+            foreach($services as $k=>$v){
+                if(isset($services[$k])){
+                    if($v['perc']==0){
+                        $price_ozone += $v['fixed_price'];
+                    }
                 }
             }
         }
 
-        return $baseprice;
+
+
+        $total = $price_std + $price_ozone;
+
+        return $total;
     }
 
     public function preCalculateCheckout(Request $request){
