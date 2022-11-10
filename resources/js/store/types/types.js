@@ -53,6 +53,7 @@ export const TOASTER_ADD_TOAST='TOASTER_ADD_TOAST';//mutations
 export const TOASTER_REMOVE_TOAST='TOASTER_REMOVE_TOAST';//mutations
 export const TOASTER_MESSAGE='TOASTER_MESSAGE';//action
 export const TOASTER_GET_ALL='TOASTER_GET_ALL';//getters
+export const TOASTER_CLEAR_TOASTS='TOASTER_CLEAR_TOASTS'//mutations
 
 
 export const ORDERDETAIL_MODULE='ORDERDETAIL_MODULE/';//namespace
