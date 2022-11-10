@@ -1,6 +1,5 @@
 <template>
     <button @click="checkOrderToFulfill" class="btn btn-outline-success">Fulfill Order</button>
-
     <modal ref="no_payment_modal">
         <template #closebtn>
             <span class="close" id="addon_modal_close" @click="closeNoPaymentModal"></span>
