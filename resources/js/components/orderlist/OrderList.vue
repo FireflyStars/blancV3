@@ -182,21 +182,21 @@
                     css:"font-weight:bold;text-align:left;"
                 },
                 Det:{
-                    name:"Det",
+                    name:"DETAILED",
                     width:"6%",
                     sortable:false,
                     css:"font-weight:bold;text-align:left;",
                     header_align:"left"
                 },
                 Prod:{
-                    name:"Prod",
+                    name:"PRODUCTION",
                     width:"6%",
                     sortable:false,
                     css:"font-weight:bold;text-align:left;",
                     header_align:"left"
                 },
                 Deliv:{
-                    name:"Deliv",
+                    name:"DELIVERY",
                     width:"6%",
                     sortable:false,
                     css:"font-weight:bold;text-align:left",
@@ -279,21 +279,21 @@
                     css:"font-weight:bold;text-align:left;"
                 },
                 Det:{
-                    name:"Det",
+                    name:"DETAILED",
                     width:"6%",
                     sortable:false,
                     css:"font-weight:bold;text-align:left;",
                     header_align:"left"
                 },
                 Prod:{
-                    name:"Prod",
+                    name:"PRODUCTION",
                     width:"6%",
                     sortable:false,
                     css:"font-weight:bold;text-align:left;",
                     header_align:"left"
                 },
                 Deliv:{
-                    name:"Deliv",
+                    name:"DELIVERY",
                     width:"6%",
                     sortable:false,
                     css:"font-weight:bold;text-align:left",
@@ -380,21 +380,21 @@
                     css:"font-weight:bold;text-align:left;"
                 },
                 Det:{
-                    name:"Det",
+                    name:"DETAILED",
                     width:"6%",
                     sortable:false,
                     css:"font-weight:bold;text-align:left;",
                     header_align:"left"
                 },
                 Prod:{
-                    name:"Prod",
+                    name:"PRODUCTION",
                     width:"6%",
                     sortable:false,
                     css:"font-weight:bold;text-align:left;",
                     header_align:"left"
                 },
                 Deliv:{
-                    name:"Deliv",
+                    name:"DELIVERY",
                     width:"6%",
                     sortable:false,
                     css:"font-weight:bold;text-align:left",

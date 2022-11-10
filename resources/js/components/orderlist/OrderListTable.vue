@@ -169,7 +169,7 @@
                 if(def.name=="Type"){
                     return order.delivery_method
                 }
-                if(def.name=="Det"){
+                if(def.name=="DETAILED"){
                     return order.DET
                 }
                 return val;
