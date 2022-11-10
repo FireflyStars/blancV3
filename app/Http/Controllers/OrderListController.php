@@ -1178,8 +1178,23 @@ class OrderListController extends Controller
                 ->orderBy('infoInvoice.NumInvoice')->get();
 
         $items=[];
-        $infoitems->each(function ($item) use(&$items) {
+        $infoitems->each(function ($item) use(&$items , $order) {
 
+            if($order->Status == "DELIVERED"){
+                $nextpost = DB::table('postes')->select(['postes.nominterface'])
+                ->where('postes.id','=', 39)->first(); 
+                $item->station = $nextpost->nominterface;
+            }
+            if($order->Status == "FULFILLED"){
+                $nextpost = DB::table('postes')->select(['postes.nominterface'])
+                ->where('postes.id','=', 28)->first(); 
+                $item->station = $nextpost->nominterface;
+            }
+            if($order->Status == "VOID" || $order->Status == "DELETE"){
+                $nextpost = DB::table('postes')->select(['postes.nominterface'])
+                ->where('postes.id','=', 34)->first(); 
+                $item->station = $nextpost->nominterface;
+            }
             $Price = DB::table('detailingitem')->select(['detailingitem.dry_cleaning_price' , 'detailingitem.cleaning_addon_price' , 'detailingitem.tailoring_price' ])
             ->where('detailingitem.InvoiceID','=',$item->InvoiceID)
             ->where('detailingitem.tracking','=',$item->ItemTrackingKey)->first();
@@ -1343,7 +1358,7 @@ class OrderListController extends Controller
         $itemInfo = DB::table('infoitems')
                       ->join('infoInvoice', 'infoitems.InvoiceID', '=', 'infoInvoice.InvoiceID')
                       ->join('infoCustomer', 'infoInvoice.CustomerID', '=', 'infoCustomer.CustomerID')
-                      ->join('infoOrder','infoOrder.CustomerID','=','infoCustomer.CustomerID')
+                      ->join('infoOrder','infoInvoice.OrderID','=','infoOrder.OrderID')
                       ->join('postes', 'infoitems.nextpost', '=', 'postes.id')
                       ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
                       ->where('infoitems.id', $request->item_id)
@@ -1353,26 +1368,45 @@ class OrderListController extends Controller
                           'infoitems.StoreName as store_name', 'infoitems.store', 'infoitems.damage', 'infoitems.id_items',
                           'infoitems.typeitem as item_name', 'TypePost.bg_color as location_color', 'postes.nom as location', 'TypePost.circle_color', 'TypePost.process',
                           'infoCustomer.Name as customer_name', 'infoCustomer.CustomerIDMaster', 'infoCustomer.CustomerIDMasterAccount',
-                          'infoCustomer.IsMaster', 'infoCustomer.IsMasterAccount', 'postes.id as poste_id', 'infoOrder.id as order_id'
+                          'infoCustomer.IsMaster', 'infoCustomer.IsMasterAccount', 'postes.id as poste_id', 'infoOrder.id as order_id','infoOrder.Status'
                           )->first();
 
         if($request->invoice_Id != null){
             $InvoiceId = $request->invoice_Id;
             $subOrder = DB::table('itemhistorique')
             ->join('infoInvoice', 'itemhistorique.InvoiceID', '=', 'infoInvoice.InvoiceID')
+            ->join('infoOrder','infoOrder.OrderID','=','infoInvoice.OrderID')
             ->join('infoitems','infoitems.ItemTrackingKey','=','itemhistorique.ItemTrackingKey')
             ->where('itemhistorique.InvoiceID', $InvoiceId)
-            ->select('infoitems.id_items as itemproduction' ,'infoitems.ItemTrackingKey' ,  'itemhistorique.ID_item as productionitem' ,'infoInvoice.NumInvoice as NumInvoice', 'infoInvoice.InvoiceID')
+            ->select('infoitems.id_items as itemproduction' ,'infoitems.ItemTrackingKey' ,  'itemhistorique.ID_item as productionitem' ,'infoInvoice.NumInvoice as NumInvoice', 'infoInvoice.InvoiceID' , 'infoOrder.Status' , 'infoOrder.id as orderId')
             ->first();
         }else {
             $InvoiceId = $itemInfo->InvoiceID;
-            $subOrder = DB::table('itemhistorique')->select('infoitems.id_items as itemproduction' ,'infoitems.ItemTrackingKey' ,  'itemhistorique.ID_item as productionitem' ,'infoInvoice.NumInvoice as NumInvoice', 'infoInvoice.InvoiceID')
+            $subOrder = DB::table('itemhistorique')->select('infoitems.id_items as itemproduction' ,'infoitems.ItemTrackingKey' ,  'itemhistorique.ID_item as productionitem' ,'infoInvoice.NumInvoice as NumInvoice', 'infoInvoice.InvoiceID', 'infoOrder.Status' , 'infoOrder.id as orderId')
             ->join('infoInvoice', 'itemhistorique.InvoiceID', '=', 'infoInvoice.InvoiceID')
+            ->join('infoOrder','infoOrder.OrderID','=','infoInvoice.OrderID')
             ->join('infoitems','infoitems.ItemTrackingKey','=','itemhistorique.ItemTrackingKey')
             ->where('itemhistorique.InvoiceID', $InvoiceId)
             ->first();
         }
 
+        if($subOrder){
+            if($subOrder->Status == "DELIVERED"){
+                $nextpost = DB::table('postes')->select(['postes.nominterface'])
+                ->where('postes.id','=', 39)->first(); 
+                $itemInfo->location = $nextpost->nominterface;
+            }
+            if($subOrder->Status == "FULFILLED"){
+                $nextpost = DB::table('postes')->select(['postes.nominterface'])
+                ->where('postes.id','=', 28)->first(); 
+                $itemInfo->location = $nextpost->nominterface;
+            }
+            if($subOrder->Status == "VOID" || $subOrder->Status == "DELETE"){
+                $nextpost = DB::table('postes')->select(['postes.nominterface'])
+                ->where('postes.id','=', 34)->first(); 
+                $itemInfo->location = $nextpost->nominterface;
+            }
+        }
         $itemsList = DB::table('itemhistorique')->select([ 'infoitems.id_items as itemproduction' , 'itemhistorique.ID_item as productionitem'])
             ->join('infoitems','infoitems.ItemTrackingKey','=','itemhistorique.ItemTrackingKey')
             ->where('itemhistorique.InvoiceID', '=' , $InvoiceId)
