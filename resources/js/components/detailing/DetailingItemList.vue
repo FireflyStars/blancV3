@@ -59,7 +59,7 @@
                                         class="body_regular td-text"
                                         @click="openDetailing(det.item_number)"
                                     >£{{ det.price.toFixed(2) }}</td>
-                                    <td @click="loadRemoveItemModal(det.tracking,det.item_number)"><img src="/images/garbage.svg"/></td>
+                                    <td v-if="count_has_invoices==0" @click="loadRemoveItemModal(det.tracking,det.item_number)"><img src="/images/garbage.svg"/></td>
                                 </tr>
                             </tbody>
                         </table>
