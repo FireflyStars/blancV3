@@ -42,8 +42,10 @@ cancel_bookings[]=array(
 namespace App\Models;
 
 use App\Customer;
+use App\Http\Controllers\NotificationController;
 use App\Models\DayGenerator;
 use Carbon\Carbon;
+use Exception;
 use function GuzzleHttp\Psr7\str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -69,7 +71,7 @@ class OrderRecurringCreator
 
     public function __construct($CustomerID=null,$trigger=null)
     {
-
+        try{
         $this->file_time= date('Y-m-d');
         //Storage::disk('local')->delete('order_recurring'.DIRECTORY_SEPARATOR.'OR_'.$this->file_time.'.md');
         $this->holidays=Holiday::getHolidays();
@@ -265,7 +267,11 @@ class OrderRecurringCreator
 
         $this->l('## End Cron : '.date('Y-m-d H:i:s'));
 
-
+        }catch(Exception $e){
+            NotificationController::Notify('','+23057520441','','0_SMS_CRON_REC_ERROR',['error'=>$e->getMessage()]);//reyewat   
+            NotificationController::Notify('','+23052525997','','0_SMS_CRON_REC_ERROR',['error'=>$e->getMessage()]);//franck
+            $this->l('## '.date('Y-m-d H:i:s').' #Caught exception: `'.  $e->getMessage().'`');
+        }
     }
     public function isDateHoliday($date){
         return in_array($date,$this->holidays);
