@@ -74,7 +74,24 @@ export default ({
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message: "Invalid Barcode",ttl:5, type:'danger'},{ root: true });
                 }    
                });
-            } else {
+            } else if (e.target.value.length == 14){
+                axios.post('/get-order-barcode',{
+                    Barcode: e.target.value.substring(5)
+               }).then((res)=>{
+                if(res.data.order_id != null){
+                    router.push({
+                        name:'OrderDetails',
+                        params: {
+                            order_id:res.data.order_id,
+                        },
+                    })
+                  close();
+                } else {
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message: "Invalid Barcode",ttl:5, type:'danger'},{ root: true });
+                }    
+               });
+            }
+             else {
                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message: "Invalid Barcode",ttl:5, type:'danger'},{ root: true });
             }
            
