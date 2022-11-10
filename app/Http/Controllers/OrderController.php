@@ -1274,7 +1274,7 @@ class OrderController extends Controller
        $ListInvoice=[];
        $infoitemsIds=[];
 
-           $order =  DB::table('infoOrder')->where('infoOrder.id',$order_id)->update([ 
+           $order =  DB::table('infoOrder')->where('infoOrder.id',$order_id)->update([
             'datevoid' =>date('Y-m-d H:i:s'),
             'Status'   => "VOID ",
             'Total'    => 0,
@@ -1326,7 +1326,7 @@ class OrderController extends Controller
         $orderid=$request->post('order_id');
 
             $infoOrder=DB::table('infoOrder')->where('infoOrder.id',$orderid)->first();
-            
+
             if($infoOrder){
                 $pickup = DB::table('pickup')->where('pickup.order_id',$orderid)->first();
 
@@ -1342,13 +1342,38 @@ class OrderController extends Controller
                                 $deleted = DB::table('detailingitem')->where('id',$v->id)->delete();
                             }
                         }
-                        
+
                         DB::table('infoOrder')->where('infoOrder.id',$orderid)->update([
                             'Status'=>'SCHEDULED'
                         ]);
                     }
             }
         return response()->json(['done'=>'ok']);
+    }
+
+    public function getOrderToFulfill(Request $request){
+        $order_id = $request->order_id;
+
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+        $user = Auth::user();
+
+        return response()->json([
+            'order'=>$order,
+            'user'=>$user,
+        ]);
+
+    }
+
+    public function fulfillOrder(Request $request){
+        $order = $request->order_id;
+        $paid = $request->paid;
+
+        $updated = DB::table('infoOrder')->where('id',$request->order_id)->update(['Status'=>($paid?'FULFILLED':'DELIVERED')]);
+
+        return response()->json([
+            'post'=>$request->all(),
+            'updated'=>$updated,
+        ]);
     }
 
 }

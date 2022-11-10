@@ -855,6 +855,13 @@ Route::post('/generate-ar-invoice',[CustomerController::class,'generateArInvoice
 Route::get('/download-ar-pdf',[CustomerController::class,'downloadArPdf'])->name('download-ar-pdf');
 
 /**
+ * ORDER DETAIL MINI CHECKOUT
+ */
+Route::post('/order-to-fulfill',[OrderController::class,'getOrderToFulfill'])->name('order-to-fulfill')->middleware('auth');
+Route::post('/fulfill-order',[OrderController::class,'fulfillOrder'])->name('fulfill-order')->middleware('auth');
+
+
+/**
  * Route for Electron Pos printer - DO NOT REMOVE
  */
 
