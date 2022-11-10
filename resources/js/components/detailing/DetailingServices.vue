@@ -32,7 +32,7 @@
                     <!--
 (!detailingitem.cleaning_services && service.selected_default==1) ||
                         -->
-                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center position-relative" v-for="(service,id) in services" :class="{'sel_service': service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0,'mb-4':service.cleaning_group==2, 'active_service': preference_customer && preference_customer.includes(service.id_preference)  && detailingitem.status != 'Completed' , 'cleaning': group=='Cleaning Add-on'}" :id="'sub_service_'+service.id" @click="checkSubService(service.id)" :data-cleaning-service-id="service.id">
+                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center position-relative" v-for="(service,id) in services" :class="{'sel_service': service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0, 'service_add_ons':service.cleaning_group==1 , 'mb-4':service.cleaning_group==2, 'active_service': preference_customer && preference_customer.includes(service.id_preference)  && detailingitem.status != 'Completed' , 'cleaning': group=='Cleaning Add-on'}" :id="'sub_service_'+service.id" @click="checkSubService(service.id)" :data-cleaning-service-id="service.id">
                         <div class="d-block w-100 text-center">
                             {{service.name}}<span v-if="service.cleaning_group==2" class="text-center d-block w-100">(&#163;{{service.fixed_price}})</span>
 
@@ -334,6 +334,28 @@ export default {
                 if(id==2){ //Tailoring
                     checkSelTailoringGroups();
                 }
+            }else{
+                //Clears all subselected;
+                if(id==1){ //CLEANING
+                    
+                    let sub_services = document.querySelectorAll('.cleaning-subservice');
+                    let keys = Object.keys(sub_services);
+
+                    let i;
+                    for(i in keys){
+                        let el = sub_services[i];
+                        el.classList.remove('sel_service');
+                    }
+                        sel_cleaning_price_type.value = 'Standard';
+                        document.getElementById('pricenow_describe_cleaning').classList.remove('sel_service');
+                        document.getElementById('pricenow_cleaning').classList.remove('sel_service');
+                        document.getElementById('sub_service_Standard').classList.add('sel_service');
+
+                    checkSelectedCleaning(true);
+                    checkCleaningGroup();
+                    document.getElementById('main_service_1').classList.add('main_selected');
+                    
+                }
             }
 
             main_service.value = id;
@@ -385,10 +407,24 @@ export default {
 
         function toggleSubService(id){
             let el = document.getElementById('sub_service_'+id);
-            el.classList.toggle('sel_service');
-          
-
+                el.classList.toggle('sel_service');
              let classes = Object.values(el.classList);
+
+             
+            if(classes.includes('cleaning-subservice') && classes.includes('service_add_ons')){
+                
+                if(id !== 1 && id !== 3 && classes.includes('sel_service')){
+
+                let cleaning = document.querySelectorAll('.service_add_ons:not(#sub_service_'+id+')');
+                let keys = Object.keys(cleaning);
+
+                          let i;
+                        for(i in keys){
+                            let elp = cleaning[i];
+                            elp.classList.remove('sel_service');
+                        }  
+                } 
+            }           
 
                 //TO optimize
                 if(classes.includes('cleaning-prices')){
@@ -519,7 +555,7 @@ export default {
 
             sel_tailoring_group.value = sel_tailoring_gp;
             //End open accordion
-
+            document.getElementById('main_service_1').classList.add('main_selected');
 
         }
 
@@ -556,6 +592,7 @@ export default {
 
             }else{
                 document.getElementById('main_service_1').classList.remove('main_selected');
+                    sel_cleaning_service_id.value = cleaning_services_id;  
             }
 
             if(on_click){
@@ -564,7 +601,7 @@ export default {
                     step:11,
                     detailingitem_id: props.detailingitem.id,
                     cleaning_services: JSON.stringify(cleaning_services_id),
-                    cleaning_price_type: cleaning_pricing_type,
+                    cleaning_price_type: sel_cleaning_price_type.value,
                     tailoring_services: JSON.stringify(sel_tailoring_service_id.value),
                     tailoring_price_type:sel_tailoring_price_type.value,
                 });

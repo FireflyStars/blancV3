@@ -8,7 +8,7 @@
                         <div class ="name_customer">{{ORDER.detail.Name.toLowerCase()}}</div>
                         <span class="ms-3 cursor-pointer" style="font-size: 12px; line-height: 14px; color: #42A71E; text-decoration: underline;" @click="EditCustomer(ORDER.detail.id)">View</span>
                     </div>
-                    
+
                     <div class="detail-close-section d-flex align-items-center">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform: translateY(8px);">
                         <path fill-rule="evenodd" clip-rule="evenodd" d="M20.8867 11.1437C20.8543 11.0873 20.8279 11.0274 20.8081 10.9652L19.8615 8.00091C19.7421 7.62706 19.4011 7.45233 19.0165 7.45233H16.8865V6.22331H19.0165C19.7857 6.22331 20.648 6.70463 20.8867 7.45233L21.7857 9.90358L22.8774 12.8132C22.941 12.9861 23 13.1118 23 13.2737V15.4265C23 16.4304 22.2041 17.2443 21.2222 17.2443H2.77778C1.79594 17.2443 1 16.4304 1 15.4265V6.87706C1 5.87311 1.79594 5.00586 2.77778 5.00586H15.6716C16.4309 5.00586 16.8865 5.44681 16.8865 6.22331L16.2663 6.5591C16.2663 6.28458 15.94 6.22331 15.6716 6.22331H2.77778C2.28686 6.22331 2.20968 6.37509 2.20968 6.87706V15.4265C2.20968 15.9285 2.28686 16.0183 2.77778 16.0183H21.2222C21.7131 16.0183 21.7857 15.9285 21.7857 15.4265V13.4761C21.7857 13.3425 21.7589 13.2103 21.707 13.0873L20.8867 11.1437Z" fill="white"/>
@@ -31,7 +31,7 @@
                     <div class="cust-account-icon rounded-pill">
                             {{ ORDER.detail.OnAccount == '1' ? "On Account" : "PAY AS YOU GO" }}
                     </div>
-                </div> 
+                </div>
                 <div class = "mt-1 d-flex align-items-center">
                     <img  @click="removeLinkedAccount(ORDER.detail.id)" v-if="ORDER.detail.account_type == 'Sub'" src="/images/link.png"/>
                     <div class="text-type">
@@ -43,7 +43,7 @@
         <div v-if="(typeof ORDER['detail']!='undefined')"  class="row section2 align-items-center">
 
              <div v-if="(typeof ORDER['detail']!='undefined')" class=" col-7 section1">
-                <h2 >&numero; {{ORDER.detail.order_id}}<button v-if="ORDER['detailingitemlist'].length !== 0" type="button" class="btn-link-green body_regular"  @click='EditOrder(ORDER.detail.order_id)'>Edit</button></h2> 
+                <h2 >&numero; {{ORDER.detail.order_id}}<button v-if="ORDER['detailingitemlist'].length !== 0" type="button" class="btn-link-green body_regular"  @click='EditOrder(ORDER.detail.order_id)'>Edit</button></h2>
                 <div class=" text-center">
                     <tag :name="ORDER.detail.Status" style="margin-right: 10px;"></tag>
                     <tag :name="ORDER.detail.paid"></tag>
@@ -297,6 +297,11 @@
              <div class="col-4" v-if="ORDER['items'].length === 0 && (ORDER['detail'].Status =='RECURRING' || ORDER['detail'].Status =='SCHEDULED' )">
                 <button class="btn btn-outline-danger body_medium" @click="CancelBooking">Cancel booking</button>
             </div>
+
+            <div class="col-4">
+                <mini-checkout :order_id="parseInt($route.params.order_id)" @reload-order-detail="reloadOrderDetail" v-if="showFulfillBtn"></mini-checkout>
+            </div>
+
             <div class="col-1 options_btn">
                 <button @click="openOptions()" class="btn btn-outline-dark body_medium menu"><span>...</span></button>
                 <OrderOptions v-if="show_options_btn" :user="ORDER['user']" :order="ORDER['detail']" :items="ORDER['items']"></OrderOptions>
@@ -310,7 +315,7 @@
 </template>
 
 <script>
-    import {ref,computed,nextTick,watch} from 'vue';
+    import {ref,computed,nextTick,watch,onBeforeMount} from 'vue';
     import {useRoute,useRouter} from 'vue-router';
     import {useStore} from 'vuex';
     import Tag from  '../miscellaneous/Tag'
@@ -323,6 +328,7 @@
     import CancelBookingConfirmation from '../miscellaneous/CancelBookingConfirmation';
     import OrderOptions from '../miscellaneous/OrderOptions';
     import QzPrint from "../QzPrint";
+    import MiniCheckout from '../miscellaneous/MiniCheckout.vue';
     import {
         ORDERLIST_MODULE,
         ORDERLIST_GET_CURRENT_SELECTED,
@@ -353,7 +359,7 @@
 
     export default {
         name: "OrderDetail",
-        components:{Tag,AddressFormat,OrderDetailSubOrderItemsTable,DatePicker,TimeSlotPicker,SplitConfirmation ,OrderOptions , CancelBookingConfirmation , QzPrint},
+        components:{Tag,AddressFormat,OrderDetailSubOrderItemsTable,DatePicker,TimeSlotPicker,SplitConfirmation ,OrderOptions , CancelBookingConfirmation , QzPrint,MiniCheckout},
         setup(){
             const route =useRoute();
             const router=useRouter();
@@ -432,10 +438,14 @@
             const instAcc = ref(false);
             const showModelCancelBooking = ref(false);
             const newdeliverydate = ref('')
+            const order =  ref({});
+            const showFulfillBtn = ref(true);
 
 
             const ORDER=computed(()=>{
                 const o= store.getters[`${ORDERDETAIL_MODULE}${ORDERDETAIL_GET_DETAILS}`];
+
+                order.value = o.detail;
 
                 if(typeof o.available_slots!=="undefined") {
                      availableslots.value=o.available_slots;
@@ -457,6 +467,9 @@
                 }
 
                 }
+
+
+
                 return o;
             });
 
@@ -469,11 +482,18 @@
             });
             if(showorderdetail) {
                 store.commit(`${ORDERDETAIL_MODULE}${ORDERDETAIL_SET_LOADER}`,'');
+
                 nextTick(() => {
                     store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_LOAD_DETAIL}`, CURRENT_SELECTED.value).catch((error)=>{
                         if(typeof error.response!="undefined")
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
-                    });;
+                    }).finally(()=>{
+                        //console.log('order status',order.value.Status);
+
+                        if(typeof(order.value.Status) !='undefined' && ['DELIVERED','FULFILLED'].includes(order.value.Status)){
+                            showFulfillBtn.value = false;
+                        }
+                    });
                 });
             }
             const featureunavailable=((feature)=>{
@@ -505,7 +525,7 @@
                 if(current_val != previous_val ){
                         updatedelverydate.value = true
                 }
-                
+
                 if(ORDER.value.detail.TypeDelivery=="DELIVERY") {
                     if(Object.entries(availableslots.value).length>0) {
                         availabletimeslot.value=availableslots.value[current_val];
@@ -632,7 +652,7 @@
                     }else {
                              newtimeslotdelivery.value = ORDER.value.detail.TimeDelivery
                     }
-                    
+
 
                 store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_NEW_PICKUP_DATE}`,{PickupDate:cc_new_pickup_date.value, deliveryDate:newdeliverydate.value, timeslotPickup:suggest_timeslot_pickup.value ,timeslotDelivery:suggest_timeslot.value }).then((response)=>{
                     console.log("respppppp" , response)
@@ -727,20 +747,39 @@
 
              // handler when you unlink sub account from linked accounts
              const removeLinkedAccount = (id)=>{
-               
+
                axios.post('/unlink-Account', {
                         customer_id: id,
                     }).then((res)=>{
-                        if(res.data.message == "OK"){    
+                        if(res.data.message == "OK"){
                             location.reload();
                         } else {
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: res.data.error , ttl:5, type:'danger' });
                         }
                     }).catch((errors)=>{
                         console.log(errors)
-                    });  
-                    
+                    });
+
             }
+
+
+            const reloadOrderDetail = ()=>{
+                console.log('reload called from mini checkout');
+
+                store.commit(`${ORDERDETAIL_MODULE}${ORDERDETAIL_SET_LOADER}`,'');
+                nextTick(() => {
+                    store.dispatch(`${ORDERDETAIL_MODULE}${ORDERDETAIL_LOAD_DETAIL}`, CURRENT_SELECTED.value).catch((error)=>{
+                        if(typeof error.response!="undefined")
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
+                    }).finally(()=>{
+                        if(typeof(order.value.Status) !='undefined' &&  ['DELIVERED','FULFILLED'].includes(order.value.Status)){
+                            showFulfillBtn.value = false;
+                        }
+                    })
+                });
+
+            }
+
             return {
                 showorderdetail,
                 loaderclass:computed(()=>{
@@ -797,7 +836,10 @@
                 newtimeslotdelivery,
                 updatedelverydate,
                 formatOrderDate,
-                removeLinkedAccount
+                removeLinkedAccount,
+                reloadOrderDetail,
+                order,
+                showFulfillBtn,
             }
         },
         methods:{
@@ -1052,7 +1094,7 @@
             box-shadow: 0px 0px 6px rgba(153, 153, 153, 0.25);
             border-radius: 5px;
 
-     }        
+     }
       .order-brief-info-section p{
                 font-family: 'Gotham Rounded Book';
                 font-size: 12px;
@@ -1083,7 +1125,7 @@
                 background: rgba(212, 221, 247, 0.7);
                 color: #47454B;
                 margin-right: 10px;
-                
+
             }
             .cust-account-icon{
                 padding: 2px 18px;
@@ -1093,7 +1135,7 @@
                 height: 20px;
                 background: linear-gradient(0deg, rgba(251, 248, 185, 0.5), rgba(251, 248, 185, 0.5)), rgba(251, 248, 185, 0.5);
                 color: #47454B;
-                margin-right: 10px; 
+                margin-right: 10px;
             }
             .cust-location-name{
                 font-size: 16px;
@@ -1144,13 +1186,13 @@
                     font-weight: 400;
                     font-size: 20px;
                     line-height: 140%;
-                }  
+                }
                 .name_customer{
                     white-space: nowrap;
                     overflow: hidden;
                     max-width: 400px;
                     text-overflow: ellipsis;
-                }  
+                }
                 .cursor-pointer{
                     font-size: 8px;
                     line-height: 10px;

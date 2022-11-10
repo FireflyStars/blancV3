@@ -274,6 +274,13 @@
                             <div class="accordion-body">
                                 <div class="row mb-2" v-if="Object.values(grouped_cleaning_services).length > 0 || detailingitem.cleaning_price_type=='PriceNow' ">
                                     <div class="col-9"><h5 class="gp_service mb-0">Cleaning</h5></div>
+                                    <div v-if="Object.values(grouped_cleaning_services).length == 0"  class="col-3 d-flex justify-content-end">
+                                        <span v-if="detailingitem.cleaning_price_type=='Quote'">
+                                            <span class="question_mark">?</span>&#163;0.00
+                                        </span>
+                                        <span v-else-if="detailingitem.cleaning_price_type=='PriceNow'">&#163;{{detailingitem.dry_cleaning_price.toFixed(2)}}</span>
+                                        <span v-else>&#163;{{dry_cleaning_price}}</span>
+                                    </div>
                                 </div>
                                 <div class="row mb-1" v-for="(services,gpService) in grouped_cleaning_services">
                                     <div class="col-9 pr-0">
