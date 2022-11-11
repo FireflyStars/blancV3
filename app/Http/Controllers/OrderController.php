@@ -1365,14 +1365,46 @@ class OrderController extends Controller
     }
 
     public function fulfillOrder(Request $request){
-        $order = $request->order_id;
+        $order_id = $request->order_id;
         $paid = $request->paid;
 
-        $updated = DB::table('infoOrder')->where('id',$request->order_id)->update(['Status'=>($paid?'FULFILLED':'DELIVERED')]);
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+
+        $statusCode = "";
+        $content = "";
+        $res = false;
+
+/*
+        $endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v1-order.php";
+        $token = "GhtfvbbG4489hGtyEfgARRGht3";
+
+        $site_url = \Illuminate\Support\Facades\URL::to("/");
+
+
+        $client = new \GuzzleHttp\Client();
+
+        $response = $client->request('GET', $endpoint, ['query' => [
+            'order_id'=>$order->OrderID,
+            'token'=>$token,
+            'userid'=>Auth::user()->id,
+        ]]);
+
+        $statusCode = $response->getStatusCode();
+        $content = $response->getBody();
+        $content = str_replace('\\"','',$content);
+
+        $res = @json_decode($content);
+
+        //*/
+
+        $res = new stdClass;
+        $res->result = "not ok";
 
         return response()->json([
             'post'=>$request->all(),
-            'updated'=>$updated,
+            'status'=>$statusCode,
+            'content'=>$content,
+            'output'=>$res,
         ]);
     }
 

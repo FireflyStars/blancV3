@@ -133,9 +133,8 @@ export default {
                         console.log('End calling selectReader');
 
                         if(typeof(selected_reader.value.id)!='undefined' && !err_terminal.value){
-                            selected_reader.value.readReusableCard().then((result)=>{
-                                console.log('read card',result);
-                            })
+                           await getClientSecret(100);
+
                         }
 
 
@@ -149,21 +148,36 @@ export default {
                 }
         }
 
-        async function savePaymentIntent(){
 
-            const bodyContent = JSON.stringify({customer_id:3428});
-            return fetch('/stripe-test/save_terminal_detail', {
+        const getClientSecret = (amount)=>{
+            fetchSetupIntentClientSecret(amount).then((data)=>{
+                console.log('data',data);
+
+                terminal.value.collectSetupIntentPaymentMethod(data.client_secret).then((res)=>{
+                    console.log(res);
+                });
+            });
+        }
+
+
+        function fetchSetupIntentClientSecret(amount) {
+
+            const bodyContent = JSON.stringify({ amount: amount});
+
+            return fetch('/stripe-test/create_setup_intent', {
                 method: "POST",
                 headers: {
                 'Content-Type': 'application/json'
-                },
-                body: bodyContent
+            },
+            body: bodyContent
             })
             .then(function(response) {
                 return response.json();
             })
             .then(function(data) {
-                return data.client_secret;
+                return data;
+            }).catch((err)=>{
+                console.log(err);
             });
         }
 
