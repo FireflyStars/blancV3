@@ -1481,7 +1481,7 @@ class OrderListController extends Controller
                     $damages_decode =json_decode($Issues->damages);
                     $stains_damagesissues_decode =json_decode($Issues->damagesissues);
                     $Issues->damages =  DB::table('itemzones')->whereIn('id', array_column($damages_decode, 'id_zone'))->get();
-                    if(!empty($stains_stainsissue_decode)){
+                    if(!empty($stains_damagesissues_decode)){
                     $Issues->damagesissues = DB::table('issues_tag')->select('id','name')->whereIn('id', $stains_damagesissues_decode)->get();
                     }
                 }
