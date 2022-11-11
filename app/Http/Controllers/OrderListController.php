@@ -1208,9 +1208,14 @@ class OrderListController extends Controller
         });
 
         $order->alreadypickuped=false;
-        $pkdate=Carbon::parse($order->DatePickup);
-        if($pkdate->isPast()||$pkdate->isToday())
-        $order->alreadypickuped=true;
+
+        if($order->DatePickup == "--"){
+            $order->alreadypickuped=false;
+        }else{
+            $pkdate=Carbon::parse($order->DatePickup);
+            if($pkdate->isPast()||$pkdate->isToday())
+            $order->alreadypickuped=true;
+        }  
 
 
         if($order->Phone!=""){
