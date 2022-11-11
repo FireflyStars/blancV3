@@ -1472,14 +1472,18 @@ class OrderListController extends Controller
                 $stains_decode =json_decode($Issues->stains);
                 $stains_stainsissue_decode =json_decode($Issues->stainsissue);
                 $Issues->stains = DB::table('itemzones')->whereIn('id', array_column($stains_decode, 'id_zone'))->get();
-                $Issues->stainsissue = DB::table('issues_tag')->select('id','name')->whereIn('id', $stains_stainsissue_decode)->get();
+                if(!empty($stains_stainsissue_decode)){
+                    $Issues->stainsissue = DB::table('issues_tag')->select('id','name')->whereIn('id', $stains_stainsissue_decode)->get();
+                } 
                 }
 
                 if(!is_null($Issues->damages)){
                     $damages_decode =json_decode($Issues->damages);
                     $stains_damagesissues_decode =json_decode($Issues->damagesissues);
                     $Issues->damages =  DB::table('itemzones')->whereIn('id', array_column($damages_decode, 'id_zone'))->get();
+                    if(!empty($stains_stainsissue_decode)){
                     $Issues->damagesissues = DB::table('issues_tag')->select('id','name')->whereIn('id', $stains_damagesissues_decode)->get();
+                    }
                 }
             }
 
