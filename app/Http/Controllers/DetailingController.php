@@ -750,7 +750,7 @@ class DetailingController extends Controller
         if (isset($detailingitem['damages']) && $detailingitem['damages'] != null) {
             $damages=json_decode($detailingitem['damages'],true);
             $damages_tags_decode=json_decode($detailingitem['damagesissues'],true);
-            if(!empty($damages_tags_decod)){
+            if(!empty($damages_tags_decode)){
                $damages_tags = DB::table('issues_tag')->select('id','name')->whereIn('id', $damages_tags_decode)->get();
             }
             $damages_zones = DB::table('itemzones')->whereIn('id', array_column($damages, 'id_zone'))->get();
