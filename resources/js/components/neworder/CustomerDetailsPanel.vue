@@ -14,7 +14,7 @@
     <div class="panel" v-if="order.infoCustomer!=null &&!edit_customer"><!-- -->
         <div class="row">
             <div class="col-12">
-        <h2 class="subtitle text-capitalize">{{order.infoCustomer.LastName.toLowerCase()}} {{order.infoCustomer.FirstName.toLowerCase()}}<button class="btn-link-green body_regular" @click="editCustomer">Edit</button></h2>
+        <h2 class="subtitle text-capitalize">{{order.infoCustomer.LastName.toLowerCase()}} <span v-if ="order.infoCustomer.FirstName">{{order.infoCustomer.FirstName.toLowerCase()}}</span><button class="btn-link-green body_regular" @click="editCustomer">Edit</button></h2>
             </div>
 
         </div>
