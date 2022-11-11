@@ -356,6 +356,26 @@ export default {
                     document.getElementById('main_service_1').classList.add('main_selected');
                     
                 }
+                //Clears all subselected;
+                if(id==2){ //TAILORING
+                    
+                    let sub_services = document.querySelectorAll('.tailoring-subservice');
+                    let keys = Object.keys(sub_services);
+
+                    let i;
+                    for(i in keys){
+                        let el = sub_services[i];
+                        el.classList.remove('sel_service');
+                    }
+                        
+                        document.getElementById('pricenow_describe_tailoring').classList.remove('sel_service');
+                        document.getElementById('pricenow_tailoring').classList.remove('sel_service');
+                        document.getElementById('sub_service_tailoring_Standard').classList.add('sel_service');
+
+                    checkSelectedTailoring(true);
+                    checkSelTailoringGroups();
+                    document.getElementById('main_service_2').classList.add('main_selected'); 
+                }
             }
 
             main_service.value = id;
@@ -517,9 +537,14 @@ export default {
             }
 
 
-            sel_tailoring_price_type.value = price_type;
+            if(price_type == '' ){
+                sel_tailoring_price_type.value = 'Standard';
+            }else {
+                sel_tailoring_price_type.value = price_type;
+            } 
 
             checkSelectedCleaning(false);
+            console.log(tailoring_services_id ,sel_tailoring_service_id.value )
 
             if(on_click){
                 //Update Detailing
@@ -527,7 +552,7 @@ export default {
                     step:11,
                     detailingitem_id: props.detailingitem.id,
                     tailoring_services: JSON.stringify(tailoring_services_id),
-                    tailoring_price_type: price_type,
+                    tailoring_price_type: sel_tailoring_price_type.value,
                     cleaning_services:JSON.stringify(sel_cleaning_service_id.value),
                     cleaning_pricing_type:sel_cleaning_price_type.value,
                 });

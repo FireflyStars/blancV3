@@ -539,6 +539,9 @@ export default {
     font-weight: normal;
     font-size: 14px;
     line-height: 140%;
+    color: #151920;
+}
+.free-text-input::placeholder {
     color: #868686;
 }
 </style>

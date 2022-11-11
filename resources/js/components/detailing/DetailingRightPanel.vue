@@ -231,27 +231,19 @@
                                     </div>
                                 </div>
                                 <p>{{getIssueStep()}}</p>
-                                <div class="row free-text pt-3" v-if="issuesStep == 0 || issuesStep == 1 || issuesStep == 2">
-                                        <span class="free-text-label">Stains - Additional Comments </span>
-                                        <textarea
-                                            placeholder="Specification about stain"
-                                            class="free-text-input"
-                                            maxlength="140"
-                                            @keyup.prevent="submit"
-                                            v-model="stain_free_text"
-                                            @blur="addFreeText"
-                                        ></textarea>
-                                </div>
-                                <div class="row free-text pt-3" v-if="issuesStep == 3 || issuesStep == 4 || issuesStep == 5">
-                                        <span class="free-text-label">Damages - Additional Comments</span>
-                                        <textarea
-                                            placeholder="Specification about damage"
-                                            class="free-text-input"
-                                            maxlength="140"
-                                            @keyup.prevent="submit"
-                                            v-model="damage_free_text"
-                                            @blur="addFreeText"
-                                        ></textarea>
+                                  <!-- //comment stain and damages  -->
+
+                                <div class="row">
+                                    <div class="col-6 stain-bloc">
+                                        <div class="free-text-input">
+                                            <p>Comments: <span class="free-text-label">{{stain_free_text}}</span> </p>    
+                                        </div>
+                                    </div>
+                                    <div class="col-6 stain-bloc">                                     
+                                            <div class="free-text-input">
+                                              <p>Comments: <span class="free-text-label">{{damage_free_text}}</span></p>
+                                        </div>
+                                    </div>
                                 </div>
                                 
                             </div>
@@ -278,7 +270,7 @@
                                         <span v-if="detailingitem.cleaning_price_type=='Quote'">
                                             <span class="question_mark">?</span>&#163;0.00
                                         </span>
-                                        <span v-else-if="detailingitem.cleaning_price_type=='PriceNow'">&#163;{{detailingitem.dry_cleaning_price.toFixed(2)}}</span>
+                                        <span v-else-if="detailingitem.cleaning_price_type=='PriceNow' && detailingitem.dry_cleaning_price ">&#163;{{detailingitem.dry_cleaning_price.toFixed(2)}}</span>
                                         <span v-else>&#163;{{dry_cleaning_price}}</span>
                                     </div>
                                 </div>
@@ -293,7 +285,7 @@
                                                 <span class="question_mark">?</span>
                                                 &#163;0.00
                                             </span>
-                                            <span v-else-if="cleaning_price_type=='PriceNow'">&#163;{{detailingitem.dry_cleaning_price.toFixed(2)}}</span>
+                                            <span v-else-if="cleaning_price_type=='PriceNow' && detailingitem.dry_cleaning_price ">&#163;{{detailingitem.dry_cleaning_price.toFixed(2)}}</span>
                                             <span v-else>&#163;{{grouped_cleaning_price[gpService]}}</span>
                                         </span>
                                     </div>
@@ -605,9 +597,13 @@ export default {
 
             sel_tailoring_services.value = sel_services;
             tailoring_price.value = price.toFixed(2);
-
             if(tailoring_price_type=='PriceNow'){
-                return fixed_price;
+
+                if(fixed_price){
+                    return fixed_price
+                }else {
+                    return props.detailingitem.tailoring_price;
+                }  
             }else{
                 return price;
             }
@@ -984,9 +980,7 @@ export default {
     flex-direction: column;
     align-items: flex-start;
     padding: 16px;
-    border: 1px solid #868686;
     box-sizing: border-box;
-    border-radius: 5px;
     flex: none;
     order: 2;
     align-self: stretch;
@@ -997,7 +991,15 @@ export default {
     font-weight: normal;
     font-size: 14px;
     line-height: 140%;
-    color: #868686;
+    color: #151920;
+    background: #F8F8F8;
+    border: 1px solid #E0E0E0;
+    border-radius: 5px;
+    min-height: 75px;
+}
+.free-text-input p{
+    margin: 0;
+    padding: 0;
 }
 .description-service{
     font-family: 'Gotham Rounded';
@@ -1017,6 +1019,14 @@ export default {
 }
 .issue-tag{
     padding-left: 28px;
+}
+.free-text-label{
+    font-family: Gotham Rounded;
+    font-style: normal;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 140%;
+    color: #151920;
 }
 
 </style>
