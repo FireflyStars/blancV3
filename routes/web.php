@@ -1085,26 +1085,48 @@ Route::group(['prefix'=>'stripe-test'],function(){
         $stripe->refunds->create(['payment_intent' => $payment_intent_id]);
     });
 
-    Route::post('/save_terminal_detail',function(){
+    Route::post('/create_setup_intent',function(){
         $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
 
         $json_str = file_get_contents('php://input');
         $request = json_decode($json_str);
 
-        //$reader = $stripe->terminal->readers->retrieve('tmr_Eqz4ewJhXq5eu6',[]);
+        $cust = DB::table('infoCustomer')->where('id',3428)->first();
 
-        $customer = $stripe->customers->retrieve('cus_MeaLJ5cY4usxnq',[]);
+        $stripe_customer = $stripe->customers->create([
+            'name'              => $cust->Name,//$cardholder_name,
+            'email'             => $cust->EmailAddress,
+            //'payment_method'    => $card->id,
+            //'invoice_settings'  => ['default_payment_method' => $card->id],
+            'metadata'          => [
+                                        'CustomerID' => $cust->CustomerID
+                                ],
+/*
+            'address'           => [
+                                    'city'          => ($addr?$addr->Town:''),
+                                    'state'         => ($addr?$addr->County:''),
+                                    'country'       => ($addr?$addr->Country:''),
+                                    'postal_code'   => ($addr?$addr->postcode:''),
+                                    'line1'         => ($addr?$addr->address1:''),
+                                    'line2'         => ($addr?$addr->address2:''),
+                                ]
+            */
+        ]);
 
         $si = $stripe->setupIntents->create([
-            'customer'=>$customer->id,
+            'customer'=>$stripe_customer->id,
             'payment_method_types' => ['card_present'],
         ]);
 
-    /*
-    $res = $stripe->terminal->readers->processSetupIntent('tmr_Eqz4ewJhXq5eu6',
-        ['setup_intent' => $si->id, 'customer_consent_collected' => true]
-    );
-    */
+        $stripe->terminal->readers->processSetupIntent(
+            'tmr_Eqz4ewJhXq5eu6', //To change
+            [
+              'setup_intent' => $si->id,
+              'customer_consent_collected' => 'true',
+            ]
+          );
+
+        echo json_encode($si);
 
 
     });
