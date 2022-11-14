@@ -1523,7 +1523,7 @@ class CustomerController extends Controller
             //                     ->select('')
         }
 
-        $customer->billing = DB::table('address')->select('AddressID' , 'id' ,'address1', 'address2', 'postcode', 'Town' , 'Country')
+        $customer->billing = DB::table('address')
                                 ->where('CustomerID', $customer->CustomerID)
                                 ->where('status', "BILLING")
                                 ->first();
@@ -3064,7 +3064,7 @@ class CustomerController extends Controller
             $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','BILLING')->first();
 
             if($addr){
-                $updated = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','BILLING')->update([
+                $updated = DB::table('address')->where('AddressID',$addr->AddressID)->update([
                     'address1'=>$request->address1,
                     'address2'=>$request->address2,
                     'postcode'=>$request->postcode,
@@ -3078,12 +3078,12 @@ class CustomerController extends Controller
                 'AddressID'     => '',
                 'longitude'     => $request->customerLon,
                 'Latitude'      => $request->customerLat,
-                'Town'          => $request->companyCity,
+                'Town'          => $request->city,
                 'County'        => $request->companyCounty,
                 'Country'       => 'GB',
-                'postcode'      => $request->companyPostCode,
-                'address1'      => $request->companyAddress1,
-                'address2'      => $request->companyAddress2,
+                'postcode'      => $request->postcode,
+                'address1'      => $request->address1,
+                'address2'      => $request->address2,
                 'status'        => 'BILLING',
                 'created_at'    => now(),
                 'updated_at'    => now(),
@@ -3128,7 +3128,7 @@ class CustomerController extends Controller
             }else{
 
                 $contact = [
-                    'CustomerID'    => $customer_id,
+                    'CustomerID'    => $cust->CustomerID,
                     'address_id'    => '',
                     'name'          => $request->name,
                     'firstname'     => $request->firstname,
