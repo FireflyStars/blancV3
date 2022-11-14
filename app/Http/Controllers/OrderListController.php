@@ -1563,6 +1563,20 @@ class OrderListController extends Controller
                             'pickup_time'=>$pickupTimeTranche['tranchefrom']
                         ]
                     );
+
+                    $infoInvoices=DB::table('infoInvoice')
+                    ->join('infoOrder',function ($join) {
+                        $join->on('infoInvoice.OrderID', '=', 'infoOrder.OrderID')->where('infoOrder.OrderID','<>','');
+                    })->where('infoOrder.id','=',$infoOrder_id)->select(['infoInvoice.InvoiceID'])->get();
+
+                $InvoiceIDs=[];
+                foreach ($infoInvoices as $infoInvoice) {
+                    $InvoiceIDs[]=$infoInvoice->InvoiceID;
+                }
+                DB::table('infoitems')->whereIn('InvoiceID',$InvoiceIDs)->update([
+                    'PromisedDate'=>$PromisedDate,
+                    'dateJour'=>date('l',strtotime($PromisedDate))
+                ]);
                     $update=true;
                 }else{    
 

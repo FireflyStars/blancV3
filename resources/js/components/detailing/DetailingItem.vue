@@ -14,6 +14,7 @@
                         @click="detailingitem.status == 'In Process'?show_pause_popup = true:pauseDetailling()"
                         v-if="detailingitem.status == 'In Process' || detailingitem.status == 'Pause'"
                     >{{ detailingitem.status == 'In Process' ? 'Pause detailing' : 'Resume detailing' }}</button>
+                    <button class="finish-detailing-btn" v-if="detailingitem.brand_id && detailingitem.typeitem_id && detailingitem.color_id"  @click="backPreviousStep(11)">Finish detailing</button>
                     <div class="row container-detailing">
                         <div class="col-8 left-panel">
                             <div class="new-order-text">New order n°{{ order_id }}</div>
@@ -102,6 +103,7 @@
                                 ></detailing-item-issues>
                                 <detailing-services
                                     v-if="detailingitem.etape == 11"
+                                    ref="finsh_detailing"
                                     :detailingitem="detailingitem"
                                     :main_services="main_services"
                                     :cleaning_services="cust_cleaning_services"
@@ -523,7 +525,7 @@ input:focus-visible {
     left: -2px;
 }
 .pause-detailing-btn {
-    padding: 10px;
+    padding: 10px 30px;
     position: absolute;
     font-size: 16px !important;
     color: #000000;
@@ -532,6 +534,17 @@ input:focus-visible {
     background: #ffffff;
     border: 1px solid #47454b;
     border-radius: 4px;
+}
+.finish-detailing-btn {
+    top: 75px;
+    right: 225px;
+    padding: 10px 30px;
+    position: absolute;
+    font-size: 16px !important;
+    color: #42A71E;
+    background: #ffffff;
+    border-radius: 4px;
+    border: 1px solid #42A71E;
 }
 
 .popup-pause {
