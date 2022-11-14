@@ -58,7 +58,7 @@ public function SearchCustomer(Request $request)
 
     $users = DB::table('infoCustomer')
     ->select('Name', 'EmailAddress', 'Phone','infoCustomer.id', 'infoCustomer.CustomerID' , 'infoCustomer.Actif','infoCustomer.CustomerIDMaster','CompanyName',
-    DB::raw(' IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as cust_type'),
+    DB::raw(' IF(infoCustomer.btob = 0, "B2C", "B2B") as cust_type'),
     DB::raw(' IF(infoCustomer.CustomerIDMaster = "",  "Main", "Sub") as customer_account')
     )->where('infoCustomer.Actif', '=', 1);
     foreach($keywords as $searchTerm){
@@ -173,7 +173,7 @@ public function SearchByCustomer(Request $request)
       $customers = DB::table('infoCustomer')
                     ->select(
                         'id', 'Name as name', 'EmailAddress as email', 'Phone as phone','FirstName as firstName' , 'LastName as lastName',
-                        DB::raw('IF(CustomerIDMaster = "" AND CustomerIDMasterAccount = "" AND IsMaster = 0 AND IsMasterAccount = 0, "B2C", "B2B") as customerType'),
+                        DB::raw(' IF(btob = 0, "B2C", "B2B") as customerType'),
                         DB::raw('IF(IsMaster = 1, "Main", "Sub") as accountType'),
                         DB::raw('IF(SignupDate = "2000-01-01", SignupDateOnline, SignupDate) as date'),
                         'TotalSpend as spent',
