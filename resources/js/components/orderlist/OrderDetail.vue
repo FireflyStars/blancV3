@@ -283,22 +283,22 @@
                 </order-detail-sub-order-items-table>
             </div>
         </div>
-        <div class="mt-3 mb-3 row" v-if="(typeof ORDER['detail']!='undefined')">
-            <div class="col-4" v-if="ORDER['items'].length !== 0">
+        <div class="mt-3 mb-5 row" v-if="(typeof ORDER['detail']!='undefined')">
+            <div class="col-4 options_btn" v-if="ORDER['items'].length !== 0">
                 <button class="btn btn-outline-dark body_medium" @click="openModal(ORDER['detail'].order_id)">Print ticket(s)</button>
             </div>
 
-            <div class="col-4" v-if="ORDER['items'].length !== 0">
+            <div class="col-4 options_btn" v-if="ORDER['items'].length !== 0">
                 <button class="btn btn-outline-danger body_medium" @click="markaslate" v-if="ORDER['detail'].Status!='LATE'">Mark as late</button>
             </div>
-             <div class="col-4" v-if="ORDER['items'].length === 0">
+             <div class="col-4 options_btn" v-if="ORDER['items'].length === 0">
                 <button class="btn btn-outline-dark body_medium" @click="openModal(ORDER['detail'].order_id)">Print ticket(s)</button>
             </div>
-             <div class="col-4" v-if="ORDER['items'].length === 0 && (ORDER['detail'].Status =='RECURRING' || ORDER['detail'].Status =='SCHEDULED' )">
+             <div class="col-4 options_btn" v-if="ORDER['items'].length === 0 && (ORDER['detail'].Status =='RECURRING' || ORDER['detail'].Status =='SCHEDULED' )">
                 <button class="btn btn-outline-danger body_medium" @click="CancelBooking">Cancel booking</button>
             </div>
 
-            <div class="col-4">
+            <div class="col-4 options_btn">
                 <mini-checkout :order_id="parseInt($route.params.order_id)" @reload-order-detail="reloadOrderDetail" v-if="showFulfillBtn"></mini-checkout>
             </div>
 
@@ -880,6 +880,7 @@
 }
 .options_btn{
     position: relative;
+    width: auto;
 }
 .menu{
     display: flex;
