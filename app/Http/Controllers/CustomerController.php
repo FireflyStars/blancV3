@@ -486,12 +486,12 @@ class CustomerController extends Controller
         return response()->json($custId);
     }
     public function getInvoiceHistories(Request $request){
-        
+
         $skip=$request->post('skip');
         $take=$request->post('take');
         $CustomerID=$request->post('CustomerID');
 
-    
+
             $invoiceHistorylist=DB::table('infoOrderPrint')
                 ->select( [
                     'infoOrderPrint.FactureID','infoOrderPrint.id','infoOrderPrint.NumFact','infoOrderPrint.montant as Total','infoOrderPrint.created_at as issue_date','users.name AS issuer',
@@ -503,9 +503,9 @@ class CustomerController extends Controller
                     $join->on('users.id','=','infoOrderPrint.user_id');
                 })
                 ->where('infoOrderPrint.CustomerID','=',$CustomerID);
-        
 
-    
+
+
 
 
         $invoiceHistorylist=$invoiceHistorylist->skip($skip)->take($take);
@@ -1476,7 +1476,7 @@ class CustomerController extends Controller
         ->whereDate('infoOrder.DateDeliveryAsk', '>=', date('Y-m-d'))
         ->orderBy('infoOrder.DateDeliveryAsk', 'asc')
         ->first();
-        
+
         return response()->json( $customer );
     }
 
@@ -2174,7 +2174,7 @@ class CustomerController extends Controller
              ];
 
             NotificationController::Notify($addr->EmailAddress, '+123456789', '4B_RECURRING_PAUSE', '', $mail_vars, false, 0, $infocustomer->CustomerID);
-        
+
         }
 
         OrderRecurringCreator::processRecurringOrders('PAUSE RECCURING BOOKING',$infocustomer->CustomerID);
@@ -2493,7 +2493,7 @@ class CustomerController extends Controller
 
 
         $orders = DB::table('infoOrder')
-                ->select('infoCustomer.Name','infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*')
+                ->select('infoCustomer.Name','infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.TotalDue','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*')
                 ->join('detailingitem','infoOrder.id','detailingitem.order_id')
                 ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -2529,6 +2529,7 @@ class CustomerController extends Controller
                                                                                 'priceTotal'=>$v->priceTotal,
                                                                                 'CustomerID'=>$v->CustomerID,
                                                                                 'order_id'=>$v->order_id,
+                                                                                'TotalDue'=>$v->TotalDue,
                                                                             ];
             $order_per_customer[$v->CustomerID][] = $v->order_id;
         }
@@ -2656,12 +2657,16 @@ class CustomerController extends Controller
 
         $orderids = [];
 
+
         foreach($grouped_by_customer as $customerid=>$orders){
             $order_net = 0;
             $order_vat = 0;
             $order_total = 0;
 
             $orderid_per_customer = [];
+            $totaldue_per_order = [];
+            $total_ext_discount_per_order = [];
+
 
            foreach($orders as $orderid=>$invoices){
                 if(!in_array($orderid,$orderid_per_customer)){
@@ -2695,7 +2700,10 @@ class CustomerController extends Controller
 
                             $dept[$v->Department][] = $item_txt;
                             $total += $v->priceTotal;
+                            $totaldue_per_order[$v->order_id] = $v->TotalDue;
                         }
+
+
                         $items_per_dept[$v->Department] = array_count_values($dept[$v->Department]);
 
                         usort($promised_dates,function($a,$b){
@@ -2718,6 +2726,9 @@ class CustomerController extends Controller
 
                     }
                 }
+
+                $total_ext_discount_per_order[$orderid] = $order_total;
+
            }
 
            foreach($order_details as $customerid=>$invoices){
@@ -2732,24 +2743,30 @@ class CustomerController extends Controller
             }
            }
 
+
            $discount_per_customer = 0;
 
+           /*
            $orders_per_cust = DB::table('infoOrder')->whereIn('id',$orderid_per_customer)->get();
 
            foreach($orders_per_cust as $ok=>$oc){
             $discount_per_customer += $oc->OrderDiscount;
            }
+           */
+            foreach($total_ext_discount_per_order as $order_id=>$order_amount){
+                $discount_per_customer += $order_amount - (isset($totaldue_per_order[$order_id])?$totaldue_per_order[$order_id]:0);
+            }
 
            $order_total_exc_discount = $order_total;
            $order_total = $order_total - $discount_per_customer;
 
            $order_net = $order_total_exc_discount/1.2;
+
+
            $facture_total[] = $order_total;
 
 
            $order_vat = $order_total_exc_discount - $order_net;
-
-
 
            $order_totals[$customerid]['order_net'] = number_format($order_net,2);
            $order_totals[$customerid]['order_vat'] = number_format($order_vat,2);
@@ -2759,21 +2776,21 @@ class CustomerController extends Controller
 
         }
 
-        $orders = DB::table('infoOrder')->whereIn('id',$orderids)->get();
+
         $discount = 0;
-        /*
-        if(count($orders) > 0){
-            foreach($orders as $k=>$v){
-                $discount += $v->OrderDiscount;
-            }
-        }
-        */
+        $facture_amount_total = 0;
+        $facture_amount_vat = 0;
+
 
         $facture_amount_total = array_sum($facture_total);
-        $discounted_amount = $facture_amount_total - $discount;
-        $facture_amount_net = $discounted_amount/1.2;
 
-        $facture_amount_vat = $discounted_amount - $facture_amount_net;
+
+
+        $facture_amount_net = $facture_amount_total/1.2;
+
+        $facture_amount_vat = $facture_amount_total - $facture_amount_net;
+
+
 
         $data = [
            'customer'=>$customer,
