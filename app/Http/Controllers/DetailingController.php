@@ -95,6 +95,7 @@ class DetailingController extends Controller
                 'detailing_list' => $detailingitemlist,
                 'customer' => $customer,
                 'count_has_invoices'=>$count_has_invoices,
+                'order_status' => $order->Status,
             ]
         );
     }
