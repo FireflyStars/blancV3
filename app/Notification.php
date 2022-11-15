@@ -30,6 +30,9 @@ class Notification extends Model
              //   $email->setFrom(setting('sendgrid.sendgrid_from_email'), setting('sendgrid.sendgrid_from'));
                 $email->setFrom($NOTTIFICATION_TEMPLATE->fromemail, setting('sendgrid.sendgrid_from'));
                 $email->addTo($email_address);
+                //send carbon copy to sender
+                if($NOTTIFICATION_TEMPLATE->copytofrom==1)
+                $email->addCc($NOTTIFICATION_TEMPLATE->fromemail);
                 $email->setTemplateId($NOTTIFICATION_TEMPLATE->template_id);
                 $email->addDynamicTemplateDatas(json_decode($this->Parametres));
 
@@ -49,6 +52,9 @@ class Notification extends Model
                             //$email_Force->setFrom(setting('sendgrid.sendgrid_from_email'), setting('sendgrid.sendgrid_from'));
                             $email_Force->setFrom($NOTTIFICATION_TEMPLATE->fromemail, setting('sendgrid.sendgrid_from'));
                             $email_Force->addTo($this->Email);
+                            //send carbon copy to sender
+                            if($NOTTIFICATION_TEMPLATE->copytofrom==1)
+                            $email_Force->addCc($NOTTIFICATION_TEMPLATE->fromemail);
                             $email_Force->setTemplateId($NOTTIFICATION_TEMPLATE->template_id);
                             $email_Force->addDynamicTemplateDatas(json_decode($this->Parametres));
 
