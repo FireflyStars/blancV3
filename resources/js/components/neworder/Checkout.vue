@@ -1072,9 +1072,17 @@ export default {
 
             var reg = /^\d+$/;
 
+            let remaining_perc = 100 - cust.value.discount;
+
+
             if(order_discount.value=='' || !reg.test(order_discount.value) || parseInt(order_discount.value) > 100){
                 err = "Please enter a discount percent";
             }
+            else if(order_discount.value > remaining_perc){
+                err = "Discount percentage must be less or equal to "+remaining_perc+"%";
+            }
+
+
             if(err!=''){
                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
                 {
