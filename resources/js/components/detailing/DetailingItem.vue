@@ -103,7 +103,6 @@
                                 ></detailing-item-issues>
                                 <detailing-services
                                     v-if="detailingitem.etape == 11"
-                                    ref="finsh_detailing"
                                     :detailingitem="detailingitem"
                                     :main_services="main_services"
                                     :cleaning_services="cust_cleaning_services"
