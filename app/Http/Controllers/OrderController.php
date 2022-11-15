@@ -1374,28 +1374,34 @@ class OrderController extends Controller
         $content = "";
         $res = false;
 
-/*
-        $endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v1-order.php";
-        $token = "GhtfvbbG4489hGtyEfgARRGht3";
-
         $site_url = \Illuminate\Support\Facades\URL::to("/");
 
+        if(strpos($site_url,'blancposdev') > -1){
+            //Do nothing
+        }elseif(strpos($site_url,'fullcirclepos') > -1){
+            /*
+            $endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v1-order.php";
+            $token = "GhtfvbbG4489hGtyEfgARRGht3";
 
-        $client = new \GuzzleHttp\Client();
+            $site_url = \Illuminate\Support\Facades\URL::to("/");
 
-        $response = $client->request('GET', $endpoint, ['query' => [
-            'order_id'=>$order->OrderID,
-            'token'=>$token,
-            'userid'=>Auth::user()->id,
-        ]]);
 
-        $statusCode = $response->getStatusCode();
-        $content = $response->getBody();
-        $content = str_replace('\\"','',$content);
+            $client = new \GuzzleHttp\Client();
 
-        $res = @json_decode($content);
+            $response = $client->request('GET', $endpoint, ['query' => [
+                'order_id'=>$order->OrderID,
+                'token'=>$token,
+                'userid'=>Auth::user()->id,
+            ]]);
 
-        //*/
+            $statusCode = $response->getStatusCode();
+            $content = $response->getBody();
+            $content = str_replace('\\"','',$content);
+
+            $res = @json_decode($content);
+
+            //*/
+        }
 
         $res = new stdClass;
         $res->result = "not ok";

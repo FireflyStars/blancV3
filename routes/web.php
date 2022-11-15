@@ -672,6 +672,20 @@ Route::get('/merge-pdf',function(){
 });
 
 
+Route::get('/batch-pdf-test',function(){
+    $id = 31;
+    $details = DB::table('infoOrderPrint')->where('id',$id)->first();
+
+    //$info = @json_decode($details->info);
+
+    $data = CustomerController::getArPDFData($details);
+
+    echo "<pre>";
+    print_r($data);
+});
+
+
+
 /* END TEST ROUTES */
 
 Route::get('/3d-secure',function(Request $request){
@@ -1119,7 +1133,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
         ]);
 
         $stripe->terminal->readers->processSetupIntent(
-            'tmr_Eqz4ewJhXq5eu6', //To change
+            'tmr_Eqz4ewJhXq5eu6', //Atelier terminal
             [
               'setup_intent' => $si->id,
               'customer_consent_collected' => 'true',
