@@ -27,7 +27,8 @@ class Notification extends Model
             if ($NOTTIFICATION_TEMPLATE!=null&&$this->TypeNotification == "EMAIL"&&$NOTTIFICATION_TEMPLATE->TypeNotification=="EMAIL") { // send email with sendgrid
 
                 $email = new \SendGrid\Mail\Mail();
-                $email->setFrom(setting('sendgrid.sendgrid_from_email'), setting('sendgrid.sendgrid_from'));
+             //   $email->setFrom(setting('sendgrid.sendgrid_from_email'), setting('sendgrid.sendgrid_from'));
+                $email->setFrom($NOTTIFICATION_TEMPLATE->fromemail, setting('sendgrid.sendgrid_from'));
                 $email->addTo($email_address);
                 $email->setTemplateId($NOTTIFICATION_TEMPLATE->template_id);
                 $email->addDynamicTemplateDatas(json_decode($this->Parametres));
@@ -45,7 +46,8 @@ class Notification extends Model
                         //force send email to customer in mode demo
                         if($this->Force==1&&setting('sendgrid.demo_email') == 1){
                             $email_Force = new \SendGrid\Mail\Mail();
-                            $email_Force->setFrom(setting('sendgrid.sendgrid_from_email'), setting('sendgrid.sendgrid_from'));
+                            //$email_Force->setFrom(setting('sendgrid.sendgrid_from_email'), setting('sendgrid.sendgrid_from'));
+                            $email_Force->setFrom($NOTTIFICATION_TEMPLATE->fromemail, setting('sendgrid.sendgrid_from'));
                             $email_Force->addTo($this->Email);
                             $email_Force->setTemplateId($NOTTIFICATION_TEMPLATE->template_id);
                             $email_Force->addDynamicTemplateDatas(json_decode($this->Parametres));
