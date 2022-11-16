@@ -762,27 +762,15 @@ Route::get('/unpaid-card-orders',function(Request $request){
     }
 
     $start = microtime(true);
-/*
-    $orders = DB::table('infoOrder')
-        ->select('infoOrder.TotalDue','infoOrder.id AS order_id','cards.*','infoCustomer.EmailAddress')
-        ->join('detailingitem','infoOrder.id','detailingitem.order_id')
-        ->join('infoCustomer','infoOrder.CustomerID','infoCustomer.CustomerID')
-        ->join('cards','infoOrder.CustomerID','cards.CustomerID')
-        ->where('cards.Actif',1)
-        ->where('infoOrder.TypeDelivery','DELIVERY')
-        ->where('infoOrder.deliverymethod','!=','')
-        ->whereNotIn('infoOrder.Status',['DELETE','VOID','CANCEL','IN DETAILING','RECURRING','SCHEDULED'])
-        ->where('infoOrder.Total','>',0)
-        ->where('infoOrder.Paid',0)
-        ->groupBy('infoOrder.id')
-        ->get();
-    */
 
     $orders_to_charge = [];
     $customers_to_charge = [];
     $card_details = [];
     $payment_intents = [];
     $count_paid = 0;
+    $paid_orders = [];
+    $paid_per_order = [];
+    $orders_id = [];
 
     $orders = DB::table('infoOrder')
         ->select('infoOrder.id','infoOrder.TotalDue','infoOrder.CustomerID')
@@ -791,7 +779,6 @@ Route::get('/unpaid-card-orders',function(Request $request){
         ->whereNotIn('infoOrder.Status',['DELETE','VOID','CANCEL','IN DETAILING','RECURRING','SCHEDULED'])
         ->where('infoOrder.Total','>',0)
         ->where('infoOrder.Paid',0)
-        ->where('infoOrder.id',134445) //To remove
         ->get();
 
     if(count($orders) > 0){
@@ -800,6 +787,30 @@ Route::get('/unpaid-card-orders',function(Request $request){
 
             if(!in_array($v->CustomerID,$customers_to_charge)){
                 array_push($customers_to_charge,$v->CustomerID);
+            }
+
+            if(!in_array($v->id, $orders_id)){
+                array_push($orders_id,$v->id);
+            }
+        }
+
+        $payments = DB::table("payments")->whereIn('order_id',$orders_id)->where('montant','>',0)->where('status','succeeded')->get();
+
+        if(count($payments) > 0){
+            foreach($payments as $k=>$v){
+                $paid_orders[$v->order_id][] = $v->montant;
+            }
+
+            foreach($paid_orders as $k=>$v){
+                $paid_per_order[$k] = array_sum($v);
+            }
+        }
+
+        foreach($orders_to_charge as $orderid=>$detail){
+            if(isset($paid_per_order[$orderid])){
+                $totaldue = $detail['TotalDue'] - $paid_per_order[$orderid];
+
+                $orders_to_charge[$orderid]['TotalDue'] = $totaldue;
             }
         }
 
@@ -827,7 +838,7 @@ Route::get('/unpaid-card-orders',function(Request $request){
 
         foreach($orders_to_charge as $k=>$v){
 
-            if(isset($card_details[$v['CustomerID']])){
+            if(isset($card_details[$v['CustomerID']]) && $v['TotalDue'] > 0){
                 $card = $card_details[$v['CustomerID']];
                 $payment_intents[] = [
                         'amount'            => $v['TotalDue']*100, //100*0.01
@@ -845,26 +856,52 @@ Route::get('/unpaid-card-orders',function(Request $request){
         }
 
         foreach($payment_intents as $k=>$pi){
-            $payment_intent = $stripe->paymentIntents->create($pi);
-            if($payment_intent->status=='succeeded'){
-                $count_paid += 1;
-                $order = DB::table('infoOrder')->where('id',$pi['description'])->first();
-                DB::table('infoOrder')->where('id',$order->id)->update(['Paid'=>1]);
-                DB::table('infoInvoice')->where('OrderID',$order->OrderID)->update(['Paid'=>1]);
-            }
+            $order = DB::table('infoOrder')->where('id',$pi['description'])->first();
+            $payment_id = DB::table('payments')->insertGetId([
+                'type'=>'card',
+                'datepayment'=>date('Y-m-d H:i:s'),
+                'status'=>'',
+                'montant'=>$pi['amount']/100,
+                'order_id'=>$pi['description'],
+                'card_id'=>$card_details[$order->CustomerID]->id,
+                'CustomerID'=>$order->CustomerID,
+                'created_at'=>date('Y-m-d H:i:s'),
+            ]);
+
+
+           try{
+                $payment_intent = $stripe->paymentIntents->create($pi);
+
+                if($payment_intent->status=='succeeded'){
+                    DB::table('payments')->where('id',$payment_id)->update(['status'=>'succeeded']);
+                    $count_paid += 1;
+                    DB::table('infoOrder')->where('id',$order->id)->update(['Paid'=>1,'TotalDue'=>0]);
+                    DB::table('infoInvoice')->where('OrderID',$order->OrderID)->update(['Paid'=>1]);
+
+                }
+
+            }catch(\Stripe\Exception\CardException $e) {
+                error_log("A payment error occurred: {$e->getError()->message}");
+                DB::table('payments')->where('id',$payment_id)->update(['status'=>'cron failed','info'=>"A payment error occurred | ".json_encode($e)]);
+              } catch (\Stripe\Exception\InvalidRequestException $e) {
+                error_log("An invalid request occurred.");
+                DB::table('payments')->where('id',$payment_id)->update(['status'=>'cron failed','info'=>"An invalid request occurred | ".json_encode($e)]);
+              } catch (Exception $e) {
+                error_log("Another problem occurred, maybe unrelated to Stripe.");
+                DB::table('payments')->where('id',$payment_id)->update(['status'=>'cron failed','info'=>"Another problem occurred, maybe unrelated to Stripe | ".json_encode($e)]);
+              }
         }
+
 
     }
 
     $end = microtime(true);
     $timetaken = $end - $start;
 
-    echo "<pre>";
-    print_r($payment_intents);
-
     echo "Time taken : ".gmdate('H:i:s',$timetaken)."<br/>";
     echo "Total orders : ".count($payment_intents)."<br/>";
     echo "Orders paid : ".$count_paid;
+
 
 });
 
