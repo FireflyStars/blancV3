@@ -791,6 +791,7 @@ Route::get('/unpaid-card-orders',function(Request $request){
         ->whereNotIn('infoOrder.Status',['DELETE','VOID','CANCEL','IN DETAILING','RECURRING','SCHEDULED'])
         ->where('infoOrder.Total','>',0)
         ->where('infoOrder.Paid',0)
+        ->where('infoOrder.id',134445) //To remove
         ->get();
 
     if(count($orders) > 0){
@@ -828,7 +829,6 @@ Route::get('/unpaid-card-orders',function(Request $request){
 
             if(isset($card_details[$v['CustomerID']])){
                 $card = $card_details[$v['CustomerID']];
-
                 $payment_intents[] = [
                         'amount'            => $v['TotalDue']*100, //100*0.01
                         'currency'          => 'gbp',
@@ -840,6 +840,7 @@ Route::get('/unpaid-card-orders',function(Request $request){
                         "description"=>$k,
                         "receipt_email"=>($stripe_test?'rushdi@vpc-direct-service.com':$card->EmailAddress), //To change for customer email
                 ];
+
             }
         }
 
@@ -852,10 +853,14 @@ Route::get('/unpaid-card-orders',function(Request $request){
                 DB::table('infoInvoice')->where('OrderID',$order->OrderID)->update(['Paid'=>1]);
             }
         }
+
     }
 
     $end = microtime(true);
     $timetaken = $end - $start;
+
+    echo "<pre>";
+    print_r($payment_intents);
 
     echo "Time taken : ".gmdate('H:i:s',$timetaken)."<br/>";
     echo "Total orders : ".count($payment_intents)."<br/>";
