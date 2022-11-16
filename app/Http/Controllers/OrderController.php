@@ -1379,7 +1379,6 @@ class OrderController extends Controller
         if(strpos($site_url,'blancposdev') > -1){
             //Do nothing
         }elseif(strpos($site_url,'fullcirclepos') > -1){
-            /*
             $endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v1-order.php";
             $token = "GhtfvbbG4489hGtyEfgARRGht3";
 
@@ -1402,9 +1401,6 @@ class OrderController extends Controller
 
             //*/
         }
-
-        $res = new stdClass;
-        $res->result = "not ok";
 
         return response()->json([
             'post'=>$request->all(),
