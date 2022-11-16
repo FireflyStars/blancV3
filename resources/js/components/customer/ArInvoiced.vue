@@ -32,8 +32,8 @@
 
                     <!-- Email -->
                     <td class="fw-16" valign="middle">
-                        <div v-if="customer.email.length > 0">
-                            <p v-for="email in customer.email" style="margin:0;">{{email}}</p>
+                        <div v-if="customer.notification_status.length > 0">
+                            <div v-for="detail in customer.notification_status" style="margin:0;" class="each-email-line d-flex w-100 align-items-center">{{detail.email}} <img v-if="detail.sent==1" src="/images/icon_check.svg"/><img v-else src="/images/unpaid_cross.svg"/></div>
                         </div>
                     </td>
                     <!-- Phone -->
@@ -441,5 +441,9 @@ export default {
     .ar-btn:hover{
         background:#000;
         color:#fff;
+    }
+
+    .each-email-line img{
+        margin-left:5px;
     }
 </style>
