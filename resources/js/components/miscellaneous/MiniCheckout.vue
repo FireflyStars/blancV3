@@ -70,7 +70,7 @@ export default {
                     cur_user.value = res.data.user;
                     amount_to_pay.value = res.data.order.TotalDue;
 
-                    if(res.data.order==1){
+                    if(res.data.order.Paid==1 || res.data.order.TotalDue==0){
                         console.log('order is paid');
                         fulfillOrder();
                     }else{

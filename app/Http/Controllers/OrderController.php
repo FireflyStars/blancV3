@@ -1370,6 +1370,11 @@ class OrderController extends Controller
 
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
+        if($paid){
+            DB::table('infoOrder')->where('id',$order_id)->update(['Paid'=>1,'TotalDue'=>0]);
+            DB::table('infoInvoice')->where('OrderID',$order->id)->update(['Paid'=>1]);
+        }
+
         $statusCode = "";
         $content = "";
         $res = false;
