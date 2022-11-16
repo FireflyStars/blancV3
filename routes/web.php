@@ -881,13 +881,13 @@ Route::get('/unpaid-card-orders',function(Request $request){
                 }
 
             }catch(\Stripe\Exception\CardException $e) {
-                error_log("A payment error occurred: {$e->getError()->message}");
+                //error_log("A payment error occurred: {$e->getError()->message}");
                 DB::table('payments')->where('id',$payment_id)->update(['status'=>'cron failed','info'=>"A payment error occurred | ".json_encode($e)]);
               } catch (\Stripe\Exception\InvalidRequestException $e) {
-                error_log("An invalid request occurred.");
+                //error_log("An invalid request occurred.");
                 DB::table('payments')->where('id',$payment_id)->update(['status'=>'cron failed','info'=>"An invalid request occurred | ".json_encode($e)]);
               } catch (Exception $e) {
-                error_log("Another problem occurred, maybe unrelated to Stripe.");
+                //error_log("Another problem occurred, maybe unrelated to Stripe.");
                 DB::table('payments')->where('id',$payment_id)->update(['status'=>'cron failed','info'=>"Another problem occurred, maybe unrelated to Stripe | ".json_encode($e)]);
               }
         }
