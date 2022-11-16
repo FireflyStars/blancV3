@@ -672,20 +672,6 @@ Route::get('/merge-pdf',function(){
 });
 
 
-Route::get('/batch-pdf-test',function(){
-    $id = 31;
-    $details = DB::table('infoOrderPrint')->where('id',$id)->first();
-
-    //$info = @json_decode($details->info);
-
-    $data = CustomerController::getArPDFData($details);
-
-    echo "<pre>";
-    print_r($data);
-});
-
-
-
 /* END TEST ROUTES */
 
 Route::get('/3d-secure',function(Request $request){
@@ -763,6 +749,117 @@ Route::get('/batch-si',function(Request $request){
 
         $i++;
     }
+
+});
+
+Route::get('/unpaid-card-orders',function(Request $request){
+    $token = $request->get('token');
+
+    $app_token = setting('admin.url_token');//EjD4L7tgrHxmCY3exnCE31b3
+
+    if(!isset($token)){
+        die('token not set');
+    }
+
+    $start = microtime(true);
+/*
+    $orders = DB::table('infoOrder')
+        ->select('infoOrder.TotalDue','infoOrder.id AS order_id','cards.*','infoCustomer.EmailAddress')
+        ->join('detailingitem','infoOrder.id','detailingitem.order_id')
+        ->join('infoCustomer','infoOrder.CustomerID','infoCustomer.CustomerID')
+        ->join('cards','infoOrder.CustomerID','cards.CustomerID')
+        ->where('cards.Actif',1)
+        ->where('infoOrder.TypeDelivery','DELIVERY')
+        ->where('infoOrder.deliverymethod','!=','')
+        ->whereNotIn('infoOrder.Status',['DELETE','VOID','CANCEL','IN DETAILING','RECURRING','SCHEDULED'])
+        ->where('infoOrder.Total','>',0)
+        ->where('infoOrder.Paid',0)
+        ->groupBy('infoOrder.id')
+        ->get();
+    */
+
+    $orders_to_charge = [];
+    $customers_to_charge = [];
+    $card_details = [];
+    $payment_intents = [];
+    $count_paid = 0;
+
+    $orders = DB::table('infoOrder')
+        ->select('infoOrder.id','infoOrder.TotalDue','infoOrder.CustomerID')
+        ->where('infoOrder.TypeDelivery','DELIVERY')
+        ->where('infoOrder.deliverymethod','!=','')
+        ->whereNotIn('infoOrder.Status',['DELETE','VOID','CANCEL','IN DETAILING','RECURRING','SCHEDULED'])
+        ->where('infoOrder.Total','>',0)
+        ->where('infoOrder.Paid',0)
+        ->get();
+
+    if(count($orders) > 0){
+        foreach($orders as $k=>$v){
+            $orders_to_charge[$v->id] = ['TotalDue'=>$v->TotalDue,'CustomerID'=>$v->CustomerID];
+
+            if(!in_array($v->CustomerID,$customers_to_charge)){
+                array_push($customers_to_charge,$v->CustomerID);
+            }
+        }
+
+        $cards = DB::table('cards')
+            ->select('cards.*','infoCustomer.EmailAddress')
+            ->join('infoCustomer','cards.CustomerID','infoCustomer.CustomerID')
+            ->where('cards.Actif',1)
+            ->get();
+
+        if(count($cards) > 0){
+            foreach($cards as $k=>$v){
+                $card_details[$v->CustomerID] = $v;
+            }
+        }
+
+
+        $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
+
+        $stripe_test = env('STRIPE_TEST');
+        if($stripe_test){
+            $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
+        }
+
+        $stripe = new \Stripe\StripeClient(env($stripe_key));
+
+        foreach($orders_to_charge as $k=>$v){
+
+            if(isset($card_details[$v['CustomerID']])){
+                $card = $card_details[$v['CustomerID']];
+
+                $payment_intents[] = [
+                        'amount'            => $v['TotalDue']*100, //100*0.01
+                        'currency'          => 'gbp',
+                        'confirm'           => true,
+                        "payment_method"    => ($stripe_test?'pm_1LnoA2B2SbORtEDspPBXGNAJ':$card->stripe_card_id),
+                        "customer"          => ($stripe_test?'cus_MWrt7Gggau7yrE':$card->stripe_customer_id),
+                        "capture_method"    => "automatic",
+                        'payment_method_types' => ['card'],
+                        "description"=>$k,
+                        "receipt_email"=>($stripe_test?'rushdi@vpc-direct-service.com':$card->EmailAddress), //To change for customer email
+                ];
+            }
+        }
+
+        foreach($payment_intents as $k=>$pi){
+            $payment_intent = $stripe->paymentIntents->create($pi);
+            if($payment_intent->status=='succeeded'){
+                $count_paid += 1;
+                $order = DB::table('infoOrder')->where('id',$pi['description'])->first();
+                DB::table('infoOrder')->where('id',$order->id)->update(['Paid'=>1]);
+                DB::table('infoInvoice')->where('OrderID',$order->OrderID)->update(['Paid'=>1]);
+            }
+        }
+    }
+
+    $end = microtime(true);
+    $timetaken = $end - $start;
+
+    echo "Time taken : ".gmdate('H:i:s',$timetaken)."<br/>";
+    echo "Total orders : ".count($payment_intents)."<br/>";
+    echo "Orders paid : ".$count_paid;
 
 });
 
@@ -1144,6 +1241,43 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
 
     });
+
+
+    Route::post('/test_payment_intent',function(){
+        $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+        try {
+            $json_str = file_get_contents('php://input');
+            $json_obj = json_decode($json_str);
+
+
+            $pi = [
+                'amount' => 100*1,
+                'currency' => 'gbp',
+                'payment_method_types' => [
+                                'card_present',
+                                        ],
+                'capture_method' => 'manual',
+                'description'=>99999,
+                "receipt_email"=>'rushdi@vpc-direct-service.com',
+                //'customer'=>$stripe_customer->id,
+            ];
+
+
+            $intent = $stripe->paymentIntents->create($pi);
+
+
+            echo json_encode($intent);
+
+
+
+        } catch (Throwable $e) {
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    });
+
+
 });
 
 Route::post('/cancel-terminal-request',function(){
