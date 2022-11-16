@@ -1069,7 +1069,7 @@ class OrderController extends Controller
         if(strpos($site_url,'blancposdev') > -1){
             $endpoint = "http://blancspot.vpc-direct-service.com/validorder.php";
         }elseif(strpos($site_url,'fullcirclepos') > -1){
-            $endpoint = "http://blancspot.vpc-direct-service.com/validorder-prod.php";
+            $endpoint = "http://routeapi.vpc-direct-service.com/validorder-prod.php";
         }
 
         $client = new \GuzzleHttp\Client();
