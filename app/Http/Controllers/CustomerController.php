@@ -1213,16 +1213,20 @@ class CustomerController extends Controller
                                                          $tranche_arr = explode("_",$tranche);
                                                          if(isset($tranche_arr[0]) && isset($tranche_arr[1])){
                                                              $slot = Tranche::getSlotFromTranche($tranche_arr[0],$tranche_arr[1]);
+                                                             if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $current_orders[$k][$i][$key]->order_right_time = $timeslot;
+                                                             }
                                                          }
                                                      //leftTime
                                                          $tranche_left = $item->order_left_time;
                                                          $tranche_arr_left = explode("_",$tranche_left);
                                                          if(isset($tranche_arr_left[0]) && isset($tranche_arr_left[1])){
                                                              $slot = Tranche::getSlotFromTranche($tranche_arr_left[0],$tranche_arr_left[1]);
+                                                             if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $current_orders[$k][$i][$key]->order_left_time = $timeslot;
+                                                             }
                                                          }
                                                      //}
                                                  }
@@ -1337,16 +1341,20 @@ class CustomerController extends Controller
                                                          $tranche_arr = explode("_",$tranche);
                                                          if(isset($tranche_arr[0]) && isset($tranche_arr[1])){
                                                              $slot = Tranche::getSlotFromTranche($tranche_arr[0],$tranche_arr[1]);
-                                                             $timeslot = $tranches_slots[$slot];
-                                                             $past_orders[$k][$i][$key]->order_right_time = $timeslot;
+                                                             if($slot){
+                                                                $timeslot = $tranches_slots[$slot];
+                                                                $past_orders[$k][$i][$key]->order_right_time = $timeslot;
+                                                             }                                                         
                                                          }
                                                          //leftTime
                                                          $tranche_left = $item->order_left_time;
                                                          $tranche_arr_left = explode("_",$tranche_left);
                                                          if(isset($tranche_arr_left[0]) && isset($tranche_arr_left[1])){
                                                              $slot = Tranche::getSlotFromTranche($tranche_arr_left[0],$tranche_arr_left[1]);
+                                                             if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $past_orders[$k][$i][$key]->order_left_time = $timeslot;
+                                                             }
                                                          }
                                                      //}
                                                      //}
@@ -1451,16 +1459,20 @@ class CustomerController extends Controller
                                                          $tranche_arr = explode("_",$tranche);
                                                          if(isset($tranche_arr[0]) && isset($tranche_arr[1])){
                                                              $slot = Tranche::getSlotFromTranche($tranche_arr[0],$tranche_arr[1]);
+                                                             if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $scheduled_orders[$k][$i][$key]->order_right_time = $timeslot;
+                                                             }
                                                          }
                                                          //leftTime
                                                          $tranche_left = $item->order_left_time;
                                                          $tranche_arr_left = explode("_",$tranche_left);
                                                          if(isset($tranche_arr_left[0]) && isset($tranche_arr_left[1])){
                                                              $slot = Tranche::getSlotFromTranche($tranche_arr_left[0],$tranche_arr_left[1]);
+                                                             if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $scheduled_orders[$k][$i][$key]->order_left_time = $timeslot;
+                                                             }
                                                          }
                                                      //}
                                                  }
