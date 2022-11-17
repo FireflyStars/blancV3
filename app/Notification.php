@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Twilio\Rest\Client;
 
@@ -27,12 +28,27 @@ class Notification extends Model
             if ($NOTTIFICATION_TEMPLATE!=null&&$this->TypeNotification == "EMAIL"&&$NOTTIFICATION_TEMPLATE->TypeNotification=="EMAIL") { // send email with sendgrid
 
                 $email = new \SendGrid\Mail\Mail();
-             //   $email->setFrom(setting('sendgrid.sendgrid_from_email'), setting('sendgrid.sendgrid_from'));
+               // $email->setFrom(setting('sendgrid.sendgrid_from_email'), setting('sendgrid.sendgrid_from'));
                 $email->setFrom($NOTTIFICATION_TEMPLATE->fromemail, setting('sendgrid.sendgrid_from'));
                 $email->addTo($email_address);
                 //send carbon copy to sender
                 if($NOTTIFICATION_TEMPLATE->copytofrom==1)
                 $email->addCc($NOTTIFICATION_TEMPLATE->fromemail);
+                //send email attachment
+                try{
+                if($this->email_attachements!=null&&$this->email_attachements!=''){
+                    $attachments=json_decode($this->email_attachements);
+                    foreach($attachments as $attachment){
+                        $filecontent=file_get_contents(urlencode($attachment['url']));
+                        if($filecontent!==false){
+                            $email->addAttachment($filecontent,$attachment['mime_type'],$attachment['nom']);
+                        }else{
+                            $this->attachement_error="Cannot retrieve file: ".$attachment['url'];
+                        }
+                    }
+                }}catch(Exception $e){
+                    $this->attachement_error=$e->getMessage();
+                }
                 $email->setTemplateId($NOTTIFICATION_TEMPLATE->template_id);
                 $email->addDynamicTemplateDatas(json_decode($this->Parametres));
 
@@ -49,12 +65,27 @@ class Notification extends Model
                         //force send email to customer in mode demo
                         if($this->Force==1&&setting('sendgrid.demo_email') == 1){
                             $email_Force = new \SendGrid\Mail\Mail();
-                            //$email_Force->setFrom(setting('sendgrid.sendgrid_from_email'), setting('sendgrid.sendgrid_from'));
-                            $email_Force->setFrom($NOTTIFICATION_TEMPLATE->fromemail, setting('sendgrid.sendgrid_from'));
+                           // $email_Force->setFrom(setting('sendgrid.sendgrid_from_email'), setting('sendgrid.sendgrid_from'));
+                           $email_Force->setFrom($NOTTIFICATION_TEMPLATE->fromemail, setting('sendgrid.sendgrid_from'));
                             $email_Force->addTo($this->Email);
                             //send carbon copy to sender
                             if($NOTTIFICATION_TEMPLATE->copytofrom==1)
                             $email_Force->addCc($NOTTIFICATION_TEMPLATE->fromemail);
+                                   //send email attachment
+                            try{
+                                if($this->email_attachements!=null&&$this->email_attachements!=''){
+                                    $attachments=json_decode($this->email_attachements);
+                                    foreach($attachments as $attachment){
+                                        $filecontent=file_get_contents(urlencode($attachment['url']));
+                                        if($filecontent!==false){
+                                            $email_Force->addAttachment($filecontent,$attachment['mime_type'],$attachment['nom']);
+                                        }else{
+                                            $this->attachement_error="Cannot retrieve file: ".$attachment['url'];
+                                        }
+                                    }
+                                }}catch(Exception $e){
+                                    $this->attachement_error=$e->getMessage();
+                                }
                             $email_Force->setTemplateId($NOTTIFICATION_TEMPLATE->template_id);
                             $email_Force->addDynamicTemplateDatas(json_decode($this->Parametres));
 

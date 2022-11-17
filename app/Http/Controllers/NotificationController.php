@@ -19,8 +19,8 @@ class NotificationController extends Controller
          * @param $send_now boolean Try to send notification immediately
          * @param null int $infoOrder_id
          */
-        public static function Notify($email,$phone,$email_template='',$sms_template='',$params=[],$send_now=false,$infoOrder_id=0,$customeruuid=false){
-                $sent = false;
+        public static function Notify($email,$phone,$email_template='',$sms_template='',$params=[],$send_now=false,$infoOrder_id=0,$customeruuid=false,$attachments=null){
+
                 if(trim($email_template)==''&&trim($sms_template)==''){
                     throw new \Exception('At least one template should be provided');
                 }
@@ -35,6 +35,8 @@ class NotificationController extends Controller
                     $notification->TypeNotification ='EMAIL';
                     $notification->InfoOrder_id = $infoOrder_id;
                     $notification->CustomerID = ($customeruuid?$customeruuid:"");
+                    if($attachments!=null)
+                    $notification->email_attachements=json_encode($attachments);
                     $notification->save();
                     $sent = true;
                     if($send_now){
