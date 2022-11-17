@@ -17,7 +17,10 @@
                         </div>
                     </div>
                     <div class="row my-4">
+                        <div class="col-3">
                         <mini-checkout :order_id="134932"></mini-checkout>
+                        </div>
+
                     </div>
                     <div class="row">
                         <div class="col-3">

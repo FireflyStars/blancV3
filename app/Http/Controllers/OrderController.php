@@ -593,6 +593,19 @@ class OrderController extends Controller
 
             $total_amount = 100*$amount_two_dp;
 
+            $payment_arr = [
+                'type'=>'card',
+                'datepayment'=>date('Y-m-d H:i:s'),
+                'status'=>'',
+                'montant'=>number_format($amount_two_dp,2),
+                'order_id'=>$order_id,
+                'card_id'=>$card->id,
+                'CustomerID'=>$order->CustomerID,
+                'created_at'=>date('Y-m-d H:i:s'),
+            ];
+
+            $payment_id = DB::table('payments')->insertGetId($payment_arr);
+
             try{
                 $payment_intent = $stripe->paymentIntents->create([
                     'amount'            => $total_amount, //100*0.01
@@ -607,53 +620,54 @@ class OrderController extends Controller
                     'off_session' => true,
                     'confirm' => true,
                 ]);
-            }catch(Exception $e){
-                return response([
-                    'error_stripe'=>$e,
-                ]);
-            }
+
+                if($payment_intent && isset($payment_intent->status)){
+
+                    if($payment_intent->status == 'succeeded'){
+
+                        DB::table('payments')->where('id',$payment_id)->update(['status'=>'succeeded']);
+
+                        //Update order
+                        DB::table('infoOrder')->where('id',$order_id)->update([
+                            //'Paid'=>1,
+                            'payment_id'=>$payment_id,
+                        ]);
+
+                        $paid = true;
+
+                        //Create/update items, itempost and invoices
 
 
-            if($payment_intent && isset($payment_intent->status)){
-
-                if($payment_intent->status == 'succeeded'){
-
-                    $payment_arr = [
-                        'type'=>'card',
-                        'datepayment'=>date('Y-m-d H:i:s'),
-                        'status'=>$payment_intent->status,
-                        'montant'=>number_format($amount_two_dp,2),
-                        'order_id'=>$order_id,
-                        'card_id'=>$card->id,
-                        'CustomerID'=>$order->CustomerID,
-                        'created_at'=>date('Y-m-d H:i:s'),
-                    ];
-
-                    $payment_id = DB::table('payments')->insertGetId($payment_arr);
-
-                    //Update order
-                    DB::table('infoOrder')->where('id',$order_id)->update([
-                        //'Paid'=>1,
-                        'payment_id'=>$payment_id,
-                    ]);
-
-                    $paid = true;
-
-                    //Create/update items, itempost and invoices
-
-
-                }else{
-                    DB::table('unpaid_orders')->insert([
-                        'payment_intent_id'=>$payment_intent->id,
-                        'order_id'=>$order_id,
-                        'created_at'=>date('Y-m-d H:i:s'),
-                    ]);
-
-                    $err_payment = $payment_intent;
+                    }
                 }
-            }else{
+
+            }catch(\Stripe\Exception\CardException $e) {
+                OrderController::logErrorPayment($payment_id,$e->getError());
+
                 $err_payment = "Payment unsuccessful";
-            }
+
+                return response([
+                    'error_stripe'=>"Stripe error: ".$e->getError()->code,
+                ]);
+
+              }catch (\Stripe\Exception\InvalidRequestException $e) {
+
+                OrderController::logErrorPayment($payment_id,$e->getError());
+
+                $err_payment = "Payment unsuccessful";
+
+                return response([
+                    'error_stripe'=>"Stripe error: ".$e->getError()->code,
+                ]);
+              }catch (Exception $e) {
+                OrderController::logErrorPayment($payment_id,$e);
+
+                $err_payment = "Payment unsuccessful";
+
+                return response([
+                    'error_stripe'=>"Another problem occurred, maybe unrelated to Stripe",
+                ]);
+              }
         }
 
 
@@ -1069,7 +1083,7 @@ class OrderController extends Controller
         if(strpos($site_url,'blancposdev') > -1){
             $endpoint = "http://blancspot.vpc-direct-service.com/validorder.php";
         }elseif(strpos($site_url,'fullcirclepos') > -1){
-            $endpoint = "http://blancspot.vpc-direct-service.com/validorder-prod.php";
+            $endpoint = "http://routeapi.vpc-direct-service.com/validorder-prod.php";
         }
 
         $client = new \GuzzleHttp\Client();
@@ -1370,41 +1384,59 @@ class OrderController extends Controller
 
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
+        if($paid){
+            DB::table('infoOrder')->where('id',$order_id)->update(['Paid'=>1,'TotalDue'=>0]);
+            DB::table('infoInvoice')->where('OrderID',$order->id)->update(['Paid'=>1]);
+        }
+
         $statusCode = "";
         $content = "";
         $res = false;
 
-/*
-        $endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v1-order.php";
-        $token = "GhtfvbbG4489hGtyEfgARRGht3";
-
         $site_url = \Illuminate\Support\Facades\URL::to("/");
 
+        if(strpos($site_url,'blancposdev') > -1){
+            //Do nothing
+        }elseif(strpos($site_url,'fullcirclepos') > -1){
+            $endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v1-order.php";
+            $token = "GhtfvbbG4489hGtyEfgARRGht3";
 
-        $client = new \GuzzleHttp\Client();
+            $site_url = \Illuminate\Support\Facades\URL::to("/");
 
-        $response = $client->request('GET', $endpoint, ['query' => [
-            'order_id'=>$order->OrderID,
-            'token'=>$token,
-            'userid'=>Auth::user()->id,
-        ]]);
+            $client = new \GuzzleHttp\Client();
 
-        $statusCode = $response->getStatusCode();
-        $content = $response->getBody();
-        $content = str_replace('\\"','',$content);
+            $response = $client->request('GET', $endpoint, ['query' => [
+                'order_id'=>$order->OrderID,
+                'token'=>$token,
+                'userid'=>Auth::user()->id,
+            ]]);
 
-        $res = @json_decode($content);
+            $statusCode = $response->getStatusCode();
+            $content = $response->getBody();
+            $content = str_replace('\\"','',$content);
 
-        //*/
+            $res = @json_decode($content);
 
-        $res = new stdClass;
-        $res->result = "not ok";
+            //*/
+        }
 
         return response()->json([
             'post'=>$request->all(),
             'status'=>$statusCode,
             'content'=>$content,
             'output'=>$res,
+        ]);
+    }
+
+    public static function logErrorPayment($payment_id,$err){
+        DB::table('payments')->where('id',$payment_id)->update(['status'=>'card failed','info'=>json_encode($err)]);
+
+        $payment_line = DB::table('payments')->where('id',$payment_id)->first();
+
+        DB::table('unpaid_orders')->insert([
+            'payment_intent_id'=>'',
+            'order_id'=>$payment_line->order_id,
+            'created_at'=>date('Y-m-d H:i:s'),
         ]);
     }
 

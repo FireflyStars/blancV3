@@ -1182,17 +1182,17 @@ class OrderListController extends Controller
 
             if($order->Status == "DELIVERED"){
                 $nextpost = DB::table('postes')->select(['postes.nominterface'])
-                ->where('postes.id','=', 39)->first(); 
+                ->where('postes.id','=', 39)->first();
                 $item->station = $nextpost->nominterface;
             }
             if($order->Status == "FULFILLED"){
                 $nextpost = DB::table('postes')->select(['postes.nominterface'])
-                ->where('postes.id','=', 28)->first(); 
+                ->where('postes.id','=', 28)->first();
                 $item->station = $nextpost->nominterface;
             }
             if($order->Status == "VOID" || $order->Status == "DELETE"){
                 $nextpost = DB::table('postes')->select(['postes.nominterface'])
-                ->where('postes.id','=', 34)->first(); 
+                ->where('postes.id','=', 34)->first();
                 $item->station = $nextpost->nominterface;
             }
             $Price = DB::table('detailingitem')->select(['detailingitem.dry_cleaning_price' , 'detailingitem.cleaning_addon_price' , 'detailingitem.tailoring_price' ])
@@ -1215,7 +1215,7 @@ class OrderListController extends Controller
             $pkdate=Carbon::parse($order->DatePickup);
             if($pkdate->isPast()||$pkdate->isToday())
             $order->alreadypickuped=true;
-        }  
+        }
 
 
         if($order->Phone!=""){
@@ -1277,7 +1277,7 @@ class OrderListController extends Controller
      public function setInvoiceFulfilled(Request $request){
 
         $invoice_id = $request->post('invoice_id');
-        $endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v2.php";
+        $endpoint = "http://routeapi.vpc-direct-service.com/fulfiled-v2.php";
         //$endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v2-test.php";
         $client = new \GuzzleHttp\Client();
         $content = "";
@@ -1335,7 +1335,7 @@ class OrderListController extends Controller
 
 
 
-        $endpoint = "http://blancspot.vpc-direct-service.com/split-v1.php";
+        $endpoint = "http://routeapi.vpc-direct-service.com/split-v1.php";
         // $arr = http_build_query($items,"item[");
         $array_item = preg_replace('/\[\d/', '\\0]', $array_item);
         $client = new \GuzzleHttp\Client();
@@ -1398,17 +1398,17 @@ class OrderListController extends Controller
         if($subOrder){
             if($subOrder->Status == "DELIVERED"){
                 $nextpost = DB::table('postes')->select(['postes.nominterface'])
-                ->where('postes.id','=', 39)->first(); 
+                ->where('postes.id','=', 39)->first();
                 $itemInfo->location = $nextpost->nominterface;
             }
             if($subOrder->Status == "FULFILLED"){
                 $nextpost = DB::table('postes')->select(['postes.nominterface'])
-                ->where('postes.id','=', 28)->first(); 
+                ->where('postes.id','=', 28)->first();
                 $itemInfo->location = $nextpost->nominterface;
             }
             if($subOrder->Status == "VOID" || $subOrder->Status == "DELETE"){
                 $nextpost = DB::table('postes')->select(['postes.nominterface'])
-                ->where('postes.id','=', 34)->first(); 
+                ->where('postes.id','=', 34)->first();
                 $itemInfo->location = $nextpost->nominterface;
             }
         }
@@ -1474,7 +1474,7 @@ class OrderListController extends Controller
                 $Issues->stains = DB::table('itemzones')->whereIn('id', array_column($stains_decode, 'id_zone'))->get();
                 if(!empty($stains_stainsissue_decode)){
                     $Issues->stainsissue = DB::table('issues_tag')->select('id','name')->whereIn('id', $stains_stainsissue_decode)->get();
-                } 
+                }
                 }
 
                 if(!is_null($Issues->damages)){
@@ -1578,7 +1578,7 @@ class OrderListController extends Controller
                     'dateJour'=>date('l',strtotime($PromisedDate))
                 ]);
                     $update=true;
-                }else{    
+                }else{
 
                 $cust_details =  DB::table('infoCustomer')
                     ->select('infoCustomer.id AS customer_id','infoCustomer.*','address.*')

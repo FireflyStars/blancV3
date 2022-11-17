@@ -1,5 +1,5 @@
 <template>
-    <button @click="checkOrderToFulfill" class="btn btn-outline-success">Fulfill Order</button>
+    <button @click="checkOrderToFulfill" class="btn btn-success" id="fulfill_btn">Fulfill</button>
     <modal ref="no_payment_modal">
         <template #closebtn>
             <span class="close" id="addon_modal_close" @click="closeNoPaymentModal"></span>
@@ -34,7 +34,7 @@
 
 import {ref} from 'vue';
 import { useStore } from 'vuex';
-import { LOADER_MODULE,DISPLAY_LOADER,HIDE_LOADER} from '../../store/types/types';
+import { LOADER_MODULE,DISPLAY_LOADER,HIDE_LOADER,TOASTER_MODULE,TOASTER_MESSAGE} from '../../store/types/types';
 import Modal from './Modal';
 import StripePayNow from './StripePayNow.vue';
 
@@ -70,7 +70,7 @@ export default {
                     cur_user.value = res.data.user;
                     amount_to_pay.value = res.data.order.TotalDue;
 
-                    if(res.data.order==1){
+                    if(res.data.order.Paid==1 || res.data.order.TotalDue==0){
                         console.log('order is paid');
                         fulfillOrder();
                     }else{
@@ -103,8 +103,27 @@ export default {
                 order_id:props.order_id,
                 paid:paid,
             }).then((res)=>{
+                let output = res.data.output;
+                let msg_type = 'danger';
+                let fulfill_msg = 'API Error';
+
+                if(output.result=='ok'){
+                    msg_type = 'success';
+                    fulfill_msg = 'Order fulfilled';
+                }
+
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                    message:fulfill_msg,
+                    type:msg_type,
+                    ttl:5,
+                });
 
             }).catch((err)=>{
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                    message:'API error',
+                    type:'danger',
+                    ttl:5,
+                });
 
             }).finally(()=>{
                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
@@ -165,5 +184,14 @@ export default {
     font:bold 22px "Gilroy";
     color:#F4003D;
     background:#FFEFED;
+}
+
+#fulfill_btn{
+    color:#fff;
+}
+
+#fulfill_btn:hover{
+    background:#333;
+    border:thin solid #333;
 }
 </style>

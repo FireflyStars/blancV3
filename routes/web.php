@@ -752,6 +752,179 @@ Route::get('/batch-si',function(Request $request){
 
 });
 
+Route::get('/unpaid-card-orders',function(Request $request){
+    $token = $request->get('token');
+
+    $app_token = setting('admin.url_token');//EjD4L7tgrHxmCY3exnCE31b3
+
+    if(!isset($token)){
+        die('token not set');
+    }
+
+    if($app_token != $token){
+        die('invalid token');
+    }
+
+    $start = microtime(true);
+
+    $orders_to_charge = [];
+    $customers_to_charge = [];
+    $card_details = [];
+    $payment_intents = [];
+    $count_paid = 0;
+    $paid_orders = [];
+    $paid_per_order = [];
+    $orders_id = [];
+
+    $orders = DB::table('infoOrder')
+        ->select('infoOrder.id','infoOrder.TotalDue','infoOrder.CustomerID')
+        ->where('infoOrder.TypeDelivery','DELIVERY')
+        ->where('infoOrder.deliverymethod','!=','')
+        ->whereNotIn('infoOrder.Status',['DELETE','VOID','CANCEL','IN DETAILING','RECURRING','SCHEDULED'])
+        ->where('infoOrder.Total','>',0)
+        ->where('infoOrder.Paid',0)
+        ->get();
+
+    if(count($orders) > 0){
+
+        $ctrl = new DetailingController();
+        foreach($orders as $k=>$v){
+            if(!in_array($v->id, $orders_id)){
+                array_push($orders_id,$v->id);
+            }
+        }
+
+        foreach($orders_id as $k=>$v){
+            $ctrl->calculateCheckout($v);
+        }
+
+        $orders2 = DB::table('infoOrder')->whereIn('id',$orders_id)->get();
+
+        foreach($orders2 as $k=>$v){
+
+            $orders_to_charge[$v->id] = ['TotalDue'=>$v->TotalDue,'CustomerID'=>$v->CustomerID];
+
+            if(!in_array($v->CustomerID,$customers_to_charge)){
+                array_push($customers_to_charge,$v->CustomerID);
+            }
+
+
+        }
+
+        /*
+
+        $payments = DB::table("payments")->whereIn('order_id',$orders_id)->where('montant','>',0)->where('status','succeeded')->get();
+
+        if(count($payments) > 0){
+            foreach($payments as $k=>$v){
+                $paid_orders[$v->order_id][] = $v->montant;
+            }
+
+            foreach($paid_orders as $k=>$v){
+                $paid_per_order[$k] = array_sum($v);
+            }
+        }
+
+        foreach($orders_to_charge as $orderid=>$detail){
+            if(isset($paid_per_order[$orderid])){
+                $totaldue = $detail['TotalDue'] - $paid_per_order[$orderid];
+
+                $orders_to_charge[$orderid]['TotalDue'] = $totaldue;
+            }
+        }
+        */
+
+        $cards = DB::table('cards')
+            ->select('cards.*','infoCustomer.EmailAddress')
+            ->join('infoCustomer','cards.CustomerID','infoCustomer.CustomerID')
+            ->where('cards.Actif',1)
+            ->get();
+
+        if(count($cards) > 0){
+            foreach($cards as $k=>$v){
+                $card_details[$v->CustomerID] = $v;
+            }
+        }
+
+
+        $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
+
+        $stripe_test = env('STRIPE_TEST');
+        if($stripe_test){
+            $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
+        }
+
+        $stripe = new \Stripe\StripeClient(env($stripe_key));
+
+        foreach($orders_to_charge as $k=>$v){
+
+            if(isset($card_details[$v['CustomerID']]) && $v['TotalDue'] > 0){
+                $card = $card_details[$v['CustomerID']];
+                $payment_intents[] = [
+                        'amount'            => $v['TotalDue']*100, //100*0.01
+                        'currency'          => 'gbp',
+                        'confirm'           => true,
+                        "payment_method"    => ($stripe_test?'pm_1LnoA2B2SbORtEDspPBXGNAJ':$card->stripe_card_id),
+                        "customer"          => ($stripe_test?'cus_MWrt7Gggau7yrE':$card->stripe_customer_id),
+                        "capture_method"    => "automatic",
+                        'payment_method_types' => ['card'],
+                        "description"=>$k,
+                        "receipt_email"=>($stripe_test?'rushdi@vpc-direct-service.com':$card->EmailAddress), //To change for customer email
+                ];
+
+            }
+        }
+
+        foreach($payment_intents as $k=>$pi){
+            $order = DB::table('infoOrder')->where('id',$pi['description'])->first();
+            $payment_id = DB::table('payments')->insertGetId([
+                'type'=>'card',
+                'datepayment'=>date('Y-m-d H:i:s'),
+                'status'=>'',
+                'montant'=>$pi['amount']/100,
+                'order_id'=>$pi['description'],
+                'card_id'=>$card_details[$order->CustomerID]->id,
+                'CustomerID'=>$order->CustomerID,
+                'created_at'=>date('Y-m-d H:i:s'),
+            ]);
+
+
+           try{
+                $payment_intent = $stripe->paymentIntents->create($pi);
+
+                if($payment_intent->status=='succeeded'){
+                    DB::table('payments')->where('id',$payment_id)->update(['status'=>'succeeded']);
+                    $count_paid += 1;
+                    DB::table('infoOrder')->where('id',$order->id)->update(['Paid'=>1,'TotalDue'=>0]);
+                    DB::table('infoInvoice')->where('OrderID',$order->OrderID)->update(['Paid'=>1]);
+
+                }
+
+            }catch(\Stripe\Exception\CardException $e) {
+                //error_log("A payment error occurred: {$e->getError()->message}");
+                DB::table('payments')->where('id',$payment_id)->update(['status'=>'cron failed','info'=>json_encode($e->getError())]);
+              } catch (\Stripe\Exception\InvalidRequestException $e) {
+                //error_log("An invalid request occurred.");
+                DB::table('payments')->where('id',$payment_id)->update(['status'=>'cron failed','info'=>json_encode($e->getError())]);
+              } catch (Exception $e) {
+                //error_log("Another problem occurred, maybe unrelated to Stripe.");
+                DB::table('payments')->where('id',$payment_id)->update(['status'=>'cron failed','info'=>"Another problem occurred, maybe unrelated to Stripe | ".json_encode($e)]);
+              }
+        }
+
+
+    }
+
+    $end = microtime(true);
+    $timetaken = $end - $start;
+
+    echo "Time taken : ".gmdate('H:i:s',$timetaken)."<br/>";
+    echo "Total orders : ".count($payment_intents)."<br/>";
+    echo "Orders paid : ".$count_paid;
+
+
+});
+
 // added by yonghuan to search customers to be linked
 Route::post('/search-customer', [SearchController::class, 'SearchCustomersToLink'])->name('SearchCustomersToLink');
 
@@ -1119,7 +1292,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
         ]);
 
         $stripe->terminal->readers->processSetupIntent(
-            'tmr_Eqz4ewJhXq5eu6', //To change
+            'tmr_Eqz4ewJhXq5eu6', //Atelier terminal
             [
               'setup_intent' => $si->id,
               'customer_consent_collected' => 'true',
@@ -1130,6 +1303,43 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
 
     });
+
+
+    Route::post('/test_payment_intent',function(){
+        $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+        try {
+            $json_str = file_get_contents('php://input');
+            $json_obj = json_decode($json_str);
+
+
+            $pi = [
+                'amount' => 100*1,
+                'currency' => 'gbp',
+                'payment_method_types' => [
+                                'card_present',
+                                        ],
+                'capture_method' => 'manual',
+                'description'=>99999,
+                "receipt_email"=>'rushdi@vpc-direct-service.com',
+                //'customer'=>$stripe_customer->id,
+            ];
+
+
+            $intent = $stripe->paymentIntents->create($pi);
+
+
+            echo json_encode($intent);
+
+
+
+        } catch (Throwable $e) {
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    });
+
+
 });
 
 Route::post('/cancel-terminal-request',function(){
@@ -1180,6 +1390,7 @@ Route::get('/unpaid-orders',function(Request $request){
 
     $app_token = setting('admin.url_token');//EjD4L7tgrHxmCY3exnCE31b3
 
+
     if(!isset($token)){
         die('token not set');
     }
@@ -1188,7 +1399,15 @@ Route::get('/unpaid-orders',function(Request $request){
         die('invalid token');
     }
 
-    $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+    $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
+
+    $stripe_test = env('STRIPE_TEST');
+    if($stripe_test){
+        $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
+    }
+
+    $stripe = new \Stripe\StripeClient(env($stripe_key));
 
 
     $unpaid_orders = DB::table('unpaid_orders')
@@ -1200,47 +1419,143 @@ Route::get('/unpaid-orders',function(Request $request){
 
     $orders_to_update = [];
     $lines_to_update = [];
+    $order_ids = [];
+    $orders_to_calculate = [];
+    $payment_per_order = [];
+    $order_totals = [];
+
 
     if(count($unpaid_orders) > 0){
         foreach($unpaid_orders as $k=>$v){
+            $order_ids[] = $v->order_id;
+            $order_totals[$v->id] = $v->TotalDue;
+        }
 
+        /*
+        $payments = DB::table("payments")->where('status','succeeded')->whereIn('order_id',$order_ids)->get();
 
-            $payment_intent = $stripe->paymentIntents->retrieve(
-                $v->payment_intent_id,
-                []
-              );
+        $order_payments = [];
 
-            if($payment_intent->status=='succeeded'){
-                $orders_to_update[] = $v->order_id;
-                $lines_to_update[] = $v->id;
+        if(count($payments) > 0){
+            foreach($payments as $k=>$v){
+                $order_payments[$v->order_id][] = $v->montant;
+            }
+
+            foreach($order_payments as $k=>$v){
+                $payment_per_order[$k] = array_sum($v);
+            }
+
+            foreach($payment_per_order as $orderid=>$montant){
+                if(isset($order_totals[$orderid])){
+                    $amount_due = $order_totals[$orderid] - $montant;
+
+                    $order_totals[$orderid] = $amount_due;
+                }
             }
 
         }
-    }
+        */
 
-    if(!empty($orders_to_update)){
 
-        $orders = DB::table('infoOrder')->whereIn('id',$orders_to_update)->get();
+    foreach($order_totals as $k=>$v){
+        if($v > 0){
 
-        $orders_ids = [];
-        foreach($orders as $k=>$v){
-            $orders_ids[] = $v->OrderID;
+            $total_amount = 100*$v;
+            $order = DB::table('infoOrder')->where('id',$k)->first();
+            $card = DB::table('cards')->where('CustomerID',$order->CustomerID)->where('Actif',1)->first();
+            $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
+        if($order && $card && $cust){
+            $payment_arr = [
+                'type'=>'card',
+                'datepayment'=>date('Y-m-d H:i:s'),
+                'status'=>'',
+                'montant'=>number_format($total_amount,2),
+                'order_id'=>$k,
+                'card_id'=>$card->id,
+                'CustomerID'=>$order->CustomerID,
+                'created_at'=>date('Y-m-d H:i:s'),
+            ];
+
+            $payment_id = DB::table('payments')->insertGetId($payment_arr);
+
+            try{
+
+                $pi = [
+                    'amount'            => $total_amount, //100*0.01
+                    'currency'          => 'gbp',
+                    'confirm'           => true,
+                    "payment_method"    => ($stripe_test?'pm_1LnoA2B2SbORtEDspPBXGNAJ':$card->stripe_card_id),
+                    "customer"          => ($stripe_test?'cus_MWrt7Gggau7yrE':$card->stripe_customer_id),
+                    "capture_method"    => "automatic",
+                    'payment_method_types' => ['card'],
+                    "description"=>$k,
+                    "receipt_email"=>($stripe_test?'rushdi@vpc-direct-service.com':$cust->EmailAddress), //To change for customer email
+                    'off_session' => true,
+                    'confirm' => true,
+                ];
+
+                $payment_intent = $stripe->paymentIntents->create($pi);
+
+                if($payment_intent && isset($payment_intent->status)){
+
+                    if($payment_intent->status == 'succeeded'){
+                        $orders_to_update[] = $k;
+
+                        DB::table('payments')->where('id',$payment_id)->update(['status'=>'succeeded']);
+
+                        //Update order
+                        DB::table('infoOrder')->where('id',$k)->update([
+                            'Paid'=>1,
+                            'payment_id'=>$payment_id,
+                        ]);
+
+                        DB::table('infoInvoice')->where('OrderID',$order->OrderID)->update(['Paid'=>1]);
+                        DB::table('unpaid_orders')->where('order_id',$k)->update(['paid'=>1]);
+
+                    }
+                }
+
+            }catch(\Stripe\Exception\CardException $e) {
+                OrderController::logErrorPayment($payment_id,$e->getError());
+
+                $err_payment = "Payment unsuccessful";
+
+                return response([
+                    'error_stripe'=>"Stripe error: ".$e->getError()->code,
+                ]);
+
+              }catch (\Stripe\Exception\InvalidRequestException $e) {
+
+                OrderController::logErrorPayment($payment_id,$e->getError());
+
+                $err_payment = "Payment unsuccessful";
+
+                return response([
+                    'error_stripe'=>"Stripe error: ".$e->getError()->code,
+                ]);
+              }catch (Exception $e) {
+                OrderController::logErrorPayment($payment_id,$e);
+
+                $err_payment = "Payment unsuccessful";
+
+                return response([
+                    'error_stripe'=>"Another problem occurred, maybe unrelated to Stripe",
+                ]);
+              }
+            }
         }
 
-        DB::table('infoInvoice')->where('OrderID',$orders_ids)->update(['Paid'=>1]);
-        DB::table('infoOrder')->where('id',$orders_to_update)->update(['Paid'=>1]);
-    }
 
 
-    if(!empty($lines_to_update)){
-        DB::table('unpaid_orders')->whereIn('id',$lines_to_update)->update(['paid'=>1]);
+        }
     }
 
     $end = microtime(true);
     $timetaken = $end-$start;
 
     echo "Time taken: ".gmdate('H:i:s',$timetaken)."<br/>";
-    echo count($lines_to_update)." lines updated";
+    echo count($orders_to_update)." lines updated";
 
 });
 

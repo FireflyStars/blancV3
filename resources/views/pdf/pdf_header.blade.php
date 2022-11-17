@@ -8,7 +8,7 @@
         <div id="vat_reg">VAT Reg.No: 124 0369 45</div>
         <div>Company Reg.No: 07689489</div>
         <div>Telephone: 0203 865 4062</div>
-        <div>Email: <a href="mailto:bruno@blancliving.co">bruno@blancliving.co</a></div>
+        <div>Email: <a href="mailto:finance@blancliving.co">finance@blancliving.co</a></div>
         <div>Web: <a href="www.blancliving.co">www.blancliving.co</a></div>
     </div>
 
