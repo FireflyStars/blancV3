@@ -761,6 +761,10 @@ Route::get('/unpaid-card-orders',function(Request $request){
         die('token not set');
     }
 
+    if($app_token != $token){
+        die('invalid token');
+    }
+
     $start = microtime(true);
 
     $orders_to_charge = [];
