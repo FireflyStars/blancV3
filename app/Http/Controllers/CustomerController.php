@@ -3040,6 +3040,7 @@ class CustomerController extends Controller
                 $attachment = new stdClass;
                 $attachment->url = \Illuminate\Support\Facades\URL::to("/inv-pdf")."?id=".$v->FactureID;
                 $attachment->nom = 'INV'.date('Ymd').'-'.sprintf('%04d', $v->id);
+                $attachment->mime_type = 'application/pdf';
                 $attachment_arr = (array) $attachment;
 
                 $attachments = [$attachment_arr];
@@ -3054,7 +3055,7 @@ class CustomerController extends Controller
                         $notification->TypeNotification ='EMAIL';
                         $notification->InfoOrder_id = $order_id;
                         $notification->CustomerID = $cust->CustomerID;
-                        $notification->email_attachement = $attachments;
+                        $notification->email_attachements = json_encode($attachments);
 
                         if($notification->save()){
                             $sent = true;
