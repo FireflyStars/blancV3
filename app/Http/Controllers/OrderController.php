@@ -1403,7 +1403,6 @@ class OrderController extends Controller
 
             $site_url = \Illuminate\Support\Facades\URL::to("/");
 
-
             $client = new \GuzzleHttp\Client();
 
             $response = $client->request('GET', $endpoint, ['query' => [

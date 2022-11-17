@@ -1260,6 +1260,10 @@ class DetailingController extends Controller
             $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL;
         }
 
+        if($_SUBTOTAL==0){
+            $_ACCOUNT_DISCOUNT = 0;
+        }
+
 
         $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
 
@@ -1331,7 +1335,7 @@ class DetailingController extends Controller
 
 
 
-        if($order->detailed_at=='0000-00-00 00:00:00'){
+        if($order->detailed_at=='0000-00-00 00:00:00' || $_SUBTOTAL==0){
             $values['AccountDiscount'] = number_format($_ACCOUNT_DISCOUNT,2);
             $values['AccountDiscountPerc'] = $cust->discount;
         }
@@ -1834,7 +1838,7 @@ class DetailingController extends Controller
                 $items[$k]->damages = @json_decode($v->damages);
                 $items[$k]->damagesissues = @json_decode($v->damagesissues);
                 $items[$k]->stainsissue = @json_decode($v->stainsissue);
-                
+
 
 
                 $items[$k]->detailed_services = [];
