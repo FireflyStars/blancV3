@@ -32,10 +32,11 @@
                     <!--
 (!detailingitem.cleaning_services && service.selected_default==1) ||
                         -->
-                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center position-relative" v-for="(service,id) in services" :class="{'sel_service': service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0, 'service_add_ons':service.cleaning_group==1 , 'mb-4':service.cleaning_group==2, 'active_service': preference_customer && preference_customer.includes(service.id_preference)  && detailingitem.status != 'Completed' , 'cleaning': group=='Cleaning Add-on'}" :id="'sub_service_'+service.id" @click="checkSubService(service.id)" :data-cleaning-service-id="service.id">
+                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center position-relative" v-for="(service,id) in services" :class="{'sel_service': service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0, 'is_preference':service.cleaning_group==2 && service.id_preference!=0 ,'service_add_ons':service.cleaning_group==1 , 'mb-4':service.cleaning_group==2, 'active_service': preference_customer && preference_customer.includes(service.id_preference)  && detailingitem.status != 'Completed' , 'cleaning': group=='Cleaning Add-on'}" :id="'sub_service_'+service.id" @click="checkSubService(service.id)" :data-cleaning-service-id="service.id">
                         <div class="d-block w-100 text-center">
-                            {{service.name}}<span v-if="service.cleaning_group==2" class="text-center d-block w-100">(&#163;{{service.fixed_price}})</span>
-
+                            {{service.name}}
+                            <span v-if="service.cleaning_group==2 && service.perc >= 0" class="text-center d-block w-100">(&#163;{{service.fixed_price}})</span>
+                            <span v-if="service.cleaning_group==2 && service.perc < 0">{{calculateNegativPerc(service)}}(&#163;{{service_perc}})</span>
                         </div>
                         <img src="/images/padlock.svg" class="position-absolute pref-disable-icon" v-if="service.cleaning_group==2 && service.isPrefActive==0"/>
                     </div>
@@ -276,6 +277,7 @@ export default {
         const price_value = ref('');
         const sel_tailoring_describe = ref('');
         const sel_clean_describe = ref('');
+        const service_perc = ref(0);
 
         sel_tailoring_describe.value = props.detailingitem.describeprixnowtailoring;
         sel_clean_describe.value = props.detailingitem.describeprixnow;
@@ -393,7 +395,7 @@ export default {
 
             let classes = Object.values(el.classList);
 
-            if(classes.includes('is_pref_disabled') && !classes.includes('sel_service')){
+            if(!classes.includes('sel_service') && classes.includes('is_preference')){
                 sel_addon_id.value = id;
                 addon_modal.value.showModal();
             }else{
@@ -959,6 +961,18 @@ export default {
         function closePriceNowAndDescribeModal(){
             pricenow_describe_modal.value.closeModal();
         }
+        function calculateNegativPerc(service){
+            if(props.detailingitem.cleaning_services != null){
+                if(!props.detailingitem.cleaning_services.includes(service.id)){
+                    let total_price_cleaning = ((props.detailingitem.dry_cleaning_price / 100) * service.perc).toFixed(2);
+                    service_perc.value = total_price_cleaning
+                }else{
+                    let previous_totla_cleaning = (props.detailingitem.dry_cleaning_price * 100) / (100 + service.perc)
+                    let total_price_cleaning = ((previous_totla_cleaning / 100) * service.perc).toFixed(2);
+                    service_perc.value = total_price_cleaning
+                }
+            }
+        }
 
         return {
             back,
@@ -995,7 +1009,9 @@ export default {
             priceNowAndDescribe,
             sel_tailoring_describe,
             sel_clean_describe,
-            getPreference
+            getPreference,
+            calculateNegativPerc,
+            service_perc
         };
     },
 }
