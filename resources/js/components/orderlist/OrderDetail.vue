@@ -878,7 +878,7 @@
 .options_btn{
     position: relative;
     width: auto;
-    padding: 0 0 0 13px;
+    padding: 0 13px 0 0;
 }
 .menu{
     display: flex;
