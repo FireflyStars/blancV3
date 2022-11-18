@@ -64,7 +64,7 @@
                                                         v-model="paymentMethod"
                                                         :options="[
                                                             { display:'Credit Card', value: 'Credit Card' },
-                                                            { display:'BACS', value: 'BACS' },
+                                                            // { display:'BACS', value: 'BACS' },
                                                         ]"
                                                         :placeholder="'Select'"
                                                         :label="'Payment Method'"
