@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\OrderRecurringCreator;
 use App\Http\Controllers\NotificationController;
 use App\Notification;
+use stdClass;
 
 class CustomerController extends Controller
 {
@@ -1344,7 +1345,7 @@ class CustomerController extends Controller
                                                              if($slot){
                                                                 $timeslot = $tranches_slots[$slot];
                                                                 $past_orders[$k][$i][$key]->order_right_time = $timeslot;
-                                                             }                                                         
+                                                             }
                                                          }
                                                          //leftTime
                                                          $tranche_left = $item->order_left_time;
@@ -3036,7 +3037,13 @@ class CustomerController extends Controller
                     $recipients[] = $email;
                 }
 
+                $attachment = new stdClass;
+                $attachment->url = \Illuminate\Support\Facades\URL::to("/inv-pdf")."?id=".$v->FactureID;
+                $attachment->nom = 'INV'.date('Ymd').'-'.sprintf('%04d', $v->id);
+                $attachment->mime_type = 'application/pdf';
+                $attachment_arr = (array) $attachment;
 
+                $attachments = [$attachment_arr];
 
                 if(!empty($recipients)){
                     foreach($recipients as $key=>$val){
@@ -3048,6 +3055,8 @@ class CustomerController extends Controller
                         $notification->TypeNotification ='EMAIL';
                         $notification->InfoOrder_id = $order_id;
                         $notification->CustomerID = $cust->CustomerID;
+                        $notification->email_attachements = json_encode($attachments);
+
                         if($notification->save()){
                             $sent = true;
                         }

@@ -761,6 +761,10 @@ Route::get('/unpaid-card-orders',function(Request $request){
         die('token not set');
     }
 
+    if($app_token != $token){
+        die('invalid token');
+    }
+
     $start = microtime(true);
 
     $orders_to_charge = [];
@@ -782,16 +786,29 @@ Route::get('/unpaid-card-orders',function(Request $request){
         ->get();
 
     if(count($orders) > 0){
+
+        $ctrl = new DetailingController();
         foreach($orders as $k=>$v){
+            if(!in_array($v->id, $orders_id)){
+                array_push($orders_id,$v->id);
+            }
+        }
+
+        foreach($orders_id as $k=>$v){
+            $ctrl->calculateCheckout($v);
+        }
+
+        $orders2 = DB::table('infoOrder')->whereIn('id',$orders_id)->get();
+
+        foreach($orders2 as $k=>$v){
+
             $orders_to_charge[$v->id] = ['TotalDue'=>$v->TotalDue,'CustomerID'=>$v->CustomerID];
 
             if(!in_array($v->CustomerID,$customers_to_charge)){
                 array_push($customers_to_charge,$v->CustomerID);
             }
 
-            if(!in_array($v->id, $orders_id)){
-                array_push($orders_id,$v->id);
-            }
+
         }
 
         /*
