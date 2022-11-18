@@ -1277,7 +1277,7 @@ class OrderListController extends Controller
      public function setInvoiceFulfilled(Request $request){
 
         $invoice_id = $request->post('invoice_id');
-        $endpoint = "http://routeapi.vpc-direct-service.com/fulfiled-v2.php";
+        $endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v2.php";
         //$endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v2-test.php";
         $client = new \GuzzleHttp\Client();
         $content = "";
@@ -1335,7 +1335,7 @@ class OrderListController extends Controller
 
 
 
-        $endpoint = "http://routeapi.vpc-direct-service.com/split-v1.php";
+        $endpoint = "http://blancspot.vpc-direct-service.com/split-v1.php";
         // $arr = http_build_query($items,"item[");
         $array_item = preg_replace('/\[\d/', '\\0]', $array_item);
         $client = new \GuzzleHttp\Client();

@@ -56,7 +56,8 @@
     </transition>
 
 
-    <button class="ar-btn" v-if="Object.values(customerList).length > 0" @click="loadInvoiceModal">Batch invoice</button>
+    <button class="ar-btn" v-if="Object.values(customerList).length > 0" @click="loadInvoiceModal('mail')">Email invoice(s)</button>
+    <button class="ar-btn" v-if="Object.values(customerList).length > 0" @click="loadInvoiceModal('pdf')">PDF invoice(s)</button>
 
     <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
         <div v-if="showlayer" class="back-layer"></div>
@@ -67,19 +68,31 @@
             <span class="close" id="addon_modal_close" @click="closeBatchInvoiceModal"></span>
         </template>
         <template #bheader>
-            <div class="bmodal-header py-4 text-center">Batch invoice</div>
+            <div class="bmodal-header py-4 text-center justify-content-center row mx-0" :class="{'pdf':sel_modal_type=='pdf','mail':sel_modal_type=='mail'}">
+                <div class="col-9" v-if="sel_modal_type=='mail'">Are you sure you want to send invoices to the following customers?</div>
+                <div class="col-9" v-if="sel_modal_type=='pdf'">Are you sure you want to generate PDF invoices to the following customers?</div>
+            </div>
         </template>
         <template #bcontent>
-
+            <div class="row justify-content-center py-4">
+                <div class="col-9" v-if="sel_modal_type=='mail'">
+                    This process will generate an invoice for all unpaid orders since the last invoice run, and send it to the customer’s billing email address
+                </div>
+                <div class="col-9" v-if="sel_modal_type=='pdf'">
+                    This process will generate and download a PDF invoice for all unpaid orders since the last invoice run, but will NOT send the invoices to the customer
+                </div>
+            </div>
         </template>
         <template #mbuttons>
             <div class="row mx-0 justify-content-center mt-3 mb-5">
                 <div class="col-5">
-                    <button class="btn btn-outline-dark w-100" @click="generateInvoice('mail')">Mail</button>
+                    <button class="btn btn-outline-danger w-100" @click="closeBatchInvoiceModal">No, cancel</button>
                 </div>
-                <div class="col-1"></div>
                 <div class="col-5">
-                    <button class="btn btn-outline-dark w-100" @click="generateInvoice('pdf')">Pdf</button>
+                    <button class="btn btn-outline-success w-100" @click="generateInvoice(sel_modal_type)">
+                        <span v-if="sel_modal_type=='mail'">Yes, submit</span>
+                        <span v-if="sel_modal_type=='pdf'">Yes, generate</span>
+                    </button>
                 </div>
             </div>
         </template>
@@ -127,6 +140,7 @@ export default {
         const filterDef = ref({});
         const customerList = ref([]);
         const invoice_modal = ref();
+        const sel_modal_type = ref('');
 
 
         const totalCustomerCount = ref(0);
@@ -308,11 +322,13 @@ export default {
 
         }
 
-        function loadInvoiceModal(){
+        function loadInvoiceModal(type){
+            sel_modal_type.value = type;
             invoice_modal.value.showModal();
         }
 
         function closeBatchInvoiceModal(){
+            sel_modal_type.value = '';
             invoice_modal.value.closeModal();
         }
 
@@ -428,6 +444,7 @@ export default {
             loadInvoiceModal,
             closeBatchInvoiceModal,
             generateInvoice,
+            sel_modal_type,
         }
     }
 }
@@ -523,9 +540,6 @@ export default {
         width: 100%;
         z-index: 9999;
     }
-</style>
-<style>
-
 
     .chkbox_wrap{
         margin-left:15px;
@@ -554,5 +568,18 @@ export default {
     .ar-btn:hover{
         background:#000;
         color:#fff;
+    }
+
+    .bmodal-header{
+        font:normal 18px "Gilroy";
+    }
+
+    .bmodal-header.mail{
+        color:#F4003D;
+        background:#FFEFED;
+    }
+
+    .bmodal-header.pdf{
+        background: #f8f8f8;
     }
 </style>
