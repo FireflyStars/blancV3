@@ -284,29 +284,26 @@
             </div>
         </div>
         <div class="mt-3 mb-5 row" v-if="(typeof ORDER['detail']!='undefined')">
-            <div class="col-4 options_btn" v-if="ORDER['items'].length !== 0">
-                <button class="btn btn-outline-dark body_medium" @click="openModal(ORDER['detail'].order_id)">Print ticket(s)</button>
-            </div>
+            <div class="col-8 d-flex">
+                <div class="col-4 options_btn">
+                    <button class="btn btn-outline-dark body_medium" @click="openModal(ORDER['detail'].order_id)">Print ticket(s)</button>
+                </div>
 
-            <div class="col-4 options_btn" v-if="ORDER['items'].length !== 0">
-                <button class="btn btn-outline-danger body_medium" @click="markaslate" v-if="ORDER['detail'].Status!='LATE'">Mark as late</button>
+                <div class="col-4 options_btn" v-if="ORDER['items'].length !== 0">
+                    <button class="btn btn-outline-danger body_medium" @click="markaslate" v-if="ORDER['detail'].Status!='LATE'">Mark as late</button>
+                </div>
+                <div class="col-4 options_btn" v-if="ORDER['items'].length === 0 && (ORDER['detail'].Status =='RECURRING' || ORDER['detail'].Status =='SCHEDULED' )">
+                    <button class="btn btn-outline-danger body_medium" @click="CancelBooking">Cancel booking</button>
+                </div> 
+                <div class="col-1 options_btn">
+                    <button @click="openOptions()" class="btn btn-outline-dark body_medium menu"><span>...</span></button>
+                    <OrderOptions v-if="show_options_btn" :user="ORDER['user']" :order="ORDER['detail']" :items="ORDER['items']"></OrderOptions>
+                </div>
+            </div>    
+            <div class="col-4 text-right">
+                <mini-checkout  :order_id="parseInt($route.params.order_id)" @reload-order-detail="reloadOrderDetail" v-if="showFulfillBtn"></mini-checkout>
             </div>
-             <div class="col-4 options_btn" v-if="ORDER['items'].length === 0">
-                <button class="btn btn-outline-dark body_medium" @click="openModal(ORDER['detail'].order_id)">Print ticket(s)</button>
-            </div>
-             <div class="col-4 options_btn" v-if="ORDER['items'].length === 0 && (ORDER['detail'].Status =='RECURRING' || ORDER['detail'].Status =='SCHEDULED' )">
-                <button class="btn btn-outline-danger body_medium" @click="CancelBooking">Cancel booking</button>
-            </div>
-
-            <div class="col-4 options_btn">
-                <mini-checkout :order_id="parseInt($route.params.order_id)" @reload-order-detail="reloadOrderDetail" v-if="showFulfillBtn"></mini-checkout>
-            </div>
-
-            <div class="col-1 options_btn">
-                <button @click="openOptions()" class="btn btn-outline-dark body_medium menu"><span>...</span></button>
-                <OrderOptions v-if="show_options_btn" :user="ORDER['user']" :order="ORDER['detail']" :items="ORDER['items']"></OrderOptions>
-            </div>
-            </div>
+        </div>
 
         <split-confirmation :show_conf="show_split_conf" @close="show_split_conf=false"></split-confirmation>
         <CancelBookingConfirmation v-if= "showModelCancelBooking" :show_modal="showModelCancelBooking" @close="showModelCancelBooking=false" :order = ORDER.detail></CancelBookingConfirmation>
@@ -881,12 +878,19 @@
 .options_btn{
     position: relative;
     width: auto;
+    padding: 0 0 0 13px;
 }
 .menu{
     display: flex;
     flex-direction: column;
     justify-content: center;
     height: 100%;
+    background: #F8F8F8;
+    border: 1px solid #47454B;
+    border-radius: 4px;
+}
+.menu:hover{
+    background-color: #47454B;
 }
 .menu span{
     font-size: 26px;

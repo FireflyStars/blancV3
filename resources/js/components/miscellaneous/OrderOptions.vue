@@ -109,10 +109,7 @@
         background-color: #EEEEEE;
     }
     .options{
-        bottom:100%;
-        right: 0;
-        /* top:56px;
-        right: -28px; */
+        top:56px;
         background: #F8F8F8;
         box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
         width: 298px;
