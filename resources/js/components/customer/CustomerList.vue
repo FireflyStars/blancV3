@@ -12,7 +12,7 @@
             <tbody>
             <transition-group name="list" appear>
                 <tr v-for="(customer, index) in customerList" :key="index" class="trow"
-                    :class="{current_sel:customer.id == CURRENT_SELECTED}"
+                    :class="{current_sel:customer.id == CURRENT_SELECTED  && route.params.customer_id > 0}"
                     @click="selectrow(customer.id)"
                 >
                     <!-- checkbox column -->
@@ -53,7 +53,7 @@
         </table>
     </transition>
     <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
-        <div v-if="showlayer" class="back-layer"></div>
+        <div v-if="showlayer" class="back-layer" @click="hideCustomerDetail"></div>
     </transition>
 </template>
 <script>
@@ -191,7 +191,7 @@ export default {
                 var area_code = phone.split("|")[0];
                 var number = phone.split("|")[1];
                 if(phone.split("|").length > 1)
-                    return '+' + area_code.replace(/\D/g, '') + ' ' + number.replace(/ /g, '').replace(/(\d{3})(\d{3})(\d{3,4})/, "$1 $2 $3");
+                    return '+' + area_code.replace(/\D/g, '') + ' ' + number.replace(/ /g, '').replace(/(\d{3})(\d{3})(\d{3,4})/, "$1 $2 $3").replace("]" , '');
                 else
                     return phone.replace(/\D/g, '').replace(/(\d{2})(\d{3})(\d{3})(\d{3,4})/, "+$1 $2 $3 $3");
             }
@@ -223,6 +223,15 @@ export default {
                 })
             }
         }
+        function hideCustomerDetail(event){
+                store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`,'');
+                store.commit(`${CUSTOMER_MODULE}${SET_CUSTOMER_DETAIL}`, {
+                    name: ''
+                });
+                router.push({
+                    name: 'Customer'
+                });
+        }
         return {
             route,
             CURRENT_SELECTED,
@@ -235,6 +244,7 @@ export default {
             loadMoreCustomer,
             checkboxclicked,
             selectrow,
+            hideCustomerDetail,
             showlayer: computed( ()=> {
                 return (route.params.customer_id > 0 && CURRENT_SELECTED.value != '');
                 // return false;

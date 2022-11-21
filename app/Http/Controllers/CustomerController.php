@@ -1091,11 +1091,15 @@ class CustomerController extends Controller
                     ->first();
                     if($customer->account_type == "Sub"){
                         $company = DB::table('infoCustomer')->select('infoCustomer.CompanyName')->where('infoCustomer.CustomerID','=',$customer->CustomerIDMaster)->first();
-                        $customer->CompanyName = $company->CompanyName;
+                        if($company){
+                            $customer->CompanyName = $company->CompanyName;
+                        }
                    }
                    else if($customer->account_type == "Main"){
                        $company = DB::table('infoCustomer')->select('infoCustomer.CompanyName')->where('infoCustomer.CustomerID','=',$customer->CustomerID)->first();
-                       $customer->CompanyName = $company->CompanyName;
+                       if($company){
+                        $customer->CompanyName = $company->CompanyName;
+                       }
                    }
 
         $total = DB::table('infoOrder')->where('CustomerID', $customer->CustomerID)
