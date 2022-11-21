@@ -66,11 +66,8 @@ class OrderListController extends Controller
         ->select( [
             'infoOrder.id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoOrder.TypeDelivery', 'infoOrder.DateDeliveryAsk','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold','infoOrder.deliverymethod','pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask','infoOrder.OrderID',
 
-            /* 'infoitems.id as item_id',
-                'infoitems.PromisedDate',
-            'infoInvoice.datesold'*/
 
-        //DB::raw('GROUP_CONCAT(infoitems.express) as express'),
+        //
         DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%d/%m/%Y") as DET'),
         //DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
         // DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
@@ -348,11 +345,39 @@ class OrderListController extends Controller
         $count_ready_suborders = [];
         $count_ready_suborders_by_orderid = [];
         $count_suborders_orderid = [];
+        $details_by_orderid = [];
 
         foreach ($orderlist as $order) {
             if(!in_array($order->OrderID,$order_ids)){
                 array_push($order_ids,$order->OrderID);
             }
+        }
+
+
+        if(!empty($order_ids)){
+            $orderdetails = DB::table('infoInvoice')
+                ->select(['infoInvoice.OrderID','infoitems.id as item_id','infoitems.PromisedDate',
+            'infoInvoice.datesold', DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
+                DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
+                DB::raw('IF(MAX(infoitems.PromisedDate) = "", "", MAX(infoitems.PromisedDate)) as PromisedDate')])
+                ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
+                ->whereIn('infoInvoice.OrderID',$order_ids)
+                ->get();
+
+            if(count($orderdetails) > 0){
+                foreach($orderdetails as $k=>$v){
+                    $details_by_orderid[$v->OrderID] = $v;
+                }
+            }
+
+            foreach($orderlist as $k=>$v){
+
+                $orderlist[$k]->Prod = (isset($details_by_orderid[$v->OrderID])?$details_by_orderid[$v->OrderID]->Prod:"");
+                $orderlist[$k]->Deliv = (isset($details_by_orderid[$v->OrderID])?$details_by_orderid[$v->OrderID]->Deliv:"");
+                $orderlist[$k]->item_id = (isset($details_by_orderid[$v->OrderID]->item_id)?$details_by_orderid[$v->OrderID]:"");
+                $orderlist[$k]->PromisedDate = (isset($details_by_orderid[$v->OrderID])?$details_by_orderid[$v->OrderID]->PromisedDate:"");
+            }
+
         }
 
 
@@ -362,7 +387,6 @@ class OrderListController extends Controller
 
             $sub_orders = DB::table('infoInvoice')
                 ->whereIn('OrderID', $order_ids)
-                //->whereIn('Status', ['READY','READY IN STORE','FULFILLED'])
                 ->get();
 
             if(count($sub_orders) > 0){
