@@ -287,7 +287,7 @@ export default {
                         if(type=='Save'){
                              context.emit("reload-checkout");
                         }else{
-                           //createItems();
+                           createItems();
                         }
 
                     });
