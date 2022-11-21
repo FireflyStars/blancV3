@@ -169,8 +169,9 @@ class OrderController extends Controller
                     'order_id'=>$new_order_id,
 
                 ];
-
-                $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
+                if($new_order['do_delivery']){
+                   $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
+                }
             }
 
             if($id_booking !=0){
@@ -241,7 +242,7 @@ class OrderController extends Controller
             ]);
 
 
-
+         if($new_order['hd_delivery']){
 
             $delivery_slot = $new_order['hd_delivery_timeslot'];
             $tranche_delivery = BookingController::getBookingDetailFromSlot($delivery_slot);
@@ -272,6 +273,7 @@ class OrderController extends Controller
                 'DeliveryaskID'=>$booking_hd_delivery->DeliveryaskID,
                 'DateDeliveryAsk'=>$new_order['hd_delivery']
             ]);
+         }
 
 
 
@@ -1288,9 +1290,46 @@ class OrderController extends Controller
        $ListInvoice=[];
        $infoitemsIds=[];
 
+           $orderInfo  =  DB::table('infoOrder')->where('infoOrder.id',$order_id)
+                        ->join('infoCustomer','infoOrder.CustomerID','infoCustomer.CustomerID')
+                        ->first();
+
+           $revenuInfo = DB::table('revenu')->select('revenu.*',
+                            DB::raw('ROUND(SUM(Total), 2) as Totalfinal'),
+                            DB::raw('ROUND(SUM(AccountDiscounts), 2)  as AccountDiscountsFinal'),
+                            DB::raw('ROUND(SUM(OrderDiscounts), 2)  as OrderDiscountsfinal'),
+                            DB::raw('ROUND(SUM(DeliveryFees), 2)  as DeliveryFeesFinal'),
+                            DB::raw('ROUND(SUM(ExpressCharge), 2)  as ExpressChargefinal'),
+                            DB::raw('ROUND(SUM(bundles), 2)  as bundlesFinal'),
+                            DB::raw('ROUND(SUM(FailedDeliveryCharge), 2)  as FailedDeliveryChargeFinal'),
+                        )
+                        ->where('revenu.order_id',$order_id)
+                        ->first();              
+        
+           $order_revenu = [
+                'OrderRevenueLocation'=> $orderInfo->OrderRevenueLocation,
+                'Total'=>($revenuInfo->Totalfinal?-($revenuInfo->Totalfinal):0),
+                'AccountDiscounts'=>($revenuInfo->AccountDiscountsFinal?-($revenuInfo->AccountDiscountsFinal):0),
+                'OrderDiscounts'=>($revenuInfo->OrderDiscountsfinal?-($revenuInfo->OrderDiscountsfinal):0),
+                'DeliveryFees'=>($revenuInfo->DeliveryFeesFinal?-($revenuInfo->DeliveryFeesFinal):0),
+                'ExpressCharge'=>($revenuInfo->ExpressChargefinal?-($revenuInfo->ExpressChargefinal):0),
+                'bundles'=>($revenuInfo->bundlesFinal?-($revenuInfo->bundlesFinal):0),
+                'FailedDeliveryCharge'=>($revenuInfo->FailedDeliveryChargeFinal?-($revenuInfo->FailedDeliveryChargeFinal):0),
+                'TypeDelivery'=>$orderInfo->TypeDelivery,
+                'CustomerID'=>$orderInfo->CustomerID,
+                'btob'=>$orderInfo->btob,
+                'order_id'=>$order_id,
+                'Status'=>"ADJVOID",
+                'users_id'=>Auth::user()->id,
+                'created_at'=>date('Y-m-d H:i:s')
+           ];
+   
+           DB::table('revenu')->insert($order_revenu);
+          
+
            $order =  DB::table('infoOrder')->where('infoOrder.id',$order_id)->update([
             'datevoid' =>date('Y-m-d H:i:s'),
-            'Status'   => "VOID ",
+            'Status'   => "VOID",
             'Total'    => 0,
          ]);
            foreach ($ListSubOrder as $suborder) {
