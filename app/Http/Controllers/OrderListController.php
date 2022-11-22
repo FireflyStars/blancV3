@@ -267,20 +267,21 @@ class OrderListController extends Controller
                     if(in_array('standard',$values)){
                         $express=array_merge($express,[0,2,3]);
                     }
-                if(in_array('exp24',$values)){
-                    $express=array_merge($express,[1,4,5]);
-                }
-                if(in_array('exp48',$values)){
-                    $express=array_merge($express,[6]);
-                }
-                if(!empty($express)){
-                    $orderlist->whereIn('OrderID',function($query) use($express){
-                        $query->select('infoInvoice.OrderID')
-                            ->from('infoInvoice')
-                            ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
-                            ->where('infoitems.express',$express)
-                            ->whereNotIn('infoitems.Status',['DELETE','VOID']);
-                    });
+                    if(in_array('exp24',$values)){
+                        $express=array_merge($express,[1,4,5]);
+                    }
+                    if(in_array('exp48',$values)){
+                        $express=array_merge($express,[6]);
+                    }
+                    if(!empty($express)){
+                        $orderlist->whereIn('OrderID',function($query) use($express){
+                            $query->select('infoInvoice.OrderID')
+                                ->from('infoInvoice')
+                                ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
+                                ->where('infoitems.express',$express)
+                                ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+                        });
+                    }
                 }
                 else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod'){
                     if(!empty($values))
@@ -304,8 +305,7 @@ class OrderListController extends Controller
                             ->whereNotIn('infoitems.Status',['DELETE','VOID']);
                     });
                 }
-
-                }else if($colname == 'infoOrder.DetDate' && !empty($values)){
+                else if($colname == 'infoOrder.DetDate' && !empty($values)){
                         $start_first_day = Carbon::parse($values[0])->startOfDay()->toDateTimeString();
                         $end_first_day = Carbon::parse($values[1])->endOfDay()->toDateTimeString();
                         $orderlist=$orderlist->whereBetween('infoOrder.detailed_at', [ $start_first_day , $end_first_day]);
@@ -399,7 +399,7 @@ class OrderListController extends Controller
                 }
 
                 foreach($count_ready_suborders as $order_id=>$invoiceids){
-                    $count_ready_suborders_by_orderid[$order_id] = count($v);
+                    $count_ready_suborders_by_orderid[$order_id] = count($invoiceids);
                 }
             }
         }
