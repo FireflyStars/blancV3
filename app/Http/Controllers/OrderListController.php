@@ -1249,7 +1249,7 @@ class OrderListController extends Controller
             DB::raw('IF(pickup.date ="2020-01-01" OR pickup.date ="2000-01-01" OR pickup.date ="","--",DATE_FORMAT(pickup.date , " %W %d %M %Y")) as PickupDateNew '),
             DB::raw('IF(infoOrder.DateDeliveryAsk ="2020-01-01" OR infoOrder.DateDeliveryAsk ="2000-01-01" OR infoOrder.DateDeliveryAsk ="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk , "%W %d %M %Y")) as DateDelivery '),
             DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate',
-            DB::raw('IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as cust_type'),
+            DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as cust_type'),
             DB::raw(
                 'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN "Store Drop Off"
                       WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN "Pickup"
