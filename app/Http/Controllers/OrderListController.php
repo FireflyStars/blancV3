@@ -64,10 +64,11 @@ class OrderListController extends Controller
         $orderlist=DB::table('infoOrder')
 
         ->select( [
-            'infoOrder.id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoOrder.TypeDelivery', 'infoOrder.DateDeliveryAsk','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold','infoOrder.deliverymethod','pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask','infoOrder.OrderID',
+            'infoOrder.id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoOrder.TypeDelivery', 'infoOrder.DateDeliveryAsk','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold','infoOrder.deliverymethod','infoOrder.OrderID',
 
 
-        //
+        'pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask',
+
         DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%d/%m/%Y") as DET'),
         //DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
         // DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
@@ -78,7 +79,8 @@ class OrderListController extends Controller
         DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'),
         DB::raw('IF(infoCustomer.OnAccount = 1, "On Account", "Pay As You Go") as payementType')
     ])
-        ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID)'))
+        //->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID)'))
+        ->join('infoCustomer','infoOrder.CustomerID','infoCustomer.CustomerID')
         ->leftJoin('pickup', 'infoOrder.id', '=', 'pickup.order_id')
         ->leftJoin('deliveryask', 'infoOrder.id', '=', 'deliveryask.order_id')
         ->where('infoOrder.OrderID','!=','')
@@ -96,7 +98,20 @@ class OrderListController extends Controller
                     ->where('infoitems.CCStatus','!=','');
 
             })
+
+            ->whereDate('infoOrder.DateDeliveryAsk', '<=', date('Y-m-d'))
+            ->whereNotIn('infoOrder.Status', ['DELIVERED', 'DELIVERD TO STORE', 'SOLD', 'DONATED', 'DONATED TO CHARITY', 'COLLECTED', 'VOIDED', 'FULFILLED', 'VOID', 'DELETE', 'SOLD'])
+            ->orWhere(function($query){
+                $query->where('infoOrder.Paid', 0)->where('infoCustomer.TypeDelivery','=','DELIVERY');
+            })->orWhere(function($query){
+                $query->whereIn('infoOrder.Status',['LATE','LATE DELIVERY','OVERDUE FOR COLLECTION','MISSED PICKUP','OVERDUE STORE','FAILED DELIVERY','FAILED PAYMENT','PART ON HOLD','PART PENDING'])
+                    ->where('infoOrder.DateDeliveryAsk','!=','2020-01-01');
+            });
+
+
+            /*
             ->where(
+
                 function($query) {
                     $query->where(function($query) {
                         $query->whereDate('infoOrder.DateDeliveryAsk', '<=', date('Y-m-d'));
@@ -108,6 +123,7 @@ class OrderListController extends Controller
                             ->where('infoOrder.DateDeliveryAsk','!=','2020-01-01');
                     });
                 });
+                //*/
 
         }
 
@@ -187,10 +203,15 @@ class OrderListController extends Controller
         }
         */
 
-        if($current_tab=='with_partner')
-        $orderlist=$orderlist->where('infoitems.idPartner','!=','0')
-            ->where('infoitems.PartnerINOUT','=','1');
-
+        if($current_tab=='with_partner'){
+            $orderlist->whereIn('infoOrder.OrderID',function($query){
+                $query->select('infoInvoice.OrderID')
+                    ->from('infoInvoice')
+                    ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
+                    ->where('infoitems.idPartner','!=','0')
+                    ->where('infoitems.PartnerINOUT','=','1');
+            });
+        }
         if($current_tab=='due_today')
             $orderlist=$orderlist->whereDate('infoOrder.dateprod','=',date('Y-m-d'));
 
@@ -202,8 +223,14 @@ class OrderListController extends Controller
         }
         if($current_tab=='without_delivery_date'){
             $orderlist=$orderlist->whereNotIn('infoOrder.status',['DELIVERED', 'DELIVERD TO STORE', 'SOLD', 'DONATED', 'DONATED TO CHARITY', 'COLLECTED','VOIDED','FULFILLED'])
-                ->where('infoOrder.DateDeliveryAsk','<=',date('Y-m-d'))
-                ->where('infoitems.ItemTrackingKey','<>','');
+                ->where('infoOrder.DateDeliveryAsk','<=',date('Y-m-d'));
+            $orderlist->where('infoOrder.OrderID',function($query){
+                $query->select('infoInvoice.OrderID')
+                    ->from('infoInvoice')
+                    ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
+                    ->where('infoitems.ItemTrackingKey','<>','');
+            });
+
         }
         if($current_tab!='all_orders')
             $orderlist=$orderlist->whereNotIn('infoOrder.Status',['VOID', 'DELETE']);
@@ -267,20 +294,21 @@ class OrderListController extends Controller
                     if(in_array('standard',$values)){
                         $express=array_merge($express,[0,2,3]);
                     }
-                if(in_array('exp24',$values)){
-                    $express=array_merge($express,[1,4,5]);
-                }
-                if(in_array('exp48',$values)){
-                    $express=array_merge($express,[6]);
-                }
-                if(!empty($express)){
-                    $orderlist->whereIn('OrderID',function($query) use($express){
-                        $query->select('infoInvoice.OrderID')
-                            ->from('infoInvoice')
-                            ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
-                            ->where('infoitems.express',$express)
-                            ->whereNotIn('infoitems.Status',['DELETE','VOID']);
-                    });
+                    if(in_array('exp24',$values)){
+                        $express=array_merge($express,[1,4,5]);
+                    }
+                    if(in_array('exp48',$values)){
+                        $express=array_merge($express,[6]);
+                    }
+                    if(!empty($express)){
+                        $orderlist->whereIn('OrderID',function($query) use($express){
+                            $query->select('infoInvoice.OrderID')
+                                ->from('infoInvoice')
+                                ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
+                                ->where('infoitems.express',$express)
+                                ->whereNotIn('infoitems.Status',['DELETE','VOID']);
+                        });
+                    }
                 }
                 else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod'){
                     if(!empty($values))
@@ -304,8 +332,7 @@ class OrderListController extends Controller
                             ->whereNotIn('infoitems.Status',['DELETE','VOID']);
                     });
                 }
-
-                }else if($colname == 'infoOrder.DetDate' && !empty($values)){
+                else if($colname == 'infoOrder.DetDate' && !empty($values)){
                         $start_first_day = Carbon::parse($values[0])->startOfDay()->toDateTimeString();
                         $end_first_day = Carbon::parse($values[1])->endOfDay()->toDateTimeString();
                         $orderlist=$orderlist->whereBetween('infoOrder.detailed_at', [ $start_first_day , $end_first_day]);
@@ -346,6 +373,8 @@ class OrderListController extends Controller
         $count_ready_suborders_by_orderid = [];
         $count_suborders_orderid = [];
         $details_by_orderid = [];
+        $deliveryask_by_orderid = [];
+        $pickup_by_order_id = [];
 
         foreach ($orderlist as $order) {
             if(!in_array($order->OrderID,$order_ids)){
@@ -399,7 +428,7 @@ class OrderListController extends Controller
                 }
 
                 foreach($count_ready_suborders as $order_id=>$invoiceids){
-                    $count_ready_suborders_by_orderid[$order_id] = count($v);
+                    $count_ready_suborders_by_orderid[$order_id] = count($invoiceids);
                 }
             }
         }
@@ -410,6 +439,9 @@ class OrderListController extends Controller
 
 
         foreach ($orderlist as $order) {
+            //$order->status_pickup = "";
+            //$order->status_deliveryask = "";
+
             $order->subOrderCount = (isset($count_suborders_orderid[$order->OrderID])?count($count_suborders_orderid[$order->OrderID]):0);
 
             $order->ready_sub_orders = (isset($count_ready_suborders_by_orderid[$order->OrderID])?$count_ready_suborders_by_orderid[$order->OrderID]:0);
@@ -1224,7 +1256,7 @@ class OrderListController extends Controller
             DB::raw('IF(pickup.date ="2020-01-01" OR pickup.date ="2000-01-01" OR pickup.date ="","--",DATE_FORMAT(pickup.date , " %W %d %M %Y")) as PickupDateNew '),
             DB::raw('IF(infoOrder.DateDeliveryAsk ="2020-01-01" OR infoOrder.DateDeliveryAsk ="2000-01-01" OR infoOrder.DateDeliveryAsk ="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk , "%W %d %M %Y")) as DateDelivery '),
             DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'),'infoOrder.OrderID','infoOrder.suggestedDeliveryDate',
-            DB::raw('IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as cust_type'),
+            DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as cust_type'),
             DB::raw(
                 'CASE WHEN infoOrder.deliverymethod = "in_store_collection" OR infoOrder.TypeDelivery <> "DELIVERY" THEN "Store Drop Off"
                       WHEN infoOrder.deliverymethod = "home_delivery" OR (infoOrder.TypeDelivery="DELIVERY" AND infoOrder.deliverymethod = "") THEN "Pickup"

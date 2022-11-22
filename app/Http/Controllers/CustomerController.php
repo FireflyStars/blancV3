@@ -953,7 +953,7 @@ class CustomerController extends Controller
                 $join->on( 'infoOrder.CustomerID', '=', 'infoCustomer.CustomerID');
             })
             ->select('infoCustomer.id',
-              DB::raw(' IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as type'),
+              DB::raw(' IF(infoCustomer.btob = 0, "B2C", "B2B") as type'),
               DB::raw(
                 'CASE WHEN (infoCustomer.isMaster = 1 OR infoCustomer.CustomerIDMaster = "") AND infoCustomer.isMasterAccount = 0  THEN "Main"
                       WHEN infoCustomer.isMasterAccount = 1 THEN "Master"
@@ -994,7 +994,7 @@ class CustomerController extends Controller
                         })
                         ->select(
                             'infoCustomer.id',
-                            DB::raw('IF(infoCustomer.CustomerIDMaster = "" AND infoCustomer.CustomerIDMasterAccount = "" AND infoCustomer.IsMaster = 0 AND infoCustomer.IsMasterAccount = 0, "B2C", "B2B") as type'),
+                            DB::raw(' IF(infoCustomer.btob = 0, "B2C", "B2B") as type'),
                             DB::raw(
                                 'CASE WHEN (infoCustomer.isMaster = 1 OR infoCustomer.CustomerIDMaster = "") AND infoCustomer.isMasterAccount = 0  THEN "Main"
                                       WHEN infoCustomer.isMasterAccount = 1 THEN "Master"
@@ -1016,18 +1016,10 @@ class CustomerController extends Controller
                         ->orderBy('infoCustomer.id', 'DESC');
         }
         if($request->selected_nav == 'B2B' || $request->customer_type == 'B2B'){
-            $customers = $customers->where( function( $query ) {
-                $query->where('infoCustomer.CustomerIDMaster', '!=', '')
-                    ->orWhere('infoCustomer.CustomerIDMasterAccount', '!=', '')
-                    ->orWhere('infoCustomer.IsMaster', 1)
-                    ->orWhere('infoCustomer.IsMasterAccount', 1);
-            });
+            $customers = $customers->where('infoCustomer.btob', 1);
         }
         if($request->selected_nav == 'B2C' || $request->customer_type == 'B2C'){
-            $customers = $customers->where('infoCustomer.CustomerIDMaster', '')
-                            ->where('infoCustomer.CustomerIDMasterAccount', '')
-                            ->where('infoCustomer.IsMaster', 0)
-                            ->where('infoCustomer.IsMasterAccount', 0);
+            $customers = $customers->where('infoCustomer.btob', 0);
         }
         if( $request->customer_location !='' ){
             $customers = $customers->where('infoCustomer.TypeDelivery', $request->customer_location);
