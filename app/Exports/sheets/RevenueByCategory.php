@@ -72,20 +72,20 @@ class RevenueByCategory implements FromCollection, WithTitle, WithColumnWidths, 
         foreach ($salesData as  $item) {
             $data[] = [ $item->channel, $item->amount, $item->count ];
         }
-        $salesByTypeitemTotal = InfoOrder::whereBetween('detailed_at', $this->period)
-            ->where('deliverymethod', '!=','')
-            ->select(
-                DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount')
-            )
-            ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING', 'VOID', 'VOIDED', 'CANCEL', 'PENDING', 'DELETED'])
-            ->value('amount');
-        $salesByTypeitemTotalOfItem = DB::table('detailingitem')
-            ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
-            ->whereBetween('infoOrder.detailed_at', $this->period)
-            ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-            ->select(
-                DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price), 2), 0) as amount')
-            )->value('amount');
+        // $salesByTypeitemTotal = InfoOrder::whereBetween('detailed_at', $this->period)
+        //     ->where('deliverymethod', '!=','')
+        //     ->select(
+        //         DB::raw('IFNULL(ROUND(SUM(total), 2), 0) as amount')
+        //     )
+        //     ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING', 'VOID', 'VOIDED', 'CANCEL', 'PENDING', 'DELETED'])
+        //     ->value('amount');
+        // $salesByTypeitemTotalOfItem = DB::table('detailingitem')
+        //     ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
+        //     ->whereBetween('infoOrder.detailed_at', $this->period)
+        //     ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+        //     ->select(
+        //         DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price), 2), 0) as amount')
+        //     )->value('amount');
 
         $accountDiscount = DB::table('revenu')
             ->whereBetween('created_at', $this->period)
@@ -123,6 +123,12 @@ class RevenueByCategory implements FromCollection, WithTitle, WithColumnWidths, 
             ->select(
                 DB::raw('IFNULL(ROUND(SUM(FailedDeliveryCharge), 2), 0) as amount')
             )->value('amount');
+        $total = DB::table('revenu')
+            ->whereBetween('created_at', $this->period)
+            ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+            ->select(
+                DB::raw('IFNULL(ROUND(SUM(Total), 2), 0) as amount')
+            )->value('amount');
         $data[] = ['Sub-Total (Item Sales)', $salesData->sum('amount'), $salesData->sum('count')];
         $data[] = ['Account discounts', $accountDiscount, ''];
         $data[] = ['Order discounts', $orderDiscount, ''];
@@ -131,8 +137,8 @@ class RevenueByCategory implements FromCollection, WithTitle, WithColumnWidths, 
         $data[] = ['Express Charge', $expressCharge, ''];
         $data[] = ['Bundles', $bundles, ''];
         $data[] = ['Failed Delivery Fees', $failedDeliveryCharge, ''];
-        $data[] = ['Other', $salesByTypeitemTotal - $salesByTypeitemTotalOfItem, ''];
-        $data[] = ['Total (incl discount & add. fees)', $salesData->sum('amount'), $salesData->sum('count')];
+        $data[] = ['Other', $total - $salesData->sum('amount'), ''];
+        $data[] = ['Total (incl discount & add. fees)', $total, $salesData->sum('count')];
         $data[] = ['growth % vs prev year', ($salesTotalToCompareYearMode->amount != 0 ? ($salesTotal/$salesTotalToCompareYearMode->amount - 1)*100 : '--'), ($salesTotalToCompareYearMode->count != 0 ? ($salesData->sum('count')/$salesTotalToCompareYearMode->count -1)*100 : '--')];
         $data[] = ['growth % vs prev month', ($salesTotalToCompareMonthMode->amount != 0 ? ($salesTotal/$salesTotalToCompareMonthMode->amount - 1)*100 : '--'), ($salesTotalToCompareMonthMode->count != 0 ? ($salesData->sum('count')/$salesTotalToCompareMonthMode->count -1)*100 : '--')];
         return collect([ $data ]);
