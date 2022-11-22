@@ -96,7 +96,20 @@ class OrderListController extends Controller
                     ->where('infoitems.CCStatus','!=','');
 
             })
+
+            ->whereDate('infoOrder.DateDeliveryAsk', '<=', date('Y-m-d'))
+            ->whereNotIn('infoOrder.Status', ['DELIVERED', 'DELIVERD TO STORE', 'SOLD', 'DONATED', 'DONATED TO CHARITY', 'COLLECTED', 'VOIDED', 'FULFILLED', 'VOID', 'DELETE', 'SOLD'])
+            ->orWhere(function($query){
+                $query->where('infoOrder.Paid', 0)->where('infoCustomer.TypeDelivery','=','DELIVERY');
+            })->orWhere(function($query){
+                $query->whereIn('infoOrder.Status',['LATE','LATE DELIVERY','OVERDUE FOR COLLECTION','MISSED PICKUP','OVERDUE STORE','FAILED DELIVERY','FAILED PAYMENT','PART ON HOLD','PART PENDING'])
+                    ->where('infoOrder.DateDeliveryAsk','!=','2020-01-01');
+            });
+
+
+            /*
             ->where(
+
                 function($query) {
                     $query->where(function($query) {
                         $query->whereDate('infoOrder.DateDeliveryAsk', '<=', date('Y-m-d'));
@@ -108,6 +121,7 @@ class OrderListController extends Controller
                             ->where('infoOrder.DateDeliveryAsk','!=','2020-01-01');
                     });
                 });
+                //*/
 
         }
 
@@ -187,10 +201,15 @@ class OrderListController extends Controller
         }
         */
 
-        if($current_tab=='with_partner')
-        $orderlist=$orderlist->where('infoitems.idPartner','!=','0')
-            ->where('infoitems.PartnerINOUT','=','1');
-
+        if($current_tab=='with_partner'){
+            $orderlist->whereIn('infoOrder.OrderID',function($query){
+                $query->select('infoInvoice.OrderID')
+                    ->from('infoInvoice')
+                    ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
+                    ->where('infoitems.idPartner','!=','0')
+                    ->where('infoitems.PartnerINOUT','=','1');
+            });
+        }
         if($current_tab=='due_today')
             $orderlist=$orderlist->whereDate('infoOrder.dateprod','=',date('Y-m-d'));
 
@@ -202,8 +221,14 @@ class OrderListController extends Controller
         }
         if($current_tab=='without_delivery_date'){
             $orderlist=$orderlist->whereNotIn('infoOrder.status',['DELIVERED', 'DELIVERD TO STORE', 'SOLD', 'DONATED', 'DONATED TO CHARITY', 'COLLECTED','VOIDED','FULFILLED'])
-                ->where('infoOrder.DateDeliveryAsk','<=',date('Y-m-d'))
-                ->where('infoitems.ItemTrackingKey','<>','');
+                ->where('infoOrder.DateDeliveryAsk','<=',date('Y-m-d'));
+            $orderlist->where('infoOrder.OrderID',function($query){
+                $query->select('infoInvoice.OrderID')
+                    ->from('infoInvoice')
+                    ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
+                    ->where('infoitems.ItemTrackingKey','<>','');
+            });
+
         }
         if($current_tab!='all_orders')
             $orderlist=$orderlist->whereNotIn('infoOrder.Status',['VOID', 'DELETE']);
