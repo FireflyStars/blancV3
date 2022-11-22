@@ -620,46 +620,77 @@ class StatisticsController extends Controller
         $salesByTypeitemTotal = 0;
         $salesByTypeitemTotalOfItem = 0;
         if($salesType == 'channel'){
-            $salesByChannel = InfoOrder::whereBetween('detailed_at', $period)
-                                    ->where('deliverymethod', '!=','')
+            // $salesByChannel = InfoOrder::whereBetween('detailed_at', $period)
+            //                         ->where('deliverymethod', '!=','')
+            //                         ->select(
+            //                             DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount'), 'TypeDelivery as channel'
+            //                         )
+            //                         ->where('infoOrder.TypeDelivery', '!=', 'DELIVERY')
+            //                         ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+            //                         ->groupBy('TypeDelivery')->orderBy('amount', 'DESC')->get();
+            // $b2bDelivery = InfoOrder::join('infoCustomer', function($join){
+            //                         $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
+            //                     })
+            //                     ->whereBetween('detailed_at', $period)
+            //                     ->where('infoOrder.deliverymethod', '!=','')
+            //                     ->where('infoOrder.TypeDelivery', 'DELIVERY')
+            //                     ->where('infoCustomer.btob', 1)
+            //                     ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+            //                     ->select(
+            //                         DB::raw('IFNULL(ROUND(SUM(infoOrder.total)), 0) as amount')
+            //                     )
+            //                     ->value('amount');
+            // $salesByChannel->push(collect(['channel'=> 'B2B Deliveries', 'amount'=>$b2bDelivery]));
+            // $b2cDelivery = InfoOrder::join('infoCustomer', function($join){
+            //                         $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
+            //                     })
+            //                     ->whereBetween('infoOrder.detailed_at', $period)
+            //                     ->where('infoOrder.deliverymethod', '!=','')
+            //                     ->where('infoOrder.TypeDelivery', 'DELIVERY')
+            //                     ->where('infoCustomer.btob', 0)
+            //                     ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+            //                     ->select(
+            //                         DB::raw('IFNULL(ROUND(SUM(infoOrder.total)), 0) as amount')
+            //                     )
+            //                     ->value('amount');
+            // $salesByChannel->push(collect(['channel'=> 'B2C Deliveries', 'amount'=>$b2cDelivery]));
+            // $salesByChannelTotal = $salesByChannel->sum('amount');
+            // $salesByChannelTotalToCompare =  InfoOrder::whereBetween('detailed_at', $past_period)
+            //                                     ->where('deliverymethod', '!=','')
+            //                                     ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+            //                                     ->select(
+            //                                         DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
+            //                                     )->value('amount');
+            $salesByChannel = DB::table('revenu')->whereBetween('created_at', $period)
                                     ->select(
-                                        DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount'), 'TypeDelivery as channel'
+                                        DB::raw('IFNULL(ROUND(SUM(Total)), 0) as amount'), 'TypeDelivery as channel'
                                     )
-                                    ->where('infoOrder.TypeDelivery', '!=', 'DELIVERY')
-                                    ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                                    ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                                    ->where('TypeDelivery', '!=', 'DELIVERY')
                                     ->groupBy('TypeDelivery')->orderBy('amount', 'DESC')->get();
-            $b2bDelivery = InfoOrder::join('infoCustomer', function($join){
-                                    $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
-                                })    
-                                ->whereBetween('detailed_at', $period)            
-                                ->where('infoOrder.deliverymethod', '!=','')
-                                ->where('infoOrder.TypeDelivery', 'DELIVERY')
-                                ->where('infoCustomer.btob', 1)
-                                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+            $b2bDelivery = DB::table('revenu')->whereBetween('created_at', $period)
+                                ->where('TypeDelivery', 'DELIVERY')
+                                ->where('btob', 1)
+                                ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                                 ->select(
-                                    DB::raw('IFNULL(ROUND(SUM(infoOrder.total)), 0) as amount')
+                                    DB::raw('IFNULL(ROUND(SUM(Total)), 0) as amount')
                                 )
                                 ->value('amount');
             $salesByChannel->push(collect(['channel'=> 'B2B Deliveries', 'amount'=>$b2bDelivery]));
-            $b2cDelivery = InfoOrder::join('infoCustomer', function($join){
-                                    $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
-                                })    
-                                ->whereBetween('infoOrder.detailed_at', $period)            
-                                ->where('infoOrder.deliverymethod', '!=','')
-                                ->where('infoOrder.TypeDelivery', 'DELIVERY')
-                                ->where('infoCustomer.btob', 0)
-                                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+            $b2cDelivery = DB::table('revenu')->whereBetween('created_at', $period)
+                                ->where('TypeDelivery', 'DELIVERY')
+                                ->where('btob', 0)
+                                ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                                 ->select(
-                                    DB::raw('IFNULL(ROUND(SUM(infoOrder.total)), 0) as amount')
+                                    DB::raw('IFNULL(ROUND(SUM(Total)), 0) as amount')
                                 )
                                 ->value('amount');
             $salesByChannel->push(collect(['channel'=> 'B2C Deliveries', 'amount'=>$b2cDelivery]));
             $salesByChannelTotal = $salesByChannel->sum('amount');
-            $salesByChannelTotalToCompare =  InfoOrder::whereBetween('detailed_at', $past_period)
-                                                ->where('deliverymethod', '!=','')
-                                                ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+            $salesByChannelTotalToCompare =  DB::table('revenu')->whereBetween('created_at', $past_period)
+                                                ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                                                 ->select(
-                                                    DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
+                                                    DB::raw('IFNULL(ROUND(SUM(Total)), 0) as amount')
                                                 )->value('amount');
         }else if($salesType == 'department'){
             $salesByChannel = DB::table('detailingitem')->join('departments', 'departments.id', '=', 'detailingitem.department_id')
@@ -727,7 +758,7 @@ class StatisticsController extends Controller
                             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                             ->select(
                                 DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
-                            )->value('amount');                            
+                            )->value('amount');
             $salesByTypeitemTotalOfItem = DB::table('detailingitem')
                             ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
                             ->whereBetween('infoOrder.detailed_at', $period)
@@ -755,7 +786,7 @@ class StatisticsController extends Controller
                             ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                             ->select(
                                 DB::raw('IFNULL(ROUND(SUM(total)), 0) as amount')
-                            )->value('amount');                                  
+                            )->value('amount');
             $salesByTypeitemTotalOfItem = DB::table('detailingitem')
                             ->join('infoOrder', 'infoOrder.id', '=', 'detailingitem.order_id')
                             ->whereBetween('infoOrder.detailed_at', $period)
@@ -866,167 +897,107 @@ class StatisticsController extends Controller
                                 DB::raw('count(*) as amount')
                             )->value('amount');
         }
-        $b2bAVGSale = InfoOrder::whereBetween('detailed_at', $period)
-                        ->join('infoCustomer', function($join){
-                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
-                        })
-                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                        ->where('infoOrder.deliverymethod', '!=', '')
-                        ->where('infoOrder.total', '!=', 0)
-                        ->where('infoCustomer.btob', '=', 1)
-                        ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
-        $b2cAVGSale = InfoOrder::whereBetween('detailed_at', $period)
-                        ->join('infoCustomer', function($join){
-                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
-                        })
-                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                        ->where('infoOrder.deliverymethod', '!=', '')
-                        ->where('infoOrder.total', '!=', 0)
-                        ->where('infoCustomer.btob', '=', 0)
-                        ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
-        $corpDel = InfoOrder::whereBetween('detailed_at', $period)
-                        ->join('infoCustomer', function($join){
-                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
-                        })
-                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                        ->where('infoOrder.deliverymethod', '!=','')
-                        ->where('infoOrder.deliverymethod', '!=', 'in_store_collection')
-                        ->where('infoOrder.total', '!=', 0)
-                        ->where('infoCustomer.btob', 1)
-                        ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
-        $homeDel = InfoOrder::whereBetween('detailed_at', $period)
-                        ->join('infoCustomer', function($join){
-                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')->where('infoOrder.CustomerID', '!=', '');
-                        })
-                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                        ->where('infoOrder.deliverymethod', '!=','')
-                        ->where('infoOrder.deliverymethod', '!=', 'in_store_collection')
-                        ->where('infoOrder.total', '!=', 0)
-                        ->where('infoCustomer.btob', 0)
-                        ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
-        $storeDel = InfoOrder::whereBetween('detailed_at', $period)
-                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                        ->where('infoOrder.deliverymethod', 'in_store_collection')
-                        ->where('infoOrder.total', '!=', 0)
-                        ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
+        $b2bAVGSale = DB::table('revenu')->whereBetween('created_at', $period)
+                        ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->where('Total', '!=', 0)
+                        ->where('btob', '=', 1)
+                        ->select(DB::raw('ROUND(AVG(Total), 2) as total'))->value('total') ?? 0;
+        $b2cAVGSale = DB::table('revenu')->whereBetween('created_at', $period)
+                        ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->where('Total', '!=', 0)
+                        ->where('btob', '=', 0)
+                        ->select(DB::raw('ROUND(AVG(Total), 2) as total'))->value('total') ?? 0;
+        $corpDel = DB::table('revenu')->whereBetween('created_at', $period)
+                        ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->where('OrderRevenueLocation', '!=', 'DELIVERY')
+                        ->where('Total', '!=', 0)
+                        ->where('btob', 1)
+                        ->select(DB::raw('ROUND(AVG(Total), 2) as total'))->value('total') ?? 0;
+        $homeDel = DB::table('revenu')->whereBetween('created_at', $period)
+                        ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->where('OrderRevenueLocation', '!=', 'DELIVERY')
+                        ->where('Total', '!=', 0)
+                        ->where('btob', 0)
+                        ->select(DB::raw('ROUND(AVG(Total), 2) as total'))->value('total') ?? 0;
+        $storeDel = DB::table('revenu')->whereBetween('created_at', $period)
+                        ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->where('OrderRevenueLocation', 'DELIVERY')
+                        ->where('Total', '!=', 0)
+                        ->select(DB::raw('ROUND(AVG(Total), 2) as total'))->value('total') ?? 0;
 
-        $avgOrder = InfoOrder::whereBetween('detailed_at', $period)
-                        ->where('infoOrder.deliverymethod', '!=','')
-                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                        ->where('infoOrder.total', '!=', 0)
-                        ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
+        $avgOrder = DB::table('revenu')->whereBetween('created_at', $period)
+                        ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->where('Total', '!=', 0)
+                        ->select(DB::raw('ROUND(AVG(Total), 2) as total'))->value('total') ?? 0;
+        $avgOrderToCompare = DB::table('revenu')->whereBetween('created_at', $past_period)
+                        ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->where('Total', '!=', 0)
+                        ->select(DB::raw('ROUND(AVG(Total), 2) as total'))->value('total') ?? 0;
 
-        $avgOrderToCompare = InfoOrder::whereBetween('detailed_at', $past_period)
-                        ->where('infoOrder.deliverymethod', '!=','')
-                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                        ->where('infoOrder.total', '!=', 0)
-                        ->select(DB::raw('ROUND(AVG(infoOrder.total), 2) as total'))->value('total') ?? 0;
-
-        $allSaleData = InfoOrder::whereBetween('detailed_at', $period)
-                        ->where('deliverymethod', '!=','')
-                        ->where('total', '!=', 0)
-                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+        $allSaleData = DB::table('revenu')->whereBetween('created_at', $period)
+                        ->where('Total', '!=', 0)
+                        ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->select(
-                            DB::raw('ROUND(SUM(total), 2) as amount'),
-                            DB::raw('DATE_FORMAT(detailed_at, "%Y-%m-%d") as date')
+                            DB::raw('ROUND(SUM(Total), 2) as amount'),
+                            DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d") as date')
                         )
                         ->groupBy('date')->get();
-        $corpDelSaleData = InfoOrder::whereBetween('detailed_at', $period)
-                        ->join('infoCustomer', function($join){
-                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
-                                ->where('infoOrder.CustomerID', '!=', '');
-                                // ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
-                        })
-                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                        ->where('infoOrder.deliverymethod', '!=', '')
-                        ->where('infoOrder.deliverymethod', 'home_delivery')
-                        ->where('infoOrder.total', '!=', 0)
-                        ->where('infoCustomer.btob', 1)
+        $corpDelSaleData = DB::table('revenu')->whereBetween('created_at', $period)
+                        ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->where('OrderRevenueLocation', '!=', 'DELIVERY')
+                        ->where('Total', '!=', 0)
+                        ->where('btob', 1)
                         ->select(
-                            DB::raw('ROUND(SUM(infoOrder.total), 2) as amount'),
-                            DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%Y-%m-%d") as date')
+                            DB::raw('ROUND(SUM(Total), 2) as amount'),
+                            DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d") as date')
                         )
                         ->groupBy('date')->get();
-        $homeDelSaleData = InfoOrder::whereBetween('detailed_at', $period)
-                        ->join('infoCustomer', function($join){
-                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
-                                ->where('infoOrder.CustomerID', '!=', '');
-                                // ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
-                        })
-                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                        ->where('infoOrder.deliverymethod', '!=', '')
-                        ->where('infoOrder.deliverymethod', 'home_delivery')
-                        ->where('infoOrder.total', '!=', 0)
-                        ->where('infoCustomer.btob', 0)
+        $homeDelSaleData = DB::table('revenu')->whereBetween('created_at', $period)
+                        ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->where('OrderRevenueLocation', '!=', 'DELIVERY')
+                        ->where('Total', '!=', 0)
+                        ->where('btob', 0)
                         ->select(
-                            DB::raw('ROUND(SUM(infoOrder.total), 2) as amount'),
-                            DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%Y-%m-%d") as date')
+                            DB::raw('ROUND(SUM(Total), 2) as amount'),
+                            DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d") as date')
                         )
                         ->groupBy('date')->get();
-        $MBSaleData = InfoOrder::whereBetween('detailed_at', $period)
-                        ->join('infoCustomer', function($join){
-                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
-                                ->where('infoOrder.CustomerID', '!=', '')
-                                ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
-                        })
-                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                        // ->where('infoOrder.deliverymethod', 'in_store_collection')
-                        ->where('infoOrder.deliverymethod', '!=', '')
-                        ->where('infoOrder.TypeDelivery', 'MARYLEBONE')
-                        ->where('infoOrder.total', '!=', 0)
+        $MBSaleData = DB::table('revenu')->whereBetween('created_at', $period)
+                        ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->where('TypeDelivery', 'MARYLEBONE')
+                        ->where('Total', '!=', 0)
                         ->select(
-                            DB::raw('ROUND(SUM(infoOrder.total), 2) as amount'),
-                            DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%Y-%m-%d") as date')
+                            DB::raw('ROUND(SUM(Total), 2) as amount'),
+                            DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d") as date')
                         )
                         ->groupBy('date')->get();
 
-        $NHSaleData = InfoOrder::whereBetween('detailed_at', $period)
-                        ->join('infoCustomer', function($join){
-                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
-                                ->where('infoOrder.CustomerID', '!=', '')
-                                ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
-                        })
-                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                        // ->where('infoOrder.deliverymethod', 'in_store_collection')
-                        ->where('infoOrder.deliverymethod', '!=', '')
-                        ->where('infoOrder.TypeDelivery', 'NOTTING HILL')
-                        ->where('infoOrder.total', '!=', 0)
+        $NHSaleData = DB::table('revenu')->whereBetween('created_at', $period)
+                        ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->where('TypeDelivery', 'NOTTING HILL')
+                        ->where('Total', '!=', 0)
                         ->select(
-                            DB::raw('ROUND(SUM(infoOrder.total), 2) as amount'),
-                            DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%Y-%m-%d") as date')
+                            DB::raw('ROUND(SUM(Total), 2) as amount'),
+                            DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d") as date')
                         )
                         ->groupBy('date')->get();
 
-        $CHSaleData = InfoOrder::whereBetween('detailed_at', $period)
-                        ->join('infoCustomer', function($join){
-                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
-                                ->where('infoOrder.CustomerID', '!=', '')
-                                ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
-                        })
-                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                        // ->where('infoOrder.deliverymethod', 'in_store_collection')
-                        ->where('infoOrder.deliverymethod', '!=', '')
-                        ->where('infoOrder.TypeDelivery', 'CHELSEA')
-                        ->where('infoOrder.total', '!=', 0)
+        $CHSaleData = DB::table('revenu')->whereBetween('created_at', $period)
+                        ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->where('TypeDelivery', 'CHELSEA')
+                        ->where('Total', '!=', 0)
                         ->select(
-                            DB::raw('ROUND(SUM(infoOrder.total), 2) as amount'),
-                            DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%Y-%m-%d") as date')
+                            DB::raw('ROUND(SUM(Total), 2) as amount'),
+                            DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d") as date')
                         )
                         ->groupBy('date')->get();
-        $SKSaleData = InfoOrder::whereBetween('detailed_at', $period)
-                        ->join('infoCustomer', function($join){
-                            $join->on('infoOrder.CustomerID', '=', 'infoCustomer.CustomerID')
-                                ->where('infoOrder.CustomerID', '!=', '')
-                                ->where('infoCustomer.CustomerCategory', '!=', 'Private Customer');
-                        })
-                        ->whereNotIn('infoOrder.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                        // ->where('infoOrder.deliverymethod', 'in_store_collection')
-                        ->where('infoOrder.deliverymethod', '!=', '')
-                        ->where('infoOrder.TypeDelivery', 'SOUTH KEN')
-                        ->where('infoOrder.total', '!=', 0)
+        $SKSaleData = DB::table('revenu')->whereBetween('created_at', $period)
+                        ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+                        ->where('TypeDelivery', 'SOUTH KEN')
+                        ->where('Total', '!=', 0)
                         ->select(
-                            DB::raw('ROUND(SUM(infoOrder.total), 2) as amount'),
-                            DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%Y-%m-%d") as date')
+                            DB::raw('ROUND(SUM(Total), 2) as amount'),
+                            DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d") as date')
                         )
                         ->groupBy('date')->get();
         $signupByChannel = InfoCustomer::where(function($query) use ($period){
@@ -1265,7 +1236,7 @@ class StatisticsController extends Controller
             }else if ( $dateRangeType == 'Last Month' ){
                 $period = [Carbon::now()->subMonth()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->subMonth()->endOfMonth()->endOfDay()->toDateTimeString()];
             }else if ( $dateRangeType == 'This Month' ){
-                $period = [Carbon::now()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->toDateTimeString()];                
+                $period = [Carbon::now()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->toDateTimeString()];
             }else if ( $dateRangeType == 'Year to date' ){
                 $period = [Carbon::now()->startOfYear()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
             }else if ( $dateRangeType == '4th Quarter' ){
@@ -1286,7 +1257,7 @@ class StatisticsController extends Controller
                         ->where('infoOrder.deliverymethod', '!=', '')
                         ->where('infoOrder.Total', '!=', 0)
                         ->select(
-                            'infoOrder.id',  DB::raw("0 as CashPayment"), DB::raw("0 as CardPayment"), DB::raw("0 as BACSPayment"), DB::raw("0 as CashCreditPayment"), 
+                            'infoOrder.id',  DB::raw("0 as CashPayment"), DB::raw("0 as CardPayment"), DB::raw("0 as BACSPayment"), DB::raw("0 as CashCreditPayment"),
                             'infoOrder.deliverymethod', 'infoOrder.datesold', 'infoOrder.datevoid', 'infoOrder.OrderRevenueLocation',
                             'infoOrder.suggestedDeliveryDate', 'infoOrder.Paid', 'infoOrder.express', 'infoOrder.SumItemUpcharges', 'infoOrder.SumItemDiscounts',
                             'infoOrder.Subtotal', 'infoOrder.SubtotalWithDiscount', 'infoOrder.AccountDiscount', 'infoOrder.AccountDiscountPerc', 'infoOrder.VoucherDiscount',
@@ -1295,7 +1266,7 @@ class StatisticsController extends Controller
                             'infoOrder.OrderDiscount', 'infoOrder.DiscountPerc', 'infoOrder.Split', 'infoOrder.FailedDelivery', 'infoOrder.TypeDelivery',
                             'infoOrder.DateDeliveryAsk', 'infoOrder.DatePickup', 'infoOrder.CustomerID', 'infoOrder.created_at', 'infoOrder.detailed_at',
                             'infoOrder.updated_at', 'infoOrder.OrderID', 'infoOrder.Status',
-                            'infoCustomer.OnAccount', 'infoCustomer.Actif', 'infoCustomer.SMS6I', 
+                            'infoCustomer.OnAccount', 'infoCustomer.Actif', 'infoCustomer.SMS6I',
                             'infoCustomer.PaymentMethod', 'infoCustomer.PaymentMethodExpiryDate', 'infoCustomer.opt_out', 'infoCustomer.AcceptSMSMarketing',
                             'infoCustomer.spendlimit', 'infoCustomer.cardvip', 'infoCustomer.opt_out', 'infoCustomer.CustomerOrigin',
                             'infoCustomer.btob', 'infoCustomer.OrderFulfield', 'infoCustomer.EmailActif', 'infoCustomer.MonthlyVATRec',
@@ -1314,19 +1285,19 @@ class StatisticsController extends Controller
                             'infoCustomer.DeliveryWed', 'infoCustomer.DeliveryTh', 'infoCustomer.DeliveryFri', 'infoCustomer.DeliverySat',
                             'infoCustomer.DeliverybyDay', 'infoCustomer.tranchetoDelivery', 'infoCustomer.tranchefromDelivery', 'infoCustomer.commentDelivery',
                             'infoCustomer.Phone', 'infoCustomer.Name', 'infoCustomer.EmailAddress', 'infoCustomer.LastName',
-                            'infoCustomer.FirstName', 'infoCustomer.id_customer', 'infoCustomer.Title', 'infoCustomer.id_address_invoice',                            
+                            'infoCustomer.FirstName', 'infoCustomer.id_customer', 'infoCustomer.Title', 'infoCustomer.id_address_invoice',
                         )
                         ->get();
         foreach ($reportData as $item) {
-            $item->CashPayment = DB::table('payments')->join('infoOrder', 'infoOrder.id', '=', 'payments.order_id')
-                                ->where('infoOrder.id', $item->id)
+            $item->CashPayment = DB::table('payments')->join('revenu', 'revenu.order_id', '=', 'payments.order_id')
+                                ->where('revenu.order_id', $item->id)
                                 ->where('payments.status', 'succeeded')
                                 ->where('payments.type', 'cash')
                                 ->select(
                                     DB::raw('IFNULL(ROUND(SUM(payments.montant), 2), 0) as amount')
                                 )->value('amount');
-            $item->CardPayment = DB::table('payments')->join('infoOrder', 'infoOrder.id', '=', 'payments.order_id')
-                                ->where('infoOrder.id', $item->id)
+            $item->CardPayment = DB::table('payments')->join('revenu', 'revenu.order_id', '=', 'payments.order_id')
+                                ->where('revenu.order_id', $item->id)
                                 ->where('payments.status', 'succeeded')
                                 ->where(function($query){
                                     $query->where('payments.type', 'card')->orWhere('payments.type', 'like', '%reader%');
@@ -1334,15 +1305,15 @@ class StatisticsController extends Controller
                                 ->select(
                                     DB::raw('IFNULL(ROUND(SUM(payments.montant), 2), 0) as amount')
                                 )->value('amount');
-            $item->BACSPayment = DB::table('payments')->join('infoOrder', 'infoOrder.id', '=', 'payments.order_id')
-                                ->where('infoOrder.id', $item->id)
+            $item->BACSPayment = DB::table('payments')->join('revenu', 'revenu.order_id', '=', 'payments.order_id')
+                                ->where('revenu.order_id', $item->id)
                                 ->where('payments.status', 'succeeded')
                                 ->where('payments.type', 'bacs')
                                 ->select(
                                     DB::raw('IFNULL(ROUND(SUM(payments.montant), 2), 0) as amount')
                                 )->value('amount');
-            $item->CashCreditPayment = DB::table('payments')->join('infoOrder', 'infoOrder.id', '=', 'payments.order_id')
-                                ->where('infoOrder.id', $item->id)
+            $item->CashCreditPayment = DB::table('payments')->join('revenu', 'revenu.order_id', '=', 'payments.order_id')
+                                ->where('revenu.order_id', $item->id)
                                 ->where('payments.status', 'succeeded')
                                 ->where('payments.type', 'cust_credit')
                                 ->select(
@@ -1381,7 +1352,7 @@ class StatisticsController extends Controller
             }else if ( $dateRangeType == 'Last Month' ){
                 $period = [Carbon::now()->subMonth()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->subMonth()->endOfMonth()->endOfDay()->toDateTimeString()];
             }else if ( $dateRangeType == 'This Month' ){
-                $period = [Carbon::now()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->toDateTimeString()];                
+                $period = [Carbon::now()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->toDateTimeString()];
             }else if ( $dateRangeType == 'Year to date' ){
                 $period = [Carbon::now()->startOfYear()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
             }else if ( $dateRangeType == '4th Quarter' ){
@@ -1409,8 +1380,8 @@ class StatisticsController extends Controller
                         'infoOrder.Total', 'infoOrder.TotalDue', 'infoOrder.TotalExcVat', 'infoOrder.TaxAmount', 'infoOrder.OrderUpcharge',
                         'infoOrder.OrderDiscount', 'infoOrder.DiscountPerc', 'infoOrder.Split', 'infoOrder.FailedDelivery', 'infoOrder.TypeDelivery',
                         'infoOrder.DateDeliveryAsk', 'infoOrder.DatePickup', 'infoOrder.CustomerID', 'infoOrder.created_at', 'infoOrder.detailed_at',
-                        'infoOrder.updated_at', 'infoOrder.OrderID', 'infoOrder.Status',                            
-                        'infoCustomer.OnAccount', 'infoCustomer.Actif', 'infoCustomer.SMS6I', 
+                        'infoOrder.updated_at', 'infoOrder.OrderID', 'infoOrder.Status',
+                        'infoCustomer.OnAccount', 'infoCustomer.Actif', 'infoCustomer.SMS6I',
                         'infoCustomer.PaymentMethod', 'infoCustomer.PaymentMethodExpiryDate', 'infoCustomer.opt_out', 'infoCustomer.AcceptSMSMarketing',
                         'infoCustomer.spendlimit', 'infoCustomer.cardvip', 'infoCustomer.opt_out', 'infoCustomer.CustomerOrigin',
                         'infoCustomer.btob', 'infoCustomer.OrderFulfield', 'infoCustomer.EmailActif', 'infoCustomer.MonthlyVATRec',

@@ -86,12 +86,51 @@ class RevenueByCategory implements FromCollection, WithTitle, WithColumnWidths, 
             ->select(
                 DB::raw('IFNULL(ROUND(SUM(detailingitem.tailoring_price+detailingitem.cleaning_addon_price+detailingitem.dry_cleaning_price), 2), 0) as amount')
             )->value('amount');
+
+        $accountDiscount = DB::table('revenu')
+            ->whereBetween('created_at', $this->period)
+            ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+            ->select(
+                DB::raw('IFNULL(ROUND(SUM(AccountDiscounts), 2), 0) as amount')
+            )->value('amount');
+        $orderDiscount = DB::table('revenu')
+            ->whereBetween('created_at', $this->period)
+            ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+            ->select(
+                DB::raw('IFNULL(ROUND(SUM(OrderDiscounts), 2), 0) as amount')
+            )->value('amount');
+        $deliveryFees = DB::table('revenu')
+            ->whereBetween('created_at', $this->period)
+            ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+            ->select(
+                DB::raw('IFNULL(ROUND(SUM(DeliveryFees), 2), 0) as amount')
+            )->value('amount');
+        $expressCharge = DB::table('revenu')
+            ->whereBetween('created_at', $this->period)
+            ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+            ->select(
+                DB::raw('IFNULL(ROUND(SUM(ExpressCharge), 2), 0) as amount')
+            )->value('amount');
+        $bundles = DB::table('revenu')
+            ->whereBetween('created_at', $this->period)
+            ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+            ->select(
+                DB::raw('IFNULL(ROUND(SUM(bundles), 2), 0) as amount')
+            )->value('amount');
+        $failedDeliveryCharge = DB::table('revenu')
+            ->whereBetween('created_at', $this->period)
+            ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
+            ->select(
+                DB::raw('IFNULL(ROUND(SUM(FailedDeliveryCharge), 2), 0) as amount')
+            )->value('amount');
         $data[] = ['Sub-Total (Item Sales)', $salesData->sum('amount'), $salesData->sum('count')];
-        $data[] = ['Account discounts', '', ''];
-        $data[] = ['Order discounts', '', ''];
-        $data[] = ['Vouchers', '', ''];
-        $data[] = ['Delivery Fees', '', ''];
-        $data[] = ['Failed Delivery Fees', '', ''];
+        $data[] = ['Account discounts', $accountDiscount, ''];
+        $data[] = ['Order discounts', $orderDiscount, ''];
+        $data[] = ['Vouchers', $accountDiscount, ''];
+        $data[] = ['Delivery Fees', $deliveryFees, ''];
+        $data[] = ['Express Charge', $expressCharge, ''];
+        $data[] = ['Bundles', $bundles, ''];
+        $data[] = ['Failed Delivery Fees', $failedDeliveryCharge, ''];
         $data[] = ['Other', $salesByTypeitemTotal - $salesByTypeitemTotalOfItem, ''];
         $data[] = ['Total (incl discount & add. fees)', $salesData->sum('amount'), $salesData->sum('count')];
         $data[] = ['growth % vs prev year', ($salesTotalToCompareYearMode->amount != 0 ? ($salesTotal/$salesTotalToCompareYearMode->amount - 1)*100 : '--'), ($salesTotalToCompareYearMode->count != 0 ? ($salesData->sum('count')/$salesTotalToCompareYearMode->count -1)*100 : '--')];
@@ -202,10 +241,10 @@ class RevenueByCategory implements FromCollection, WithTitle, WithColumnWidths, 
                 'vertical' => Alignment::VERTICAL_BOTTOM,
             ],
         ];
-        $sheet->getStyle('C'.(5 + $this->dataCnt + 2).':D'.(5 + $this->dataCnt + 7))->applyFromArray($yellowFieldStyle);
-        $sheet->getStyle('C'.(5 + $this->dataCnt + 2).':D'.(5 + $this->dataCnt + 7))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_DOTTED);
+        $sheet->getStyle('C'.(5 + $this->dataCnt + 2).':D'.(5 + $this->dataCnt + 9))->applyFromArray($yellowFieldStyle);
+        $sheet->getStyle('C'.(5 + $this->dataCnt + 2).':D'.(5 + $this->dataCnt + 9))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_DOTTED);
 
-        $sheet->getStyle('B'.(5 + $this->dataCnt + 8).':D'.(5 + $this->dataCnt + 8))->applyFromArray($subTotalCellStyle);
-        $sheet->getStyle('B'.(5 + $this->dataCnt + 8).':D'.(5 + $this->dataCnt + 8))->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
+        $sheet->getStyle('B'.(5 + $this->dataCnt + 10).':D'.(5 + $this->dataCnt + 10))->applyFromArray($subTotalCellStyle);
+        $sheet->getStyle('B'.(5 + $this->dataCnt + 10).':D'.(5 + $this->dataCnt + 10))->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
     }
 }
