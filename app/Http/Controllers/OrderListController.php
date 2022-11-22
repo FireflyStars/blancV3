@@ -64,10 +64,11 @@ class OrderListController extends Controller
         $orderlist=DB::table('infoOrder')
 
         ->select( [
-            'infoOrder.id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoOrder.TypeDelivery', 'infoOrder.DateDeliveryAsk','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold','infoOrder.deliverymethod','pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask','infoOrder.OrderID',
+            'infoOrder.id','infoOrder.Status','infoOrder.Total','infoCustomer.Name','infoOrder.TypeDelivery', 'infoOrder.DateDeliveryAsk','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold','infoOrder.deliverymethod','infoOrder.OrderID',
 
 
-        //
+        'pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask',
+
         DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%d/%m/%Y") as DET'),
         //DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Prod'),
         // DB::raw('DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y") as Deliv'),
@@ -78,7 +79,8 @@ class OrderListController extends Controller
         DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'),
         DB::raw('IF(infoCustomer.OnAccount = 1, "On Account", "Pay As You Go") as payementType')
     ])
-        ->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID)'))
+        //->join('infoCustomer','infoOrder.CustomerID','=', DB::raw('if(infoCustomer.CustomerIDMaster != "", infoCustomer.CustomerIDMaster , infoCustomer.CustomerID)'))
+        ->join('infoCustomer','infoOrder.CustomerID','infoCustomer.CustomerID')
         ->leftJoin('pickup', 'infoOrder.id', '=', 'pickup.order_id')
         ->leftJoin('deliveryask', 'infoOrder.id', '=', 'deliveryask.order_id')
         ->where('infoOrder.OrderID','!=','')
@@ -371,6 +373,8 @@ class OrderListController extends Controller
         $count_ready_suborders_by_orderid = [];
         $count_suborders_orderid = [];
         $details_by_orderid = [];
+        $deliveryask_by_orderid = [];
+        $pickup_by_order_id = [];
 
         foreach ($orderlist as $order) {
             if(!in_array($order->OrderID,$order_ids)){
@@ -435,6 +439,9 @@ class OrderListController extends Controller
 
 
         foreach ($orderlist as $order) {
+            //$order->status_pickup = "";
+            //$order->status_deliveryask = "";
+
             $order->subOrderCount = (isset($count_suborders_orderid[$order->OrderID])?count($count_suborders_orderid[$order->OrderID]):0);
 
             $order->ready_sub_orders = (isset($count_ready_suborders_by_orderid[$order->OrderID])?$count_ready_suborders_by_orderid[$order->OrderID]:0);
