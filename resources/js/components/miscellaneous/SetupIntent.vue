@@ -2,6 +2,15 @@
     <div>
         <button @click="saveTerminalDetail" class="btn btn-outline-success">Save terminal details</button>
     </div>
+    <br/>
+
+    <div>
+        <button @click="createPaymentIntent" class="btn btn-outline-success">Create intent</button>
+    </div>
+    <br/>
+    <div>
+        <button @click="cancelRequest" class="btn btn-outline-danger">Cancel terminal request</button>
+    </div>
 </template>
 <script>
 import {ref} from 'vue';
@@ -14,6 +23,7 @@ import {
     TOASTER_MESSAGE,
     TOASTER_MODULE,
 } from '../../store/types/types';
+
 
 export default {
     'name':'SetupIntent',
@@ -133,9 +143,8 @@ export default {
                         console.log('End calling selectReader');
 
                         if(typeof(selected_reader.value.id)!='undefined' && !err_terminal.value){
-                            selected_reader.value.readReusableCard().then((result)=>{
-                                console.log('read card',result);
-                            })
+                           await getClientSecret(100);
+
                         }
 
 
@@ -149,28 +158,124 @@ export default {
                 }
         }
 
-        async function savePaymentIntent(){
 
-            const bodyContent = JSON.stringify({customer_id:3428});
-            return fetch('/stripe-test/save_terminal_detail', {
+        async function createPaymentIntent(){
+            await listReaders();
+
+                if(readers.value.length > 0){
+                    let store_id = 1;
+
+                    if(typeof(readers_id[store_id]) !='undefined'){
+                        let reader_id = readers_id[store_id];
+
+                        let selected_index = readers.value.findIndex((z) => { return z.id === reader_id});
+                        selected_reader.value = readers.value[selected_index];
+
+                        console.log('calling selectReader');
+                        await selectReader(selected_reader.value);
+                        console.log('End calling selectReader');
+
+                        if(typeof(selected_reader.value.id)!='undefined' && !err_terminal.value){
+                           await getPaymentClientSecret(100);
+
+                        }
+
+
+                    }else{
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                            message: 'Store reader not set for user '+props.user.name,
+                            ttl: 5,
+                            type: "danger",
+                        });
+                    }
+                }
+        }
+
+
+
+        const getClientSecret = (amount)=>{
+            fetchSetupIntentClientSecret(amount).then((data)=>{
+                console.log('data',data);
+
+                terminal.value.collectSetupIntentPaymentMethod(data.client_secret).then((res)=>{
+                    console.log(res);
+                });
+            });
+        }
+
+        const getPaymentClientSecret = (amount)=>{
+            fetchPaymentIntentClientSecret(amount).then((data)=>{
+                console.log('data',data);
+
+                terminal.value.collectPaymentMethod(data.client_secret).then((res)=>{
+                    console.log(res);
+                });
+            });
+        }
+
+
+        function fetchSetupIntentClientSecret(amount) {
+
+            const bodyContent = JSON.stringify({ amount: amount});
+
+            return fetch('/stripe-test/create_setup_intent', {
                 method: "POST",
                 headers: {
                 'Content-Type': 'application/json'
-                },
-                body: bodyContent
+            },
+            body: bodyContent
             })
             .then(function(response) {
                 return response.json();
             })
             .then(function(data) {
-                return data.client_secret;
+                return data;
+            }).catch((err)=>{
+                console.log(err);
             });
         }
 
 
-        return {
-            saveTerminalDetail
+        function fetchPaymentIntentClientSecret(amount){
+            const bodyContent = JSON.stringify({ amount: amount});
+
+            return fetch('/stripe-test/test_payment_intent', {
+                method: "POST",
+                headers: {
+                'Content-Type': 'application/json'
+            },
+            body: bodyContent
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                return data;
+            }).catch((err)=>{
+                console.log(err);
+            });
         }
+
+
+        const cancelRequest = ()=>{
+            console.log('selected_reader',selected_reader.value);
+
+
+
+            /*
+            selected_reader.value.disconnectReader().then((res)=>{
+                console.log(res);
+            });
+            */
+        }
+
+        return {
+            saveTerminalDetail,
+            createPaymentIntent,
+            cancelRequest,
+        }
+
+
 
     },
 }

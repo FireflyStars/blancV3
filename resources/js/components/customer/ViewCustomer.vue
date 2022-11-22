@@ -290,6 +290,8 @@
                             </div>
                         </transition>
                         <transition name="list" appear v-if="step =='payment'">
+                                <div>
+                                    <customer-invoice-history :CustomerID="form.customerID"/>
                             <div class="payment cust-page-content m-auto pt-5">
                                 <div class="payment-method-section" v-if="form.accountType !='Master'">
                                     <h3 class="title">Payment method <span v-if="!creditCardCustomer" class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="toggleCreditCard()">Edit</span></h3>
@@ -519,7 +521,7 @@
                                                 </div>
                                                 <div class="d-flex">
                                                     <div class="phone-country-code" v-if="invoice_details_edit">
-                                                        <select-options 
+                                                        <select-options
                                                             v-model="form.companyPhoneCountryCode"
                                                             :modelValue="form.companyPhoneCountryCode"
                                                             :options="phoneCodesSorted"
@@ -530,7 +532,7 @@
                                                     <div v-else style="width: 80px;" class="phone-country-code py-2 rounded-3 bg-color text-center">
                                                     {{ form.companyPhoneCountryCode }}&nbsp;
                                                     </div>
-                             
+
                                                     <div class="form-group ms-2">
                                                         <input v-if="invoice_details_edit" type="text" v-model="form.companyPhoneNumber" class="form-control custom-input">
                                                         <div v-else class="customer-type py-2 bg-color px-3 rounded-3">
@@ -625,6 +627,7 @@
                                     </div>
                                 </div>
                             </div>
+                                </div>
                         </transition>
                         <transition name="list" appear v-if="step == 'order_management'">
                             <div class="cust-page-content mt-5 m-auto order-panel">
@@ -1039,6 +1042,7 @@
     import Modal from '../miscellaneous/Modal.vue';
     import DatePicker from '../miscellaneous/DatePicker.vue';
     import NewSubAccountForm from '../miscellaneous/NewSubAccountForm.vue';
+    import CustomerInvoiceHistory from './CustomerInvoiceHistory.vue'
     import {
         TOASTER_MODULE,
         TOASTER_MESSAGE,
@@ -1062,7 +1066,8 @@
             Search,
             Modal,
             DatePicker,
-            NewSubAccountForm
+            NewSubAccountForm,
+            CustomerInvoiceHistory
         },
         setup(props,context){
             const route = useRoute();
@@ -1292,7 +1297,7 @@
                             form.value.invoiceAddressEmail1 =  res.data.customer.invoice.email;
                             form.value.invoiceAddressEmail2 = res.data.customer.invoice.email2;
                             var phone = getPhone(res.data.customer.invoice.Phone);
-                  
+
                             if(phone.code.includes('+')){
                                 form.value.companyPhoneCountryCode = phone.code;
                             }else {
@@ -1401,7 +1406,7 @@
                     form.value.pauseDateTo = res.data.customer.pauseDateTo ?? "";
                     form.value.pauseDateFrom = res.data.customer.pauseDateFrom ?? "";
                     if(form.value.deliveryByday == '1'){
-                        if((form.value.pauseDateFrom != '' && (new Date(form.value.pauseDateFrom) > new Date() ))|| (form.value.pauseDateTo != '' && (new Date(form.value.pauseDateTo) > new Date()))){       
+                        if((form.value.pauseDateFrom != '' && (new Date(form.value.pauseDateFrom) > new Date() ))|| (form.value.pauseDateTo != '' && (new Date(form.value.pauseDateTo) > new Date()))){
                             pauseRecurring.value = true;
                         }
                         pickupDays.value = res.data.available_days;
@@ -1415,7 +1420,7 @@
                             })
                             if(pickupDays.value.length > 0){
                                 pickupDays.value[0].active = true
-                            } 
+                            }
                         }
                         if(res.data.customer.DeliveryTu){
                             form.value.pickupSlots.push({
@@ -1741,9 +1746,13 @@
                     this.add_payement =false;
                     window.location.reload();
                 }).catch((error)=>{
+                    let err_txt = "Error saving card details";
+                    if(typeof(error.response.data)!='undefined'){
+                        err_txt = "Stripe error: "+error.response.data.message;
+                    }
 
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
-                        message:"Error saving card details",
+                        message:err_txt,
                         ttl: 5,
                         type: 'danger'
                     });
@@ -2279,10 +2288,10 @@
             }
             const openPauseRecurringModal = ()=>{
 
-                if((form.value.pauseDateTo != '' && (new Date(form.value.pauseDateTo) < new Date()))){       
+                if((form.value.pauseDateTo != '' && (new Date(form.value.pauseDateTo) < new Date()))){
                             form.value.pauseDateTo = ''
                 }
-                if((form.value.pauseDateFrom != '' && (new Date(form.value.pauseDateFrom) < new Date()))){       
+                if((form.value.pauseDateFrom != '' && (new Date(form.value.pauseDateFrom) < new Date()))){
                             form.value.pauseDateFrom = ''
                 }
                 pauseRecurringModal.value.showModal();

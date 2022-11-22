@@ -47,6 +47,8 @@ export const formatDate=(date_str,format)=>{
         format='DD/MM';
     const date=new Date(date_str);
     let options = {  month: 'numeric', day: 'numeric' };
+    if(format==='DD/MM/YYYY')
+    options ={month:'2-digit',day:'2-digit', year:'numeric'};
     if(format==='DAY DD/MM')
         options = { weekday: 'short',  month: 'numeric', day: 'numeric' };
     if(format==='DAYL DD/MM')

@@ -1,7 +1,7 @@
 <template>
     <div class="container detail-panel" v-if="showCustomerDetail">
         <div class="detail-progressbar" :class="loaderclass"></div>
-        <div class="w-100" v-if="CUSTOMER.name != ''">
+        <div class="w-100" v-if="CUSTOMER.name != '' && showDetails == true">
             <div class="detail-header position-fixed">
                 <div class = "d-flex align-items-center justify-content-between">
                     <div class="detail-title text-capitalize">
@@ -127,7 +127,7 @@
             <div class="detail-footer bg-white">
                 <div class="d-flex col-12 p-0">
                     <div class="col-6 p-0 d-flex justify-content-between">
-                        <button class="detail-btn detail-btn-new-order text-center" @click="newOrder">
+                        <button class="detail-btn detail-btn-new-order text-center" @click="newOrder(CUSTOMER.CustomerID , CUSTOMER.first_order)">
                             New Order
                         </button>
                         <!-- <button class="detail-btn detail-btn-app-sms text-center" @click="appSMS">
@@ -174,6 +174,7 @@ export default {
         const route = useRoute();
         const router= useRouter();
         const selected_panel = ref('current_orders');
+        const showDetails = ref(false);
         const selectPanel = (panelName)=>{
             if(selected_panel.value == panelName){
                 selected_panel.value = '';
@@ -198,6 +199,9 @@ export default {
         }
 
         const showCustomerDetail = computed(()=>{
+            if(route.params.customer_id >0){
+                store.dispatch(`${CUSTOMER_MODULE}${SET_CURRENT_SELECTED_CUSTOMER}`,route.params.customer_id);
+            }
             return CURRENT_SELECTED.value !='' && route.params.customer_id > 0;
         })
         const CUSTOMER = computed( () =>{
@@ -224,15 +228,30 @@ export default {
         const appSMS =()=>{
             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'App SMS is not implemented yet.',ttl:5,type:'success'});
         }
-        const newOrder =()=>{
+        const newOrder =(customerId , order)=>{
             store.commit(`${NEWORDER_MODULE}${NEWORDER_PRELOAD_ORDER_CUSTOMER_SET}`,null);
-            router.push({
-                name: 'NewOrder'
-            });
+            if(order != null){
+              router.push({
+                    name:'DetailingItemList',
+                    params: {
+                      order_id:order.orde_id,
+                    },
+                })
+            }else{
+              router.push({
+                    name:'NewOrder',
+                    params: {
+                       customerId,
+                    },
+                })
+            } 
         }
         if(showCustomerDetail) {
             nextTick(() => {
-                store.dispatch(`${CUSTOMER_MODULE}${LOAD_CUSTOMER_DETAIL}`, CURRENT_SELECTED.value).catch((error)=>{
+                store.dispatch(`${CUSTOMER_MODULE}${LOAD_CUSTOMER_DETAIL}`, CURRENT_SELECTED.value).then((res)=>{
+                    showDetails.value = true
+                    })
+                .catch((error)=>{
                     if(typeof error.response!="undefined")
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
                 });;
@@ -242,7 +261,7 @@ export default {
         })
         const formatPhone = (phoneString)=>{
             
-            if(phoneString !== "" &&  phoneString !="--" ){
+            if(phoneString !== "" &&  phoneString !="--" && phoneString != null){
                 phoneString = phoneString.split(']').join('')
                 var phone = phoneString.split('"')[1];
                 var area_code = phone.split("|")[0];
@@ -293,6 +312,7 @@ export default {
             manageOrders,
             appSMS,
             newOrder,
+            showDetails,
             loaderclass: computed(()=>{
                 return store.getters[`${CUSTOMER_MODULE}${GET_LOADER_CLASS}`];
             }),

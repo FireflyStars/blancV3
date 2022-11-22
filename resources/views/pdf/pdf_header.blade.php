@@ -8,7 +8,7 @@
         <div id="vat_reg">VAT Reg.No: 124 0369 45</div>
         <div>Company Reg.No: 07689489</div>
         <div>Telephone: 0203 865 4062</div>
-        <div>Email: <a href="mailto:bruno@blancliving.co">bruno@blancliving.co</a></div>
+        <div>Email: <a href="mailto:finance@blancliving.co">finance@blancliving.co</a></div>
         <div>Web: <a href="www.blancliving.co">www.blancliving.co</a></div>
     </div>
 
@@ -16,18 +16,30 @@
     <div id="cust_addr">
         @if($v['contact'])
             <div>{{$v['contact']->company}}</div>
-            <div>{{$v['contact']->name}}</div>
         @else
             <div>{{$v['customer']->CompanyName}}</div>
+        @endif
+
+        @if($v['contact'])
+            <div>{{$v['contact']->name}}<span v-if="$v['contact']->firstname!=''">, {{$v['contact']->firstname}}</span></div>
+        @else
             <div>{{$v['customer']->Name}}</div>
         @endif
 
-        @if($v['address'])
+        @if($v['address'] && $v['address']->address1 !='')
             @if($v['address']->address1 !='')<div>{{$v['address']->address1}}</div>@endif
             @if($v['address']->address2 !='')<div>{{$v['address']->address2}}</div>@endif
             <div>
                 @if($v['address']->Town!=''){{$v['address']->Town}}, @endif{{$v['address']->postcode}}
             </div>
+        @else
+            @if($v['delivery_address'])
+                @if($v['delivery_address']->address1 !='')<div>{{$v['delivery_address']->address1}}</div>@endif
+                @if($v['delivery_address']->address2 !='')<div>{{$v['delivery_address']->address2}}</div>@endif
+                <div>
+                    @if($v['delivery_address']->Town!=''){{$v['delivery_address']->Town}}, @endif{{$v['delivery_address']->postcode}}
+                </div>
+            @endif
         @endif
     </div>
 

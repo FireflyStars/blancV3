@@ -18,11 +18,11 @@
              <div class="col-12 row-option" >
                 <img class="img-arrow" src="/images/arrow.png" />
                 <span>Reassign</span>
-            </div>
-             <div class="col-12 row-option" >
+            </div>-->
+             <div class="col-12 row-option" v-if="order.Status == 'IN DETAILING'"  @click="DeleteOrder()">
                 <img class="img-arrow" src="/images/garbage.png" />
                 <span>Delete</span>
-            </div> -->
+            </div> 
             <div class="col-12 row-option" v-if="user_id == 1 || user_id == 4" @click="VoidOrder()">
                 <img class="img-arrow" src="/images/erase.png" />
                 <span>Void</span>
@@ -72,10 +72,25 @@
                     })
            }
 
+           function DeleteOrder(){
+            axios.post('/deleteorder',{
+                   order_id: props.order.order_id
+               }).then((res)=>{
+                          if( res.data.done == "ok"){
+                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Order deleted successfully',ttl:5,type:'success'});
+                             location.reload();
+                        }
+                    })
+                    .catch((error)=>{
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured`,ttl:5,type:'danger'});
+                    })
+           }
+
             return {
                 user_id,
                 goToCheckout,
-                VoidOrder
+                VoidOrder,
+                DeleteOrder
             }
         }
     }
@@ -95,7 +110,6 @@
     }
     .options{
         top:56px;
-        right: -28px;
         background: #F8F8F8;
         box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
         width: 298px;

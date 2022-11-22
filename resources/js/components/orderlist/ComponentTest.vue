@@ -16,6 +16,12 @@
                             -->
                         </div>
                     </div>
+                    <div class="row my-4">
+                        <div class="col-3">
+                        <mini-checkout :order_id="134932"></mini-checkout>
+                        </div>
+
+                    </div>
                     <div class="row">
                         <div class="col-3">
 
@@ -277,11 +283,12 @@
     import { useRouter, useRoute } from "vue-router";
     import InvoicePdf from '../miscellaneous/InvoicePdf.vue';
     import SetupIntent from  '../miscellaneous/SetupIntent.vue';
+    import MiniCheckout from "../miscellaneous/MiniCheckout.vue";
 
 
     export default {
         name: "ComponentTest",
-        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,SwitchBtn,OrderBarcode, RecurringForm,ItemPictoNew,DetailingRightPanel,Modal,InvoicePdf, SetupIntent},
+        components: { SideBar, MainHeader,SelectOptions,TimeSlotPicker,DatePicker,TabPane,Search,SwitchBtn,OrderBarcode, RecurringForm,ItemPictoNew,DetailingRightPanel,Modal,InvoicePdf, SetupIntent,MiniCheckout},
         setup(props,context){
             const showcontainer=ref(false);
             const show_barcode= ref(false);

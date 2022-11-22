@@ -51,7 +51,7 @@
                                             <div class="col-10">
                                                 <div class="item-desc-heading mb-3">
                                                     <span>Description</span>
-                                                    <a href="javascript:void(0)" @click="goToDetailing(item.order_id,item.detailingitem_id,2)">Edit</a>
+                                                    <a href="javascript:void(0)"  v-if= "disabled_btn_with_status" @click="goToDetailing(item.order_id,item.detailingitem_id,2)">Edit</a>
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-6">
@@ -117,7 +117,7 @@
                                             <div class="col-10">
                                                 <div class="item-desc-heading mb-3">
                                                     <span>Issues</span>
-                                                    <a href="javascript:void(0)" @click="goToDetailing(item.order_id,item.detailingitem_id,10)">Edit</a>
+                                                    <a href="javascript:void(0)" v-if= "disabled_btn_with_status" @click="goToDetailing(item.order_id,item.detailingitem_id,10)">Edit</a>
                                                 </div>
                                                 <div class="row" v-if="(item.stains && item.stains.length > 0) || (item.damages && item.damages.length > 0)">
                                                     <div class="col-6" v-if="item.stains && item.stains.length > 0">
@@ -133,6 +133,18 @@
                                                                 </span>
                                                                 <span v-else>Stain </span>
                                                                 <span v-if="zones[stain.id_zone]">{{zones[stain.id_zone]}}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row justify-content-center mb-1" v-for="(stain,index) in item.stainsissue">
+                                                            <div class="col-1"></div>
+                                                            <div class="col-11">
+                                                                <span v-if="issues[stain]">Stain {{issues[stain]}}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row justify-content-center mb-1" >
+                                                            <div class="col-1"></div>
+                                                            <div class="col-11">
+                                                                <span v-if="item.stainstext">Stain {{item.stainstext}}</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -152,6 +164,18 @@
                                                                 <span v-if="zones[damage.id_zone]">{{zones[damage.id_zone]}}</span>
                                                             </div>
                                                         </div>
+                                                        <div class="row justify-content-center mb-1" v-for="(damg,index) in item.damagesissues">
+                                                            <div class="col-1"></div>
+                                                            <div class="col-11">
+                                                                <span v-if="issues[damg]">Damage {{issues[damg]}}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row justify-content-center mb-1" >
+                                                            <div class="col-1"></div>
+                                                            <div class="col-11">
+                                                                <span v-if="item.damagestext">Stain {{item.damagestext}}</span>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="row">
@@ -165,7 +189,7 @@
                                             <div class="col-10">
                                                 <div class="item-desc-heading mb-3">
                                                     <span>Services</span>
-                                                    <a href="javascript:void(0)" @click="goToDetailing(item.order_id,item.detailingitem_id,11)">Edit</a>
+                                                    <a  v-if= "disabled_btn_with_status" href="javascript:void(0)" @click="goToDetailing(item.order_id,item.detailingitem_id,11)">Edit</a>
                                                 </div>
                                                 <div class="row each-desc-row mb-2 each-detailed-service-row py-1" v-for="ds in item.detailed_services">
                                                     <div class="col-10">
@@ -318,6 +342,17 @@
                                             </div>
                                         </div>
 
+                                        <div class="row px-0 py-1 sub-total-text" v-if="Object.values(amount_paid_other).length > 0">
+                                            <template v-for="a,i in amount_paid_other" :key="i">
+                                                <div class="col-12">
+                                                <div class="row">
+                                                    <div class="col-9 px-0 payment-desc-text">{{a.name}} on <small>{{a.date}}</small>:</div>
+                                                    <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
+                                                </div>
+                                                </div>
+                                            </template>
+                                        </div>
+
                                          <div class="row px-0 mt-4 py-2 balance-text">
                                             <div class="col-9">Outstanding order balance to pay</div>
                                             <div class="col-3 text-align-right">{{formatPrice(order.TotalDue)}}</div>
@@ -394,7 +429,7 @@
                                                             <div class="row align-items-center mb-3" v-if="order">
                                                                 <div class="col-6">
                                                                     <span class="sidebar_title text-white">Order details</span>
-                                                                    <a href="javascript:void(0)" id="order_link">Edit</a>
+                                                                    <a v-if= "disabled_btn_with_status" href="javascript:void(0)" id="order_link">Edit</a>
                                                                 </div>
                                                                 <div class="col-6 text-align-right">
                                                                         <img src="/images/picto_store.svg" class="delivery-method-icon store_collecion_icon"  v-if="order.deliverymethod=='in_store_collection'">
@@ -685,7 +720,7 @@
                             <div class="col-4">
                                 <div class="row align-items-center">
                                     <div class="col-6 px-4 text-align-center">
-                                        <a href="javascript:void(0)" @click="redirectToDetailingList">Previous</a>
+                                        <a  v-if= "disabled_btn_with_status"  href="javascript:void(0)" @click="redirectToDetailingList">Previous</a>
                                     </div>
                                     <div class="col-6 px-4">
                                         <button id="closeBtn" @click="redirectToOrderDetail" class="w-100 py-3" v-if="amount_diff<=0 && Object.keys(has_invoices).length > 0">Close</button>
@@ -855,6 +890,7 @@ export default {
         const awaiting_payment_modal = ref();
         const amount_paid_card = ref(0);
         const amount_paid_credit = ref(0);
+        const amount_paid_other = ref([]);
         const discount_perc = ref(0);
         const created_date = ref("");
         const credit_to_deduct = ref(0);
@@ -880,6 +916,7 @@ export default {
         const pricedeliverynow=ref("");
         const has_invoices = ref([]);
         const btn_disabled = ref(false);
+        const disabled_btn_with_status =ref(false);
 
         let bodytag=document.getElementsByTagName( 'body' )[0]
         bodytag.classList.remove('hide-overflowY');
@@ -932,6 +969,9 @@ export default {
                 issues.value = res.data.issues;
                 cust.value = res.data.cust;
                 order.value = res.data.order;
+                if(order.value.Status != "DELIVERED" && order.value.Status != "VOID" && order.value.Status != "FULFILLED" && order.value.Status != "DELETE" ){               
+                    disabled_btn_with_status.value = true 
+                }
                 if(res.data.order.DeliveryNowFee!='')
                 pricedeliverynow.value=parseFloat(res.data.order.DeliveryNowFee).toFixed(2);
                 booking.value = res.data.booking_details;
@@ -970,6 +1010,7 @@ export default {
                 price_plus_delivery.value = res.data.price_plus_delivery;
                 order_bundles.value = res.data.order_bundles;
                 has_invoices.value = res.data.has_invoices;
+                amount_paid_other.value = res.data.amount_paid_other;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -1035,9 +1076,17 @@ export default {
 
             var reg = /^\d+$/;
 
+            let remaining_perc = 100 - cust.value.discount;
+
+
             if(order_discount.value=='' || !reg.test(order_discount.value) || parseInt(order_discount.value) > 100){
                 err = "Please enter a discount percent";
             }
+            else if(order_discount.value > remaining_perc){
+                err = "Discount percentage must be less or equal to "+remaining_perc+"%";
+            }
+
+
             if(err!=''){
                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
                 {
@@ -1074,7 +1123,7 @@ export default {
                 order_id:order_id.value,
                 amount_to_pay:amount_to_pay.value,
                 balance:order_balance.value,
-                credit_to_deduct:credit_to_deduct.value,
+                credit_to_deduct:parseFloat(credit_to_deduct.value),
                 paylater:(paylater?1:0),
             }).then((res)=>{
 
@@ -1513,6 +1562,8 @@ export default {
             handleAllowNumbers,
             has_invoices,
             btn_disabled,
+            amount_paid_other,
+            disabled_btn_with_status
         }
     },
 }

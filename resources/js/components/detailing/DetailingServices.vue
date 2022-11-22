@@ -32,10 +32,11 @@
                     <!--
 (!detailingitem.cleaning_services && service.selected_default==1) ||
                         -->
-                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center position-relative" v-for="(service,id) in services" :class="{'sel_service': service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0,'mb-4':service.cleaning_group==2, 'active_service': preference_customer && preference_customer.includes(service.id_preference)  && detailingitem.status != 'Completed' , 'cleaning': group=='Cleaning Add-on'}" :id="'sub_service_'+service.id" @click="checkSubService(service.id)" :data-cleaning-service-id="service.id">
+                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center position-relative" v-for="(service,id) in services" :class="{'sel_service': service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0, 'is_preference':service.cleaning_group==2 && service.id_preference!=0 ,'service_add_ons':service.cleaning_group==1 , 'mb-4':service.cleaning_group==2, 'active_service': preference_customer && preference_customer.includes(service.id_preference)  && detailingitem.status != 'Completed' , 'cleaning': group=='Cleaning Add-on'}" :id="'sub_service_'+service.id" @click="checkSubService(service.id)" :data-cleaning-service-id="service.id">
                         <div class="d-block w-100 text-center">
-                            {{service.name}}<span v-if="service.cleaning_group==2" class="text-center d-block w-100">(&#163;{{service.fixed_price}})</span>
-
+                            {{service.name}}
+                            <span v-if="service.cleaning_group==2 && service.perc >= 0" class="text-center d-block w-100">(&#163;{{service.fixed_price}})</span>
+                            <span v-if="service.cleaning_group==2 && service.perc < 0">{{calculateNegativPerc(service)}}(&#163;{{service_perc}})</span>
                         </div>
                         <img src="/images/padlock.svg" class="position-absolute pref-disable-icon" v-if="service.cleaning_group==2 && service.isPrefActive==0"/>
                     </div>
@@ -276,6 +277,7 @@ export default {
         const price_value = ref('');
         const sel_tailoring_describe = ref('');
         const sel_clean_describe = ref('');
+        const service_perc = ref(0);
 
         sel_tailoring_describe.value = props.detailingitem.describeprixnowtailoring;
         sel_clean_describe.value = props.detailingitem.describeprixnow;
@@ -334,6 +336,48 @@ export default {
                 if(id==2){ //Tailoring
                     checkSelTailoringGroups();
                 }
+            }else{
+                //Clears all subselected;
+                if(id==1){ //CLEANING
+                    
+                    let sub_services = document.querySelectorAll('.cleaning-subservice');
+                    let keys = Object.keys(sub_services);
+
+                    let i;
+                    for(i in keys){
+                        let el = sub_services[i];
+                        el.classList.remove('sel_service');
+                    }
+                        sel_cleaning_price_type.value = 'Standard';
+                        document.getElementById('pricenow_describe_cleaning').classList.remove('sel_service');
+                        document.getElementById('pricenow_cleaning').classList.remove('sel_service');
+                        document.getElementById('sub_service_Standard').classList.add('sel_service');
+
+                    checkSelectedCleaning(true);
+                    checkCleaningGroup();
+                    document.getElementById('main_service_1').classList.add('main_selected');
+                    
+                }
+                //Clears all subselected;
+                if(id==2){ //TAILORING
+                    
+                    let sub_services = document.querySelectorAll('.tailoring-subservice');
+                    let keys = Object.keys(sub_services);
+
+                    let i;
+                    for(i in keys){
+                        let el = sub_services[i];
+                        el.classList.remove('sel_service');
+                    }
+                        
+                        document.getElementById('pricenow_describe_tailoring').classList.remove('sel_service');
+                        document.getElementById('pricenow_tailoring').classList.remove('sel_service');
+                        document.getElementById('sub_service_tailoring_Standard').classList.add('sel_service');
+
+                    checkSelectedTailoring(true);
+                    checkSelTailoringGroups();
+                    document.getElementById('main_service_2').classList.add('main_selected'); 
+                }
             }
 
             main_service.value = id;
@@ -351,7 +395,7 @@ export default {
 
             let classes = Object.values(el.classList);
 
-            if(classes.includes('is_pref_disabled') && !classes.includes('sel_service')){
+            if(!classes.includes('sel_service') && classes.includes('is_preference')){
                 sel_addon_id.value = id;
                 addon_modal.value.showModal();
             }else{
@@ -385,10 +429,24 @@ export default {
 
         function toggleSubService(id){
             let el = document.getElementById('sub_service_'+id);
-            el.classList.toggle('sel_service');
-          
-
+                el.classList.toggle('sel_service');
              let classes = Object.values(el.classList);
+
+             
+            if(classes.includes('cleaning-subservice') && classes.includes('service_add_ons')){
+                
+                if(id !== 1 && id !== 3 && classes.includes('sel_service')){
+
+                let cleaning = document.querySelectorAll('.service_add_ons:not(#sub_service_'+id+')');
+                let keys = Object.keys(cleaning);
+
+                          let i;
+                        for(i in keys){
+                            let elp = cleaning[i];
+                            elp.classList.remove('sel_service');
+                        }  
+                } 
+            }           
 
                 //TO optimize
                 if(classes.includes('cleaning-prices')){
@@ -481,9 +539,14 @@ export default {
             }
 
 
-            sel_tailoring_price_type.value = price_type;
+            if(price_type == '' ){
+                sel_tailoring_price_type.value = 'Standard';
+            }else {
+                sel_tailoring_price_type.value = price_type;
+            } 
 
             checkSelectedCleaning(false);
+            console.log(tailoring_services_id ,sel_tailoring_service_id.value )
 
             if(on_click){
                 //Update Detailing
@@ -491,7 +554,7 @@ export default {
                     step:11,
                     detailingitem_id: props.detailingitem.id,
                     tailoring_services: JSON.stringify(tailoring_services_id),
-                    tailoring_price_type: price_type,
+                    tailoring_price_type: sel_tailoring_price_type.value,
                     cleaning_services:JSON.stringify(sel_cleaning_service_id.value),
                     cleaning_pricing_type:sel_cleaning_price_type.value,
                 });
@@ -519,7 +582,7 @@ export default {
 
             sel_tailoring_group.value = sel_tailoring_gp;
             //End open accordion
-
+            document.getElementById('main_service_1').classList.add('main_selected');
 
         }
 
@@ -556,6 +619,7 @@ export default {
 
             }else{
                 document.getElementById('main_service_1').classList.remove('main_selected');
+                    sel_cleaning_service_id.value = cleaning_services_id;  
             }
 
             if(on_click){
@@ -564,7 +628,7 @@ export default {
                     step:11,
                     detailingitem_id: props.detailingitem.id,
                     cleaning_services: JSON.stringify(cleaning_services_id),
-                    cleaning_price_type: cleaning_pricing_type,
+                    cleaning_price_type: sel_cleaning_price_type.value,
                     tailoring_services: JSON.stringify(sel_tailoring_service_id.value),
                     tailoring_price_type:sel_tailoring_price_type.value,
                 });
@@ -897,6 +961,18 @@ export default {
         function closePriceNowAndDescribeModal(){
             pricenow_describe_modal.value.closeModal();
         }
+        function calculateNegativPerc(service){
+            if(props.detailingitem.cleaning_services != null){
+                if(!props.detailingitem.cleaning_services.includes(service.id)){
+                    let total_price_cleaning = ((props.detailingitem.dry_cleaning_price / 100) * service.perc).toFixed(2);
+                    service_perc.value = total_price_cleaning
+                }else{
+                    let previous_totla_cleaning = (props.detailingitem.dry_cleaning_price * 100) / (100 + service.perc)
+                    let total_price_cleaning = ((previous_totla_cleaning / 100) * service.perc).toFixed(2);
+                    service_perc.value = total_price_cleaning
+                }
+            }
+        }
 
         return {
             back,
@@ -933,7 +1009,9 @@ export default {
             priceNowAndDescribe,
             sel_tailoring_describe,
             sel_clean_describe,
-            getPreference
+            getPreference,
+            calculateNegativPerc,
+            service_perc
         };
     },
 }

@@ -125,10 +125,13 @@
                             <p class="w-100 m-0 sub-title mb-2">Stains</p>
                             <div class="issue-item stain d-flex align-items-center" v-for="(stain, index) in ITEM.Issues.stains" :key="index">
                                 <span class="issue-item-num d-flex align-items-center justify-content-center">1</span>
-                                <span class="issue-item-name ms-1">Stain - {{stain.name}} </span>
+                                <span class="issue-item-name ms-1">Stain - {{getStainZone(stain)}}</span>
+                            </div>
+                            <div class="issue-item stain d-flex align-items-center" v-for="(stain, index) in ITEM.Issues.stainsissue" :key="index">
+                                <span class="issue-item-name issue-tag ms-1">Stain - {{stain.name}} </span>
                             </div>
                             <div class="issue-item stain d-flex align-items-center" >
-                                <span class="issue-item-name ms-1 pt-2">{{ITEM.Issues.stainstext}} </span>
+                                <span class="issue-item-name issue-tag ms-1" v-if="ITEM.Issues.stainstext" >Stain - {{ITEM.Issues.stainstext}} </span>
                             </div>
                             
                         </div>
@@ -136,10 +139,13 @@
                             <p class="m-0 sub-title mb-2">Damages</p>
                             <div class="issue-item damage d-flex align-items-center" v-for="(damage, index) in ITEM.Issues.damages" :key="index">
                                 <span class="issue-item-num d-flex align-items-center justify-content-center">1</span>
-                                <span class="issue-item-name ms-1">Damage - {{damage.name}}</span>                                
+                                <span class="issue-item-name ms-1">Damage - {{getStainZone(damage)}}</span>                                
+                            </div>
+                            <div class="issue-item stain d-flex align-items-center" v-for="(damage, index) in ITEM.Issues.damagesissues" :key="index">
+                                <span class="issue-item-name issue-tag ms-1">Damage - {{damage.name}} </span>
                             </div> 
                             <div class="issue-item stain d-flex align-items-center" >
-                                <span class="issue-item-name ms-1 pt-2">{{ITEM.Issues.damagestext}} </span>
+                                <span class="issue-item-name issue-tag ms-1" v-if="ITEM.Issues.damagestext">Damage - {{ITEM.Issues.damagestext}} </span>
                             </div>                                                       
                         </div>
                     </div>
@@ -309,6 +315,11 @@ export default {
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
                 });
         }
+        function getStainZone(zone) {
+            if(typeof(zone !='undefined')){
+                return zone.description;
+            }
+        }
         return{
             ITEM,
             qz_printer,
@@ -322,6 +333,7 @@ export default {
             services_panel,
             item_history_panel,
             itemIdFromRoute,
+            getStainZone,
             markaslate,
             close: ()=>{
                 if(itemIdFromRoute > 0){
@@ -677,6 +689,9 @@ export default {
     font-size: 12px;
     line-height: 14px;
     color: #000000;
+}
+.issue-tag{
+   padding-left: 16px;
 }
 
 </style>

@@ -8,6 +8,7 @@ use App\Models\InfoCustomer;
 use App\Http\Controllers\BookingController;
 use App\Models\OrderRecurringCreator;
 use App\Models\Delivery;
+use App\Http\Controllers\DetailingController;
 use Exception;
 use stdClass;
 
@@ -168,8 +169,9 @@ class OrderController extends Controller
                     'order_id'=>$new_order_id,
 
                 ];
-
-                $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
+                if($new_order['do_delivery']){
+                   $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
+                }
             }
 
             if($id_booking !=0){
@@ -240,7 +242,7 @@ class OrderController extends Controller
             ]);
 
 
-
+         if($new_order['hd_delivery']){
 
             $delivery_slot = $new_order['hd_delivery_timeslot'];
             $tranche_delivery = BookingController::getBookingDetailFromSlot($delivery_slot);
@@ -271,6 +273,7 @@ class OrderController extends Controller
                 'DeliveryaskID'=>$booking_hd_delivery->DeliveryaskID,
                 'DateDeliveryAsk'=>$new_order['hd_delivery']
             ]);
+         }
 
 
 
@@ -592,6 +595,19 @@ class OrderController extends Controller
 
             $total_amount = 100*$amount_two_dp;
 
+            $payment_arr = [
+                'type'=>'card',
+                'datepayment'=>date('Y-m-d H:i:s'),
+                'status'=>'',
+                'montant'=>number_format($amount_two_dp,2),
+                'order_id'=>$order_id,
+                'card_id'=>$card->id,
+                'CustomerID'=>$order->CustomerID,
+                'created_at'=>date('Y-m-d H:i:s'),
+            ];
+
+            $payment_id = DB::table('payments')->insertGetId($payment_arr);
+
             try{
                 $payment_intent = $stripe->paymentIntents->create([
                     'amount'            => $total_amount, //100*0.01
@@ -606,53 +622,54 @@ class OrderController extends Controller
                     'off_session' => true,
                     'confirm' => true,
                 ]);
-            }catch(Exception $e){
-                return response([
-                    'error_stripe'=>$e,
-                ]);
-            }
+
+                if($payment_intent && isset($payment_intent->status)){
+
+                    if($payment_intent->status == 'succeeded'){
+
+                        DB::table('payments')->where('id',$payment_id)->update(['status'=>'succeeded']);
+
+                        //Update order
+                        DB::table('infoOrder')->where('id',$order_id)->update([
+                            //'Paid'=>1,
+                            'payment_id'=>$payment_id,
+                        ]);
+
+                        $paid = true;
+
+                        //Create/update items, itempost and invoices
 
 
-            if($payment_intent && isset($payment_intent->status)){
-
-                if($payment_intent->status == 'succeeded'){
-
-                    $payment_arr = [
-                        'type'=>'card',
-                        'datepayment'=>date('Y-m-d H:i:s'),
-                        'status'=>$payment_intent->status,
-                        'montant'=>number_format($amount_two_dp,2),
-                        'order_id'=>$order_id,
-                        'card_id'=>$card->id,
-                        'CustomerID'=>$order->CustomerID,
-                        'created_at'=>date('Y-m-d H:i:s'),
-                    ];
-
-                    $payment_id = DB::table('payments')->insertGetId($payment_arr);
-
-                    //Update order
-                    DB::table('infoOrder')->where('id',$order_id)->update([
-                        //'Paid'=>1,
-                        'payment_id'=>$payment_id,
-                    ]);
-
-                    $paid = true;
-
-                    //Create/update items, itempost and invoices
-
-
-                }else{
-                    DB::table('unpaid_orders')->insert([
-                        'payment_intent_id'=>$payment_intent->id,
-                        'order_id'=>$order_id,
-                        'created_at'=>date('Y-m-d H:i:s'),
-                    ]);
-
-                    $err_payment = $payment_intent;
+                    }
                 }
-            }else{
+
+            }catch(\Stripe\Exception\CardException $e) {
+                OrderController::logErrorPayment($payment_id,$e->getError());
+
                 $err_payment = "Payment unsuccessful";
-            }
+
+                return response([
+                    'error_stripe'=>"Stripe error: ".$e->getError()->code,
+                ]);
+
+              }catch (\Stripe\Exception\InvalidRequestException $e) {
+
+                OrderController::logErrorPayment($payment_id,$e->getError());
+
+                $err_payment = "Payment unsuccessful";
+
+                return response([
+                    'error_stripe'=>"Stripe error: ".$e->getError()->code,
+                ]);
+              }catch (Exception $e) {
+                OrderController::logErrorPayment($payment_id,$e);
+
+                $err_payment = "Payment unsuccessful";
+
+                return response([
+                    'error_stripe'=>"Another problem occurred, maybe unrelated to Stripe",
+                ]);
+              }
         }
 
 
@@ -1135,7 +1152,7 @@ class OrderController extends Controller
             }
 
             if($order && number_format($amount_paid,2) >= number_format($order->Total,2)){
-                DB::table('infoOrder')->where('id',$order_id)->update(['Paid'=>1]);
+                DB::table('infoOrder')->where('id',$order_id)->update(['Paid'=>1,'TotalDue'=>0]);
 
                 if(!empty($invoices_id)){
                     DB::table('infoInvoice')->whereIn('InvoiceID',$invoices_id)->update(['Paid'=>1]);
@@ -1184,7 +1201,7 @@ class OrderController extends Controller
 
             $credit_remaining = $cust->credit - $credit_to_deduct;
 
-            $credit_remaining = number_format($credit_remaining,2);
+            //$credit_remaining = number_format($credit_remaining,2);
 
             DB::table('infoCustomer')->where('id',$cust->id)->update(['credit'=>($credit_remaining>0?$credit_remaining:0)]);
 
@@ -1273,7 +1290,48 @@ class OrderController extends Controller
        $ListInvoice=[];
        $infoitemsIds=[];
 
-           $order =  DB::table('infoOrder')->where('infoOrder.id',$order_id)->update([ 'datevoid' =>date('Y-m-d H:i:s'), ]);
+           $orderInfo  =  DB::table('infoOrder')->where('infoOrder.id',$order_id)
+                        ->join('infoCustomer','infoOrder.CustomerID','infoCustomer.CustomerID')
+                        ->first();
+
+           $revenuInfo = DB::table('revenu')->select('revenu.*',
+                            DB::raw('ROUND(SUM(Total), 2) as Totalfinal'),
+                            DB::raw('ROUND(SUM(AccountDiscounts), 2)  as AccountDiscountsFinal'),
+                            DB::raw('ROUND(SUM(OrderDiscounts), 2)  as OrderDiscountsfinal'),
+                            DB::raw('ROUND(SUM(DeliveryFees), 2)  as DeliveryFeesFinal'),
+                            DB::raw('ROUND(SUM(ExpressCharge), 2)  as ExpressChargefinal'),
+                            DB::raw('ROUND(SUM(bundles), 2)  as bundlesFinal'),
+                            DB::raw('ROUND(SUM(FailedDeliveryCharge), 2)  as FailedDeliveryChargeFinal'),
+                        )
+                        ->where('revenu.order_id',$order_id)
+                        ->first();              
+        
+           $order_revenu = [
+                'OrderRevenueLocation'=> $orderInfo->OrderRevenueLocation,
+                'Total'=>($revenuInfo->Totalfinal?-($revenuInfo->Totalfinal):0),
+                'AccountDiscounts'=>($revenuInfo->AccountDiscountsFinal?-($revenuInfo->AccountDiscountsFinal):0),
+                'OrderDiscounts'=>($revenuInfo->OrderDiscountsfinal?-($revenuInfo->OrderDiscountsfinal):0),
+                'DeliveryFees'=>($revenuInfo->DeliveryFeesFinal?-($revenuInfo->DeliveryFeesFinal):0),
+                'ExpressCharge'=>($revenuInfo->ExpressChargefinal?-($revenuInfo->ExpressChargefinal):0),
+                'bundles'=>($revenuInfo->bundlesFinal?-($revenuInfo->bundlesFinal):0),
+                'FailedDeliveryCharge'=>($revenuInfo->FailedDeliveryChargeFinal?-($revenuInfo->FailedDeliveryChargeFinal):0),
+                'TypeDelivery'=>$orderInfo->TypeDelivery,
+                'CustomerID'=>$orderInfo->CustomerID,
+                'btob'=>$orderInfo->btob,
+                'order_id'=>$order_id,
+                'Status'=>"ADJVOID",
+                'users_id'=>Auth::user()->id,
+                'created_at'=>date('Y-m-d H:i:s')
+           ];
+   
+           DB::table('revenu')->insert($order_revenu);
+          
+
+           $order =  DB::table('infoOrder')->where('infoOrder.id',$order_id)->update([
+            'datevoid' =>date('Y-m-d H:i:s'),
+            'Status'   => "VOID",
+            'Total'    => 0,
+         ]);
            foreach ($ListSubOrder as $suborder) {
                 foreach ($suborder as $key=>$invoice) {
                        DB::table('infoInvoice')->where('infoInvoice.InvoiceID', $invoice['InvoiceID'] )
@@ -1314,6 +1372,111 @@ class OrderController extends Controller
            }
 
       return response()->json(['done'=>'ok']);
+    }
+
+    public function deleteorder(Request $request){
+
+        $orderid=$request->post('order_id');
+
+            $infoOrder=DB::table('infoOrder')->where('infoOrder.id',$orderid)->first();
+
+            if($infoOrder){
+                $pickup = DB::table('pickup')->where('pickup.order_id',$orderid)->first();
+
+                    if(empty($pickup)){
+                        DB::table('infoOrder')->where('infoOrder.id',$orderid)->update([
+                            'Status'=>'DELETE'
+                        ]);
+                    }else if(!empty($pickup)){
+
+                        $items=DB::table('detailingitem')->where('detailingitem.order_id',$infoOrder->id)->get();
+                        if(!empty($items)){
+                            foreach($items as $k=>$v){
+                                $deleted = DB::table('detailingitem')->where('id',$v->id)->delete();
+                            }
+                        }
+
+                        DB::table('infoOrder')->where('infoOrder.id',$orderid)->update([
+                            'Status'=>'SCHEDULED'
+                        ]);
+                    }
+            }
+        return response()->json(['done'=>'ok']);
+    }
+
+    public function getOrderToFulfill(Request $request){
+        $order_id = $request->order_id;
+
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+        $user = Auth::user();
+
+        return response()->json([
+            'order'=>$order,
+            'user'=>$user,
+        ]);
+
+    }
+
+    public function fulfillOrder(Request $request){
+        $order_id = $request->order_id;
+        $paid = $request->paid;
+
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+
+        if($paid){
+            DB::table('infoOrder')->where('id',$order_id)->update(['Paid'=>1,'TotalDue'=>0]);
+            DB::table('infoInvoice')->where('OrderID',$order->id)->update(['Paid'=>1]);
+        }
+
+        $statusCode = "";
+        $content = "";
+        $res = false;
+
+        $site_url = \Illuminate\Support\Facades\URL::to("/");
+
+        if(strpos($site_url,'blancposdev') > -1){
+            //Do nothing
+        }elseif(strpos($site_url,'fullcirclepos') > -1){
+            $endpoint = "http://blancpos.vpc-direct-service.com/fulfiled-v1-order.php";
+            $token = "GhtfvbbG4489hGtyEfgARRGht3";
+
+            $site_url = \Illuminate\Support\Facades\URL::to("/");
+
+            $client = new \GuzzleHttp\Client();
+
+            $response = $client->request('GET', $endpoint, ['query' => [
+                'order_id'=>$order->OrderID,
+                'token'=>$token,
+                'userid'=>Auth::user()->id,
+            ]]);
+
+            $statusCode = $response->getStatusCode();
+            $content = $response->getBody();
+            $content = str_replace('\\"','',$content);
+
+            $res = @json_decode($content);
+
+            //*/
+        }
+
+        return response()->json([
+            'post'=>$request->all(),
+            'status'=>$statusCode,
+            'content'=>$content,
+            'output'=>$res,
+        ]);
+    }
+
+    public static function logErrorPayment($payment_id,$err){
+        DB::table('payments')->where('id',$payment_id)->update(['status'=>'card failed','info'=>json_encode($err)]);
+
+        $payment_line = DB::table('payments')->where('id',$payment_id)->first();
+
+        DB::table('unpaid_orders')->insert([
+            'payment_intent_id'=>'',
+            'order_id'=>$payment_line->order_id,
+            'created_at'=>date('Y-m-d H:i:s'),
+        ]);
     }
 
 }

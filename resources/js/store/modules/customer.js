@@ -67,6 +67,7 @@ export const Customer = {
             state.filter.selected_nav = payload;
         },
         [SET_CUSTOMER_FILTER]: (state, payload)=>{
+            state.filter.skip = 0; 
             if(payload.Customername){
                 state.filter.Customername = payload.Customername.value;
             }else {

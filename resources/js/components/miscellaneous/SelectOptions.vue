@@ -59,9 +59,13 @@
             }
 
             const select=(index)=>{
+                if(props.options[index].value == current_display.value){
+                    current.value="";
+                    context.emit("update:modelValue", '');
+                }else{
                     current.value=index;
                     context.emit("update:modelValue",props.options[index].value);
-
+                }   
                 store.commit(`${SELECT_MODULE}${SET_CURRENT_SELECT}`,'');
             }
 

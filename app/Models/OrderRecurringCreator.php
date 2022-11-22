@@ -42,8 +42,10 @@ cancel_bookings[]=array(
 namespace App\Models;
 
 use App\Customer;
+use App\Http\Controllers\NotificationController;
 use App\Models\DayGenerator;
 use Carbon\Carbon;
+use Exception;
 use function GuzzleHttp\Psr7\str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -69,7 +71,7 @@ class OrderRecurringCreator
 
     public function __construct($CustomerID=null,$trigger=null)
     {
-
+        try{
         $this->file_time= date('Y-m-d');
         //Storage::disk('local')->delete('order_recurring'.DIRECTORY_SEPARATOR.'OR_'.$this->file_time.'.md');
         $this->holidays=Holiday::getHolidays();
@@ -158,6 +160,34 @@ class OrderRecurringCreator
 
                 $this->l('Check 02: Check ended');
 
+
+
+
+                $this->l('Check 2.1: Checking if existing non recurring order\'s pickup date or non recurring order\'s delivery date falls between a recently updated pause dates.');
+                $infoOrders = DB::table('infoOrder')->where('CustomerID', '=', $CustomerID)->where(function ($query) {
+                    $query->whereDate('DatePickup', '>=', date('Y-m-d'))->orWhereDate('DateDeliveryAsk', '>=', date('Y-m-d'));
+
+                })->whereNotIn('Status', ['RECURRING','DEL'])->get();
+
+                foreach ($infoOrders as $infoOrder){
+
+                    if($this->isDatePaused($infoOrder->DatePickup,$customer)&&($this->isDateFuture($infoOrder->DatePickup)||$this->isToday($infoOrder->DatePickup))) {
+                        $this->l("#NONREC: The pickup date `$infoOrder->DatePickup` for non-recurring order `$infoOrder->id` is Paused. This order will now be deleted since it has not been picked up yet.");
+                        $this->delNonRecurringOrder($infoOrder);
+                    }else if($this->isDatePaused($infoOrder->DateDeliveryAsk,$customer)&&$this->isDateFuture($infoOrder->DateDeliveryAsk)){
+                        $this->l("#NONREC:  The delivery date `$infoOrder->DateDeliveryAsk` for non-recurring order `$infoOrder->id` is Paused. This delivery will now be reschedule on next possible date and time slot since it has already been picked up and we are obliged to deliver the item back to the customer.");
+                        $this->reScheduleNonRecurringDelivery($infoOrder,$customer);
+                    }
+
+
+                }
+
+                $this->l('Check 2.1: Check ended');
+
+
+
+
+
                 //checks against cancel dates
                 $this->l('Check 03: Checking if existing order\'s pickup date or order\'s delivery date falls has recently been cancelled.');
                 $noBookingDays=$this->getDaysWithoutBooking($customer);
@@ -237,7 +267,11 @@ class OrderRecurringCreator
 
         $this->l('## End Cron : '.date('Y-m-d H:i:s'));
 
-
+        }catch(Exception $e){
+            NotificationController::Notify('','+23057520441','','0_SMS_CRON_REC_ERROR',['error'=>$e->getMessage()]);//reyewat   
+            NotificationController::Notify('','+23052525997','','0_SMS_CRON_REC_ERROR',['error'=>$e->getMessage()]);//franck
+            $this->l('## '.date('Y-m-d H:i:s').' #Caught exception: `'.  $e->getMessage().'`');
+        }
     }
     public function isDateHoliday($date){
         return in_array($date,$this->holidays);
@@ -591,7 +625,164 @@ class OrderRecurringCreator
             ]);
         $this->l("infoOrder with id `$infoOrder->id` updated to Status DELETE");
     }
+    public function reScheduleNonRecurringDelivery($infoOrder,$customer){
 
+        $this->l('reScheduleNonRecurringDelivery()');
+        $ScheduleBookingDay=$this->scheduleBookingDay($customer);
+        $pickupdate=Carbon::createFromFormat('Y-m-d',$infoOrder->DatePickup);
+        if(empty($ScheduleBookingDay)){
+            $this->l("#NONREC: Cannot reschedule, customer does not have any recurring booking");
+            return;
+        }
+        $dg=new DayGenerator($ScheduleBookingDay);
+        $delivery_date='';
+        $d=0;
+        while($delivery_date=='') {
+
+            $dayObj=$dg->next();
+            $dayname=$dayObj->dayname;
+            if($dayObj->return_to_start)
+                $d++;
+                $possible_delivery_date = date('Y-m-d', strtotime($dayname . " this week + " . ($d * 7) . " days"));
+                $d1=Carbon::createFromFormat('Y-m-d',$possible_delivery_date);
+            if($d1->isSameDay($pickupdate))
+            $this->l("#NONREC: ### skipping same day: `$possible_delivery_date`");
+                if($d1->isAfter($pickupdate)&&!$d1->isSameDay($pickupdate)) {
+                    $this->l("#NONREC: New possible booking date (Delivery): `$possible_delivery_date`");
+                    $pausedFrom = $customer->PauseDateFrom;
+                    $pausedTo = $customer->PauseDateTo;
+
+                    if ($pausedFrom != '' && $pausedTo != '') {
+                        $d1 = Carbon::createFromFormat('Y-m-d', $pausedFrom);
+                        $d2 = Carbon::createFromFormat('Y-m-d', $pausedTo);
+
+                        $d3 = Carbon::createFromFormat('Y-m-d', $possible_delivery_date);
+                        if ($d3->between($d1, $d2)) {
+                            $this->l("#NONREC: Possible booking date (Delivery): `$possible_delivery_date` is between pause dates `$pausedFrom` and `$pausedTo`. Skipping further test.");
+                            continue;
+                        }
+
+
+                    } else if ($pausedFrom != '') {
+                        $d1 = Carbon::createFromFormat('Y-m-d', $pausedFrom);
+
+                        $d3 = Carbon::createFromFormat('Y-m-d', $possible_delivery_date);
+                        if ($d3->isAfter($d1)) {
+                            $this->l("#NONREC: Possible booking date (Delivery): `$possible_delivery_date` is after pause start date(pause indefinitely) `$pausedFrom`.End pause not specified. Cannot assign new date.Skipping further test.");
+                            $delivery_date = '2020-01-01';
+                            continue;
+                        }
+
+                    } else if ($pausedTo != '') {
+                        $d2 = Carbon::createFromFormat('Y-m-d', $pausedTo);
+
+                        $d3 = Carbon::createFromFormat('Y-m-d', $possible_delivery_date);
+                        if ($d3->isBefore($d2)) {
+                            $this->l("#NONREC: Possible booking date (Delivery): `$possible_delivery_date` is before pause end date(pause to) `$pausedTo`. Skipping further test.");
+                            continue;
+                        }
+
+                    }
+
+
+                    if (in_array($possible_delivery_date, $this->holidays)) {
+                        $this->l("#NONREC: `$possible_delivery_date` is a holiday. Finding next delivery date.");
+                        continue;
+                    }
+
+                    $delivery_date = $possible_delivery_date;
+                    $this->l("#NONREC: Next booking date (Delivery) is: `$delivery_date`");
+                    break;
+                }
+
+
+        }
+
+        if($infoOrder->DateDeliveryAsk!=$delivery_date) {
+            $timeslot = $this->getTimeSlot($delivery_date, $customer);
+            $this->l('#NONREC: The time slot is: `' . $timeslot['tranchefrom'] . '` - `' . $timeslot['trancheto'] . '`');
+
+
+            $existing_deliveryask = DB::table('deliveryask')->where('CustomerID', '=', $customer->CustomerID)->where('DeliveryaskID', '=', $infoOrder->DeliveryaskID)->first();
+           if($existing_deliveryask==null){
+            $this->l('#NONREC: Error: Existing delivery ask not found');
+            return;
+           }
+            //$deliveryPref = DB::table('DeliveryPreference')->where('CustomerID', '=', $customer->CustomerID)->first();
+            $deliveryask_id = DB::table('deliveryask')->insertGetId([
+                'PhoneNumber' => $existing_deliveryask->PhoneNumber,
+                'CodeCountry' => $existing_deliveryask->CodeCountry,
+                'TypeDelivery' => $existing_deliveryask->TypeDelivery,
+                'CustomerID' => $existing_deliveryask->CustomerID,
+                'AddressID' => $existing_deliveryask->AddressID,
+                'id_customer' => $existing_deliveryask->id_customer,
+                'comment' => $existing_deliveryask->comment,
+                'trancheto' => $timeslot['trancheto'],
+                'trancheFrom' => $timeslot['tranchefrom'],
+                'address_id' => $existing_deliveryask->address_id,
+                'created_at' => date('Y-m-d H:i:s'),
+                'status' => $existing_deliveryask->status,
+                'date' => $delivery_date,
+
+            ]);
+            $new_deliveryask = DB::table('deliveryask')->where('id', '=', $deliveryask_id)->first();
+            $this->l("#NONREC: DeliveryaskID changing from `$infoOrder->DeliveryaskID` to `$new_deliveryask->DeliveryaskID` on order `$infoOrder->id`");
+            DB::table('infoOrder')->where('id', '=', $infoOrder->id)->update([
+                'DeliveryaskID' => $new_deliveryask->DeliveryaskID,
+                'DateDeliveryAsk' => $delivery_date
+            ]);
+
+
+            $this->l("#NONREC: Rescheduling delivery performed on `$infoOrder->id` from `$infoOrder->DateDeliveryAsk` to `$delivery_date`");
+            DB::table('deliveryask')->where('CustomerID', '=', $customer->CustomerID)->where('DeliveryaskID', '=', $infoOrder->DeliveryaskID)->update([
+                'date' => '2020-01-01',
+                'status' => 'DEL',
+            ]);
+            $this->l("#NONREC: Previous deliveryask with DeliveryaskID `$infoOrder->DeliveryaskID` has changed status to DEL");
+            $infoInvoices = DB::table('infoInvoice')
+                ->select('infoInvoice.InvoiceID')
+                ->join('infoOrder', function ($join) use ($infoOrder) {
+                    $join->on('infoOrder.OrderID', '=', 'infoInvoice.OrderID')
+                        ->where('infoOrder.OrderID', '<>', '')
+                        ->where('infoOrder.id', '=', $infoOrder->id);
+                })->get();
+
+            $promiseddate_updated = false;
+            foreach ($infoInvoices as $infoInvoice) {
+                DB::table('infoitems')->where('InvoiceID', '=', $infoInvoice->InvoiceID)->update([
+                    'PromisedDate' => $delivery_date
+                ]);
+                $promiseddate_updated = true;
+            }
+
+            if ($promiseddate_updated) {
+                $this->l("#NONREC: Promised Date updated to: `$delivery_date`");
+            }
+        }else{
+            $this->l("#NONREC: Same date rescheduling avoided.");
+        }
+    }
+    public function delNonRecurringOrder($infoOrder){
+        DB::table('pickup')->where('PickupID', '=', $infoOrder->PickupID)
+            ->update([
+                'status' => 'DEL'
+            ]);
+
+        $this->l("#NONREC: Pickup with PickupID `$infoOrder->PickupID` updated to status DEL");
+
+        DB::table('deliveryask')->where('DeliveryaskID', '=', $infoOrder->DeliveryaskID)
+            ->update([
+                'status' => 'DEL'
+            ]);
+        $this->l("#NONREC: Delivery with DeliveryaskID `$infoOrder->DeliveryaskID` updated to status DEL");
+        DB::table('infoOrder')->where('id', '=', $infoOrder->id)
+            ->update([
+                'DatePickup' => '2020-01-01',
+                'DateDeliveryAsk' => '2020-01-01',
+                'Status' => 'DELETE'
+            ]);
+        $this->l("#NONREC: infoOrder with id `$infoOrder->id` updated to Status DELETE");
+    }
 
     public function getDeliveryDate($pickup_date,$customer){
         $this->l('getDeliveryDate()');

@@ -95,6 +95,7 @@ class DetailingController extends Controller
                 'detailing_list' => $detailingitemlist,
                 'customer' => $customer,
                 'count_has_invoices'=>$count_has_invoices,
+                'order_status' => $order->Status,
             ]
         );
     }
@@ -104,9 +105,10 @@ class DetailingController extends Controller
         //+  SUM (typeitem.pricecleaning*complexities.coefcleaning) + SUM(typeitem.pricecleaning*fabrics.coefcleaning )
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
-        if($order->Status=="FULFILLED"){
+        if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED'])){
             return;
         }
+
             $detailingitemlist = DB::table('detailingitem')->select(['detailingitem.id','detailingitem.pricecleaning','brands.coefcleaning','detailingitem.complexities_id','detailingitem.fabric_id','detailingitem.cleaning_services','detailingitem.etape','detailingitem.status','detailingitem.cleaning_price_type','detailingitem.dry_cleaning_price','detailingitem.cleaning_addon_price','detailingitem.etape'])
                 ->join('typeitem', 'detailingitem.typeitem_id', 'typeitem.id')
                 ->join('brands', 'detailingitem.brand_id', 'brands.id')
@@ -144,9 +146,11 @@ class DetailingController extends Controller
 
                         if(is_array($cs)){
                             foreach($cs as $keycs=>$idcs){
+                                /*
                                 if(!in_array($idcs,[1,2,3])){
                                     unset($cs[$keycs]);
                                 }
+                                */
                             }
                         }
 
@@ -738,14 +742,19 @@ class DetailingController extends Controller
         $damages_zones=collect();
         if (isset($detailingitem['stains']) && $detailingitem['stains'] != null) {
             $stains=json_decode($detailingitem['stains'],true);
-            $stains_tags = DB::table('issues_tag')->select('id','name')->whereIn('id', array_column($stains, 'id_issue'))->get();
+            $stains_tags_decode=json_decode($detailingitem['stainsissue'],true);
+            if(!empty($stains_tags_decode)){
+                $stains_tags = DB::table('issues_tag')->select('id','name')->whereIn('id',$stains_tags_decode)->get();
+            }
             $stains_zones = DB::table('itemzones')->whereIn('id', array_column($stains, 'id_zone'))->get();
         }
         if (isset($detailingitem['damages']) && $detailingitem['damages'] != null) {
             $damages=json_decode($detailingitem['damages'],true);
-            $damages_tags = DB::table('issues_tag')->select('id','name')->whereIn('id', array_column($damages, 'id_issue'))->get();
+            $damages_tags_decode=json_decode($detailingitem['damagesissues'],true);
+            if(!empty($damages_tags_decode)){
+               $damages_tags = DB::table('issues_tag')->select('id','name')->whereIn('id', $damages_tags_decode)->get();
+            }
             $damages_zones = DB::table('itemzones')->whereIn('id', array_column($damages, 'id_zone'))->get();
-
         }
         return  array(
             'typeitem_name' => isset($typeitem) ? $typeitem['name'] : '',
@@ -764,6 +773,8 @@ class DetailingController extends Controller
             'damages' => isset($detailingitem['damages']) ? json_decode($detailingitem['damages']) : array(),
             'issues_zones' => $stains_zones->merge($damages_zones) ,
             'issues_tags' => $stains_tags->merge($damages_tags) ,
+            'stains_tags' => $stains_tags,
+            'damages_tags' => $damages_tags
         );
     }
 
@@ -1137,7 +1148,7 @@ class DetailingController extends Controller
 
     public function calculateCheckout($order_id){
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
-        if($order->Status=="FULFILLED")
+        if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED']))
         return;
 
         $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
@@ -1145,16 +1156,36 @@ class DetailingController extends Controller
         $_SUBTOTAL_WITH_DISCOUNT=0;
         $_ITEMS_TOTAL = 0;
 
+        $all_typeitems = [];
+        $count_by_typeitem = [];
+
+        $all_services = [];
+        $count_by_service = [];
+
         $items = DB::table('detailingitem')
         ->select('detailingitem.*','detailingitem.id AS detailingitem_id','typeitem.pricecleaning as baseprice')
         ->join('infoOrder','detailingitem.order_id','infoOrder.id')
         ->join('typeitem','detailingitem.typeitem_id','typeitem.id')
         ->where('infoOrder.id',$order_id)
         ->get();
-            if(count($items) > 0)
+
+        if(count($items) > 0){
             foreach($items as $k=>$v){
                 $_ITEMS_TOTAL += $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+                $all_typeitems[] = $v->typeitem_id;
+
+                $services = @json_decode($v->cleaning_services);
+
+                if(is_array($services) && !empty($services)){
+                    foreach($services as $index=>$service){
+                        $all_services[] = $service;
+                    }
+                }
             }
+
+            $count_by_typeitem = array_count_values($all_typeitems);
+            $count_by_service = array_count_values($all_services);
+        }
 
 
 
@@ -1168,7 +1199,13 @@ class DetailingController extends Controller
             $bundles = DB::table('bundles')->whereIn('id',$bundles_id)->get();
 
             foreach($bundles as $k=>$v){
-                $_BUNDLES_DISCOUNT += $v->discount;
+                $bundle_type = $v->type;
+                if(isset(${"count_by_".$bundle_type}[$v->bundles_id]) && ${"count_by_".$bundle_type}[$v->bundles_id]>=$v->qty)
+                    $_BUNDLES_DISCOUNT += $v->discountbyitem*${"count_by_".$bundle_type}[$v->bundles_id];
+
+               /* if($v->type=='service' && isset($count_by_service[$v->bundles_id]) && $count_by_service[$v->bundles_id]>=$v->qty)
+                    $_BUNDLES_DISCOUNT += $v->discountbyitem*$count_by_service[$v->bundles_id];
+                    */
             }
         }
 
@@ -1221,6 +1258,10 @@ class DetailingController extends Controller
 
         if($order->detailed_at=='0000-00-00 00:00:00'){
             $_ACCOUNT_DISCOUNT=($cust->discount/100) * $_SUBTOTAL;
+        }
+
+        if($_SUBTOTAL==0){
+            $_ACCOUNT_DISCOUNT = 0;
         }
 
 
@@ -1294,7 +1335,7 @@ class DetailingController extends Controller
 
 
 
-        if($order->detailed_at=='0000-00-00 00:00:00'){
+        if($order->detailed_at=='0000-00-00 00:00:00' || $_SUBTOTAL==0){
             $values['AccountDiscount'] = number_format($_ACCOUNT_DISCOUNT,2);
             $values['AccountDiscountPerc'] = $cust->discount;
         }
@@ -1334,6 +1375,7 @@ class DetailingController extends Controller
         $balance = 0;
         $amount_paid_card = [];
         $amount_paid_credit = [];
+        $amount_paid_other = [];
         $discount_perc = 0;
         $credit_to_deduct = 0;
         $cust_discount = 0;
@@ -1549,6 +1591,11 @@ class DetailingController extends Controller
 
         }
 
+        $all_typeitem = [];
+        $count_by_typeitem = [];
+        $all_services = [];
+        $count_by_service = [];
+
         $items = DB::table('detailingitem')
             ->select('detailingitem.*','detailingitem.id AS detailingitem_id','typeitem.pricecleaning as baseprice')
             ->join('infoOrder','detailingitem.order_id','infoOrder.id')
@@ -1647,7 +1694,7 @@ class DetailingController extends Controller
         $issues = DB::table('issues_tag')->get();
         if(count($issues) > 0){
             foreach($issues as $k=>$v){
-                $issue_names[$v->id][$v->type] = $v->name;
+                $issue_names[$v->id] = $v->name;
             }
         }
 
@@ -1669,6 +1716,16 @@ class DetailingController extends Controller
 
         if(count($items) > 0){
             foreach($items as $k=>$v){
+
+                $all_typeitem[] = $v->typeitem_id;
+
+                $allservices = @json_decode($v->cleaning_services);
+
+                if(is_array($allservices) && !empty($allservices)){
+                    foreach($allservices as $id=>$serv){
+                        $all_services[] = $serv;
+                    }
+                }
 
                 $services = [];
                 //Tailoring
@@ -1779,6 +1836,9 @@ class DetailingController extends Controller
 
                 $items[$k]->stains = @json_decode($v->stains);
                 $items[$k]->damages = @json_decode($v->damages);
+                $items[$k]->damagesissues = @json_decode($v->damagesissues);
+                $items[$k]->stainsissue = @json_decode($v->stainsissue);
+
 
 
                 $items[$k]->detailed_services = [];
@@ -1844,6 +1904,8 @@ class DetailingController extends Controller
 
             }
 
+            $count_by_typeitem = array_count_values($all_typeitem);
+            $count_by_service = array_count_values($all_services);
         }
 
         $order_without_upcharges = $total_price;
@@ -1903,8 +1965,21 @@ class DetailingController extends Controller
             $bundles = DB::table('bundles')->whereIn('id',$bundles_id)->get();
 
             foreach($bundles as $k=>$v){
-                $order_bundles[$v->name] = number_format($v->discount,2);
-                $bundles_discount += $v->discount;
+                $bundle_type =  $v->type;
+
+                if(isset(${"count_by_".$bundle_type}[$v->bundles_id]) && ${"count_by_".$bundle_type}[$v->bundles_id]>=$v->qty){
+                    $order_bundles[$v->name] = number_format($v->discountbyitem*${"count_by_".$bundle_type}[$v->bundles_id],2);
+                    $bundles_discount += $v->discountbyitem*${"count_by_".$bundle_type}[$v->bundles_id];
+                }
+
+                /*
+                if($v->type=='service' && isset($count_by_service[$v->bundles_id]) && $count_by_service[$v->bundles_id]>=$v->qty){
+                    $order_bundles[$v->name] = number_format($v->discountbyitem,2);
+                    $bundles_discount += $v->discountbyitem;
+                }
+                */
+
+                //To add for service
             }
         }
 
@@ -1946,6 +2021,12 @@ class DetailingController extends Controller
                                 'card_id'=>$v->card_id
                             ];
                         }
+                    }else{
+                        $amount_paid_other[] = [
+                            'montant'=> number_format($v->montant,2),
+                            'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
+                            'name'=>ucfirst($v->type),
+                        ];
                     }
                 }
             }
@@ -2072,6 +2153,7 @@ class DetailingController extends Controller
             //'price_plus_delivery'=>number_format($price_plus_delivery,2),
             'order_bundles'=>$order_bundles,
             'has_invoices'=>$has_invoices,
+            'amount_paid_other'=>$amount_paid_other,
         ]);
     }
 
@@ -2778,30 +2860,42 @@ class DetailingController extends Controller
             ];
         }
 
-        if(in_array(1,$cs) && in_array(3,$cs)){
-            //100%
-        }
-
-        if(in_array(1,$cs) && !in_array(3,$cs) && !in_array(2,$cs)){
-            $baseprice = $baseprice*($services[1]['perc']/100);
-        }
-        if(!in_array(1,$cs) && !in_array(3,$cs) && in_array(2,$cs)){
-            $baseprice = $baseprice*($services[2]['perc']/100);
-        }
-        if(!in_array(1,$cs) && in_array(3,$cs) && !in_array(2,$cs)){
-            $baseprice = $baseprice*($services[3]['perc']/100);
-        }
+        $price_std = 0;
+        $price_ozone = 0;
 
 
-        foreach($services as $k=>$v){
-            if(isset($services[$k])){
-                if($v['perc']==0){
-                    $baseprice += $v['fixed_price'];
+        if(in_array(1,$cs) || in_array(2,$cs) || in_array(3,$cs)){
+
+            if(in_array(1,$cs) && in_array(3,$cs)){
+                //100%
+                $price_std = $baseprice;
+            }
+
+            if(in_array(1,$cs) && !in_array(3,$cs) && !in_array(2,$cs)){
+                $price_std = $baseprice*($services[1]['perc']/100);
+            }
+            if(!in_array(1,$cs) && !in_array(3,$cs) && in_array(2,$cs)){
+                $price_std = $baseprice*($services[2]['perc']/100);
+            }
+            if(!in_array(1,$cs) && in_array(3,$cs) && !in_array(2,$cs)){
+                $price_std = $baseprice*($services[3]['perc']/100);
+            }
+
+        }else{
+            foreach($services as $k=>$v){
+                if(isset($services[$k])){
+                    if($v['perc']==0){
+                        $price_ozone += $v['fixed_price'];
+                    }
                 }
             }
         }
 
-        return $baseprice;
+
+
+        $total = $price_std + $price_ozone;
+
+        return $total;
     }
 
     public function preCalculateCheckout(Request $request){

@@ -59,7 +59,7 @@
                                         class="body_regular td-text"
                                         @click="openDetailing(det.item_number)"
                                     >£{{ det.price.toFixed(2) }}</td>
-                                    <td @click="loadRemoveItemModal(det.tracking,det.item_number)"><img src="/images/garbage.svg"/></td>
+                                    <td v-if="count_has_invoices==0" @click="loadRemoveItemModal(det.tracking,det.item_number)"><img src="/images/garbage.svg"/></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -199,6 +199,7 @@ export default {
         const cur_item_to_remove = ref(0);
         const count_has_invoices = ref(0);
         const order_invoices = ref({});
+        const orderStatus = ref("");
 
         store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
             true,
@@ -222,6 +223,7 @@ export default {
                     customer_name.value = response.data.customer.Name;
                     cur_customer.value = response.data.customer;
                     detailing_list.value = response.data.detailing_list;
+                    orderStatus.value = response.data.order_status;
                     item_total.value = detailing_list.value.reduce((acc, ele) => {
                         return acc + ele.price;
                     }, 0);
@@ -265,7 +267,9 @@ export default {
 
         }
         function openDetailing(item_id) {
-            router.push('/detailing_item/' + order_id.value + '/' + item_id);
+            if(orderStatus.value != "DELIVERED" && orderStatus.value != "VOID" && orderStatus.value != "FULFILLED" && orderStatus.value != "DELETE" ){  
+              router.push('/detailing_item/' + order_id.value + '/' + item_id);
+            }
         }
 
         const showTrackingModal = ()=>{
@@ -458,6 +462,7 @@ export default {
             cur_tracking_to_remove,
             cur_item_to_remove,
             count_has_invoices,
+            orderStatus
         };
     },
 };

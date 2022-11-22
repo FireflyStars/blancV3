@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\OrderRecurringCreator;
 use App\Http\Controllers\NotificationController;
 use App\Notification;
+use stdClass;
 
 class CustomerController extends Controller
 {
@@ -485,7 +486,33 @@ class CustomerController extends Controller
         }
         return response()->json($custId);
     }
+    public function getInvoiceHistories(Request $request){
 
+        $skip=$request->post('skip');
+        $take=$request->post('take');
+        $CustomerID=$request->post('CustomerID');
+
+
+            $invoiceHistorylist=DB::table('infoOrderPrint')
+                ->select( [
+                    'infoOrderPrint.FactureID','infoOrderPrint.id','infoOrderPrint.NumFact','infoOrderPrint.montant as Total','infoOrderPrint.created_at as issue_date','users.name AS issuer',
+                    DB::raw('DATE_ADD(infoOrderPrint.created_at, INTERVAL 15 DAY) as due_date'),
+                    DB::raw('(infoOrderPrint.montant/1.2) as net'),
+                    DB::raw('(infoOrderPrint.montant-infoOrderPrint.montant/1.2) as vat'),
+                    DB::raw('IF(infoOrderPrint.Paid= 1, "invoicePaid", "invoiceUnpaid") as Paid')
+                ])->leftJoin('users',function($join){
+                    $join->on('users.id','=','infoOrderPrint.user_id');
+                })
+                ->where('infoOrderPrint.CustomerID','=',$CustomerID);
+
+
+
+
+
+        $invoiceHistorylist=$invoiceHistorylist->skip($skip)->take($take);
+        $invoiceHistorylist=$invoiceHistorylist->get();
+        return response()->json($invoiceHistorylist);
+    }
     public function createCustomerSubAccount(Request $request){
         $emailAddress = $request->customer_data['email'] !='' ? $request->customer_data['email'] : (Str::random(10).'@noemail.com');
 
@@ -1064,11 +1091,15 @@ class CustomerController extends Controller
                     ->first();
                     if($customer->account_type == "Sub"){
                         $company = DB::table('infoCustomer')->select('infoCustomer.CompanyName')->where('infoCustomer.CustomerID','=',$customer->CustomerIDMaster)->first();
-                        $customer->CompanyName = $company->CompanyName;
+                        if($company){
+                            $customer->CompanyName = $company->CompanyName;
+                        }
                    }
                    else if($customer->account_type == "Main"){
                        $company = DB::table('infoCustomer')->select('infoCustomer.CompanyName')->where('infoCustomer.CustomerID','=',$customer->CustomerID)->first();
-                       $customer->CompanyName = $company->CompanyName;
+                       if($company){
+                        $customer->CompanyName = $company->CompanyName;
+                       }
                    }
 
         $total = DB::table('infoOrder')->where('CustomerID', $customer->CustomerID)
@@ -1187,16 +1218,20 @@ class CustomerController extends Controller
                                                          $tranche_arr = explode("_",$tranche);
                                                          if(isset($tranche_arr[0]) && isset($tranche_arr[1])){
                                                              $slot = Tranche::getSlotFromTranche($tranche_arr[0],$tranche_arr[1]);
+                                                             if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $current_orders[$k][$i][$key]->order_right_time = $timeslot;
+                                                             }
                                                          }
                                                      //leftTime
                                                          $tranche_left = $item->order_left_time;
                                                          $tranche_arr_left = explode("_",$tranche_left);
                                                          if(isset($tranche_arr_left[0]) && isset($tranche_arr_left[1])){
                                                              $slot = Tranche::getSlotFromTranche($tranche_arr_left[0],$tranche_arr_left[1]);
+                                                             if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $current_orders[$k][$i][$key]->order_left_time = $timeslot;
+                                                             }
                                                          }
                                                      //}
                                                  }
@@ -1311,16 +1346,20 @@ class CustomerController extends Controller
                                                          $tranche_arr = explode("_",$tranche);
                                                          if(isset($tranche_arr[0]) && isset($tranche_arr[1])){
                                                              $slot = Tranche::getSlotFromTranche($tranche_arr[0],$tranche_arr[1]);
-                                                             $timeslot = $tranches_slots[$slot];
-                                                             $past_orders[$k][$i][$key]->order_right_time = $timeslot;
+                                                             if($slot){
+                                                                $timeslot = $tranches_slots[$slot];
+                                                                $past_orders[$k][$i][$key]->order_right_time = $timeslot;
+                                                             }
                                                          }
                                                          //leftTime
                                                          $tranche_left = $item->order_left_time;
                                                          $tranche_arr_left = explode("_",$tranche_left);
                                                          if(isset($tranche_arr_left[0]) && isset($tranche_arr_left[1])){
                                                              $slot = Tranche::getSlotFromTranche($tranche_arr_left[0],$tranche_arr_left[1]);
+                                                             if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $past_orders[$k][$i][$key]->order_left_time = $timeslot;
+                                                             }
                                                          }
                                                      //}
                                                      //}
@@ -1425,16 +1464,20 @@ class CustomerController extends Controller
                                                          $tranche_arr = explode("_",$tranche);
                                                          if(isset($tranche_arr[0]) && isset($tranche_arr[1])){
                                                              $slot = Tranche::getSlotFromTranche($tranche_arr[0],$tranche_arr[1]);
+                                                             if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $scheduled_orders[$k][$i][$key]->order_right_time = $timeslot;
+                                                             }
                                                          }
                                                          //leftTime
                                                          $tranche_left = $item->order_left_time;
                                                          $tranche_arr_left = explode("_",$tranche_left);
                                                          if(isset($tranche_arr_left[0]) && isset($tranche_arr_left[1])){
                                                              $slot = Tranche::getSlotFromTranche($tranche_arr_left[0],$tranche_arr_left[1]);
+                                                             if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $scheduled_orders[$k][$i][$key]->order_left_time = $timeslot;
+                                                             }
                                                          }
                                                      //}
                                                  }
@@ -1444,6 +1487,12 @@ class CustomerController extends Controller
 
         $customer->scheduled_orders = $scheduled_orders;
 
+        $customer->first_order = DB::table('infoOrder')->select('id as orde_id', 'DateDeliveryAsk as date')
+        ->where('infoOrder.CustomerID','=',$customer->CustomerID)
+        ->whereIn('infoOrder.status',['RECRURRING' , 'SCHEDULED'])
+        ->whereDate('infoOrder.DateDeliveryAsk', '>=', date('Y-m-d'))
+        ->orderBy('infoOrder.DateDeliveryAsk', 'asc')
+        ->first();
 
         return response()->json( $customer );
     }
@@ -1491,7 +1540,7 @@ class CustomerController extends Controller
             //                     ->select('')
         }
 
-        $customer->billing = DB::table('address')->select('AddressID' , 'id' ,'address1', 'address2', 'postcode', 'Town' , 'Country')
+        $customer->billing = DB::table('address')
                                 ->where('CustomerID', $customer->CustomerID)
                                 ->where('status', "BILLING")
                                 ->first();
@@ -2142,7 +2191,7 @@ class CustomerController extends Controller
              ];
 
             NotificationController::Notify($addr->EmailAddress, '+123456789', '4B_RECURRING_PAUSE', '', $mail_vars, false, 0, $infocustomer->CustomerID);
-        
+
         }
 
         OrderRecurringCreator::processRecurringOrders('PAUSE RECCURING BOOKING',$infocustomer->CustomerID);
@@ -2461,7 +2510,7 @@ class CustomerController extends Controller
 
 
         $orders = DB::table('infoOrder')
-                ->select('infoCustomer.Name','infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*')
+                ->select('infoCustomer.Name','infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.TotalDue','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*')
                 ->join('detailingitem','infoOrder.id','detailingitem.order_id')
                 ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -2497,6 +2546,7 @@ class CustomerController extends Controller
                                                                                 'priceTotal'=>$v->priceTotal,
                                                                                 'CustomerID'=>$v->CustomerID,
                                                                                 'order_id'=>$v->order_id,
+                                                                                'TotalDue'=>$v->TotalDue,
                                                                             ];
             $order_per_customer[$v->CustomerID][] = $v->order_id;
         }
@@ -2587,12 +2637,11 @@ class CustomerController extends Controller
 
         $customer = DB::table('infoCustomer')->where('CustomerID',$details->CustomerID)->first();
         $addr = Delivery::getAddressByCustomerUUID($details->CustomerID,true);
+        $delivery_addr = DB::table('address')->where('CustomerID',$customer->CustomerID)->where('status','DELIVERY')->first();
 
         $contact = false;
 
-        if($addr){
-            $contact = DB::table('contacts')->where('address_id',$addr->id)->first();
-        }
+        $contact = DB::table('contacts')->where('CustomerID',$customer->CustomerID)->latest('id')->first();
 
         $order_details = (array) @json_decode($details->info);
 
@@ -2624,12 +2673,16 @@ class CustomerController extends Controller
 
         $orderids = [];
 
+
         foreach($grouped_by_customer as $customerid=>$orders){
             $order_net = 0;
             $order_vat = 0;
             $order_total = 0;
 
             $orderid_per_customer = [];
+            $totaldue_per_order = [];
+            $total_ext_discount_per_order = [];
+
 
            foreach($orders as $orderid=>$invoices){
                 if(!in_array($orderid,$orderid_per_customer)){
@@ -2663,7 +2716,10 @@ class CustomerController extends Controller
 
                             $dept[$v->Department][] = $item_txt;
                             $total += $v->priceTotal;
+                            $totaldue_per_order[$v->order_id] = $v->TotalDue;
                         }
+
+
                         $items_per_dept[$v->Department] = array_count_values($dept[$v->Department]);
 
                         usort($promised_dates,function($a,$b){
@@ -2686,6 +2742,9 @@ class CustomerController extends Controller
 
                     }
                 }
+
+                $total_ext_discount_per_order[$orderid] = $order_total;
+
            }
 
            foreach($order_details as $customerid=>$invoices){
@@ -2700,24 +2759,30 @@ class CustomerController extends Controller
             }
            }
 
+
            $discount_per_customer = 0;
 
+           /*
            $orders_per_cust = DB::table('infoOrder')->whereIn('id',$orderid_per_customer)->get();
 
            foreach($orders_per_cust as $ok=>$oc){
             $discount_per_customer += $oc->OrderDiscount;
            }
+           */
+            foreach($total_ext_discount_per_order as $order_id=>$order_amount){
+                $discount_per_customer += $order_amount - (isset($totaldue_per_order[$order_id])?$totaldue_per_order[$order_id]:0);
+            }
 
            $order_total_exc_discount = $order_total;
            $order_total = $order_total - $discount_per_customer;
 
            $order_net = $order_total_exc_discount/1.2;
+
+
            $facture_total[] = $order_total;
 
 
            $order_vat = $order_total_exc_discount - $order_net;
-
-
 
            $order_totals[$customerid]['order_net'] = number_format($order_net,2);
            $order_totals[$customerid]['order_vat'] = number_format($order_vat,2);
@@ -2727,25 +2792,26 @@ class CustomerController extends Controller
 
         }
 
-        $orders = DB::table('infoOrder')->whereIn('id',$orderids)->get();
+
         $discount = 0;
-        /*
-        if(count($orders) > 0){
-            foreach($orders as $k=>$v){
-                $discount += $v->OrderDiscount;
-            }
-        }
-        */
+        $facture_amount_total = 0;
+        $facture_amount_vat = 0;
+
 
         $facture_amount_total = array_sum($facture_total);
-        $discounted_amount = $facture_amount_total - $discount;
-        $facture_amount_net = $discounted_amount/1.2;
 
-        $facture_amount_vat = $discounted_amount - $facture_amount_net;
+
+
+        $facture_amount_net = $facture_amount_total/1.2;
+
+        $facture_amount_vat = $facture_amount_total - $facture_amount_net;
+
+
 
         $data = [
            'customer'=>$customer,
            'address'=>$addr,
+           'delivery_address'=>$delivery_addr,
            'contact'=>$contact,
            'grouped_by_customer'=>$grouped_by_customer,
            'cust_names'=>$cust_names,
@@ -2975,7 +3041,13 @@ class CustomerController extends Controller
                     $recipients[] = $email;
                 }
 
+                $attachment = new stdClass;
+                $attachment->url = \Illuminate\Support\Facades\URL::to("/inv-pdf")."?id=".$v->FactureID;
+                $attachment->nom = 'INV'.date('Ymd').'-'.sprintf('%04d', $v->id);
+                $attachment->mime_type = 'application/pdf';
+                $attachment_arr = (array) $attachment;
 
+                $attachments = [$attachment_arr];
 
                 if(!empty($recipients)){
                     foreach($recipients as $key=>$val){
@@ -2987,6 +3059,8 @@ class CustomerController extends Controller
                         $notification->TypeNotification ='EMAIL';
                         $notification->InfoOrder_id = $order_id;
                         $notification->CustomerID = $cust->CustomerID;
+                        $notification->email_attachements = json_encode($attachments);
+
                         if($notification->save()){
                             $sent = true;
                         }
@@ -3032,7 +3106,7 @@ class CustomerController extends Controller
             $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','BILLING')->first();
 
             if($addr){
-                $updated = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','BILLING')->update([
+                $updated = DB::table('address')->where('AddressID',$addr->AddressID)->update([
                     'address1'=>$request->address1,
                     'address2'=>$request->address2,
                     'postcode'=>$request->postcode,
@@ -3046,12 +3120,12 @@ class CustomerController extends Controller
                 'AddressID'     => '',
                 'longitude'     => $request->customerLon,
                 'Latitude'      => $request->customerLat,
-                'Town'          => $request->companyCity,
+                'Town'          => $request->city,
                 'County'        => $request->companyCounty,
                 'Country'       => 'GB',
-                'postcode'      => $request->companyPostCode,
-                'address1'      => $request->companyAddress1,
-                'address2'      => $request->companyAddress2,
+                'postcode'      => $request->postcode,
+                'address1'      => $request->address1,
+                'address2'      => $request->address2,
                 'status'        => 'BILLING',
                 'created_at'    => now(),
                 'updated_at'    => now(),
@@ -3096,7 +3170,7 @@ class CustomerController extends Controller
             }else{
 
                 $contact = [
-                    'CustomerID'    => $customer_id,
+                    'CustomerID'    => $cust->CustomerID,
                     'address_id'    => '',
                     'name'          => $request->name,
                     'firstname'     => $request->firstname,
@@ -3111,7 +3185,7 @@ class CustomerController extends Controller
                     DB::table('contacts')->insert($contact);
                 } catch (\Exception $e) {
                     return response()->json(['error'=> $e->getMessage()]);
-             }
+                }
         }
     }
 
@@ -3123,59 +3197,98 @@ class CustomerController extends Controller
 
     public function getArInvoicedCustomers(Request $request){
         $customers = DB::table('infoOrderPrint')
-            ->select('*','infoOrderPrint.id as row_id')
-            ->join('infoCustomer','infoOrderPrint.CustomerID','infoCustomer.CustomerID')
-            ->where('infoOrderPrint.email','!=','')->get();
+        ->select('*','infoOrderPrint.id as row_id')
+        ->join('infoCustomer','infoOrderPrint.CustomerID','infoCustomer.CustomerID')
+        ->where('infoOrderPrint.email','!=','')->get();
 
-        $list = [];
 
-        $customer_ids = [];
-        $addr = [];
+    $list = [];
 
-        if(count($customers) > 0){
-            foreach($customers as $k=>$v){
-                if(!in_array($v->CustomerID,$customer_ids)){
-                    array_push($customer_ids,$v->CustomerID);
-                }
+    $customer_ids = [];
+    $addr = [];
+    $notification_ids = [];
+    $notification_status = [];
+
+    if(count($customers) > 0){
+        foreach($customers as $k=>$v){
+            if(!in_array($v->CustomerID,$customer_ids)){
+                array_push($customer_ids,$v->CustomerID);
             }
 
-            $addresses = DB::table('address')->where('status','BILLING')->whereIn('CustomerID',$customer_ids)->get();
+            $notificationids = @json_decode($v->notification_id);
 
-            foreach($addresses as $k=>$v){
-                $addr[$v->CustomerID] = $v;
-            }
-
-            foreach($customers as $k=>$v){
-
-
-                $level = "";
-                if(($v->CustomerIDMaster==''|| $v->IsMaster==1) && $v->IsMasterAccount== 0){
-                    $level = "Main";
-                } else if ($v->CustomerIDMaster!=''){
-                    $level = "Sub";
-                } else if ($v->IsMasterAccount== 1){
-                    $level = "Master";
+            if(is_array($notificationids)){
+                foreach($notificationids as $key=>$id){
+                    $notification_ids[] = $id;
                 }
-
-                $orders = @json_decode($v->infoOrder_id);
-
-
-                $list[] = [
-                    'id'=>$v->row_id,
-                    'NumFact'=>$v->NumFact,
-                    'type'=>($v->btob==0?"B2C":"B2B"),
-                    'active_in'=>$v->TypeDelivery,
-                    'name'=>$v->Name,
-                    'email'=>@json_decode($v->email),
-                    'phone'=>$v->Phone,
-                    'level'=>$level,
-                    'orders'=>implode(",",$orders),
-                    'order_total'=>$v->montant,
-                    'url_invoice'=>\Illuminate\Support\Facades\URL::to("/inv-pdf")."?id=".$v->FactureID,
-                ];
-
             }
         }
+
+        $notifs = [];
+        if(!empty($notification_ids)){
+            $notifs = DB::table('notifications')->whereIn('id',$notification_ids)->get();
+            foreach($notifs as $k=>$v){
+                $notification_status[$v->id] = [
+                    'email'=>$v->Email,
+                    'sent'=>$v->Sent,
+                    'id'=>$v->id,
+                ];
+            }
+        }
+
+
+
+        $addresses = DB::table('address')->where('status','BILLING')->whereIn('CustomerID',$customer_ids)->get();
+
+        foreach($addresses as $k=>$v){
+            $addr[$v->CustomerID] = $v;
+        }
+
+        foreach($customers as $k=>$v){
+
+
+            $level = "";
+            if(($v->CustomerIDMaster==''|| $v->IsMaster==1) && $v->IsMasterAccount== 0){
+                $level = "Main";
+            } else if ($v->CustomerIDMaster!=''){
+                $level = "Sub";
+            } else if ($v->IsMasterAccount== 1){
+                $level = "Master";
+            }
+
+            $orders = @json_decode($v->infoOrder_id);
+
+
+            $list[] = [
+                'id'=>$v->row_id,
+                'NumFact'=>$v->NumFact,
+                'type'=>($v->btob==0?"B2C":"B2B"),
+                'active_in'=>$v->TypeDelivery,
+                'name'=>$v->Name,
+                'email'=>@json_decode($v->email),
+                'phone'=>$v->Phone,
+                'level'=>$level,
+                'orders'=>implode(",",$orders),
+                'order_total'=>$v->montant,
+                'url_invoice'=>\Illuminate\Support\Facades\URL::to("/inv-pdf")."?id=".$v->FactureID,
+                'notification_ids'=>@json_decode($v->notification_id),
+            ];
+        }
+
+        foreach($list as $k=>$v){
+            $list[$k]['notification_status'] = [];
+
+            if(is_array($v['notification_ids'])){
+
+                foreach($v['notification_ids'] as $key=>$id){
+
+                    if(isset($notification_status[$id])){
+                        $list[$k]['notification_status'][] = $notification_status[$id];
+                    }
+                }
+            }
+        }
+    }
 
         return response()->json([
             'list'=>$list,
