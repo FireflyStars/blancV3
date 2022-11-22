@@ -416,15 +416,15 @@
                                                             <span>{{formatDate(isc_pickup)}}</span><br/>
                                                             <span>{{all_timeslots[isc_pickup_timeslot]}}</span>
                                                         </div>
-                                                        <div class="body_medium dark-grey"  v-if="deliverymethod=='delivery_only'">
+                                                        <div class="body_medium dark-grey"  v-if="deliverymethod=='delivery_only' && do_delivery">
                                                             <span>{{formatDate(do_delivery)}}</span><br/>
                                                             <span>{{all_timeslots[do_delivery_timeslot]}}</span>
                                                         </div>
-                                                        <div class="body_medium dark-grey"  v-if="deliverymethod=='home_delivery'">
+                                                        <div class="body_medium dark-grey"  v-if="deliverymethod=='home_delivery' && hd_delivery">
                                                             <span>{{formatDate(hd_delivery)}}</span><br/>
                                                             <span>{{all_timeslots[hd_delivery_timeslot]}}</span>
                                                         </div>
-                                                        <div class="body_medium dark-grey"  v-if="deliverymethod=='shipping'">
+                                                        <div class="body_medium dark-grey"  v-if="deliverymethod=='shipping' && shp_delivery">
                                                             <span>{{formatDate(shp_delivery)}}</span>
                                                         </div>
                                                     </div>
@@ -520,6 +520,30 @@
                                 </template>
                             </modal>
 
+                            <modal v-if="no_delivery_date == false" ref="delivery_modal">
+                                <template #closebtn>
+                                    <span class="close" id="delivery_modal_close" @click="deliveryAddOnModal"></span>
+                                </template>
+                                <template #bheader>
+                                    <div class="bmodal-header py-4 text-center">Are you sure?</div>
+                                </template>
+                                <template #bcontent>
+                                    <div class="row py-5">
+                                        <div class="col-12 text-center"> you are creating a delivery order without delivery date.</div>
+                                    </div>
+                                </template>
+                                <template #mbuttons>
+                                    <div class="row mx-0 justify-content-center mt-3 mb-5">
+                                        <div class="col-5">
+                                            <button class="btn btn-outline-success w-100" @click="CreateOrderWithoutDeliveryDate()" >YES</button>
+                                        </div>
+                                        <div class="col-1"></div>
+                                        <div class="col-5">
+                                            <button class="btn btn-outline-dark w-100" @click="deliveryAddOnModal">NO</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </modal>
                         </div>
                     </div>
 
@@ -577,6 +601,7 @@ import axios from 'axios';
 
             const showcontainer=ref(false);
             const deliverymethod =ref('');
+            const delivery_modal = ref();
 
             //isc : in store collection
             //const isc_dropoff =ref('');
@@ -589,6 +614,7 @@ import axios from 'axios';
             const isc_pickup_tranche=ref([]);
             const proceedtodetailing_disabled=ref(false);
             const no_main_booking=ref(false);
+            const no_delivery_date=ref(false);
 
             //do : delivery only
             //const do_dropoff =ref('');
@@ -1037,12 +1063,16 @@ import axios from 'axios';
                        }
 
                        err_txt.forEach(function(v,i){
+                        if(v == 'openModal'){
+                            delivery_modal.value.showModal();
+                        }else{
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
                             {
                                 message: v,
                                 ttl: 3,
                                 type: 'danger'
                             });
+                        }
                        })
 
                    }else{
@@ -1240,25 +1270,16 @@ import axios from 'axios';
                 }
 
                 if(val=='delivery_only'){
-                    /*
-                    if(do_dropoff.value==''){
-                        err_arr.push('Dropoff date is empty');
+
+                    if(do_delivery.value==''  && no_delivery_date.value == false){
+                        err_arr.push('openModal');
                     }
-                    if(do_dropoff_timeslot.value==0){
-                        err_arr.push('Dropoff time is empty');
-                    }
-                    */
-                    if(do_delivery.value==''){
-                        err_arr.push('Delivery date is empty');
-                    }
-                    if(do_delivery_timeslot.value==0){
+                    if(do_delivery_timeslot.value==0 && do_delivery.value!='' ){
                         err_arr.push('Delivery time is empty');
                     }
-                    /*
-                    if(do_dropoff.value > do_delivery.value){
-                        err_arr.push('Dropoff date is greater than delivery date');
+                    if(do_delivery.value=='' && do_delivery_timeslot.value==0 && no_delivery_date.value == false){
+                        err_arr.push('openModal');
                     }
-                    */
                 }
 
                 if(val=='home_delivery'){
@@ -1268,31 +1289,24 @@ import axios from 'axios';
                     if(hd_pickup_timeslot.value==0){
                         err_arr.push('Pickup time is empty');
                     }
-                    if(hd_delivery.value==''){
-                        err_arr.push('Delivery date is empty');
+                    if(hd_delivery.value=='' && hd_pickup.value!='' && hd_pickup_timeslot.value!=0 && no_delivery_date.value == false){
+                         err_arr.push('openModal');
                     }
-                    if(hd_delivery_timeslot.value==0){
+                    if(hd_delivery_timeslot.value==0 && hd_delivery.value!='' ){
                         err_arr.push('Delivery time is empty');
                     }
-                    if(hd_pickup.value > hd_delivery.value){
+                    if(hd_delivery.value=='' && hd_delivery_timeslot.value==0 && !no_delivery_date.value){
+                        err_arr.push('openModal');
+                    }
+                    if(hd_pickup.value > hd_delivery.value && hd_delivery.value!='' ){
                         err_arr.push('Pickup date is greater than delivery date');
                     }
                 }
 
                 if(val=='shipping'){
-                    /*
-                    if(shp_received.value==''){
-                        err_arr.push('Shipping received date is empty');
-                    }
-                    if(shp_received_timeslot.value==0){
-                        err_arr.push('Shipping received time is empty');
-                    }
-                    if(shp_received.value > shp_delivery.value){
-                        err_arr.push('Shipping delivery date is greater than received date');
-                    }
-                    */
-                    if(shp_delivery.value==''){
-                        err_arr.push('Shipping delivery date is empty');
+               
+                    if(shp_delivery.value=='' && !no_delivery_date.value){
+                        err_arr.push('openModal');
                     }
                     if(shp_address1.value==''){
                         err_arr.push('Shipping address1 is empty');
@@ -1321,6 +1335,7 @@ import axios from 'axios';
                 if(num==1){
                     let dt = new Date();
                     cur_date.value = dt;
+                    no_delivery_date.value = false;
                 }
 
                 process_step.value = num;
@@ -1734,6 +1749,13 @@ import axios from 'axios';
                     name: 'LandingPage'
                 });
             }
+            function deliveryAddOnModal(){
+             delivery_modal.value.closeModal();
+           }
+           function CreateOrderWithoutDeliveryDate(){
+              no_delivery_date.value = true
+              delivery_modal.value.closeModal();
+           }
 
             return {
                 showcontainer,
@@ -1823,9 +1845,13 @@ import axios from 'axios';
                 available_days,
                 available_cust_slots,
                 holidays,
-                cancel
-            }
-        },
+                cancel,
+                deliveryAddOnModal,
+                delivery_modal,
+                CreateOrderWithoutDeliveryDate,
+                no_delivery_date
+        }
+    },
         data(){
             return {
                 cardBrand: null,
