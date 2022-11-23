@@ -12,7 +12,14 @@
                 <div class="select" :class="{active: current_filter==ind}" @click="selectclick(ind)">{{select.name}}
                     <transition name="trans-filter" >
                         <div class="select-options" v-if="current_filter==ind" >
-                            <check-box v-for="(option,index) in select.options" :key="index" @checkbox-clicked="checkboxclicked" :id="index" :name="ind" :checked_checkbox="ind in preselection && preselection[ind].includes(index)">{{option}}</check-box>
+                            <check-box v-for="(option,index) in select.options" 
+                                :key="index" 
+                                @checkbox-clicked="checkboxclicked" 
+                                :id="index" 
+                                :name="ind" 
+                                :checked_checkbox="ind in preselection && preselection[ind].includes(index)">
+                                {{option}}
+                            </check-box>
                         </div>
                     </transition>
                 </div>
@@ -343,7 +350,7 @@
         top: 46px;
         background: #FFF;
         box-shadow: inset 0px 0px 4px rgba(37, 40, 43, 0.12);
-        max-height: 168px;
+        max-height: 250px;
         z-index: 1;
         overflow-y: auto;
         transform-origin: top center;

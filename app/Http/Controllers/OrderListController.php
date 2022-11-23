@@ -2580,10 +2580,13 @@ class OrderListController extends Controller
         return response()->json($orderlist);
     }
 
-    public function getStatusOrders(Request $request){
+    public function getStatusOrders(){
 
         $Status= [] ;
-        $orderstatus=DB::table('infoOrder')->select('infoOrder.Status')->distinct('infoOrder.Status')->get();
+        $orderstatus = DB::table('infoOrder')->select('Status')->distinct('Status')->get();
+        $tmp = $orderstatus[1];
+        $orderstatus[1] = $orderstatus[0];
+        $orderstatus[0] = $tmp;
             foreach ($orderstatus as $k => $v) {
                 $Status[$k] = $v->Status;
             }
