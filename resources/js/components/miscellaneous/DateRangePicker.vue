@@ -219,15 +219,15 @@
 
                 let firstDayofMonth = new Date(MonthYear.value.year, MonthYear.value.month, 1).getDay();
                 let lastDateofMonth = new Date(MonthYear.value.year, MonthYear.value.month + 1, 0).getDate();
-                console.log('Current=>Month-Year=>'+MonthYear.value.month+"-"+MonthYear.value.year);
-                console.log('firstDayofMonth=>'+firstDayofMonth);
-                console.log('lastDateofMonth=>'+lastDateofMonth);
+                // console.log('Current=>Month-Year=>'+MonthYear.value.month+"-"+MonthYear.value.year);
+                // console.log('firstDayofMonth=>'+firstDayofMonth);
+                // console.log('lastDateofMonth=>'+lastDateofMonth);
                 let lastMonth = (MonthYear.value.month == 0 ? 11 : MonthYear.value.month - 1);
                 let lastMonthYear = (MonthYear.value.month == 0 ? MonthYear.value.year - 1 : MonthYear.value.year);
-                console.log('lastMonth=>'+lastMonth);
-                console.log('lastMonthYear=>'+lastMonthYear);
+                // console.log('lastMonth=>'+lastMonth);
+                // console.log('lastMonthYear=>'+lastMonthYear);
                 let lastMonthEnd = new Date(lastMonthYear, lastMonth + 1, 0).getDate();
-                console.log('lastMonthEnd=>'+lastMonthEnd);
+                // console.log('lastMonthEnd=>'+lastMonthEnd);
                 let calendarStarts = (lastMonthEnd - firstDayofMonth + 2);
                 let notavailable = typeof props.availableDates !="undefined" && props.availableDates.length > 0;
                 if(calendarStarts <= lastMonthEnd){

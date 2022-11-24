@@ -15,7 +15,7 @@
                     <template v-for="(col,index) in tabledef" :key="index">
                         <td class="tcol" :colspan="colspan(index,order)"  :style="{width:col.width}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(order.id,index)" v-if="hideOnLate(order.Status,index,order)" >
                             <check-box v-if="col.type=='checkbox'" :checked_checkbox="(order.id==CURRENT_SELECTED&&route.params.order_id>0)||MULTI_CHECKED.includes(order)" :id="order.id" :order="order"  @checkbox-clicked="checkboxclicked"></check-box>
-                            <tag v-else-if="col.type=='tag'&&(order.Status!='LATE')||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate!=null)||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate==null&&hasRoles(['cc']))" :name="order[index]" >
+                            <tag v-else-if="typeof(order['index']) !='undefined' && col.type=='tag'&&(order.Status!='LATE')||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate!=null)||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate==null&&hasRoles(['cc']))" :name="order[index]" >
                                 <span  v-if="order.Status=='LATE'&&order.suggestedDeliveryDate!=null&&index=='Status'" class="tool-tip" :data-tooltip="`New Delivery date suggested, waiting for approval`"><i class="icon-late"></i>Late</span>
                             </tag>
                             <express-icon v-else-if="col.type=='express'" :express_values="order[index]"></express-icon>
@@ -119,7 +119,7 @@
                return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_SORT}`];
             });
             function loadMore(){
-                if((props.customer_id  || route.params.customerId) && (props.customer_id != "undefined" || route.params.customerId != "undefined")){     
+                if((props.customer_id  || route.params.customerId) && (props.customer_id != "undefined" || route.params.customerId != "undefined")){
                  store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading more, please wait...');
                  store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`,{customer:route.params.customerId = "" ? props.customer_id : route.params.customerId   , showmore:1}).finally(()=>{
                  window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
@@ -133,11 +133,11 @@
                  });
 
                 }
-            
+
 
             }
 
-             watch(route, (to) => {       
+             watch(route, (to) => {
                 customerId.value = route.params.customerId;
              })
 
@@ -146,7 +146,7 @@
                     return ('-' + ' ('+ order.ready_sub_orders+'%)');
                 } else {
                     return (order.ready_sub_orders + '/' + val + ' ('+ parseInt(order.ready_sub_orders*100/val) +'%)');
-                }  
+                }
             }
             function preprocess(def,val,order) {
                 if(typeof def.type!="undefined"&&def.type=="tag"){
@@ -209,10 +209,9 @@
                     NoDeliveryDate.value = false
                 }else {
                     NoDeliveryDate.value = true
-                }  
+                }
             }
             function checkboxallclicked(check,id,name) {
-                console.log('bangbang',check);
                     if(check==false)
                         store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
 
@@ -242,42 +241,43 @@
                             name:"Order status",
                             type: 'select',
                             options:Status_LIST
-                            /*{
-                                'ASSEMBLING':'ASSEMBLING',
-                                'AWAITING REDELIVERY':'AWAITING REDELIVERY',
-                                'AWAITING SALE':'AWAITING SALE',
-                                'CANCELLED':'CANCELLED',
-                                'CHECK IN ATELIER':'CHECK IN ATELIER',
-                                'COLLECTED':'COLLECTED',
-                                'DELETE':'DELETE',
-                                'DELIVERED':'DELIVERED',
-                                'DELIVERED TO STORE':'DELIVERED TO STORE',
-                                'DELIVERY IN STORE':'DELIVERY IN STORE',
-                                'DONATED TO CHARITY':'DONATED TO CHARITY',
-                                'DROPPED OFF':'DROPPED OFF',
-                                'FAILED DELIVERY':'FAILED DELIVERY',
-                                'FAILED PAYMENT':'FAILED PAYMENT',
-                                'FULFILLED':'FULFILLED',
-                                'IN PROCESS':'IN PROCESS',
-                                'IN STORAGE':'IN STORAGE',
-                                'LATE':'LATE',
-                                'LATE DELIVERY':'LATE DELIVERY',
-                                'MISSED PICKUP':'MISSED PICKUP',
-                                'OFFLOADED':'OFFLOADED',
-                                'ON VAN':'ON VAN',
-                                'OVERDUE FOR COLLECTION':'OVERDUE FOR COLLECTION',
-                                'OVERDUE STORE':'OVERDUE STORE',
-                                'PART ON HOLD':'PART ON HOLD',
-                                'PART PENDING':'PART PENDING',
-                                'PICKED UP':'PICKED UP',
-                                'READY':'READY',
-                                'RECURRING':'RECURRING',
-                                'READY IN STORE':'READY IN STORE',
-                                'SCHEDULED':'SCHEDULED',
-                                'SOLD':'SOLD',
-                                'VOID':'VOID',
-    
-                            }*/
+                            // options:
+                            // {
+                            //     'ASSEMBLING':'ASSEMBLING',
+                            //     'AWAITING REDELIVERY':'AWAITING REDELIVERY',
+                            //     'AWAITING SALE':'AWAITING SALE',
+                            //     'CANCELLED':'CANCELLED',
+                            //     'CHECK IN ATELIER':'CHECK IN ATELIER',
+                            //     'COLLECTED':'COLLECTED',
+                            //     'DELETE':'DELETE',
+                            //     'DELIVERED':'DELIVERED',
+                            //     'DELIVERED TO STORE':'DELIVERED TO STORE',
+                            //     'DELIVERY IN STORE':'DELIVERY IN STORE',
+                            //     'DONATED TO CHARITY':'DONATED TO CHARITY',
+                            //     'DROPPED OFF':'DROPPED OFF',
+                            //     'FAILED DELIVERY':'FAILED DELIVERY',
+                            //     'FAILED PAYMENT':'FAILED PAYMENT',
+                            //     'FULFILLED':'FULFILLED',
+                            //     'IN PROCESS':'IN PROCESS',
+                            //     'IN STORAGE':'IN STORAGE',
+                            //     'LATE':'LATE',
+                            //     'LATE DELIVERY':'LATE DELIVERY',
+                            //     'MISSED PICKUP':'MISSED PICKUP',
+                            //     'OFFLOADED':'OFFLOADED',
+                            //     'ON VAN':'ON VAN',
+                            //     'OVERDUE FOR COLLECTION':'OVERDUE FOR COLLECTION',
+                            //     'OVERDUE STORE':'OVERDUE STORE',
+                            //     'PART ON HOLD':'PART ON HOLD',
+                            //     'PART PENDING':'PART PENDING',
+                            //     'PICKED UP':'PICKED UP',
+                            //     'READY':'READY',
+                            //     'RECURRING':'RECURRING',
+                            //     'READY IN STORE':'READY IN STORE',
+                            //     'SCHEDULED':'SCHEDULED',
+                            //     'SOLD':'SOLD',
+                            //     'VOID':'VOID',
+
+                            // }
                         },
                         'infoOrder.TypeDelivery':{
                             name:"Destination",
@@ -289,7 +289,7 @@
                                 'NOTTING HILL':'NOTTING HILL',
                                 'SOUTH KEN':'SOUTH KEN'
                             }
-    
+
                         },
                         'infoOrder.deliverymethod':{
                             name:"Type",
@@ -298,7 +298,7 @@
                                 0:"POS3",
                                 1:"SPOT",
                             }
-    
+
                         },
                         'infoCustomer.OnAccount':{
                             name:"Payment type",
@@ -324,7 +324,7 @@
                                 exp24:"Express 24h",
                                 exp48:"Express 48h"
                             }
-    
+
                         },
                         'infoOrder.DET': {
                             name: 'Detailed Date',
@@ -340,7 +340,7 @@
                             name: 'Delivery Date',
                             id: 'deliv_date',
                             type: 'datepicker',
-                        },                        
+                        },
                     }
                 }
             }else if(props.tab.name == 'Customer Care'){
@@ -369,12 +369,12 @@
                                 'Complaint Investigation':'Complaint Investigation',
                                 'Lost Owner (No barcode)':'Lost Owner (No barcode)',
                                 'No Delivery Date':'No Delivery Date',
-                                'Failed Payment':'Failed Payment',	
+                                'Failed Payment':'Failed Payment',
                                 'Lost Item Investigation':'Lost Item Investigation',
                                 'Late Prod - Call Customer +2 days':'Late Prod - Call Customer +2 days',
                                 'Late Prod - Call Customer +3 days':'Late Prod - Call Customer +3 days',
                                 'Late Prod - Call Customer +5 days':'Late Prod - Call Customer +5 days',
-                                'No Delivered Not Paid'	:'No Delivered Not Paid',   
+                                'No Delivered Not Paid'	:'No Delivered Not Paid',
                             }
                         },
                         'infoOrder.Status':{
@@ -426,7 +426,7 @@
                             name: 'Delivery Date',
                             id: 'deliv_date',
                             type: 'datepicker',
-                        },                        
+                        },
                     }
                 }
             }
@@ -444,7 +444,7 @@
                         'infoOrder.Status':{
                             name:"Order status",
                             type: 'select',
-                            options: Status_LIST                      
+                            options: Status_LIST
                         },
                         'infoOrder.TypeDelivery':{
                             name:"Destination",
@@ -482,7 +482,7 @@
                             name: 'Delivery Date',
                             id: 'deliv_date',
                             type: 'datepicker',
-                        },                        
+                        },
                     }
                 }
             }
@@ -512,8 +512,8 @@
 
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,` please wait...`);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_SMSDELIVERY}`, listCustomers.value).then(()=>{
-                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Customers update successfully.',ttl:5,type:'success'});   
-                    window.location.reload();  
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Customers update successfully.',ttl:5,type:'success'});
+                    window.location.reload();
                 }).catch((error)=>{
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
                 });
