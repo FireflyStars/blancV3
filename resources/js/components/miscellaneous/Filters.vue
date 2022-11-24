@@ -6,21 +6,15 @@
       <h2 class ="col-8">Filter by</h2>
       <span @click="removefilter()">Remove filters</span>
      </div>
-        
+
         <div class="row" v-for="(select, ind) in filterDef.def" :key="ind">
             <div class="col" v-if="select.type == 'select'">
-                <div class="select" :class="{active: current_filter==ind}" @click="selectclick(ind)">{{select.name}}
-                    <transition name="trans-filter" >
-                        <div class="select-options" v-if="current_filter==ind" >
-                            <check-box v-for="(option,index) in select.options" :key="index" @checkbox-clicked="checkboxclicked" :id="index" :name="ind" :checked_checkbox="ind in preselection && preselection[ind].includes(index)">{{option}}</check-box>
-                        </div>
-                    </transition>
-                </div>
+                <multi-select-options :name="select.name" :optionKey="ind" :options="select.options" @selected-options="selectedOptions"></multi-select-options>
             </div>
             <div class="col" v-if="select.type == 'datepicker' && select.id == 'det_date'">
                 <div class="from-group mb-3">
-                    <date-range-picker 
-                        v-model="detDate" 
+                    <date-range-picker
+                        v-model="detDate"
                         :name="select.id"
                         :placeholder="select.name"
                         :droppos="{ top:'auto', right: 0, bottom:'auto', left:'auto', transformOrigin:'top right'}"
@@ -33,11 +27,11 @@
             </div>
             <div class="col" v-if="select.type == 'datepicker' && select.id == 'prod_date'">
                 <div class="from-group mb-3">
-                    <date-range-picker 
-                        v-model="prodDate" 
+                    <date-range-picker
+                        v-model="prodDate"
                         :name="select.id"
                         :placeholder="select.name"
-                        :droppos="{ top:'auto', right: 0, bottom:'auto', left:'auto', transformOrigin:'top right'}" 
+                        :droppos="{ top:'auto', right: 0, bottom:'auto', left:'auto', transformOrigin:'top right'}"
                         :color="'#000000'"
                         :font="'16px'"
                         ref="date_picker_prod"
@@ -47,8 +41,8 @@
             </div>
             <div class="col" v-if="select.type == 'datepicker' && select.id == 'deliv_date'">
                 <div class="from-group">
-                    <date-range-picker 
-                        v-model="delivDate" 
+                    <date-range-picker
+                        v-model="delivDate"
                         :name="select.id"
                         :placeholder="select.name"
                         :droppos="{ top:'auto', right: 0, bottom:'auto', left:'auto', transformOrigin:'top right'}"
@@ -72,13 +66,14 @@
     import {ref,computed, watch} from 'vue';
     import DateRangePicker from '../miscellaneous/DateRangePicker';
     import CheckBox from '../miscellaneous/CheckBox';
+    import MultiSelectOptions from '../miscellaneous/MultiSelectOptions';
     import {useRoute} from 'vue-router';
     import {useStore} from 'vuex';
     import {ORDERLIST_FILTER, ORDERLIST_GET_FILTER, ORDERLIST_MODULE,ORDERLIST_RESET_MULITCHECKED} from "../../store/types/types";
     export default {
         name: "Filters",
         props:['filterDef', 'data'],
-        components:{CheckBox, DateRangePicker},
+        components:{CheckBox, DateRangePicker, MultiSelectOptions},
         setup(props){
             const showfilter=ref(false);
             const current_filter=ref('');
@@ -103,48 +98,25 @@
             data.value = props.data;
             const route = useRoute();
 
-            function selectclick(sel) {
-                if(current_filter.value != sel) {
-                    current_filter.value = sel;
-                }else if(current_filter.value==sel){
-                    current_filter.value='';
-                }
-            }
             const hasActiveFilters=computed(()=>{
                 const filters= _.cloneDeep(store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_FILTER}`]);
                 const allEmpty= Object.values(filters).every((element) => element.length===0);
                 return !allEmpty;
             });
 
-
-            function checkboxclicked(check,id,name) {
-                console.log(check,id,name);
-                if(check)
-                if(name in preselection.value) {
-                    preselection.value[name].push(id);
-                }else {
-                    preselection.value[name] = [];
-                    preselection.value[name].push(id);
-                }
-
-                if(!check)
-                    if(name in preselection.value) {
-                        preselection.value[name]= preselection.value[name].filter(item=>item!=id);
-                    }
-            }
             function applyFilter() {
                 if(prodDate.value.start !='' && prodDate.value.end !='')
                     preselection.value['infoitems.ProdDate'] = [prodDate.value.start, prodDate.value.end];
                 else
                     delete preselection.value['infoitems.ProdDate']
-                if(delivDate.value.start !='' && delivDate.value.end !='')                    
+                if(delivDate.value.start !='' && delivDate.value.end !='')
                     preselection.value['infoitems.DelivDate'] = [delivDate.value.start, delivDate.value.end];
                 else
                     delete preselection.value['infoitems.DelivDate']
-                if(detDate.value.start !='' && detDate.value.end !='')                    
+                if(detDate.value.start !='' && detDate.value.end !='')
                     preselection.value['infoOrder.DetDate'] = [detDate.value.start, detDate.value.end];
                 else
-                    delete preselection.value['infoOrder.DetDate']    
+                    delete preselection.value['infoOrder.DetDate']
                 console.log(preselection);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,{ customer: route.params.customerId , search:route.params.value , filter:preselection.value});
@@ -161,23 +133,25 @@
             function removedata(){
                 preselection.value = {}
             }
+            const selectedOptions =( options, ind )=>{
+                preselection.value[ind] = options;
+            }
             return {
                 showfilter,
                 current_filter,
-                selectclick,
-                toggleShow,
-                checkboxclicked,
                 preselection,
-                applyFilter,
-                cancel,
                 hasActiveFilters,
                 prodDate,
                 delivDate,
                 data,
                 detDate,
-                removedata
+                toggleShow,
+                applyFilter,
+                cancel,
+                removedata,
+                selectedOptions
             }
-            
+
         },
         methods:{
             removefilter(){
@@ -272,6 +246,8 @@
         box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
         width:458px;
         min-height:445px;
+        max-height: 800px;
+        overflow-y: auto;        
         top:-8px;
         z-index: 2;
         transform-origin: top center;
@@ -291,80 +267,4 @@
     .subtitle{
         display: flex;
     }
-
-    .trans-filter-enter-from{
-        opacity: 0;
-        transform: scale(0.6);
-    }
-    .trans-filter-enter-to{
-        opacity: 1;
-        transform: scale(1);
-    }
-    .trans-filter-enter-active{
-        transition: all ease 0.2s;
-    }
-    .trans-filter-leave-from{
-        opacity: 1;
-        transform: scale(1);
-    }
-    .trans-filter-leave-to{
-        opacity: 0;
-        transform: scale(0.6);
-    }
-    .trans-filter-leave-active{
-        transition: all ease 0.2s;
-    }
-
-    .select{
-        background: #FFFFFF;
-        border: 0.5px solid #E0E0E0;
-        box-sizing: border-box;
-        border-radius: 5px;
-        padding: 0 36px 0 16px;
-        height: 40px;
-        font-size: 16px;
-        display: flex;
-        cursor: pointer;
-        align-items: center;
-        position: relative;
-        margin-bottom: 20px;
-
-    }
-    .select.active{
-        margin-right: -2px;
-        margin-left: -2px;
-        background: #EEEEEE;
-        border: 2px solid #000000;
-    }
-    .select-options{
-        position: absolute;
-        width: 100%;
-        left: 0;
-        top: 46px;
-        background: #FFF;
-        box-shadow: inset 0px 0px 4px rgba(37, 40, 43, 0.12);
-        max-height: 168px;
-        z-index: 1;
-        overflow-y: auto;
-        transform-origin: top center;
-    }
-    .select:after,.select:before{
-        content: " ";
-        height: 3px;
-        display: block;
-        width: 13px;
-        background: #868686;
-        border-radius: 10px;
-        transform: rotate(40deg);
-        right:22px;
-        position: absolute;
-    }
-    .select.active:after,.select.active:before{
-    background: #000000;
-    }
-    .select:after{
-        transform: rotate(-40deg);
-        right: 13px;
-    }
-
 </style>

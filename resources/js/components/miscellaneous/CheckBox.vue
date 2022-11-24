@@ -78,7 +78,7 @@
         margin: 0;
     }
     .filters span.chkbox{
-        margin: 14px 22px 14px 22px;
+        margin: 6px 22px 6px 22px;
     }
     .filters .chkbox_wrap{
         display: flex;
@@ -87,7 +87,7 @@
         margin: 0 10px;
     }
     .filters .chkbox_wrap label{
-        margin: 14px 22px 14px 0;
+        margin: 6px 22px 6px 0;
         font-weight: lighter;
     }
 </style>
