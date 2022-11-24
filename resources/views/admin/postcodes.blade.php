@@ -8,6 +8,7 @@
         td.rotate{
             border: none!important;
             padding: 3px 0!important;
+            text-align: center;
         }
         table.dataTable tbody td, table.dataTable tbody th {
             padding: 3px 4px;
@@ -19,7 +20,21 @@
             writing-mode: vertical-rl;
             transform: rotate(180deg);
             white-space: nowrap;
+        }
 
+        select {
+  /* for Firefox */
+  -moz-appearance: none;
+  /* for Chrome */
+  -webkit-appearance: none;
+}
+
+/* For IE10 */
+select::-ms-expand {
+  display: none;
+}
+        td.checked{
+            background-color: blue;
         }
 
         table.dataTable thead > tr > th {
@@ -40,6 +55,12 @@
         }
         .bgfriday{
             background: rgba(229,196,189,0.5);
+        }
+        .sel{
+            width: 100%;
+            background-color: #FFF;
+            color:black;
+            font-weight: bold;
         }
     </style>
     <div class="container-fluid">
@@ -229,12 +250,13 @@
                                         <td style="padding: 0">
                                             <table style="width: 100%" class="@if($day=="MONDAY")bgmonday @endif @if($day=="TUESDAY")bgtuesday @endif @if($day=="WEDNESDAY")bgwednesday @endif @if($day=="THURSDAY")bgthursday @endif @if($day=="FRIDAY")bgfriday @endif">
                                                 <tbody>
-                                                <tr style="background: transparent;"><td><input autocomplete="off" type="checkbox" name="t_[]" value="{{$postcode}}_{{$day}}_1" @if (isset($group_postcodes[$postcode][$day])&&in_array(1,$group_postcodes[$postcode][$day]))checked="checked" @endif></td>
-                                                    <td><input autocomplete="off" type="checkbox" name="t_[]" value="{{$postcode}}_{{$day}}_3" @if (isset($group_postcodes[$postcode][$day])&&in_array(3,$group_postcodes[$postcode][$day]))checked="checked" @endif></td>
-                                                    <td><input autocomplete="off" type="checkbox" name="t_[]" value="{{$postcode}}_{{$day}}_5" @if (isset($group_postcodes[$postcode][$day])&&in_array(5,$group_postcodes[$postcode][$day]))checked="checked" @endif></td>
-                                                    <td><input autocomplete="off" type="checkbox" name="t_[]" value="{{$postcode}}_{{$day}}_7" @if (isset($group_postcodes[$postcode][$day])&&in_array(7,$group_postcodes[$postcode][$day]))checked="checked" @endif></td>
-                                                    <td><input autocomplete="off" type="checkbox" name="t_[]" value="{{$postcode}}_{{$day}}_9" @if (isset($group_postcodes[$postcode][$day])&&in_array(9,$group_postcodes[$postcode][$day]))checked="checked" @endif></td>
-                                                    <td><input autocomplete="off" type="checkbox" name="t_[]" value="{{$postcode}}_{{$day}}_11" @if (isset($group_postcodes[$postcode][$day])&&in_array(11,$group_postcodes[$postcode][$day]))checked="checked" @endif></td>
+                                                <tr style="background: transparent;">
+                                                    <td @if (isset($group_postcodes[$postcode][$day])&&key_exists(1,$group_postcodes[$postcode][$day]))class="checked" @endif><select class="sel" name="#{{$postcode}}_{{$day}}_1" autocomplete="off"><option value="">--</option>@foreach ($preroutes['MONDAY'] as $preroute)<option @if (isset($group_postcodes[$postcode][$day])&&key_exists(1,$group_postcodes[$postcode][$day])&&$group_postcodes[$postcode][$day][1]==$preroute->id) selected="selected" @endif value="{{$preroute->id}}">{{$preroute->number}}</option>@endforeach</select></td>
+                                                    <td @if (isset($group_postcodes[$postcode][$day])&&key_exists(3,$group_postcodes[$postcode][$day]))class="checked" @endif><select class="sel" name="#{{$postcode}}_{{$day}}_3" autocomplete="off"><option value="">--</option>@foreach ($preroutes['TUESDAY'] as $preroute)<option @if (isset($group_postcodes[$postcode][$day])&&key_exists(3,$group_postcodes[$postcode][$day])&&$group_postcodes[$postcode][$day][3]==$preroute->id) selected="selected" @endif value="{{$preroute->id}}">{{$preroute->number}}</option>@endforeach</select></td>
+                                                    <td @if (isset($group_postcodes[$postcode][$day])&&key_exists(5,$group_postcodes[$postcode][$day]))class="checked" @endif><select class="sel" name="#{{$postcode}}_{{$day}}_5" autocomplete="off"><option value="">--</option>@foreach ($preroutes['WEDNESDAY'] as $preroute)<option @if (isset($group_postcodes[$postcode][$day])&&key_exists(5,$group_postcodes[$postcode][$day])&&$group_postcodes[$postcode][$day][5]==$preroute->id) selected="selected" @endif value="{{$preroute->id}}">{{$preroute->number}}</option>@endforeach</select></td>
+                                                    <td @if (isset($group_postcodes[$postcode][$day])&&key_exists(7,$group_postcodes[$postcode][$day]))class="checked" @endif><select class="sel" name="#{{$postcode}}_{{$day}}_7" autocomplete="off"><option value="">--</option>@foreach ($preroutes['THURSDAY'] as $preroute)<option @if (isset($group_postcodes[$postcode][$day])&&key_exists(7,$group_postcodes[$postcode][$day])&&$group_postcodes[$postcode][$day][7]==$preroute->id) selected="selected" @endif value="{{$preroute->id}}">{{$preroute->number}}</option>@endforeach</select></td>
+                                                    <td @if (isset($group_postcodes[$postcode][$day])&&key_exists(9,$group_postcodes[$postcode][$day]))class="checked" @endif><select class="sel" name="#{{$postcode}}_{{$day}}_9" autocomplete="off"><option value="">--</option>@foreach ($preroutes['FRIDAY'] as $preroute)<option @if (isset($group_postcodes[$postcode][$day])&&key_exists(9,$group_postcodes[$postcode][$day])&&$group_postcodes[$postcode][$day][9]==$preroute->id) selected="selected" @endif value="{{$preroute->id}}">{{$preroute->number}}</option>@endforeach</select></td>
+                                                    <td @if (isset($group_postcodes[$postcode][$day])&&key_exists(11,$group_postcodes[$postcode][$day]))class="checked" @endif><select class="sel" name="#{{$postcode}}_{{$day}}_11" autocomplete="off"><option value="">--</option>@foreach ($preroutes['SATURDAY'] as $preroute)<option @if (isset($group_postcodes[$postcode][$day])&&key_exists(11,$group_postcodes[$postcode][$day])&&$group_postcodes[$postcode][$day][11]==$preroute->id) selected="selected" @endif value="{{$preroute->id}}">{{$preroute->number}}</option>@endforeach</select></td>
                                                 </tr>
                                                 </tbody>
                                             </table>
