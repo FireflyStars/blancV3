@@ -35,7 +35,7 @@
             label: String,
             options: Object,
             modelValue: Array,
-            optionKey: String,
+            // selected: Array,
         },
         // emits: [ 'selected-options' ], 
         components:{ CheckBox },
