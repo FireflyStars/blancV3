@@ -10,31 +10,6 @@
         <div class="row" v-for="(select, ind) in filterDef.def" :key="ind">
             <div class="col" v-if="select.type == 'select'">
                 <multi-select-options :name="select.name" :optionKey="ind" :options="select.options" @selected-options="selectedOptions"></multi-select-options>
-                <!-- <div class="select" :class="{active: current_filter==ind}" @click="selectclick($event, ind)">{{select.name}}
-                    <transition name="trans-filter" >
-                        <div class="select-options" v-if="current_filter==ind" >
-                            <span class="tick-all" @click="tickAllOptions(ind, select.options)">Tick all</span>
-                            <check-box v-for="(option,index) in select.options"
-                                :key="index"
-                                @checkbox-clicked="checkboxclicked"
-                                :id="index"
-                                :name="ind"
-                                :checked_checkbox="ind in preselection && preselection[ind].includes(index)">
-                                {{option}}
-                            </check-box>
-                        </div>
-                    </transition>
-                </div>
-                <div class="selected-options" v-if="ind in preselection && preselection[ind].length > 0">
-                    <template v-for="(option, opIndex) in select.options">
-                        <div class="selected-option-item" v-if="preselection[ind].includes(opIndex)">
-                            {{ option.toLowerCase() }} 
-                            <svg @click="removeOption(ind, opIndex)" class="ms-2 cursor-pointer" width="9" height="8" viewBox="0 0 9 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M1.02217 0.277731C0.798925 0.0597667 0.43697 0.0597667 0.213723 0.277731C-0.00952425 0.495696 -0.00952428 0.849086 0.213723 1.06705L3.19464 3.97743L0.167435 6.933C-0.0558118 7.15096 -0.0558117 7.50435 0.167435 7.72232C0.390682 7.94028 0.752637 7.94028 0.975884 7.72232L4.00309 4.76675L7.02741 7.7195C7.25065 7.93747 7.61261 7.93747 7.83585 7.7195C8.0591 7.50154 8.0591 7.14815 7.83585 6.93019L4.81153 3.97743L7.78957 1.06986C8.01281 0.851899 8.01281 0.498508 7.78957 0.280544C7.56632 0.0625794 7.20436 0.0625795 6.98112 0.280544L4.00309 3.18811L1.02217 0.277731Z" fill="black"/>
-                            </svg>
-                        </div>
-                    </template>
-                </div> -->
             </div>
             <div class="col" v-if="select.type == 'datepicker' && select.id == 'det_date'">
                 <div class="from-group mb-3">
@@ -123,41 +98,12 @@
             data.value = props.data;
             const route = useRoute();
 
-            // function selectclick(event, sel) {
-            //     if(current_filter.value != sel) {
-            //         current_filter.value = sel;
-            //     }else if(current_filter.value==sel){
-            //         if ( event.target.matches(".select") || !event.target.closest(".select-options")){
-            //             current_filter.value='';
-            //         }
-            //     }
-            // }
-            // document.addEventListener('click', (event)=>{
-            //     if(!event.target.matches(".select") && !event.target.closest(".select-options")){
-            //         current_filter.value='';
-            //     }
-            // });
             const hasActiveFilters=computed(()=>{
                 const filters= _.cloneDeep(store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_FILTER}`]);
                 const allEmpty= Object.values(filters).every((element) => element.length===0);
                 return !allEmpty;
             });
 
-
-            // function checkboxclicked(check,id,name) {
-            //     if(check)
-            //     if(name in preselection.value) {
-            //         preselection.value[name].push(id);
-            //     }else {
-            //         preselection.value[name] = [];
-            //         preselection.value[name].push(id);
-            //     }
-
-            //     if(!check)
-            //         if(name in preselection.value) {
-            //             preselection.value[name]= preselection.value[name].filter(item=>item!=id);
-            //         }
-            // }
             function applyFilter() {
                 if(prodDate.value.start !='' && prodDate.value.end !='')
                     preselection.value['infoitems.ProdDate'] = [prodDate.value.start, prodDate.value.end];
