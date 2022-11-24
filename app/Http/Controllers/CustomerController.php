@@ -2502,7 +2502,7 @@ class CustomerController extends Controller
 
 
         $orders = DB::table('infoOrder')
-                ->select('infoCustomer.Name','infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.TotalDue','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*')
+                ->select('infoCustomer.Name','infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.TotalDue','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*','infoOrder.Subtotal')
                 ->join('detailingitem','infoOrder.id','detailingitem.order_id')
                 ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -2539,6 +2539,8 @@ class CustomerController extends Controller
                                                                                 'CustomerID'=>$v->CustomerID,
                                                                                 'order_id'=>$v->order_id,
                                                                                 'TotalDue'=>$v->TotalDue,
+                                                                                'Total'=>$v->Total,
+                                                                                'Subtotal'=>$v->Subtotal,
                                                                             ];
             $order_per_customer[$v->CustomerID][] = $v->order_id;
         }
@@ -2674,6 +2676,7 @@ class CustomerController extends Controller
             $orderid_per_customer = [];
             $totaldue_per_order = [];
             $total_ext_discount_per_order = [];
+            $subtotal_per_order = [];
 
 
            foreach($orders as $orderid=>$invoices){
@@ -2709,6 +2712,8 @@ class CustomerController extends Controller
                             $dept[$v->Department][] = $item_txt;
                             $total += $v->priceTotal;
                             $totaldue_per_order[$v->order_id] = $v->TotalDue;
+                            $total_ext_discount_per_order[$v->order_id] = $v->Total;
+                            $subtotal_per_order[$v->order_id] = $v->Subtotal;
                         }
 
 
@@ -2719,6 +2724,8 @@ class CustomerController extends Controller
                         });
 
                         $order_total += $total;
+
+
                         $net = $total/1.2;
 
                         $vat = $total - $net;
@@ -2735,7 +2742,7 @@ class CustomerController extends Controller
                     }
                 }
 
-                $total_ext_discount_per_order[$orderid] = $order_total;
+                //$total_ext_discount_per_order[$orderid] = $order_total;
 
            }
 
@@ -2762,25 +2769,32 @@ class CustomerController extends Controller
            }
            */
             foreach($total_ext_discount_per_order as $order_id=>$order_amount){
-                $discount_per_customer += $order_amount - (isset($totaldue_per_order[$order_id])?$totaldue_per_order[$order_id]:0);
+                $discount_per_customer += $order_amount - (isset($subtotal_per_order[$order_id])?$subtotal_per_order[$order_id]:0);
             }
 
-           $order_total_exc_discount = $order_total;
-           $order_total = $order_total - $discount_per_customer;
 
-           $order_net = $order_total_exc_discount/1.2;
-
-
-           $facture_total[] = $order_total;
+           //$order_total_exc_discount = $order_total;
+           $order_total_exc_discount = array_sum($total_ext_discount_per_order);
 
 
-           $order_vat = $order_total_exc_discount - $order_net;
+           $order_total = $order_total_exc_discount - $discount_per_customer;
+
+           $order_net = $order_total/1.2;
+
+
+           $facture_total[] = $order_total_exc_discount;
+
+
+           $order_vat = $order_total - $order_net;
 
            $order_totals[$customerid]['order_net'] = number_format($order_net,2);
            $order_totals[$customerid]['order_vat'] = number_format($order_vat,2);
-           $order_totals[$customerid]['order_total'] = number_format($order_total,2);
+          // $order_totals[$customerid]['order_total'] = number_format($order_total,2);
+          $order_totals[$customerid]['order_total'] = number_format($order_total_exc_discount,2);
            $order_totals[$customerid]['discount'] = number_format($discount_per_customer,2);
-           $order_totals[$customerid]['order_without_discount'] = number_format($order_total_exc_discount,2);
+
+         //  $order_totals[$customerid]['order_without_discount'] = number_format($order_total_exc_discount,2);
+         $order_totals[$customerid]['order_without_discount'] =  number_format($order_total,2);
 
         }
 
