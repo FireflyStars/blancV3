@@ -76,7 +76,7 @@
         components:{CheckBox, DateRangePicker, MultiSelectOptions},
         setup(props){
             const showfilter=ref(false);
-            const current_filter=ref('');
+            // const current_filter=ref('');
             const detDate=ref({
                 start: '',
                 end: '',
@@ -117,14 +117,13 @@
                     preselection.value['infoOrder.DetDate'] = [detDate.value.start, detDate.value.end];
                 else
                     delete preselection.value['infoOrder.DetDate']
-                console.log(preselection);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,{ customer: route.params.customerId , search:route.params.value , filter:preselection.value});
-                current_filter.value='';
+                // current_filter.value='';
                 toggleShow();
             }
             function cancel() {
-                current_filter.value='';
+                // current_filter.value='';
                 const filters=store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_FILTER}`];
                 preselection.value=_.cloneDeep(filters);
                 toggleShow();
@@ -138,7 +137,7 @@
             // }
             return {
                 showfilter,
-                current_filter,
+                // current_filter,
                 preselection,
                 hasActiveFilters,
                 prodDate,

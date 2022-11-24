@@ -1,10 +1,10 @@
 <template>
-    <div class="select" :class="{active: showOption}" @click="selectclick($event, optionKey)">{{label}}
+    <div class="select" :class="{active: showOption}" @click="selectclick($event)">{{label}}
         <transition name="trans-filter" >
             <div class="select-options" v-if="showOption" >
                 <span class="tick-all" @click="tickAllOptions(options)">Tick all</span>
                 <check-box v-for="(option, index) in options"
-                    :key="option"
+                    :key="index"
                     @checkbox-clicked="checkboxclicked"
                     :id="option"
                     :name="'checkbox'"
@@ -17,7 +17,7 @@
     <div class="selected-options" v-if="selectedOptions.length > 0">
         <template v-for="(option, opIndex) in options">
             <div class="selected-option-item" v-if="selectedOptions.includes(option)">
-                {{ option }} 
+                {{ option }}
                 <svg @click="removeOption(option)" class="ms-2 cursor-pointer" width="9" height="8" viewBox="0 0 9 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M1.02217 0.277731C0.798925 0.0597667 0.43697 0.0597667 0.213723 0.277731C-0.00952425 0.495696 -0.00952428 0.849086 0.213723 1.06705L3.19464 3.97743L0.167435 6.933C-0.0558118 7.15096 -0.0558117 7.50435 0.167435 7.72232C0.390682 7.94028 0.752637 7.94028 0.975884 7.72232L4.00309 4.76675L7.02741 7.7195C7.25065 7.93747 7.61261 7.93747 7.83585 7.7195C8.0591 7.50154 8.0591 7.14815 7.83585 6.93019L4.81153 3.97743L7.78957 1.06986C8.01281 0.851899 8.01281 0.498508 7.78957 0.280544C7.56632 0.0625794 7.20436 0.0625795 6.98112 0.280544L4.00309 3.18811L1.02217 0.277731Z" fill="black"/>
                 </svg>
@@ -37,11 +37,11 @@
             modelValue: Array,
             // selected: Array,
         },
-        // emits: [ 'selected-options' ], 
+        emits: [ 'update:modelValue' ],
         components:{ CheckBox },
         setup(props, context){
             const showOption = ref(false);
-            const selectedOptions = ref([]);
+            const selectedOptions = ref(props.modelValue ? props.modelValue : []);
             const selectclick = (event, sel) =>{
                 if( !showOption.value ) {
                     showOption.value = true;
@@ -70,14 +70,12 @@
                     // if(name in selectedOptions.value) {
                     // }
                 }
-                // context.emit('selected-options', selectedOptions, props.optionKey);
                 context.emit('update:modelValue', selectedOptions);
-            }        
+            }
             const removeOption = (filterItem)=>{
                 selectedOptions.value = selectedOptions.value.filter((item)=>{
                     return item != filterItem;
                 })
-                // context.emit('selected-options', selectedOptions, props.optionKey);
                 context.emit('update:modelValue', selectedOptions);
             }
             const tickAllOptions = (options)=>{
@@ -85,9 +83,8 @@
                 for (const key in options) {
                     selectedOptions.value.push(key);
                 }
-                // context.emit('selected-options', selectedOptions, props.optionKey);
                 context.emit('update:modelValue', selectedOptions);
-            }                
+            }
             return{
                 selectclick,
                 removeOption,
@@ -196,11 +193,11 @@
         font-size: 16px;
         line-height: 19px;
         text-decoration-line: underline;
-        color: #42A71E;        
+        color: #42A71E;
         cursor: pointer;
         position: absolute;
         margin: 0 !important;
         right: 10px;
-        top: 10px;        
+        top: 10px;
     }
 </style>
