@@ -60,11 +60,12 @@ class OrderListController extends Controller
         $current_tab=$request->get('current_tab');
         $sort=$request->get('sort');
         $filters=$request->get('filters');
+        $filter_cols = [];
 
-        $is_customer_care = false;
-
-        if($current_tab=='customer_care'){
-            $is_customer_care = true;
+        if(count($filters) > 0){
+            foreach($filters as $k=>$v){
+                $filter_cols[] = $k;
+            }
         }
 
         $orderlist=DB::table('infoOrder');
@@ -121,13 +122,14 @@ class OrderListController extends Controller
             $orderlist->whereDate('infoOrder.DateDeliveryAsk', '<=', date('Y-m-d'))
             ->whereNotIn('infoOrder.Status', ['DELIVERED', 'DELIVERD TO STORE', 'SOLD', 'DONATED', 'DONATED TO CHARITY', 'COLLECTED', 'VOIDED', 'FULFILLED', 'VOID', 'DELETE', 'SOLD']);
 
-
+    if(empty($filter_cols)){
             $orderlist->orWhere(function($query){
                 $query->where('infoOrder.Paid', 0)->where('infoCustomer.TypeDelivery','=','DELIVERY');
             })->orWhere(function($query){
                 $query->whereIn('infoOrder.Status',['LATE','LATE DELIVERY','OVERDUE FOR COLLECTION','MISSED PICKUP','OVERDUE STORE','FAILED DELIVERY','FAILED PAYMENT','PART ON HOLD','PART PENDING'])
                     ->where('infoOrder.DateDeliveryAsk','!=','2020-01-01');
             });
+    }
 
 //*/
             /*
