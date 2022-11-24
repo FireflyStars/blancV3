@@ -35,7 +35,6 @@
             label: String,
             options: Object,
             modelValue: Array,
-            // selected: Array,
         },
         emits: [ 'update:modelValue' ],
         components:{ CheckBox },
@@ -59,16 +58,8 @@
             const checkboxclicked = (check , id, name) =>{
                 if(check){
                     selectedOptions.value.push(id);
-                    // if(name in selectedOptions.value) {
-                    // }else {
-                    //     selectedOptions.value = [];
-                    //     selectedOptions.value.push(id);
-                    // }
                 }else{
-                    // console.log(name in selectedOptions.value)
                     selectedOptions.value= selectedOptions.value.filter(item=>item!=id);
-                    // if(name in selectedOptions.value) {
-                    // }
                 }
                 context.emit('update:modelValue', selectedOptions);
             }

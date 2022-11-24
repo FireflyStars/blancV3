@@ -17,7 +17,7 @@
                             <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'Pending' ? 'active' : ''" @click="setNav('Pending')">Pending</li>
                         </ul>
                         <div class="filter-section position-relative" v-if="selected_nav == 'InvoiceList'">
-                            <filter :filterDef="filterDef"></filter>
+                            <InvoiceFilter :filterDef="filterDef"></InvoiceFilter>
                         </div>
                     </div>
                     <!-- <KeepAlive> -->
@@ -42,7 +42,7 @@
     } from "../../store/types/types";
     import SideBar from "../layout/SideBar";
     import MainHeader from "../layout/MainHeader";
-    import Filter from '../miscellaneous/InvoiceFilter';
+    import InvoiceFilter from '../miscellaneous/InvoiceFilter';
     import InvoiceList from './InvoiceList';
     import AssemblyHome from './AssemblyHome';
     import { ref, computed } from "vue";
@@ -53,7 +53,7 @@
         components:{
             SideBar,
             MainHeader,
-            Filter,
+            InvoiceFilter,
             InvoiceList,
             AssemblyHome
         },

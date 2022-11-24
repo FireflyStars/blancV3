@@ -1,7 +1,7 @@
 <template>
     <div class="dp noselect">
         <label class="select-label" :class="{disabled:disabled==true}" v-if="label">{{ label }}</label>
-        <input type="text" readonly :placeholder="placeholder" class="w-100 bg-white" :style="{'color': color, 'font-size': font}" v-model="formated_date" @click="toggleshowDp"/>
+        <input type="text" readonly :placeholder="placeholder" class="w-100 bg-white date-picker" :style="{'color': color, 'font-size': font}" v-model="formated_date" @click="toggleshowDp"/>
         <transition name="trans-dp-picker" >
             <div class="dp-picker" id="dateRangePicker" v-if="sel===name" :class="{row6:displayed_dates_rows[5].length>0&&currentView=='dates' }" :style="{top:droppos.top,right:droppos.right,bottom:droppos.bottom,left:droppos.left,transformOrigin:droppos.transformOrigin}">
                 <div class="row" id="dateRangePickerHeader">
@@ -58,7 +58,7 @@
     import {ref, nextTick, watch, computed, onUpdated} from 'vue';
     import {useStore} from 'vuex';
     import {GET_CURRENT_SELECT, SELECT_MODULE, SET_CURRENT_SELECT} from "../../store/types/types";
-    
+
     export default {
         name: "DateRangePicker",
         props:{
@@ -182,7 +182,7 @@
                 MonthYear.value.year = d.getFullYear();
             }
             function minusMonth() {
-                                
+
                 if(MonthYear.value.month==0){
                     MonthYear.value.month=11;
                     MonthYear.value.year--;
@@ -192,7 +192,7 @@
                 adjustPickerHeight();
             }
             function plusMonth() {
-                
+
                 if(MonthYear.value.month==11){
                     MonthYear.value.month=0;
                     MonthYear.value.year++;
@@ -205,9 +205,9 @@
             const displayed_dates_rows = ref({});
 
             function renderPicker() {
-                if( 
+                if(
                     typeof start_date.value[0]!="undefined" &&
-                    typeof start_date.value[1]!="undefined" && 
+                    typeof start_date.value[1]!="undefined" &&
                     typeof start_date.value[2]!="undefined" &&
                     typeof end_date.value[0]!="undefined" &&
                     typeof end_date.value[1]!="undefined" &&
@@ -272,7 +272,7 @@
                         current_month: true,
                         selected: false,
                         start: false,
-                        end: false,                        
+                        end: false,
                         period: false,
                         notavailable:notavailable,
                     });
@@ -288,7 +288,7 @@
                         current_month: false,
                         selected: false,
                         start: false,
-                        end: false,                        
+                        end: false,
                         period: false,
                         notavailable:notavailable,
                     });
@@ -304,7 +304,7 @@
                             current_month: false,
                             selected: false,
                             start: false,
-                            end: false,                            
+                            end: false,
                             period: false,
                             notavailable:notavailable,
                         });
@@ -368,7 +368,7 @@
                             displayed_dates.value[i].start = false;
                             displayed_dates.value[i].selected = false;
                             displayed_dates.value[i].period = true;
-                        }                        
+                        }
                         if( curdate.getTime() > start.getTime() && curdate.getTime() < end.getTime()){
                             displayed_dates.value[i].period = true;
                         }
@@ -406,7 +406,7 @@
                         start: '',
                         end: ''
                     }
-                );                  
+                );
                 renderPicker();
             }
             function setDate(y,m,d) {
@@ -438,7 +438,7 @@
                                 start: `${start_date.value[0]}-${start_date.value[1].toString().padStart(2, "0")}-${start_date.value[2].toString().padStart(2, "0")}`,
                                 end: `${end_date.value[0]}-${end_date.value[1].toString().padStart(2, "0")}-${end_date.value[2].toString().padStart(2, "0")}`
                             }
-                        );                
+                        );
                     }
                     toggleshowDp();
                 }
@@ -513,12 +513,15 @@
                     sel = computed(()=>store.getters[`${SELECT_MODULE}${GET_CURRENT_SELECT}`]);
                 });
             }
-            // document.onclick = function(e){
-            //     let element = e.target;
-            //     if( ! element.class('.dp-picker')){
-            //         store.commit(`${SELECT_MODULE}${SET_CURRENT_SELECT}`, sel.value === props.name ? '' : props.name);
+            // document.addEventListener('click', (event)=>{
+            //     if(!event.target.matches(".date-picker") && !event.target.closest(".dp-picker")){
+            //         nextTick(()=>{
+            //             store.commit(`${SELECT_MODULE}${SET_CURRENT_SELECT}`, '');
+            //         }).then(()=>{
+            //             sel = computed(()=>store.getters[`${SELECT_MODULE}${GET_CURRENT_SELECT}`]);
+            //         });
             //     }
-            // };
+            // });
             return {
                 sel,
                 minusMonth,
@@ -823,13 +826,13 @@
     .period{
         color: #EB5757;
         background: rgba(245, 171, 171, 0.7);
-        box-shadow: 0px 1px 1px rgba(0, 14, 51, 0.05);        
+        box-shadow: 0px 1px 1px rgba(0, 14, 51, 0.05);
         opacity: .8;
     }
     .start{
         color: greenyellow;
         background: rgba(245, 171, 171, 0.7);
-        box-shadow: 0px 1px 1px rgba(0, 14, 51, 0.05);        
+        box-shadow: 0px 1px 1px rgba(0, 14, 51, 0.05);
         opacity: .8;
     }
 </style>
