@@ -76,7 +76,6 @@
         components:{CheckBox, DateRangePicker, MultiSelectOptions},
         setup(props){
             const showfilter=ref(false);
-            // const current_filter=ref('');
             const detDate=ref({
                 start: '',
                 end: '',
@@ -119,25 +118,32 @@
                     delete preselection.value['infoOrder.DetDate']
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,{ customer: route.params.customerId , search:route.params.value , filter:preselection.value});
-                // current_filter.value='';
                 toggleShow();
             }
             function cancel() {
-                // current_filter.value='';
                 const filters=store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_FILTER}`];
                 preselection.value=_.cloneDeep(filters);
                 toggleShow();
 
             }
-            function removedata(){
+            const removefilter =()=>{
+                detDate.value ={
+                    start: '',
+                    end: '',
+                };
+                delivDate.value ={
+                    start: '',
+                    end: '',
+                };
+                detDate.value ={
+                    start: '',
+                    end: '',
+                };
                 preselection.value = {}
+                applyFilter()
             }
-            // const selectedOptions =( options, ind )=>{
-            //     preselection.value[ind] = options;
-            // }
             return {
                 showfilter,
-                // current_filter,
                 preselection,
                 hasActiveFilters,
                 prodDate,
@@ -147,20 +153,10 @@
                 toggleShow,
                 applyFilter,
                 cancel,
-                removedata,
-                // selectedOptions
+                removefilter,
             }
 
         },
-        methods:{
-            removefilter(){
-                this.$refs.date_picker_deliv.resetFilter()
-                this.$refs.date_picker_det.resetFilter()
-                this.$refs.date_picker_prod.resetFilter()
-                this.removedata()
-                this.applyFilter()
-           }
-        }
     }
 </script>
 
