@@ -16,14 +16,23 @@ class VoyagerPostcodesController extends Controller
     public function index(Request $request){
         //$this->authorize('read_configure-postcodes');
         $postcodes = DB::table('tranchepostcode')->orderBy('Postcode')->get();
+        $preroutes =[];
+        $pre_routes = DB::table('preroute')->select(['id','name','number','day'])->whereNull('deleted_at')->get();
 
-        foreach ($postcodes as $postcode) {
-            $group_postcodes[$postcode->Postcode][$postcode->day] = json_decode($postcode->tranche);
-
+        foreach($pre_routes as $preroute){
+            $preroutes[$preroute->day][]=$preroute;
         }
 
+        foreach ($postcodes as $postcode) {
+            $group_postcodes[$postcode->Postcode][$postcode->day] = (array)json_decode($postcode->preroute);
+
+        }
+        foreach ($postcodes as $postcode) {
+            $group_postcodes2[$postcode->Postcode][$postcode->day] = json_decode($postcode->tranche);
+
+        }
         $DAYS=self::$DAYS;
-        return view('admin.postcodes',compact('group_postcodes','DAYS'));
+        return view('admin.postcodes',compact('group_postcodes','DAYS','preroutes','group_postcodes2'));
     }
 
     public function postprocess(Request $request)
@@ -71,31 +80,39 @@ class VoyagerPostcodesController extends Controller
         }
 
         if (isset($_POST['bulksave'])) {
-            //$this->authorize('edit_configure-postcodes');
+            $t_=[];
             $postcodes = [];
-            $t_ = $request->post('t_');
-            if(is_array($t_))
-            foreach ($t_ as $t) {
-                $tranche = explode('_', $t);
-                $postcodes[$tranche['0']][$tranche[1]][] = $tranche[2];
+            foreach($_POST as  $postkey=>$postvalue){
+                if(substr($postkey,0,1)=='#'&&$postvalue!=""){
+                    $t_[]= substr($postkey,1);
+                }
             }
 
-    $existingPostcodes=DB::table('tranchepostcode')->select(['Postcode'])->distinct()->get();
-    foreach($existingPostcodes as $pcode){
-        if(!key_exists($pcode->Postcode,$postcodes)){
-            DB::table('tranchepostcode')->where('Postcode', $pcode->Postcode)->update(['tranche' => '[]']);
-        }
-    }
+            foreach ($t_ as $t) {
+                $tranche = explode('_', $t);
+                $postcodes[$tranche['0']][$tranche[1]] [$tranche[2]] =$_POST['#'.$t];
+            }
+      
+            $existingPostcodes=DB::table('tranchepostcode')->select(['Postcode'])->distinct()->get();
+            foreach($existingPostcodes as $pcode){
+                if(!key_exists($pcode->Postcode,$postcodes)){
+                   DB::table('tranchepostcode')->where('Postcode', $pcode->Postcode)->update(['tranche' => '[]','preroute'=>'']);
+                }
+            }
+       
 
 
             foreach ($postcodes as $postcode => $days) {
 
-                foreach ($days as $day => $tranche) {
+                foreach ($days as $day => $tranche_preroute) {
+                    $tranche=[];
+                    foreach($tranche_preroute as $_tranche=>$preroute)
+                    $tranche[]=$_tranche;
 
                     $affected = DB::table('tranchepostcode')
                         ->where('Postcode', $postcode)
                         ->where('day', $day)
-                        ->update(['tranche' => json_encode($tranche)]);
+                        ->update(['tranche' => json_encode($tranche),'preroute'=>json_encode($tranche_preroute)]);
 
                     if (!$affected) {
                         $existing_postcode = DB::table('tranchepostcode')->where('Postcode', $postcode)->where('day', $day)->value('Postcode');
@@ -103,7 +120,8 @@ class VoyagerPostcodesController extends Controller
                             DB::table('tranchepostcode')->insert(array(
                                 'Postcode' => $postcode,
                                 'day' => $day,
-                                'tranche' => json_encode($tranche)
+                                'tranche' => json_encode($tranche),
+                                'preroute'=>json_encode($tranche_preroute)
                             ));
                         }
                     }

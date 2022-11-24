@@ -3104,7 +3104,10 @@ class StatisticsController extends Controller
         if($request->search != ''){
             $invoices   =  $invoices->Join('infoInvoice','infoitems.InvoiceID','infoInvoice.InvoiceID')
             ->join('infoOrder','infoInvoice.OrderID','infoOrder.OrderID')
-            ->leftJoin('infoCustomer', 'infoInvoice.CustomerID', '=', 'infoCustomer.CustomerID')
+            ->leftJoin( 'infoCustomer', function ($join){
+                $join->on( 'infoCustomer.CustomerID', '=', 'infoInvoice.CustomerID')
+                ->where('infoCustomer.Actif', '=' , 1);
+            })
             ->leftJoin('postes', 'infoitems.nextpost', '=', 'postes.id')
             ->leftJoin('pickup', 'infoOrder.PickupID', '=', 'pickup.PickupID')
             ->leftJoin('deliveryask', 'infoOrder.DeliveryaskID', '=', 'deliveryask.DeliveryaskID')
@@ -3117,8 +3120,9 @@ class StatisticsController extends Controller
                 ->orWhere('infoitems.id', 'LIKE', $request->search)
                 ->orWhere('infoitems.id_items', 'LIKE', $request->search)
                 ->orWhere('infoOrder.id', 'LIKE', $request->search)
-                ->orWhere('infoCustomer.FirstName', 'LIKE', $request->search)
-                ->orWhere('infoCustomer.LastName', 'LIKE', $request->search);
+                ->orWhere('infoCustomer.FirstName', 'LIKE', '%'. $request->search . '%')
+                ->orWhere('infoCustomer.LastName', 'LIKE', '%'. $request->search . '%')
+                ->orWhere('infoCustomer.Name' , 'LIKE', '%'. $request->search . '%');
              }
              $invoices = $invoices->orderBy('infoitems.date_add', 'desc');
         } else {

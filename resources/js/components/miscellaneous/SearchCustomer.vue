@@ -126,7 +126,7 @@
                             <tag  :name="order.Status" ></tag>
                         </div>
                           <div class="col-2" style="text-align: end;">
-                            <tag   v-if="order.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
+                            <tag   v-if="order.cust_type=='B2C'" :name="'B2C'" ></tag>
                             <tag   v-else :name="'B2B'" ></tag>
                          </div>
                      </div>
@@ -232,22 +232,30 @@ export default({
            const preselection=ref({});
            const search_value =ref('');
            const filterDef = ref({});
-            
 
+           clear.value = window.sessionStorage.getItem('search_value');
+           
+           if(clear.value != null){
+            showbutton.value = true
+           }
            const featureunavailable=((feature)=>{
                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:feature+' feature not yet implemented.',ttl:5,type:'success'});
             });
 
       function clearSearch(){
+         window.sessionStorage.removeItem('search_value')
+         window.sessionStorage.removeItem('orders_customer')
          clear.value = null;
          showSearch.value = false;
          showbutton.value = false;
          show_loader.value= false;
+         location.reload();
        }
        function HideSearch(event){
         event.target.classList.forEach((element)=>{
           if(element == "search" ){
-            clearSearch()
+            showSearch.value = false;
+            show_loader.value= false;
           }
         })
        }
@@ -294,6 +302,7 @@ export default({
                             };
                             preselection.value = filterDef.value
                             search_value.value = e.target.value
+                            window.sessionStorage.setItem('search_value', search_value.value);
                             } else {
                               showSearch.value = false;
                               show_loader.value= false;
@@ -336,10 +345,9 @@ export default({
             }
 
           function displayAll(tab){
-     
+                showSearch.value = false;
+                show_loader.value= false;
               if(tab == "search_name"){
- 
-                this.clearSearch()
                 if(route.name == "Customer"){
                   store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
                   store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_FILTER}`, _.cloneDeep(preselection.value))
@@ -357,7 +365,6 @@ export default({
                 }
 
               } else if (tab == "search_order") {
-               this.clearSearch()
                     router.push({
                     name:'LandingPage',
                     params: {
@@ -365,11 +372,11 @@ export default({
                            'value': search_value.value
                     },
                 })
-
+                window.sessionStorage.setItem('search_value', search_value.value);
+                window.sessionStorage.removeItem('orders_customer');
               //  }
              } else if (tab == 'search_item'){
 
-                this.clearSearch()
                 if(route.name == "Assembly"){
                   const searchvalue = {
                                             'name':"searchitem",
@@ -395,8 +402,10 @@ export default({
           }
             
           function goToOrderList(customerId){
-            this.clearSearch()
-
+            window.sessionStorage.setItem('orders_customer', customerId);
+            window.sessionStorage.removeItem('search_value')
+            showSearch.value = false;
+            show_loader.value= false;
             router.push({
                     name:'LandingPage',
                     params: {
@@ -407,7 +416,9 @@ export default({
           }
 
           function goToNewOrder(customerId, order){
-            this.clearSearch()
+            window.sessionStorage.setItem('orders_customer', customerId);
+            showSearch.value = false;
+            show_loader.value= false;
             if(order != null){
               router.push({
                     name:'DetailingItemList',
