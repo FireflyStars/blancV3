@@ -64,21 +64,20 @@
                     status: {
                         label: 'Sub Order Status',
                         id: 'sub_order_status',
-                        mode: 'single',
-                        value: ''
+                        type: 'select',
+                        value: [],
+                        options: [],
                     },
                     dest: {
                         label: 'Destination',
                         id: 'destination',
                         type: 'select',
                         value: [],
-                        mode: 'tags',
                         options: [],
                     },
                     location: {
                         label: 'Location',
                         id: 'location',
-                        mode: 'tags',
                         type: 'select',
                         value: [],
                         options: [],

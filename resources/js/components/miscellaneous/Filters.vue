@@ -9,7 +9,7 @@
 
         <div class="row" v-for="(select, ind) in filterDef.def" :key="ind">
             <div class="col" v-if="select.type == 'select'">
-                <multi-select-options :name="select.name" :optionKey="ind" :options="select.options" @selected-options="selectedOptions"></multi-select-options>
+                <multi-select-options v-model="preselection[ind]" :label="select.name" :options="select.options"></multi-select-options>
             </div>
             <div class="col" v-if="select.type == 'datepicker' && select.id == 'det_date'">
                 <div class="from-group mb-3">
@@ -133,9 +133,9 @@
             function removedata(){
                 preselection.value = {}
             }
-            const selectedOptions =( options, ind )=>{
-                preselection.value[ind] = options;
-            }
+            // const selectedOptions =( options, ind )=>{
+            //     preselection.value[ind] = options;
+            // }
             return {
                 showfilter,
                 current_filter,
@@ -149,7 +149,7 @@
                 applyFilter,
                 cancel,
                 removedata,
-                selectedOptions
+                // selectedOptions
             }
 
         },

@@ -1,14 +1,14 @@
 <template>
-    <div class="select" :class="{active: showOption}" @click="selectclick($event, optionKey)">{{name}}
+    <div class="select" :class="{active: showOption}" @click="selectclick($event, optionKey)">{{label}}
         <transition name="trans-filter" >
             <div class="select-options" v-if="showOption" >
                 <span class="tick-all" @click="tickAllOptions(options)">Tick all</span>
-                <check-box v-for="(option,index) in options"
-                    :key="index"
+                <check-box v-for="(option, index) in options"
+                    :key="option"
                     @checkbox-clicked="checkboxclicked"
-                    :id="index"
-                    :name="optionKey"
-                    :checked_checkbox="selectedOptions.includes(index)">
+                    :id="option"
+                    :name="'checkbox'"
+                    :checked_checkbox="selectedOptions.includes(option)">
                     {{option}}
                 </check-box>
             </div>
@@ -16,9 +16,9 @@
     </div>
     <div class="selected-options" v-if="selectedOptions.length > 0">
         <template v-for="(option, opIndex) in options">
-            <div class="selected-option-item" v-if="selectedOptions.includes(opIndex)">
+            <div class="selected-option-item" v-if="selectedOptions.includes(option)">
                 {{ option }} 
-                <svg @click="removeOption(opIndex)" class="ms-2 cursor-pointer" width="9" height="8" viewBox="0 0 9 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg @click="removeOption(option)" class="ms-2 cursor-pointer" width="9" height="8" viewBox="0 0 9 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M1.02217 0.277731C0.798925 0.0597667 0.43697 0.0597667 0.213723 0.277731C-0.00952425 0.495696 -0.00952428 0.849086 0.213723 1.06705L3.19464 3.97743L0.167435 6.933C-0.0558118 7.15096 -0.0558117 7.50435 0.167435 7.72232C0.390682 7.94028 0.752637 7.94028 0.975884 7.72232L4.00309 4.76675L7.02741 7.7195C7.25065 7.93747 7.61261 7.93747 7.83585 7.7195C8.0591 7.50154 8.0591 7.14815 7.83585 6.93019L4.81153 3.97743L7.78957 1.06986C8.01281 0.851899 8.01281 0.498508 7.78957 0.280544C7.56632 0.0625794 7.20436 0.0625795 6.98112 0.280544L4.00309 3.18811L1.02217 0.277731Z" fill="black"/>
                 </svg>
             </div>
@@ -32,12 +32,12 @@
     export default {
         name: "MultiSelectOptions",
         props:{
-            name: String,
+            label: String,
             options: Object,
             modelValue: Array,
             optionKey: String,
         },
-        emits: [ 'selected-options' ], 
+        // emits: [ 'selected-options' ], 
         components:{ CheckBox },
         setup(props, context){
             const showOption = ref(false);
@@ -70,20 +70,23 @@
                     // if(name in selectedOptions.value) {
                     // }
                 }
-                context.emit('selected-options', selectedOptions, props.optionKey);
+                // context.emit('selected-options', selectedOptions, props.optionKey);
+                context.emit('update:modelValue', selectedOptions);
             }        
-            const removeOption = (filterItemIndex)=>{
+            const removeOption = (filterItem)=>{
                 selectedOptions.value = selectedOptions.value.filter((item)=>{
-                    return item != filterItemIndex;
+                    return item != filterItem;
                 })
-                context.emit('selected-options', selectedOptions, props.optionKey);
+                // context.emit('selected-options', selectedOptions, props.optionKey);
+                context.emit('update:modelValue', selectedOptions);
             }
             const tickAllOptions = (options)=>{
                 selectedOptions.value = [];
                 for (const key in options) {
                     selectedOptions.value.push(key);
                 }
-                context.emit('selected-options', selectedOptions, props.optionKey);
+                // context.emit('selected-options', selectedOptions, props.optionKey);
+                context.emit('update:modelValue', selectedOptions);
             }                
             return{
                 selectclick,

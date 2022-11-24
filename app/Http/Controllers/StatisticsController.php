@@ -3137,14 +3137,14 @@ class StatisticsController extends Controller
                                 ->whereNotIn('infoOrder.Status',['VOID', 'DELETE'])
                                 ->orderBy('item_id');
         }
-        if($request->status != ''){
-            $invoices   = $invoices->where('infoitems.Status', $request->status);
+        if(count($request->status)){
+            $invoices   = $invoices->whereIn('infoitems.Status', $request->status);
         }
-        if($request->dest != ''){
-            $invoices   = $invoices->whereIn('infoitems.store', explode(',', $request->dest));
+        if(count($request->dest)){
+            $invoices   = $invoices->whereIn('infoitems.store', $request->dest);
         }
-        if($request->location != ''){
-            $invoices   = $invoices->whereIn('postes.nom', explode(',', $request->location));
+        if(count($request->location)){
+            $invoices   = $invoices->whereIn('postes.nom', $request->location);
         }
         if($request->prod_date_from != '' && $request->prod_date_to != ''){
             $invoices   = $invoices->whereBetween('infoitems.PromisedDate',
