@@ -212,7 +212,6 @@
                 }  
             }
             function checkboxallclicked(check,id,name) {
-                console.log('bangbang',check);
                     if(check==false)
                         store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
 
@@ -242,42 +241,43 @@
                             name:"Order status",
                             type: 'select',
                             options:Status_LIST
-                            /*{
-                                'ASSEMBLING':'ASSEMBLING',
-                                'AWAITING REDELIVERY':'AWAITING REDELIVERY',
-                                'AWAITING SALE':'AWAITING SALE',
-                                'CANCELLED':'CANCELLED',
-                                'CHECK IN ATELIER':'CHECK IN ATELIER',
-                                'COLLECTED':'COLLECTED',
-                                'DELETE':'DELETE',
-                                'DELIVERED':'DELIVERED',
-                                'DELIVERED TO STORE':'DELIVERED TO STORE',
-                                'DELIVERY IN STORE':'DELIVERY IN STORE',
-                                'DONATED TO CHARITY':'DONATED TO CHARITY',
-                                'DROPPED OFF':'DROPPED OFF',
-                                'FAILED DELIVERY':'FAILED DELIVERY',
-                                'FAILED PAYMENT':'FAILED PAYMENT',
-                                'FULFILLED':'FULFILLED',
-                                'IN PROCESS':'IN PROCESS',
-                                'IN STORAGE':'IN STORAGE',
-                                'LATE':'LATE',
-                                'LATE DELIVERY':'LATE DELIVERY',
-                                'MISSED PICKUP':'MISSED PICKUP',
-                                'OFFLOADED':'OFFLOADED',
-                                'ON VAN':'ON VAN',
-                                'OVERDUE FOR COLLECTION':'OVERDUE FOR COLLECTION',
-                                'OVERDUE STORE':'OVERDUE STORE',
-                                'PART ON HOLD':'PART ON HOLD',
-                                'PART PENDING':'PART PENDING',
-                                'PICKED UP':'PICKED UP',
-                                'READY':'READY',
-                                'RECURRING':'RECURRING',
-                                'READY IN STORE':'READY IN STORE',
-                                'SCHEDULED':'SCHEDULED',
-                                'SOLD':'SOLD',
-                                'VOID':'VOID',
+                            // options:
+                            // {
+                            //     'ASSEMBLING':'ASSEMBLING',
+                            //     'AWAITING REDELIVERY':'AWAITING REDELIVERY',
+                            //     'AWAITING SALE':'AWAITING SALE',
+                            //     'CANCELLED':'CANCELLED',
+                            //     'CHECK IN ATELIER':'CHECK IN ATELIER',
+                            //     'COLLECTED':'COLLECTED',
+                            //     'DELETE':'DELETE',
+                            //     'DELIVERED':'DELIVERED',
+                            //     'DELIVERED TO STORE':'DELIVERED TO STORE',
+                            //     'DELIVERY IN STORE':'DELIVERY IN STORE',
+                            //     'DONATED TO CHARITY':'DONATED TO CHARITY',
+                            //     'DROPPED OFF':'DROPPED OFF',
+                            //     'FAILED DELIVERY':'FAILED DELIVERY',
+                            //     'FAILED PAYMENT':'FAILED PAYMENT',
+                            //     'FULFILLED':'FULFILLED',
+                            //     'IN PROCESS':'IN PROCESS',
+                            //     'IN STORAGE':'IN STORAGE',
+                            //     'LATE':'LATE',
+                            //     'LATE DELIVERY':'LATE DELIVERY',
+                            //     'MISSED PICKUP':'MISSED PICKUP',
+                            //     'OFFLOADED':'OFFLOADED',
+                            //     'ON VAN':'ON VAN',
+                            //     'OVERDUE FOR COLLECTION':'OVERDUE FOR COLLECTION',
+                            //     'OVERDUE STORE':'OVERDUE STORE',
+                            //     'PART ON HOLD':'PART ON HOLD',
+                            //     'PART PENDING':'PART PENDING',
+                            //     'PICKED UP':'PICKED UP',
+                            //     'READY':'READY',
+                            //     'RECURRING':'RECURRING',
+                            //     'READY IN STORE':'READY IN STORE',
+                            //     'SCHEDULED':'SCHEDULED',
+                            //     'SOLD':'SOLD',
+                            //     'VOID':'VOID',
     
-                            }*/
+                            // }
                         },
                         'infoOrder.TypeDelivery':{
                             name:"Destination",
