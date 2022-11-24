@@ -90,7 +90,7 @@ export default {
         filterDef.value={
             'Customername':{
                 name:route.params.name,
-                value:route.params.value
+                value:route.params.value ? route.params.value : window.sessionStorage.getItem('search_value')
             },
         };
         const tableColumnsDef = [

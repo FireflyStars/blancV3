@@ -119,22 +119,30 @@
                return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_SORT}`];
             });
             function loadMore(){
-                if((props.customer_id  || route.params.customerId) && (props.customer_id != "undefined" || route.params.customerId != "undefined")){
+                if((props.customer_id  || route.params.customerId || window.sessionStorage.getItem('orders_customer')) && (props.customer_id != "undefined" || route.params.customerId != "undefined" || window.sessionStorage.getItem('orders_customer')!= "undefined")){     
                  store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading more, please wait...');
-                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`,{customer:route.params.customerId = "" ? props.customer_id : route.params.customerId   , showmore:1}).finally(()=>{
-                 window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
-                });
-
+                        if(window.sessionStorage.getItem('orders_customer') != null){
+                            store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`,{customer: window.sessionStorage.getItem('orders_customer'), showmore:1}).finally(()=>{
+                            window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
+                            });
+                        }else{
+                            store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`,{customer:route.params.customerId = "" ? props.customer_id : route.params.customerId   , showmore:1}).finally(()=>{
+                            window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
+                            });
+                        }
                 }else {
 
                  store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading more, please wait...');
-                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`,{search:route.params.value, showmore:1}).finally(()=>{
-                 window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
-                 });
-
+                 if(window.sessionStorage.getItem('search_value') != null){
+                          store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`,{search:window.sessionStorage.getItem('search_value'), showmore:1}).finally(()=>{
+                            window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
+                            });
+                    }else{
+                            store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`,{search:route.params.value, showmore:1}).finally(()=>{
+                             window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
+                            });
+                    }
                 }
-
-
             }
 
              watch(route, (to) => {
