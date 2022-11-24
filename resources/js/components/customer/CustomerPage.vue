@@ -31,7 +31,7 @@ import { onMounted, ref } from 'vue';
 import { useStore } from 'vuex';
 import SideBar from "../layout/SideBar";
 import MainHeader from "../layout/MainHeader";
-import CustomerFilter from '../test/CustomerFilter';
+import CustomerFilter from '../miscellaneous/CustomerFilter';
 import CustomerList from './CustomerList';
 import ArList from './ArList';
 import ArInvoiced from './ArInvoiced.vue';
