@@ -1267,7 +1267,7 @@ class StatisticsController extends Controller
                             'infoOrder.updated_at', 'infoOrder.OrderID', 'infoOrder.Status',
                             'infoCustomer.OnAccount', 'infoCustomer.Actif',
 
-                            'infoCustomer.btob', 'infoCustomer.TotalSpendBedlinen', 'infoCustomer.NbBooking', 'infoCustomer.LoginPreference', 
+                            'infoCustomer.btob',
                             'infoCustomer.CustomerCategory', 'infoCustomer.CustomerNotes', 'infoCustomer.SignupDateOnline',
                             'infoCustomer.SignupDate', 'infoCustomer.CompanyName', 'infoCustomer.DeliveryMon', 'infoCustomer.DeliveryTu',
                             'infoCustomer.DeliveryWed', 'infoCustomer.DeliveryTh', 'infoCustomer.DeliveryFri', 'infoCustomer.DeliverySat',
@@ -1429,7 +1429,7 @@ class StatisticsController extends Controller
                         'infoOrder.DateDeliveryAsk', 'infoOrder.DatePickup', 'infoOrder.CustomerID', 'infoOrder.created_at', 'infoOrder.detailed_at',
                         'infoOrder.updated_at', 'infoOrder.OrderID', 'infoOrder.Status',
 
-                        'infoCustomer.btob', 'infoCustomer.TotalSpendBedlinen', 'infoCustomer.NbBooking', 'infoCustomer.LoginPreference', 
+                        'infoCustomer.btob',
                         'infoCustomer.CustomerCategory', 'infoCustomer.CustomerNotes', 'infoCustomer.SignupDateOnline',
                         'infoCustomer.SignupDate', 'infoCustomer.CompanyName', 'infoCustomer.DeliveryMon', 'infoCustomer.DeliveryTu',
                         'infoCustomer.DeliveryWed', 'infoCustomer.DeliveryTh', 'infoCustomer.DeliveryFri', 'infoCustomer.DeliverySat',
