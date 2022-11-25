@@ -119,7 +119,7 @@
                return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_SORT}`];
             });
             function loadMore(){
-                if((props.customer_id  || route.params.customerId || window.sessionStorage.getItem('orders_customer')) && (props.customer_id != "undefined" || route.params.customerId != "undefined" || window.sessionStorage.getItem('orders_customer')!= "undefined")){     
+                if((props.customer_id  || route.params.customerId || window.sessionStorage.getItem('orders_customer')) && (props.customer_id != "undefined" || route.params.customerId != "undefined" || window.sessionStorage.getItem('orders_customer')!= null)){     
                  store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,'Loading more, please wait...');
                         if(window.sessionStorage.getItem('orders_customer') != null){
                             store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`,{customer: window.sessionStorage.getItem('orders_customer'), showmore:1}).finally(()=>{
