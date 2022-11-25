@@ -15,7 +15,7 @@
                     <template v-for="(col,index) in tabledef" :key="index">
                         <td class="tcol" :colspan="colspan(index,order)"  :style="{width:col.width}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(order.id,index)" v-if="hideOnLate(order.Status,index,order)" >
                             <check-box v-if="col.type=='checkbox'" :checked_checkbox="(order.id==CURRENT_SELECTED&&route.params.order_id>0)||MULTI_CHECKED.includes(order)" :id="order.id" :order="order"  @checkbox-clicked="checkboxclicked"></check-box>
-                            <tag v-else-if="typeof(order['index']) !='undefined' && col.type=='tag'&&(order.Status!='LATE')||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate!=null)||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate==null&&hasRoles(['cc']))" :name="order[index]" >
+                            <tag v-else-if="col.type=='tag'&&(order.Status!='LATE')||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate!=null)||(col.type=='tag'&&order.Status=='LATE'&&order.suggestedDeliveryDate==null&&hasRoles(['cc']))" :name="order[index]" >
                                 <span  v-if="order.Status=='LATE'&&order.suggestedDeliveryDate!=null&&index=='Status'" class="tool-tip" :data-tooltip="`New Delivery date suggested, waiting for approval`"><i class="icon-late"></i>Late</span>
                             </tag>
                             <express-icon v-else-if="col.type=='express'" :express_values="order[index]"></express-icon>
