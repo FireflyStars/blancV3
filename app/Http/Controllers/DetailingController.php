@@ -1264,8 +1264,10 @@ class DetailingController extends Controller
             $_ACCOUNT_DISCOUNT = 0;
         }
 
-
         $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
+
+        $_ACCOUNT_DISCOUNT = number_format($_ACCOUNT_DISCOUNT,2);
+        $_ORDER_DISCOUNT = number_format($_ORDER_DISCOUNT,2);
 
 
         $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
@@ -1911,6 +1913,13 @@ class DetailingController extends Controller
         $order_without_upcharges = $total_price;
         $order_addon = 0;
         $failed_delivery_price = 0;
+
+
+        //Si le client le desactive, il faut trouver un moyen de le garder desactiver
+        if($order->express==1){
+            //DB::table('order_upcharges')->updateOrInsert(['order_id',''])
+            $has_upcharge_24 = DB::table('order_upcharges')->where('order_id',$order_id)->where('upcharges_id',1)->first();
+        }
 
         $upcharges = DB::table('order_upcharges')->where('order_id',$order_id)->get();
         if(count($upcharges) > 0){
