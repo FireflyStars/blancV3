@@ -1286,7 +1286,7 @@ class StatisticsController extends Controller
                             'infoCustomer.Phone', 'infoCustomer.Name', 'infoCustomer.EmailAddress', 'infoCustomer.LastName',
                             'infoCustomer.FirstName'/* , 'infoCustomer.id_customer', 'infoCustomer.Title', 'infoCustomer.id_address_invoice', */
                         )
-                        ->where('infoOrder.id', 140028)->get();
+                        ->get();
         foreach ($reportData as $item) {
             $item->CashPayment = DB::table('payments')->join('revenu', 'revenu.order_id', '=', 'payments.order_id')
                                 ->where('revenu.order_id', $item->id)
