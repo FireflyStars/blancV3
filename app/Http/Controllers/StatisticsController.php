@@ -1367,38 +1367,6 @@ class StatisticsController extends Controller
                             'infoCustomer.FirstName'
                         )
                         ->get();
-        foreach ($reportData as $item) {
-            $item->CashPayment = DB::table('payments')->join('revenu', 'revenu.order_id', '=', 'payments.order_id')
-                                ->where('revenu.order_id', $item->id)
-                                ->where('payments.status', 'succeeded')
-                                ->where('payments.type', 'cash')
-                                ->select(
-                                    DB::raw('IFNULL(ROUND(SUM(payments.montant), 2), 0) as amount')
-                                )->value('amount');
-            $item->CardPayment = DB::table('payments')->join('revenu', 'revenu.order_id', '=', 'payments.order_id')
-                                ->where('revenu.order_id', $item->id)
-                                ->where('payments.status', 'succeeded')
-                                ->where(function($query){
-                                    $query->where('payments.type', 'card')->orWhere('payments.type', 'like', '%reader%');
-                                })
-                                ->select(
-                                    DB::raw('IFNULL(ROUND(SUM(payments.montant), 2), 0) as amount')
-                                )->value('amount');
-            $item->BACSPayment = DB::table('payments')->join('revenu', 'revenu.order_id', '=', 'payments.order_id')
-                                ->where('revenu.order_id', $item->id)
-                                ->where('payments.status', 'succeeded')
-                                ->where('payments.type', 'bacs')
-                                ->select(
-                                    DB::raw('IFNULL(ROUND(SUM(payments.montant), 2), 0) as amount')
-                                )->value('amount');
-            $item->CashCreditPayment = DB::table('payments')->join('revenu', 'revenu.order_id', '=', 'payments.order_id')
-                                ->where('revenu.order_id', $item->id)
-                                ->where('payments.status', 'succeeded')
-                                ->where('payments.type', 'cust_credit')
-                                ->select(
-                                    DB::raw('IFNULL(ROUND(SUM(payments.montant), 2), 0) as amount')
-                                )->value('amount');
-        }
         return response()->json([
             'data'=>$reportData,
             'fileName'=>sprintf("All-Revenue-%s-%s", Carbon::parse($period[0])->format('Ymd'), Carbon::parse($period[1])->format('Ymd'))
