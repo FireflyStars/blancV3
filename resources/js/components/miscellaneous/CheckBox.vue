@@ -89,5 +89,7 @@
     .filters .chkbox_wrap label{
         margin: 6px 22px 6px 0;
         font-weight: lighter;
+        overflow: hidden;
+        text-overflow: ellipsis;        
     }
 </style>

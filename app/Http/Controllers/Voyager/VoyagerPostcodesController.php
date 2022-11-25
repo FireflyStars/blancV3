@@ -27,9 +27,12 @@ class VoyagerPostcodesController extends Controller
             $group_postcodes[$postcode->Postcode][$postcode->day] = (array)json_decode($postcode->preroute);
 
         }
+        foreach ($postcodes as $postcode) {
+            $group_postcodes2[$postcode->Postcode][$postcode->day] = json_decode($postcode->tranche);
 
+        }
         $DAYS=self::$DAYS;
-        return view('admin.postcodes',compact('group_postcodes','DAYS','preroutes'));
+        return view('admin.postcodes',compact('group_postcodes','DAYS','preroutes','group_postcodes2'));
     }
 
     public function postprocess(Request $request)

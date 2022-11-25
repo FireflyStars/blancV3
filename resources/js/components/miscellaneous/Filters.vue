@@ -9,7 +9,7 @@
 
         <div class="row" v-for="(select, ind) in filterDef.def" :key="ind">
             <div class="col" v-if="select.type == 'select'">
-                <multi-select-options :name="select.name" :optionKey="ind" :options="select.options" @selected-options="selectedOptions"></multi-select-options>
+                <multi-select-options v-model="preselection[ind]" :label="select.name" :options="select.options"></multi-select-options>
             </div>
             <div class="col" v-if="select.type == 'datepicker' && select.id == 'det_date'">
                 <div class="from-group mb-3">
@@ -76,7 +76,6 @@
         components:{CheckBox, DateRangePicker, MultiSelectOptions},
         setup(props){
             const showfilter=ref(false);
-            const current_filter=ref('');
             const detDate=ref({
                 start: '',
                 end: '',
@@ -117,28 +116,34 @@
                     preselection.value['infoOrder.DetDate'] = [detDate.value.start, detDate.value.end];
                 else
                     delete preselection.value['infoOrder.DetDate']
-                console.log(preselection);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,{ customer: route.params.customerId , search:route.params.value , filter:preselection.value});
-                current_filter.value='';
                 toggleShow();
             }
             function cancel() {
-                current_filter.value='';
                 const filters=store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_FILTER}`];
                 preselection.value=_.cloneDeep(filters);
                 toggleShow();
 
             }
-            function removedata(){
+            const removefilter =()=>{
+                detDate.value ={
+                    start: '',
+                    end: '',
+                };
+                delivDate.value ={
+                    start: '',
+                    end: '',
+                };
+                detDate.value ={
+                    start: '',
+                    end: '',
+                };
                 preselection.value = {}
-            }
-            const selectedOptions =( options, ind )=>{
-                preselection.value[ind] = options;
+                applyFilter()
             }
             return {
                 showfilter,
-                current_filter,
                 preselection,
                 hasActiveFilters,
                 prodDate,
@@ -148,20 +153,10 @@
                 toggleShow,
                 applyFilter,
                 cancel,
-                removedata,
-                selectedOptions
+                removefilter,
             }
 
         },
-        methods:{
-            removefilter(){
-                this.$refs.date_picker_deliv.resetFilter()
-                this.$refs.date_picker_det.resetFilter()
-                this.$refs.date_picker_prod.resetFilter()
-                this.removedata()
-                this.applyFilter()
-           }
-        }
     }
 </script>
 

@@ -16,8 +16,9 @@
                             <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'Overdue' ? 'active' : ''" @click="setNav('Overdue')">Overdue</li>
                             <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'Pending' ? 'active' : ''" @click="setNav('Pending')">Pending</li>
                         </ul>
-                        <div class="filter-section position-relative" v-if="selected_nav == 'InvoiceList'">
-                            <filters :filterDef="filterDef"></filters>
+                        <div class="filter-section position-relative d-flex align-items-center" v-if="selected_nav == 'InvoiceList'">
+                            <a class="export-csv" @click="exportCSV">Export CSV</a>
+                            <InvoiceFilter :filterDef="filterDef"></InvoiceFilter>
                         </div>
                     </div>
                     <!-- <KeepAlive> -->
@@ -42,7 +43,7 @@
     } from "../../store/types/types";
     import SideBar from "../layout/SideBar";
     import MainHeader from "../layout/MainHeader";
-    import Filters from '../test/Filter';
+    import InvoiceFilter from '../miscellaneous/InvoiceFilter';
     import InvoiceList from './InvoiceList';
     import AssemblyHome from './AssemblyHome';
     import { ref, computed } from "vue";
@@ -53,7 +54,7 @@
         components:{
             SideBar,
             MainHeader,
-            Filters,
+            InvoiceFilter,
             InvoiceList,
             AssemblyHome
         },
@@ -64,21 +65,20 @@
                     status: {
                         label: 'Sub Order Status',
                         id: 'sub_order_status',
-                        mode: 'single',
-                        value: ''
+                        type: 'select',
+                        value: [],
+                        options: [],
                     },
                     dest: {
                         label: 'Destination',
                         id: 'destination',
                         type: 'select',
                         value: [],
-                        mode: 'tags',
                         options: [],
                     },
                     location: {
                         label: 'Location',
                         id: 'location',
-                        mode: 'tags',
                         type: 'select',
                         value: [],
                         options: [],
@@ -102,6 +102,9 @@
                         }
                     },
                 });
+                const exportCSV = ()=>{
+
+                }
 
             return {
                 filterDef,
@@ -116,6 +119,7 @@
                 setNav:( nav_val )=>{
                     store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_SELECTED_NAV}`, nav_val)
                 },
+                exportCSV
             }
         }
     }
@@ -192,5 +196,12 @@ tr:hover .visible-hidden .form-check{
     height: 100%;
     width: 100%;
     z-index: 9999;
+}
+.export-csv{
+    display: block;
+    color: #F4003D !important;
+    font-weight: bold;
+    cursor: pointer;
+    margin-right: 20px;
 }
 </style>

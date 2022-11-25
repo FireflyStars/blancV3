@@ -34,8 +34,8 @@ export const invoicelist= {
         multi_selected: [],
         total_invoice_count: 0,
         order_status: [
-            'ARCHIVED',
             'ASSEMBLING',
+            'ARCHIVED',
             'CONVEYOR IN',
             'DELIVERED',
             'FAILED DELIVERY',
@@ -129,9 +129,9 @@ export const invoicelist= {
             order_id: '',
             sub_order: '',
             item: '',
-            status: '',
-            dest: '',
-            location: '',
+            status: [],
+            dest: [],
+            location: [],
             prod_date_from: '',
             prod_date_to: '',
             deliv_date_from: '',
@@ -150,8 +150,8 @@ export const invoicelist= {
             state.invoice_list = [];
             state.total_invoice_count = 0;
             state.filter.status = payload.status.value;            
-            state.filter.dest = payload.dest.value.join(',');            
-            state.filter.location = payload.location.value.join(',');            
+            state.filter.dest = payload.dest.value;            
+            state.filter.location = payload.location.value;            
             state.filter.prod_date_from = payload.prod_date.value.start;            
             state.filter.prod_date_to = payload.prod_date.value.end;            
             state.filter.deliv_date_from = payload.deliv_date.value.start;            
