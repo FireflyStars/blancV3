@@ -128,6 +128,7 @@
                         <div class="d-flex ms-auto" v-if="userRole == 1">
                             <h4 @click="downloadVoucherExcel" class="mb-0 me-4 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Voucher</em></h4>
                             <h4 @click="downloadExcel" class="mb-0 me-4 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Report</em></h4>
+                            <h4 @click="downloadRevenueCSV" class="mb-0 me-4 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Revenue</em></h4>
                             <h4 @click="downloadOrderCSV" class="mb-0 me-4 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Order</em></h4>
                             <h4 @click="downloadVoidOrderCSV" class="mb-0 font-14 text-custom-success gotham-rounded-medium text-decoration-underline cursor-pointer"><em>View Void Order</em></h4>
                         </div>
@@ -877,6 +878,21 @@ export default {
                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
             })
         }
+
+        const downloadRevenueCSV = ()=>{
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading revenue...']);
+            axios.post('/get-revenue-csv', filterVal.value).then((res) => {
+                const data = res.data.data;
+                const fileName = res.data.fileName;
+                const exportType = exportFromJSON.types.csv;
+
+                if (data) exportFromJSON({ data, fileName, exportType });
+            }).catch((error)=>{
+                console.log(error);
+            }).finally(()=>{
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            })
+        }
         const downloadExcel = ()=>{
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading report...']);
             axios({
@@ -982,6 +998,7 @@ export default {
 
             downloadOrderCSV,
             downloadVoidOrderCSV,
+            downloadRevenueCSV,
             downloadExcel,
             downloadVoucherExcel
         }

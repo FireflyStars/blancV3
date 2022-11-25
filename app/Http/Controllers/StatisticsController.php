@@ -1314,6 +1314,98 @@ class StatisticsController extends Controller
 
     }
     /**
+     * Get revenue report data for download
+     */
+    public function getRevenueCSV(Request $request){
+        $customFilter   =   $request->post('customFilter');
+        $startDate      =   $request->post('startDate');
+        $endDate        =   $request->post('endDate');
+        $dateRangeType  =   $request->post('dateRangeType');
+
+        $period         = [ Carbon::parse($startDate)->startOfDay()->toDateTimeString(), Carbon::parse($endDate)->endOfDay()->toDateTimeString() ];
+
+        // new code added by YH
+        if( !$customFilter ){
+            $start_first_quarter_day = Carbon::now()->startOfYear();
+            $end_first_quarter_day = Carbon::parse($start_first_quarter_day)->lastOfQuarter();
+            if( $dateRangeType == 'Today' ){
+                $period = [Carbon::now()->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Yesterday' ){
+                $period = [Carbon::yesterday()->startOfDay()->toDateTimeString(), Carbon::yesterday()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Last 7 days' ){
+                $period = [Carbon::now()->subDays(7)->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Last 90 days' ){
+                $period = [Carbon::now()->subDays(90)->startOfDay()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Last Month' ){
+                $period = [Carbon::now()->subMonth()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->subMonth()->endOfMonth()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == 'This Month' ){
+                $period = [Carbon::now()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::now()->toDateTimeString()];
+            }else if ( $dateRangeType == 'Year to date' ){
+                $period = [Carbon::now()->startOfYear()->toDateTimeString(), Carbon::now()->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == '4th Quarter' ){
+                $period = [Carbon::parse($start_first_quarter_day)->addMonths(9)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->addMonths(9)->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == '3rd Quarter' ){
+                $period = [Carbon::parse($start_first_quarter_day)->addMonths(6)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->addMonths(6)->endOfDay()->toDateTimeString()];
+            }else if ( $dateRangeType == '2nd Quarter' ){
+                $period = [Carbon::parse($start_first_quarter_day)->addMonths(3)->startOfDay()->toDateTimeString(), Carbon::parse($end_first_quarter_day)->addMonths(3)->endOfDay()->toDateTimeString()];
+            }else{
+                $period = [$start_first_quarter_day->toDateTimeString(), $end_first_quarter_day->toDateTimeString()];
+            }
+        }
+        $reportData = DB::table('revenu')->whereBetween('created_at', $period)
+                        ->join('infoCustomer', function($join){
+                            $join->on('revenu.CustomerID', '=', 'infoCustomer.CustomerID')->where('revenu.CustomerID', '!=', '');
+                        })
+                        ->select(
+                            'revenu.*',
+
+                            'infoCustomer.btob', 'infoCustomer.TotalSpendBedlinen', 'infoCustomer.NbBooking', 'infoCustomer.LoginPreference', 
+                            'infoCustomer.CustomerCategory', 'infoCustomer.CustomerNotes', 'infoCustomer.SignupDateOnline',
+                            'infoCustomer.SignupDate', 'infoCustomer.CompanyName', 'infoCustomer.DeliveryMon', 'infoCustomer.DeliveryTu',
+                            'infoCustomer.DeliveryWed', 'infoCustomer.DeliveryTh', 'infoCustomer.DeliveryFri', 'infoCustomer.DeliverySat',
+                            'infoCustomer.DeliverybyDay', 'infoCustomer.Phone', 'infoCustomer.Name', 'infoCustomer.EmailAddress', 'infoCustomer.LastName',
+                            'infoCustomer.FirstName'
+                        )
+                        ->get();
+        foreach ($reportData as $item) {
+            $item->CashPayment = DB::table('payments')->join('revenu', 'revenu.order_id', '=', 'payments.order_id')
+                                ->where('revenu.order_id', $item->id)
+                                ->where('payments.status', 'succeeded')
+                                ->where('payments.type', 'cash')
+                                ->select(
+                                    DB::raw('IFNULL(ROUND(SUM(payments.montant), 2), 0) as amount')
+                                )->value('amount');
+            $item->CardPayment = DB::table('payments')->join('revenu', 'revenu.order_id', '=', 'payments.order_id')
+                                ->where('revenu.order_id', $item->id)
+                                ->where('payments.status', 'succeeded')
+                                ->where(function($query){
+                                    $query->where('payments.type', 'card')->orWhere('payments.type', 'like', '%reader%');
+                                })
+                                ->select(
+                                    DB::raw('IFNULL(ROUND(SUM(payments.montant), 2), 0) as amount')
+                                )->value('amount');
+            $item->BACSPayment = DB::table('payments')->join('revenu', 'revenu.order_id', '=', 'payments.order_id')
+                                ->where('revenu.order_id', $item->id)
+                                ->where('payments.status', 'succeeded')
+                                ->where('payments.type', 'bacs')
+                                ->select(
+                                    DB::raw('IFNULL(ROUND(SUM(payments.montant), 2), 0) as amount')
+                                )->value('amount');
+            $item->CashCreditPayment = DB::table('payments')->join('revenu', 'revenu.order_id', '=', 'payments.order_id')
+                                ->where('revenu.order_id', $item->id)
+                                ->where('payments.status', 'succeeded')
+                                ->where('payments.type', 'cust_credit')
+                                ->select(
+                                    DB::raw('IFNULL(ROUND(SUM(payments.montant), 2), 0) as amount')
+                                )->value('amount');
+        }
+        return response()->json([
+            'data'=>$reportData,
+            'fileName'=>sprintf("All-Revenue-%s-%s", Carbon::parse($period[0])->format('Ymd'), Carbon::parse($period[1])->format('Ymd'))
+        ]);
+
+    }
+    /**
      * Get void order report data for download
      */
     public function getVoidOrderCSV(Request $request){
