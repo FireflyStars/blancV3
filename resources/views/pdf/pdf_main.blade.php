@@ -32,7 +32,7 @@
                 <th colspan="4"></th><th class="amount">{{$v['order_totals'][$customerid]['order_net']}}</th><th class="amount">{{$v['order_totals'][$customerid]['order_vat']}}</th><th class="amount">{{$v['order_totals'][$customerid]['order_without_discount']}}</th>
             </tr>
             <tr>
-                <th colspan="4"></th><th colspan="2" class="sub_order_total">Discount</th><th class="amount">{{$v['order_totals'][$customerid]['discount']}}</th>
+                <th colspan="4"></th><th colspan="2" class="sub_order_total">Discount & Fees</th><th class="amount">{{$v['order_totals'][$customerid]['discount']}}</th>
             </tr>
             <tr>
                 <th colspan="4"></th><th colspan="2" class="sub_order_total">Total</th><th class="amount">{{$v['order_totals'][$customerid]['order_total']}}</th>

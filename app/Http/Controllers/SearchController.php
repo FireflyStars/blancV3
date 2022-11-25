@@ -60,7 +60,7 @@ public function SearchCustomer(Request $request)
 
 
     $users = DB::table('infoCustomer')
-    ->select('Name', 'EmailAddress', 'Phone','infoCustomer.id', 'infoCustomer.CustomerID' , 'infoCustomer.Actif','infoCustomer.CustomerIDMaster','CompanyName',
+    ->select('Name', 'EmailAddress', 'Phone','infoCustomer.id', 'infoCustomer.CustomerID' , 'infoCustomer.TypeDelivery', 'infoCustomer.Actif','infoCustomer.CustomerIDMaster','CompanyName',
     DB::raw(' IF(infoCustomer.btob = 0, "B2C", "B2B") as cust_type'),
     DB::raw(' IF(infoCustomer.CustomerIDMaster = "",  "Main", "Sub") as customer_account')
     )->where('infoCustomer.Actif', '=', 1);
@@ -95,11 +95,11 @@ public function SearchCustomer(Request $request)
             ->whereDate('pickup.date', '>=', date('Y-m-d'))
             ->get();
         }
-        $item->LastOrder = DB::table('infoOrder')->select('id as orde_id', 'DateDeliveryAsk as date')
+        $item->LastOrder = DB::table('infoOrder')->select('id as orde_id', 'DatePickup as date')
             ->where('infoOrder.CustomerID','=',$item->CustomerID)
-            ->whereIn('infoOrder.status',['RECRURRING' , 'SCHEDULED'])
-            ->whereDate('infoOrder.DateDeliveryAsk', '>=', date('Y-m-d'))
-            ->orderBy('infoOrder.DateDeliveryAsk', 'asc')
+            ->whereIn('infoOrder.status',['RECURRING' , 'SCHEDULED'])
+            ->whereDate('infoOrder.DatePickup', '>=', date('Y-m-d'))
+            ->orderBy('infoOrder.DatePickup', 'asc')
             ->first();
     }
 

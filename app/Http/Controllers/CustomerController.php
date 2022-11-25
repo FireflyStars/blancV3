@@ -1061,7 +1061,7 @@ class CustomerController extends Controller
     public function getCustomerDetail(Request $request){
         $customer = DB::table('infoCustomer')
                     ->leftJoin('InfoCustomerPreference', 'InfoCustomerPreference.CustomerID', '=', 'infoCustomer.CustomerID')
-                    ->select('Name as name', 'EmailAddress as email', 'Phone as phone',
+                    ->select('Name as name', 'EmailAddress as email', 'Phone as phone', 'TypeDelivery as type_delivery',
                         DB::raw('IF(btob = 0, "B2C", "B2B") as cust_type'),
                         'infoCustomer.TypeDelivery as location', 'infoCustomer.CustomerNotes as notes', 'infoCustomer.id', 'infoCustomer.CustomerID','infoCustomer.CustomerIDMaster',
                         DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recurring", "Normal") as booking'),
@@ -1479,11 +1479,11 @@ class CustomerController extends Controller
 
         $customer->scheduled_orders = $scheduled_orders;
 
-        $customer->first_order = DB::table('infoOrder')->select('id as orde_id', 'DateDeliveryAsk as date')
+        $customer->first_order = DB::table('infoOrder')->select('id as orde_id', 'DatePickup as date')
         ->where('infoOrder.CustomerID','=',$customer->CustomerID)
-        ->whereIn('infoOrder.status',['RECRURRING' , 'SCHEDULED'])
-        ->whereDate('infoOrder.DateDeliveryAsk', '>=', date('Y-m-d'))
-        ->orderBy('infoOrder.DateDeliveryAsk', 'asc')
+        ->whereIn('infoOrder.status',['RECURRING' , 'SCHEDULED'])
+        ->whereDate('infoOrder.DatePickup', '>=', date('Y-m-d'))
+        ->orderBy('infoOrder.DatePickup', 'asc')
         ->first();
 
         return response()->json( $customer );

@@ -127,7 +127,7 @@
             <div class="detail-footer bg-white">
                 <div class="d-flex col-12 p-0">
                     <div class="col-6 p-0 d-flex justify-content-between">
-                        <button class="detail-btn detail-btn-new-order text-center" @click="newOrder(CUSTOMER.CustomerID , CUSTOMER.first_order)">
+                        <button class="detail-btn detail-btn-new-order text-center" @click="newOrder(CUSTOMER)">
                             New Order
                         </button>
                         <!-- <button class="detail-btn detail-btn-app-sms text-center" @click="appSMS">
@@ -228,23 +228,33 @@ export default {
         const appSMS =()=>{
             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'App SMS is not implemented yet.',ttl:5,type:'success'});
         }
-        const newOrder =(customerId , order)=>{
+        const newOrder =(customer)=>{
             store.commit(`${NEWORDER_MODULE}${NEWORDER_PRELOAD_ORDER_CUSTOMER_SET}`,null);
-            if(order != null){
-              router.push({
-                    name:'DetailingItemList',
-                    params: {
-                      order_id:order.orde_id,
-                    },
-                })
-            }else{
+            let customerId = customer.CustomerID
+            if(customer.type_delivery != 'DELIVERY'){
               router.push({
                     name:'NewOrder',
                     params: {
                        customerId,
                     },
                 })
-            } 
+            }
+            if(customer.type_delivery == 'DELIVERY' &&  customer.first_order == null ){
+              router.push({
+                    name:'NewOrder',
+                    params: {
+                       customerId,
+                    },
+                })
+            }
+            if(customer.type_delivery == 'DELIVERY' && customer.first_order != null ){
+                  router.push({
+                    name:'DetailingItemList',
+                    params: {
+                      order_id:customer.first_order.orde_id,
+                    },
+                })
+            }   
         }
         if(showCustomerDetail) {
             nextTick(() => {
