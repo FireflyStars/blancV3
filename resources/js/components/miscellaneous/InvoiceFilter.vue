@@ -4,7 +4,7 @@
         <div class="filters position-absolute" v-if="showfilter">
             <h2 class="subtitle">Filter by</h2>
             <div class="row">
-                <div class="mb-2 col-12" v-for="(filterItem, key) in filterDef" :key="key">
+                <div class="col-12" v-for="(filterItem, key) in filterDef" :key="key">
                     <div class="form-group" v-if="filterItem.id == 'sub_order_status'">
                         <MultiSelectOptions :label="filterItem.label" :options="orderStatus" v-model="filterItem.value"></MultiSelectOptions>
                     </div>
