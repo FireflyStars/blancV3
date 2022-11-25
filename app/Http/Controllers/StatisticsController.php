@@ -1359,7 +1359,7 @@ class StatisticsController extends Controller
                         ->select(
                             'revenu.*',
 
-                            'infoCustomer.btob', 'infoCustomer.TotalSpendBedlinen', 'infoCustomer.NbBooking', 'infoCustomer.LoginPreference', 
+                            'infoCustomer.btob', 
                             'infoCustomer.CustomerCategory', 'infoCustomer.CustomerNotes', 'infoCustomer.SignupDateOnline',
                             'infoCustomer.SignupDate', 'infoCustomer.CompanyName', 'infoCustomer.DeliveryMon', 'infoCustomer.DeliveryTu',
                             'infoCustomer.DeliveryWed', 'infoCustomer.DeliveryTh', 'infoCustomer.DeliveryFri', 'infoCustomer.DeliverySat',
@@ -3117,7 +3117,7 @@ class StatisticsController extends Controller
     }
 
     /**
-     * return all invoices
+     * Get All Invoices
      */
     public function getAllInvoices(Request $request){
         $invoices = Db::table('infoitems')
