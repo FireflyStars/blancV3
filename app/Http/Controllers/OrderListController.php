@@ -227,7 +227,7 @@ class OrderListController extends Controller
                         });
                     }
                 }
-                else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod'){
+                else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod' && $colname !='infoOrder.paid'){
                     if(!empty($values))
                     $orderlist=$orderlist->whereIn($colname, $values);
                 }
@@ -265,6 +265,13 @@ class OrderListController extends Controller
                         }
                     }
 
+                }
+                else if($colname == 'infoOrder.paid'){
+                    if($values == "unpaid"){
+                        $orderlist=$orderlist->where($colname, 0);
+                    }else{
+                        $orderlist=$orderlist->where($colname, 1);
+                    }     
                 }
                 else{
 
@@ -794,7 +801,7 @@ class OrderListController extends Controller
                     }
                     if(!empty($express))
                         $orderlist=$orderlist->whereIn($colname,$express);
-                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod'){
+                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod' && $colname !='infoOrder.paid'){
                     if(!empty($values))
                     $orderlist=$orderlist->whereIn($colname, $values);
                 }else if($colname == 'infoitems.ProdDate' && !empty($values)){
@@ -818,6 +825,13 @@ class OrderListController extends Controller
                         }
                     }
 
+                }else if($colname == 'infoOrder.paid'){
+                    if($values == "unpaid"){
+                        $orderlist=$orderlist->where($colname, 0);
+                    }else{
+                        $orderlist=$orderlist->where($colname, 1);
+                    }
+                    
                 }else{
 
                 }
@@ -2186,7 +2200,7 @@ class OrderListController extends Controller
                     }
                     if(!empty($express))
                         $orderlist=$orderlist->whereIn($colname,$express);
-                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod'){
+                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod' && $colname !='infoOrder.paid'){
                     if(!empty($values))
                     $orderlist=$orderlist->whereIn($colname, $values);
                 }else if($colname == 'infoitems.ProdDate' && !empty($values)){
@@ -2210,6 +2224,13 @@ class OrderListController extends Controller
                         }
                     }
 
+                }else if($colname == 'infoOrder.paid'){
+                    if($values == "unpaid"){
+                        $orderlist=$orderlist->where($colname, 0);
+                    }else{
+                        $orderlist=$orderlist->where($colname, 1);
+                    }
+                    
                 }else{
 
                 }
