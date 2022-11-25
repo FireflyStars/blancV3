@@ -1241,6 +1241,20 @@ class DetailingController extends Controller
         if($order->TypeDelivery=='DELIVERY' && $order->FailedDelivery===1)
             $_FAILED_DELIVERY_PRICE = 5;
 
+
+
+        if(in_array($order->express,[1,6])){
+            $mapped_id = [1=>1,6=>2];
+            $upcharge_id = $mapped_id[$order->express];
+
+            $has_upcharge = DB::table('order_upcharges')->where('order_id',$order_id)->where('upcharges_id',$upcharge_id)->first();
+            if(!$has_upcharge){
+                DetailingController::setExpressUpcharge($upcharge_id,$order->id);
+                DetailingController::logUpcharge($order->id,$upcharge_id,1);
+            }
+
+        }
+
         $upcharges = DB::table('order_upcharges')->where('order_id',$order_id)->get();
         if(count($upcharges) > 0){
             foreach($upcharges as $k=>$v){
@@ -1914,13 +1928,6 @@ class DetailingController extends Controller
         $order_addon = 0;
         $failed_delivery_price = 0;
 
-
-        //Si le client le desactive, il faut trouver un moyen de le garder desactiver
-        if($order->express==1){
-            //DB::table('order_upcharges')->updateOrInsert(['order_id',''])
-            $has_upcharge_24 = DB::table('order_upcharges')->where('order_id',$order_id)->where('upcharges_id',1)->first();
-        }
-
         $upcharges = DB::table('order_upcharges')->where('order_id',$order_id)->get();
         if(count($upcharges) > 0){
             foreach($upcharges as $k=>$v){
@@ -2378,11 +2385,19 @@ class DetailingController extends Controller
             if($addon_id !=4){
                 DB::table('infoOrder')->where('id',$order_id)->update(['DeliveryNowFee'=>null]);
             }
+
         }else{
             $updated = DB::table('order_upcharges')->where('order_id',$order_id)->where('upcharges_id',$addon_id)->delete();
-            if($addon_id==3)
-            DB::table('infoOrder')->where('id',$order_id)->where('Status','<>','FULFILLED')->update(['FailedDelivery'=>0]);
+            if($addon_id==3){
+                DB::table('infoOrder')->where('id',$order_id)->where('Status','<>','FULFILLED')->update(['FailedDelivery'=>0]);
+            }
+
+            if(in_array($addon_id,[1,2])){
+                DB::table('infoOrder')->where('id',$order_id)->update(['express'=>0]);
+            }
         }
+
+        DetailingController::logUpcharge($order_id,$addon_id,($selected?1:0),Auth::user()->id);
 
         return response()->json([
             'post'=>$request->all(),
@@ -2922,6 +2937,32 @@ class DetailingController extends Controller
 
         return response()->json([
             'post'=>$request->all(),
+        ]);
+    }
+
+    public static function setExpressUpcharge($upcharge_id,$order_id){
+        $user = Auth::user();
+        $upcharge = DB::table('upcharges')->where('id',$upcharge_id)->first();
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+
+        $amount = ($upcharge->amount * $order->Subtotal)/100;
+
+        DB::table('order_upcharges')->insert([
+            'order_id'=>$order_id,
+            'upcharges_id'=>$upcharge_id,
+            'user_id'=>$user->id,
+            'amount'=>number_format($amount,2),
+            'created_at'=>date('Y-m-d H:i:s'),
+        ]);
+    }
+
+    public static function logUpcharge($order_id,$upcharge_id,$type,$user_id=0){
+        DB::table('logUpcharges')->insert([
+            'order_id'=>$order_id,
+            'upcharges_id'=>$upcharge_id,
+            'user_id'=>$user_id,
+            'set'=>$type,
+            'created_at'=>date('Y-m-d H:i:s'),
         ]);
     }
 
