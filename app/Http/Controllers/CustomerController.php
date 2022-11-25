@@ -3030,6 +3030,7 @@ class CustomerController extends Controller
                 $notification_ids = [];
 
                 if($contact){
+                    /*
                     if($contact->email!=''){
                         $email = $contact->email;
                         $recipients[] = $email;
@@ -3043,6 +3044,11 @@ class CustomerController extends Controller
                         $email2 = $contact->email2;
                         $recipients[] = $email2;
                     }
+                    */
+                    if($contact->email!=''){
+                        $recipients = explode("\r\n",$contact->email);
+                    }
+
                 }else{
                     $recipients[] = $email;
                 }
