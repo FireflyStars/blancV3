@@ -118,6 +118,7 @@ class OrderListController extends Controller
                             ->where('infoOrder.DateDeliveryAsk','!=','2020-01-01');
                     });
             }
+        }
 
         if($current_tab=='with_partner'){
             $orderlist->whereIn('infoOrder.OrderID',function($query){
