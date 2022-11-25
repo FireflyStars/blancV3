@@ -119,8 +119,8 @@
                                                     <span>Issues</span>
                                                     <a href="javascript:void(0)" v-if= "disabled_btn_with_status" @click="goToDetailing(item.order_id,item.detailingitem_id,10)">Edit</a>
                                                 </div>
-                                                <div class="row" v-if="(item.stains && item.stains.length > 0) || (item.damages && item.damages.length > 0)">
-                                                    <div class="col-6" v-if="item.stains && item.stains.length > 0">
+                                                <div class="row" v-if="((item.stains && item.stains.length > 0) || (item.stainsissue && item.stainsissue.length > 0) || item.stainstext != null) || ((item.damages && item.damages.length > 0) || (item.damagesissues && item.damagesissues.length > 0) || item.damagestext != null )">
+                                                    <div class="col-6" v-if="(item.stains && item.stains.length > 0) || (item.stainsissue && item.stainsissue.length > 0) || item.stainstext != null">
                                                         <div class="mb-4">
                                                             <div class="item-sub-heading">Stains</div>
                                                         </div>
@@ -149,7 +149,7 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-6" v-if="item.damages && item.damages.length > 0">
+                                                    <div class="col-6" v-if="(item.damages && item.damages.length > 0) || (item.damagesissues && item.damagesissues.length > 0) || item.damagestext != null ">
                                                         <div class="mb-4">
                                                             <div class="item-sub-heading">Damages</div>
                                                         </div>
@@ -173,15 +173,14 @@
                                                         <div class="row justify-content-center mb-1" >
                                                             <div class="col-1"></div>
                                                             <div class="col-11">
-                                                                <span v-if="item.damagestext">Stain {{item.damagestext}}</span>
+                                                                <span v-if="item.damagestext">Damage {{item.damagestext}}</span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="row">
+                                                <div class="row" v-else>
                                                     <div class="col-12 item-desc-text">No issues</div>
                                                 </div>
-
                                             </div>
                                         </div>
 
