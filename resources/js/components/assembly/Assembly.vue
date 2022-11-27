@@ -46,6 +46,9 @@
     import InvoiceFilter from '../miscellaneous/InvoiceFilter';
     import InvoiceList from './InvoiceList';
     import AssemblyHome from './AssemblyHome';
+    import DueTodayInvoiceList from './DueTodayInvoiceList';
+    import DueTomorrowInvoiceList from './DueTomorrowInvoiceList';
+    import OverDueInvoiceList from './OverDueInvoiceList';
     import { ref, computed } from "vue";
     import { useStore } from "vuex";
     import { useRoute } from "vue-router";
@@ -56,7 +59,10 @@
             MainHeader,
             InvoiceFilter,
             InvoiceList,
-            AssemblyHome
+            AssemblyHome,
+            OverDueInvoiceList,
+            DueTodayInvoiceList,
+            DueTomorrowInvoiceList
         },
         setup(){
             const store = useStore();
