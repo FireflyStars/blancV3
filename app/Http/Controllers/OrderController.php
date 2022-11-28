@@ -624,6 +624,7 @@ class OrderController extends Controller
                 ]);
 
                 if($payment_intent && isset($payment_intent->status)){
+                    DB::table('payments')->where('id',$payment_id)->update(['payment_intent_id'=>$payment_intent->id]);
 
                     if($payment_intent->status == 'succeeded'){
 
@@ -1186,7 +1187,7 @@ class OrderController extends Controller
 
         $credit_remaining = $cust->credit;
 
-        if($cust->credit >= 0){
+        if($cust->credit >= 0 && $credit_to_deduct > 0){
             /*
             if($cust->credit > $balance){
                 $credit_remaining = $cust->credit - $balance;
@@ -1304,8 +1305,8 @@ class OrderController extends Controller
                             DB::raw('ROUND(SUM(FailedDeliveryCharge), 2)  as FailedDeliveryChargeFinal'),
                         )
                         ->where('revenu.order_id',$order_id)
-                        ->first();              
-        
+                        ->first();
+
            $order_revenu = [
                 'OrderRevenueLocation'=> $orderInfo->OrderRevenueLocation,
                 'Total'=>($revenuInfo->Totalfinal?-($revenuInfo->Totalfinal):0),
@@ -1323,9 +1324,9 @@ class OrderController extends Controller
                 'users_id'=>Auth::user()->id,
                 'created_at'=>date('Y-m-d H:i:s')
            ];
-   
+
            DB::table('revenu')->insert($order_revenu);
-          
+
 
            $order =  DB::table('infoOrder')->where('infoOrder.id',$order_id)->update([
             'datevoid' =>date('Y-m-d H:i:s'),
