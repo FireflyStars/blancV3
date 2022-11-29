@@ -321,7 +321,7 @@
                                             <div class="col-12 text-align-right" v-else>&#163;0.00</div>
                                             -->
                                         </div>
-                                        <div class="row px-0 py-1 sub-total-text" v-if="amountPaidCredit(amount_paid_credit) > 0">
+                                        <div class="row px-0 py-1 sub-total-text" v-if="Object.values(amount_paid_credit).length > 0">
                                             <div class="col-12">
                                                 <template v-for="a,i in amount_paid_credit" :key="i">
                                                 <div class="row" v-if="a.montant>0">
@@ -968,8 +968,8 @@ export default {
                 issues.value = res.data.issues;
                 cust.value = res.data.cust;
                 order.value = res.data.order;
-                if(order.value.Status != "DELIVERED" && order.value.Status != "VOID" && order.value.Status != "FULFILLED" && order.value.Status != "DELETE" ){               
-                    disabled_btn_with_status.value = true 
+                if(order.value.Status != "DELIVERED" && order.value.Status != "VOID" && order.value.Status != "FULFILLED" && order.value.Status != "DELETE" ){
+                    disabled_btn_with_status.value = true
                 }
                 if(res.data.order.DeliveryNowFee!='')
                 pricedeliverynow.value=parseFloat(res.data.order.DeliveryNowFee).toFixed(2);
@@ -1162,7 +1162,29 @@ export default {
             });
         }
 
-        function validatePayment(){
+        async function validatePayment(){
+            const btn = document.getElementById('completeBtn');
+
+            btn.disabled = true;
+
+            try{
+                await checkoutComplete();
+
+            }finally{
+                console.log('after checkout items');
+                btn.disabled = false;
+            }
+        }
+
+        function delayPage(n){
+          return new Promise(function(resolve){
+            setTimeout(resolve,n*1000);
+          });
+        }
+
+
+        function checkoutComplete(){
+            console.log('checkout complete called');
             if(cust.value.OnAccount==1){
                 completeCheckout(true);
             }else{
