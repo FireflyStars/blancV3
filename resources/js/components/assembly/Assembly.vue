@@ -20,6 +20,9 @@
                             <a class="export-csv" v-if="userRole == 1" @click="exportCSV">Export CSV</a>
                             <InvoiceFilter :filterDef="filterDef"></InvoiceFilter>
                         </div>
+                        <div class="filter-section position-relative d-flex align-items-center" v-if="selected_nav == 'OverDueInvoiceList'">
+                            <a class="export-csv" v-if="userRole == 1" @click="exportOverDueCSV">Export CSV</a>
+                        </div>
                     </div>
                     <!-- <KeepAlive> -->
                         <component :is="selected_nav"></component>
@@ -115,8 +118,13 @@
                     },
                 });
                 const exportCSV = ()=>{
-                    store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading revenue...']);
                     const fileName = 'item-Date-hours.csv';
+                    const exportType = exportFromJSON.types.csv;
+                    const data = store.getters[`${INVOICE_MODULE}${GET_INVOICE_LIST}`]
+                    if (data) exportFromJSON({ data, fileName, exportType });
+                }
+                const exportOverDueCSV = ()=>{
+                    const fileName = 'item-overdue.csv';
                     const exportType = exportFromJSON.types.csv;
                     const data = store.getters[`${INVOICE_MODULE}${GET_INVOICE_LIST}`]
                     if (data) exportFromJSON({ data, fileName, exportType });
@@ -151,7 +159,8 @@
 
                     }
                 },
-                exportCSV
+                exportCSV,
+                exportOverDueCSV
             }
         }
     }
