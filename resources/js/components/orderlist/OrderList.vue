@@ -404,7 +404,7 @@
             onMounted(()=>{
                 nextTick(()=>{
                     showcontainer.value=true;
-                    let data = route.params.customerId?route.params.customerId:window.sessionStorage.getItem('orders_customer')      
+                    let data = route.params.customerId?route.params.customerId:window.sessionStorage.getItem('orders_customer')
                      if(route.params.name == "Customer name"){
                         filterDef.value={
                                         'Customername':{
@@ -427,6 +427,7 @@
                           store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`,{search:window.sessionStorage.getItem('search_value')});
                         }else{
                           store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`,{search:route.params.value});
+                          searchValue.value = route.params.value
                         }   
                     }
                 });
@@ -437,9 +438,10 @@
             watch(route, (to) => {
 
                     customerID.value =  route.params.customerId ? route.params.customerId : window.sessionStorage.getItem('orders_customer')
-                if( (customerID.value != null && customerID.value != 'undefined' && customerID.value != undefined)){
-                    store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`, {customer:route.params.customerId} );
-                } else {
+
+                if((customerID.value != null && customerID.value != "null" && customerID.value != 'undefined' && customerID.value != undefined)){
+                    store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`, {customer:customerID.value} );
+                }else{
                        if(window.sessionStorage.getItem('search_value') != null){
                         store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`,{search:window.sessionStorage.getItem('search_value')});
                         searchValue.value = window.sessionStorage.getItem('search_value')
@@ -457,17 +459,17 @@
 
                 tabs.value[tab].active=true;
                 
-                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_TAB}`,{tab:tab,name:tabs.value[tab].name, customer:customerID.value , search: searchValue.value});
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_TAB}`,{tab:tab,name:tabs.value[tab].name, customer:route.params.customerId ? route.params.customerId : window.sessionStorage.getItem('orders_customer') , search: route.params.value ? route.params.value :window.sessionStorage.getItem('search_value')});
             }
 
             function hideOrderDetail(event){
                 router.push({
                     name:'LandingPage',
                     params: {
-                        customerId:route.params.customerId,
-                        value:route.params.value,
+                        customerId:customerID.value,
+                        value:searchValue.value,
                     },
-                    
+
                 });
             }
 

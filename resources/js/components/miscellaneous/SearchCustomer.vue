@@ -401,9 +401,9 @@ export default({
           }
             
           function goToOrderList(customerId){
-            window.sessionStorage.setItem('orders_customer', customerId);
             showSearch.value = false;
             show_loader.value= false;
+            window.sessionStorage.setItem('orders_customer', customerId);
             router.push({
                     name:'LandingPage',
                     params: {
