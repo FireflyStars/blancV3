@@ -3210,6 +3210,13 @@ class StatisticsController extends Controller
         } else if( $request->deliv_date_from == '' && $request->deliv_date_to != '' ){
             $invoices   = $invoices->whereDate('infoitems.PromisedDate', '<=', Carbon::parse($request->prod_date_to)->toDateTimeString());
         }
+        if($request->duetoday){
+            $invoices = $invoices->where('infoitems.PromisedDate', Carbon::today()->toDateTimeString());
+        }else if($request->duetomorrow){
+            $invoices = $invoices->where('infoitems.PromisedDate', Carbon::tomorrow()->toDateTimeString());
+        }else if($request->overdue){
+            $invoices = $invoices->where('infoitems.PromisedDate', '<=',Carbon::today()->toDateTimeString());
+        }
         $total_invoice_count = $invoices->count();
         $invoices   =  $invoices->skip($request->skip ? $request->skip : 0)
                                 ->take(20)

@@ -230,6 +230,10 @@ export const INVOICELIST_SET_MULTI_UNCHECKED = 'INVOICELIST_SET_MULTI_UNCHECKED'
 
 export const INVOICE_RESET_MULITCHECKED = 'INVOICE_RESET_MULITCHECKED'; //action | mutation
 
+export const SET_DUE_TODAY_FLAG = 'SET_DUE_TODAY_FLAG'; //action | mutation
+export const SET_DUE_TOMORROW_FLAG = 'SET_DUE_TOMORROW_FLAG'; //action | mutation
+export const SET_OVERDUE_FLAG = 'SET_OVERDUE_FLAG'; //action | mutation
+
 // item detail page contant
 
 export const ITEM_DETAIL_MODULE = 'ITEM_DETAIL_MODULE/'; //action | mutation

@@ -11,9 +11,9 @@
                         <ul class="tab-nav list-inline mb-0">
                             <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'AssemblyHome' ? 'active' : ''" @click="setNav('AssemblyHome')">Stations</li>
                             <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'InvoiceList' ? 'active' : ''" @click="setNav('InvoiceList')">All items</li>
-                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'DueToday' ? 'active' : ''" @click="setNav('DueToday')">Due today</li>
-                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'DueTomorrow' ? 'active' : ''" @click="setNav('DueTomorrow')">Due tomorrow</li>
-                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'Overdue' ? 'active' : ''" @click="setNav('Overdue')">Overdue</li>
+                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'DueTodayInvoiceList' ? 'active' : ''" @click="setNav('DueTodayInvoiceList')">Due today</li>
+                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'DueTomorrowInvoiceList' ? 'active' : ''" @click="setNav('DueTomorrowInvoiceList')">Due tomorrow</li>
+                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'OverDueInvoiceList' ? 'active' : ''" @click="setNav('OverdueInvoiceList')">Overdue</li>
                             <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'Pending' ? 'active' : ''" @click="setNav('Pending')">Pending</li>
                         </ul>
                         <div class="filter-section position-relative d-flex align-items-center" v-if="selected_nav == 'InvoiceList'">
@@ -40,6 +40,9 @@
         SET_SELECTED_NAV,
         GET_SELECTED_NAV,
         INVOICELIST_GET_CURRENT_SELECTED,
+        SET_DUE_TODAY_FLAG,
+        SET_DUE_TOMORROW_FLAG,
+        SET_OVERDUE_FLAG,
     } from "../../store/types/types";
     import SideBar from "../layout/SideBar";
     import MainHeader from "../layout/MainHeader";
@@ -120,10 +123,25 @@
                             return (route.params.item_id>0 && store.getters[`${ASSEMBLY_HOME_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);
                         else if (store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'InvoiceList')
                             return (route.params.item_id>0&&store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);
+                        else if (store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'DueTodayInvoiceList')
+                            return (route.params.item_id>0&&store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);
+                        else if (store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'DueTomorrowInvoiceList')
+                            return (route.params.item_id>0&&store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);
+                        else if (store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'OverDueInvoiceList')
+                            return (route.params.item_id>0&&store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);
                         else return false;
                 }),
                 setNav:( nav_val )=>{
                     store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_SELECTED_NAV}`, nav_val)
+                    if(nav_val == 'DueTodayInvoiceList'){
+                        store.dispatch(`${INVOICE_MODULE}${SET_DUE_TODAY_FLAG}`)
+                    }else if(nav_val == 'DueTomorrowInvoiceList'){
+                        store.dispatch(`${INVOICE_MODULE}${SET_DUE_TOMORROW_FLAG}`)
+                    }else if(nav_val == 'OverDueInvoiceList'){
+                        store.dispatch(`${INVOICE_MODULE}${SET_OVERDUE_FLAG}`)
+                    }else{
+
+                    }
                 },
                 exportCSV
             }
