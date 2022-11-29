@@ -42,7 +42,7 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
                                 )
                                 ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                                 ->where('OrderRevenueLocation', '!=', 'DELIVERY')
-                                ->whereNotNull('OrderRevenueLocation')
+                                ->where('revenu.OrderRevenueLocation', '!=', '')
                                 ->groupBy('OrderRevenueLocation')->orderBy('amount', 'DESC')->get();
         $salesTotal = $salesData->sum('amount');
         $this->cnt = $salesData->count();
@@ -62,7 +62,7 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
                         ->join('revenu', 'revenu.order_id', '=', 'detailingitem.order_id')
                         ->whereBetween('revenu.created_at', $this->period)
                         ->where('revenu.OrderRevenueLocation', '!=', 'DELIVERY')
-                        ->whereNotNull('revenu.OrderRevenueLocation')
+                        ->where('revenu.OrderRevenueLocation', '!=', '')
                         ->whereNotIn('revenu.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->select(
                             DB::raw('count(*) as amount')

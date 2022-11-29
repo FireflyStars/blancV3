@@ -666,7 +666,7 @@ class StatisticsController extends Controller
                                     )
                                     ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                                     ->where('OrderRevenueLocation', '!=', 'DELIVERY')
-                                    ->whereNotNull('OrderRevenueLocation')
+                                    ->where('OrderRevenueLocation', '!=', '')
                                     ->groupBy('OrderRevenueLocation')->orderBy('amount', 'DESC')->get();
             $b2bDelivery = DB::table('revenu')->whereBetween('created_at', $period)
                                 ->where('OrderRevenueLocation', 'DELIVERY')
