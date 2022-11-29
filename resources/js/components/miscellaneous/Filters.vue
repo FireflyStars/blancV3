@@ -117,7 +117,7 @@
                 else
                     delete preselection.value['infoOrder.DetDate']
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_RESET_MULITCHECKED}`);
-                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,{ customer: route.params.customerId , search:route.params.value , filter:preselection.value});
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_FILTER}`,{ customer: route.params.customerId ? route.params.customerId:window.sessionStorage.getItem('orders_customer') , search:route.params.value ? route.params.value : window.sessionStorage.getItem('search_value') , filter:preselection.value});
                 toggleShow();
             }
             function cancel() {

@@ -1482,7 +1482,7 @@ class CustomerController extends Controller
         $customer->first_order = DB::table('infoOrder')->select('id as orde_id', 'DatePickup as date')
         ->where('infoOrder.CustomerID','=',$customer->CustomerID)
         ->whereIn('infoOrder.status',['RECURRING' , 'SCHEDULED'])
-        ->whereDate('infoOrder.DatePickup', '>=', date('Y-m-d'))
+        ->whereDate('infoOrder.DatePickup', '<=', date('Y-m-d'))
         ->orderBy('infoOrder.DatePickup', 'asc')
         ->first();
 

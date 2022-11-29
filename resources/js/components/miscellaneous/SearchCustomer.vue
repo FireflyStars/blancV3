@@ -233,8 +233,7 @@ export default({
            const search_value =ref('');
            const filterDef = ref({});
 
-           clear.value = window.sessionStorage.getItem('search_value');
-           
+           clear.value = window.sessionStorage.getItem('search_value');       
            if(clear.value != null){
             showbutton.value = true
            }
@@ -347,6 +346,8 @@ export default({
           function displayAll(tab){
                 showSearch.value = false;
                 show_loader.value= false;
+                window.sessionStorage.setItem('search_value', search_value.value);
+                window.sessionStorage.removeItem('orders_customer');
               if(tab == "search_name"){
                 if(route.name == "Customer"){
                   store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, ' please wait...']);
@@ -372,8 +373,6 @@ export default({
                            'value': search_value.value
                     },
                 })
-                window.sessionStorage.setItem('search_value', search_value.value);
-                window.sessionStorage.removeItem('orders_customer');
               //  }
              } else if (tab == 'search_item'){
 
@@ -403,7 +402,6 @@ export default({
             
           function goToOrderList(customerId){
             window.sessionStorage.setItem('orders_customer', customerId);
-            window.sessionStorage.removeItem('search_value')
             showSearch.value = false;
             show_loader.value= false;
             router.push({

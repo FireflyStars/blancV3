@@ -98,7 +98,7 @@ public function SearchCustomer(Request $request)
         $item->LastOrder = DB::table('infoOrder')->select('id as orde_id', 'DatePickup as date')
             ->where('infoOrder.CustomerID','=',$item->CustomerID)
             ->whereIn('infoOrder.status',['RECURRING' , 'SCHEDULED'])
-            ->whereDate('infoOrder.DatePickup', '>=', date('Y-m-d'))
+            ->whereDate('infoOrder.DatePickup', '<=', date('Y-m-d'))
             ->orderBy('infoOrder.DatePickup', 'asc')
             ->first();
     }

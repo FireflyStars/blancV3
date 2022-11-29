@@ -671,6 +671,16 @@ Route::get('/merge-pdf',function(){
     shell_exec("gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=$output_file -dBATCH $files");
 });
 
+Route::get('/test-calculate-checkout',function(){
+    $ctrl = new DetailingController();
+
+    $ctrl->calculateCheckout(146605);
+
+
+    echo "<pre>";
+
+});
+
 
 /* END TEST ROUTES */
 
@@ -1499,6 +1509,7 @@ Route::get('/unpaid-orders',function(Request $request){
                 $payment_intent = $stripe->paymentIntents->create($pi);
 
                 if($payment_intent && isset($payment_intent->status)){
+                    DB::table('payments')->where('id',$payment_id)->update(['payment_intent_id'=>$payment_intent->id]);
 
                     if($payment_intent->status == 'succeeded'){
                         $orders_to_update[] = $k;
