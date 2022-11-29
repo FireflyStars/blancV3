@@ -319,7 +319,7 @@
                                 1:"On Account",
                             }
                         },
-                        'infoOrder.paid':{
+                        'infoOrder.Paid':{
                             name:"Payment status",
                             type: 'select',
                             options:{
@@ -357,7 +357,7 @@
             }else if(props.tab.name == 'Customer Care'){
                filterDef.value={
                     def:{
-                        'infoOrder.paid':{
+                        'infoOrder.Paid':{
                             name:"Payment status",
                             type: 'select',
                             options:{
@@ -444,7 +444,7 @@
             else{
                 filterDef.value={
                     def:{
-                        'infoOrder.paid':{
+                        'infoOrder.Paid':{
                             name:"Payment status",
                             type: 'select',
                             options:{
