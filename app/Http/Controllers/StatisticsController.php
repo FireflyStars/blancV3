@@ -662,13 +662,14 @@ class StatisticsController extends Controller
             //                                     )->value('amount');
             $salesByChannel = DB::table('revenu')->whereBetween('created_at', $period)
                                     ->select(
-                                        DB::raw('IFNULL(ROUND(SUM(Total)), 0) as amount'), 'TypeDelivery as channel'
+                                        DB::raw('IFNULL(ROUND(SUM(Total)), 0) as amount'), 'OrderRevenueLocation as channel'
                                     )
                                     ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                                    ->where('TypeDelivery', '!=', 'DELIVERY')
-                                    ->groupBy('TypeDelivery')->orderBy('amount', 'DESC')->get();
+                                    ->where('OrderRevenueLocation', '!=', 'DELIVERY')
+                                    ->where('OrderRevenueLocation', '!=', '')
+                                    ->groupBy('OrderRevenueLocation')->orderBy('amount', 'DESC')->get();
             $b2bDelivery = DB::table('revenu')->whereBetween('created_at', $period)
-                                ->where('TypeDelivery', 'DELIVERY')
+                                ->where('OrderRevenueLocation', 'DELIVERY')
                                 ->where('btob', 1)
                                 ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                                 ->select(
@@ -677,7 +678,7 @@ class StatisticsController extends Controller
                                 ->value('amount');
             $salesByChannel->push(collect(['channel'=> 'B2B Deliveries', 'amount'=>$b2bDelivery]));
             $b2cDelivery = DB::table('revenu')->whereBetween('created_at', $period)
-                                ->where('TypeDelivery', 'DELIVERY')
+                                ->where('OrderRevenueLocation', 'DELIVERY')
                                 ->where('btob', 0)
                                 ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                                 ->select(
@@ -2971,6 +2972,7 @@ class StatisticsController extends Controller
             'stats_overdue'=>$stats_per_postes_overdue,
             'stats_later'=>$stats_per_postes_later,
             'stats_total'=>$stats_total,
+            'user_role'=>auth()->user()->role_id,
             [$today,$tomorrow]
         ]);
     }
@@ -3209,6 +3211,13 @@ class StatisticsController extends Controller
             $invoices   = $invoices->whereDate('infoitems.PromisedDate', '>=', Carbon::parse($request->prod_date_from)->toDateTimeString());
         } else if( $request->deliv_date_from == '' && $request->deliv_date_to != '' ){
             $invoices   = $invoices->whereDate('infoitems.PromisedDate', '<=', Carbon::parse($request->prod_date_to)->toDateTimeString());
+        }
+        if($request->duetoday){
+            $invoices = $invoices->where('infoitems.PromisedDate', Carbon::today()->toDateTimeString());
+        }else if($request->duetomorrow){
+            $invoices = $invoices->where('infoitems.PromisedDate', Carbon::tomorrow()->toDateTimeString());
+        }else if($request->overdue){
+            $invoices = $invoices->where('infoitems.PromisedDate', '<=',Carbon::today()->toDateTimeString());
         }
         $total_invoice_count = $invoices->count();
         $invoices   =  $invoices->skip($request->skip ? $request->skip : 0)

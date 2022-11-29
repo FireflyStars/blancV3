@@ -27,6 +27,8 @@ import {
     HIDE_LOADER,
     SET_SELECTED_NAV,
     GET_SELECTED_NAV,
+    GET_USER_ROLE,
+    SET_USER_ROLE
 
 } from "../types/types";
 export const assemblyHome = {
@@ -61,6 +63,7 @@ export const assemblyHome = {
         multi_selected: [],      
         total_invoice_count: 0,  
         skip: 0,
+        user_role: 0
     },
     mutations: {
         [RESET_ASSEMBLY_STATE]: (state) => { 
@@ -137,6 +140,9 @@ export const assemblyHome = {
         [SET_SELECTED_NAV]:(state, payolad)=>{
                 state.selected_nav = payolad;
         },        
+        [SET_USER_ROLE]:(state, user_role)=>{
+                state.user_role = user_role;
+        },        
     },
     actions: {
         [RESET_ASSEMBLY_STATE]: ({ commit }) => {
@@ -176,6 +182,9 @@ export const assemblyHome = {
         [SET_SELECTED_NAV]:({ commit }, payload)=>{
             commit(SET_SELECTED_NAV, payload);
         },
+        [SET_USER_ROLE]:({ commit }, user_role)=>{
+            commit(SET_USER_ROLE, user_role);
+        },
     },
     getters: {
         [GET_ASSEMBLY_GROUPED_POSTES]:(state)   => state.groupedpostes,
@@ -191,5 +200,6 @@ export const assemblyHome = {
         [GET_LOADED_INVOICE_COUNT]:state=> state.invoice_list.length,
         [GET_TOTAL_INVOICE_COUNT]:state=> state.total_invoice_count,
         [GET_SELECTED_NAV]:state=> state.selected_nav,
+        [GET_USER_ROLE]:state=> state.user_role,
     },
 };

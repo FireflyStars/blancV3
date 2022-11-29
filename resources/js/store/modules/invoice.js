@@ -3,13 +3,13 @@ import {
     SET_INVOICE_LIST,
     SET_INVOICE_FILTER_FLAG,
     SET_INVOICE_FILTER,
-    GET_INVOICE_LIST, 
-    GET_INVOICE_STATUS, 
-    GET_INVOICE_DESTINATION, 
-    GET_INVOICE_LOCATION, 
-    GET_TOTAL_INVOICE_COUNT, 
+    GET_INVOICE_LIST,
+    GET_INVOICE_STATUS,
+    GET_INVOICE_DESTINATION,
+    GET_INVOICE_LOCATION,
+    GET_TOTAL_INVOICE_COUNT,
     ADD_MORE_INVOICE_TO_LIST,
-    GET_LOADED_INVOICE_COUNT, 
+    GET_LOADED_INVOICE_COUNT,
     FILTER_INVOICE_LIST,
     INVOICELIST_GET_CURRENT_SELECTED,
     INVOICELIST_SET_CURRENT_SELECTED,
@@ -17,12 +17,15 @@ import {
     INVOICELIST_GET_ALL_SELECTED,
     INVOICELIST_SET_MULTI_UNCHECKED,
     INVOICE_RESET_MULITCHECKED,
-    LOAD_MORE_INVOICE, 
+    LOAD_MORE_INVOICE,
     LOADER_MODULE,
     DISPLAY_LOADER,
     TOASTER_MODULE,
     TOASTER_MESSAGE,
-    HIDE_LOADER
+    HIDE_LOADER,
+    SET_OVERDUE_FLAG,
+    SET_DUE_TODAY_FLAG,
+    SET_DUE_TOMORROW_FLAG,
 } from "../types/types";
 import axios from 'axios';
 
@@ -138,6 +141,9 @@ export const invoicelist= {
             deliv_date_to: '',
             skip: 0,
             search:'',
+            duetoday: false,
+            duetomorrow: false,
+            overdue: false,
         }
     },
     mutations: {
@@ -146,25 +152,28 @@ export const invoicelist= {
             state.total_invoice_count = payload.total_count;
             state.filter.skip = state.invoice_list.length;
         },
-        [SET_INVOICE_FILTER]: (state, payload) => { 
+        [SET_INVOICE_FILTER]: (state, payload) => {
             state.invoice_list = [];
             state.total_invoice_count = 0;
-            state.filter.status = payload.status.value;            
-            state.filter.dest = payload.dest.value;            
-            state.filter.location = payload.location.value;            
-            state.filter.prod_date_from = payload.prod_date.value.start;            
-            state.filter.prod_date_to = payload.prod_date.value.end;            
-            state.filter.deliv_date_from = payload.deliv_date.value.start;            
-            state.filter.deliv_date_to = payload.deliv_date.value.end;            
+            state.filter.status = payload.status.value;
+            state.filter.dest = payload.dest.value;
+            state.filter.location = payload.location.value;
+            state.filter.prod_date_from = payload.prod_date.value.start;
+            state.filter.prod_date_to = payload.prod_date.value.end;
+            state.filter.deliv_date_from = payload.deliv_date.value.start;
+            state.filter.deliv_date_to = payload.deliv_date.value.end;
             state.filter.skip = 0;
+            state.filter.overdue = false;
+            state.filter.duetoday = false;
+            state.filter.duetomorrow = false;
         },
-        [FILTER_INVOICE_LIST]: (state, payload) => { 
+        [FILTER_INVOICE_LIST]: (state, payload) => {
             state.invoice_list = payload.invoices;
             state.total_invoice_count = payload.total_count;
-            state.filter.skip = state.invoice_list.length;            
+            state.filter.skip = state.invoice_list.length;
         },
         // [SET_INVOICE_FILTER_FLAG]: (state, payload) => { state.filter.filter = payload },
-        [ADD_MORE_INVOICE_TO_LIST]: (state, payload) => { 
+        [ADD_MORE_INVOICE_TO_LIST]: (state, payload) => {
             if(payload.invoices.length > 0){
                 state.invoice_list = ( [ ...state.invoice_list, ...payload.invoices ]);
                 state.filter.skip = state.invoice_list.length;
@@ -185,10 +194,25 @@ export const invoicelist= {
                 state.multi_selected.push( payload.id );
              if(!payload.add) // remove from multi_checked
                 state.multi_selected  =  state.multi_selected.filter(item => item !== payload.id);
-        },        
+        },
         [INVOICE_RESET_MULITCHECKED]:(state)=>{
                 state.multi_selected = [];
-        },        
+        },
+        [SET_DUE_TOMORROW_FLAG]:(state)=>{
+            state.filter.duetomorrow = true;
+            state.filter.duetoday = false;
+            state.filter.overdue = false;
+        },
+        [SET_DUE_TODAY_FLAG]:(state)=>{
+            state.filter.duetoday = true;
+            state.filter.duetomorrow = false;
+            state.filter.overdue = false;
+        },
+        [SET_OVERDUE_FLAG]:(state)=>{
+            state.filter.overdue = true;
+            state.filter.duetoday = false;
+            state.filter.duetomorrow = false;
+        },
     },
     actions: {
         [SET_INVOICE_LIST]: async({ commit, dispatch, state }, payload )=>{
@@ -250,6 +274,15 @@ export const invoicelist= {
         },
         [INVOICE_RESET_MULITCHECKED]:({ commit })=>{
             commit(INVOICE_RESET_MULITCHECKED);
+        },
+        [SET_OVERDUE_FLAG]:({ commit })=>{
+            commit(SET_OVERDUE_FLAG);
+        },
+        [SET_DUE_TODAY_FLAG]:({ commit })=>{
+            commit(SET_DUE_TODAY_FLAG);
+        },
+        [SET_DUE_TOMORROW_FLAG]:({ commit })=>{
+            commit(SET_DUE_TOMORROW_FLAG);
         },
     },
     getters: {

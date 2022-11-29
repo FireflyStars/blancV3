@@ -201,6 +201,8 @@ export const GET_STATS_OVERDUE = 'GET_STATS_OVERDUE';
 export const GET_STATS_LATER = 'GET_STATS_LATER';
 export const GET_ASSEMBLY_INVOICE = 'GET_ASSEMBLY_INVOICE';
 export const SET_ASSEMBLY_INVOICE = 'SET_ASSEMBLY_INVOICE';
+export const SET_USER_ROLE = 'SET_USER_ROLE';
+export const GET_USER_ROLE = 'GET_USER_ROLE';
 
 // assembly home page Invoice
 export const INVOICE_MODULE = 'INVOICE_MODULE/'; //namespace
@@ -229,6 +231,10 @@ export const INVOICELIST_SET_ALL_SELECTED = 'INVOICELIST_SET_ALL_SELECTED'; //ac
 export const INVOICELIST_SET_MULTI_UNCHECKED = 'INVOICELIST_SET_MULTI_UNCHECKED'; //action | mutation
 
 export const INVOICE_RESET_MULITCHECKED = 'INVOICE_RESET_MULITCHECKED'; //action | mutation
+
+export const SET_DUE_TODAY_FLAG = 'SET_DUE_TODAY_FLAG'; //action | mutation
+export const SET_DUE_TOMORROW_FLAG = 'SET_DUE_TOMORROW_FLAG'; //action | mutation
+export const SET_OVERDUE_FLAG = 'SET_OVERDUE_FLAG'; //action | mutation
 
 // item detail page contant
 

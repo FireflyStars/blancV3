@@ -38,11 +38,12 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
 
         $salesData = DB::table('revenu')->whereBetween('created_at', $this->period)
                                 ->select(
-                                    DB::raw('IFNULL(ROUND(SUM(Total), 2), 0) as amount'), 'TypeDelivery as channel'
+                                    DB::raw('IFNULL(ROUND(SUM(Total), 2), 0) as amount'), 'OrderRevenueLocation as channel'
                                 )
                                 ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-                                ->where('TypeDelivery', '!=', 'DELIVERY')
-                                ->groupBy('TypeDelivery')->orderBy('amount', 'DESC')->get();
+                                ->where('OrderRevenueLocation', '!=', 'DELIVERY')
+                                ->where('revenu.OrderRevenueLocation', '!=', '')
+                                ->groupBy('OrderRevenueLocation')->orderBy('amount', 'DESC')->get();
         $salesTotal = $salesData->sum('amount');
         $this->cnt = $salesData->count();
         $month_period = [ Carbon::parse($this->period[0])->subMonth()->startOfMonth()->startOfDay()->toDateTimeString(), Carbon::parse($this->period[1])->subMonth()->endOfMonth()->endOfDay()->toDateTimeString()];
@@ -60,7 +61,8 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
         $salesItemTotal = DB::table('detailingitem')
                         ->join('revenu', 'revenu.order_id', '=', 'detailingitem.order_id')
                         ->whereBetween('revenu.created_at', $this->period)
-                        ->where('revenu.TypeDelivery', '!=', 'DELIVERY')
+                        ->where('revenu.OrderRevenueLocation', '!=', 'DELIVERY')
+                        ->where('revenu.OrderRevenueLocation', '!=', '')
                         ->whereNotIn('revenu.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->select(
                             DB::raw('count(*) as amount')
@@ -83,10 +85,10 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
             $data[] = [ $item->channel, $item->amount, DB::table('detailingitem')->join('revenu', 'revenu.order_id', '=', 'detailingitem.order_id')
             ->whereBetween('revenu.created_at', $this->period)
             ->whereNotIn('revenu.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
-            ->where('revenu.TypeDelivery', $item->channel)->count() ];
+            ->where('revenu.OrderRevenueLocation', $item->channel)->count() ];
         }
         $b2bSales = DB::table('revenu')->whereBetween('created_at', $this->period)           
-                    ->where('revenu.TypeDelivery', 'DELIVERY')
+                    ->where('revenu.OrderRevenueLocation', 'DELIVERY')
                     ->where('revenu.btob', 1)
                     ->whereNotIn('revenu.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                     ->select(
@@ -94,7 +96,7 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
                     )
                     ->value('amount');
         $b2cSales = DB::table('revenu')->whereBetween('created_at', $this->period)           
-                    ->where('revenu.TypeDelivery', 'DELIVERY')
+                    ->where('revenu.OrderRevenueLocation', 'DELIVERY')
                     ->where('revenu.btob', 0)
                     ->whereNotIn('revenu.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                     ->select(
@@ -104,7 +106,7 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
         $b2bItemTotal = DB::table('detailingitem')
                     ->join('revenu', 'revenu.order_id', '=', 'detailingitem.order_id')
                     ->whereBetween('revenu.created_at', $this->period)
-                    ->where('revenu.TypeDelivery', 'DELIVERY')
+                    ->where('revenu.OrderRevenueLocation', 'DELIVERY')
                     ->where('revenu.btob', 1)
                     ->whereNotIn('revenu.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                     ->select(
@@ -113,7 +115,7 @@ class RevenueByChannel implements FromCollection, WithTitle, WithColumnWidths, W
         $b2cItemTotal = DB::table('detailingitem')
                     ->join('revenu', 'revenu.order_id', '=', 'detailingitem.order_id')
                     ->whereBetween('revenu.created_at', $this->period)
-                    ->where('revenu.TypeDelivery', 'DELIVERY')
+                    ->where('revenu.OrderRevenueLocation', 'DELIVERY')
                     ->where('revenu.btob', 0)
                     ->whereNotIn('revenu.Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                     ->select(

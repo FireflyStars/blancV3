@@ -11,14 +11,17 @@
                         <ul class="tab-nav list-inline mb-0">
                             <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'AssemblyHome' ? 'active' : ''" @click="setNav('AssemblyHome')">Stations</li>
                             <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'InvoiceList' ? 'active' : ''" @click="setNav('InvoiceList')">All items</li>
-                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'DueToday' ? 'active' : ''" @click="setNav('DueToday')">Due today</li>
-                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'DueTomorrow' ? 'active' : ''" @click="setNav('DueTomorrow')">Due tomorrow</li>
-                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'Overdue' ? 'active' : ''" @click="setNav('Overdue')">Overdue</li>
+                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'DueTodayInvoiceList' ? 'active' : ''" @click="setNav('DueTodayInvoiceList')">Due today</li>
+                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'DueTomorrowInvoiceList' ? 'active' : ''" @click="setNav('DueTomorrowInvoiceList')">Due tomorrow</li>
+                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'OverDueInvoiceList' ? 'active' : ''" @click="setNav('OverDueInvoiceList')">Overdue</li>
                             <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'Pending' ? 'active' : ''" @click="setNav('Pending')">Pending</li>
                         </ul>
                         <div class="filter-section position-relative d-flex align-items-center" v-if="selected_nav == 'InvoiceList'">
-                            <a class="export-csv" @click="exportCSV">Export CSV</a>
+                            <a class="export-csv" v-if="userRole == 1" @click="exportCSV">Export CSV</a>
                             <InvoiceFilter :filterDef="filterDef"></InvoiceFilter>
+                        </div>
+                        <div class="filter-section position-relative d-flex align-items-center" v-if="selected_nav == 'OverDueInvoiceList'">
+                            <a class="export-csv" v-if="userRole == 1" @click="exportOverDueCSV">Export CSV</a>
                         </div>
                     </div>
                     <!-- <KeepAlive> -->
@@ -40,15 +43,24 @@
         SET_SELECTED_NAV,
         GET_SELECTED_NAV,
         INVOICELIST_GET_CURRENT_SELECTED,
+        SET_DUE_TODAY_FLAG,
+        SET_DUE_TOMORROW_FLAG,
+        SET_OVERDUE_FLAG,
+        GET_INVOICE_LIST,
+        GET_USER_ROLE
     } from "../../store/types/types";
     import SideBar from "../layout/SideBar";
     import MainHeader from "../layout/MainHeader";
     import InvoiceFilter from '../miscellaneous/InvoiceFilter';
     import InvoiceList from './InvoiceList';
     import AssemblyHome from './AssemblyHome';
+    import DueTodayInvoiceList from './DueTodayInvoiceList';
+    import DueTomorrowInvoiceList from './DueTomorrowInvoiceList';
+    import OverDueInvoiceList from './OverDueInvoiceList';
     import { ref, computed } from "vue";
     import { useStore } from "vuex";
     import { useRoute } from "vue-router";
+    import exportFromJSON from "export-from-json";
     export default {
         name: "Assembly",
         components:{
@@ -56,7 +68,10 @@
             MainHeader,
             InvoiceFilter,
             InvoiceList,
-            AssemblyHome
+            AssemblyHome,
+            OverDueInvoiceList,
+            DueTodayInvoiceList,
+            DueTomorrowInvoiceList
         },
         setup(){
             const store = useStore();
@@ -103,23 +118,49 @@
                     },
                 });
                 const exportCSV = ()=>{
-
+                    const fileName = 'item-Date-hours.csv';
+                    const exportType = exportFromJSON.types.csv;
+                    const data = store.getters[`${INVOICE_MODULE}${GET_INVOICE_LIST}`]
+                    if (data) exportFromJSON({ data, fileName, exportType });
+                }
+                const exportOverDueCSV = ()=>{
+                    const fileName = 'item-overdue.csv';
+                    const exportType = exportFromJSON.types.csv;
+                    const data = store.getters[`${INVOICE_MODULE}${GET_INVOICE_LIST}`]
+                    if (data) exportFromJSON({ data, fileName, exportType });
                 }
 
             return {
                 filterDef,
+                userRole: computed(()=>store.getters[`${ASSEMBLY_HOME_MODULE}${GET_USER_ROLE}`]),
                 selected_nav: computed(()=>store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`]),
                 showlayer: computed( ()=> {
                         if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
                             return (route.params.item_id>0 && store.getters[`${ASSEMBLY_HOME_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);
                         else if (store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'InvoiceList')
                             return (route.params.item_id>0&&store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);
+                        else if (store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'DueTodayInvoiceList')
+                            return (route.params.item_id>0&&store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);
+                        else if (store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'DueTomorrowInvoiceList')
+                            return (route.params.item_id>0&&store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);
+                        else if (store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'OverDueInvoiceList')
+                            return (route.params.item_id>0&&store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_CURRENT_SELECTED}`]);
                         else return false;
                 }),
                 setNav:( nav_val )=>{
                     store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_SELECTED_NAV}`, nav_val)
+                    if(nav_val == 'DueTodayInvoiceList'){
+                        store.dispatch(`${INVOICE_MODULE}${SET_DUE_TODAY_FLAG}`)
+                    }else if(nav_val == 'DueTomorrowInvoiceList'){
+                        store.dispatch(`${INVOICE_MODULE}${SET_DUE_TOMORROW_FLAG}`)
+                    }else if(nav_val == 'OverDueInvoiceList'){
+                        store.dispatch(`${INVOICE_MODULE}${SET_OVERDUE_FLAG}`)
+                    }else{
+
+                    }
                 },
-                exportCSV
+                exportCSV,
+                exportOverDueCSV
             }
         }
     }
