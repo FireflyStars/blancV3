@@ -190,8 +190,8 @@
                     name:'OrderDetails',
                     params: {
                         order_id:id,
-                        customerId:route.params.customerId,
-                        value:route.params.value
+                        customerId: route.params.customerId ? route.params.customerId: window.sessionStorage.getItem('orders_customer'),
+                        value:route.params.value ? route.params.value : window.sessionStorage.getItem('search_value')
                     },
                 })
             }
@@ -521,7 +521,8 @@
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOADERMSG}`,` please wait...`);
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_SMSDELIVERY}`, listCustomers.value).then(()=>{
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Customers update successfully.',ttl:5,type:'success'});
-                    window.location.reload();
+                    store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_TAB}`,{tab:props.id,name:props.tab.name ,customer:window.sessionStorage.getItem('orders_customer') , search:window.sessionStorage.getItem('search_value')});
+                    NoDeliveryDate.value = false
                 }).catch((error)=>{
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
                 });

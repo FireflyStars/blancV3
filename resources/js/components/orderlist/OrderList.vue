@@ -404,8 +404,7 @@
             onMounted(()=>{
                 nextTick(()=>{
                     showcontainer.value=true;
-
-                     let data = window.sessionStorage.getItem('orders_customer') 
+                    let data = route.params.customerId?route.params.customerId:window.sessionStorage.getItem('orders_customer')      
                      if(route.params.name == "Customer name"){
                         filterDef.value={
                                         'Customername':{
@@ -420,7 +419,6 @@
                     }
 
                     if( data != null &&  data != undefined ){
-
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`, {customer:data} );
 
                     } else {
@@ -437,11 +435,10 @@
 
 
             watch(route, (to) => {
-                customerID.value =  route.params.customerId
-                if( route.params.customerId != null && route.params.customerId != 'undefined' && route.params.customerId != undefined){
 
+                    customerID.value =  route.params.customerId ? route.params.customerId : window.sessionStorage.getItem('orders_customer')
+                if( (customerID.value != null && customerID.value != 'undefined' && customerID.value != undefined)){
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`, {customer:route.params.customerId} );
-
                 } else {
                        if(window.sessionStorage.getItem('search_value') != null){
                         store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`,{search:window.sessionStorage.getItem('search_value')});
@@ -451,29 +448,16 @@
                         searchValue.value = route.params.value
                        }       
                 }
-
              })
 
-             watch(() => window.sessionStorage.getItem('orders_customer'), (current_val, previous_val) => {
-                    customerID.value =  current_val
-                    if( current_val != null && current_val != 'undefined' && current_val != undefined){
 
-                        store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_CUSTOMER_ORDERS}`, {customer:current_val} );
-
-                    } else {
-
-                        store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_LIST}`,{search:route.params.value});
-                    }
-
-                });
-
-            function showtab(tab) {      
+            function showtab(tab) {   
                 for (const prop in tabs.value)
                     tabs.value[prop].active=false;
 
                 tabs.value[tab].active=true;
                 
-                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_TAB}`,{tab:tab,name:tabs.value[tab].name, customer:window.sessionStorage.getItem('orders_customer') , search:window.sessionStorage.getItem('search_value')});
+                store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_LOAD_TAB}`,{tab:tab,name:tabs.value[tab].name, customer:customerID.value , search: searchValue.value});
             }
 
             function hideOrderDetail(event){
