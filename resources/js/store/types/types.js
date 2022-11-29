@@ -201,6 +201,8 @@ export const GET_STATS_OVERDUE = 'GET_STATS_OVERDUE';
 export const GET_STATS_LATER = 'GET_STATS_LATER';
 export const GET_ASSEMBLY_INVOICE = 'GET_ASSEMBLY_INVOICE';
 export const SET_ASSEMBLY_INVOICE = 'SET_ASSEMBLY_INVOICE';
+export const SET_USER_ROLE = 'SET_USER_ROLE';
+export const GET_USER_ROLE = 'GET_USER_ROLE';
 
 // assembly home page Invoice
 export const INVOICE_MODULE = 'INVOICE_MODULE/'; //namespace

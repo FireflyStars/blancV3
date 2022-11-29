@@ -2972,6 +2972,7 @@ class StatisticsController extends Controller
             'stats_overdue'=>$stats_per_postes_overdue,
             'stats_later'=>$stats_per_postes_later,
             'stats_total'=>$stats_total,
+            'user_role'=>auth()->user()->role_id,
             [$today,$tomorrow]
         ]);
     }

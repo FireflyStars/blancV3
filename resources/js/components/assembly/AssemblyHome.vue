@@ -462,7 +462,8 @@
         INVOICELIST_SET_MULTI_UNCHECKED,
         INVOICE_RESET_MULITCHECKED,
         ITEM_DETAIL_MODULE,
-        ITEM_DETAIL_SET_DETAIL
+        ITEM_DETAIL_SET_DETAIL,
+        SET_USER_ROLE
     } from "../../store/types/types";
     import { useStore } from "vuex";
     import { useRoute, useRouter } from "vue-router";
@@ -565,6 +566,7 @@
                         assemblyStatsOverdue.value = res.data.stats_overdue;
                         assemblyStatsLater.value = res.data.stats_later;
                         store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_ASSEMBLY_STATE}`, res.data);
+                        store.dispatch(`${ASSEMBLY_HOME_MODULE}${SET_USER_ROLE}`, res.data.user_role);
                     })
                     .catch(error => {
                         console.log(error);

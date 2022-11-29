@@ -13,11 +13,11 @@
                             <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'InvoiceList' ? 'active' : ''" @click="setNav('InvoiceList')">All items</li>
                             <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'DueTodayInvoiceList' ? 'active' : ''" @click="setNav('DueTodayInvoiceList')">Due today</li>
                             <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'DueTomorrowInvoiceList' ? 'active' : ''" @click="setNav('DueTomorrowInvoiceList')">Due tomorrow</li>
-                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'OverDueInvoiceList' ? 'active' : ''" @click="setNav('OverdueInvoiceList')">Overdue</li>
+                            <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'OverDueInvoiceList' ? 'active' : ''" @click="setNav('OverDueInvoiceList')">Overdue</li>
                             <li class="tab-nav-item list-inline-item font-16 px-3 py-2" :class="selected_nav == 'Pending' ? 'active' : ''" @click="setNav('Pending')">Pending</li>
                         </ul>
                         <div class="filter-section position-relative d-flex align-items-center" v-if="selected_nav == 'InvoiceList'">
-                            <a class="export-csv" @click="exportCSV">Export CSV</a>
+                            <a class="export-csv" v-if="userRole == 1" @click="exportCSV">Export CSV</a>
                             <InvoiceFilter :filterDef="filterDef"></InvoiceFilter>
                         </div>
                     </div>
@@ -43,6 +43,8 @@
         SET_DUE_TODAY_FLAG,
         SET_DUE_TOMORROW_FLAG,
         SET_OVERDUE_FLAG,
+        GET_INVOICE_LIST,
+        GET_USER_ROLE
     } from "../../store/types/types";
     import SideBar from "../layout/SideBar";
     import MainHeader from "../layout/MainHeader";
@@ -55,6 +57,7 @@
     import { ref, computed } from "vue";
     import { useStore } from "vuex";
     import { useRoute } from "vue-router";
+    import exportFromJSON from "export-from-json";
     export default {
         name: "Assembly",
         components:{
@@ -112,11 +115,16 @@
                     },
                 });
                 const exportCSV = ()=>{
-
+                    store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'downloading revenue...']);
+                    const fileName = 'item-Date-hours.csv';
+                    const exportType = exportFromJSON.types.csv;
+                    const data = store.getters[`${INVOICE_MODULE}${GET_INVOICE_LIST}`]
+                    if (data) exportFromJSON({ data, fileName, exportType });
                 }
 
             return {
                 filterDef,
+                userRole: computed(()=>store.getters[`${ASSEMBLY_HOME_MODULE}${GET_USER_ROLE}`]),
                 selected_nav: computed(()=>store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`]),
                 showlayer: computed( ()=> {
                         if(store.getters[`${ASSEMBLY_HOME_MODULE}${GET_SELECTED_NAV}`] == 'AssemblyHome')
