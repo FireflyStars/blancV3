@@ -762,7 +762,7 @@
                                                 </div>
                                             </div>
                                             <div class="item-block py-4 border-bottom">
-                                                <button class="btn btn-success each-save-btn" @click="saveCustomerPreferences(group.key)">Save {{group.key.toLowerCase()}}</button>
+                                                <button class="btn btn-success each-save-btn" @click="saveCustomerPreferences(group.key)">Save</button>
                                             </div>
                                         </div>
 
