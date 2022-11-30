@@ -2692,18 +2692,15 @@ class CustomerController extends Controller
                     $inv = DB::table('infoInvoice')->where('InvoiceID',$invoiceid)->first();
                     $order_details[$customerid][$invoiceid] = [];
 
+                    $dept = [];
+                    $net = 0;
+                    $vat = 0;
+                    $total = 0;
+                    $items_text = [];
+                    $promised_dates = [];
+                    $items_per_dept = [];
+
                     if($inv && !in_array($inv->Status,['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])){
-
-
-                        $dept = [];
-                        $net = 0;
-                        $vat = 0;
-                        $total = 0;
-                        $items_text = [];
-                        $promised_dates = [];
-
-
-
                         foreach($items as $k=>$v){
                             $promised_dates[] = $v->PromisedDate;
 
@@ -2716,8 +2713,10 @@ class CustomerController extends Controller
                             $subtotal_per_order[$v->order_id] = $v->Subtotal;
                         }
 
+                        foreach($dept as $k=>$v){
+                            $items_per_dept[$k] = array_count_values($v);
+                        }
 
-                        $items_per_dept[$v->Department] = array_count_values($dept[$v->Department]);
 
                         usort($promised_dates,function($a,$b){
                             return strtotime($b) - strtotime($a);
@@ -3192,7 +3191,7 @@ class CustomerController extends Controller
                     'email'         => $request->email,
                     'email2'        => $request->email2,
                     'email3'        =>$request->email3,
-                    'email4'        =>$request->email4,                    
+                    'email4'        =>$request->email4,
                     'Phone'         => (!empty($phone_arr)?json_encode($phone_arr):""),
                     'created_at'    => now(),
                     'updated_at'    => now(),
