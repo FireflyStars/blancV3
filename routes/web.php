@@ -1508,10 +1508,10 @@ Route::get('/unpaid-orders',function(Request $request){
 
                 $payment_intent = $stripe->paymentIntents->create($pi);
 
-                if($payment_intent && isset($payment_intent->status)){
+                if($payment_intent){
                     DB::table('payments')->where('id',$payment_id)->update(['payment_intent_id'=>$payment_intent->id]);
 
-                    if($payment_intent->status == 'succeeded'){
+                    if(isset($payment_intent->status) && $payment_intent->status == 'succeeded'){
                         $orders_to_update[] = $k;
 
                         DB::table('payments')->where('id',$payment_id)->update(['status'=>'succeeded']);
@@ -1524,8 +1524,8 @@ Route::get('/unpaid-orders',function(Request $request){
 
                         DB::table('infoInvoice')->where('OrderID',$order->OrderID)->update(['Paid'=>1]);
                         DB::table('unpaid_orders')->where('order_id',$k)->update(['paid'=>1]);
-
                     }
+
                 }
 
             }catch(\Stripe\Exception\CardException $e) {

@@ -283,7 +283,7 @@ export const orderlist= {
             commit(ORDERLIST_SET_FILTER,payload.filter);
             commit(ORDERLIST_SET_LIMIT,{skip:0,take:10});
             commit(ORDERLIST_SET_LOADERMSG,'Applying Filters...');
-            if(payload.customer != undefined && payload.customer != 'undefined' && payload.customer != null && payload.customer != '' ){
+            if(payload.customer != undefined && payload.customer != 'undefined' && payload.customer != null && payload.customer != '' && payload.customer != "null"){
                 dispatch(ORDERLIST_CUSTOMER_ORDERS , {customer:payload.customer});
             }else {
                 dispatch(ORDERLIST_LOAD_LIST , {search:payload.search});
@@ -377,7 +377,7 @@ export const orderlist= {
             commit(ORDERLIST_RESET_ORDERLIST);
             commit(ORDERLIST_SET_LIMIT,{skip:0,take:10});
             dispatch(ORDERLIST_LOADERMSG, `Loading ${payload.name.toLowerCase()}...`);
-            if(payload.customer != undefined && payload.customer != 'undefined' && payload.customer != null && payload.customer != '' ){
+            if(payload.customer != undefined && payload.customer != 'undefined' && payload.customer != null && payload.customer != '' && payload.customer != "null"){
                 dispatch(ORDERLIST_CUSTOMER_ORDERS , {customer:payload.customer});
             }else {
                 dispatch(ORDERLIST_LOAD_LIST , {search:payload.search});

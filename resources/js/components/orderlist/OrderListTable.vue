@@ -184,18 +184,21 @@
             }
 
             function selectrow(id,colname){
-                if(colname=='line_select') return;
+              
+                if(colname=='line_select') return
                 store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SELECT_CURRENT}`,id);
+                let serach_value = route.params.value ? route.params.value : window.sessionStorage.getItem('search_value')
                   router.push({
                     name:'OrderDetails',
                     params: {
                         order_id:id,
                         customerId: route.params.customerId ? route.params.customerId: window.sessionStorage.getItem('orders_customer'),
-                        value:route.params.value ? route.params.value : window.sessionStorage.getItem('search_value')
+                        value: serach_value != null ? serach_value : ''
                     },
                 })
             }
             function checkboxclicked(check,id,name ,order) {
+                console.log("CURRENT_SELECTED.value" , CURRENT_SELECTED.value , name)
                 if(CURRENT_SELECTED.value==id&&check==false){
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SELECT_CURRENT}`,'');
                         router.back();
@@ -316,7 +319,7 @@
                                 1:"On Account",
                             }
                         },
-                        'infoOrder.paid':{
+                        'infoOrder.Paid':{
                             name:"Payment status",
                             type: 'select',
                             options:{
@@ -354,7 +357,7 @@
             }else if(props.tab.name == 'Customer Care'){
                filterDef.value={
                     def:{
-                        'infoOrder.paid':{
+                        'infoOrder.Paid':{
                             name:"Payment status",
                             type: 'select',
                             options:{
@@ -441,7 +444,7 @@
             else{
                 filterDef.value={
                     def:{
-                        'infoOrder.paid':{
+                        'infoOrder.Paid':{
                             name:"Payment status",
                             type: 'select',
                             options:{

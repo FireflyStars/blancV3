@@ -215,12 +215,7 @@
                     .then((res) => {
                         shouldClose.value = true;
                         if(res.data.inv) {
-                            let inv = res.data.inv;
-                            if(parseInt(inv.count_six_month_items) == 0) {
                                 printReceiptQz(printer_name.value, res.data.inv);
-                            }else{
-                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message: "ERROR WRONG SubOrder",ttl:5, type:'danger'},{ root: true });
-                            }
                         }else{
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message: "Invoice not found",ttl:5, type:'danger'},{ root: true });
                         }
