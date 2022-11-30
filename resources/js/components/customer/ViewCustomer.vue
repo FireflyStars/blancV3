@@ -2762,8 +2762,20 @@ background: #4E58E7;
         padding: 1.875rem;
     }
 }
+@media only screen and (min-width: 1410px){
+    .cust-page-content{
+        width: 1000px !important;
+    }
+    .preferences.cust-page-content{
+        width: 1410px !important;
+    }
+}
+@media only screen and (max-width: 1400px){
+    .cust-page-content{
+        width: 95% !important;
+    }
+}
 .preferences.cust-page-content{
-    width: 1410px;
     .blocks{
         width: 48%;
         padding: 0;
