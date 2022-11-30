@@ -1497,7 +1497,7 @@ class CustomerController extends Controller
                     ->select('infoCustomer.FirstName as firstName', 'infoCustomer.LastName as lastName', 'infoCustomer.Name as Name' ,'infoCustomer.CompanyName' ,  'infoCustomer.EmailAddress as email', 'infoCustomer.Phone as phone',
                         'infoCustomer.TotalSpend as totalSpent', 'infoCustomer.cardvip as kioskNumber', 'bycard as paymentMethod', 'infoCustomer.OnAccount' ,
                         DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'), DB::raw('IF(infoCustomer.CustomerIDMaster = "", "Main", "Sub") as accountType'),
-                         'infoCustomer.TypeDelivery as typeDelivery','infoCustomer.CustomerIDMaster','infoCustomer.OnAccount',
+                         'infoCustomer.TypeDelivery as typeDelivery','infoCustomer.CustomerIDMaster',
                         'infoCustomer.CustomerNotes', 'infoCustomer.id', 'infoCustomer.CustomerID',
                         DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recurring", "Normal") as booking'), 'discount', 'credit',
                         'infoCustomer.DeliverybyDay as deliveryByDay', 'DeliveryMon', 'DeliveryTu', 'DeliveryWed', 'DeliveryTh', 'DeliveryFri', 'DeliverySat',

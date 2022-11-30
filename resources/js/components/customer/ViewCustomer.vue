@@ -482,13 +482,11 @@
                                     </div>
                                 </div>
                                 <div class="new-invoice-details-panel" v-if="form.accountType !='Sub' && form.CustomerPayemenProfile == 1">
-                                <!-- <div class="invoice-details-panel" v-if="form.accountType !='Main' && form.CustomerPayemenProfile == 1 "> -->
                                     <h3 class="title d-flex">
                                         Invoice details
                                         <span class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="invoice_details_edit = !invoice_details_edit">Edit</span>
                                         <CheckBox  v-model="form.receiptToVatInvoice" class="ms-5"><slot>Attach e-Receipts to VAT Invoice</slot></CheckBox>
                                         <span class="gotham-rounded-book primary-color ms-auto font-16 cursor-pointer text-decoration-underline" @click="openInvoiceHistoryModal">Invoice History</span>
-
                                     </h3>
                                     <div class="page-section bacs">
                                         <div class="form-group mb-0 company-legal-name">
