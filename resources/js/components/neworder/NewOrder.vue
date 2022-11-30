@@ -210,14 +210,14 @@
                                                         <!--
                                                         <date-picker v-model="do_dropoff" name="do_dropoff" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Drop off" :disabledToDate="yesterday"></date-picker>
                                                         -->
-                                                        <label for="do_dropoff">date</label>
+                                                        <label for="do_dropoff">Date</label>
                                                         <input type="text" class="form-control" :value="getCurDateTime('date')" readonly id="do_dropoff"/>
                                                     </div>
                                                     <div class="col-3">
                                                         <!--
                                                         <time-slot-picker v-model="do_dropoff_timeslot"   name="do_dropoff_timeslot" :available-slots="[1]"  label=" "></time-slot-picker>
                                                         -->
-                                                        <label for="do_dropoff_time">time</label>
+                                                        <label for="do_dropoff_time">Time</label>
                                                         <input type="text" class="form-control" :value="getCurDateTime('time')" readonly id="do_dropoff_time"/>
                                                     </div>
 
@@ -225,7 +225,7 @@
                                                         <date-picker :disabled="do_delivery_disabled" v-model="do_delivery" name="do_delivery" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'top left'}" label="Delivery" :disabledToDate="addRemoveDays('add',0,cur_date)" @loadtranche="loadtranche('do_delivery')" ref="do_delivery_datepicker" :disabled-sunday="true" :available-days="available_days" :disabledDates="holidays"></date-picker>
                                                     </div>
                                                     <div class="col-3">
-                                                        <time-slot-picker v-model="do_delivery_timeslot"   name="do_delivery_timeslot" :available-slots="do_delivery_tranche"  label="time"></time-slot-picker>
+                                                        <time-slot-picker v-model="do_delivery_timeslot"   name="do_delivery_timeslot" :available-slots="do_delivery_tranche"  label="Time"></time-slot-picker>
                                                     </div>
                                                 </div>
                                             </transition>
