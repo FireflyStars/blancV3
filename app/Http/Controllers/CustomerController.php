@@ -2509,6 +2509,7 @@ class CustomerController extends Controller
                 ->join('infoCustomer','infoOrder.CustomerID','infoCustomer.CustomerID')
                 ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
                 ->whereNotIn('infoInvoice.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
+                ->whereNotIn('infoOrder.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
                 ->where('infoOrder.orderinvoiced',0)
                 ->whereIn('infoOrder.CustomerID',$all_customer_ids)
                 ->get();
