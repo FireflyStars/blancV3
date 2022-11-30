@@ -143,7 +143,7 @@
                                     </div>
                                     <div class="d-flex mt-3" v-if="form.customerType == 'B2B'">
                                         <div class="customer-company w-45 p-0 justify-content-between">
-                                                <label class="form-label d-block m-0" for="email">Company legal name</label>
+                                                <label class="form-label d-block m-0" for="email">Account name</label>
                                                 <input v-if="contact_details_edit" type="text" v-model="form.CompanyName" class="form-control custom-input" placeholder="Branch / Company name">
                                                 <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
                                                     {{ form.CompanyName }} &nbsp;
@@ -558,7 +558,24 @@
                                                         {{ form.invoiceAddressEmail2 }} &nbsp;
                                                     </div>
                                             </div>
-
+                                        </div>
+                                        <div class="d-flex mt-3">
+                                            <div class="customer-contact w-55 justify-content-between">
+                                                    <label class="form-label d-block m-0" for="first_name">Invoice Email address 3</label>
+                                                    <input v-if="invoice_details_edit" type="text" v-model="form.invoiceAddressEmail3" class="form-control custom-input" placeholder="Invoice Email address 3">
+                                                    <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
+                                                        {{ form.invoiceAddressEmail3 }} &nbsp;
+                                                    </div>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex mt-3">
+                                            <div class="customer-contact w-55 justify-content-between">
+                                                    <label class="form-label d-block m-0" for="first_name">Invoice Email address 4</label>
+                                                    <input v-if="invoice_details_edit" type="text" v-model="form.invoiceAddressEmail4" class="form-control custom-input" placeholder="Invoice Email address 4">
+                                                    <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
+                                                        {{ form.invoiceAddressEmail4 }} &nbsp;
+                                                    </div>
+                                            </div>
                                         </div>
                                         <div class="d-flex justify-content-end mt-3" v-if="invoice_details_edit">
                                                 <button style="height:46px" class="btn btn btn-success each-save-btn" @click="validateAndSaveInvoiceDetails">Save</button>
@@ -1145,6 +1162,8 @@
                 invoiceCompanyName:'',
                 invoiceAddressEmail1:'',
                 invoiceAddressEmail2:'',
+                invoiceAddressEmail3:'',
+                invoiceAddressEmail4:'',
                 invoiceFirstName:'',
                 invoiceName:'',
                 // preferences tab
@@ -1301,6 +1320,8 @@
                             form.value.invoiceFirstName = res.data.customer.invoice.firstname;
                             form.value.invoiceAddressEmail1 =  res.data.customer.invoice.email;
                             form.value.invoiceAddressEmail2 = res.data.customer.invoice.email2;
+                            form.value.invoiceAddressEmail3 = res.data.customer.invoice.email3;
+                            form.value.invoiceAddressEmail3 = res.data.customer.invoice.email4;
                             var phone = getPhone(res.data.customer.invoice.Phone);
 
                             if(phone.code.includes('+')){
@@ -2021,6 +2042,8 @@
                         company:form.value.invoiceCompanyName,
                         email:form.value.invoiceAddressEmail1,
                         email2:form.value.invoiceAddressEmail2,
+                        email3:form.value.invoiceAddressEmail3,
+                        email4:form.value.invoiceAddressEmail4,
                         firstname:form.value.invoiceFirstName,
                         name:form.value.invoiceName,
                         companyPhoneCountryCode:form.value.companyPhoneCountryCode,
