@@ -290,15 +290,13 @@
                             </div>
                         </transition>
                         <transition name="list" appear v-if="step =='payment'">
-                                <div>
-                                    <customer-invoice-history :CustomerID="form.customerID"/>
                             <div class="payment cust-page-content m-auto pt-5">
                                 <div class="payment-method-section" v-if="form.accountType !='Master'">
                                     <h3 class="title">Payment method <span v-if="!creditCardCustomer" class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="toggleCreditCard()">Edit</span></h3>
 
                                     <div class="page-section">
-                                          <img v-if="creditCardCustomer&&form.cardId!=null" src="/images/trash.svg" style="float: right;" @click="DeleteCreditCardCustomer()"/>
-                                          <div class="credit-card d-flex justify-content-between">
+                                        <img v-if="creditCardCustomer&&form.cardId!=null" src="/images/trash.svg" style="float: right;" @click="DeleteCreditCardCustomer()"/>
+                                        <div class="credit-card d-flex justify-content-between">
                                             <div class="form-group col-3 cardholder mb-0">
                                                 <label for="">Payment method</label>
                                                 <div class="w-100 py-2 rounded-2 bg-color px-3">
@@ -316,7 +314,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                           </div>
+                                        </div>
                                         <div class="credit-card mt-3 d-flex justify-content-between" v-if="form.paymentMethod=='Credit Card'">
                                             <div class="form-group col-3 cardholder mb-0">
                                                 <label for="">Cardholder name</label>
@@ -487,8 +485,10 @@
                                 <!-- <div class="invoice-details-panel" v-if="form.accountType !='Main' && form.CustomerPayemenProfile == 1 "> -->
                                     <h3 class="title d-flex">
                                         Invoice details
-                                         <span class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="invoice_details_edit = !invoice_details_edit">Edit</span>
+                                        <span class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="invoice_details_edit = !invoice_details_edit">Edit</span>
                                         <CheckBox  v-model="form.receiptToVatInvoice" class="ms-5"><slot>Attach e-Receipts to VAT Invoice</slot></CheckBox>
+                                        <span class="gotham-rounded-book primary-color ms-auto font-16 cursor-pointer text-decoration-underline" @click="openInvoiceHistoryModal">Invoice History</span>
+
                                     </h3>
                                     <div class="page-section bacs">
                                         <div class="form-group mb-0 company-legal-name">
@@ -537,7 +537,7 @@
                                                         <input v-if="invoice_details_edit" type="text" v-model="form.companyPhoneNumber" class="form-control custom-input">
                                                         <div v-else class="customer-type py-2 bg-color px-3 rounded-3">
                                                         {{ form.companyPhoneNumber }} &nbsp;
-                                                       </div>
+                                                    </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -610,7 +610,7 @@
                                                     </div>
                                                     <div v-else class="customer-type py-2 bg-color rounded-3">
                                                     {{ form.billingPostcode }} &nbsp;
-                                                   </div>
+                                                </div>
                                                 </div>
                                                 <div class="form-group m-0">
                                                     <label for="customer_city">City *</label>
@@ -627,7 +627,6 @@
                                     </div>
                                 </div>
                             </div>
-                                </div>
                         </transition>
                         <transition name="list" appear v-if="step == 'order_management'">
                             <div class="cust-page-content mt-5 m-auto order-panel">
@@ -1025,6 +1024,13 @@
             </div>
         </template>
     </modal>
+    <modal ref="invoiceHistoryModal">
+        <template #bcontent>
+            <div class="bmodal-content p-4">
+                <customer-invoice-history :CustomerID="form.customerID"/>
+            </div>
+        </template>
+    </modal>
     <new-sub-account-form :phoneCodesSorted="phoneCodesSorted" :form="form" :show_conf="show_model_SubAccount" @close="show_model_SubAccount=false"></new-sub-account-form>
 </template>
 
@@ -1169,6 +1175,7 @@
             const contact_details_edit = ref(false);
             const invoice_details_edit = ref(false);
             const pauseRecurringModal = ref(null);
+            const invoiceHistoryModal = ref(null);
             const add_payement = ref(false);
             const address_edit = ref(false);
             const customer_note_edit = ref(false);
@@ -1760,14 +1767,7 @@
                 }).finally(()=>{
                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
                 })
-             /*   }else{
-                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
-                        message:"Credit card details missing",
-                        ttl: 5,
-                        type: 'danger'
-                    });
-                }
-*/
+
 
 
             }
@@ -2296,6 +2296,10 @@
                 }
                 pauseRecurringModal.value.showModal();
             }
+            const openInvoiceHistoryModal = ()=>{
+
+                invoiceHistoryModal.value.showModal();
+            }
             const closePauseRecurringModal = ()=>{
                 pauseRecurringModal.value.closeModal();
             }
@@ -2418,6 +2422,8 @@
                 unpauseRecurringFunc,
                 closePauseRecurringModal,
                 openPauseRecurringModal,
+                openInvoiceHistoryModal,
+                invoiceHistoryModal,
                 show_model_SubAccount,
                 createSubAccount,
                 billing_address_edit,
