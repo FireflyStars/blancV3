@@ -577,26 +577,6 @@
                                                     </div>
                                             </div>
                                         </div>
-                                        <div class="d-flex mt-3">
-                                            <div class="customer-contact w-55 justify-content-between">
-                                                    <label class="form-label d-block m-0" for="first_name">Invoice Email address 3</label>
-                                                    <input v-if="invoice_details_edit" type="text" v-model="form.invoiceAddressEmail3" class="form-control custom-input" placeholder="Invoice Email address 3">
-                                                    <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
-                                                        {{ form.invoiceAddressEmail3 }} &nbsp;
-                                                    </div>
-                                            </div>
-
-                                        </div>
-                                        <div class="d-flex mt-3">
-                                            <div class="customer-contact w-55 justify-content-between">
-                                                    <label class="form-label d-block m-0" for="first_name">Invoice Email address 4</label>
-                                                    <input v-if="invoice_details_edit" type="text" v-model="form.invoiceAddressEmail4" class="form-control custom-input" placeholder="Invoice Email address 4">
-                                                    <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
-                                                        {{ form.invoiceAddressEmail4 }} &nbsp;
-                                                    </div>
-                                            </div>
-
-                                        </div>
                                         <div class="d-flex justify-content-end mt-3" v-if="invoice_details_edit">
                                                 <button style="height:46px" class="btn btn btn-success each-save-btn" @click="validateAndSaveInvoiceDetails">Save</button>
                                             </div>
