@@ -1229,6 +1229,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
         $amount = $request->amount;
         $status = $request->status;
         $info = $request->info;
+        $payment_intent_id = $request->payment_intent_id;
 
         $stamp = date('Y-m-d H:i:s');
 
