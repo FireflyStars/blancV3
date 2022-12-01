@@ -490,6 +490,20 @@
                                             </div>
                                       
                                         </div>
+                                        <div class="d-flex mt-3">
+                                            <div class="customer-contact w-55 justify-content-between">
+                                                    <label class="form-label d-block m-0" for="first_name">Invoice Email address 3</label>
+                                                    <input type="text" v-model="form.invoiceAddressEmail3" class="form-control custom-input" placeholder="Invoice Email address 3">
+                                            </div>
+                                      
+                                        </div>
+                                        <div class="d-flex mt-3">
+                                            <div class="customer-contact w-55 justify-content-between">
+                                                    <label class="form-label d-block m-0" for="first_name">Invoice Email address 4</label>
+                                                    <input type="text" v-model="form.invoiceAddressEmail4" class="form-control custom-input" placeholder="Invoice Email address 4">
+                                            </div>
+                                      
+                                        </div>
                                         <!-- /////// -->
                                     </div>
                                 </div>
@@ -859,6 +873,8 @@ import axios from 'axios';
                 invoiceEmail2: '',
                 invoiceAddressEmail1:'',
                 invoiceAddressEmail2:'',
+                invoiceAddressEmail3:'',
+                invoiceAddressEmail4:'',
                 invoiceFirstname:'',
                 invoiceName:'',
                 companyPostCode: '',
@@ -1146,7 +1162,7 @@ import axios from 'axios';
                     }
                     if(form.value.CustomerPayemenProfile == 1 && form.value.accountType != "Sub" ){
                        //invoce details
-                       if(form.value.invoiceAddressEmail1 != '' || form.value.invoiceAddressEmail2 != '' || form.value.invoiceFirstname != '' || form.value.invoiceName != '' ||  form.value.companyPhoneNumber != '' || form.value.companyLegalName){
+                       if(form.value.invoiceAddressEmail1 != '' || form.value.invoiceAddressEmail2 != '' || form.value.invoiceAddressEmail3 != '' || form.value.invoiceAddressEmail4 != '' || form.value.invoiceFirstname != '' || form.value.invoiceName != '' ||  form.value.companyPhoneNumber != '' || form.value.companyLegalName){
 
                             if(form.value.invoiceAddressEmail1 != ''){
                                 if( !emailValidation(form.value.invoiceAddressEmail1) ){
@@ -1167,6 +1183,20 @@ import axios from 'axios';
                             if(form.value.invoiceAddressEmail2 != ''){
                                 if( !emailValidation(form.value.invoiceAddressEmail2) ){
                                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 2', ttl:5, type:'danger' });
+                                        error = true;
+                                        return;
+                                }
+                            } 
+                            if(form.value.invoiceAddressEmail3 != ''){
+                                if( !emailValidation(form.value.invoiceAddressEmail3) ){
+                                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 3', ttl:5, type:'danger' });
+                                        error = true;
+                                        return;
+                                }
+                            } 
+                            if(form.value.invoiceAddressEmail4 != ''){
+                                if( !emailValidation(form.value.invoiceAddressEmail4) ){
+                                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 4', ttl:5, type:'danger' });
                                         error = true;
                                         return;
                                 }
@@ -1306,6 +1336,20 @@ import axios from 'axios';
                    
                             if(form.value.invoiceAddressEmail2 != ''){
                                 if( !emailValidation(form.value.invoiceAddressEmail2) ){
+                                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 2', ttl:5, type:'danger' });
+                                        error = true;
+                                        return;
+                                }
+                            }
+                            if(form.value.invoiceAddressEmail3 != ''){
+                                if( !emailValidation(form.value.invoiceAddressEmail3) ){
+                                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 2', ttl:5, type:'danger' });
+                                        error = true;
+                                        return;
+                                }
+                            } 
+                            if(form.value.invoiceAddressEmail4 != ''){
+                                if( !emailValidation(form.value.invoiceAddressEmail4) ){
                                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Please enter valid email for Email Address 2', ttl:5, type:'danger' });
                                         error = true;
                                         return;

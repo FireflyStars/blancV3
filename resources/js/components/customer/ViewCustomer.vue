@@ -562,6 +562,26 @@
                                             </div>
 
                                         </div>
+                                        <div class="d-flex mt-3">
+                                            <div class="customer-contact w-55 justify-content-between">
+                                                    <label class="form-label d-block m-0" for="first_name">Invoice Email address 3</label>
+                                                    <input v-if="invoice_details_edit" type="text" v-model="form.invoiceAddressEmail3" class="form-control custom-input" placeholder="Invoice Email address 3">
+                                                    <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
+                                                        {{ form.invoiceAddressEmail3 }} &nbsp;
+                                                    </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="d-flex mt-3">
+                                            <div class="customer-contact w-55 justify-content-between">
+                                                    <label class="form-label d-block m-0" for="first_name">Invoice Email address 4</label>
+                                                    <input v-if="invoice_details_edit" type="text" v-model="form.invoiceAddressEmail4" class="form-control custom-input" placeholder="Invoice Email address 4">
+                                                    <div v-else class="w-100 py-2 rounded-3 bg-color px-3">
+                                                        {{ form.invoiceAddressEmail4 }} &nbsp;
+                                                    </div>
+                                            </div>
+
+                                        </div>
                                         <div class="d-flex justify-content-end mt-3" v-if="invoice_details_edit">
                                                 <button style="height:46px" class="btn btn btn-success each-save-btn" @click="validateAndSaveInvoiceDetails">Save</button>
                                             </div>
@@ -1141,6 +1161,8 @@
                 invoiceCompanyName:'',
                 invoiceAddressEmail1:'',
                 invoiceAddressEmail2:'',
+                invoiceAddressEmail3:'',
+                invoiceAddressEmail4:'',
                 invoiceFirstName:'',
                 invoiceName:'',
                 // preferences tab
@@ -1294,8 +1316,19 @@
                             form.value.invoiceCompanyName =  res.data.customer.invoice.company;
                             form.value.invoiceName = res.data.customer.invoice.name;
                             form.value.invoiceFirstName = res.data.customer.invoice.firstname;
-                            form.value.invoiceAddressEmail1 =  res.data.customer.invoice.email;
-                            form.value.invoiceAddressEmail2 = res.data.customer.invoice.email2;
+                            let text = "invoiceAddressEmail"
+                            if(res.data.customer.invoice.email != null){
+                                let array_emails = res.data.customer.invoice.email.split("\n")
+
+                                array_emails.forEach(function(v,i){
+                                    form.value[text+(i+1)] = v
+                                })
+                                 
+
+                            }
+                            // console.log("emaiiiil" , res.data.customer.invoice.email.split("\n"))
+                            // form.value.invoiceAddressEmail1 =  res.data.customer.invoice.email;
+                            // console.log(form.value[text+1])
                             var phone = getPhone(res.data.customer.invoice.Phone);
 
                             if(phone.code.includes('+')){
@@ -2023,6 +2056,8 @@
                         company:form.value.invoiceCompanyName,
                         email:form.value.invoiceAddressEmail1,
                         email2:form.value.invoiceAddressEmail2,
+                        email3:form.value.invoiceAddressEmail3,
+                        email4:form.value.invoiceAddressEmail4,
                         firstname:form.value.invoiceFirstName,
                         name:form.value.invoiceName,
                         companyPhoneCountryCode:form.value.companyPhoneCountryCode,
