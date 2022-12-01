@@ -229,6 +229,7 @@
             }
             const printReceiptQz = (printer, inv)=>{
                 // Create a default config for the found printer
+                console.log('receipt invoice',inv);
                 var config = qz.configs.create(printer);
                 let toPrint = '<html><head></head><body style="font-family:Arial, Helvetica, sans-serif; text-align:center; width:90%; margin: auto;"></body>';
                 toPrint += '<table border="0" width="100%" style="font-size:10pt;">';
@@ -332,11 +333,11 @@
                     flavor: 'plain', // or 'plain' if the data is raw HTML
                     data: toPrint
                 }];
-                console.log("toPrinttoPrint" , toPrint)
+                //console.log("toPrinttoPrint" , toPrint)
 
                 return qz.print(config, data);
-            }        
-            ///Print Order 
+            }
+            ///Print Order
 
             const loadPrinterOrderModal = (Order)=>{
                 orderId.value = Order;
@@ -382,7 +383,7 @@
                             let inv = res.data.inv;
                             let order = res.data.order
                                 printOrderReceiptQz(printer_name.value, res.data);
-                            
+
                         }else{
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message: "Invoice not found",ttl:5, type:'danger'},{ root: true });
                         }
@@ -397,6 +398,8 @@
 
             const printOrderReceiptQz = (printer, data)=>{
                 // Create a default config for the found printer
+                console.log('printing started');
+
                 var config = qz.configs.create(printer);
                 let toPrint = '<html><head></head><body style="font-family:Arial, Helvetica, sans-serif; text-align:center; width:90%; margin: auto;"></body>';
                 toPrint += '<table border="0" width="100%" style="font-size:10pt;">';
@@ -409,7 +412,7 @@
                 toPrint += '<p style="text-align: center;font-size:20pt;">ORDER '+data.order.id+'</p>';
 
                 toPrint += '<span style="font-size:14pt;">'+data.cust.Name+'</span><br/>';
-                
+
                 if(data.cust.Phone) {
                     toPrint += '<span style="font-size:10pt">Tel: '+data.cust.Phone[0].replace("|","")+'</span>';
                     toPrint += '<br/>';
@@ -429,7 +432,7 @@
                     toPrint += '</p><hr/>';
                 }
 
-                //List Items 
+                //List Items
                 let nb_pieces = 0;
                 let total_items_price = 0;
                 let ListItems= data.items;
@@ -444,7 +447,7 @@
                             ListItems.forEach(function(v,i){
                             toPrint += '<tr>';
                             toPrint += '<td width="10%" style="vertical-align: top;">'+1+'</td>';
-                           
+
                             toPrint += '<td width="70%">'+v.typeitem;
                             toPrint += '<br><span style="font-size:8pt; padding-left:15px;">HSL: '+v.tracking+'</span>';
                             if(v.all_colors !='' || v.brand!=''){
@@ -459,7 +462,7 @@
                             if(v.describeprixnow != null){
                                 toPrint += '<br><span style="font-size:8pt; ">'+v.describeprixnow+'</span>';
                             }
-                            if(v.tail_services.length > 0){                            
+                            if(v.tail_services.length > 0){
                                     toPrint += '<br><span style="font-size:8pt">'+v.tail_services[0]+'</span>';
                             }
                            if(v.describeprixnowtailoring != null){
@@ -467,7 +470,7 @@
                            }
 
                             toPrint +='</td>';
-                            
+
                             toPrint += '<td width="20%" style="text-align:right; vertical-align: top;">£'+v.priceTotal;
                             toPrint += '<br>';
                             toPrint += '<br>';
@@ -508,8 +511,8 @@
                 //OrderTotal
 
                     toPrint += '<table border="0" width="100%" style="font-size:9pt; margin-top:10px">';
-                        
-                        
+
+
                         if(data.order.AccountDiscount > 0){
                             toPrint += '<tr>';
                             toPrint += '<td width="30%" style="vertical-align: top;">Account Discount</td>';
@@ -521,7 +524,7 @@
                             toPrint +='</td>'
                             toPrint += '<td width="20%" style="text-align:right; vertical-align: top;">'
                             toPrint += '<span>-</span>';
-                            toPrint += formatPrice(data.order.AccountDiscount)+'</td>'     
+                            toPrint += formatPrice(data.order.AccountDiscount)+'</td>'
                             toPrint += '</tr>';
                         }
 
@@ -536,7 +539,7 @@
                             toPrint +='</td>'
                             toPrint += '<td width="20%" style="text-align:right; vertical-align: top;">'
                             toPrint += '<span>-</span>';
-                            toPrint += formatPrice(data.order.OrderDiscount)+'</td>'     
+                            toPrint += formatPrice(data.order.OrderDiscount)+'</td>'
                             toPrint += '</tr>';
                         }
 
@@ -545,7 +548,7 @@
                             toPrint += '<td width="30%" style="vertical-align: top;">Voucher Discount</td>';
                             toPrint += '<td width="30%" style="vertical-align: top;  font-size:10px ; color: #c4c4c4;">'
                                 if(data.codes_voucher!= null){
-                                        toPrint += data.codes_voucher;  
+                                        toPrint += data.codes_voucher;
                                 }
                             toPrint += '<td width="20%" style="text-align:right; vertical-align: top;">-'+formatPrice(data.order.VoucherDiscount)+'</td>';
                             toPrint += '</tr>';
@@ -565,10 +568,10 @@
                                     toPrint +='<td width="30%"></td>';
                                     if(Object.values(data.order_bundles)>0){
                                         toPrint += '<td width="20%" style="text-align:right; vertical-align: top;">+'+Object.values(data.order_bundles) +'</td>';
-                                    }  
+                                    }
                             toPrint += '</tr>';
                         }
-                        
+
                         toPrint += '</table>';
 
                         toPrint += '<table border="0" width="100%" style="font-size:9pt;">';
@@ -586,7 +589,7 @@
                             toPrint += '<td width="20%" style="text-align:right; vertical-align: top;">+'+formatPrice(data.order.FailedDeliveryCharge)+'</td>';
                             toPrint += '</tr>';
                         }
-                          
+
                         if(data.order.DeliveryNowFee!=null && data.order.TypeDelivery=='DELIVERY'){
                             toPrint += '<tr>';
                             toPrint += '<td width="10%" style="vertical-align: top;">Delivery fee</td>';
@@ -594,7 +597,7 @@
                             toPrint += '<td width="20%" style="text-align:right; vertical-align: top;">+'+formatPrice(data.order.DeliveryNowFee)+'</td>';
                             toPrint += '</tr>';
                         }
-                        
+
                         if(data.order.AutoDeliveryFee > 0 && data.order.TypeDelivery=='DELIVERY'){
                             toPrint += '<tr>';
                             toPrint += '<td width="10%" style="vertical-align: top;">Auto delivery fee</td>';
@@ -605,7 +608,7 @@
                         toPrint += '</table><hr/>';
 
                         toPrint += '<table border="0" width="100%" style="font-size:9pt;">';
-                        
+
                         if(data.order.TypeDelivery=='DELIVERY'){
                             toPrint += '<tr>';
                             toPrint += '<td width="50%" style="vertical-align: top;"><span style="text-align: right; font-size:16px;">Order total (incl. VAT)</span></td>';
@@ -613,7 +616,7 @@
                             toPrint += '<td width="20%" style="text-align:right; font-size:16px; font-weight: 700; vertical-align: top;">'+formatPrice(data.order.Total)+'</td>';
                             toPrint += '</tr>';
                         }
-                       
+
 
                         toPrint += '<tr>';
                         toPrint += '<td width="10%" style="vertical-align: top;">Total (Excl. VAT)</td>';
@@ -627,7 +630,7 @@
                         toPrint += '<td width="20%" style="text-align:right; vertical-align: top;">'+formatPrice(data.order.TaxAmount)+'</td>';
                         toPrint += '</tr>';
                         toPrint += '</table>';
-                  
+
                     toPrint += '</table></br>';
                     // toPrint += '<p style="text-align: center"><span style="font-size:11pt;">Vat Reg. No. 124 0369 45</span></p>';
                     toPrint += '<div style="font-size: 12px;">'+data.FooterTicket+'</div>';

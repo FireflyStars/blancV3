@@ -1318,10 +1318,19 @@
                             form.value.invoiceCompanyName =  res.data.customer.invoice.company;
                             form.value.invoiceName = res.data.customer.invoice.name;
                             form.value.invoiceFirstName = res.data.customer.invoice.firstname;
-                            form.value.invoiceAddressEmail1 =  res.data.customer.invoice.email;
-                            form.value.invoiceAddressEmail2 = res.data.customer.invoice.email2;
-                            form.value.invoiceAddressEmail3 = res.data.customer.invoice.email3;
-                            form.value.invoiceAddressEmail3 = res.data.customer.invoice.email4;
+                            let text = "invoiceAddressEmail"
+                            if(res.data.customer.invoice.email != null){
+                                let array_emails = res.data.customer.invoice.email.split("\n")
+
+                                array_emails.forEach(function(v,i){
+                                    form.value[text+(i+1)] = v
+                                })
+                                 
+
+                            }
+                            // console.log("emaiiiil" , res.data.customer.invoice.email.split("\n"))
+                            // form.value.invoiceAddressEmail1 =  res.data.customer.invoice.email;
+                            // console.log(form.value[text+1])
                             var phone = getPhone(res.data.customer.invoice.Phone);
 
                             if(phone.code.includes('+')){

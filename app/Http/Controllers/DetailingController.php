@@ -240,6 +240,7 @@ class DetailingController extends Controller
         }
 
         $searched_item = null;
+        $new_type_item = null;
 
         if ($search) {
             $searched_item = DB::table('typeitem')
@@ -256,6 +257,11 @@ class DetailingController extends Controller
                         'updated_at' => date('Y-m-d H:i:s')
                     ]);
                 }
+                $new_type_item = DB::table('typeitem')
+                ->where('typeitem.name', 'LIKE', '%' . $search . '%')
+                ->where('department_id', $searched_item->department_id)
+                ->where('deleted_at' , '=' , NULL)
+                ->get();
         }
 
 
@@ -270,10 +276,15 @@ class DetailingController extends Controller
 
         $detailing_data = [];
         $cust_cleaning_services = [];
+        $search_cat = [];
 
         if(!empty($detailingitem)){
             $detailing_data = $this->getDetailingData($detailingitem['department_id'], $detailingitem['typeitem_id']);
             $cust_cleaning_services = DetailingController::getCustCleaningServices($detailingitem);
+           
+            if ($search) {
+                $detailing_data['typeitemssearch'] = $new_type_item;
+              }
 
         }
 
