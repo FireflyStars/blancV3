@@ -681,6 +681,10 @@ Route::get('/test-calculate-checkout',function(){
 
 });
 
+Route::get('test-ar-log',function(){
+
+});
+
 
 /* END TEST ROUTES */
 
@@ -1238,6 +1242,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
             'CustomerID'=>$order->CustomerID,
             'created_at'=>$stamp,
             'order_id'=>$order_id,
+            'payment_intent_id'=>$payment_intent_id,
             'info'=>json_encode($info),
         ];
 
