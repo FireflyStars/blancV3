@@ -1197,6 +1197,7 @@ export default {
                         });
                 }else{
                     let err = false;
+
                     if(amount_to_pay.value > 0 && cust.value.bycard==1 && !custcard.value){
                         err = true;
                         no_payment_modal.value.showModal();
@@ -1211,7 +1212,7 @@ export default {
                         else{
                             console.log('by credit',credit_to_deduct.value);
 
-                            if(parseFloat(credit_to_deduct.value)==0){
+                            if(parseFloat(credit_to_deduct.value)==0 && amount_to_pay.value > 0){
                                 no_payment_modal.value.showModal();
                             }else{
                                 completeCheckout(false);
