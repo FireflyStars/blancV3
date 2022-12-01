@@ -626,7 +626,6 @@ class DetailingController extends Controller
         $detailingitem = (array) $detailingitem->first();
 
         $detailing_data = $this->getDetailingData($detailingitem['department_id'], $detailingitem['typeitem_id']);
-        dump($request);
         $item_description = $this->getItemDescription($detailingitem);
 
 
