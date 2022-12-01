@@ -1496,7 +1496,7 @@ class CustomerController extends Controller
                     ->select('infoCustomer.FirstName as firstName', 'infoCustomer.LastName as lastName', 'infoCustomer.Name as Name' ,'infoCustomer.CompanyName' ,  'infoCustomer.EmailAddress as email', 'infoCustomer.Phone as phone',
                         'infoCustomer.TotalSpend as totalSpent', 'infoCustomer.cardvip as kioskNumber', 'bycard as paymentMethod', 'infoCustomer.OnAccount' ,
                         DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'), DB::raw('IF(infoCustomer.CustomerIDMaster = "", "Main", "Sub") as accountType'),
-                         'infoCustomer.TypeDelivery as typeDelivery','infoCustomer.CustomerIDMaster','infoCustomer.OnAccount',
+                         'infoCustomer.TypeDelivery as typeDelivery','infoCustomer.CustomerIDMaster',
                         'infoCustomer.CustomerNotes', 'infoCustomer.id', 'infoCustomer.CustomerID',
                         DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recurring", "Normal") as booking'), 'discount', 'credit',
                         'infoCustomer.DeliverybyDay as deliveryByDay', 'DeliveryMon', 'DeliveryTu', 'DeliveryWed', 'DeliveryTh', 'DeliveryFri', 'DeliverySat',
@@ -2508,8 +2508,10 @@ class CustomerController extends Controller
                 ->join('infoCustomer','infoOrder.CustomerID','infoCustomer.CustomerID')
                 ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
                 ->whereNotIn('infoInvoice.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
+                ->whereNotIn('infoOrder.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
                 ->where('infoOrder.orderinvoiced',0)
                 ->whereIn('infoOrder.CustomerID',$all_customer_ids)
+                ->orderBy('infoOrder.detailed_at','ASC')
                 ->get();
 
         $invoices_per_order = [];
@@ -2691,18 +2693,15 @@ class CustomerController extends Controller
                     $inv = DB::table('infoInvoice')->where('InvoiceID',$invoiceid)->first();
                     $order_details[$customerid][$invoiceid] = [];
 
+                    $dept = [];
+                    $net = 0;
+                    $vat = 0;
+                    $total = 0;
+                    $items_text = [];
+                    $promised_dates = [];
+                    $items_per_dept = [];
+
                     if($inv && !in_array($inv->Status,['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])){
-
-
-                        $dept = [];
-                        $net = 0;
-                        $vat = 0;
-                        $total = 0;
-                        $items_text = [];
-                        $promised_dates = [];
-
-
-
                         foreach($items as $k=>$v){
                             $promised_dates[] = $v->PromisedDate;
 
@@ -2715,8 +2714,10 @@ class CustomerController extends Controller
                             $subtotal_per_order[$v->order_id] = $v->Subtotal;
                         }
 
+                        foreach($dept as $k=>$v){
+                            $items_per_dept[$k] = array_count_values($v);
+                        }
 
-                        $items_per_dept[$v->Department] = array_count_values($dept[$v->Department]);
 
                         usort($promised_dates,function($a,$b){
                             return strtotime($b) - strtotime($a);

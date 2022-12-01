@@ -184,7 +184,6 @@ export default {
 
   width: 1329px;
   margin: 37px auto 0 auto;
-  box-shadow: 0px 8px 36px rgba(0, 0, 0, 0.16);
   border-radius: 6px;
   & h3{
     text-align: center;

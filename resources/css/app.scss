@@ -1071,7 +1071,8 @@ padding:0 1.2rem;
         position: relative;
         flex-direction: column;
         padding: 0;
-        width: 660px;
+        width: fit-content;
+        min-width: 660px;
         min-height: 200px;
 
         background: #FFF;
