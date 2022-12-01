@@ -2512,6 +2512,7 @@ class CustomerController extends Controller
                 ->whereNotIn('infoOrder.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
                 ->where('infoOrder.orderinvoiced',0)
                 ->whereIn('infoOrder.CustomerID',$all_customer_ids)
+                ->orderBy('infoOrder.detailed_at','ASC')
                 ->get();
 
         $invoices_per_order = [];
