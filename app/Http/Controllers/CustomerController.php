@@ -2501,7 +2501,7 @@ class CustomerController extends Controller
 
 
         $orders = DB::table('infoOrder')
-                ->select('infoCustomer.Name','infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.TotalDue','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*','infoOrder.Subtotal')
+                ->select('infoCustomer.Name','infoOrder.id as order_id','infoOrder.detailed_at','infoOrder.Total','infoOrder.TotalDue','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*','infoOrder.Subtotal')
                 ->join('detailingitem','infoOrder.id','detailingitem.order_id')
                 ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -2532,7 +2532,7 @@ class CustomerController extends Controller
                                                                                 'NumInvoice'=>$v->NumInvoice,
                                                                                 'InvoiceID'=>$v->InvoiceID,
                                                                                 'Tracking'=>$v->ItemTrackingKey,
-                                                                                'PromisedDate'=>$v->created_at,
+                                                                                'PromisedDate'=>$v->detailed_at,
                                                                                 'Department'=>$v->DepartmentName,
                                                                                 'Description'=>$v->typeitem,
                                                                                 'brand'=>$v->brand,
