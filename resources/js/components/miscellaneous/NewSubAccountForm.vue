@@ -162,12 +162,13 @@
                                 CustomerPayemenProfile : props.form.CustomerPayemenProfile,
                                 typeDelivery : props.form.typeDelivery
                             }).then((res)=>{
-                            close();
+                               close();
                             }).catch((error)=>{
-                            console.log(error);
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured}`,ttl:5,type:'danger'});
                         })
-                    }
-                    close();   
+                    }else{
+                        close();
+                    } 
             }
             return {
                 route,
