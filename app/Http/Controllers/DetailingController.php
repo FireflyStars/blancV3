@@ -1254,8 +1254,6 @@ class DetailingController extends Controller
             $_FAILED_DELIVERY_PRICE = 5;
         }
 
-        $_SUBTOTAL = $_SUBTOTAL - $_BUNDLES_DISCOUNT-$_VOUCHER_DISCOUNT;
-
 
         if(in_array($order->express,[1,6])){
             $mapped_id = [1=>1,6=>2];
@@ -1263,7 +1261,7 @@ class DetailingController extends Controller
 
             $has_upcharge = DB::table('order_upcharges')->where('order_id',$order_id)->where('upcharges_id',$upcharge_id)->where('amount','>',0)->first();
             if(!$has_upcharge){
-                DetailingController::setExpressUpcharge($upcharge_id,$order->id,$_SUBTOTAL);
+                DetailingController::setExpressUpcharge($upcharge_id,$order->id,$_ITEMS_TOTAL);
                 DetailingController::logUpcharge($order->id,$upcharge_id,1);
             }
 
@@ -1279,7 +1277,7 @@ class DetailingController extends Controller
         }
 
 
-        $_SUBTOTAL = $_SUBTOTAL+$_EXPRESS_CHARGES_PRICE;
+        $_SUBTOTAL = $_SUBTOTAL - $_BUNDLES_DISCOUNT-$_VOUCHER_DISCOUNT+$_EXPRESS_CHARGES_PRICE;
 
         $_ACCOUNT_DISCOUNT  =  $order->AccountDiscount;
         $_ORDER_DISCOUNT = 0;
@@ -2954,12 +2952,12 @@ class DetailingController extends Controller
         ]);
     }
 
-    public static function setExpressUpcharge($upcharge_id,$order_id,$subtotal){
+    public static function setExpressUpcharge($upcharge_id,$order_id,$items_total){
         $user = Auth::user();
         $upcharge = DB::table('upcharges')->where('id',$upcharge_id)->first();
-        //$order = DB::table('infoOrder')->where('id',$order_id)->first();
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
-        $amount = ($upcharge->amount * $subtotal)/100;
+        $amount = ($upcharge->amount * $items_total)/100;
 
         DB::table('order_upcharges')->insert([
             'order_id'=>$order_id,
