@@ -4,7 +4,7 @@
             <main-header></main-header>
             <div class="row d-flex align-content-stretch align-items-stretch flex-row hmax" style="z-index: 100">
                 <side-bar></side-bar>
-                <div class="col main-view mx-5" id="Customer List">
+                <div class="col main-view" id="Customer-List" :class="{'mx-5':selected_nav!='AR'}">
                     <h2 class="mx-0 font-22">Customer List</h2>
                     <div class="nav-panel d-flex justify-content-between mb-1">
                         <ul class="tab-nav list-inline mb-0">

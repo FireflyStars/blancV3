@@ -52,12 +52,12 @@
                 </tr>
             </tfoot>
         </table>
-
     </transition>
 
 
     <button class="ar-btn" v-if="Object.values(customerList).length > 0" @click="loadInvoiceModal('mail')">Email invoice(s)</button>
     <button class="ar-btn" v-if="Object.values(customerList).length > 0" @click="loadInvoiceModal('pdf')">PDF invoice(s)</button>
+
 
     <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
         <div v-if="showlayer" class="back-layer"></div>
@@ -563,6 +563,7 @@ export default {
         font:normal 16px "Gotham Rounded";
         margin-left:1rem;
         margin-right:2rem;
+        margin-bottom:1rem;
     }
 
     .ar-btn:hover{
