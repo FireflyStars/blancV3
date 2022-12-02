@@ -215,7 +215,7 @@ export default {
                                 //To add fetch for card details
                                 context.emit('set-terminal-pay');
 
-                                updateTerminalOrder(order_id,amount,'succeeded','');
+                                updateTerminalOrder(order_id,amount,'succeeded','',result.paymentIntent.id);
                                 console.log('terminal.collectPaymentMethod', result.paymentIntent);
 
                                 paymentIntentId.value = result.paymentIntent.id;
@@ -299,7 +299,7 @@ export default {
             }
         }
 
-        function updateTerminalOrder(order_id,amount,status,msg){
+        function updateTerminalOrder(order_id,amount,status,msg,payment_intent_id){
             console.log('update order started');
 
             const bodyContent = JSON.stringify({
@@ -308,6 +308,7 @@ export default {
                 terminal:selected_reader.value.label,
                 status:status,
                 info:msg,
+                payment_intent_id:payment_intent_id,
             });
 
             console.log(bodyContent);

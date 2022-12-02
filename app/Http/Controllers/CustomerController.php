@@ -1026,6 +1026,7 @@ class CustomerController extends Controller
                 END as level'
                 ),
               DB::raw('LCASE(infoCustomer.TypeDelivery) as active_in'),
+              'infoCustomer.CompanyName ad account_name',
               DB::raw('LCASE(infoCustomer.Name) as name'),
               DB::raw('IF(infoCustomer.Phone = "", "--", infoCustomer.Phone) as phone'),
               DB::raw('LCASE(infoCustomer.EmailAddress) as email'),
@@ -2681,8 +2682,8 @@ class CustomerController extends Controller
 
         }
 
-        if($emailed){
-           DB::table('infoOrder')->where('id',$all_orders)->update(['orderinvoiced'=>1]);
+        if($emailed && !empty($all_orders)){
+           DB::table('infoOrder')->whereIn('id',$all_orders)->update(['orderinvoiced'=>1]);
         }
 
         return $row_ids;
