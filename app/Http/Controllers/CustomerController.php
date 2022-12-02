@@ -2615,8 +2615,8 @@ class CustomerController extends Controller
 
         }
 
-        if($emailed){
-           DB::table('infoOrder')->where('id',$all_orders)->update(['orderinvoiced'=>1]);
+        if($emailed && !empty($all_orders)){
+           DB::table('infoOrder')->whereIn('id',$all_orders)->update(['orderinvoiced'=>1]);
         }
 
         return $row_ids;
