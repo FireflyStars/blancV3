@@ -25,6 +25,8 @@
                     <td class="fw-16" valign="middle"><span>{{ customer.level }}</span></td>
                     <!-- active in -->
                     <td class="fw-16 text-capitalize" valign="middle"><span>{{ customer.active_in }}</span></td>
+                    <!-- account name -->
+                    <td class="fw-16 text-capitalize" valign="middle"><span>{{ customer.account_name }}</span></td>
                     <!-- Customer Name -->
                     <td class="text-capitalize fw-16" valign="middle">{{ customer.name }}</td>
                     <!-- address -->
@@ -111,6 +113,12 @@ export default {
                 {
                     label: 'Active in',
                     key: 'active_in',
+                    thClass: 'customer-table-th text-nowrap',
+                    tdClass: 'text-capitalize fw-16',
+                },
+                {
+                    label: 'Account Name',
+                    key: 'account_name',
                     thClass: 'customer-table-th text-nowrap',
                     tdClass: 'text-capitalize fw-16',
                 },

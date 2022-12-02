@@ -74,6 +74,7 @@ class OrderListController extends Controller
             'infoOrder.id','infoOrder.Status','infoOrder.Total','infoOrder.TypeDelivery', 'infoOrder.DateDeliveryAsk','infoOrder.DatePickup', 'infoCustomer.DeliverybyDay','infoOrder.datesold as Orderdatesold','infoOrder.deliverymethod','infoOrder.OrderID',
 
             ($current_tab=='customer_care'?'infoCustomer.Name AS Customer':'infoCustomer.Name'),
+            'infoCustomer.CompanyName AS AccountName',
 
         'pickup.status as status_pickup' , 'deliveryask.status as status_deliveryask',
 

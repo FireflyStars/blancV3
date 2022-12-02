@@ -960,6 +960,7 @@ class CustomerController extends Controller
                 END as level'
                 ),
               DB::raw('LCASE(infoCustomer.TypeDelivery) as active_in'),
+              'infoCustomer.CompanyName ad account_name',
               DB::raw('LCASE(infoCustomer.Name) as name'),
               DB::raw('IF(infoCustomer.Phone = "", "--", infoCustomer.Phone) as phone'),
               DB::raw('LCASE(infoCustomer.EmailAddress) as email'),
