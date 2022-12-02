@@ -125,14 +125,19 @@
                     width:"7%",
                     sortable:false
                 },
+                AccountName:{
+                    name:"Account Name",
+                    width:"18%",
+                    sortable:false
+                },
                 Name:{
                     name:"Customer",
-                    width:"28%",
+                    width:"18%",
                     sortable:false
                 },
                 TypeDelivery:{
                     name:"Destination",
-                    width:"14%",
+                    width:"10%",
                     css:"text-align:left",
                     sortable:false,
                     header_align:"left"
@@ -161,7 +166,7 @@
                 },
                 subOrderCount:{
                     name:"Sub Order Ready",
-                    width:"12%",
+                    width:"8%",
                     sortable:false,
                     type:'percent',
                     header_align:"left",
