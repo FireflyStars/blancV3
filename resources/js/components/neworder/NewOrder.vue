@@ -913,25 +913,25 @@ import axios from 'axios';
                             // isc_pickup_disabled.value=true;
 
                         }else{
-                            if(current_customer.main_account.recent_deliveryask==null){
-                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
-                                    message:"No booking on mail account",
-                                    ttl:5,
-                                    type:'danger'
-                                });
-                            }
+                            // if(current_customer.main_account.recent_deliveryask==null){
+                            //     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                            //         message:"No booking on mail account",
+                            //         ttl:5,
+                            //         type:'danger'
+                            //     });
+                            // }
 
-                             deliverymethod.value='delivery_only';
-                              deliverymethod_disabled.value=true;
-                              do_delivery_disabled.value=true;
-                              if(current_customer.main_account.recent_deliveryask!=null){
-                              do_delivery.value=current_customer.main_account.recent_deliveryask.date;
-                                do_delivery_timeslot.value = current_customer.main_account.recent_deliveryask.slot;
+                            //  deliverymethod.value='delivery_only';
+                            //   deliverymethod_disabled.value=true;
+                            //   do_delivery_disabled.value=true;
+                            //   if(current_customer.main_account.recent_deliveryask!=null){
+                            //   do_delivery.value=current_customer.main_account.recent_deliveryask.date;
+                            //     do_delivery_timeslot.value = current_customer.main_account.recent_deliveryask.slot;
 
-                              }else{
-                                  //no_main_booking.value=true;
+                            //   }else{
+                            //       //no_main_booking.value=true;
 
-                              }
+                            //   }
 
                         }
 
