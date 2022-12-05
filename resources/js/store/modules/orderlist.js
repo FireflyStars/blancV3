@@ -179,7 +179,7 @@ export const orderlist= {
             console.log(payload);
             state[state.current_tab].order_list=state[state.current_tab].order_list.filter(order=>!payload.includes(order.id));
         },
-        [ORDERLIST_GET_TOTAL_COUNT]:(state, payload)=>{
+        [ORDERLIST_SET_TOTAL_COUNT]:(state, payload)=>{
             state[state.current_tab].total_count=payload;
         },
         [ORDERLIST_UPDATE_SUGGESTED_DELIVERY_DATE]:(state,payload)=>{
@@ -213,8 +213,8 @@ export const orderlist= {
                     search_value : payload.search,
                 })
                     .then(function (response) {
-                        commit(ORDERLIST_ADD_TO_LIST, response.data);
-
+                        commit(ORDERLIST_ADD_TO_LIST, response.data.orderlist);
+                        commit(ORDERLIST_SET_TOTAL_COUNT, response.data.total_count);
                     })
                     .catch(function (error) {
                         if(typeof error.response !="undefined")
@@ -234,7 +234,7 @@ export const orderlist= {
             })
                 .then(function (response) {
                     commit(ORDERLIST_ADD_TO_LIST, response.data.orderlist);
-                    commit(ORDERLIST_GET_TOTAL_COUNT, response.data.total_count);
+                    commit(ORDERLIST_SET_TOTAL_COUNT, response.data.total_count);
 
                 })
                 .catch(function (error) {
@@ -258,8 +258,8 @@ export const orderlist= {
         [ORDERLIST_SET_CURRENTTAB]:({commit},payload)=>{
             commit(ORDERLIST_CURRENTTAB,{tab:payload});
         },
-        [ORDERLIST_GET_TOTAL_COUNT]:({commit},payload)=>{
-            commit(ORDERLIST_GET_TOTAL_COUNT, payload);
+        [ORDERLIST_SET_TOTAL_COUNT]:({commit},payload)=>{
+            commit(ORDERLIST_SET_TOTAL_COUNT, payload);
         },
         [ORDERLIST_SORT]:({commit,state,dispatch,getters},payload)=>{
             let sortcols=getters.ORDERLIST_GET_SORT;
@@ -418,7 +418,8 @@ export const orderlist= {
                 customerID:payload.customer,
             })
                 .then(function (response) {
-                    commit(ORDERLIST_ADD_TO_LIST, response.data);
+                    commit(ORDERLIST_ADD_TO_LIST, response.data.orderlist);
+                    commit(ORDERLIST_SET_TOTAL_COUNT, response.data.total_count);
 
                 })
                 .catch(function (error) {
