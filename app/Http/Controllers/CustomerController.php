@@ -1031,7 +1031,7 @@ class CustomerController extends Controller
               DB::raw('IF(infoCustomer.Phone = "", "--", infoCustomer.Phone) as phone'),
               DB::raw('LCASE(infoCustomer.EmailAddress) as email'),
               //DB::raw('CONCAT_WS(", ", CONCAT_WS(" ", address.address1, address.address2), address.Town, address.Country, address.postcode) as address'),
-              'address1','address2','postcode',
+              'address1','address2','postcode', 'Town as city',
               DB::raw('IF(DATE_FORMAT(MAX(infoOrder.created_at), "%d/%m/%y") = "", "--", DATE_FORMAT(MAX(infoOrder.created_at), "%d/%m/%y")) as last_order'),
               //DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
               'infoCustomer.TotalSpend as total_spent'
