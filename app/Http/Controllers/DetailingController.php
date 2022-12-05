@@ -421,6 +421,7 @@ class DetailingController extends Controller
         $tailoring_services = $request->post('tailoring_services');
         $tailoring_price = $request->post('tailoring_price');
         $tailoring_price_type = $request->post('tailoring_price_type');
+        $search = $request->post('search');
 
         if (isset($dept_id)) {
             $detailingitem = DB::table('detailingitem')->where('id', '=', $detailingitem_id)->get();
@@ -627,6 +628,30 @@ class DetailingController extends Controller
         $detailingitem = (array) $detailingitem->first();
 
         $detailing_data = $this->getDetailingData($detailingitem['department_id'], $detailingitem['typeitem_id']);
+        $new_type_item = null;
+
+        if ($search) {
+            $searched_item = DB::table('typeitem')
+                ->where('typeitem.name', 'LIKE', '%' . $search . '%')
+                ->where('deleted_at' , '=' , NULL)
+                ->first();
+                if($searched_item){
+                    DB::table('detailingitem')->where('id', $detailingitem_id)->update([
+                        'department_id' => $searched_item->department_id,
+                        'category_id' => $searched_item->category_id,
+                        'typeitem_id' => $searched_item->id,
+                        'size_id' => null,
+                        'etape' => 2,
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ]);
+                }
+                $new_type_item = DB::table('typeitem')
+                ->where('typeitem.name', 'LIKE', '%' . $search . '%')
+                ->where('department_id', $searched_item->department_id)
+                ->where('deleted_at' , '=' , NULL)
+                ->get();
+            $detailing_data['typeitemssearch'] = $new_type_item;
+        }
         $item_description = $this->getItemDescription($detailingitem);
 
 
@@ -888,8 +913,22 @@ class DetailingController extends Controller
             if($inv){
 
                 if($cust->CustomerID != $inv->CustomerID){
-                    $err = "HSL $tracking already linked with another customer.";
-                    $is_cust_inv = false;
+
+                    $sub_cust = DB::table('infoCustomer')
+                                ->where('CustomerIDMaster',$cust->CustomerID)
+                                ->where('CustomerID',$inv->CustomerID)
+                                ->first();
+
+                        if(!$sub_cust){
+                            $main_cust = DB::table('infoCustomer')
+                                        ->where('CustomerID',$inv->CustomerID)
+                                        ->where('CustomerIDMaster','')
+                                        ->get();
+                            if(!$main_cust){
+                                $err = "HSL $tracking already linked with another customer.";
+                                $is_cust_inv = false;
+                            }
+                        }
                 }
             }
 
