@@ -883,7 +883,6 @@ import axios from 'axios';
                         alternate_contact.value = current_customer.delivery_preference.PhoneNumber;
                     }
 
-                    //console.log(current_customer.main_account.TypeDelivery);
 
                     if(typeof current_customer.main_account!="undefined"){
                         if(current_customer.main_account.TypeDelivery!="DELIVERY"){
@@ -891,9 +890,9 @@ import axios from 'axios';
                             store_name.value=current_customer.main_account.TypeDelivery;
                             isc_pickup_timeslot.value=11;
                             isc_pickup_timeslot_disabled.value=true;
-                            store_name_disabled.value=true;
+                            // store_name_disabled.value=true;
 
-                            deliverymethod_disabled.value=true;
+                            // deliverymethod_disabled.value=true;
                             let Today = new Date();
                             let days=3;
                             let collectionDate = Today.setDate(Today.getDate() + days);
@@ -911,7 +910,7 @@ import axios from 'axios';
                                }
                             }
                             isc_pickup.value=collectionDate;
-                            isc_pickup_disabled.value=true;
+                            // isc_pickup_disabled.value=true;
 
                         }else{
                             if(current_customer.main_account.recent_deliveryask==null){
