@@ -1704,9 +1704,6 @@ class OrderListController extends Controller
         $user=Auth::user();
         $update=false;
 
-        // if($user->hasRoles(['admin','Blanc Admin','cc'])){
-        if(in_array($user->role_id,[1,4])){ // Production operator cannot set a new delivery date
-
                 $infoOrder=DB::table('infoOrder')->select(['CustomerID','DeliveryaskID','TypeDelivery'])->where('id','=',$infoOrder_id)->first();
 
                 if($infoOrder==null)
@@ -1815,7 +1812,6 @@ class OrderListController extends Controller
                     $update=true;
                 }
             }
-        }
         return response()->json(['updated'=>$update,'message'=>'','post'=>$request->all()]);
     }
 
