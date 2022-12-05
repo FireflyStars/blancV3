@@ -27,7 +27,7 @@
             </transition-group>
             <tfoot>
                 <tr>
-                    <td class="tcol" style="text-align: center" :colspan="Object.keys(tabledef).length">  <button class="btn btn-link" @click="loadMore">Show more</button></td>
+                    <td class="tcol" style="text-align: center" :colspan="Object.keys(tabledef).length">  <button class="btn btn-link" @click="loadMore">Show more ( {{ ORDER_LIST.length }} of {{ Order_Total_Count }})</button></td>
                 </tr>
             </tfoot>
         </table>
@@ -81,7 +81,8 @@
         ORDERLIST_MARK_AS_LATE,
         ORDERLIST_CUSTOMER_ORDERS,
         ORDERLIST_CUSTOMER_SMSDELIVERY,
-        ORDER_GET_STATUS
+        ORDER_GET_STATUS,
+        ORDERLIST_GET_TOTAL_COUNT
     } from '../../store/types/types';
     import Tag from  '../miscellaneous/Tag'
     import CheckBox from '../miscellaneous/CheckBox'
@@ -108,6 +109,9 @@
             });
             const ORDER_LIST=computed(()=>{
                 return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_LIST}`];
+            });
+            const Order_Total_Count=computed(()=>{
+                return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_TOTAL_COUNT}`];
             });
             const CURRENT_SELECTED=computed(()=>{
                 return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_CURRENT_SELECTED}`];
@@ -581,7 +585,8 @@
                 SendSmsDelivery,
                 listOrderSelected,
                 NoDeliveryDate,
-                listCustomers
+                listCustomers,
+                Order_Total_Count
             }
         }
     }

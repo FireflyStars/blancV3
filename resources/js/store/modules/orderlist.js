@@ -40,7 +40,9 @@ import {
     ORDERLIST_CUSTOMER_ORDERS,
     ORDERLIST_CUSTOMER_SMSDELIVERY,
     ORDER_GET_STATUS,
-    ORDER_SET_STATUS
+    ORDER_SET_STATUS,
+    ORDERLIST_GET_TOTAL_COUNT,
+    ORDERLIST_SET_TOTAL_COUNT,
 } from "../types/types";
 import {PERMISSIONS} from "../types/permission_types";
 import {usePermission} from "../../components/helpers/helpers";
@@ -61,6 +63,7 @@ export const orderlist= {
                 take:10, //show more
                 sort:[],//sort col
                 filters:{},//filters
+                total_count: 0,
             },
             due_tomorrow:{
                 currently_selected:'',//currently selected line for displaying order detail
@@ -70,6 +73,7 @@ export const orderlist= {
                 take:10, //show more
                 sort:[],//sort col
                 filters:{},//filters
+                total_count: 0,
             },
             all_orders:{
                 currently_selected:'',//currently selected line for displaying order detail
@@ -79,6 +83,7 @@ export const orderlist= {
                 take:10, //show more
                 sort:[],//sort col
                 filters:{},//filters
+                total_count: 0,
             },
             customer_care:{
                 currently_selected:'',//currently selected line for displaying order detail
@@ -88,6 +93,7 @@ export const orderlist= {
                 take:10, //show more
                 sort:[],//sort col
                 filters:{},//filters
+                total_count: 0,
             },
             with_partner:{
                 currently_selected:'',//currently selected line for displaying order detail
@@ -97,6 +103,7 @@ export const orderlist= {
                 take:10, //show more
                 sort:[],//sort col
                 filters:{},//filters
+                total_count: 0,
             },
             unfulfilled:{
                 currently_selected:'',//currently selected line for displaying order detail
@@ -106,6 +113,7 @@ export const orderlist= {
                 take:10, //show more
                 sort:[],//sort col
                 filters:{},//filters
+                total_count: 0,
             },
             without_delivery_date:{
                 currently_selected:'',//currently selected line for displaying order detail
@@ -115,6 +123,7 @@ export const orderlist= {
                 take:10, //show more
                 sort:[],//sort col
                 filters:{},//filters
+                total_count: 0,
             },
             status:{}
     },
@@ -170,6 +179,9 @@ export const orderlist= {
             console.log(payload);
             state[state.current_tab].order_list=state[state.current_tab].order_list.filter(order=>!payload.includes(order.id));
         },
+        [ORDERLIST_GET_TOTAL_COUNT]:(state, payload)=>{
+            state[state.current_tab].total_count=payload;
+        },
         [ORDERLIST_UPDATE_SUGGESTED_DELIVERY_DATE]:(state,payload)=>{
             state[state.current_tab].order_list.find(order=>{
                 if(order.id==payload.infoOrder_id)
@@ -221,7 +233,8 @@ export const orderlist= {
                 filters:state[state.current_tab].filters,
             })
                 .then(function (response) {
-                    commit(ORDERLIST_ADD_TO_LIST, response.data);
+                    commit(ORDERLIST_ADD_TO_LIST, response.data.orderlist);
+                    commit(ORDERLIST_GET_TOTAL_COUNT, response.data.total_count);
 
                 })
                 .catch(function (error) {
@@ -244,6 +257,9 @@ export const orderlist= {
         },
         [ORDERLIST_SET_CURRENTTAB]:({commit},payload)=>{
             commit(ORDERLIST_CURRENTTAB,{tab:payload});
+        },
+        [ORDERLIST_GET_TOTAL_COUNT]:({commit},payload)=>{
+            commit(ORDERLIST_GET_TOTAL_COUNT, payload);
         },
         [ORDERLIST_SORT]:({commit,state,dispatch,getters},payload)=>{
             let sortcols=getters.ORDERLIST_GET_SORT;
@@ -445,6 +461,7 @@ export const orderlist= {
         [ORDERLIST_GET_LIST]:state =>state[state.current_tab].order_list,
         [ORDERLIST_GET_SORT]:state =>state[state.current_tab].sort,
         [ORDERLIST_GET_FILTER]:state=> state[state.current_tab].filters,
+        [ORDERLIST_GET_TOTAL_COUNT]:state=> state[state.current_tab].total_count,
         [ORDER_GET_STATUS]:state =>state.status,
     }
 }

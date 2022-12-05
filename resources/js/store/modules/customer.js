@@ -21,7 +21,8 @@ import {
     LOAD_CUSTOMER_DETAIL,
     GET_CUSTOMER_DETAIL,
     GET_LOADER_CLASS,
-    SET_LOADER_CLASS
+    SET_LOADER_CLASS,
+    GET_CUSTOMER_SELECTED_TAB,
 }
 from '../types/types';
 export const Customer = {
@@ -170,5 +171,6 @@ export const Customer = {
         [GET_ALL_SELECTED_CUSTOMER]: state => state.multi_selected,
         [GET_CUSTOMER_DETAIL]: state => state.customer_detail,
         [GET_LOADER_CLASS]: state => state.loader,
+        [GET_CUSTOMER_SELECTED_TAB]: state => state.filter.selected_nav,
     }
 }

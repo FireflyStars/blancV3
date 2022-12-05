@@ -298,6 +298,7 @@ class OrderListController extends Controller
         }
 
 
+        $totalOrderCount = $orderlist->count();
         $orderlist=$orderlist->skip($skip)->take($take);
         $orderlist=$orderlist->get();
 
@@ -643,7 +644,10 @@ class OrderListController extends Controller
             }
     }
 
-        return response()->json($orderlist);
+        return response()->json([
+            'orderlist' =>$orderlist,
+            'total_count'=>$totalOrderCount
+        ]);
     }
 
     public function getorderlistbysearch(Request $request){

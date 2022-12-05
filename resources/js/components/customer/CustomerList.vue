@@ -73,7 +73,8 @@ import {
     SET_CUSTOMER_DETAIL,
     SET_CUSTOMER_LIST,
     SET_CUSTOMER_FILTER,
-    FILTER_CUSTOMER_LIST
+    FILTER_CUSTOMER_LIST,
+    GET_CUSTOMER_SELECTED_TAB
 
 } from "../../store/types/types";
 import { useStore } from 'vuex';
@@ -95,6 +96,9 @@ export default {
                 value:route.params.value ? route.params.value : window.sessionStorage.getItem('search_value')
             },
         };
+        // const selected_nav =  computed(()=>{
+        //     return store.getters[`${CUSTOMER_MODULE}${GET_CUSTOMER_SELECTED_TAB}`];
+        // })        
         const tableColumnsDef = [
                 {
                     label: '',
@@ -257,6 +261,7 @@ export default {
                 return (route.params.customer_id > 0 && CURRENT_SELECTED.value != '');
                 // return false;
             }),
+            // selected_nav
         }
     }
 }

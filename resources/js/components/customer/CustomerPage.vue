@@ -27,7 +27,7 @@
     </transition>
 </template>
 <script>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useStore } from 'vuex';
 import SideBar from "../layout/SideBar";
 import MainHeader from "../layout/MainHeader";
@@ -36,7 +36,7 @@ import CustomerList from './CustomerList';
 import ArList from './ArList';
 import ArInvoiced from './ArInvoiced.vue';
 
-import { CUSTOMER_MODULE, SET_CUSTOMER_SELECTED_TAB, SET_CUSTOMER_LIST } from '../../store/types/types';
+import { CUSTOMER_MODULE, SET_CUSTOMER_SELECTED_TAB, SET_CUSTOMER_LIST, GET_CUSTOMER_SELECTED_TAB } from '../../store/types/types';
 export default {
     name: 'CustomerPage',
     components:{
@@ -50,7 +50,10 @@ export default {
     setup(){
         const store = useStore();
         const component = ref('CustomerList');
-        const selected_nav = ref('CustomerList');
+        const selected_nav =  computed(()=>{
+            return store.getters[`${CUSTOMER_MODULE}${GET_CUSTOMER_SELECTED_TAB}`];
+        })
+
         const current_user = ref(null);
 
 
@@ -66,7 +69,6 @@ export default {
             }else{
                 component.value = nav;
             }
-            selected_nav.value = nav;
         }
         const filterDef = ref({
             customer_type: {
