@@ -1069,6 +1069,7 @@ class CustomerController extends Controller
                             ),
                             DB::raw('LCASE(infoCustomer.TypeDelivery) as active_in'),
                             DB::raw('LCASE(infoCustomer.Name) as name'),
+                            'infoCustomer.CompanyName ad account_name',
                             //DB::raw('CONCAT_WS(", ", CONCAT_WS(" ", address.address1, address.address2), address.Town, address.Country, address.postcode) as address'),
                             'address1','address2','postcode',
                             DB::raw('LCASE(infoCustomer.EmailAddress) as email'),
