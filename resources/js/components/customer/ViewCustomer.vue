@@ -4,7 +4,7 @@
             <main-header></main-header>
             <div class="row align-content-stretch align-items-stretch flex-row hmax">
                 <side-bar></side-bar>
-                <div class="w-100">
+                <div class="w-100 customer-view-container">
                     <bread-crumb :paths="paths"></bread-crumb>
                     <div class="page-fluid cust-page m-0">
                         <ul class="full-nav d-flex p-0 m-0">
@@ -2477,7 +2477,11 @@
 </script>
 <style scoped lang="scss">
     .hmax{
-        padding-top: 0;
+        padding-top: var(--mainlogoheight);
+    }
+    .customer-view-container{
+        padding-left: 70px;
+        padding-right: 0;
     }
     .linked-account-table thead tr{
         border: 1px solid #E0E0E0;
