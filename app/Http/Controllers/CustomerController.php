@@ -92,10 +92,55 @@ class CustomerController extends Controller
                 $info_customer['CustomerID'] = '';
                 $custId = DB::table('infoCustomer')->insertGetId($info_customer);
                 $CustomerUUID = DB::table('infoCustomer')->where('id', $custId)->value('CustomerID');
+                $customer     = DB::table('infoCustomer')->where('id', $custId)->first();
             } catch (\Exception $e) {
                 return response()->json(['error'=> $e->getMessage()]);
             }
         }
+
+        //setrPreference to Customer
+
+                foreach ($request->preferences as $group) {
+                    foreach ($group['data'] as $item) {
+                        $customer_preferences[] = [
+                            'CustomerID' => $CustomerUUID,
+                            'Titre' => $item['title'],
+                            'Value' => $item['value'],
+                            'id_preference' => $item['id'],
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+                }
+                $customer_preferences[] = [
+                    'CustomerID' => $CustomerUUID,
+                    'Titre' => 'Type Customer',
+                    'Value' => $request->programmeType,
+                    'id_preference' => DB::table('customerpreferences')->where('title', 'Type Customer')->value('id'),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+                try {
+                    DB::table('InfoCustomerPreference')->where('CustomerID', '=', $CustomerUUID)->update(['Delete' => 1,'updated_at'=>date('Y-m-d H:i:s')]);
+                    DB::table('InfoCustomerPreference')->insert($customer_preferences);
+                } catch (\Throwable $e) {
+                    return response()->json(['error'=> $e->getMessage()]);
+                }
+                $delivery_preference = [
+                    'CustomerId'    => $CustomerUUID,
+                    'TypeDelivery'  => $request->altTypeDelivery ? $request->altTypeDelivery : 'N/A' ,
+                    'Name'          => $request->altName,
+                    'CodeCountry'   => $request->altPhoneCountryCode,
+                    'PhoneNumber'   => $request->altPhoneNumber,
+                    'OtherInstruction' => $request->altDriverInstruction,
+                    'created_at'    => now(),
+                    'updated_at'    => now(),
+                ];
+                try {
+                    DB::table('DeliveryPreference')->insert($delivery_preference);
+                } catch (\Exception $e) {
+                    return response()->json(['error'=> $e->getMessage()]);
+                }
         // set CustomerIdMaster of sub account as Main customer's CustomerID
         if(count($request->linkedAccounts) > 1){
             if($request->accountType == 'Main'){
@@ -103,25 +148,80 @@ class CustomerController extends Controller
                     if($index != 0){
                         try {
                             if($account['id'] != 0){
-                                DB::table('infoCustomer')->where('id', $account['id'])->update(['CustomerIDMaster' => $CustomerUUID]);
-                            }else if($account['id'] == 0 && $account['accountType'] == 'Sub' ){
+                                DB::table('infoCustomer')->where('id', $account['id'])
+                                ->update([
+                                    'CustomerIDMaster' => $CustomerUUID,
+                                    'OnAccount'        => $customer->OnAccount,
+                                    'TypeDelivery'     => $customer->TypeDelivery,
+                                    'btob'             => $customer->btob
+                                ]);
+                                $preferences = DB::table('InfoCustomerPreference')->where('CustomerID', $account['customerId'])->get();
+                                //preference
+
+                                    if(count($preferences) > 0){
+                                        foreach($customer_preferences as $k=>$v){
+                                            $updated = DB::table('InfoCustomerPreference')
+                                                ->where('CustomerID',$account['customerId'])
+                                                ->where('Delete',0)
+                                                ->where('id_preference',$v['id_preference'])
+                                                ->update([
+                                                    'Value'=>$v['Value'],
+                                                    'updated_at'=>date('Y-m-d H:i:s')
+                                                ]);
+                                        }
+                                    }else{
+                                    
+                                    foreach ($customer_preferences as $k=>$pref) {
+                                        $customer_preferences_account[] = [
+                                            'CustomerID' =>  $account['customerId'],
+                                            'Titre' => $pref['Titre'],
+                                            'Value' => $pref['Value'],
+                                            'id_preference' => $pref['id_preference'],
+                                            'created_at' => now(),
+                                            'updated_at' => now(),
+                                        ];
+                                    }
+                                    try {
+                                        $response =  DB::table('InfoCustomerPreference')->insert($customer_preferences_account);
+                                    } catch (\Exception $e) {
+                                        return response()->json($e->getMessage(), 500);
+                                    }
+                                }
+                            }else if($account['id'] == 0 && $account['accountType'] == 'Sub' ){       
                                 $info_customer_sub = [
                                     'CustomerID'    => '',
                                     'CustomerIDMaster'=> $CustomerUUID,
-                                    'OnAccount'     => $request->CustomerPayemenProfile,
-                                    'TypeDelivery'     => $request->typeDelivery,
+                                    'OnAccount'     => $customer->OnAccount,
+                                    'TypeDelivery'  => $customer->TypeDelivery,
                                     'isMaster'      => 0,
-                                    'btob'          => 1,
+                                    'btob'          => $customer->btob,
                                     'FirstName'     => $account['firstName'],
                                     'LastName'      => $account['lastName'],
                                     'Name'          => $account['name'],
-                                    'EmailAddress'  => $account['email'],
+                                    'EmailAddress'  => $account['email'] !='' ?$account['email'] : (Str::random(10).'@noemail.com'),
                                     'Phone'         => $account['phoneNumber']!= '' ? '["'.$account['phoneCountryCode'].'|'.$account['phoneNumber'].']"' : '',
                                     'SignupDate'    => Carbon::now()->format('Y-m-d'),
                                 ];
                                 try {
                                     $cust_Id = DB::table('infoCustomer')->insertGetId($info_customer_sub);
                                     $customerUUID_sub = DB::table('infoCustomer')->where('id', $cust_Id)->value('CustomerID');
+                                    //preference
+                                        foreach ($customer_preferences as $k=>$pref) {
+                                                $customer_preferences_sub[] = [
+                                                'CustomerID' => $customerUUID_sub,
+                                                'Titre' => $pref['Titre'],
+                                                'Value' => $pref['Value'],
+                                                'id_preference' => $pref['id_preference'],
+                                                'created_at' => now(),
+                                                'updated_at' => now(),
+                                                ];
+                                        }
+                                            try {
+                                            $response =  DB::table('InfoCustomerPreference')->insert($customer_preferences_sub);
+                                            } catch (\Exception $e) {
+                                            return response()->json($e->getMessage(), 500);
+                                            }
+
                                 } catch (\Exception $e) {
                                     return response()->json($e->getMessage(), 500);
                                 }
@@ -349,47 +449,6 @@ class CustomerController extends Controller
                 return response()->json(['error'=> $e->getMessage()]);
             }
         }
-        // if($request->paymentMethod == 'BACS'){ // paymentMethod is BACS, we add extra records to several table.
-        //     $billing_address = [
-        //         'CustomerID'    => $CustomerUUID,
-        //         'AddressID'     => '',
-        //         'longitude'     => $request->customerLon,
-        //         'Latitude'      => $request->customerLat,
-        //         'Town'          => $request->companyCity,
-        //         'County'        => $request->companyCounty,
-        //         'Country'       => $request->companyCountry,
-        //         'postcode'      => $request->companyPostCode,
-        //         'address1'      => $request->companyAddress1,
-        //         'address2'      => $request->companyAddress2,
-        //         'status'        => 'BILLING',
-        //         'created_at'    => now(),
-        //         'updated_at'    => now(),
-        //     ];
-        //     try {
-        //         $billing_address_id = DB::table('address')->insertGetId($billing_address);
-        //     } catch (\Exception $e) {
-        //         return response()->json(['error'=> $e->getMessage()]);
-        //     }
-
-        //         $contact = [
-        //             'CustomerID'    => $CustomerUUID,
-        //             'address_id'    => $billing_address_id,
-        //             'name'          => $info_customer['Name'],
-        //             'firstname'     => $request->invoiceFirstname,
-        //             'company'       => $request->companyLegalName,
-        //             'email'         => $request->invoiceAddressEmail1,
-        //             'email2'         => $request->invoiceAddressEmail2,
-        //             'Phone'         => $request->companyPhoneNumber != '' ? '["'.$request->companyPhoneCountryCode.'|'.$request->companyPhoneNumber.']"' : '',
-        //             'created_at'    => now(),
-        //             'updated_at'    => now(),
-        //             'type'          => 'BILLING',
-        //         ];
-        //         try {
-        //             DB::table('contacts')->insert($contact);
-        //         } catch (\Exception $e) {
-        //             return response()->json(['error'=> $e->getMessage()]);
-        //      }
-        //     }
 
             if($request->CustomerPayemenProfile == "1" && $request->accountType != "Sub" ){
                 $billing_address_id = null;
@@ -438,51 +497,7 @@ class CustomerController extends Controller
                         return response()->json(['error'=> $e->getMessage()]);
                  }
                 }
-
-
             }
-
-        foreach ($request->preferences as $group) {
-            foreach ($group['data'] as $item) {
-                $customer_preferences[] = [
-                    'CustomerID' => $CustomerUUID,
-                    'Titre' => $item['title'],
-                    'Value' => $item['value'],
-                    'id_preference' => $item['id'],
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
-        }
-        $customer_preferences[] = [
-            'CustomerID' => $CustomerUUID,
-            'Titre' => 'Type Customer',
-            'Value' => $request->programmeType,
-            'id_preference' => DB::table('customerpreferences')->where('title', 'Type Customer')->value('id'),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
-        try {
-            DB::table('InfoCustomerPreference')->where('CustomerID', '=', $CustomerUUID)->update(['Delete' => 1,'updated_at'=>date('Y-m-d H:i:s')]);
-            DB::table('InfoCustomerPreference')->insert($customer_preferences);
-        } catch (\Throwable $e) {
-            return response()->json(['error'=> $e->getMessage()]);
-        }
-        $delivery_preference = [
-            'CustomerId'    => $CustomerUUID,
-            'TypeDelivery'  => $request->altTypeDelivery ? $request->altTypeDelivery : 'N/A' ,
-            'Name'          => $request->altName,
-            'CodeCountry'   => $request->altPhoneCountryCode,
-            'PhoneNumber'   => $request->altPhoneNumber,
-            'OtherInstruction' => $request->altDriverInstruction,
-            'created_at'    => now(),
-            'updated_at'    => now(),
-        ];
-        try {
-            DB::table('DeliveryPreference')->insert($delivery_preference);
-        } catch (\Exception $e) {
-            return response()->json(['error'=> $e->getMessage()]);
-        }
         return response()->json($custId);
     }
     public function getInvoiceHistories(Request $request){
@@ -513,34 +528,85 @@ class CustomerController extends Controller
         return response()->json($invoiceHistorylist);
     }
     public function createCustomerSubAccount(Request $request){
+        $customer_preferences = [];
         $emailAddress = $request->customer_data['email'] !='' ? $request->customer_data['email'] : (Str::random(10).'@noemail.com');
+        $customer = DB::table('infoCustomer')->where('CustomerID',$request->customer_id)->first();
+        if($customer)
+          $customer_prefrences_array = DB::table('InfoCustomerPreference')->where('CustomerID',$customer->CustomerID)->get();
 
         if($request->customer_data['customerId'] != "" && $request->customer_data['id'] != 0 ){
             DB::table('infoCustomer')->where('id', $request->customer_data['id'])
             ->update([
                 'CustomerIDMaster' => $request->customer_id,
                 'OnAccount'        => $request->CustomerPayemenProfile,
-                'TypeDelivery'     => $request->typeDelivery
+                'TypeDelivery'     => $request->typeDelivery,
+                'btob'             => $request->btob
             ]);
+
+            $Prefrences =  DB::table('InfoCustomerPreference')->where('CustomerID',$request->customer_data['customerId'])
+                            ->where('Delete', 0)
+                            ->get(); 
+                    if(count($Prefrences) > 0)  {
+                        foreach($customer_prefrences_array as $k=>$v){
+                            $updated = DB::table('InfoCustomerPreference')
+                                ->where('CustomerID',$request->customer_data['customerId'])
+                                ->where('Delete',0)
+                                ->where('id_preference',$v->id_preference)
+                                ->update([
+                                    'Value'=>$v->Value,
+                                    'updated_at'=>date('Y-m-d H:i:s')
+                                ]);
+                        }
+                    }else{
+
+                        foreach ($customer_prefrences_array as $k=>$pref) {
+                            $customer_preferences[] = [
+                                'CustomerID' => $request->customer_data['customerId'],
+                                'Titre' => $pref->Titre,
+                                'Value' => $pref->Value,
+                                'id_preference' => $pref->id_preference,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ];
+            
+                        }
+                    }                                  
+                try {
+                    $response =  DB::table('InfoCustomerPreference')->insert($customer_preferences);
+                } catch (\Exception $e) {
+                    return response()->json($e->getMessage(), 500);
+                }
+                return response()->json($response);
         }else {
 
             $info_customer_sub = [
                 'CustomerID'    => '',
                 'CustomerIDMaster'=> $request->customer_id,
-                'OnAccount'       => $request->CustomerPayemenProfile,
-                'TypeDelivery'    => $request->typeDelivery,
+                'OnAccount'     => $request->CustomerPayemenProfile,
+                'TypeDelivery'  => $customer->TypeDelivery,
                 'isMaster'      => 0,
-                'btob'          => 1,
+                'btob'          => $customer->btob,
                 'FirstName'     => $request->customer_data['firstName'],
                 'LastName'      => $request->customer_data['lastName'],
                 'Name'          => $request->customer_data['name'],
-                'EmailAddress'  => $request->customer_data['email'],
+                'EmailAddress'  => $emailAddress,
                 'Phone'         => '["'.$request->customer_data['phoneCountryCode'].'|'.$request->customer_data['phoneNumber'].'"]' ,
                 'SignupDate'    => Carbon::now()->format('Y-m-d'),
             ];
             try {
                 $cust_Id = DB::table('infoCustomer')->insertGetId($info_customer_sub);
                 $customerUUID_sub = DB::table('infoCustomer')->where('id', $cust_Id)->value('CustomerID');
+                foreach ($customer_prefrences_array as $pref) {
+                    $customer_preferences[] = [
+                        'CustomerID' => $customerUUID_sub,
+                        'Titre' => $pref->Titre,
+                        'Value' => $pref->Value,
+                        'id_preference' => $pref->id_preference,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+                DB::table('InfoCustomerPreference')->insert($customer_preferences);
             } catch (\Exception $e) {
                 return response()->json($e->getMessage(), 500);
             }
@@ -1495,7 +1561,7 @@ class CustomerController extends Controller
     public function getCustomerFullDetail(Request $request){
         $customer = DB::table('infoCustomer')
                     ->select('infoCustomer.FirstName as firstName', 'infoCustomer.LastName as lastName', 'infoCustomer.Name as Name' ,'infoCustomer.CompanyName' ,  'infoCustomer.EmailAddress as email', 'infoCustomer.Phone as phone',
-                        'infoCustomer.TotalSpend as totalSpent', 'infoCustomer.cardvip as kioskNumber', 'bycard as paymentMethod', 'infoCustomer.OnAccount' ,
+                    'infoCustomer.CustomerID','infoCustomer.TotalSpend as totalSpent', 'infoCustomer.cardvip as kioskNumber', 'bycard as paymentMethod', 'infoCustomer.OnAccount' ,
                         DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'), DB::raw('IF(infoCustomer.CustomerIDMaster = "", "Main", "Sub") as accountType'),
                          'infoCustomer.TypeDelivery as typeDelivery','infoCustomer.CustomerIDMaster',
                         'infoCustomer.CustomerNotes', 'infoCustomer.id', 'infoCustomer.CustomerID',
@@ -1632,8 +1698,8 @@ class CustomerController extends Controller
                                               ->Where('CustomerID','!=',"");
                                     })
                                     ->select(
-                                        DB::raw('IF(isMaster = 1, "Main", "Sub") as accountType'),'FirstName as firstName', 'LastName as lastName',
-                                        'Name as name', 'Phone as phone', 'EmailAddress as email',
+                                        DB::raw('IF(CustomerIDMaster = "", "Main", "Sub") as accountType'),'FirstName as firstName', 'LastName as lastName',
+                                        'Name as name', 'Phone as phone', 'EmailAddress as email',"CustomerID",
                                         DB::raw('IF(SignupDateOnline = "2000-01-01", DATE_FORMAT(SignupDate, "%d/%m/%Y"), DATE_FORMAT(SignupDateOnline, "%d/%m/%Y")) as date'),
                                         'TotalSpend as spent', 'id'
                                     )->get();
@@ -2502,7 +2568,7 @@ class CustomerController extends Controller
 
 
         $orders = DB::table('infoOrder')
-                ->select('infoCustomer.Name','infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.TotalDue','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*','infoOrder.Subtotal')
+                ->select('infoCustomer.Name','infoOrder.id as order_id','infoOrder.detailed_at','infoOrder.Total','infoOrder.TotalDue','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*','infoOrder.Subtotal')
                 ->join('detailingitem','infoOrder.id','detailingitem.order_id')
                 ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -2533,7 +2599,7 @@ class CustomerController extends Controller
                                                                                 'NumInvoice'=>$v->NumInvoice,
                                                                                 'InvoiceID'=>$v->InvoiceID,
                                                                                 'Tracking'=>$v->ItemTrackingKey,
-                                                                                'PromisedDate'=>$v->created_at,
+                                                                                'PromisedDate'=>$v->detailed_at,
                                                                                 'Department'=>$v->DepartmentName,
                                                                                 'Description'=>$v->typeitem,
                                                                                 'brand'=>$v->brand,

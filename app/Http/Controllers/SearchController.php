@@ -176,9 +176,9 @@ public function SearchByCustomer(Request $request)
   public function SearchCustomersToLink(Request $request){
       $customers = DB::table('infoCustomer')
                     ->select(
-                        'id', 'Name as name', 'EmailAddress as email', 'Phone as phone','FirstName as firstName' , 'LastName as lastName',
+                        'id', 'Name as name', 'EmailAddress as email', 'Phone as phone','FirstName as firstName' , 'LastName as lastName','btob','discount',
                         DB::raw(' IF(btob = 0, "B2C", "B2B") as customerType'),
-                        DB::raw('IF(IsMaster = 1, "Main", "Sub") as accountType'),
+                        DB::raw('IF(CustomerIDMaster = "", "Main", "Sub") as accountType'),
                         DB::raw('IF(SignupDate = "2000-01-01", SignupDateOnline, SignupDate) as date'),
                         'TotalSpend as spent',
                         'CustomerID as customerId'

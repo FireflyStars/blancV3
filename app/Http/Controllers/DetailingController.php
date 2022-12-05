@@ -114,6 +114,7 @@ class DetailingController extends Controller
                 ->join('brands', 'detailingitem.brand_id', 'brands.id')
                 ->where('detailingitem.order_id', '=', $order_id)
                 ->get();
+
             foreach($detailingitemlist as $detailingitem){
 
                 $sum_complexites=0;
@@ -281,7 +282,7 @@ class DetailingController extends Controller
         if(!empty($detailingitem)){
             $detailing_data = $this->getDetailingData($detailingitem['department_id'], $detailingitem['typeitem_id']);
             $cust_cleaning_services = DetailingController::getCustCleaningServices($detailingitem);
-           
+
             if ($search) {
                 $detailing_data['typeitemssearch'] = $new_type_item;
               }
@@ -1157,9 +1158,9 @@ class DetailingController extends Controller
         ];
     }
 
-    public function calculateCheckout($order_id){
+    public function calculateCheckout($order_id,$force=false){
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
-        if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED']))
+        if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED']) && !$force)
         return;
 
         $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
@@ -1249,18 +1250,18 @@ class DetailingController extends Controller
         $_DELIVERY_NOW_FEE=$order->DeliveryNowFee;
         $_AUTO_DELIVERY_FEE=0;
 
-        if($order->TypeDelivery=='DELIVERY' && $order->FailedDelivery===1)
+        if($order->TypeDelivery=='DELIVERY' && $order->FailedDelivery===1){
             $_FAILED_DELIVERY_PRICE = 5;
-
+        }
 
 
         if(in_array($order->express,[1,6])){
             $mapped_id = [1=>1,6=>2];
             $upcharge_id = $mapped_id[$order->express];
 
-            $has_upcharge = DB::table('order_upcharges')->where('order_id',$order_id)->where('upcharges_id',$upcharge_id)->first();
+            $has_upcharge = DB::table('order_upcharges')->where('order_id',$order_id)->where('upcharges_id',$upcharge_id)->where('amount','>',0)->first();
             if(!$has_upcharge){
-                DetailingController::setExpressUpcharge($upcharge_id,$order->id);
+                DetailingController::setExpressUpcharge($upcharge_id,$order->id,$_ITEMS_TOTAL);
                 DetailingController::logUpcharge($order->id,$upcharge_id,1);
             }
 
@@ -2951,12 +2952,12 @@ class DetailingController extends Controller
         ]);
     }
 
-    public static function setExpressUpcharge($upcharge_id,$order_id){
+    public static function setExpressUpcharge($upcharge_id,$order_id,$items_total){
         $user = Auth::user();
         $upcharge = DB::table('upcharges')->where('id',$upcharge_id)->first();
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
 
-        $amount = ($upcharge->amount * $order->Subtotal)/100;
+        $amount = ($upcharge->amount * $items_total)/100;
 
         DB::table('order_upcharges')->insert([
             'order_id'=>$order_id,
@@ -2975,6 +2976,44 @@ class DetailingController extends Controller
             'set'=>$type,
             'created_at'=>date('Y-m-d H:i:s'),
         ]);
+    }
+
+    public function setCheckoutCreditRefund(Request $request){
+        $order_id = $request->order_id;
+
+        $order = DB::table('infoOrder')->where('id',$order_id)->first();
+        $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+        $user = Auth::user();
+
+        $amount_to_credit = abs($order->TotalDue);
+
+        DB::table('payments')->insert([
+            'datepayment'=>date('Y-m-d H:i:s'),
+            'montant'=>$amount_to_credit,
+            'order_id'=>$order_id,
+            'type'=>'cust_credit',
+            'status'=>'succeeded',
+            'CustomerID'=>$order->CustomerID,
+            'created_at'=>date('Y-m-d H::i:s'),
+        ]);
+
+        DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->update(['credit'=>$cust->credit+$amount_to_credit]);
+
+        DB::table('credits')->insert([
+            'type'=>'add',
+            'montant'=>$amount_to_credit,
+            'user_id'=>$user->id,
+            'CustomerID'=>$cust->id,
+        ]);
+
+        $this->calculateCheckout($order_id,true);
+
+        return response()->json([
+            'order'=>$order,
+            'amount_to_credit'=>$amount_to_credit,
+        ]);
+
+
     }
 
 }

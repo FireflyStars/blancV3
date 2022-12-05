@@ -1350,7 +1350,7 @@
                     form.value.accountType = res.data.customer.accountType;
                     form.value.customerType = res.data.customer.customerType;
                     form.value.typeDelivery = res.data.customer.typeDelivery;
-                    form.value.programmeType = res.data.customer.programmeType;
+                    form.value.programmeType = res.data.customer.programmeType ? res.data.customer.programmeType : '';
                     form.value.kioskNumber = res.data.customer.kioskNumber;
                     form.value.firstName = res.data.customer.firstName;
                     form.value.lastName = res.data.customer.lastName;
@@ -1649,9 +1649,10 @@
                          CustomerPayemenProfile : form.value.CustomerPayemenProfile,
                          typeDelivery : form.value.typeDelivery
                     }).then((res)=>{
-                    }).catch((error)=>{
-                        console.log(error);
-                    })
+                               close();
+                            }).catch((error)=>{
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured}`,ttl:5,type:'danger'});
+                        })
             };
             // handler when you unlink sub account from linked accounts
             const removeLinkedAccount = (id)=>{
