@@ -1,7 +1,8 @@
 <template>
     <transition enter-active-class="animate__animated animate__fadeIn">
-        <div class="container-fluid bg-color p-0" v-if="showcontainer">
-            <div class="d-flex align-content-stretch align-items-stretch flex-row hmax">
+        <div class="container-fluid bg-color" v-if="showcontainer">
+            <main-header></main-header>
+            <div class="row align-content-stretch align-items-stretch flex-row hmax">
                 <side-bar></side-bar>
                 <div class="w-100">
                     <bread-crumb :paths="paths"></bread-crumb>
@@ -1050,6 +1051,7 @@
 </template>
 
 <script>
+    import MainHeader from '../layout/MainHeader';
     import BreadCrumb from '../layout/BreadCrumb'
     import SideBar from '../layout/SideBar'
     import { useRouter, useRoute } from 'vue-router';
@@ -1088,7 +1090,8 @@
             Modal,
             DatePicker,
             NewSubAccountForm,
-            CustomerInvoiceHistory
+            CustomerInvoiceHistory,
+            MainHeader
         },
         setup(props,context){
             const route = useRoute();
