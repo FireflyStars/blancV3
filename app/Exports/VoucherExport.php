@@ -34,9 +34,9 @@ class VoucherExport implements WithMultipleSheets, Responsable
     ];    
 
     protected $period;
-    public function __construct()
+    public function __construct($period)
     {
-        // $this->period = $period;
+        $this->period = $period;
         // $this->fileName = sprintf("all-voucher-%s-%s.xlsx", Carbon::parse($period[0])->format('Ymd'), Carbon::parse($period[1])->format('Ymd'));
     }    
     /**
@@ -46,7 +46,7 @@ class VoucherExport implements WithMultipleSheets, Responsable
     {
         $sheets = [];
 
-        $sheets[] = new VoucherDetailSheet();
+        $sheets[] = new VoucherDetailSheet($this->period);
         $sheets[] = new VoucherSheet();
 
         return $sheets;
