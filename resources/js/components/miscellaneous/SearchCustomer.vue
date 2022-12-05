@@ -51,7 +51,7 @@
                         </div>
                        <div class="col-2" style="text-align: end;" >
                             <!-- <tag   :name="'Orders'" ></tag> -->
-                            <button class="btn btn-white body_medium text-nowrap btn-new-orders" @click="goToNewOrder(customer)"> New order</button>
+                            <!-- <button class="btn btn-white body_medium text-nowrap btn-new-orders" @click="goToNewOrder(customer)"> New order</button> -->
                         </div>
                         <div class="col-2" style="text-align: end;">
                             <button class="btn btn-white body_medium text-nowrap btn-all-orders"  @click="goToOrderList(customer.CustomerID)"> All Orders</button>
