@@ -901,12 +901,12 @@ class StatisticsController extends Controller
         $b2bAVGSale = DB::table('revenu')->whereBetween('created_at', $period)
                         ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('Total', '!=', 0)
-                        ->where('btob', '=', 1)
+                        ->where('btob', 1)
                         ->select(DB::raw('ROUND(AVG(Total), 2) as total'))->value('total') ?? 0;
         $b2cAVGSale = DB::table('revenu')->whereBetween('created_at', $period)
                         ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('Total', '!=', 0)
-                        ->where('btob', '=', 0)
+                        ->where('btob', 0)
                         ->select(DB::raw('ROUND(AVG(Total), 2) as total'))->value('total') ?? 0;
         $corpDel = DB::table('revenu')->whereBetween('created_at', $period)
                         ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])

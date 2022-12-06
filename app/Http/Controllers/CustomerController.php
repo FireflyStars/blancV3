@@ -72,6 +72,7 @@ class CustomerController extends Controller
             'AcceptSMSMarketing'        => $request->acceptSMSMarketing,
             'OnAccount'     => $request->CustomerPayemenProfile,
             'CompanyName'   => $request->CompanyName,
+            'ChargeDelivery'=> $request->ChargeDelivery,
         ];
         if($request->deliveryByday == '1'){
             $info_customer['DeliverybyDay'] = 1;
@@ -1565,7 +1566,7 @@ class CustomerController extends Controller
                     'infoCustomer.CustomerID','infoCustomer.TotalSpend as totalSpent', 'infoCustomer.cardvip as kioskNumber', 'bycard as paymentMethod', 'infoCustomer.OnAccount' ,
                         DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as customerType'), DB::raw('IF(infoCustomer.CustomerIDMaster = "", "Main", "Sub") as accountType'),
                          'infoCustomer.TypeDelivery as typeDelivery','infoCustomer.CustomerIDMaster',
-                        'infoCustomer.CustomerNotes', 'infoCustomer.id', 'infoCustomer.CustomerID',
+                        'infoCustomer.CustomerNotes', 'infoCustomer.id', 'infoCustomer.CustomerID', 'ChargeDelivery',
                         DB::raw('IF(infoCustomer.DeliverybyDay = 1, "Recurring", "Normal") as booking'), 'discount', 'credit',
                         'infoCustomer.DeliverybyDay as deliveryByDay', 'DeliveryMon', 'DeliveryTu', 'DeliveryWed', 'DeliveryTh', 'DeliveryFri', 'DeliverySat',
                         'AcceptSMSMarketing as acceptSMSMarketing', 'AcceptMarketing as acceptMarketing', 'PauseDateTo as pauseDateTo', 'PauseDateFrom as pauseDateFrom'
@@ -1994,6 +1995,7 @@ class CustomerController extends Controller
         $new_address_id = 0;
 
         if($cust){
+            DB::table('infoCustomer')->where('id',$customer_id)->update(['ChargeDelivery'=> $request->ChargeDelivery]);
             $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->first();
 
             if($addr){

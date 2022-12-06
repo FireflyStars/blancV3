@@ -270,6 +270,15 @@
                                                     {{ form.deliveryAddress2 }} &nbsp;
                                                 </div>
                                             </div>
+                                            <div class="d-flex align-items-center justify-content-between mt-3">
+                                                <div class="w-55">
+                                                    <label>Charge Delivery</label>
+                                                    <p>Auto-charge delivery fees for any order value &lt; £25 (applies to this customer and any sub-accounts)</p>
+                                                </div>
+                                                <div class="col-2 d-flex justify-content-end">
+                                                    <SwitchBtn class="ms-auto" v-model="form.ChargeDelivery"></SwitchBtn>
+                                                </div>
+                                            </div>                                        
                                         </div>
                                         <div class="w-45 d-flex justify-content-end" v-if="address_edit">
                                             <button class="btn btn btn-success each-save-btn" @click="validateAndSaveContactAddress">Save</button>
@@ -1122,6 +1131,7 @@
                 customerLon: '',
                 deliveryAddress1: '',
                 deliveryAddress2: '',
+                ChargeDelivery: 1,
                 customerNote: '',
                 acceptSMSMarketing: 1,
                 acceptMarketing: 0,
@@ -1357,6 +1367,7 @@
                     form.value.kioskNumber = res.data.customer.kioskNumber;
                     form.value.firstName = res.data.customer.firstName;
                     form.value.lastName = res.data.customer.lastName;
+                    form.value.ChargeDelivery = res.data.customer.ChargeDelivery;
                     var phone = getPhone(res.data.customer.phone);
 
                     if(phone.code.includes('+')){
@@ -1951,7 +1962,8 @@
                         city:form.value.city,
                         address1:form.value.deliveryAddress1,
                         address2:form.value.deliveryAddress2,
-                        typedelivery:form.value.typeDelivery
+                        typedelivery:form.value.typeDelivery,
+                        ChargeDelivery:form.value.ChargeDelivery,
                     }).then((res)=>{
                         if(res.data.new_address_id){
                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
