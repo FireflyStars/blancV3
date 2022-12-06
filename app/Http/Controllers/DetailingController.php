@@ -2953,6 +2953,7 @@ class DetailingController extends Controller
 
         $price_std = 0;
         $price_ozone = 0;
+        $price_percentage=0;
 
 
         if(in_array(1,$cs) || in_array(2,$cs) || in_array(3,$cs)){
@@ -2976,7 +2977,7 @@ class DetailingController extends Controller
             foreach($services as $k=>$v){
                 if(isset($services[$k])){
                     if($v['perc']>0&&$v['typeservice']!=1){
-                        $price_std = $baseprice*($services[$k]['perc']/100);
+                        $price_percentage += $baseprice*($services[$k]['perc']/100);
                     }elseif($v['perc']==0){
                         $price_ozone += $v['fixed_price'];
                     }
@@ -2986,7 +2987,7 @@ class DetailingController extends Controller
 
 
 
-        $total = $price_std + $price_ozone;
+        $total = $price_std + $price_ozone +$price_percentage;
 
         return $total;
     }
