@@ -773,8 +773,10 @@ class OrderController extends Controller
             //In store collection
             if($order->deliverymethod=='in_store_collection'){
                 $booking = DB::table('booking_store')->where('order_id',$order->id)->first();
-                $promised_date = $booking->pickup_date;
-                $storename = $booking->store_name;
+                if($booking){
+                    $promised_date = $booking->pickup_date;
+                    $storename = $booking->store_name;
+                }
                 $stores = 'STORES';
             }
             //Delivery
