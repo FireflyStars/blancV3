@@ -44,7 +44,7 @@
             </div>
         </section>
         <section class="nodata p-2" v-if="Object.entries(ITEM_LIST).length === 0">
-           <button v-if="status == 'RECURRING' || status == 'SCHEDULED' " class="detail-btn detail-btn-detail-order text-center" @click="EditOrder()"> Detail order </button>
+           <button v-if="(status == 'RECURRING' || status == 'SCHEDULED') && hideButton(order)" class="detail-btn detail-btn-detail-order text-center" @click="EditOrder()"> Detail order </button>
            <p v-if="status != 'RECURRING' && status != 'SCHEDULED' ">No items available.</p>
         </section>
         <!-- <transition name="trans-batch-actions">
@@ -93,7 +93,7 @@
 
     export default {
         name: "OrderDetailSubOrderItemsTable",
-        props:['tabledef',"tab","id" , "status" , "user"],
+        props:['tabledef',"tab","id" , "status" , "user" , "order"],
         components:{ColorTag, Tag,CheckBox, SubOrderOptions, QzPrint , FulfillConfirmation , ItemDetail},
         setup(props,context){
             const router = useRouter();
@@ -108,6 +108,7 @@
             const ItemId = ref('');
             const ListTrackingKey = ref([]);
             const OpenitemDetails = ref(false);
+
             const ITEM_LIST=computed(()=>{
                 return store.getters[`${ORDERDETAIL_MODULE}${ORDERDETAIL_GET_DETAILS}`].items;
             });
@@ -117,6 +118,13 @@
             });
              const MULTI_HSL_CHECKED=computed(()=>{
                 return store.getters[`${ORDERDETAIL_MODULE}${ORDERDETAIL_GET_ALL_HSL_MULITCHECKED}`];
+            });
+
+            const hideButton=((order)=>{
+
+                if(new Date(order.order_left_date) <= new Date() && new Date(order.order_right_date) <= new Date()){
+                             return true;
+                 }
             });
 
 
@@ -256,7 +264,8 @@
                 close,
                 OpenitemDetails,
                 ItemId,
-                ListTrackingKey
+                ListTrackingKey,
+                hideButton
 
 
 
