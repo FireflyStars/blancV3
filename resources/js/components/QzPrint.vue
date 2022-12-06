@@ -289,7 +289,8 @@
                         if(v.Colors !='' || v.brand!=''){
                             toPrint += '<br/>'+v.Colors+(v.brand!=''?', '+v.brand+'<br/>':'');
                         }
-                        if(v.item_comment.length > 0){
+
+                        if(v.item_comment){
                             toPrint += v.item_comment.join("<br/>");
                         }
 
