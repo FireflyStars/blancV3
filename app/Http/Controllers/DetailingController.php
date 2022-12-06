@@ -2972,13 +2972,14 @@ class DetailingController extends Controller
             if(!in_array(1,$cs) && in_array(3,$cs) && !in_array(2,$cs)){
                 $price_std = $baseprice*($services[3]['perc']/100);
             }
-
+            if(in_array(17,$cs)){
+                $price_percentage += $baseprice*($services[17]['perc']/100);
+            }
+         
         }else{
             foreach($services as $k=>$v){
                 if(isset($services[$k])){
-                    if($v['perc']>0&&$v['typeservice']!=1){
-                        $price_percentage += $baseprice*($services[$k]['perc']/100);
-                    }elseif($v['perc']==0){
+                    if($v['perc']==0){
                         $price_ozone += $v['fixed_price'];
                     }
                 }
