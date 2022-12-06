@@ -1995,6 +1995,7 @@ class CustomerController extends Controller
         $new_address_id = 0;
 
         if($cust){
+            DB::table('infoCustomer')->where('id',$customer_id)->update(['ChargeDelivery'=> $request->ChargeDelivery]);
             $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->first();
 
             if($addr){
