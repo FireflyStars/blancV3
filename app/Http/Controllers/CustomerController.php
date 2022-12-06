@@ -2848,7 +2848,7 @@ class CustomerController extends Controller
         //    $order_total = $order_total_exc_discount - $discount_per_customer;
 
            $order_net = $order_total/1.2;
-
+           $order_descount = $order_total_exc_discount - $order_total;
 
            $facture_total[] = $order_total_exc_discount;
 
@@ -2859,7 +2859,7 @@ class CustomerController extends Controller
            $order_totals[$customerid]['order_vat'] = number_format($order_vat,2);
           // $order_totals[$customerid]['order_total'] = number_format($order_total,2);
           $order_totals[$customerid]['order_total'] = number_format($order_total_exc_discount,2);
-           $order_totals[$customerid]['discount'] = number_format($discount_per_customer,2);
+           $order_totals[$customerid]['discount'] = number_format($order_descount,2);
 
          //  $order_totals[$customerid]['order_without_discount'] = number_format($order_total_exc_discount,2);
          $order_totals[$customerid]['order_without_discount'] =  number_format($order_total,2);
