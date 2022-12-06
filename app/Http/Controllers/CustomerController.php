@@ -2845,8 +2845,7 @@ class CustomerController extends Controller
            //$order_total_exc_discount = $order_total;
            $order_total_exc_discount = array_sum($total_ext_discount_per_order);
 
-
-           $order_total = $order_total_exc_discount - $discount_per_customer;
+        //    $order_total = $order_total_exc_discount - $discount_per_customer;
 
            $order_net = $order_total/1.2;
 
