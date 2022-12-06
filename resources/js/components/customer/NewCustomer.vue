@@ -248,6 +248,15 @@
                                             <input type="text" v-model="form.deliveryAddress2" placeholder="Address line 2" class="form-control custom-input mt-3">
                                         </div>
                                     </div>
+                                    <div class="d-flex align-items-center justify-content-between mt-3">
+                                        <div class="w-55">
+                                            <label>Charge Delivery</label>
+                                            <p>Auto-charge delivery fees for any order value &lt; £25 (applies to this customer and any sub-accounts)</p>
+                                        </div>
+                                        <div class="col-2 d-flex justify-content-end">
+                                            <SwitchBtn class="ms-auto" v-model="form.chargeDelivery"></SwitchBtn>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="page-section">
                                     <h3 class="title m-0">{{ form.customerType == 'B2B' ? 'Notes' : 'Customer Notes' }}</h3>
@@ -853,6 +862,7 @@ import axios from 'axios';
                 customerLon: '',
                 deliveryAddress1: '',
                 deliveryAddress2: '',
+                chargeDelivery: true,
                 customerNote: '',
                 acceptSMSMarketing: '1',
                 acceptMarketing: '0',                
