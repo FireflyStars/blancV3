@@ -2571,14 +2571,12 @@ class CustomerController extends Controller
 
 
         $orders = DB::table('infoOrder')
-                ->select('infoCustomer.Name','infoOrder.id as order_id','infoOrder.detailed_at','infoOrder.Total','infoOrder.TotalDue','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*','infoOrder.Subtotal')
+                ->select('infoCustomer.Name','infoOrder.id as order_id','infoOrder.detailed_at','infoOrder.Total','infoOrder.TotalDue','infoOrder.CustomerID','infoInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*','infoOrder.Subtotal')
                 ->join('detailingitem','infoOrder.id','detailingitem.order_id')
-                ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
                 ->join('infoCustomer','infoOrder.CustomerID','infoCustomer.CustomerID')
                 ->join('itemhistorique','infoInvoice.InvoiceID','itemhistorique.InvoiceID')
                 ->join('infoitems','infoitems.ItemTrackingKey','=','itemhistorique.ItemTrackingKey')
-                ->whereNotIn('infoInvoice.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
                 ->whereNotIn('infoOrder.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
                 ->where('infoOrder.orderinvoiced',0)
                 ->whereIn('infoOrder.CustomerID',$all_customer_ids)
@@ -2599,9 +2597,9 @@ class CustomerController extends Controller
                 array_push($all_orders,$v->order_id);
             }
 
-           $invoices_per_order[$v->order_id][$v->InvoiceID][$v->ItemID] = [
+           $invoices_per_order[$v->order_id][$v->Invoice_id][$v->ItemID] = [
                                                                                 'NumInvoice'=>$v->NumInvoice,
-                                                                                'InvoiceID'=>$v->InvoiceID,
+                                                                                'InvoiceID'=>$v->Invoice_id,
                                                                                 'Tracking'=>$v->ItemTrackingKey,
                                                                                 'PromisedDate'=>$v->detailed_at,
                                                                                 'Department'=>$v->DepartmentName,
@@ -2847,11 +2845,10 @@ class CustomerController extends Controller
            //$order_total_exc_discount = $order_total;
            $order_total_exc_discount = array_sum($total_ext_discount_per_order);
 
-
-           $order_total = $order_total_exc_discount - $discount_per_customer;
+        //    $order_total = $order_total_exc_discount - $discount_per_customer;
 
            $order_net = $order_total/1.2;
-
+           $order_descount = $order_total_exc_discount - $order_total;
 
            $facture_total[] = $order_total_exc_discount;
 
@@ -2862,7 +2859,7 @@ class CustomerController extends Controller
            $order_totals[$customerid]['order_vat'] = number_format($order_vat,2);
           // $order_totals[$customerid]['order_total'] = number_format($order_total,2);
           $order_totals[$customerid]['order_total'] = number_format($order_total_exc_discount,2);
-           $order_totals[$customerid]['discount'] = number_format($discount_per_customer,2);
+           $order_totals[$customerid]['discount'] = number_format($order_descount,2);
 
          //  $order_totals[$customerid]['order_without_discount'] = number_format($order_total_exc_discount,2);
          $order_totals[$customerid]['order_without_discount'] =  number_format($order_total,2);

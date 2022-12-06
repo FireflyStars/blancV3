@@ -2946,12 +2946,14 @@ class DetailingController extends Controller
         foreach($cleaning_services as $k=>$v){
             $services[$v->id] = [
                 'perc'=>$v->perc,
-                'fixed_price'=>$v->fixed_price
+                'fixed_price'=>$v->fixed_price,
+                'typeservice'=>$v->typeservice
             ];
         }
 
         $price_std = 0;
         $price_ozone = 0;
+        $price_percentage=0;
 
 
         if(in_array(1,$cs) || in_array(2,$cs) || in_array(3,$cs)){
@@ -2970,7 +2972,10 @@ class DetailingController extends Controller
             if(!in_array(1,$cs) && in_array(3,$cs) && !in_array(2,$cs)){
                 $price_std = $baseprice*($services[3]['perc']/100);
             }
-
+            if(in_array(17,$cs)){
+                $price_percentage += $baseprice*($services[17]['perc']/100);
+            }
+         
         }else{
             foreach($services as $k=>$v){
                 if(isset($services[$k])){
@@ -2983,7 +2988,7 @@ class DetailingController extends Controller
 
 
 
-        $total = $price_std + $price_ozone;
+        $total = $price_std + $price_ozone +$price_percentage;
 
         return $total;
     }
