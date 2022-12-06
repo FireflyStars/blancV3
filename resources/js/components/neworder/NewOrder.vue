@@ -915,7 +915,7 @@ import axios from 'axios';
                         }else{
                             // if(current_customer.main_account.recent_deliveryask==null){
                             //     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
-                            //         message:"No booking on mail account",
+                            //         message:"No booking on main account",
                             //         ttl:5,
                             //         type:'danger'
                             //     });
@@ -982,23 +982,23 @@ import axios from 'axios';
                 if(current_val==true){
                     proceedtodetailing_disabled.value=true;
                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
-                                            {
-                                                message: 'No booking on main account.',
-                                                ttl: 6,
-                                                type: 'danger'
-                                            });
+                    {
+                        message: 'No booking on main account.',
+                        ttl: 6,
+                        type: 'danger'
+                    });
                 }
             });
             watch(() =>cust_type_delivery.value, (current_val, previous_val) => {
                 //store_name.value = current_val.toString().toUpperCase();
             });
 
-/*
-            watch(()=>_.cloneDeep(cur_cust.postcode),(current_val,previous_val)=>{
-                console.log('previous',previous_val);
-                console.log('current',current_val);
-            });
-*/
+            /*
+                watch(()=>_.cloneDeep(cur_cust.postcode),(current_val,previous_val)=>{
+                    console.log('previous',previous_val);
+                    console.log('current',current_val);
+                });
+            */
 
             store.dispatch(`${SHIPPING_MODULE}${SHIPPING_LOAD_LIST}`);
             const shipping_partners = computed(()=>store.getters[`${SHIPPING_MODULE}${GET_PARTNERS}`]);

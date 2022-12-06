@@ -257,7 +257,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="d-flex mt-3 align-items-end">
+                                    <div class="mt-3">
                                         <div class="w-55 mt-3">
                                             <div class="form-group mb-0">
                                                 <label for="customer_address1">Delivery address</label>
@@ -270,17 +270,17 @@
                                                     {{ form.deliveryAddress2 }} &nbsp;
                                                 </div>
                                             </div>
-                                            <div class="d-flex align-items-center justify-content-between mt-3">
-                                                <div class="w-55">
-                                                    <label>Charge Delivery</label>
-                                                    <p>Auto-charge delivery fees for any order value &lt; £25 (applies to this customer and any sub-accounts)</p>
-                                                </div>
-                                                <div class="col-2 d-flex justify-content-end">
-                                                    <SwitchBtn class="ms-auto" v-model="form.ChargeDelivery"></SwitchBtn>
-                                                </div>
-                                            </div>                                        
                                         </div>
-                                        <div class="w-45 d-flex justify-content-end" v-if="address_edit">
+                                        <div class="d-flex align-items-center justify-content-between mt-3">
+                                            <div class="w-55">
+                                                <label>Charge Delivery</label>
+                                                <p>Auto-charge delivery fees for any order value &lt; £25 (applies to this customer and any sub-accounts)</p>
+                                            </div>
+                                            <div class="col-2 d-flex justify-content-end">
+                                                <SwitchBtn class="ms-auto" v-model="form.ChargeDelivery"></SwitchBtn>
+                                            </div>
+                                        </div>                                        
+                                        <div class="d-flex justify-content-end" v-if="address_edit">
                                             <button class="btn btn btn-success each-save-btn" @click="validateAndSaveContactAddress">Save</button>
                                         </div>
                                     </div>

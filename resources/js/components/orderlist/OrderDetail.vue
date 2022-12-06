@@ -283,7 +283,7 @@
                     </order-detail-sub-order-items-table>
                 </div>
             </div>
-            <div class="mt-3 mb-5 row" v-if="(typeof ORDER['detail']!='undefined')">
+            <div class="mt-3 mb-5 row action-buttons" v-if="(typeof ORDER['detail']!='undefined')">
                 <div class="col-8 d-flex">
                     <div class="col-4 options_btn">
                         <button class="btn btn-outline-dark body_medium" @click="openModal(ORDER['detail'].order_id)">Print ticket(s)</button>
@@ -905,319 +905,324 @@
     margin-top: -9px;
 }
 .align-right{
-        text-align: right;
-    }
-    .section1{
-        margin-top:30px;
-    }
-    .order-detail-body{
-        margin-top: 99px;
-    }
-    .order-logistic-detail{
-        background: white;
-        position: sticky;
-        top: 99px;
-        z-index: 1000;
-    }
-    .section2,.section3{
-        color:#47454B;
-        font-weight: 400;
-        height: auto;
-        margin: 0;
-        padding-bottom: 15px;
-    }
-    
-    .section3{
-        margin-top:5px;
-     }
-    .section4{
-        margin-bottom: 8px;
-        /* margin-left: -2px;
-        margin-right: -2px; */
-    }
-    .section5{
-        margin-bottom: 30px;
-        margin-left: -2px;
-        margin-right: -2px;
-    }
-    .section6{
-        margin-left: -2px;
-        margin-right: -2px;
-    }
-    .section6 .body_small_medium{
-        color: #C3C3C3;
-    }
-    .truckicon{
-        margin-right: 8px;
-    }
-    .pdficon{
-        margin: 0 24px 0 6px;
-        display: inline-block;
-        vertical-align: middle;
-        cursor: pointer;
-    }
-    h2{
-        display: inline-block;
-        margin: 0 36px 0 0;
-        vertical-align: bottom;
+    text-align: right;
+}
+.section1{
+    margin-top:30px;
+}
+.order-detail-body{
+    margin-top: 99px;
+}
+.order-logistic-detail{
+    background: white;
+    position: sticky;
+    top: 99px;
+    z-index: 1000;
+}
+.section2,.section3{
+    color:#47454B;
+    font-weight: 400;
+    height: auto;
+    margin: 0;
+    padding-bottom: 15px;
+}
 
+.section3{
+    margin-top:5px;
     }
-    .tag{
-        vertical-align: bottom;
-    }
-    .odv{
-        max-width: 684px;
-        background: #FFF;
-        height: calc(100% - var(--mainlogoheight));
-        position: fixed;
-        top: var(--mainlogoheight);
-        overflow-y: auto;
-        right: 0;
-        z-index: 10001;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
-        padding: 0 20px;
-    }
-    .order-detail-progressbar{
-        background: #FFF;
-        height: 6px;
-        width: 100%;
-        display: block;
-        position: absolute;
-        margin: 0 -1.5rem;
-    }
-    .order-detail-progressbar:after{
-        background: #42A71E;
-        position: absolute;
-        width: 0%;
-        left: 0;
-        content: "";
-        height:6px;
-    }
+.section4{
+    margin-bottom: 8px;
+    /* margin-left: -2px;
+    margin-right: -2px; */
+}
+.section5{
+    margin-bottom: 30px;
+    margin-left: -2px;
+    margin-right: -2px;
+}
+.section6{
+    margin-left: -2px;
+    margin-right: -2px;
+}
+.section6 .body_small_medium{
+    color: #C3C3C3;
+}
+.truckicon{
+    margin-right: 8px;
+}
+.pdficon{
+    margin: 0 24px 0 6px;
+    display: inline-block;
+    vertical-align: middle;
+    cursor: pointer;
+}
+h2{
+    display: inline-block;
+    margin: 0 36px 0 0;
+    vertical-align: bottom;
 
-    .animate40:after{
-        transition: width 2s ease;
-        width: 40%;
-        animation: pulse 500ms infinite;
-    }
-    .animate100:after{
-        animation: ani100 0.5s ease forwards;
-    }
-    .booking{
-        font-size : 12px;
-    }
+}
+.tag{
+    vertical-align: bottom;
+}
+.odv{
+    max-width: 684px;
+    background: #FFF;
+    height: calc(100% - var(--mainlogoheight));
+    position: fixed;
+    top: var(--mainlogoheight);
+    overflow-y: auto;
+    right: 0;
+    z-index: 10001;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
+    padding: 0 20px;
+}
+.order-detail-progressbar{
+    background: #FFF;
+    height: 6px;
+    width: 100%;
+    display: block;
+    position: absolute;
+    margin: 0 -1.5rem;
+}
+.order-detail-progressbar:after{
+    background: #42A71E;
+    position: absolute;
+    width: 0%;
+    left: 0;
+    content: "";
+    height:6px;
+}
 
-    @keyframes ani100 {
-        50%{
-            width: 50%;
-            opacity: 1;
-        }
-        60%{
-            width: 50%;
-            opacity: 1;
-        }
-       99%{
-           width: 99%;
-            opacity: 1;
-        }
-        100%{
-            width: 100%;
-            opacity: 0;
-        }
-    }
+.animate40:after{
+    transition: width 2s ease;
+    width: 40%;
+    animation: pulse 500ms infinite;
+}
+.animate100:after{
+    animation: ani100 0.5s ease forwards;
+}
+.booking{
+    font-size : 12px;
+}
 
-    @keyframes pulse {
-        0%{
-            opacity: 0.7;
-        }
-        100%{
-            opacity: 1;
-        }
-    }
-
-    .icon-close{
-        top:24px;
-        right: 24px;
-    }
-    hr{
-      margin:  1.8rem -20px;
-      background-color: #E0E0E0;
+@keyframes ani100 {
+    50%{
+        width: 50%;
         opacity: 1;
     }
-    .section-late-production-op{
-        background: #F9D0D0;
-        min-height: 84px;
-        margin: 15px -20px 0 -20px;
-        align-items: center;
+    60%{
+        width: 50%;
+        opacity: 1;
     }
-    .section-late-production-op b{
-        font-weight: bold;
+    99%{
+        width: 99%;
+        opacity: 1;
     }
-    .date-suggested{
-        background: rgba(239, 143, 0, 0.3);
-        text-align: center;
+    100%{
+        width: 100%;
+        opacity: 0;
     }
-    .date-suggested-ok{
-        background: rgba(66, 167, 30, 0.3);
-        text-align: left;
-    }
-    .date-suggested.cc{
-        text-align: left;
-    }
-    .date-suggested.cc b{
-        margin:0 20px;
-    }
-    .btn-black{
-        background: #000000;
-        height: 40px;
-        width: 46px;
-        text-indent: -80px;
-        overflow: hidden;
-        position: relative;
-        padding: inherit;
-    }
-    .btn-black:after{
-        content: "";
-        width: 11px;
-        height: 17px;
-        border-right: 2px solid #FFFFFF;
-        border-bottom: 2px solid #FFFFFF;
-        position: absolute;
-        left: 50%;
-        transform: translate(-50%) rotate(45deg);
-    }
-    .btn-black:hover{
-        background: #47454B;
-    }
-    .detail-header{
-        padding: 20px 30px 15px 30px;
-        height: 99px;
-        background: #47454B;
-        width: 684px;
-        z-index: 2;
-        margin: 0 -1.25rem;
-    }
-    .detail-title{
-        font-size: 20px;
-        line-height: 110%;
-        color: #FFFFFF;
-        font-family: "Gotham Rounded";
-        font-style: normal;
-        font-weight: 400;
-        display:flex;
-    }
-     .order-brief-info-section{
-            padding: 15px 30px;
-            background: #FFFFFF;
-            box-shadow: 0px 0px 6px rgba(153, 153, 153, 0.25);
-            border-radius: 5px;
+}
 
-     }
-      .order-brief-info-section p{
-                font-family: 'Gotham Rounded Book';
-                font-size: 12px;
-                line-height: 14px;}
+@keyframes pulse {
+    0%{
+        opacity: 0.7;
+    }
+    100%{
+        opacity: 1;
+    }
+}
 
-      .order-brief-info-section p span{
-                    font-size: 8px;
-                    line-height: 10px;
-                    color: #42A71E;
-                }
-            .order-sub-title{
-                font-family: 'Gotham Rounded' !important;
-                font-size: 12px;
-                line-height: 14px;
-                color: #000000;
-                font-weight: 400;
-            }
-            .border-left{
-                border-left: 1px solid #E0E0E0;
-            }
+.icon-close{
+    top:24px;
+    right: 24px;
+}
+hr{
+    margin:  1.8rem -20px;
+    background-color: #E0E0E0;
+    opacity: 1;
+}
+.section-late-production-op{
+    background: #F9D0D0;
+    min-height: 84px;
+    margin: 15px -20px 0 -20px;
+    align-items: center;
+}
+.section-late-production-op b{
+    font-weight: bold;
+}
+.date-suggested{
+    background: rgba(239, 143, 0, 0.3);
+    text-align: center;
+}
+.date-suggested-ok{
+    background: rgba(66, 167, 30, 0.3);
+    text-align: left;
+}
+.date-suggested.cc{
+    text-align: left;
+}
+.date-suggested.cc b{
+    margin:0 20px;
+}
+.btn-black{
+    background: #000000;
+    height: 40px;
+    width: 46px;
+    text-indent: -80px;
+    overflow: hidden;
+    position: relative;
+    padding: inherit;
+}
+.btn-black:after{
+    content: "";
+    width: 11px;
+    height: 17px;
+    border-right: 2px solid #FFFFFF;
+    border-bottom: 2px solid #FFFFFF;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%) rotate(45deg);
+}
+.btn-black:hover{
+    background: #47454B;
+}
+.detail-header{
+    padding: 20px 30px 15px 30px;
+    height: 99px;
+    background: #47454B;
+    width: 684px;
+    z-index: 2;
+    margin: 0 -1.25rem;
+}
+.detail-title{
+    font-size: 20px;
+    line-height: 110%;
+    color: #FFFFFF;
+    font-family: "Gotham Rounded";
+    font-style: normal;
+    font-weight: 400;
+    display:flex;
+}
+.order-brief-info-section{
+    padding: 15px 30px;
+    background: #FFFFFF;
+    box-shadow: 0px 0px 6px rgba(153, 153, 153, 0.25);
+    border-radius: 5px;
 
-             .cust-type-icon{
-                padding: 2px 18px;
-                font-size: 12px;
-                line-height: 140%;
-                width: 60px;
-                height: 20px;
-                background: rgba(212, 221, 247, 0.7);
-                color: #47454B;
-                margin-right: 10px;
+}
+.order-brief-info-section p{
+    font-family: 'Gotham Rounded Book';
+    font-size: 12px;
+    line-height: 14px;}
 
-            }
-            .cust-account-icon{
-                padding: 2px 18px;
-                font-size: 12px;
-                line-height: 140%;
-                width: auto;
-                height: 20px;
-                background: linear-gradient(0deg, rgba(251, 248, 185, 0.5), rgba(251, 248, 185, 0.5)), rgba(251, 248, 185, 0.5);
-                color: #47454B;
-                margin-right: 10px;
-            }
-            .cust-location-name{
-                font-size: 16px;
-                line-height: 140%;
-                color: #F8F8F8;
-                font-family: "Gotham Rounded";
-                font-style: normal;
-                font-weight: 400;
-                transform: translateY(8px);
+.order-brief-info-section p span{
+    font-size: 8px;
+    line-height: 10px;
+    color: #42A71E;
+}   
+.order-sub-title{
+    font-family: 'Gotham Rounded' !important;
+    font-size: 12px;
+    line-height: 14px;
+    color: #000000;
+    font-weight: 400;
+}
+.border-left{
+    border-left: 1px solid #E0E0E0;
+}
 
-            }
-            .detail-close{
-                    transform: translate3d(20px, -10px, 0px);
-            }
-            .text-center{
-                display: flex;
-                margin-top: 10px
-            }
-            .sectionPrice{
-                    display: flex;
-                    border-left: 4px solid green;
-                    height: 60px;
-                    margin-top: 30px;
-                    align-items: center;
-                    background: #ECECEC;
-            }
-            .text-type{
-                color:#FFFFFF;
-                text-overflow: ellipsis;
-                max-width: 400px;
-                overflow: hidden;
-                white-space: nowrap;
-                padding-left: 3px;
-            }
-            .total div:first-child{
-                    font-size: 20px;
-                    line-height: 140%;
-                    color: #47454B;
-                }
-                .total div:last-child{
-                    font-size: 16px;
-                    line-height: 140%;
-                    color: #47454B;
-                }
-                .PriceTotal{
-                    font-family: 'Gotham Rounded';
-                    font-style: normal;
-                    font-weight: 400;
-                    font-size: 20px;
-                    line-height: 140%;
-                }
-                .name_customer{
-                    white-space: nowrap;
-                    overflow: hidden;
-                    max-width: 400px;
-                    text-overflow: ellipsis;
-                }
-                .cursor-pointer{
-                    font-size: 8px;
-                    line-height: 10px;
-                    color: #42A71E;
-                    text-decoration: underline;
-                    font-family: 'Gotham Rounded';
-                }
-                .unlink:hover{
-                    fill: #42A71E;
-                }
+.cust-type-icon{
+    padding: 2px 18px;
+    font-size: 12px;
+    line-height: 140%;
+    width: 60px;
+    height: 20px;
+    background: rgba(212, 221, 247, 0.7);
+    color: #47454B;
+    margin-right: 10px;
+
+}
+.cust-account-icon{
+    padding: 2px 18px;
+    font-size: 12px;
+    line-height: 140%;
+    width: auto;
+    height: 20px;
+    background: linear-gradient(0deg, rgba(251, 248, 185, 0.5), rgba(251, 248, 185, 0.5)), rgba(251, 248, 185, 0.5);
+    color: #47454B;
+    margin-right: 10px;
+}
+.cust-location-name{
+    font-size: 16px;
+    line-height: 140%;
+    color: #F8F8F8;
+    font-family: "Gotham Rounded";
+    font-style: normal;
+    font-weight: 400;
+    transform: translateY(8px);
+
+}
+.detail-close{
+        transform: translate3d(20px, -10px, 0px);
+}
+.text-center{
+    display: flex;
+    margin-top: 10px
+}
+.sectionPrice{
+    display: flex;
+    border-left: 4px solid green;
+    height: 60px;
+    margin-top: 30px;
+    align-items: center;
+    background: #ECECEC;
+}
+.text-type{
+    color:#FFFFFF;
+    text-overflow: ellipsis;
+    max-width: 400px;
+    overflow: hidden;
+    white-space: nowrap;
+    padding-left: 3px;
+}
+.total div:first-child{
+font-size: 20px;
+    line-height: 140%;
+    color: #47454B;
+}
+.total div:last-child{
+    font-size: 16px;
+    line-height: 140%;
+    color: #47454B;
+}
+.PriceTotal{
+    font-family: 'Gotham Rounded';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 140%;
+}
+.name_customer{
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 400px;
+    text-overflow: ellipsis;
+}
+.cursor-pointer{
+    font-size: 8px;
+    line-height: 10px;
+    color: #42A71E;
+    text-decoration: underline;
+    font-family: 'Gotham Rounded';
+}
+.unlink:hover{
+    fill: #42A71E;
+}
+.action-buttons{
+    position: absolute;
+    width: 98%;
+    bottom: 0;
+}
 </style>
