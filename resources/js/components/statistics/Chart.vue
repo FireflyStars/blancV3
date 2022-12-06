@@ -68,7 +68,7 @@
                                     <div class="origin-dot rounded-circle" v-else :style="{'background-color': '#1F78B4'}"></div>
                                 </div>
                                 <div class="col-6">{{ item.name }}</div>
-                                <div class="col-5">{{ item.amount }}</div>
+                                <div class="col-5 d-flex align-items-center">{{ item.amount }}</div>
                             </div>
                         </div>
                         <div class="col-5" id="saleByClient" style="height: 150px">
@@ -298,7 +298,7 @@ export default {
         const CHByDateLegend = ref(false);
         const SKByDateLegend = ref(false);
         const pieChart1 = ref('channel');
-        const pieChart2 = ref('item type');
+        const pieChart2 = ref('channel');
         const salesByChannelTotal = ref(0);
         const salesByTypeitemTotal = ref(0);
         const salesByTypeitemTotalOfItem = ref(0);

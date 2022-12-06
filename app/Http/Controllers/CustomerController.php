@@ -72,6 +72,7 @@ class CustomerController extends Controller
             'AcceptSMSMarketing'        => $request->acceptSMSMarketing,
             'OnAccount'     => $request->CustomerPayemenProfile,
             'CompanyName'   => $request->CompanyName,
+            'ChargeDelivery'=> $request->ChargeDelivery,
         ];
         if($request->deliveryByday == '1'){
             $info_customer['DeliverybyDay'] = 1;
