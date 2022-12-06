@@ -70,8 +70,8 @@ class CustomerController extends Controller
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
             'AcceptMarketing'        => $request->acceptMarketing,
             'AcceptSMSMarketing'        => $request->acceptSMSMarketing,
-            'OnAccount'      => $request->CustomerPayemenProfile,
-            'CompanyName' => $request->CompanyName,
+            'OnAccount'     => $request->CustomerPayemenProfile,
+            'CompanyName'   => $request->CompanyName,
         ];
         if($request->deliveryByday == '1'){
             $info_customer['DeliverybyDay'] = 1;
@@ -1026,12 +1026,12 @@ class CustomerController extends Controller
                 END as level'
                 ),
               DB::raw('LCASE(infoCustomer.TypeDelivery) as active_in'),
-              'infoCustomer.CompanyName ad account_name',
+              'infoCustomer.CompanyName as account_name',
               DB::raw('LCASE(infoCustomer.Name) as name'),
               DB::raw('IF(infoCustomer.Phone = "", "--", infoCustomer.Phone) as phone'),
               DB::raw('LCASE(infoCustomer.EmailAddress) as email'),
               //DB::raw('CONCAT_WS(", ", CONCAT_WS(" ", address.address1, address.address2), address.Town, address.Country, address.postcode) as address'),
-              'address1','address2','postcode',
+              'address1','address2','postcode', 'Town as city',
               DB::raw('IF(DATE_FORMAT(MAX(infoOrder.created_at), "%d/%m/%y") = "", "--", DATE_FORMAT(MAX(infoOrder.created_at), "%d/%m/%y")) as last_order'),
               //DB::raw('CEIL(SUM(infoOrder.Total)) as total_spent'),
               'infoCustomer.TotalSpend as total_spent'
@@ -1069,6 +1069,7 @@ class CustomerController extends Controller
                             ),
                             DB::raw('LCASE(infoCustomer.TypeDelivery) as active_in'),
                             DB::raw('LCASE(infoCustomer.Name) as name'),
+                            'infoCustomer.CompanyName as account_name',
                             //DB::raw('CONCAT_WS(", ", CONCAT_WS(" ", address.address1, address.address2), address.Town, address.Country, address.postcode) as address'),
                             'address1','address2','postcode',
                             DB::raw('LCASE(infoCustomer.EmailAddress) as email'),
@@ -2573,7 +2574,8 @@ class CustomerController extends Controller
                 ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
                 ->join('infoCustomer','infoOrder.CustomerID','infoCustomer.CustomerID')
-                ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
+                ->join('itemhistorique','infoInvoice.InvoiceID','itemhistorique.InvoiceID')
+                ->join('infoitems','infoitems.ItemTrackingKey','=','itemhistorique.ItemTrackingKey')
                 ->whereNotIn('infoInvoice.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
                 ->whereNotIn('infoOrder.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
                 ->where('infoOrder.orderinvoiced',0)

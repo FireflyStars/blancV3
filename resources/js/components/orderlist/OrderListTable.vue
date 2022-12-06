@@ -27,7 +27,7 @@
             </transition-group>
             <tfoot>
                 <tr>
-                    <td class="tcol" style="text-align: center" :colspan="Object.keys(tabledef).length">  <button class="btn btn-link" @click="loadMore">Show more ( {{ ORDER_LIST.length }} of {{ Order_Total_Count }})</button></td>
+                    <td class="tcol" style="text-align: center" :colspan="Object.keys(tabledef).length">  <button class="btn btn-link" @click="loadMore" v-if="(ORDER_LIST.length < Order_Total_Count)">Show more ( {{ ORDER_LIST.length }} of {{ Order_Total_Count }})</button></td>
                 </tr>
             </tfoot>
         </table>

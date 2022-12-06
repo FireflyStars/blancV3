@@ -16,9 +16,9 @@ class VoucherDetailSheet implements FromCollection, WithTitle, WithHeadings, Wit
 {
     private $period;
 
-    public function __construct()
+    public function __construct($period)
     {
-        // $this->period = $period;
+        $this->period = $period;
     }
 
     /**

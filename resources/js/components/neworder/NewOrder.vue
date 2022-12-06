@@ -457,7 +457,7 @@
                                                 <h4 class="body_regular medium-grey">Delivery address</h4>
                                                 <div v-if="cur_cust" class="body_regular dark-grey">
                                                     <span v-if="cur_cust.address1!=''">{{cur_cust.address1}}<br/></span>
-                                                    <span v-if="cur_cust.postcode!=''">{{cur_cust.postcode}}</span>
+                                                    <span v-if="cur_cust.city!=''">{{cur_cust.city}}</span> <span v-if="cur_cust.postcode!=''">{{cur_cust.postcode}}</span>
                                                 </div>
                                             </div>
                                             <div class="col-6"  v-if="isRecurring || ['home_delivery','delivery_only'].includes(deliverymethod)">
