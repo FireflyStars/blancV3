@@ -898,7 +898,6 @@ class StatisticsController extends Controller
                                 DB::raw('count(*) as amount')
                             )->value('amount');
         }
-        return response()->json($period);
         $b2bAVGSale = DB::table('revenu')->whereBetween('created_at', $period)
                         ->whereNotIn('Status', ['DELETE', 'IN DETAILING','VOID','VOIDED', 'CANCEL','PENDING','DELETED'])
                         ->where('Total', '!=', 0)
