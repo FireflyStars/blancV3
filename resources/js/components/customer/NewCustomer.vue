@@ -862,7 +862,7 @@ import axios from 'axios';
                 customerLon: '',
                 deliveryAddress1: '',
                 deliveryAddress2: '',
-                chargeDelivery: true,
+                chargeDelivery: 1,
                 customerNote: '',
                 acceptSMSMarketing: '1',
                 acceptMarketing: '0',                
