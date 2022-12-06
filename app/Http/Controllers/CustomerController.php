@@ -1026,7 +1026,7 @@ class CustomerController extends Controller
                 END as level'
                 ),
               DB::raw('LCASE(infoCustomer.TypeDelivery) as active_in'),
-              'infoCustomer.CompanyName ad account_name',
+              'infoCustomer.CompanyName as account_name',
               DB::raw('LCASE(infoCustomer.Name) as name'),
               DB::raw('IF(infoCustomer.Phone = "", "--", infoCustomer.Phone) as phone'),
               DB::raw('LCASE(infoCustomer.EmailAddress) as email'),
@@ -1069,7 +1069,7 @@ class CustomerController extends Controller
                             ),
                             DB::raw('LCASE(infoCustomer.TypeDelivery) as active_in'),
                             DB::raw('LCASE(infoCustomer.Name) as name'),
-                            'infoCustomer.CompanyName ad account_name',
+                            'infoCustomer.CompanyName as account_name',
                             //DB::raw('CONCAT_WS(", ", CONCAT_WS(" ", address.address1, address.address2), address.Town, address.Country, address.postcode) as address'),
                             'address1','address2','postcode',
                             DB::raw('LCASE(infoCustomer.EmailAddress) as email'),
@@ -2574,7 +2574,8 @@ class CustomerController extends Controller
                 ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
                 ->join('infoCustomer','infoOrder.CustomerID','infoCustomer.CustomerID')
-                ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
+                ->join('itemhistorique','infoInvoice.InvoiceID','itemhistorique.InvoiceID')
+                ->join('infoitems','infoitems.ItemTrackingKey','=','itemhistorique.ItemTrackingKey')
                 ->whereNotIn('infoInvoice.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
                 ->whereNotIn('infoOrder.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
                 ->where('infoOrder.orderinvoiced',0)
