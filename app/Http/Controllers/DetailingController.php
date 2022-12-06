@@ -1213,6 +1213,21 @@ class DetailingController extends Controller
         $all_services = [];
         $count_by_service = [];
 
+            $items  = DB::table('detailingitem')
+            ->select('detailingitem.*','detailingitem.id AS detailingitem_id','typeitem.pricecleaning as baseprice')
+            ->join('infoOrder','detailingitem.order_id','infoOrder.id')
+            ->join('typeitem','detailingitem.typeitem_id','typeitem.id')
+            ->where('infoOrder.id',$order_id)
+            ->get();
+        if(count($items) > 0)
+        foreach($items as $it){
+            if($it->cleaning_services==null && $it->cleaning_price_type='Standard' && $it->tailoring_price_type='Standard' && $it->tailoring_services='[]' && $it->status = 'Completed'){
+                DB::table('detailingitem')->where('id','=',$it->id)->update([
+                    'cleaning_services'=>'["1","3"]'
+                ]);
+            }
+        }
+
         $items = DB::table('detailingitem')
         ->select('detailingitem.*','detailingitem.id AS detailingitem_id','typeitem.pricecleaning as baseprice')
         ->join('infoOrder','detailingitem.order_id','infoOrder.id')
@@ -1331,8 +1346,8 @@ class DetailingController extends Controller
 
         $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
 
-        $_ACCOUNT_DISCOUNT = number_format($_ACCOUNT_DISCOUNT,2);
-        $_ORDER_DISCOUNT = number_format($_ORDER_DISCOUNT,2);
+        $_ACCOUNT_DISCOUNT = number_format($_ACCOUNT_DISCOUNT,2,'.','');
+        $_ORDER_DISCOUNT = number_format($_ORDER_DISCOUNT,2,'.','');
 
 
         $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
@@ -1385,25 +1400,25 @@ class DetailingController extends Controller
 
 
         $values=array(
-            'Subtotal'=>number_format($_SUBTOTAL,2),
-            'SubtotalWithDiscount'=>number_format($_SUBTOTAL_WITH_DISCOUNT,2),//
-            'bundles'=>number_format($_BUNDLES_DISCOUNT,2),
-            'itemsTotal'=>number_format($_ITEMS_TOTAL,2),
-            'Total'=>number_format($_TOTAL,2),
-            'TotalDue'=>number_format($_TOTAL_DUE,2),
-            'AutoDeliveryFee'=>number_format($_AUTO_DELIVERY_FEE,2),//
-            'ExpressCharge'=>number_format($_EXPRESS_CHARGES_PRICE,2),
-            'FailedDeliveryCharge'=>number_format($_FAILED_DELIVERY_PRICE,2),//
-            'TotalExcVat'=>number_format($_TOTAL_EXC_VAT,2),//
-            'TaxAmount'=> number_format($_TAX_AMOUNT,2),//
-            'OrderDiscount' => number_format($_ORDER_DISCOUNT,2),
-            'VoucherDiscount' => number_format($_VOUCHER_DISCOUNT,2),
+            'Subtotal'=>number_format($_SUBTOTAL,2,'.',''),
+            'SubtotalWithDiscount'=>number_format($_SUBTOTAL_WITH_DISCOUNT,2,'.',''),//
+            'bundles'=>number_format($_BUNDLES_DISCOUNT,2,'.',''),
+            'itemsTotal'=>number_format($_ITEMS_TOTAL,2,'.',''),
+            'Total'=>number_format($_TOTAL,2,'.',''),
+            'TotalDue'=>number_format($_TOTAL_DUE,2,'.',''),
+            'AutoDeliveryFee'=>number_format($_AUTO_DELIVERY_FEE,2,'.',''),//
+            'ExpressCharge'=>number_format($_EXPRESS_CHARGES_PRICE,2,'.',''),
+            'FailedDeliveryCharge'=>number_format($_FAILED_DELIVERY_PRICE,2,'.',''),//
+            'TotalExcVat'=>number_format($_TOTAL_EXC_VAT,2,'.',''),//
+            'TaxAmount'=> number_format($_TAX_AMOUNT,2,'.',''),//
+            'OrderDiscount' => number_format($_ORDER_DISCOUNT,2,'.',''),
+            'VoucherDiscount' => number_format($_VOUCHER_DISCOUNT,2,'.',''),
         );
 
 
 
         if($order->detailed_at=='0000-00-00 00:00:00' || $_SUBTOTAL==0){
-            $values['AccountDiscount'] = number_format($_ACCOUNT_DISCOUNT,2);
+            $values['AccountDiscount'] = number_format($_ACCOUNT_DISCOUNT,2,'.','');
             $values['AccountDiscountPerc'] = $cust->discount;
         }
 /*
@@ -1825,7 +1840,7 @@ class DetailingController extends Controller
                 $item_total_price = $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
                 $total_price += $item_total_price;
 
-                $items[$k]->priceTotal = number_format($item_total_price,2);
+                $items[$k]->priceTotal = number_format($item_total_price,2,'.','');
                 $items[$k]->generalState = (isset($conditions_map[$v->condition_id])?ucfirst($conditions_map[$v->condition_id]):"");
 
 
@@ -1918,7 +1933,7 @@ class DetailingController extends Controller
                         $dc[] = $cs[$val];
                     }
 
-                    $c_price = number_format($v->dry_cleaning_price + $v->cleaning_addon_price,2);
+                    $c_price = number_format($v->dry_cleaning_price + $v->cleaning_addon_price,2,'.','');
 
                     if($v->cleaning_price_type=='PriceNow'){
                         $c_price = "Price now";
@@ -1951,7 +1966,7 @@ class DetailingController extends Controller
 
                     if(!empty($group_by_tailoring_service)){
                         foreach($group_by_tailoring_service as $group=>$prices){
-                            $t_price = number_format(array_sum($prices),2);
+                            $t_price = number_format(array_sum($prices),2,'.','');
                             if($v->tailoring_price_type=='PriceNow'){
                                 $t_price = 'Price now';
                             }else if($v->tailoring_price_type=='Quote'){
@@ -2035,13 +2050,13 @@ class DetailingController extends Controller
                 $bundle_type =  $v->type;
 
                 if(isset(${"count_by_".$bundle_type}[$v->bundles_id]) && ${"count_by_".$bundle_type}[$v->bundles_id]>=$v->qty){
-                    $order_bundles[$v->name] = number_format($v->discountbyitem*${"count_by_".$bundle_type}[$v->bundles_id],2);
+                    $order_bundles[$v->name] = number_format($v->discountbyitem*${"count_by_".$bundle_type}[$v->bundles_id],2,'.','');
                     $bundles_discount += $v->discountbyitem*${"count_by_".$bundle_type}[$v->bundles_id];
                 }
 
                 /*
                 if($v->type=='service' && isset($count_by_service[$v->bundles_id]) && $count_by_service[$v->bundles_id]>=$v->qty){
-                    $order_bundles[$v->name] = number_format($v->discountbyitem,2);
+                    $order_bundles[$v->name] = number_format($v->discountbyitem,2,'.','');
                     $bundles_discount += $v->discountbyitem;
                 }
                 */
@@ -2055,7 +2070,7 @@ class DetailingController extends Controller
 
         $total_inc_vat = $total_with_discount;
 
-        $total_exc_vat = number_format(($total_with_discount/1.2),2);
+        $total_exc_vat = number_format(($total_with_discount/1.2),2,'.','');
         $vat = $total_inc_vat - $total_exc_vat;
 
 
@@ -2069,11 +2084,11 @@ class DetailingController extends Controller
 
         if(count($payments) > 0){
             foreach($payments as $k=>$v){
-                $amount_paid += number_format($v->montant,2);
+                $amount_paid += number_format($v->montant,2,'.','');
 
                 if($v->type=='cust_credit'){
                     $amount_paid_credit[] = [
-                        'montant'=> number_format($v->montant,2),
+                        'montant'=> number_format($v->montant,2,'.',''),
                         'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
                     ];
                 }else{
@@ -2081,7 +2096,7 @@ class DetailingController extends Controller
                         $card = DB::table('cards')->where('id',$v->card_id)->whereNotNull('cards.type')->first();
                         if($card){
                             $amount_paid_card[] = [
-                                'montant'=> number_format($v->montant,2),
+                                'montant'=> number_format($v->montant,2,'.',''),
                                 'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
                                 'cardNumber'=>$card->cardNumber,
                                 'type'=>$card->type,
@@ -2090,7 +2105,7 @@ class DetailingController extends Controller
                         }
                     }else{
                         $amount_paid_other[] = [
-                            'montant'=> number_format($v->montant,2),
+                            'montant'=> number_format($v->montant,2,'.',''),
                             'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
                             'name'=>ucfirst($v->type),
                         ];
@@ -2098,7 +2113,7 @@ class DetailingController extends Controller
                 }
             }
 
-            //$balance = $order->Total;//number_format($total_with_discount,2) - number_format($amount_paid,2);
+            //$balance = $order->Total;//number_format($total_with_discount,2,'.','') - number_format($amount_paid,2,'.','');
 
         }
 
@@ -2168,9 +2183,9 @@ class DetailingController extends Controller
         }
 
         if($cust){
-            $cust->credit_to_deduct = number_format($credit_to_deduct,2);
+            $cust->credit_to_deduct = number_format($credit_to_deduct,2,'.','');
             $cust_amount_diff =  DetailingController::getAmountToPay($order_id);
-            $cust->amount_diff =number_format($cust_amount_diff,2);
+            $cust->amount_diff =number_format($cust_amount_diff,2,'.','');
         }
 
         $has_invoices = [];
@@ -2188,36 +2203,36 @@ class DetailingController extends Controller
             'order'=>$order,
             'booking_details'=>$booking_details,
             'address'=>$addr,
-            //'sub_total'=>number_format($total_price,2),
+            //'sub_total'=>number_format($total_price,2,'.',''),
             'bundles'=>$order->bundles,
-            //'total_with_discount'=>number_format($total_with_discount,2),
-            //'discount'=>number_format($order_discount,2),
-            //'vat'=>number_format($vat,2),
-            //'total_inc_vat'=>number_format($total_inc_vat,2),
-            //'total_exc_vat'=>number_format($total_exc_vat,2),
+            //'total_with_discount'=>number_format($total_with_discount,2,'.',''),
+            //'discount'=>number_format($order_discount,2,'.',''),
+            //'vat'=>number_format($vat,2,'.',''),
+            //'total_inc_vat'=>number_format($total_inc_vat,2,'.',''),
+            //'total_exc_vat'=>number_format($total_exc_vat,2,'.',''),
             'custcard'=>$cust_card,
             'stripe_public_key'=>env($stripe_public_key),
             'stripe_security_key'=>env($stripe_security_key),
             'cur_user'=>Auth::user(),
-            'amount_to_pay'=>number_format($amount_to_pay,2),
+            'amount_to_pay'=>number_format($amount_to_pay,2,'.',''),
             'amount_paid'=>$amount_paid,
             'amount_paid_card'=>$amount_paid_card,
             'amount_paid_credit'=>$amount_paid_credit,
             'discount_perc'=>$discount_perc,
             'created_date'=>$created_date,
-            'credit_to_deduct'=>number_format($credit_to_deduct,2),
+            'credit_to_deduct'=>number_format($credit_to_deduct,2,'.',''),
             'cust_discount'=>$cust_discount,
             'order_addon'=>$order_addon,
             'order_without_upcharges'=>$order_without_upcharges,
-            'amount_without_credit'=>number_format($amount_without_credit,2),
+            'amount_without_credit'=>number_format($amount_without_credit,2,'.',''),
             'amount_diff'=>DetailingController::getAmountToPay($order_id),
             'addons'=>$grouped_addons,
             'order_upcharges'=>$order_upcharges,
             'order_vouchers'=>$order_vouchers,
             'discount_from_voucher'=>$discount_from_voucher,
             'master_account'=>$master_account,
-            'failed_delivery_price'=>number_format($failed_delivery_price,2),
-            //'price_plus_delivery'=>number_format($price_plus_delivery,2),
+            'failed_delivery_price'=>number_format($failed_delivery_price,2,'.',''),
+            //'price_plus_delivery'=>number_format($price_plus_delivery,2,'.',''),
             'order_bundles'=>$order_bundles,
             'has_invoices'=>$has_invoices,
             'amount_paid_other'=>$amount_paid_other,
@@ -2383,7 +2398,7 @@ class DetailingController extends Controller
 
         $amount_to_pay = $order->Total - $amount_paid;
 
-        return number_format($amount_to_pay,2);
+        return number_format($amount_to_pay,2,'.','');
     }
 
     public function setCheckoutAddon(Request $request){
@@ -2426,7 +2441,7 @@ class DetailingController extends Controller
                 'order_id'=>$order_id,
                 'upcharges_id'=>$addon_id,
                 'user_id'=>Auth::user()->id,
-                'amount'=>number_format($amount,2),
+                'amount'=>number_format($amount,2,'.',''),
                 'created_at'=>date('Y-m-d H:i:s'),
 
             ]);
@@ -2617,7 +2632,7 @@ class DetailingController extends Controller
                                     'CustomerID'=>$order->CustomerID,
                                     'order_id'=>$order_id,
                                     'code'=>$code,
-                                    'amount'=>number_format($montant,2),
+                                    'amount'=>number_format($montant,2,'.',''),
                                     'user_id'=>($user?$user->id:0),
                                     'created_at'=>date('Y-m-d H:i:s')
                                 ]);
@@ -2637,7 +2652,7 @@ class DetailingController extends Controller
 
         $arr = [
             'err'=>$err,
-            'montant'=>number_format($montant,2),
+            'montant'=>number_format($montant,2,'.',''),
             'voucher_valid'=>$voucher_valid,
             'code'=>$code,
             'inserted'=>$inserted,
@@ -3002,7 +3017,7 @@ class DetailingController extends Controller
             'order_id'=>$order_id,
             'upcharges_id'=>$upcharge_id,
             'user_id'=>$user->id,
-            'amount'=>number_format($amount,2),
+            'amount'=>number_format($amount,2,'.',''),
             'created_at'=>date('Y-m-d H:i:s'),
         ]);
     }
