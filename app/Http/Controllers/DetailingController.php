@@ -2946,7 +2946,8 @@ class DetailingController extends Controller
         foreach($cleaning_services as $k=>$v){
             $services[$v->id] = [
                 'perc'=>$v->perc,
-                'fixed_price'=>$v->fixed_price
+                'fixed_price'=>$v->fixed_price,
+                'typeservice'=>$v->typeservice
             ];
         }
 
@@ -2974,7 +2975,9 @@ class DetailingController extends Controller
         }else{
             foreach($services as $k=>$v){
                 if(isset($services[$k])){
-                    if($v['perc']==0){
+                    if($v['perc']>0&&$v['typeservice']!=1){
+                        $price_std = $baseprice*($services[$k]['perc']/100);
+                    }elseif($v['perc']==0){
                         $price_ozone += $v['fixed_price'];
                     }
                 }
