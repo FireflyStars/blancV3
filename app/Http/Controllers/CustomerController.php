@@ -2569,14 +2569,12 @@ class CustomerController extends Controller
 
 
         $orders = DB::table('infoOrder')
-                ->select('infoCustomer.Name','infoOrder.id as order_id','infoOrder.detailed_at','infoOrder.Total','infoOrder.TotalDue','infoOrder.CustomerID','NewInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*','infoOrder.Subtotal')
+                ->select('infoCustomer.Name','infoOrder.id as order_id','infoOrder.detailed_at','infoOrder.Total','infoOrder.TotalDue','infoOrder.CustomerID','infoInvoice.InvoiceID AS Invoice_id','infoInvoice.*','infoitems.*','infoOrder.Subtotal')
                 ->join('detailingitem','infoOrder.id','detailingitem.order_id')
-                ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
                 ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
                 ->join('infoCustomer','infoOrder.CustomerID','infoCustomer.CustomerID')
                 ->join('itemhistorique','infoInvoice.InvoiceID','itemhistorique.InvoiceID')
                 ->join('infoitems','infoitems.ItemTrackingKey','=','itemhistorique.ItemTrackingKey')
-                ->whereNotIn('infoInvoice.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
                 ->whereNotIn('infoOrder.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
                 ->where('infoOrder.orderinvoiced',0)
                 ->whereIn('infoOrder.CustomerID',$all_customer_ids)
@@ -2597,9 +2595,9 @@ class CustomerController extends Controller
                 array_push($all_orders,$v->order_id);
             }
 
-           $invoices_per_order[$v->order_id][$v->InvoiceID][$v->ItemID] = [
+           $invoices_per_order[$v->order_id][$v->Invoice_id][$v->ItemID] = [
                                                                                 'NumInvoice'=>$v->NumInvoice,
-                                                                                'InvoiceID'=>$v->InvoiceID,
+                                                                                'InvoiceID'=>$v->Invoice_id,
                                                                                 'Tracking'=>$v->ItemTrackingKey,
                                                                                 'PromisedDate'=>$v->detailed_at,
                                                                                 'Department'=>$v->DepartmentName,
