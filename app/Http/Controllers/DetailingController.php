@@ -1213,6 +1213,21 @@ class DetailingController extends Controller
         $all_services = [];
         $count_by_service = [];
 
+            $items  = DB::table('detailingitem')
+            ->select('detailingitem.*','detailingitem.id AS detailingitem_id','typeitem.pricecleaning as baseprice')
+            ->join('infoOrder','detailingitem.order_id','infoOrder.id')
+            ->join('typeitem','detailingitem.typeitem_id','typeitem.id')
+            ->where('infoOrder.id',$order_id)
+            ->get();
+        if(count($items) > 0)
+        foreach($items as $it){
+            if($it->cleaning_services==null && $it->cleaning_price_type='Standard' && $it->tailoring_price_type='Standard' && $it->tailoring_services='[]' && $it->status = 'Completed'){
+                DB::table('detailingitem')->where('id','=',$it->id)->update([
+                    'cleaning_services'=>'["1","3"]'
+                ]);
+            }
+        }
+
         $items = DB::table('detailingitem')
         ->select('detailingitem.*','detailingitem.id AS detailingitem_id','typeitem.pricecleaning as baseprice')
         ->join('infoOrder','detailingitem.order_id','infoOrder.id')
