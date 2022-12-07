@@ -912,9 +912,9 @@
 }
 .order-detail-body{
     margin-top: 99px;
-    min-height: calc(100% -99px);
+    /* min-height: calc(100% -99px);
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: wrap; */
 }
 .order-logistic-detail{
     background: white;
