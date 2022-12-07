@@ -41,7 +41,7 @@
         </div>
 
         <div class="order-detail-body">
-            <div class="order-logistic-detail">
+            <div class="order-logistic-detail w-100">
                 <div v-if="(typeof ORDER['detail']!='undefined')"  class="row section2 align-items-center">
                     <div v-if="(typeof ORDER['detail']!='undefined')" class=" col-7 section1">
                         <h2 >&numero; {{ORDER.detail.order_id}}<button v-if="ORDER['detailingitemlist'].length !== 0" type="button" class="btn-link-green body_regular"  @click='EditOrder(ORDER.detail.order_id)'>Edit</button></h2>
@@ -283,7 +283,7 @@
                     </order-detail-sub-order-items-table>
                 </div>
             </div>
-            <div class="mt-3 mb-5 row action-buttons" v-if="(typeof ORDER['detail']!='undefined')">
+            <div class="mt-3 mb-5 row action-buttons w-100" v-if="(typeof ORDER['detail']!='undefined')">
                 <div class="col-8 d-flex">
                     <div class="col-4 options_btn">
                         <button class="btn btn-outline-dark body_medium" @click="openModal(ORDER['detail'].order_id)">Print ticket(s)</button>
@@ -912,6 +912,9 @@
 }
 .order-detail-body{
     margin-top: 99px;
+    min-height: calc(100% -99px);
+    display: flex;
+    flex-wrap: wrap;
 }
 .order-logistic-detail{
     background: white;
@@ -1221,8 +1224,6 @@ font-size: 20px;
     fill: #42A71E;
 }
 .action-buttons{
-    position: absolute;
-    width: 98%;
-    bottom: 0;
+    align-self: end;
 }
 </style>
