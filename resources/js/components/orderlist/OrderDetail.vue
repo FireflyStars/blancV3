@@ -279,7 +279,7 @@
             <!-- <hr v-if="(typeof ORDER['detail']!='undefined')"/> -->
             <div class="row">
                 <div class="col">
-                    <order-detail-sub-order-items-table @close="show_split_conf=false" @show_conf="show_split_conf=true" :tabledef="itemsfields" :id="'items_table'" :user="ORDER['user']" :status="ORDER['detail'].Status" v-if="(typeof ORDER['detail']!='undefined')">
+                    <order-detail-sub-order-items-table @close="show_split_conf=false" @show_conf="show_split_conf=true" :tabledef="itemsfields" :id="'items_table'" :user="ORDER['user']" :status="ORDER['detail'].Status" :order="ORDER['detail']" v-if="(typeof ORDER['detail']!='undefined')">
                     </order-detail-sub-order-items-table>
                 </div>
             </div>
@@ -1224,6 +1224,7 @@ font-size: 20px;
     fill: #42A71E;
 }
 .action-buttons{
+    width: 100%;
     align-self: end;
 }
 </style>
