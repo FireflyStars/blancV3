@@ -122,7 +122,7 @@
 
             const hideButton=((order)=>{
 
-                if(new Date(order.order_left_date) <= new Date() && new Date(order.order_right_date) <= new Date()){
+                if(new Date(order.order_left_date) <= new Date()){
                              return true;
                  }
             });
