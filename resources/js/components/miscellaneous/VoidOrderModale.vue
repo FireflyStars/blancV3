@@ -15,7 +15,7 @@
             </div>
             <div class="confirmation-btn">
                 <button class="btn btn-outline-danger body_medium" style="margin-right: 59px" @click="close">No, cancel</button>
-                <button class="btn btn-dark body_medium" style="" @click="VoidSubOrder">Yes, void</button>
+                <button class="btn btn-dark body_medium" style="" @click="VoidOrder">Yes, void</button>
             </div>
         </div>
 
@@ -37,6 +37,9 @@
             order_id :{
                type:String
             },
+            items :{
+               type:Array
+            },
         },
         setup(props,context){
             const show=ref(false);
@@ -49,10 +52,10 @@
                 show.value=false;
             }
                  
-            function VoidSubOrder(){
-
-                axios.post('/voidSuborder',{
-                   invoiceId: props.invoice_id 
+            function VoidOrder(){
+                axios.post('/voidOrder',{
+                    order_id: props.order_id,
+                    items : props.items
                }).then((res)=>{
                           if( res.data.done == "ok"){
                              store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
@@ -67,7 +70,7 @@
             return {
                 show,
                 close,
-                VoidSubOrder
+                VoidOrder
             }
         }
     }

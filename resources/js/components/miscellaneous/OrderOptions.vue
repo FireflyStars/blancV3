@@ -31,7 +31,7 @@
        
 
     </div>
-    <VoidOrderModale :show_conf="show_void_modal" @close="show_void_modal=false" :order_id="order_id" ></VoidOrderModale>
+    <VoidOrderModale :show_conf="show_void_modal" @close="show_void_modal=false" :order_id="order.order_id" :items="items" ></VoidOrderModale>
 </template>
 
 <script>
