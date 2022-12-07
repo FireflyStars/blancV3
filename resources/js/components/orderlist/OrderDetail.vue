@@ -1221,7 +1221,7 @@ font-size: 20px;
     fill: #42A71E;
 }
 .action-buttons{
-    position: absolute;
+    position: relative;
     width: 98%;
     bottom: 0;
 }
