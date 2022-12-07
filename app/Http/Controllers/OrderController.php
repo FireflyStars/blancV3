@@ -1482,4 +1482,18 @@ class OrderController extends Controller
         ]);
     }
 
+    public function getPayementOrder(Request $request){
+
+        $order_id=$request->post('order_id');
+ 
+            $orderInfo  =  DB::table('payments')->select('status' , 'type' , 'datepayment')
+                                                ->where('payments.order_id',$order_id)
+                                                ->first();
+
+            return response()->json([
+                'order_id'=> $order_id,
+                'data'=>$orderInfo
+            ]);
+     }
+     
 }

@@ -31,12 +31,14 @@
        
 
     </div>
+    <VoidOrderModale :show_conf="show_void_modal" @close="show_void_modal=false" :order_id="order_id" ></VoidOrderModale>
 </template>
 
 <script>
-
+     import {ref,watch,inject,onUpdated} from 'vue';
     import {useStore} from 'vuex';
     import { useRouter} from "vue-router";
+    import VoidOrderModale from '../miscellaneous/VoidOrderModale';
     import {
         TOASTER_MODULE,
         TOASTER_MESSAGE
@@ -48,23 +50,34 @@
             'order',
             'items',
         ],
+        components:{VoidOrderModale},
         setup(props){
            const store=useStore();
            const router = useRouter();
-           const user_id = props.user
+           const user_id = props.user;
+           const show_void_modal = ref(false);
 
            function goToCheckout(){
             router.push('/checkout/'+props.order.order_id);
            }
 
            function VoidOrder(){
-            axios.post('/voidOrder',{
-                   order_id: props.order.order_id,
-                   items : props.items
-               }).then((res)=>{
-                          if( res.data.done == "ok"){
-                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
-                             location.reload();
+           
+            axios.post('/getPayementOrder',{
+                order_id: props.order.order_id
+               }).then((res)=>{                  
+                          if( res.data.data != null){
+                            show_void_modal.value =true
+                        }else{
+                            axios.post('/voidOrder',{
+                                    order_id: props.order.order_id,
+                                    items : props.items
+                                }).then((res)=>{
+                                            if( res.data.done == "ok"){
+                                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
+                                                location.reload();
+                                            }
+                                })
                         }
                     })
                     .catch((error)=>{
@@ -90,7 +103,8 @@
                 user_id,
                 goToCheckout,
                 VoidOrder,
-                DeleteOrder
+                DeleteOrder,
+                show_void_modal
             }
         }
     }

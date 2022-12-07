@@ -81,6 +81,7 @@ Route::post('/setprofile',[PermissionController::class,'setProfile'])->middlewar
 Route::get('/preload-order-form-info',[OrderController::class, 'preloadOrderFormInfo'])->middleware('auth')->name('preload-order-form-info');
 Route::get('/get_status_orders',[OrderListController::class, 'getStatusOrders'])->middleware('auth')->name('get_status_orders');
 Route::post('/deleteorder',[OrderController::class, 'deleteorder'])->middleware('auth')->name('deleteorder');
+Route::post('/getPayementOrder',[OrderController::class, 'getPayementOrder'])->middleware('auth')->name('getPayementOrder');
 
 
 Route::post('/create-customer',[CustomerController::class, 'createCustomer'])->middleware('auth')->name('create-customer');
