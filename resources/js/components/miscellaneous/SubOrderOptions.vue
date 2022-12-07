@@ -11,6 +11,10 @@
                 <img class="img-arrow" src="/images/offload.png" />
                 <span>Offload</span>
             </div>
+            <div class="col-12 row-option" @click="freeReclean">
+                <img class="img-arrow" src="/images/bubbles.svg" />
+                <span>Free reclean</span>
+            </div>
             <div class="col-12 row-option" row-option>
                 <img class="img-arrow" src="/images/link.svg" />
                 <span>Copy link</span>
@@ -44,6 +48,7 @@
         name: "SubOrderOptions",
         props:['items' ,'invoice_id','item_selected','suborder','invoice_Status','user' ,'ListTrackingKey'],
         components:{ NewSplitConfirmation , VoidConfirmation},
+        emits: ['freeReClean'],
         setup(props , context){
            const store=useStore();
            const btn_split_show = ref(false)
@@ -84,7 +89,9 @@
             function VoidSubOrder(){
               show_void_conf.value = true
             }
-
+            const freeReclean =()=>{
+                context.emit('freeReClean')
+            }
             return {
                selectSplit,
                show_split_conf,
