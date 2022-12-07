@@ -40,250 +40,251 @@
             </div>
         </div>
 
-        <div class="order-detail-body">
-            <div class="order-logistic-detail w-100">
-                <div v-if="(typeof ORDER['detail']!='undefined')"  class="row section2 align-items-center">
-                    <div v-if="(typeof ORDER['detail']!='undefined')" class=" col-7 section1">
-                        <h2 >&numero; {{ORDER.detail.order_id}}<button v-if="ORDER['detailingitemlist'].length !== 0" type="button" class="btn-link-green body_regular"  @click='EditOrder(ORDER.detail.order_id)'>Edit</button></h2>
-                        <div class=" text-center">
-                            <tag :name="ORDER.detail.Status" style="margin-right: 10px;"></tag>
-                            <tag :name="ORDER.detail.paid"></tag>
-                       </div>
-                    </div>
-                    <div class="col-5 text-center sectionPrice">
-                        <svg width="30" height="40" class="pdficon" @click="featureunavailable('Pdf Invoice')">
-                            <image xlink:href="/images/pdficon.svg"  width="30" height="40"/>
-                        </svg>
-                        <div class="total-section mt-2">
-        
-                                    <div class="total d-flex">
-                                        <div class="col-8 px-2 text-end PriceTotal">{{formatPrice(ORDER.detail.Total)}}</div>
-                                        <div class="col-4 px-2 d-flex align-items-center">Total</div>
-                                    </div>
-                                    <div class="total d-flex">
-                                        <div class="col-8 px-2 text-end PriceTotal">{{ORDER.totalitems}}</div>
-                                        <div class="col-4 px-2 d-flex align-items-center">Pieces</div>
-                                    </div>
+        <div class="order-detail-body d-flex flex-wrap align-items-start">
+            <div class="d-flex flex-wrap">
+                <div class="order-logistic-detail w-100">
+                    <div v-if="(typeof ORDER['detail']!='undefined')"  class="row section2 align-items-center">
+                        <div v-if="(typeof ORDER['detail']!='undefined')" class=" col-7 section1">
+                            <h2 >&numero; {{ORDER.detail.order_id}}<button v-if="ORDER['detailingitemlist'].length !== 0" type="button" class="btn-link-green body_regular"  @click='EditOrder(ORDER.detail.order_id)'>Edit</button></h2>
+                            <div class=" text-center">
+                                <tag :name="ORDER.detail.Status" style="margin-right: 10px;"></tag>
+                                <tag :name="ORDER.detail.paid"></tag>
+                           </div>
                         </div>
-                        <!-- <div>
-                        <div class="col-3 text-center body_bold">
-                          <b> {{formatPrice(ORDER.detail.Total)}}</b> Total
-                        </div>
-                        <div class="col-3 text-center body_bold">
-                          <b> {{ORDER.detailingitemlist.length}}</b> Pieces
-                        </div>
-                        </div> -->
-                    </div>
-                </div>
-                <transition name="popinout">
-                    <div v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate==null&&!hasRoles(['cc'])" class="section-late-production-op row">
-                        <div class="col" style="padding-left:32px;">
-                            <b>This order is late</b>
-                            <br/>
-                            <span class="f14" v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.TypeDelivery=='DELIVERY'">Please enter new delivery date</span>
-                            <span class="f14" v-else>Please enter new collection date</span>
-                        </div>
-                        <div class="col-5">
-        
-                            <date-picker v-model="suggested_date" name="suggested_date" :available-dates="availabledates" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
-                        </div>
-                        <div class="col-2">
-                            <button class="btn btn-dark btn-black" @click="setSuggestedDate">OK</button>
-                        </div>
-                    </div>
-                    <div v-else-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate!=null&&!showslots" class="section-late-production-op date-suggested row" :class="{cc:hasRoles(['cc','admin','Blanc Admin'])}">
-                        <div class="col">
-                            <b style="vertical-align: middle">New promised date suggested: {{formatDate(ORDER.detail.suggestedDeliveryDate)}}</b> <button v-if="hasRoles(['cc','admin','Blanc Admin'])" class="btn btn-outline-dark body_medium" @click="chooseSlot">Choose new slot</button>
-                        </div>
-                    </div>
-                    <div v-else-if="showslots" class="section-late-production-op date-suggested row"  :class="{cc:hasRoles(['cc','admin','Blanc Admin'])}">
-                        <div class="col" style="padding-left:32px;">
-                            <span :class="{'d-none':setDeliveryDate}">
-                            <b style="margin-left: 0">This order is late</b>
-                            <br/>
-                            </span>
-                            <span class="f14" v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.TypeDelivery=='DELIVERY'">Please enter new delivery date</span>
-                            <span class="f14" v-else>Please enter new collection date</span>
-                        </div>
-                        <div class="col-6  p-0 d-flex justify-content-evenly">
-                            <date-picker v-model="cc_new_delivery_date" name="cc_new_delivery_date" :disabled-to-date="disabledtodate" :available-dates="availabledates" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
-                            <time-slot-picker  v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.TypeDelivery=='DELIVERY'" placeholder="00-00 AM" v-model="suggest_timeslot"   name="suggest_timeslot" :available-slots="availabletimeslot"></time-slot-picker>
-                        </div>
-                        <div class="col-1 p-0">
-                            <button class="btn btn-dark btn-black" @click="setNewDeliveryDate">OK</button>
-                        </div>
-                    </div>
-                    <div v-else-if="showNewDeliveryDateMsg" class="section-late-production-op date-suggested date-suggested-ok row" :class="{cc:hasRoles(['cc'])}">
-                        <div class="col">
-                            <b v-if="ORDER.detail.TypeDelivery=='DELIVERY'">New delivery date: {{ORDER.detail.PromisedDate}}</b>
-                            <b v-else>New collection date: {{ORDER.detail.PromisedDate}}</b>
-                            </div>
-                    </div>
-                </transition>
-        
-                <transition name="popinout">
-                    <div v-if="typeof ORDER['detail']!='undefined'&&!ORDER.detail.alreadypickuped&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate==null&&!hasRoles(['cc'])" class="section-late-production-op row">
-                        <div class="col" style="padding-left:32px;">
-                            <b>This order is late</b>
-                            <br/>
-                            <span class="f14">Please enter new pickup date</span>
-                        </div>
-                        <div class="col-5">
-        
-                            <date-picker v-model="suggested_date" name="suggested_date" :available-dates="availabledates" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
-                        </div>
-                        <div class="col-2">
-                            <button class="btn btn-dark btn-black" @click="setSuggestedDate">OK</button>
-                        </div>
-                    </div>
-                    <div v-else-if="typeof ORDER['detail']!='undefined'&&!ORDER.detail.alreadypickuped&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate!=null&&!showslots" class="section-late-production-op date-suggested row" :class="{cc:hasRoles(['cc','admin','Blanc Admin'])}">
-                        <div class="col">
-                            <b style="vertical-align: middle">New pickup date suggested: {{formatDate(ORDER.detail.suggestedDeliveryDate)}}</b> <button v-if="hasRoles(['cc','admin','Blanc Admin'])" class="btn btn-outline-dark body_medium" @click="chooseSlot">Choose new slot</button>
-                        </div>
-                    </div>
-                    <div v-else-if="showslotspickup" class="section-late-production-op date-suggested row"  :class="{cc:hasRoles(['cc','admin','Blanc Admin'])}">
-                        <div class="col" style="padding-left:32px;">
-                            <span :class="{'d-none':setDeliveryDate}">
-                            <b style="margin-left: 0">This order is late</b>
-                            <br/>
-                            </span>
-                            <span class="f14">Please enter new pickup date</span>
-                        </div>
-                        <div class="col-6  p-0 d-flex justify-content-evenly">
-                            <date-picker v-model="cc_new_pickup_date" name="cc_new_pickup_date" :disabled-to-date="disabledtodate" :available-dates="availabledates" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
-                            <time-slot-picker placeholder="00-00 AM" v-model="suggest_timeslot_pickup"   name="suggest_timeslot_pickup" :available-slots="availabletimeslot"></time-slot-picker>
-                        </div>
-                        <div class="col-1 p-0">
-                            <button class="btn btn-dark btn-black" @click="setNewPickupDate">OK</button>
-                        </div>
-                    </div>
-                    <!-- <div v-else-if="showNewDeliveryDateMsg" class="section-late-production-op date-suggested date-suggested-ok row" :class="{cc:hasRoles(['cc'])}">
-                        <div class="col"><b>New delivery date: {{ORDER.detail.PromisedDate}}</b></div>
-                    </div> -->
-                </transition>
-        
-                <div class="order-brief-info-section mt-2" v-if="(typeof ORDER['detail']!='undefined')">
-                    <div class="d-flex">
-                        <div class="col-6"  >
-                            <p class="order-sub-title m-0">
-                                {{ORDER.detail.order_left_text}} <span v-if=" (ORDER['detail'].Status =='RECURRING' || ORDER['detail'].Status =='SCHEDULED') && ORDER['detail'].DatePickup != '--' " class="ms-2 cursor-pointer text-underline"  @click="featureunavailable('Edit Pickup')">Edit</span>
-                            </p>
-                            <p class="m-0">{{ORDER.detail.order_left_date }}</p>
-                            <p class="m-0">{{ORDER.detail.order_left_time}}</p>
-                        </div>
-                        <div class="col-6 ps-5 border-left">
-                            <p class="order-sub-title m-0">
-                                {{ORDER.detail.order_right_text}} <span  class="ms-2 cursor-pointer text-underline" v-if=" (ORDER['detail'].Status !='FULFILLED'&&ORDER['detail'].Status !='DELETE'&&ORDER['detail'].Status !='VOID' )" @click="showDeliverySlots">Edit</span>
-                            </p>
-                                <p class="mb-0" v-if="!updatedelverydate">{{ORDER.detail.order_right_date }}</p>
-                                <p class="mb-0" v-if="updatedelverydate">{{formatOrderDate(cc_new_delivery_date)}}</p>
-                                <p class="mb-0" >{{ORDER.detail.order_right_time}}</p>
-                        </div>
-                    </div>
-                </div>
-                <div  class = "booking mt-2" v-if="(typeof ORDER['booking']!='undefined') && ORDER.booking != null">
-                    <span>Booked by <b>{{ORDER.booking.name}}</b>, on {{ORDER.booking.CreatedDate}} @ {{ORDER.booking.time}}</span>
-                </div>
-                <hr v-if="(typeof ORDER['detail']!='undefined')" />
-            </div>
+                        <div class="col-5 text-center sectionPrice">
+                            <svg width="30" height="40" class="pdficon" @click="featureunavailable('Pdf Invoice')">
+                                <image xlink:href="/images/pdficon.svg"  width="30" height="40"/>
+                            </svg>
+                            <div class="total-section mt-2">
             
-            <!-- <div  v-if="(typeof ORDER['detail']!='undefined')" class="row section4">
-    
-                <div class="accordion-container">
-                    <div class="accordion accordion-flush" id="accordionFlushExample">
-                        <div class="accordion-item">
-                            <div class="col-12 accordion-header accordion-button collapsed" id="flush-headingOne"
-                                    type="button"
-                                    @click="openAccordionclick()"
-                                    :class="{ opened: instAcc === true}"
-                            >
-                                <span class="col-10 customername  body_bold  text-capitalize d-inline-block">
-                                    {{ORDER.detail.Name.replace(',','').toLowerCase()}}
-                                    <button type="button" class="btn-link-green body_regular" @click="EditCustomer(ORDER.detail.id)">Edit</button>
-                                </span>
-                                <div class="col-2">
-                                        <tag  v-if="ORDER.detail.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
-                                        <tag  v-else :name="'B2B'" ></tag>
-                                  </div>
-    
-    
+                                        <div class="total d-flex">
+                                            <div class="col-8 px-2 text-end PriceTotal">{{formatPrice(ORDER.detail.Total)}}</div>
+                                            <div class="col-4 px-2 d-flex align-items-center">Total</div>
+                                        </div>
+                                        <div class="total d-flex">
+                                            <div class="col-8 px-2 text-end PriceTotal">{{ORDER.totalitems}}</div>
+                                            <div class="col-4 px-2 d-flex align-items-center">Pieces</div>
+                                        </div>
                             </div>
-                            <div
-                                id="flush-collapseOne"
-                                class="accordion-collapse collapse"
-                                :class="{ show: instAcc === true }"
-                            >
-                                <div class="accordion-body">
-    
-                                        <div  v-if="(typeof ORDER['detail']!='undefined')" class="row section5">
+                            <!-- <div>
+                            <div class="col-3 text-center body_bold">
+                              <b> {{formatPrice(ORDER.detail.Total)}}</b> Total
+                            </div>
+                            <div class="col-3 text-center body_bold">
+                              <b> {{ORDER.detailingitemlist.length}}</b> Pieces
+                            </div>
+                            </div> -->
+                        </div>
+                    </div>
+                    <transition name="popinout">
+                        <div v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate==null&&!hasRoles(['cc'])" class="section-late-production-op row">
+                            <div class="col" style="padding-left:32px;">
+                                <b>This order is late</b>
+                                <br/>
+                                <span class="f14" v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.TypeDelivery=='DELIVERY'">Please enter new delivery date</span>
+                                <span class="f14" v-else>Please enter new collection date</span>
+                            </div>
+                            <div class="col-5">
+            
+                                <date-picker v-model="suggested_date" name="suggested_date" :available-dates="availabledates" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
+                            </div>
+                            <div class="col-2">
+                                <button class="btn btn-dark btn-black" @click="setSuggestedDate">OK</button>
+                            </div>
+                        </div>
+                        <div v-else-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate!=null&&!showslots" class="section-late-production-op date-suggested row" :class="{cc:hasRoles(['cc','admin','Blanc Admin'])}">
+                            <div class="col">
+                                <b style="vertical-align: middle">New promised date suggested: {{formatDate(ORDER.detail.suggestedDeliveryDate)}}</b> <button v-if="hasRoles(['cc','admin','Blanc Admin'])" class="btn btn-outline-dark body_medium" @click="chooseSlot">Choose new slot</button>
+                            </div>
+                        </div>
+                        <div v-else-if="showslots" class="section-late-production-op date-suggested row"  :class="{cc:hasRoles(['cc','admin','Blanc Admin'])}">
+                            <div class="col" style="padding-left:32px;">
+                                <span :class="{'d-none':setDeliveryDate}">
+                                <b style="margin-left: 0">This order is late</b>
+                                <br/>
+                                </span>
+                                <span class="f14" v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.TypeDelivery=='DELIVERY'">Please enter new delivery date</span>
+                                <span class="f14" v-else>Please enter new collection date</span>
+                            </div>
+                            <div class="col-6  p-0 d-flex justify-content-evenly">
+                                <date-picker v-model="cc_new_delivery_date" name="cc_new_delivery_date" :disabled-to-date="disabledtodate" :available-dates="availabledates" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
+                                <time-slot-picker  v-if="typeof ORDER['detail']!='undefined'&&ORDER.detail.TypeDelivery=='DELIVERY'" placeholder="00-00 AM" v-model="suggest_timeslot"   name="suggest_timeslot" :available-slots="availabletimeslot"></time-slot-picker>
+                            </div>
+                            <div class="col-1 p-0">
+                                <button class="btn btn-dark btn-black" @click="setNewDeliveryDate">OK</button>
+                            </div>
+                        </div>
+                        <div v-else-if="showNewDeliveryDateMsg" class="section-late-production-op date-suggested date-suggested-ok row" :class="{cc:hasRoles(['cc'])}">
+                            <div class="col">
+                                <b v-if="ORDER.detail.TypeDelivery=='DELIVERY'">New delivery date: {{ORDER.detail.PromisedDate}}</b>
+                                <b v-else>New collection date: {{ORDER.detail.PromisedDate}}</b>
+                                </div>
+                        </div>
+                    </transition>
+            
+                    <transition name="popinout">
+                        <div v-if="typeof ORDER['detail']!='undefined'&&!ORDER.detail.alreadypickuped&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate==null&&!hasRoles(['cc'])" class="section-late-production-op row">
+                            <div class="col" style="padding-left:32px;">
+                                <b>This order is late</b>
+                                <br/>
+                                <span class="f14">Please enter new pickup date</span>
+                            </div>
+                            <div class="col-5">
+            
+                                <date-picker v-model="suggested_date" name="suggested_date" :available-dates="availabledates" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
+                            </div>
+                            <div class="col-2">
+                                <button class="btn btn-dark btn-black" @click="setSuggestedDate">OK</button>
+                            </div>
+                        </div>
+                        <div v-else-if="typeof ORDER['detail']!='undefined'&&!ORDER.detail.alreadypickuped&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate!=null&&!showslots" class="section-late-production-op date-suggested row" :class="{cc:hasRoles(['cc','admin','Blanc Admin'])}">
+                            <div class="col">
+                                <b style="vertical-align: middle">New pickup date suggested: {{formatDate(ORDER.detail.suggestedDeliveryDate)}}</b> <button v-if="hasRoles(['cc','admin','Blanc Admin'])" class="btn btn-outline-dark body_medium" @click="chooseSlot">Choose new slot</button>
+                            </div>
+                        </div>
+                        <div v-else-if="showslotspickup" class="section-late-production-op date-suggested row"  :class="{cc:hasRoles(['cc','admin','Blanc Admin'])}">
+                            <div class="col" style="padding-left:32px;">
+                                <span :class="{'d-none':setDeliveryDate}">
+                                <b style="margin-left: 0">This order is late</b>
+                                <br/>
+                                </span>
+                                <span class="f14">Please enter new pickup date</span>
+                            </div>
+                            <div class="col-6  p-0 d-flex justify-content-evenly">
+                                <date-picker v-model="cc_new_pickup_date" name="cc_new_pickup_date" :disabled-to-date="disabledtodate" :available-dates="availabledates" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
+                                <time-slot-picker placeholder="00-00 AM" v-model="suggest_timeslot_pickup"   name="suggest_timeslot_pickup" :available-slots="availabletimeslot"></time-slot-picker>
+                            </div>
+                            <div class="col-1 p-0">
+                                <button class="btn btn-dark btn-black" @click="setNewPickupDate">OK</button>
+                            </div>
+                        </div>
+                        <!-- <div v-else-if="showNewDeliveryDateMsg" class="section-late-production-op date-suggested date-suggested-ok row" :class="{cc:hasRoles(['cc'])}">
+                            <div class="col"><b>New delivery date: {{ORDER.detail.PromisedDate}}</b></div>
+                        </div> -->
+                    </transition>
+            
+                    <div class="order-brief-info-section mt-2" v-if="(typeof ORDER['detail']!='undefined')">
+                        <div class="d-flex">
+                            <div class="col-6"  >
+                                <p class="order-sub-title m-0">
+                                    {{ORDER.detail.order_left_text}} <span v-if=" (ORDER['detail'].Status =='RECURRING' || ORDER['detail'].Status =='SCHEDULED') && ORDER['detail'].DatePickup != '--' " class="ms-2 cursor-pointer text-underline"  @click="featureunavailable('Edit Pickup')">Edit</span>
+                                </p>
+                                <p class="m-0">{{ORDER.detail.order_left_date }}</p>
+                                <p class="m-0">{{ORDER.detail.order_left_time}}</p>
+                            </div>
+                            <div class="col-6 ps-5 border-left">
+                                <p class="order-sub-title m-0">
+                                    {{ORDER.detail.order_right_text}} <span  class="ms-2 cursor-pointer text-underline" v-if=" (ORDER['detail'].Status !='FULFILLED'&&ORDER['detail'].Status !='DELETE'&&ORDER['detail'].Status !='VOID' )" @click="showDeliverySlots">Edit</span>
+                                </p>
+                                    <p class="mb-0" v-if="!updatedelverydate">{{ORDER.detail.order_right_date }}</p>
+                                    <p class="mb-0" v-if="updatedelverydate">{{formatOrderDate(cc_new_delivery_date)}}</p>
+                                    <p class="mb-0" >{{ORDER.detail.order_right_time}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div  class = "booking mt-2" v-if="(typeof ORDER['booking']!='undefined') && ORDER.booking != null">
+                        <span>Booked by <b>{{ORDER.booking.name}}</b>, on {{ORDER.booking.CreatedDate}} @ {{ORDER.booking.time}}</span>
+                    </div>
+                    <hr v-if="(typeof ORDER['detail']!='undefined')" />
+                </div>
+                
+                <!-- <div  v-if="(typeof ORDER['detail']!='undefined')" class="row section4">
+                    <div class="accordion-container">
+                        <div class="accordion accordion-flush" id="accordionFlushExample">
+                            <div class="accordion-item">
+                                <div class="col-12 accordion-header accordion-button collapsed" id="flush-headingOne"
+                                        type="button"
+                                        @click="openAccordionclick()"
+                                        :class="{ opened: instAcc === true}"
+                                >
+                                    <span class="col-10 customername  body_bold  text-capitalize d-inline-block">
+                                        {{ORDER.detail.Name.replace(',','').toLowerCase()}}
+                                        <button type="button" class="btn-link-green body_regular" @click="EditCustomer(ORDER.detail.id)">Edit</button>
+                                    </span>
+                                    <div class="col-2">
+                                            <tag  v-if="ORDER.detail.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
+                                            <tag  v-else :name="'B2B'" ></tag>
+                                      </div>
+        
+        
+                                </div>
+                                <div
+                                    id="flush-collapseOne"
+                                    class="accordion-collapse collapse"
+                                    :class="{ show: instAcc === true }"
+                                >
+                                    <div class="accordion-body">
+        
+                                            <div  v-if="(typeof ORDER['detail']!='undefined')" class="row section5">
+                                                    <div class="col">
+                                                        <AddressFormat :title="'Delivery address'" :address="ORDER.delivery" ></AddressFormat>
+                                                    </div>
+                                                    <div class="col">
+                                                    <AddressFormat :title="'Billing address'"  v-if="ORDER.billing!=null" :address="ORDER.billing" ></AddressFormat>
+                                                    <AddressFormat :title="'Billing address'" v-else :address="ORDER.delivery" ></AddressFormat>
+                                                </div>
+                                            </div>
+        
+                                    <div v-if="(typeof ORDER['detail']!='undefined')" class="row section6">
+                                        <div class="col" v-if="ORDER.detail.Phone!=''&&ORDER.detail.Phone!=null">
+                                            <div class="row" v-for="(phone,index) in ORDER.detail.Phone" :key="index">
                                                 <div class="col">
-                                                    <AddressFormat :title="'Delivery address'" :address="ORDER.delivery" ></AddressFormat>
+                                                    <div class="body_small_medium">Phone number {{index+1}}</div>
+                                                    <div class="phone body_small">+{{phone.replace('|',' ')}}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div v-else class="col">
+                                            <div class="body_small_medium">Phone number</div>
+                                            <div class="phone body_small">--</div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="row ">
+                                                <div class="col">
+                                                    <div class="body_small_medium">Payment method</div>
+                                                    <span class="body_small">--</span>
                                                 </div>
                                                 <div class="col">
-                                                <AddressFormat :title="'Billing address'"  v-if="ORDER.billing!=null" :address="ORDER.billing" ></AddressFormat>
-                                                <AddressFormat :title="'Billing address'" v-else :address="ORDER.delivery" ></AddressFormat>
-                                            </div>
-                                        </div>
-    
-                                <div v-if="(typeof ORDER['detail']!='undefined')" class="row section6">
-                                    <div class="col" v-if="ORDER.detail.Phone!=''&&ORDER.detail.Phone!=null">
-                                        <div class="row" v-for="(phone,index) in ORDER.detail.Phone" :key="index">
-                                            <div class="col">
-                                                <div class="body_small_medium">Phone number {{index+1}}</div>
-                                                <div class="phone body_small">+{{phone.replace('|',' ')}}</div>
+                                                    <div class="body_small_medium">Payment details</div>
+                                                    <span class="body_small">--</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div v-else class="col">
-                                        <div class="body_small_medium">Phone number</div>
-                                        <div class="phone body_small">--</div>
-                                    </div>
-                                    <div class="col">
-                                        <div class="row ">
-                                            <div class="col">
-                                                <div class="body_small_medium">Payment method</div>
-                                                <span class="body_small">--</span>
-                                            </div>
-                                            <div class="col">
-                                                <div class="body_small_medium">Payment details</div>
-                                                <span class="body_small">--</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                   </div>
                                 </div>
-                               </div>
                             </div>
+        
                         </div>
-    
+                    </div>
+        
+        
+        
+                    <div class="col">
+                        <tag  v-if="ORDER.detail.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
+                        <tag  v-else :name="'B2B'" ></tag>
+                    </div>
+                    </div>
+                    <div  v-if="(typeof ORDER['detail']!='undefined')" class="row section5">
+                        <div class="col">
+                            <AddressFormat :title="'Delivery address'" :address="ORDER.delivery" ></AddressFormat>
+                        </div>
+                        <div class="col">
+                            <AddressFormat :title="'Billing address'"  v-if="ORDER.billing!=null" :address="ORDER.billing" ></AddressFormat>
+                            <AddressFormat :title="'Billing address'" v-else :address="ORDER.delivery" ></AddressFormat>
+                        </div>
+                    </div> 
+                    hr v-if="(typeof ORDER['detail']!='undefined')"/>
+                -->
+        
+                <div class="d-flex w-100">
+                    <div class="col">
+                        <order-detail-sub-order-items-table @close="show_split_conf=false" @show_conf="show_split_conf=true" :tabledef="itemsfields" :id="'items_table'" :user="ORDER['user']" :status="ORDER['detail'].Status" :order="ORDER['detail']" v-if="(typeof ORDER['detail']!='undefined')">
+                        </order-detail-sub-order-items-table>
                     </div>
                 </div>
-    
-    
-    
-                <div class="col">
-                    <tag  v-if="ORDER.detail.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
-                    <tag  v-else :name="'B2B'" ></tag>
-                </div>
-            </div> -->
-            <!-- <div  v-if="(typeof ORDER['detail']!='undefined')" class="row section5">
-                <div class="col">
-                    <AddressFormat :title="'Delivery address'" :address="ORDER.delivery" ></AddressFormat>
-                </div>
-                <div class="col">
-                    <AddressFormat :title="'Billing address'"  v-if="ORDER.billing!=null" :address="ORDER.billing" ></AddressFormat>
-                    <AddressFormat :title="'Billing address'" v-else :address="ORDER.delivery" ></AddressFormat>
-                </div>
-            </div> -->
-    
-    
-            <!-- <hr v-if="(typeof ORDER['detail']!='undefined')"/> -->
-            <div class="row">
-                <div class="col">
-                    <order-detail-sub-order-items-table @close="show_split_conf=false" @show_conf="show_split_conf=true" :tabledef="itemsfields" :id="'items_table'" :user="ORDER['user']" :status="ORDER['detail'].Status" :order="ORDER['detail']" v-if="(typeof ORDER['detail']!='undefined')">
-                    </order-detail-sub-order-items-table>
-                </div>
             </div>
-            <div class="mt-3 mb-5 row action-buttons w-100" v-if="(typeof ORDER['detail']!='undefined')">
+            <div class="d-flex action-buttons w-100" v-if="(typeof ORDER['detail']!='undefined')">
                 <div class="col-8 d-flex">
                     <div class="col-4 options_btn">
                         <button class="btn btn-outline-dark body_medium" @click="openModal(ORDER['detail'].order_id)">Print ticket(s)</button>
@@ -912,9 +913,7 @@
 }
 .order-detail-body{
     margin-top: 99px;
-    /* min-height: calc(100% -99px);
-    display: flex;
-    flex-wrap: wrap; */
+    min-height: calc(100% - 99px);
 }
 .order-logistic-detail{
     background: white;
@@ -1224,7 +1223,7 @@ font-size: 20px;
     fill: #42A71E;
 }
 .action-buttons{
-    width: 100%;
     align-self: end;
+    margin-bottom: 30px;
 }
 </style>
