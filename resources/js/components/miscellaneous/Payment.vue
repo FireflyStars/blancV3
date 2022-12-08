@@ -231,16 +231,17 @@ export default {
 
                 axios.post('/make-payment-or-create-card',params)
                     .then((res)=>{
-                        if(type!='Save'){
-                            if(res.data.error_stripe){
-                                let err_msg = res.data.error_stripe;
 
-                                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
-                                    message: err_msg,
-                                    ttl:5,
-                                    type:'danger',
-                                 });
-                            }else{
+                        if(res.data.error_stripe){
+                            let err_msg = res.data.error_stripe;
+
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                message: err_msg,
+                                ttl:5,
+                                type:'danger',
+                                });
+                        }else{
+                            if(type!='Save'){
                                 /*
                                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
                                 {

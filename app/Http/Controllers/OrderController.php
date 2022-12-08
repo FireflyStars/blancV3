@@ -372,6 +372,7 @@ class OrderController extends Controller
         $card_exp_arr = explode("/",$card_exp);
 
         $stripe_customer = null;
+        $three_d_res = null;
 
         $cust = DB::table('infoCustomer')->where('CustomerID',$customer_id)->first();
         $addr = DB::table('address')->where('CustomerID',$cust->CustomerID)->where('status','DELIVERY')->first();
@@ -394,6 +395,7 @@ class OrderController extends Controller
         }else{
             if($cust){
              //create a card object to stripe
+             try{
              $card = $stripe->paymentMethods->create([
                 'type' => 'card',
                 'card' => [
@@ -426,26 +428,51 @@ class OrderController extends Controller
 
             $si = $stripe->setupIntents->create([
                 'customer' => $stripe_customer->id,
+                'payment_method'=>$card->id,
                 'payment_method_types' => ['card'],
                 'usage'=>'off_session',
             ]);
 
+            $site_url = \Illuminate\Support\Facades\URL::to("/");
 
-            $credit_card = [
-                'CustomerID'        => $cust->CustomerID,
-                'cardHolderName'    => $cardholder_name,
-                'type'              => $card->card->brand,
-                'cardNumber'        => substr_replace($card_num, str_repeat('*', strlen($card_num) - 6), 3, -3),
-                'dateexpiration'    => $card_exp,
-                'stripe_customer_id'=> $stripe_customer->id,
-                'stripe_card_id'    => $card->id,
-                'setup_intnet_id'   => $si->id,
-                'created_at'        => now(),
-                'updated_at'        => now(),
-            ];
+            $three_d_res = $stripe->setupIntents->confirm($si->id,[
+                'return_url'=>$site_url."/?si=".$si->id,
+            ]);
 
-            $card_id = DB::table('cards')->insertGetId($credit_card);
-            $card = DB::table('cards')->where('id',$card_id)->first();
+            if($three_d_res->status=='succeeded'){
+
+                $credit_card = [
+                    'CustomerID'        => $cust->CustomerID,
+                    'cardHolderName'    => $cardholder_name,
+                    'type'              => $card->card->brand,
+                    'cardNumber'        => substr_replace($card_num, str_repeat('*', strlen($card_num) - 6), 3, -3),
+                    'dateexpiration'    => $card_exp,
+                    'stripe_customer_id'=> $stripe_customer->id,
+                    'stripe_card_id'    => $card->id,
+                    'setup_intnet_id'   => $si->id,
+                    'created_at'        => now(),
+                    'updated_at'        => now(),
+                ];
+
+                $card_id = DB::table('cards')->insertGetId($credit_card);
+                $card = DB::table('cards')->where('id',$card_id)->first();
+            }else{
+                $err_txt = "Unable to authenticate card for 3DS";
+            }
+        }catch(\Stripe\Exception\CardException $e){
+            $err_txt = $e->getError()->message." Code: ".$e->getError()->decline_code;
+            /*return response()->json([
+                'error_stripe'=>$e->getError()->message." Code: ".$e->getError()->decline_code,
+            ]);*/
+        }catch(\Exception $e){
+            $err_txt = $e->getMessage();
+            /*
+            return response()->json([
+                'error_stripe'=>$e->getMessage(),
+            ]);
+            */
+        }
+
             }else{
                 /*
                 if(is_null($addr)){
@@ -459,6 +486,7 @@ class OrderController extends Controller
             'has_card'=>$has_card,
             'card'=>$card,
             'err'=>$err_txt,
+            'three_d_res'=>$three_d_res,
         ]);
     }
 
@@ -467,6 +495,7 @@ class OrderController extends Controller
         $payment_intent = null;
         $err_payment = "";
         $paid = false;
+        $three_d_res = null;
 
         $card_id = $request->card_id;
         $order_id = (int) $request->order_id;
@@ -514,64 +543,85 @@ class OrderController extends Controller
             $card_id = 0;
 
             if($cust){
-                $card = $stripe->paymentMethods->create([
-                    'type' => 'card',
-                    'card' => [
-                        'number'      => $card_num ,
-                        'exp_month'   => (int) $card_exp_arr[0],
-                        'exp_year'    => (int) $card_exp_arr[1],
-                        'cvc'         => $card_cvv,
-                    ],
-                ]);
+                try{
+                    $card = $stripe->paymentMethods->create([
+                        'type' => 'card',
+                        'card' => [
+                            'number'      => $card_num ,
+                            'exp_month'   => (int) $card_exp_arr[0],
+                            'exp_year'    => (int) $card_exp_arr[1],
+                            'cvc'         => $card_cvv,
+                        ],
+                    ]);
 
 
-                //create a customer object to stripe
-                $stripe_customer = $stripe->customers->create([
-                    'name'              => $cardholder_name,
-                    'email'             => $cust->EmailAddress,
-                    'payment_method'    => $card->id,
-                    'invoice_settings'  => ['default_payment_method' => $card->id],
-                    'metadata'          => [
-                                                'CustomerID' => $cust->CustomerID
-                                        ],
-                    'address'           => [
-                                            'city'          => ($addr?$addr->Town:''),
-                                            'state'         => ($addr?$addr->County:''),
-                                            'country'       => ($addr?$addr->Country:''),
-                                            'postal_code'   => ($addr?$addr->postcode:''),
-                                            'line1'         => ($addr?$addr->address1:''),
-                                            'line2'         => ($addr?$addr->address2:''),
-                                        ]
-                ]);
+                    //create a customer object to stripe
 
-                $si = $stripe->setupIntents->create([
-                    'customer' => $stripe_customer->id,
-                    'payment_method_types' => ['card'],
-                    'usage'=>'off_session',
-                ]);
+                    $stripe_customer = $stripe->customers->create([
+                        'name'              => $cardholder_name,
+                        'email'             => $cust->EmailAddress,
+                        'payment_method'    => $card->id,
+                        'invoice_settings'  => ['default_payment_method' => $card->id],
+                        'metadata'          => [
+                                                    'CustomerID' => $cust->CustomerID
+                                            ],
+                        'address'           => [
+                                                'city'          => ($addr?$addr->Town:''),
+                                                'state'         => ($addr?$addr->County:''),
+                                                'country'       => ($addr?$addr->Country:''),
+                                                'postal_code'   => ($addr?$addr->postcode:''),
+                                                'line1'         => ($addr?$addr->address1:''),
+                                                'line2'         => ($addr?$addr->address2:''),
+                                            ]
+                    ]);
 
+                    $si = $stripe->setupIntents->create([
+                        'customer' => $stripe_customer->id,
+                        'payment_method_types' => ['card'],
+                        'payment_method'=>$card->id,
+                        'usage'=>'off_session',
+                    ]);
 
+                    $site_url = \Illuminate\Support\Facades\URL::to("/");
 
-                $credit_card = [
-                    'CustomerID'        => $cust->CustomerID,
-                    'cardHolderName'    => $cardholder_name,
-                    'type'              => $card->card->brand,
-                    'cardNumber'        => substr_replace($card_num, str_repeat('*', strlen($card_num) - 6), 3, -3),
-                    'dateexpiration'    => $card_exp,
-                    'stripe_customer_id'=> $stripe_customer->id,
-                    'stripe_card_id'    => $card->id,
-                    'setup_intent_id'   => $si->id,
-                    'created_at'        => now(),
-                    'updated_at'        => now(),
-                ];
+                    $three_d_res = $stripe->setupIntents->confirm($si->id,[
+                        'return_url'=>$site_url."/?si=".$si->id,
+                    ]);
 
-                $card_id = DB::table('cards')->insertGetId($credit_card);
-                $card = DB::table('cards')->where('id',$card_id)->first();
+                    if($three_d_res->status=='succeeded'){
+                        $credit_card = [
+                            'CustomerID'        => $cust->CustomerID,
+                            'cardHolderName'    => $cardholder_name,
+                            'type'              => $card->card->brand,
+                            'cardNumber'        => substr_replace($card_num, str_repeat('*', strlen($card_num) - 6), 3, -3),
+                            'dateexpiration'    => $card_exp,
+                            'stripe_customer_id'=> $stripe_customer->id,
+                            'stripe_card_id'    => $card->id,
+                            'setup_intent_id'   => $si->id,
+                            'created_at'        => now(),
+                            'updated_at'        => now(),
+                        ];
+                    }else{
+                        return response()->json([
+                            'error_stripe'=>'Unable to authenticate card for 3DS',
+                        ]);
+                    }
+
+                    $card_id = DB::table('cards')->insertGetId($credit_card);
+                    $card = DB::table('cards')->where('id',$card_id)->first();
+                }catch(\Stripe\Exception\CardException $e){
+                    return response()->json([
+                        'error_stripe'=>$e->getError()->message." Code: ".$e->getError()->decline_code,
+                    ]);
+                }catch(\Exception $e){
+                    return response()->json([
+                        'error_stripe'=>$e->getMessage(),
+                    ]);
+                }
+
             }
 
         }
-
-
         //Effecting payment
 /*
         $amount_paid = 0;
@@ -687,6 +737,7 @@ class OrderController extends Controller
             'order'=>$order,
             'card_pay'=>$card_pay,
             'amount_diff'=>$amount_diff,
+            'three_d_res'=>$three_d_res,
         ]);
     }
 
