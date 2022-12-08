@@ -313,8 +313,9 @@
 
                                             <div class="col-12" v-if="amount_paid_card.length > 0">
                                                 <div class="row" v-for="a,i in amount_paid_card" :key="i">
-                                                    <div class="col-9 px-0 payment-desc-text">Paid by Card ({{ a.type[0].toUpperCase() + a.type.slice(1)}} {{a.cardNumber.slice(-7)}}) on <small>{{a.date}}</small>:</div>
+                                                    <div class="px-0 payment-desc-text" :class="{'col-7':a.is_admin==1,'col-9':cur_user.role_id!=1}">Paid by Card ({{ a.type[0].toUpperCase() + a.type.slice(1)}} {{a.cardNumber.slice(-7)}}) on <small>{{a.date}}</small>:</div>
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
+                                                    <div class="col-2" v-if="(a.is_admin==1)"><button class="btn btn-outline-dark inline-refund-btn py-0 px-1">Refund</button></div>
                                                 </div>
                                             </div>
                                             <!--
@@ -345,8 +346,9 @@
                                             <template v-for="a,i in amount_paid_other" :key="i">
                                                 <div class="col-12">
                                                 <div class="row">
-                                                    <div class="col-9 px-0 payment-desc-text">{{a.name}} on <small>{{a.date}}</small>:</div>
+                                                    <div class="px-0 payment-desc-text" :class="{'col-7':a.is_admin==1,'col-9':cur_user.role_id!=1}">{{a.name}} on <small>{{a.date}}</small>:</div>
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
+                                                    <div class="col-2" v-if="(a.is_admin==1)"><button class="btn btn-outline-dark inline-refund-btn py-0 px-1">Refund</button></div>
                                                 </div>
                                                 </div>
                                             </template>
@@ -728,8 +730,9 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
+
+                    <!-- End main -->
                 </div>
             </div>
         </div>
@@ -795,7 +798,6 @@
                 <div class="col-3"><button class="btn btn-outline-danger w-100" @click="closeVoucherModal">No</button></div>
             </div>
         </template>
-
     </modal>
 
 
@@ -830,6 +832,28 @@
             </div>
         </template>
     </modal>
+
+    <modal ref="refund_modal">
+        <template #closebtn>
+            <span class="close" id="price_delivery_now_modal_close" @click="closeRefundModal"></span>
+        </template>
+        <template #bheader>
+            <div id="modal-header-refund" class="py-5 text-center">Customer refund</div>
+        </template>
+        <template #bcontent><div class="row py-5"></div></template>
+        <template #mbuttons>
+            <div class="row justify-content-center pb-5 mb-4">
+                <div class="col-4"><button class="btn btn-outline-dark refund-btn w-100" id="credit_acc_btn" @click="creditAccount">Credit Account</button></div>
+                <div class="col-1" v-if="(cur_user.role_id!=1)"></div>
+                <div class="col-4" v-if="(cur_user.role_id!=1)">
+                    <!-- <button v-if="(cur_user.role_id==1)" class="btn btn-outline-dark refund-btn w-100">Refund card</button> -->
+                    <button class="btn btn-outline-dark refund-btn">Request refund</button>
+                </div>
+            </div>
+        </template>
+
+    </modal>
+
 
 </template>
 <script>
@@ -934,6 +958,12 @@ export default {
             { name: "Checkout", route: "" },
         ]);
 
+        const refund_modal = ref();
+
+        function closeRefundModal(){
+            refund_modal.value.closeModal();
+        }
+
 
         const getCheckoutItems =  async()=>{
 
@@ -1013,12 +1043,17 @@ export default {
             }).catch((err)=>{
 
             }).finally(()=>{
+                if(order.value.TotalDue < 0){
+                    refund_modal.value.showModal();
+                }
 
             });
 
             }
         }
         getCheckoutItems();
+
+
 
         function openAccordionclick(id) {
             let acdbtn = document.getElementById('acdbtn_'+id);
@@ -1500,6 +1535,35 @@ export default {
             },0);
            return total;
         }
+
+        const creditAccount = async ()=>{
+            let btn = document.getElementById('credit_acc_btn');
+            btn.disabled = true;
+            console.log('before account credit');
+            try{
+                await setAccountCredit();
+
+            }finally{
+                btn.disabled = false;
+                refund_modal.value.closeModal();
+                console.log('after account credit');
+            }
+        }
+
+        async function setAccountCredit(){
+
+           return axios.post('/set-checkout-credit-refund',{
+                    order_id:order_id.value,
+                 }).then((res)=>{
+                    return Promise.resolve(res);
+                 }).catch((err)=>{
+                    return Promise.reject(res);
+                 }).finally(()=>{
+
+                    getCheckoutItems();
+                 });
+        }
+
         return {
             amountPaidCredit,
             order_id,
@@ -1585,7 +1649,10 @@ export default {
             has_invoices,
             btn_disabled,
             amount_paid_other,
-            disabled_btn_with_status
+            disabled_btn_with_status,
+            refund_modal,
+            closeRefundModal,
+            creditAccount,
         }
     },
 }
@@ -2087,5 +2154,22 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type=number] {
   -moz-appearance: textfield;
+}
+
+#modal-header-refund{
+    font:bold 22px "Gilroy";
+    color:#F4003D;
+    background:#FFEFED;
+}
+
+.refund-btn:hover{
+    background: #42A71E;
+    color:#fff;
+    border:thin solid #42A71E;
+}
+
+.inline-refund-btn{
+    font-size:13px;
+    width:100%;
 }
 </style>

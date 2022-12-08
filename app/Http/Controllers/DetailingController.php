@@ -2092,7 +2092,8 @@ class DetailingController extends Controller
                                 'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
                                 'cardNumber'=>$card->cardNumber,
                                 'type'=>$card->type,
-                                'card_id'=>$v->card_id
+                                'card_id'=>$v->card_id,
+                                'is_admin'=>(Auth::user()->role_id==1?1:0),
                             ];
                         }
                     }else{
@@ -2100,6 +2101,7 @@ class DetailingController extends Controller
                             'montant'=> number_format($v->montant,2,'.',''),
                             'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
                             'name'=>ucfirst($v->type),
+                            'is_admin'=>(Auth::user()->role_id==1?1:0),
                         ];
                     }
                 }

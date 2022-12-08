@@ -672,20 +672,45 @@ Route::get('/merge-pdf',function(){
     shell_exec("gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=$output_file -dBATCH $files");
 });
 
-Route::get('/test-calculate-checkout',function(){
-    $ctrl = new DetailingController();
+Route::get('/test-create-pi',function(){
+    $order_id = 99999;
 
-    $ctrl->calculateCheckout(146605);
 
+    $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
+    $stripe = new \Stripe\StripeClient(env($stripe_key));
+
+
+    $pi= $stripe->paymentIntents->create([
+        'amount'            => 100*30, //Minimun 30 pence
+        'currency'          => 'gbp',
+        'confirm'           => true,
+        "payment_method"    => 'pm_1LnoA2B2SbORtEDspPBXGNAJ',
+        "customer"          => 'cus_MWrt7Gggau7yrE',
+        "capture_method"    => "automatic",
+        'payment_method_types' => ['card'],
+        "description"=>$order_id,
+        "receipt_email"=>'rushdi@vpc-direct-service.com', //To change for customer email
+        //'off_session' => true,
+        //'confirm' => true,
+    ]);
+
+
+    $payment_intent = $stripe->paymentIntents->retrieve($pi->id,[]);
 
     echo "<pre>";
+    print_r($payment_intent);
+    die();
+
+
 
 });
 
-Route::get('test-ar-log',function(){
+Route::get('/test-refund',function(){
+    //Create payment Intent
+
+    OrderController::logRefund(1,5);
 
 });
-
 
 /* END TEST ROUTES */
 
@@ -1034,6 +1059,8 @@ Route::post('/remove-order-voucher',[DetailingController::class,'removeCheckoutV
 Route::post('/save-price-delivery-now',[DetailingController::class,'savePriceDeliveryNow'])->name('save-price-delivery-now')->middleware('auth');
 Route::post('/add-order-voucher',[DetailingController::class,'addCheckoutVoucher'])->name('add-order-voucher')->middleware('auth');
 Route::post('/pre-calculate-checkout',[DetailingController::class,'preCalculateCheckout'])->name('pre-calculate-checkout')->middleware('auth');
+Route::post('/set-checkout-credit-refund',[DetailingController::class,'setCheckoutCreditRefund'])->name('set-checkout-credit-refund')->middleware('auth');
+
 /*
 * AR List
 */
