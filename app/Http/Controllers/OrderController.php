@@ -1485,7 +1485,7 @@ class OrderController extends Controller
     public function getPayementOrder(Request $request){
 
         $order_id=$request->post('order_id');
- 
+
             $orderInfo  =  DB::table('payments')->select('status' , 'type' , 'datepayment')
                                                 ->where('payments.order_id',$order_id)
                                                 ->first();
@@ -1495,5 +1495,85 @@ class OrderController extends Controller
                 'data'=>$orderInfo
             ]);
      }
-     
+
+     public static function logRefund($payment_id,$amount){
+        $user = Auth::user();
+        $err_txt = "";
+
+        $payment = DB::table('payments')->where('id',$payment_id)->first();
+
+        $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
+
+        $stripe_test = env('STRIPE_TEST');
+        if($stripe_test){
+            $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
+        }
+
+        $stripe = new \Stripe\StripeClient(env($stripe_key));
+
+        //$payment_intent_id = $payment->payment_intent_id;
+        $payment_intent_id = 'pi_3MCNkJB2SbORtEDs1mcg2D9j';
+
+        $payment_intent = $stripe->paymentIntents->retrieve($payment_intent_id,[]);
+
+        $charge = $payment_intent->charges->data[0];
+
+        try{
+
+            $refund = $stripe->refunds->create([
+                'charge'=>$charge->id,
+                'amount'=>$amount*100,
+            ]);
+
+            $chargeAfterRefund = $stripe->charges->retrieve($charge->id,[]);
+
+            //Log line in charge
+            DB::table('refunds')->insert([
+                'payment_id'=>$payment_id,
+                'order_id'=>($payment?$payment->order_id:0),
+                'user_id'=>($user?$user->id:0),
+                'amount'=>$amount,
+                'stripe_charge_id'=>$charge->id,
+                'created_at'=>date('Y-m-d H:i:s')
+            ]);
+
+
+            //log negative line in payments
+            DB::table('payments')->insert([
+                'type'=>'card',
+                'datepayment'=>date('Y-m-d H:i:s'),
+                'status'=>'succeeded',
+                'montant'=>0-$amount,
+                'order_id'=>($payment?$payment->order_id:0),
+                'card_id'=>($payment?$payment->card_id:0),
+                'payment_intent_id'=>$payment_intent_id,
+                'CustomerID'=>($payment?$payment->CustomerID:''),
+                'info'=>'',
+                'created_at'=>date('Y-m-d H:i:s'),
+            ]);
+
+            DB::table('payments')->where('id',$payment_id)->update(['refunded'=>$chargeAfterRefund->amount_refunded/100]);
+
+
+        }catch(\Stripe\Exception\InvalidRequestException $e){ //Child Exception class
+            //echo "InvalidRequestException <br/><pre>";
+            $err_txt = $e->getError()->message;
+        }catch(\Stripe\Exception\ApiErrorException $e){ //parent Exception class
+            //echo "ApiErrorException <br/><pre>";
+            $err_txt = $e->getError()->message;
+        }
+        catch(Exception $e){ // grandparent Exception class
+            // Exception
+            $err_txt = $e->getMessage();
+        }
+
+        // $chargeAfterRefund = $stripe->charges->retrieve($charge->id,[]);
+        // echo "<pre>";
+        // print_r($chargeAfterRefund);
+
+        return $err_txt;
+
+    }
+
+
 }

@@ -1191,7 +1191,7 @@ class DetailingController extends Controller
 
     public function calculateCheckout($order_id,$force=false){
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
-        if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED']) && !$force)
+        if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED']) && $order->orderinvoiced==1 && !$force)
         return;
 
         $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
@@ -2092,7 +2092,8 @@ class DetailingController extends Controller
                                 'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
                                 'cardNumber'=>$card->cardNumber,
                                 'type'=>$card->type,
-                                'card_id'=>$v->card_id
+                                'card_id'=>$v->card_id,
+                                'is_admin'=>(Auth::user()->role_id==1?1:0),
                             ];
                         }
                     }else{
@@ -2100,6 +2101,7 @@ class DetailingController extends Controller
                             'montant'=> number_format($v->montant,2,'.',''),
                             'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
                             'name'=>ucfirst($v->type),
+                            'is_admin'=>(Auth::user()->role_id==1?1:0),
                         ];
                     }
                 }
@@ -2967,7 +2969,7 @@ class DetailingController extends Controller
             if(in_array(17,$cs)){
                 $price_percentage += $baseprice*($services[17]['perc']/100);
             }
-         
+
         }else{
             foreach($services as $k=>$v){
                 if(isset($services[$k])){
