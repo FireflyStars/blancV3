@@ -1199,7 +1199,7 @@ class DetailingController extends Controller
 
     public function calculateCheckout($order_id,$force=false){
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
-        if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED']) && !$force)
+        if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED']) && $order->orderinvoiced==1 && !$force)
         return;
 
         $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
@@ -2975,7 +2975,7 @@ class DetailingController extends Controller
             if(in_array(17,$cs)){
                 $price_percentage += $baseprice*($services[17]['perc']/100);
             }
-         
+
         }else{
             foreach($services as $k=>$v){
                 if(isset($services[$k])){
