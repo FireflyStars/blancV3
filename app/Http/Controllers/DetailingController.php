@@ -257,14 +257,14 @@ class DetailingController extends Controller
                         'etape' => 2,
                         'updated_at' => date('Y-m-d H:i:s')
                     ]);
-                }
-                $new_type_item = DB::table('typeitem')
-                ->where('typeitem.name', 'LIKE', '%' . $search . '%')
-                ->where('department_id', $searched_item->department_id)
-                ->where('deleted_at' , '=' , NULL)
-                ->get();
-        }
 
+                    $new_type_item = DB::table('typeitem')
+                    ->where('typeitem.name', 'LIKE', '%' . $search . '%')
+                    ->where('department_id', $searched_item->department_id)
+                    ->where('deleted_at' , '=' , NULL)
+                    ->get();
+                }     
+        }
 
         $detailingitem = DB::table('detailingitem')
             ->where('order_id', '=', $order_id)
@@ -630,26 +630,18 @@ class DetailingController extends Controller
         $detailing_data = $this->getDetailingData($detailingitem['department_id'], $detailingitem['typeitem_id']);
         $new_type_item = null;
 
-        if ($search) {
+        if($search) {
             $searched_item = DB::table('typeitem')
                 ->where('typeitem.name', 'LIKE', '%' . $search . '%')
                 ->where('deleted_at' , '=' , NULL)
                 ->first();
                 if($searched_item){
-                    DB::table('detailingitem')->where('id', $detailingitem_id)->update([
-                        'department_id' => $searched_item->department_id,
-                        'category_id' => $searched_item->category_id,
-                        'typeitem_id' => $searched_item->id,
-                        'size_id' => null,
-                        'etape' => 2,
-                        'updated_at' => date('Y-m-d H:i:s')
-                    ]);
+                    $new_type_item = DB::table('typeitem')
+                    ->where('typeitem.name', 'LIKE', '%' . $search . '%')
+                    ->where('department_id', $searched_item->department_id)
+                    ->where('deleted_at' , '=' , NULL)
+                    ->get();
                 }
-                $new_type_item = DB::table('typeitem')
-                ->where('typeitem.name', 'LIKE', '%' . $search . '%')
-                ->where('department_id', $searched_item->department_id)
-                ->where('deleted_at' , '=' , NULL)
-                ->get();
             $detailing_data['typeitemssearch'] = $new_type_item;
         }
         $item_description = $this->getItemDescription($detailingitem);
