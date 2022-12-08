@@ -70,6 +70,8 @@ Route::post('/markaslate',[OrderListController::class, 'markaslate'])->middlewar
 Route::post('/getorderdetail',[OrderListController::class,'getorderdetail'])->middleware('auth')->name('getorderdetail');
 Route::post('/setInvoiceFulfilled',[OrderListController::class,'setInvoiceFulfilled'])->middleware('auth')->name('setInvoiceFulfilled');
 Route::post('/SplitSubOrder',[OrderListController::class,'SplitSubOrder'])->middleware('auth')->name('SplitSubOrder');
+Route::post('/freeReClean',[OrderListController::class,'freeReClean'])->middleware('auth')->name('freeReClean');
+Route::post('/reAssign',[OrderListController::class,'reAssign'])->middleware('auth')->name('reAssign');
 Route::post('/getitemdetail',[OrderListController::class,'getitemdetail'])->middleware('auth')->name('getitemdetail');
 Route::post('/splititems',[OrderListController::class,'splititems'])->middleware('auth')->name('splititems');
 Route::post('/suggestdate',[OrderListController::class,'suggestdate'])->middleware('auth')->name('suggestdate');

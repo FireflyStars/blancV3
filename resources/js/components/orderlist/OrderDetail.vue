@@ -277,9 +277,19 @@
                     hr v-if="(typeof ORDER['detail']!='undefined')"/>
                 -->
         
-                <div class="d-flex w-100">
+                <div class="d-flex w-100 mt-3">
                     <div class="col">
-                        <order-detail-sub-order-items-table @close="show_split_conf=false" @show_conf="show_split_conf=true" :tabledef="itemsfields" :id="'items_table'" :user="ORDER['user']" :status="ORDER['detail'].Status" :order="ORDER['detail']" v-if="(typeof ORDER['detail']!='undefined')">
+                        <order-detail-sub-order-items-table 
+                            @close="show_split_conf=false" 
+                            @show_conf="show_split_conf=true" 
+                            @free-reclean="freeReclean" 
+                            @re-assign="reAssign" 
+                            :tabledef="itemsfields" 
+                            :id="'items_table'" 
+                            :user="ORDER['user']" 
+                            :status="ORDER['detail'].Status" 
+                            :order="ORDER['detail']" 
+                            v-if="(typeof ORDER['detail']!='undefined')">
                         </order-detail-sub-order-items-table>
                     </div>
                 </div>
@@ -312,6 +322,8 @@
         <split-confirmation :show_conf="show_split_conf" @close="show_split_conf=false"></split-confirmation>
         <CancelBookingConfirmation v-if= "showModelCancelBooking" :show_modal="showModelCancelBooking" @close="showModelCancelBooking=false" :order = ORDER.detail></CancelBookingConfirmation>
         <qz-print ref="qz_printer"></qz-print>
+        <free-reclean ref="freeRecleanModal"></free-reclean>
+        <re-assign ref="reAssignModal"></re-assign>
     </div>
 </template>
 
@@ -330,6 +342,8 @@
     import OrderOptions from '../miscellaneous/OrderOptions';
     import QzPrint from "../QzPrint";
     import MiniCheckout from '../miscellaneous/MiniCheckout.vue';
+    import FreeReclean from '../miscellaneous/FreeReclean.vue';
+    import ReAssign from '../miscellaneous/ReAssign.vue';
     import {
         ORDERLIST_MODULE,
         ORDERLIST_GET_CURRENT_SELECTED,
@@ -360,7 +374,7 @@
 
     export default {
         name: "OrderDetail",
-        components:{Tag,AddressFormat,OrderDetailSubOrderItemsTable,DatePicker,TimeSlotPicker,SplitConfirmation ,OrderOptions , CancelBookingConfirmation , QzPrint,MiniCheckout},
+        components:{Tag,AddressFormat,OrderDetailSubOrderItemsTable,DatePicker,TimeSlotPicker,SplitConfirmation ,OrderOptions , CancelBookingConfirmation , QzPrint, MiniCheckout, FreeReclean, ReAssign},
         setup(){
             const route =useRoute();
             const router=useRouter();
@@ -368,6 +382,8 @@
 
             const show_split_conf=ref(false);
             const show_options_btn=ref(false);
+            const freeRecleanModal=ref(null);
+            const reAssignModal=ref(null);
 
             const itemsfields=ref({
                 line_select:{
@@ -780,6 +796,12 @@
                 });
 
             }
+            const freeReclean = (itemId, subOrder)=>{
+                freeRecleanModal.value.openModal(itemId, ORDER.value.detail.order_id, subOrder);
+            }
+            const reAssign = (item, subOrder)=>{
+                reAssignModal.value.openModal(item, subOrder, ORDER.value.detail.CustomerID);
+            }
 
             return {
                 showorderdetail,
@@ -789,7 +811,7 @@
                 close:(()=>{
                     store.dispatch(`${ORDERLIST_MODULE}${ORDERLIST_SELECT_CURRENT}`,'');
                     store.commit(`${ORDERDETAIL_MODULE}${ORDERDETAIL_SET_DETAILS}`,{});
-                    //router.back();
+                    // router.back();
                     router.push({
                         name:'LandingPage',
                         params: {
@@ -802,6 +824,10 @@
                 featureunavailable,
                 itemsfields,
                 markaslate,
+                freeReclean,
+                reAssign,
+                freeRecleanModal,
+                reAssignModal,
                 suggested_date,
                 cc_new_delivery_date: cc_new_delivery_date,
                 cc_new_pickup_date:cc_new_pickup_date,
@@ -1041,7 +1067,7 @@ h2{
     right: 24px;
 }
 hr{
-    margin:  1.8rem -20px;
+    /* margin:  1.8rem -20px; */
     background-color: #E0E0E0;
     opacity: 1;
 }

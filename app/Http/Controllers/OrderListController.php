@@ -1527,6 +1527,63 @@ class OrderListController extends Controller
                 'status_message'=>$statusText
             ]);
     }
+    /**
+     * Free ReClean
+     * @param order_id, item_id
+     */
+    public function freeReClean(Request $request){
+
+        $orderId = $request->post('orderId');
+        $itemId = $request->post('itemId');
+
+
+        $freeReCleanEndpoint = "http://blancspot.vpc-direct-service.com/freereclean.php";
+
+        $client = new \GuzzleHttp\Client();
+
+        $params = [
+            'token'     =>  'GhtfvbbG4489hGtyEfgARRGht3',
+            'orderid'   =>  $orderId,
+            'item'      =>  $itemId,
+            'userid'    =>  auth()->id(),
+        ];
+        $response = $client->request('GET', $freeReCleanEndpoint, ['query' => $params]);
+        $statusCode = $response->getStatusCode();
+        $statusText = $response->getReasonPhrase();
+        return response()->json([
+            'status_code'   =>  $statusCode,
+            'status_message'=>  $statusText
+        ]);
+    }
+
+    /**
+     * ReAssign
+     * @param customer_id, item_id
+     */
+    public function reAssign(Request $request){
+
+        $customerId = $request->post('customerId');
+        $itemId = $request->post('itemId');
+
+
+        $reassign = "http://blancspot.vpc-direct-service.com/reassign.php";
+
+        $client = new \GuzzleHttp\Client();
+
+        $params = [
+            'token'     =>  'GhtfvbbG4489hGtyEfgARRGht3',
+            'item'      =>  $itemId,
+            'userid'    =>  auth()->id(),
+            'clientid'   =>  $customerId,
+        ];
+        $response = $client->request('GET', $reassign, ['query' => $params]);
+        $statusCode = $response->getStatusCode();
+        $statusText = $response->getReasonPhrase();
+        return response()->json([
+            'status_code'   =>  $statusCode,
+            'status_message'=>  $statusText
+        ]);
+    }
 
     public function getitemdetail(Request $request){
         $itemInfo = DB::table('infoitems')
