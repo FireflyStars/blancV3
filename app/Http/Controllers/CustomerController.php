@@ -72,7 +72,7 @@ class CustomerController extends Controller
             'AcceptSMSMarketing'        => $request->acceptSMSMarketing,
             'OnAccount'     => $request->CustomerPayemenProfile,
             'CompanyName'   => $request->CompanyName,
-            'ChargeDelivery'=> $request->ChargeDelivery,
+            'ChargeDelivery'=> $request->chargeDelivery,
         ];
         if($request->deliveryByday == '1'){
             $info_customer['DeliverybyDay'] = 1;
@@ -154,7 +154,8 @@ class CustomerController extends Controller
                                     'CustomerIDMaster' => $CustomerUUID,
                                     'OnAccount'        => $customer->OnAccount,
                                     'TypeDelivery'     => $customer->TypeDelivery,
-                                    'btob'             => $customer->btob
+                                    'btob'             => $customer->btob,
+                                    'ChargeDelivery'   => $customer->ChargeDelivery
                                 ]);
                                 $preferences = DB::table('InfoCustomerPreference')->where('CustomerID', $account['customerId'])->get();
                                 //preference
@@ -196,6 +197,7 @@ class CustomerController extends Controller
                                     'TypeDelivery'  => $customer->TypeDelivery,
                                     'isMaster'      => 0,
                                     'btob'          => $customer->btob,
+                                    'ChargeDelivery'=> $customer->ChargeDelivery,
                                     'FirstName'     => $account['firstName'],
                                     'LastName'      => $account['lastName'],
                                     'Name'          => $account['name'],
@@ -539,9 +541,10 @@ class CustomerController extends Controller
             DB::table('infoCustomer')->where('id', $request->customer_data['id'])
             ->update([
                 'CustomerIDMaster' => $request->customer_id,
-                'OnAccount'        => $request->CustomerPayemenProfile,
+                'OnAccount'        => $customer->OnAccount,
+                'ChargeDelivery'   => $customer->ChargeDelivery,
                 'TypeDelivery'     => $request->typeDelivery,
-                'btob'             => $request->btob
+                'btob'             => $customer->btob
             ]);
 
             $Prefrences =  DB::table('InfoCustomerPreference')->where('CustomerID',$request->customer_data['customerId'])
@@ -583,8 +586,9 @@ class CustomerController extends Controller
             $info_customer_sub = [
                 'CustomerID'    => '',
                 'CustomerIDMaster'=> $request->customer_id,
-                'OnAccount'     => $request->CustomerPayemenProfile,
+                'OnAccount'     => $customer->OnAccount,
                 'TypeDelivery'  => $customer->TypeDelivery,
+                'ChargeDelivery'=> $customer->ChargeDelivery,
                 'isMaster'      => 0,
                 'btob'          => $customer->btob,
                 'FirstName'     => $request->customer_data['firstName'],
