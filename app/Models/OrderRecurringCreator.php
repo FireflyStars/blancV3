@@ -451,6 +451,10 @@ class OrderRecurringCreator
             $infoOrder=DB::table('infoOrder')->where('CustomerID','=',$customer->CustomerID)->where('Status','=','RECURRING')->where('DatePickup','=',$PossibleScheduleBookingDate)->first();
             if($infoOrder!=null){
                 $this->l("A recurring order exist for `$PossibleScheduleBookingDate`. No order will be created for this date.");
+                //if master account check all sub accounts for missing order and create it.
+                $this->addMissingSubOrder($customer);
+
+
                 $this->l("Checking if the order delivery date `$infoOrder->DateDeliveryAsk` need to be rescheduled");
                 $this->reScheduleDelivery($infoOrder,$customer);
                 unset($PossibleScheduleBookingDates[$k]);
@@ -467,6 +471,33 @@ class OrderRecurringCreator
 
     }
 
+    public function addMissingSubOrder($customer){
+        $subAccounts=DB::table('infoCustomer')->where('CustomerIDMaster','=',$customer->CustomerID)->get();
+         if($subAccounts->count()>0){
+            $this->l('Checking Master account\'s Sub accounts for sub orders that need to be created.');
+            $infoOrders=DB::table('infoOrder')->where('CustomerID','=',$customer->CustomerID)->where('Status','=','RECURRING')->get();
+            foreach($infoOrders as $infoOrder)
+            foreach($subAccounts as $sub){
+                $infoOrderSub=DB::table('infoOrder')->where('CustomerID','=',$sub->CustomerID)->where('PickupID','=',$infoOrder->PickupID)->where('DeliveryaskID','=',$infoOrder->DeliveryaskID)->where('Status','=','RECURRING')->first();
+                if($infoOrderSub==null){
+                    $infoOrder_id = DB::table('infoOrder')->insertGetId([
+                        "DateDeliveryAsk" => $infoOrder->DateDeliveryAsk,
+                        "deliverymethod"=>$infoOrder->deliverymethod,
+                        "DatePickup" => $infoOrder->DatePickup,
+                        "PickupID" => $infoOrder->PickupID,
+                        "DeliveryaskID" => $infoOrder->DeliveryaskID,
+                        "CustomerID" => $sub->CustomerID,
+                        "created_at" => date('Y-m-d H:i:s'),
+                        "updated_at" => date('Y-m-d H:i:s'),
+                        "Status" => 'RECURRING'
+                    ]);
+                    $this->l("New (MISSING) Sub Order Recurring created: infoOrder_id `$infoOrder_id` with customerID ` $sub->CustomerID`. CustomerIDMaster is  `$customer->CustomerID` ");
+                }
+            }
+
+            $this->l('END Checking Master account\'s Sub accounts for sub orders that need to be created.');
+        }
+    }
     public function reScheduleDelivery($infoOrder,$customer){
 
         $this->l('reScheduleDelivery()');
