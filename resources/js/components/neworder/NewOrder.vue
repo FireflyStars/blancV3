@@ -1754,6 +1754,7 @@ import axios from 'axios';
            function CreateOrderWithoutDeliveryDate(){
               no_delivery_date.value = true
               delivery_modal.value.closeModal();
+              validateDetails()
            }
 
             return {
