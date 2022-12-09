@@ -1496,7 +1496,7 @@ class OrderController extends Controller
         if(strpos($site_url,'blancposdev') > -1){
             //Do nothing
         }elseif(strpos($site_url,'fullcirclepos') > -1){
-            $endpoint = "http://blancpos.vpc-direct-service.com/fulfiled-v1-order.php";
+            $endpoint = "http://blancspot.vpc-direct-service.com/fulfiled-v1-order.php";
             $token = "GhtfvbbG4489hGtyEfgARRGht3";
 
             $site_url = \Illuminate\Support\Facades\URL::to("/");
