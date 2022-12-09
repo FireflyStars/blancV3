@@ -290,7 +290,7 @@
         margin-bottom: 15px;
         display: inline-block;
         width: 100%;
-        padding:12px 0 20px 0;
+        padding:15px 0 20px 0;
     }
     .subordernum{
         font-size: 14px;
