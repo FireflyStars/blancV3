@@ -712,7 +712,94 @@ Route::get('/test-refund',function(){
 
 });
 
+Route::get('/test-create-card',function(){
+    $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
+    $stripe = new \Stripe\StripeClient(env($stripe_key));
+
+    $cust = DB::table('infoCustomer')->where('id',22783)->first();
+
+
+    //$card_num = '4000000000000002'; //Generic returns card_declined
+    //$card_num = '4000000000009979'; //lost card returns card_declined
+    // $card_num = '4000000000000069'; //card expired returns card expired
+    //$card_num = '4000000000009995'; // insufficient funds
+    //$card_num = '4000000000009979'; // stolen card
+    //$card_num = '4000000000000127'; //incorrect CVC
+    $card_num = '4000002760003184'; // 3D secure all authenticate
+   //$card_num = '4000000000003220'; //3D secure ok
+   // $card_num = '4000000000003063'; //Setupintent succeeded
+    //$card_num = '4000002500003155';
+    //$card_num = '4000008260000000';
+
+    $site_url = \Illuminate\Support\Facades\URL::to("/");
+
+
+    try{
+        $card = $stripe->paymentMethods->create([
+            'type' => 'card',
+            'card' => [
+                'number'      => $card_num ,
+                'exp_month'   => 12,
+                'exp_year'    => 30,
+                'cvc'         => 999,
+            ]
+        ]);
+
+
+        $stripe_customer = $stripe->customers->create([
+            'name'              => 'Test Rushdi', //to change
+            'email'             => 'rushdi@vpc-direct-service.com',
+            'payment_method'    => $card->id,
+            'invoice_settings'  => ['default_payment_method' => $card->id],
+            'metadata'=>[
+                'CustomerID'=>$cust->CustomerID,
+            ]
+
+        ]);
+
+
+        $si = $stripe->setupIntents->create([
+            'customer' => $stripe_customer->id,
+            'payment_method'=>$card->id,
+            'payment_method_types' => ['card'],
+
+            /*
+            'payment_method_options'=>[
+                'card'=>[
+                    'request_three_d_secure'=>'any'
+                ]
+            ],
+            */
+        ]);
+
+        $res = $stripe->setupIntents->confirm($si->id,[
+            'return_url'=>$site_url.'/confirm-card/?si='.$si->id,
+        ]);
+
+        //echo $res->next_action->use_stripe_sdk->type;
+        if($res->status=='succeeded'){
+            echo "3D secure successful";
+        }else{
+            echo $res->id."<br/><br/>";
+            echo "<a href='".$res->next_action->redirect_to_url->url."' target='_BLANK'>Confirm URL</a><br/><br/><pre>";
+            print_r($res);
+        }
+
+    }catch(\Stripe\Exception\CardException $e){
+        $err = $e->getError();
+        echo $err->message." Code: ".$err->decline_code;
+        echo "<pre>";
+        print_r($err);
+    }catch(\Exception $e){
+        echo $e->getMessage();
+    }
+
+});
+
+
 /* END TEST ROUTES */
+
+/*DO NOT REMOVE*/
 
 Route::get('/3d-secure',function(Request $request){
     $token = $request->get('token');
@@ -851,29 +938,6 @@ Route::get('/unpaid-card-orders',function(Request $request){
 
         }
 
-        /*
-
-        $payments = DB::table("payments")->whereIn('order_id',$orders_id)->where('montant','>',0)->where('status','succeeded')->get();
-
-        if(count($payments) > 0){
-            foreach($payments as $k=>$v){
-                $paid_orders[$v->order_id][] = $v->montant;
-            }
-
-            foreach($paid_orders as $k=>$v){
-                $paid_per_order[$k] = array_sum($v);
-            }
-        }
-
-        foreach($orders_to_charge as $orderid=>$detail){
-            if(isset($paid_per_order[$orderid])){
-                $totaldue = $detail['TotalDue'] - $paid_per_order[$orderid];
-
-                $orders_to_charge[$orderid]['TotalDue'] = $totaldue;
-            }
-        }
-        */
-
         $cards = DB::table('cards')
             ->select('cards.*','infoCustomer.EmailAddress')
             ->join('infoCustomer','cards.CustomerID','infoCustomer.CustomerID')
@@ -964,6 +1028,73 @@ Route::get('/unpaid-card-orders',function(Request $request){
 
 
 });
+
+Route::get('/confirm-card',function(request $request){
+    $si_id = $request->si;
+
+    if(!isset($si_id) || $si_id==''){
+        die('Parameter "?si=XXX" not set');
+    }
+
+    $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
+
+    $stripe_test = env('STRIPE_TEST');
+    if($stripe_test){
+        $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
+    }
+
+    $stripe = new \Stripe\StripeClient(env($stripe_key));
+
+    $site_url = \Illuminate\Support\Facades\URL::to("/");
+
+    try{
+        $si = $stripe->setupIntents->retrieve($si_id);
+
+        $pm = $stripe->paymentMethods->retrieve($si->payment_method); //payment_method
+        $cust = $stripe->customers->retrieve($si->customer);
+
+        if($si->status=='succeeded'){
+            $existing_card = DB::table('cards')
+                //->where('setup_intent_id',$si->id)
+                ->where('CustomerID',$cust->metadata->CustomerID)
+                ->where('Actif',1)
+                ->first();
+
+            if($existing_card){
+                die('You already have one active card');
+            }else{
+                $last4 = $pm->card->last4;
+                $card_details = [
+                    'cardNumber'=>sprintf("%'*16d\n",$last4),
+                    'cardHolderName'=>$cust->name,
+                    'type'=>$pm->card->brand,
+                    'Actif'=>1,
+                    'dateexpiration'=>$pm->card->exp_month."/".substr($pm->card->exp_year,2),
+                    'stripe_customer_id'=>$cust->id,
+                    'stripe_card_id'=>$pm->id,
+                    'setup_intent_id'=>$si->id,
+                    'CustomerID'=>$cust->metadata->CustomerID,
+                    'app'=>(strpos($site_url,'blancapi') > -1?1:0),
+                    'created_at'=>date('Y-m-d H:i:s'),
+                ];
+
+                try{
+                    DB::table('cards')->insert($card_details);
+                    echo "Card confirmation successful";
+                }catch(\Exception $e){
+                    die("Unable to confirm card: ".$e->getMessage());
+                }
+            }
+
+        }else{
+            die('3D secure not completed');
+        }
+    }catch(\Exception $e){
+        die("Invalid setupIntent id");
+    }
+});
+
+/*END DO NOT REMOVE*/
 
 // added by yonghuan to search customers to be linked
 Route::post('/search-customer', [SearchController::class, 'SearchCustomersToLink'])->name('SearchCustomersToLink');

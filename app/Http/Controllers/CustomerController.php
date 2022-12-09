@@ -390,7 +390,7 @@ class CustomerController extends Controller
                         'exp_month'   => intval(explode('/', str_replace(' ','',$request->cardExpDate))[0]),
                         'exp_year'    => intval(explode('/', str_replace(' ','',$request->cardExpDate))[1]),
                         'cvc'         => $request->cardCVC,
-                    ],
+                    ]
                 ]);
                 //create a customer object to stripe
                 $stripe_customer = $stripe->customers->create([
@@ -422,7 +422,7 @@ class CustomerController extends Controller
                 $site_url = \Illuminate\Support\Facades\URL::to("/");
 
                 $three_d_res = $stripe->setupIntents->confirm($si->id,[
-                    'return_url'=>$site_url."/?si=".$si->id,
+                    'return_url'=>$site_url."/confirm-card/?si=".$si->id,
                 ]);
 
             if($three_d_res->status=='succeeded'){
@@ -1911,7 +1911,7 @@ class CustomerController extends Controller
             $site_url = \Illuminate\Support\Facades\URL::to("/");
 
             $three_d_res = $stripe->setupIntents->confirm($si->id,[
-                'return_url'=>$site_url."/?si=".$si->id,
+                'return_url'=>$site_url."/confirm-card/?si=".$si->id,
             ]);
 
             if($three_d_res->status=='succeeded'){
