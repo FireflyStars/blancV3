@@ -671,35 +671,36 @@ export default {
         }
 
         function getPreference(){
-            const list = [];
             if(props.detailingitem.status != 'Completed'){
 
                 axios.post('/getPreferenceCustomer',{
                 Customer_id: props.detailingitem.customer_id,
                 typeitem_id: props.detailingitem.typeitem_id
                }).then((res)=>{
-                   preference_customer.value = res.data.prefrenceActive
-                   const clean_array = JSON.parse(props.detailingitem.cleaning_services)
-                   clean_array.map(function(value, key) {
-                        list.push(value)
-                    });
-                       preference_customer.value.forEach(function(v,i){
-                        if(list!= null){
-                            if(!list.includes(v)){
-                                toggleSubService(v)
-                            }
-
-                        }else{
-                            toggleSubService(v)
-                        }
-                            
-                        })      
+                   preference_customer.value = res.data.prefrenceActive    
                }).catch((err)=>{
 
                })
             }
-            checkSelectedCleaning(true);
+            
         }
+
+        watch(() => [preference_customer.value], (current_pref, previous_pred) => {
+            const list = []; 
+            current_pref.forEach(function(v,i){
+                   const list = JSON.parse(props.detailingitem.cleaning_services);
+                   console.log(list)
+                        if(list!= null){
+                            if(!list.includes(v)){
+                                toggleSubService(v)
+                                checkSelectedCleaning(false);
+                            }
+                        }else{
+                            toggleSubService(v)
+                            checkSelectedCleaning(false);
+                        }                 
+            })  
+        });
 
         onMounted(()=>{
             sel_cleaning_price_type.value = 'Standard';
@@ -726,8 +727,12 @@ export default {
 
             if(props.detailingitem.cleaning_services==null){
                checkSelectedCleaning(true);
+               getPreference()
+            }else{
+                checkSelectedCleaning(false);
+                getPreference()
             }
-            getPreference()
+            
         });
 
 
