@@ -677,7 +677,10 @@ export default {
                 Customer_id: props.detailingitem.customer_id,
                 typeitem_id: props.detailingitem.typeitem_id
                }).then((res)=>{
-                   preference_customer.value = res.data.prefrenceActive    
+                if(res.data.prefrenceActive != null){
+                       preference_customer.value = res.data.prefrenceActive  
+                }
+                    
                }).catch((err)=>{
 
                })
@@ -689,8 +692,7 @@ export default {
             const list = []; 
             current_pref.forEach(function(v,i){
                    const list = JSON.parse(props.detailingitem.cleaning_services);
-                   console.log(list)
-                        if(list!= null){
+                        if(list != null){
                             if(!list.includes(v)){
                                 toggleSubService(v)
                                 checkSelectedCleaning(false);

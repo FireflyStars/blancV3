@@ -107,11 +107,11 @@ class OrderController extends Controller
                 $order_to_insert['TypeDelivery'] = 'DELIVERY';
             }
 
-            if($new_order['deliverymethod'] == 'delivery_only'){
-                $order_to_insert['express'] = 0;
-            }else{
-                $order_to_insert['express'] = 1;
-            }
+            // if($new_order['deliverymethod'] == 'delivery_only'){
+            //     $order_to_insert['express'] = 0;
+            // }else{
+            //     $order_to_insert['express'] = 1;
+            // }
             $new_order_id = DB::table('infoOrder')
                 ->insertGetId($order_to_insert);
         }
