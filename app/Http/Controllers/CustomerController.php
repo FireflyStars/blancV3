@@ -172,7 +172,7 @@ class CustomerController extends Controller
                                                 ]);
                                         }
                                     }else{
-                                    
+
                                     foreach ($customer_preferences as $k=>$pref) {
                                         $customer_preferences_account[] = [
                                             'CustomerID' =>  $account['customerId'],
@@ -189,7 +189,7 @@ class CustomerController extends Controller
                                         return response()->json($e->getMessage(), 500);
                                     }
                                 }
-                            }else if($account['id'] == 0 && $account['accountType'] == 'Sub' ){       
+                            }else if($account['id'] == 0 && $account['accountType'] == 'Sub' ){
                                 $info_customer_sub = [
                                     'CustomerID'    => '',
                                     'CustomerIDMaster'=> $CustomerUUID,
@@ -414,11 +414,18 @@ class CustomerController extends Controller
 
                 $si = $stripe->setupIntents->create([
                     'customer' => $stripe_customer->id,
+                    'payment_method'=>$card->id,
                     'payment_method_types' => ['card'],
                     'usage'=>'off_session',
                 ]);
 
+                $site_url = \Illuminate\Support\Facades\URL::to("/");
 
+                $three_d_res = $stripe->setupIntents->confirm($si->id,[
+                    'return_url'=>$site_url."/?si=".$si->id,
+                ]);
+
+            if($three_d_res->status=='succeeded'){
                 //add a new record to cards table
                 $credit_card = [
                     'CustomerID'        => $CustomerUUID,
@@ -448,7 +455,14 @@ class CustomerController extends Controller
                     if($payment_intent->status == 'succeeded')
                         DB::table('infoCustomer')->where('CustomerID', $CustomerUUID)->update(['credit'=> $request->addCredit]);
                 }
-            } catch (\Exception $e) {
+            }else{
+                return response()->json(['error'=> "Unable to authenticate card for 3DS"]);
+            }
+
+            }catch(\Stripe\Exception\CardException $e){
+                return response()->json(['error'=>$e->getError()->message." ".$e->getError()->decline_code]);
+            }
+            catch (\Exception $e) {
                 return response()->json(['error'=> $e->getMessage()]);
             }
         }
@@ -549,7 +563,7 @@ class CustomerController extends Controller
 
             $Prefrences =  DB::table('InfoCustomerPreference')->where('CustomerID',$request->customer_data['customerId'])
                             ->where('Delete', 0)
-                            ->get(); 
+                            ->get();
                     if(count($Prefrences) > 0)  {
                         foreach($customer_prefrences_array as $k=>$v){
                             $updated = DB::table('InfoCustomerPreference')
@@ -572,9 +586,9 @@ class CustomerController extends Controller
                                 'created_at' => now(),
                                 'updated_at' => now(),
                             ];
-            
+
                         }
-                    }                                  
+                    }
                 try {
                     $response =  DB::table('InfoCustomerPreference')->insert($customer_preferences);
                 } catch (\Exception $e) {
@@ -1851,9 +1865,12 @@ class CustomerController extends Controller
             $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
         }
 
+        $three_d_res = "";
+
         if(trim($request->cardHolderName)!=""&&trim($request->cardDetails)!=""&&trim($request->cardExpDate)!=""&&trim($request->cardCVV)!=""){
         $stripe = new \Stripe\StripeClient(env($stripe_key));
 
+            try{
             //create a card object to stripe
             $card = $stripe->paymentMethods->create([
                 'type' => 'card',
@@ -1883,12 +1900,21 @@ class CustomerController extends Controller
                                     ]
             ]);
 
+
             $si = $stripe->setupIntents->create([
                 'customer' => $stripe_customer->id,
+                'payment_method'=>$card->id,
                 'payment_method_types' => ['card'],
                 'usage'=>'off_session',
             ]);
 
+            $site_url = \Illuminate\Support\Facades\URL::to("/");
+
+            $three_d_res = $stripe->setupIntents->confirm($si->id,[
+                'return_url'=>$site_url."/?si=".$si->id,
+            ]);
+
+            if($three_d_res->status=='succeeded'){
 
             //add a new record to cards table
                 $credit_card = [
@@ -1906,6 +1932,14 @@ class CustomerController extends Controller
                 ];
                 $credit_card_id = DB::table('cards')->insertGetId($credit_card);
                 return response()->json( $credit_card_id );
+            }else{
+                return response()->json(['error_3ds'=>$three_d_res]);
+            }
+            }catch(\Stripe\Exception\CardException $e){
+               return response()->json(['stripe_error'=>$e->getError()]);
+            }catch(\Exception $e){
+                return response()->json(['stripe_error'=>$e->getMessage()]);
+            }
 
             }else{
                 DB::table('infoCustomer')->where('CustomerID','=',$request->customerID)->update(array('bycard'=>1));
