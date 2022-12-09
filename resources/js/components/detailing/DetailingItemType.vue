@@ -124,7 +124,11 @@ export default {
 
         watch(() => props.typeitemssearch, (current_val, previous_val) => {
             props.categories.map(function(value, key) {
-                listAcc.value[key] = false;
+                if(open_serch_item.value == true){
+                        listAcc.value[key] = false;
+                    }else {
+                        listAcc.value[key] = true;
+                }
             });
         });
 
@@ -136,8 +140,13 @@ export default {
         });
         watch(() => [category_id.value, typeitem_id.value], ([current_category, current_typeitem], [previous_category, previous_typeitem]) => {
             props.categories.map(function(value, key) {
-                if(category_id.value == value.id && typeitem_id_search.value == null ){
-                   listAcc.value[key] = true;
+                if(category_id.value == value.id ){
+                    if(open_serch_item.value == true){
+                        listAcc.value[key] = false;
+                    }else {
+                        listAcc.value[key] = true;
+                    }
+                   
                 }else {
                   listAcc.value[key] = false;
                 }

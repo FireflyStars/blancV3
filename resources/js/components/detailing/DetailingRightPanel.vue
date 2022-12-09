@@ -536,13 +536,15 @@ export default {
                     if(sv.length > 0){
                         grouped_cleaning_price.value[v] = (typeof(price_type!='undefined') && ['Quote','PriceNow'].includes(price_type)?parseFloat(0).toFixed(2):total_price.toFixed(2));
                         grouped_cleaning_services.value[v] = sv;
-                        if(grouped_cleaning_price.value["Dry cleaning"] != null){
-                            service_with_perc.forEach(function(v,i){            
-                               perc_service += (grouped_cleaning_price.value["Dry cleaning"] / 100) * v.perc;
-                            });
+                        if(grouped_cleaning_services.value["Cleaning Add-on"] != null){
+                            if(grouped_cleaning_price.value["Dry cleaning"] != null){
+                                service_with_perc.forEach(function(v,i){            
+                                perc_service += (grouped_cleaning_price.value["Dry cleaning"] / 100) * v.perc;
+                                });
+                           }
+                            grouped_cleaning_price.value["Cleaning Add-on"] = (parseFloat(grouped_cleaning_price.value["Cleaning Add-on"]?grouped_cleaning_price.value["Cleaning Add-on"] : 0) + perc_service).toFixed(2)
                         }
 
-                        grouped_cleaning_price.value["Cleaning Add-on"] = (parseFloat(grouped_cleaning_price.value["Cleaning Add-on"]) + perc_service).toFixed(2)
 
                     }else{
                         grouped_cleaning_price.value[v] = {};
