@@ -1801,7 +1801,7 @@
                     }else if(res.data.error_3ds){
                         let err = res.data.error_3ds;
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
-                            message:"Unable to authenticate card for 3DS",
+                            message:"3DS ERROR: Ask customer to enter card details on app",
                             ttl: 7,
                             type: 'danger'
                         });

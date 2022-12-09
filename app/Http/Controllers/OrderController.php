@@ -111,7 +111,7 @@ class OrderController extends Controller
                 $order_to_insert['express'] = 0;
             }else{
                 $order_to_insert['express'] = 1;
-            }       
+            }
             $new_order_id = DB::table('infoOrder')
                 ->insertGetId($order_to_insert);
         }
@@ -462,7 +462,7 @@ class OrderController extends Controller
                 $card_id = DB::table('cards')->insertGetId($credit_card);
                 $card = DB::table('cards')->where('id',$card_id)->first();
             }else{
-                $err_txt = "Unable to authenticate card for 3DS";
+                $err_txt = "3DS ERROR: Ask customer to enter card details on app";
             }
         }catch(\Stripe\Exception\CardException $e){
             $err_txt = $e->getError()->message." Code: ".$e->getError()->decline_code;
@@ -608,7 +608,7 @@ class OrderController extends Controller
                         ];
                     }else{
                         return response()->json([
-                            'error_stripe'=>'Unable to authenticate card for 3DS',
+                            'error_stripe'=>'3DS ERROR: Ask customer to enter card details on app',
                         ]);
                     }
 

@@ -456,7 +456,7 @@ class CustomerController extends Controller
                         DB::table('infoCustomer')->where('CustomerID', $CustomerUUID)->update(['credit'=> $request->addCredit]);
                 }
             }else{
-                return response()->json(['error'=> "Unable to authenticate card for 3DS"]);
+                return response()->json(['error'=> "3DS ERROR: Ask customer to enter card details on app"]);
             }
 
             }catch(\Stripe\Exception\CardException $e){

@@ -1031,9 +1031,13 @@ Route::get('/unpaid-card-orders',function(Request $request){
 
 Route::get('/confirm-card',function(request $request){
     $si_id = $request->si;
+    $err = false;
+    $err_txt = "";
 
     if(!isset($si_id) || $si_id==''){
-        die('Parameter "?si=XXX" not set');
+        //die('Parameter "?si=XXX" not set');
+        $err = true;
+        $err_txt = "Parameter ?si=XXX not set";
     }
 
     $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
@@ -1061,7 +1065,9 @@ Route::get('/confirm-card',function(request $request){
                 ->first();
 
             if($existing_card){
-                die('You already have one active card');
+                //die('You already have one active card');
+                $err = true;
+                $err_txt = "You already have one active card";
             }else{
                 $last4 = $pm->card->last4;
                 $card_details = [
@@ -1080,18 +1086,30 @@ Route::get('/confirm-card',function(request $request){
 
                 try{
                     DB::table('cards')->insert($card_details);
-                    echo "Card confirmation successful";
+                    //echo "Card confirmation successful";
+                    $err = false;
                 }catch(\Exception $e){
-                    die("Unable to confirm card: ".$e->getMessage());
+                    //die("Unable to confirm card: ".$e->getMessage());
+                    $err = true;
+                    $err_txt = "Unable to confirm card: ".$e->getMessage();
                 }
             }
 
         }else{
-            die('3D secure not completed');
+            //die('3D secure not completed');
+            $err = true;
+            $err_txt = "3D secure not completed";
         }
     }catch(\Exception $e){
-        die("Invalid setupIntent id");
+        //die("Invalid setupIntent id");
+        $err = true;
+        $err_txt = "Invalid setupIntent id";
     }
+
+    return response()->json([
+        'err'=>$err,
+        'err_txt'=>$err_txt,
+    ]);
 });
 
 /*END DO NOT REMOVE*/
