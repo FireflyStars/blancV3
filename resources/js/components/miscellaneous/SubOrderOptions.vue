@@ -11,18 +11,18 @@
                 <img class="img-arrow" src="/images/offload.png" />
                 <span>Offload</span>
             </div>
-            <div class="col-12 row-option" @click="freeReclean">
+            <!-- <div class="col-12 row-option" @click="freeReclean">
                 <img class="img-arrow" src="/images/bubbles.svg" />
                 <span>Free reclean</span>
-            </div>
+            </div> -->
             <div class="col-12 row-option" row-option>
                 <img class="img-arrow" src="/images/link.svg" />
                 <span>Copy link</span>
             </div>
-             <div class="col-12 row-option" >
+             <!-- <div class="col-12 row-option" >
                 <img class="img-arrow" src="/images/arrow.png" />
                 <span>Reassign</span>
-            </div>
+            </div> -->
              <!-- <div class="col-12 row-option" >
                 <img class="img-arrow" src="/images/garbage.png" />
                 <span>Delete</span>
