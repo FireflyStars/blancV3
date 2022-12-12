@@ -804,8 +804,7 @@
                 reAssignModal.value.openModal(suborder, invoice_id, ORDER.value.detail.CustomerID);
             }
             const openPrinterModal=(order_id)=>{
-                reAssign(123, 456);
-                // qz_printer.value.loadPrinterOrderModal(order_id)
+                qz_printer.value.loadPrinterOrderModal(order_id)
             }
             return {
                 showorderdetail,
