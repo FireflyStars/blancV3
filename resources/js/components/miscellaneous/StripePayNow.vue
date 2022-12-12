@@ -352,11 +352,26 @@ export default {
             */
         }
 
+        function cancelTerminalRequest(){
+
+            console.log('terminal status:',terminal.value.getPaymentStatus());
+            terminal.value.cancelCollectPaymentMethod()
+                .then((response)=>{
+                    console.log(response);
+                    //return Promise.resolve(response);
+                }).catch((error)=>{
+                    //return Promise.reject(error);
+                }).finally(()=>{
+                    context.emit('close-awaiting-payment');
+                });
+        }
+
         return {
             payNow,
             selected_reader,
             refundPayment,
             err_terminal,
+            cancelTerminalRequest,
         }
 
     },
