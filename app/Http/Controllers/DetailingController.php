@@ -257,14 +257,14 @@ class DetailingController extends Controller
                         'etape' => 2,
                         'updated_at' => date('Y-m-d H:i:s')
                     ]);
-                }
-                $new_type_item = DB::table('typeitem')
-                ->where('typeitem.name', 'LIKE', '%' . $search . '%')
-                ->where('department_id', $searched_item->department_id)
-                ->where('deleted_at' , '=' , NULL)
-                ->get();
-        }
 
+                    $new_type_item = DB::table('typeitem')
+                    ->where('typeitem.name', 'LIKE', '%' . $search . '%')
+                    ->where('department_id', $searched_item->department_id)
+                    ->where('deleted_at' , '=' , NULL)
+                    ->get();
+                }     
+        }
 
         $detailingitem = DB::table('detailingitem')
             ->where('order_id', '=', $order_id)
@@ -630,26 +630,18 @@ class DetailingController extends Controller
         $detailing_data = $this->getDetailingData($detailingitem['department_id'], $detailingitem['typeitem_id']);
         $new_type_item = null;
 
-        if ($search) {
+        if($search) {
             $searched_item = DB::table('typeitem')
                 ->where('typeitem.name', 'LIKE', '%' . $search . '%')
                 ->where('deleted_at' , '=' , NULL)
                 ->first();
                 if($searched_item){
-                    DB::table('detailingitem')->where('id', $detailingitem_id)->update([
-                        'department_id' => $searched_item->department_id,
-                        'category_id' => $searched_item->category_id,
-                        'typeitem_id' => $searched_item->id,
-                        'size_id' => null,
-                        'etape' => 2,
-                        'updated_at' => date('Y-m-d H:i:s')
-                    ]);
+                    $new_type_item = DB::table('typeitem')
+                    ->where('typeitem.name', 'LIKE', '%' . $search . '%')
+                    ->where('department_id', $searched_item->department_id)
+                    ->where('deleted_at' , '=' , NULL)
+                    ->get();
                 }
-                $new_type_item = DB::table('typeitem')
-                ->where('typeitem.name', 'LIKE', '%' . $search . '%')
-                ->where('department_id', $searched_item->department_id)
-                ->where('deleted_at' , '=' , NULL)
-                ->get();
             $detailing_data['typeitemssearch'] = $new_type_item;
         }
         $item_description = $this->getItemDescription($detailingitem);
@@ -979,7 +971,6 @@ class DetailingController extends Controller
                 $item_base_price = $prev_type_item->pricecleaning;
             }
 
-            $duplicate_detailing_item['pricecleaning'] = $item_base_price;
 
             $pricecleaning = $item_base_price
                 + ($item_base_price * $previous_detailed_item->coefcleaningbrand)
@@ -992,7 +983,9 @@ class DetailingController extends Controller
                 $pricecleaning = DetailingController::calculateCleaningPrice($cs,$pricecleaning);
             }
 
-            $duplicate_detailing_item['dry_cleaning_price'] = $pricecleaning;
+            $duplicate_detailing_item['pricecleaning'] = $previous_detailed_item->pricecleaning;
+            $duplicate_detailing_item['cleaning_addon_price'] = $previous_detailed_item->cleaning_addon_price;
+            $duplicate_detailing_item['dry_cleaning_price'] = $previous_detailed_item->dry_cleaning_price;
             $duplicate_detailing_item['tailoring_services'] = "[]";
 
 
@@ -1199,7 +1192,7 @@ class DetailingController extends Controller
 
     public function calculateCheckout($order_id,$force=false){
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
-        if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED']) && !$force)
+        if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED']) && $order->orderinvoiced==1 && !$force)
         return;
 
         $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
@@ -2100,7 +2093,8 @@ class DetailingController extends Controller
                                 'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
                                 'cardNumber'=>$card->cardNumber,
                                 'type'=>$card->type,
-                                'card_id'=>$v->card_id
+                                'card_id'=>$v->card_id,
+                                'is_admin'=>(Auth::user()->role_id==1?1:0),
                             ];
                         }
                     }else{
@@ -2108,6 +2102,7 @@ class DetailingController extends Controller
                             'montant'=> number_format($v->montant,2,'.',''),
                             'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
                             'name'=>ucfirst($v->type),
+                            'is_admin'=>(Auth::user()->role_id==1?1:0),
                         ];
                     }
                 }
@@ -2975,7 +2970,7 @@ class DetailingController extends Controller
             if(in_array(17,$cs)){
                 $price_percentage += $baseprice*($services[17]['perc']/100);
             }
-         
+
         }else{
             foreach($services as $k=>$v){
                 if(isset($services[$k])){

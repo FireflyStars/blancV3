@@ -85,7 +85,7 @@
         right:0;
         height: calc(100% - var(--mainlogoheight));
         width: 684px;
-        z-index: 1;
+        z-index: 1000;
         display: flex;
         align-items: center;
         justify-content: center;

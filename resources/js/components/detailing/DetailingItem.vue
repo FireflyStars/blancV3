@@ -70,6 +70,9 @@
                                     :categories="detailingData.categories"
                                     :typeitems="detailingData.typeitems"
                                     :detailingitem="detailingitem"
+                                    :typeitemssearch="detailingData.typeitemssearch"
+                                    :searchItem="search"
+                                    @remove-search = "removeSearch"
                                     @save-type-item="saveItemDetails"
                                     @go-to-step="backPreviousStep"
                                 ></detailing-item-type>
@@ -417,6 +420,9 @@ export default {
                 }      
         }
 
+        function removeSearch(){
+            search.value =""
+        }
         return {
             paths,
             user,
@@ -450,7 +456,8 @@ export default {
             getIssuesStep,
             getStep,
             isuue_step,
-            go_to_type
+            go_to_type,
+            removeSearch
 
         };
     },

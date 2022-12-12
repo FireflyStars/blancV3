@@ -1,5 +1,23 @@
 <template>
     <div class="accordion-container">
+        <div v-if="open_serch_item" class="row accordion-body">
+            <div class="row accordion-body">
+                        <div
+                            class="item-type"
+                            v-for="(item, j) in typeitemssearch"
+                            @click="typeItemSearchClick(item.id, item.category_id)"
+                            :class="{ selected: typeitem_id_search === item.id  && typeitemssearch}"
+                        >
+                            <img
+                                class="item-no-picto"
+                                src="/images/nopicto.svg" v-if="item.draw1 == null || item.draw1==''"
+                            />
+                            <img v-else class="item-picto" :src="'/images/pictos/'+item.draw1+'.svg'"/>
+
+                            {{ item.name }}
+                        </div>
+                    </div>
+        </div>
         <div class="accordion accordion-flush" id="accordionFlushExample">
             <div class="accordion-item" v-for="(cat, i) in categories">
                 <h2 class="accordion-header" :id="{ i }">
@@ -36,16 +54,6 @@
                             />
                             <img v-else class="item-picto" :src="'/images/pictos/'+item.draw1+'.svg'"/>
 
-                            <!--
-                            <item-picto
-                                v-else
-                                class="item-picto"
-                                :class="{ selectedpicto: typeitem_id === item.id && category_id === cat.id }"
-                                :pictoname="item.draw1"
-                                face="front"
-                            ></item-picto>
-                            -->
-
                             {{ item.name }}
                         </div>
                     </div>
@@ -77,17 +85,22 @@ export default {
     props: {
         categories: {},
         typeitems: {},
-        detailingitem: {}
+        detailingitem: {},
+        typeitemssearch: {},
+        searchItem: ""
     },
-    emits: ['save-type-item', 'go-to-step'],
+    emits: ['save-type-item', 'go-to-step' , 'remove-search'],
     setup(props, context) {
         const category_id = ref(0);
         const typeitem_id = ref(0);
+        const typeitem_id_search = ref(0);
         const valid = ref(false);
         const listAcc = ref([]);
+        const open_serch_item = ref(false);
 
         category_id.value = props.detailingitem.category_id != null ? props.detailingitem.category_id : 0;
         typeitem_id.value = props.detailingitem.typeitem_id != null ? props.detailingitem.typeitem_id : 0;
+        typeitem_id_search.value = props.detailingitem.typeitem_id != null ? props.detailingitem.typeitem_id : 0;
         valid.value = category_id.value != 0 && typeitem_id.value != 0;
            
           props.categories.map(function(value, key) {
@@ -98,17 +111,42 @@ export default {
                 }
             });
 
+            watch(() => props.searchItem, (current_val, previous_val) => {
+                if(current_val != null){
+                    open_serch_item.value = true
+                    props.categories.map(function(value, key) {
+                        listAcc.value[key] = false;
+                    });
+                }else{
+                    open_serch_item.value = false
+                }
+            });
+
+        watch(() => props.typeitemssearch, (current_val, previous_val) => {
+            props.categories.map(function(value, key) {
+                if(open_serch_item.value == true){
+                        listAcc.value[key] = false;
+                    }else {
+                        listAcc.value[key] = true;
+                }
+            });
+        });
 
         watch(() => props.detailingitem, (current_val, previous_val) => {
             category_id.value = current_val.category_id != null ? current_val.category_id : 0;
             typeitem_id.value = current_val.typeitem_id != null ? current_val.typeitem_id : 0;
+            typeitem_id_search.value = current_val.typeitem_id != null ? current_val.typeitem_id : 0;
            
         });
         watch(() => [category_id.value, typeitem_id.value], ([current_category, current_typeitem], [previous_category, previous_typeitem]) => {
-            console.log(category_id.value, typeitem_id.value , current_category , current_typeitem )
             props.categories.map(function(value, key) {
-                if(category_id.value == value.id){
-                   listAcc.value[key] = true;
+                if(category_id.value == value.id ){
+                    if(open_serch_item.value == true){
+                        listAcc.value[key] = false;
+                    }else {
+                        listAcc.value[key] = true;
+                    }
+                   
                 }else {
                   listAcc.value[key] = false;
                 }
@@ -136,7 +174,19 @@ export default {
 
             }
         }
+        function typeItemSearchClick(id , cat_id){
+            if (typeitem_id_search.value != id) {
+                typeitem_id_search.value = id;
+                context.emit("save-type-item", { detailingitem_id: props.detailingitem.id, category_id: cat_id, typeitem_id: typeitem_id_search.value , search: props.searchItem });
+                this.scrollToNext();
+            } else {
+                typeitem_id_search.value = 0;
+                context.emit("save-type-item", { detailingitem_id: props.detailingitem.id, category_id: cat_id, typeitem_id: typeitem_id_search.value , search: props.searchItem });
+            }
+        }
+
         function save() {
+            context.emit("remove-search");
             context.emit("go-to-step", 3);
             window.scrollTo(0, 0);
         }
@@ -159,7 +209,10 @@ export default {
             save,
             back,
             scrollToNext,
-            listAcc
+            listAcc,
+            typeItemSearchClick,
+            typeitem_id_search,
+            open_serch_item
         };
     },
 }

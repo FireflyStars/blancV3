@@ -3,22 +3,19 @@
             enter-active-class="animate__animated animate__fadeIn"
             leave-active-class="animate__animated animate__fadeOut"
     >
-    <div  class="confirmation-overlay">
+    <div v-if="show" class="confirmation-overlay">
         <div class="confirmation">
             <i class="icon-close" @click="close"></i>
             <div class="confirmation-title">
-                <span class="subtitle">Cancel Booking</span>
+                <span class="subtitle">Void</span>
             </div>
-            <div class="confirmation-msg body_regular"><p>Do you want to Cancel Booking </p>
-            <br />
-            <span>Pickup Date : {{order.DatePickup}}</span>
-            <br />
-            <span>Delivery Date : {{order.DateDelivery}}</span>
-            
+            <div class="confirmation-msg body_regular"><p>Do you want to VOID an order that has had payments ? 
+            <br>
+            </p>
             </div>
             <div class="confirmation-btn">
-                <button class="btn btn-outline-danger body_medium" style="margin-right: 59px" @click="close">No</button>
-                <button class="btn btn-dark body_medium" style="" @click="CancelBooking">Yes</button>
+                <button class="btn btn-outline-danger body_medium" style="margin-right: 59px" @click="close">No, cancel</button>
+                <button class="btn btn-dark body_medium" style="" @click="VoidOrder">Yes, void</button>
             </div>
         </div>
 
@@ -32,33 +29,48 @@
     import {useStore} from 'vuex';
     import {TOASTER_MODULE, TOASTER_MESSAGE} from "../../store/types/types";
     export default {
-        name: "CancelBookingConfirmation",
-        props:['order','show_modal'],
+        name: "VoidOrderModale",
+        props:{
+            show_conf:{
+                type:Boolean
+            },
+            order_id :{
+               type:String
+            },
+            items :{
+               type:Array
+            },
+        },
         setup(props,context){
-
+            const show=ref(false);
             const store=useStore();
-
+            watch(() => props.show_conf, (toval, fromval) => {
+                show.value=toval;
+            });
             const close=()=>{
                 context.emit('close');
+                show.value=false;
             }
-
-            function CancelBooking(){
-                   axios.post('/cancelBooking',{
-                   OrderID: props.order.OrderID
-                    }).then((res)=>{
+                 
+            function VoidOrder(){
+                axios.post('/voidOrder',{
+                    order_id: props.order_id,
+                    items : props.items
+               }).then((res)=>{
                           if( res.data.done == "ok"){
-                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Booking cancelled successfully',ttl:5,type:'success'});
+                             store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Success',ttl:5,type:'success'});
                              location.reload();
                              close()
                         }
                     }).catch((error)=>{
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
                     })
+                close()
             }
             return {
+                show,
                 close,
-                CancelBooking
-                
+                VoidOrder
             }
         }
     }
@@ -72,7 +84,7 @@
         right:0;
         height: calc(100% - var(--mainlogoheight));
         width: 684px;
-        z-index: 1000;
+        z-index: 10000;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -100,12 +112,13 @@
         padding-bottom:17px;
     }
     .confirmation-msg{
-        display: block;
+        display: flex;
         align-items: center;
         justify-content: center;
-        height: 200px;
+        height: 223px;
     }
     .confirmation-msg p{
-            margin: 50px 0 0 0;
+        max-width: 290px;
+        margin: 0;
     }
 </style>

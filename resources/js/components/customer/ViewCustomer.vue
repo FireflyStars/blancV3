@@ -279,7 +279,7 @@
                                             <div class="col-2 d-flex justify-content-end">
                                                 <SwitchBtn class="ms-auto" v-model="form.ChargeDelivery"></SwitchBtn>
                                             </div>
-                                        </div>                                        
+                                        </div>
                                         <div class="d-flex justify-content-end" v-if="address_edit">
                                             <button class="btn btn btn-success each-save-btn" @click="validateAndSaveContactAddress">Save</button>
                                         </div>
@@ -1338,7 +1338,7 @@
                                 array_emails.forEach(function(v,i){
                                     form.value[text+(i+1)] = v
                                 })
-                                 
+
 
                             }
                             // console.log("emaiiiil" , res.data.customer.invoice.email.split("\n"))
@@ -1789,12 +1789,30 @@
 
                 //if(form.value.cardHolderName != "" && form.value.cardDetails != ""  && form.value.cardExpDate != "" &&  form.value.cardCVV != "" && form.value.paymentMethod != ""){
                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Add Card Customer...']);
-                axios.post('/add-credit-card', form.value ).then((res)=>{
-                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                    form.value.cardId =  res.data
-                    creditCardCustomer.value = true
-                    this.add_payement =false;
-                    window.location.reload();
+                axios.post('/add-credit-card', form.value )
+                .then((res)=>{
+                    if(res.data.stripe_error && !res.data.error_3ds){
+                        let err = res.data.stripe_error;
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                            message:"Stripe error: "+err.message+" "+err.decline_code,
+                            ttl: 7,
+                            type: 'danger'
+                        });
+                    }else if(res.data.error_3ds){
+                        let err = res.data.error_3ds;
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                            message:"3DS ERROR: Ask customer to enter card details on app",
+                            ttl: 7,
+                            type: 'danger'
+                        });
+                    }
+                    else{
+                        store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                        form.value.cardId =  res.data
+                        creditCardCustomer.value = true
+                        this.add_payement =false;
+                        window.location.reload();
+                    }
                 }).catch((error)=>{
                     let err_txt = "Error saving card details";
                     if(typeof(error.response.data)!='undefined'){

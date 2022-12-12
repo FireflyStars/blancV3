@@ -32,11 +32,11 @@
                     <!--
 (!detailingitem.cleaning_services && service.selected_default==1) ||
                         -->
-                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center position-relative" v-for="(service,id) in services" :class="{'sel_service': service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0, 'is_preference':service.cleaning_group==2 && service.id_preference!=0 ,'service_add_ons':service.cleaning_group==1 , 'mb-4':service.cleaning_group==2, 'active_service': preference_customer && preference_customer.includes(service.id_preference)  && detailingitem.status != 'Completed' , 'cleaning': group=='Cleaning Add-on'}" :id="'sub_service_'+service.id" @click="checkSubService(service.id)" :data-cleaning-service-id="service.id">
+                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center position-relative" v-for="(service,id) in services" :class="{'sel_service': service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0, 'is_preference':service.cleaning_group==2 && service.modalpreference!=0 ,'service_add_ons':service.cleaning_group==1 , 'mb-4':service.cleaning_group==2, 'active_service': preference_customer && preference_customer.includes(service.id_preference)  && detailingitem.status != 'Completed' , 'cleaning': group=='Cleaning Add-on'}" :id="'sub_service_'+service.id" @click="checkSubService(service.id)" :data-cleaning-service-id="service.id">
                         <div class="d-block w-100 text-center">
                             {{service.name}}
-                            <span v-if="service.cleaning_group==2 && service.perc >= 0" class="text-center d-block w-100">(&#163;{{service.fixed_price}})</span>
-                            <span v-if="service.cleaning_group==2 && service.perc < 0">{{calculateNegativPerc(service)}}(&#163;{{service_perc}})</span>
+                            <span v-if="service.cleaning_group==2 && service.perc == 0" class="text-center d-block w-100">(&#163;{{service.fixed_price}})</span>
+                            <span v-if="service.cleaning_group==2 && service.perc != 0">{{calculateNegativPerc(service)}}(&#163;{{service_perc}})</span>
                         </div>
                         <img src="/images/padlock.svg" class="position-absolute pref-disable-icon" v-if="service.cleaning_group==2 && service.isPrefActive==0"/>
                     </div>
@@ -671,35 +671,38 @@ export default {
         }
 
         function getPreference(){
-            const list = [];
             if(props.detailingitem.status != 'Completed'){
 
                 axios.post('/getPreferenceCustomer',{
                 Customer_id: props.detailingitem.customer_id,
                 typeitem_id: props.detailingitem.typeitem_id
                }).then((res)=>{
-                   preference_customer.value = res.data.prefrenceActive
-                   const clean_array = JSON.parse(props.detailingitem.cleaning_services)
-                   clean_array.map(function(value, key) {
-                        list.push(value)
-                    });
-                       preference_customer.value.forEach(function(v,i){
-                        if(list!= null){
-                            if(!list.includes(v)){
-                                toggleSubService(v)
-                            }
-
-                        }else{
-                            toggleSubService(v)
-                        }
-                            
-                        })      
+                if(res.data.prefrenceActive != null){
+                       preference_customer.value = res.data.prefrenceActive  
+                }
+                    
                }).catch((err)=>{
 
                })
             }
-            checkSelectedCleaning(false);
+            
         }
+
+        watch(() => [preference_customer.value], (current_pref, previous_pred) => {
+            const list = []; 
+            current_pref.forEach(function(v,i){
+                   const list = JSON.parse(props.detailingitem.cleaning_services);
+                        if(list != null){
+                            if(!list.includes(v)){
+                                toggleSubService(v)
+                                checkSelectedCleaning(false);
+                            }
+                        }else{
+                            toggleSubService(v)
+                            checkSelectedCleaning(false);
+                        }                 
+            })  
+        });
 
         onMounted(()=>{
             sel_cleaning_price_type.value = 'Standard';
@@ -726,8 +729,12 @@ export default {
 
             if(props.detailingitem.cleaning_services==null){
                checkSelectedCleaning(true);
+               getPreference()
+            }else{
+                checkSelectedCleaning(false);
+                getPreference()
             }
-            getPreference()
+            
         });
 
 
@@ -962,16 +969,8 @@ export default {
             pricenow_describe_modal.value.closeModal();
         }
         function calculateNegativPerc(service){
-            if(props.detailingitem.cleaning_services != null){
-                if(!props.detailingitem.cleaning_services.includes(service.id)){
                     let total_price_cleaning = ((props.detailingitem.dry_cleaning_price / 100) * service.perc).toFixed(2);
                     service_perc.value = total_price_cleaning
-                }else{
-                    let previous_totla_cleaning = (props.detailingitem.dry_cleaning_price * 100) / (100 + service.perc)
-                    let total_price_cleaning = ((previous_totla_cleaning / 100) * service.perc).toFixed(2);
-                    service_perc.value = total_price_cleaning
-                }
-            }
         }
 
         return {

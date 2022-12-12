@@ -18,13 +18,9 @@
                 <img class="img-arrow" src="/images/reassign.svg" />
                 <span>Reassign</span>
             </div>
-            <div class="col-12 row-option" row-option>
+            <div class="col-12 row-option">
                 <img class="img-arrow" src="/images/link.svg" />
                 <span>Copy link</span>
-            </div>
-             <div class="col-12 row-option" >
-                <img class="img-arrow" src="/images/arrow.png" />
-                <span>Reassign</span>
             </div>
              <!-- <div class="col-12 row-option" >
                 <img class="img-arrow" src="/images/garbage.png" />
