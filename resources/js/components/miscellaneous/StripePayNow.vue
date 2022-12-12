@@ -105,7 +105,7 @@ export default {
                         type: "danger",
                     });
                     err_terminal.value = true;
-               // context.emit('close-awaiting-payment');
+                context.emit('close-awaiting-payment');
                 } else {
                     selected_reader.value = connectResult.reader;
                     console.log('Connected to reader: ', connectResult.reader.label);
@@ -353,6 +353,8 @@ export default {
         }
 
         function cancelTerminalRequest(){
+            // console.log('stripepaynow')
+            // context.emit('close-awaiting-payment');
 
             console.log('terminal status:',terminal.value.getPaymentStatus());
             terminal.value.cancelCollectPaymentMethod()
