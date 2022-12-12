@@ -297,7 +297,7 @@
             <div class="d-flex action-buttons w-100" v-if="(typeof ORDER['detail']!='undefined')">
                 <div class="col-8 d-flex">
                     <div class="col-4 options_btn">
-                        <button class="btn btn-outline-dark body_medium" @click="openModal(ORDER['detail'].order_id)">Print ticket(s)</button>
+                        <button class="btn btn-outline-dark body_medium" @click="openPrinterModal(ORDER['detail'].order_id)">Print ticket(s)</button>
                     </div>
     
                     <div class="col-4 options_btn" v-if="ORDER['items'].length !== 0">
@@ -382,6 +382,7 @@
 
             const show_split_conf=ref(false);
             const show_options_btn=ref(false);
+            const qz_printer=ref(null);
             const freeRecleanModal=ref(null);
             const reAssignModal=ref(null);
 
@@ -799,10 +800,13 @@
             const freeReclean = (itemId, subOrder)=>{
                 freeRecleanModal.value.openModal(itemId, ORDER.value.detail.order_id, subOrder);
             }
-            const reAssign = (item, subOrder)=>{
-                reAssignModal.value.openModal(item, subOrder, ORDER.value.detail.CustomerID);
+            const reAssign = (suborder, invoice_id)=>{
+                reAssignModal.value.openModal(suborder, invoice_id, ORDER.value.detail.CustomerID);
             }
-
+            const openPrinterModal=(order_id)=>{
+                reAssign(123, 456);
+                // qz_printer.value.loadPrinterOrderModal(order_id)
+            }
             return {
                 showorderdetail,
                 loaderclass:computed(()=>{
@@ -826,6 +830,8 @@
                 markaslate,
                 freeReclean,
                 reAssign,
+                openPrinterModal,
+                qz_printer,
                 freeRecleanModal,
                 reAssignModal,
                 suggested_date,
@@ -869,11 +875,6 @@
                 showFulfillBtn,
             }
         },
-        methods:{
-        openModal(order_id){
-            this.$refs.qz_printer.loadPrinterOrderModal(order_id)
-        }
-    }
     }
 </script>
 

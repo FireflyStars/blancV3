@@ -6,10 +6,27 @@
                 Reassign <i class="icon-close" @click="closeModal"></i>
             </div>
             <div class="order-detail-modal-content">
-                <p>Do you want to reassign sub-order {{ subOrder }} to </p>
+                <p>Do you want to reassign sub-order <b>{{ subOrder }}</b> to </p>
+                <div class="customer-search" v-if="step == 1">
+                    <search :label="'Search Customer'" @selected-customer="selectedCustomer"></search>
+                </div>
+                <div class="customer-info w-100" v-else>
+                    <div class="customer-name d-flex">
+                        <h3>{{ customer.name }}</h3> <a href="javascript:;" @click="editCustomer" class="customer-edit-btn ms-3">Edit</a>
+                    </div>
+                    <div class="d-flex mt-2">
+                        <div class="col-6">
+                            <label for="">Email</label>
+                            <p class="text-start fw-bold">{{ customer.email }}</p>
+                        </div>
+                        <div class="col-6">
+                            <label for="">Phone number</label>
+                            <p class="text-start fw-bold">{{ customer.phone }}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <search></search>
-            <div class="order-detail-modal-footer">
+            <div class="order-detail-modal-footer" v-if="step == 2">
                 <div class="cancel-btn" @click="closeModal">NO, cancel</div>
                 <div class="confirm-btn" @click="confirm">Confirm</div>
             </div>
@@ -26,6 +43,7 @@ import {
         TOASTER_MODULE,
         TOASTER_MESSAGE,
     } from "../../store/types/types";
+// import {formatPhone} from '../helpers/helpers'
 import Search from './Search.vue';
 export default {
     name: "ReAssign",
@@ -37,25 +55,31 @@ export default {
     setup(props, context){
         const store = useStore();
         const show_modal = ref(false);
+        const customer = ref({
+            name: 'Chanel, Coco',
+            email: 'c.chanel@gmail.com',
+            phone: '+44 208 004 2630',
+            customerId: '',
+        });
         const subOrder = ref(null);
-        const customerId = ref(null);
-        const itemId = ref(null);
+        const invoiceId = ref(null);
+        const step = ref(1);
 
         const closeModal = ()=>{
             show_modal.value = false;
+            step.value = 1;
         }
 
-        const openModal = (item, suborder, customer)=>{
+        const openModal = (suborder, invoice, customer)=>{
             show_modal.value = true;
+            invoiceId.value = invoice;
             subOrder.value = suborder;
-            itemId.value = item;
-            customerId.value = customer;
         }
         const confirm = ()=>{
             var reAssaignUrl = '/reAssign';
             axios.post(reAssaignUrl,{ 
-                itemId:    itemId.value,
-                customerId:    customerId.value,
+                invoiceId:    invoiceId.value,
+                customerId:    customer.value.customerId,
             }).then((res)=>{
                 if(res.data.status_code == 200){
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Reassign Done.',ttl:5,type:'success'});
@@ -69,13 +93,21 @@ export default {
 
             })
         }
-
+        const selectedCustomer = ()=>{
+            step.value = 2;
+        }
+        const editCustomer = ()=>{
+            step.value = 1;
+        }
         return {
             show_modal,
             subOrder,
+            step,
+            customer,
             closeModal,
             openModal,
             confirm,
+            selectedCustomer,
         }
     }
 };
@@ -99,7 +131,6 @@ export default {
     width: 545px;
     height: 400px;
     border-radius: 10px;
-    overflow: hidden;
     background: white;
 }
 .order-detail-modal-header{
@@ -115,7 +146,7 @@ export default {
     justify-content: center;
 }
 .order-detail-modal-content{
-    padding: 45px 110px 58px;
+    padding: 20px 40px;
 }
 .icon-close{
     top:24px;
@@ -129,6 +160,43 @@ p{
     line-height: 140%;
     color: #151920;
     text-align: center;
+}
+.customer-info{
+    padding: 20px 15px;
+    border: 1px solid #E0E0E0;
+    border-radius: 5px;    
+}
+.customer-info label{
+    font-family: 'Gotham Rounded';
+    font-style: normal;
+    font-weight: 325;
+    font-size: 16px;
+    line-height: 140%;    
+    color: #868686;
+}
+.customer-info label{
+    font-family: 'Gotham Rounded';
+    font-style: normal;
+    font-weight: 350;
+    font-size: 16px;
+    line-height: 140%;
+    color: #47454B    
+}
+.customer-name h3{
+    font-family: 'Gilroy';
+    font-style: normal;
+    font-weight: 800;
+    font-size: 22px;
+    line-height: 110%;    
+}
+.customer-edit-btn{
+    font-family: 'Gotham Rounded';
+    font-style: normal;
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 19px;    
+    text-decoration-line: underline;
+    color: #42A71E;    
 }
 .order-detail-modal-footer{
     padding: 0 70px 25px;

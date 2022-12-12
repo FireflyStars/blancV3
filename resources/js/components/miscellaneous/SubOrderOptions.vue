@@ -108,7 +108,7 @@
                 }else if(listItems.value.length > 1){
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'you can only select one item.',ttl:5,type:'danger'});
                 }else{
-                    context.emit('reAssign', listItems.value[0][0], props.suborder)
+                    context.emit('reAssign', props.suborder, props.invoice_id)
                 }                
             }
             return {

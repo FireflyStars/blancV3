@@ -241,9 +241,9 @@
                 open_options.value = false;
                 context.emit('freeReclean', itemId, subOrder);
             }
-            const reAssign = (itemId, subOrder)=>{
+            const reAssign = (suborder, invoice_id)=>{
                 open_options.value = false;
-                context.emit('reAssign', itemId, subOrder);
+                context.emit('reAssign', suborder, invoice_id);
             }
           
 

@@ -81,90 +81,92 @@
       import {useStore} from 'vuex';
       import Tag from  '../miscellaneous/Tag'
 export default({
-     name: "Search",
-      components:{Tag},
-     props:{
-            modelValue: String,
-            droppos: Object,
-            label:String,
-            disabled:Boolean,
-            hint:String,
-        },
-        setup(props,context){
+    name: "Search",
+    components:{Tag},
+    props:{
+        modelValue: String,
+        droppos: Object,
+        label:String,
+        disabled:Boolean,
+        hint:String,
+    },
+    emits: ['update:modelValue', 'selectedCustomer'],
+    setup(props,context){
 
-           const search =ref('');
-           const store =useStore();
-           const timeout =ref('');
-           const showSearch=ref(false);
-           const showbutton = ref(false);
-           const show_loader= ref(false);
-           const inputsearch=ref(null);
-     
-     function clearSearch(){
+        const search =ref('');
+        const store =useStore();
+        const timeout =ref('');
+        const showSearch=ref(false);
+        const showbutton = ref(false);
+        const show_loader= ref(false);
+        const inputsearch=ref(null);
+    
+        function clearSearch(){
         
-         search.value = null;
-         showSearch.value = false;
-         showbutton.value = false;
-         show_loader.value= false;
-       }
-   const featureunavailable=((feature)=>{
-               store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:feature+' feature not yet implemented.',ttl:5,type:'success'});
+            search.value = null;
+            showSearch.value = false;
+            showbutton.value = false;
+            show_loader.value= false;
+        }
+        const featureunavailable=((feature)=>{
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:feature+' feature not yet implemented.',ttl:5,type:'success'});
+                });
+        function submit(e) { 
+            clearTimeout(timeout.value);
+            timeout.value = setTimeout(function(){
+                    show_loader.value= true;
+                nextTick(() => {
+                    store.dispatch(`${CUSTOMERLIST_MODULE}${CUSTOMER_SEARCH_LOAD_LIST}`,{query:e.target.value}).then((response)=>{
+                    
+                        if(e.target.value){
+                            showSearch.value = true;
+                            showbutton.value = true;
+                            
+                        } else {
+                            showSearch.value = false;
+                            show_loader.value= false;
+                        }
+                    }).catch((error)=>{
+                    
+                });
             });
-   function submit(e) { 
-               clearTimeout(timeout.value);
-               timeout.value = setTimeout(function(){
-                     show_loader.value= true;
-                   nextTick(() => {
-                     store.dispatch(`${CUSTOMERLIST_MODULE}${CUSTOMER_SEARCH_LOAD_LIST}`,{query:e.target.value}).then((response)=>{
-                     
-                          if(e.target.value){
-                              showSearch.value = true;
-                              showbutton.value = true;
-                              
-                            } else {
-                              showSearch.value = false;
-                              show_loader.value= false;
-                            }
-                     }).catch((error)=>{
-                       
-                    });
-                });
-               }  
-              , 500)
-            };
+            }  
+            , 500)
+        };
 
-             function loadMore(){
-                 store.dispatch(`${CUSTOMERLIST_MODULE}${CUSTOMER_SEARCH_LOAD_LIST}`,{showmore:1,query:search.value}).finally(()=>{
-                });
+        function loadMore(){
+                store.dispatch(`${CUSTOMERLIST_MODULE}${CUSTOMER_SEARCH_LOAD_LIST}`,{showmore:1,query:search.value}).finally(()=>{
+            });
+        }
+
+        const selectCustomer=(value)=>{
+
+            
+            if( search.value==value) {
+                search.value = "";
+            }else {
+                search.value = value['Name'];  
             }
+            context.emit("update:modelValue",value.CustomerID);
+            context.emit("selectedCustomer", value);
+            showSearch.value = false;
+        }
 
-            const selectCustomer=(value)=>{
+        const Customer=computed(()=>{
+            return store.getters[`${CUSTOMERLIST_MODULE}${CUSTOMER_GET_SEARCH_LIST}`];
 
-                
-                if( search.value==value) {
-                    search.value = "";
-                }else {
-                    search.value = value['Name'];  
-                }
-                context.emit("update:modelValue",value.CustomerID);
-                showSearch.value = false;
-            }
+        });
+                const CountCustomer=computed(()=>{
+            return store.getters[`${CUSTOMERLIST_MODULE}${CUSTOMER_GET_SEARCH_COUNT}`];
 
-            const Customer=computed(()=>{
-               return store.getters[`${CUSTOMERLIST_MODULE}${CUSTOMER_GET_SEARCH_LIST}`];
-
+        });
+        watchEffect(() => {
+            if(inputsearch.value!=null)
+                inputsearch.value.focus();
+        },
+            {
+                flush: 'post'
             });
-                 const CountCustomer=computed(()=>{
-               return store.getters[`${CUSTOMERLIST_MODULE}${CUSTOMER_GET_SEARCH_COUNT}`];
-
-            });
-            watchEffect(() => {
-                if(inputsearch.value!=null)
-                    inputsearch.value.focus();
-            },
-                {
-                    flush: 'post'
-                });
 
         return {
             search,
@@ -220,13 +222,16 @@ export default({
     position: absolute;
     background: #fff;
     width: 100%;
+    min-width: 517px;
+    height: 609px;
+    overflow-y: auto;
     height: auto;
     box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
     border-radius: 5px;
     padding: 20px 32px 40px 32px !important;
     margin: 0;
-      top:-10px;
-      z-index: 100;
+    top:-10px;
+    z-index: 100;
   }
   .input_search{
       padding:0 !important;
