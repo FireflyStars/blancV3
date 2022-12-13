@@ -465,6 +465,7 @@ class DetailingController extends Controller
         $tailoring_price = $request->post('tailoring_price');
         $tailoring_price_type = $request->post('tailoring_price_type');
         $search = $request->post('search');
+        $montant = $request->post('montant');
 
         if (isset($dept_id)) {
             $detailingitem = DB::table('detailingitem')->where('id', '=', $detailingitem_id)->get();
@@ -634,7 +635,7 @@ class DetailingController extends Controller
 
                 if($cleaning_price_type=='PriceNow'){
                     DB::table('detailingitem')->where('id',$detailingitem_id)->update([
-                        'dry_cleaning_price'=>$request->montant,
+                        'dry_cleaning_price'=>$montant,
                         'cleaning_addon_price'=>0,
                     ]);
                 }else{

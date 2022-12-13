@@ -275,6 +275,7 @@ export default {
         const price_now_value = ref('');
         const describe_job_value = ref('');
         const price_value = ref('');
+        const montant_value = ref('');
         const sel_tailoring_describe = ref('');
         const sel_clean_describe = ref('');
         const service_perc = ref(0);
@@ -631,6 +632,7 @@ export default {
                     cleaning_price_type: sel_cleaning_price_type.value,
                     tailoring_services: JSON.stringify(sel_tailoring_service_id.value),
                     tailoring_price_type:sel_tailoring_price_type.value,
+                    montant:montant_value.value
                 });
             }
         }
@@ -673,7 +675,7 @@ export default {
 
         watch(() =>(props.preference_customer), (current_val, previous_val) => {
                 var array3 = current_val.filter(function(obj) { return sel_cleaning_service_id.value.indexOf(obj) == -1; });
-                if(array3){
+                if(array3.length != 0){
                         context.emit("save-item-services", {
                             step:11,
                             detailingitem_id: props.detailingitem.id,
@@ -829,6 +831,7 @@ export default {
 
         function priceNowAndDescribe(){
            let montant = price_value.value;
+           montant_value.value = montant
            let describeprixnow = describe_job_value.value
 
            if(describeprixnow == '' || montant=='' || parseFloat(montant)=='NaN'){
@@ -885,7 +888,7 @@ export default {
         function priceNow(){
             
            let montant = price_now_value.value;
-
+           montant_value.value = montant
             if(montant=='' || parseFloat(montant)=='NaN'){
                     price_now_value.value = '';
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
@@ -985,7 +988,8 @@ export default {
             sel_tailoring_describe,
             sel_clean_describe,
             calculateNegativPerc,
-            service_perc
+            service_perc,
+            montant_value
         };
     },
 }
