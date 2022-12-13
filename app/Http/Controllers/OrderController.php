@@ -444,25 +444,27 @@ class OrderController extends Controller
                 'return_url'=>$site_url."/?si=".$si->id,
             ]);
 
+
+            $credit_card = [
+                'CustomerID'        => $cust->CustomerID,
+                'cardHolderName'    => $cardholder_name,
+                'type'              => $card->card->brand,
+                'cardNumber'        => substr_replace($card_num, str_repeat('*', strlen($card_num) - 6), 3, -3),
+                'dateexpiration'    => $card_exp,
+                'stripe_customer_id'=> $stripe_customer->id,
+                'stripe_card_id'    => $card->id,
+                'setup_intnet_id'   => $si->id,
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ];
+
+            $card_id = DB::table('cards')->insertGetId($credit_card);
+            $card = DB::table('cards')->where('id',$card_id)->first();
+
             if($three_d_res->status=='succeeded'){
-
-                $credit_card = [
-                    'CustomerID'        => $cust->CustomerID,
-                    'cardHolderName'    => $cardholder_name,
-                    'type'              => $card->card->brand,
-                    'cardNumber'        => substr_replace($card_num, str_repeat('*', strlen($card_num) - 6), 3, -3),
-                    'dateexpiration'    => $card_exp,
-                    'stripe_customer_id'=> $stripe_customer->id,
-                    'stripe_card_id'    => $card->id,
-                    'setup_intnet_id'   => $si->id,
-                    'created_at'        => now(),
-                    'updated_at'        => now(),
-                ];
-
-                $card_id = DB::table('cards')->insertGetId($credit_card);
-                $card = DB::table('cards')->where('id',$card_id)->first();
+                DB::table('cards')->where('id',$card_id)->update(['three_d_secure'=>1]);
             }else{
-                $err_txt = "3DS ERROR: Ask customer to enter card details on app";
+                $err_txt = "3DS ERROR: Card saved but not validated for 3D secure";
             }
         }catch(\Stripe\Exception\CardException $e){
             $err_txt = $e->getError()->message." Code: ".$e->getError()->decline_code;
@@ -593,27 +595,31 @@ class OrderController extends Controller
                         'return_url'=>$site_url."/?si=".$si->id,
                     ]);
 
+
+                    $credit_card = [
+                        'CustomerID'        => $cust->CustomerID,
+                        'cardHolderName'    => $cardholder_name,
+                        'type'              => $card->card->brand,
+                        'cardNumber'        => substr_replace($card_num, str_repeat('*', strlen($card_num) - 6), 3, -3),
+                        'dateexpiration'    => $card_exp,
+                        'stripe_customer_id'=> $stripe_customer->id,
+                        'stripe_card_id'    => $card->id,
+                        'setup_intent_id'   => $si->id,
+                        'created_at'        => now(),
+                        'updated_at'        => now(),
+                    ];
+                    $card_id = DB::table('cards')->insertGetId($credit_card);
+                    $card = DB::table('cards')->where('id',$card_id)->first();
+
                     if($three_d_res->status=='succeeded'){
-                        $credit_card = [
-                            'CustomerID'        => $cust->CustomerID,
-                            'cardHolderName'    => $cardholder_name,
-                            'type'              => $card->card->brand,
-                            'cardNumber'        => substr_replace($card_num, str_repeat('*', strlen($card_num) - 6), 3, -3),
-                            'dateexpiration'    => $card_exp,
-                            'stripe_customer_id'=> $stripe_customer->id,
-                            'stripe_card_id'    => $card->id,
-                            'setup_intent_id'   => $si->id,
-                            'created_at'        => now(),
-                            'updated_at'        => now(),
-                        ];
+                        DB::table('cards')->where('id',$card_id)->update(['three_d_secure'=>1]);
                     }else{
                         return response()->json([
                             'error_stripe'=>'3DS ERROR: Ask customer to enter card details on app',
                         ]);
                     }
 
-                    $card_id = DB::table('cards')->insertGetId($credit_card);
-                    $card = DB::table('cards')->where('id',$card_id)->first();
+
                 }catch(\Stripe\Exception\CardException $e){
                     return response()->json([
                         'error_stripe'=>$e->getError()->message." Code: ".$e->getError()->decline_code,

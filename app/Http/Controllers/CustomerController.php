@@ -425,9 +425,9 @@ class CustomerController extends Controller
                     'return_url'=>$site_url."/confirm-card/?si=".$si->id,
                 ]);
 
-            if($three_d_res->status=='succeeded'){
+
                 //add a new record to cards table
-                $credit_card = [
+                $credit_card_arr = [
                     'CustomerID'        => $CustomerUUID,
                     'cardHolderName'    => $request->cardHolderName,
                     'type'              => $card->card->brand,
@@ -439,7 +439,14 @@ class CustomerController extends Controller
                     'created_at'        => now(),
                     'updated_at'        => now(),
                 ];
-                DB::table('cards')->insert($credit_card);
+                $card_id = DB::table('cards')->insertGetId($credit_card_arr);
+
+                if($three_d_res->status=='Succeeded'){
+                    DB::table('cards')->where('id',$card_id)->update(['three_d_secure'=>1]);
+                }else{
+                    return response()->json(['error'=> "3DS ERROR: Card saved but not valid for 3D secure"]);
+                }
+
                 //if addCredit is set, make payment with credit card
                 if($request->addCredit != 0){
                     // create a payment intent
@@ -455,9 +462,7 @@ class CustomerController extends Controller
                     if($payment_intent->status == 'succeeded')
                         DB::table('infoCustomer')->where('CustomerID', $CustomerUUID)->update(['credit'=> $request->addCredit]);
                 }
-            }else{
-                return response()->json(['error'=> "3DS ERROR: Ask customer to enter card details on app"]);
-            }
+
 
             }catch(\Stripe\Exception\CardException $e){
                 return response()->json(['error'=>$e->getError()->message." ".$e->getError()->decline_code]);
@@ -1914,7 +1919,7 @@ class CustomerController extends Controller
                 'return_url'=>$site_url."/confirm-card/?si=".$si->id,
             ]);
 
-            if($three_d_res->status=='succeeded'){
+
 
             //add a new record to cards table
                 $credit_card = [
@@ -1932,6 +1937,8 @@ class CustomerController extends Controller
                 ];
                 $credit_card_id = DB::table('cards')->insertGetId($credit_card);
                 return response()->json( $credit_card_id );
+            if($three_d_res->status=='succeeded'){
+                DB::table('cards')->where('id',$credit_card_id)->update(['three_d_secure'=>1]);
             }else{
                 return response()->json(['error_3ds'=>$three_d_res]);
             }
@@ -2392,6 +2399,8 @@ class CustomerController extends Controller
 
 
     public function getArCustomers(Request $request){
+        $detailed_at_date = $request->detailed_at_date;
+
         $customers = DB::table('infoCustomer')
             ->where('OnAccount',1)
             ->get();
@@ -2419,6 +2428,7 @@ class CustomerController extends Controller
             ->where('infoOrder.orderinvoiced',0)
             ->whereNotIn('infoInvoice.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
             ->whereIn('infoOrder.CustomerID',$bacs_cust_id)
+            ->whereRaw("DATE_FORMAT(infoOrder.detailed_at,'%Y-%m-%d') <= '".$detailed_at_date."'")
             ->get();
 
 
@@ -2536,6 +2546,7 @@ class CustomerController extends Controller
 
         return response()->json([
             'list'=>$list,
+            'post'=>$request->all(),
         ]);
     }
     public function setCustomerSmsDelivery(Request $request){
@@ -2573,7 +2584,7 @@ class CustomerController extends Controller
         ]);
     }
 
-    public static function logInfoOrderPrint($customer_ids,$emailed=false){
+    public static function logInfoOrderPrint($customer_ids,$emailed=false,$detailed_at_date){
         $all_customer_ids = [];
         $cust_master_ids = [];
         $map_master_id = [];
@@ -2617,6 +2628,7 @@ class CustomerController extends Controller
                 ->join('infoitems','infoitems.ItemTrackingKey','=','itemhistorique.ItemTrackingKey')
                 ->whereNotIn('infoOrder.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
                 ->where('infoOrder.orderinvoiced',0)
+                ->whereRaw("DATE_FORMAT(infoOrder.detailed_at,'%Y-%m-%d') <= '".$detailed_at_date."'")
                 ->whereIn('infoOrder.CustomerID',$all_customer_ids)
                 ->orderBy('infoOrder.detailed_at','ASC')
                 ->get();
@@ -2956,7 +2968,7 @@ class CustomerController extends Controller
         $row_ids = @json_decode($request->row_ids);
 
         if($has_rows==0){
-            $row_ids = CustomerController::logInfoOrderPrint($customer_ids,($type=='mail'?true:false));
+            $row_ids = CustomerController::logInfoOrderPrint($customer_ids,($type=='mail'?true:false),$detailed_at_date);
         }
 
 

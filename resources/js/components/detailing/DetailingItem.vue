@@ -110,6 +110,7 @@
                                     :main_services="main_services"
                                     :cleaning_services="cust_cleaning_services"
                                     :tailoring_services="tailoring_services"
+                                    :preference_customer="preference_customer"
                                     @save-item-services="saveItemDetails"
                                     @go-to-step="backPreviousStep"
                                     @init-detailing="initDetailing"
@@ -209,6 +210,7 @@ export default {
         const IssueStep = ref(0);
         const isuue_step = ref();
         const go_to_type = ref();
+        const preference_customer = ref([]);
 
         store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Please wait....']);
 
@@ -240,6 +242,7 @@ export default {
                     main_services.value = response.data.main_services;
                     cust_cleaning_services.value = response.data.cust_cleaning_services;
                     tailoring_services.value = response.data.tailoring_services;
+                    preference_customer.value = response.data.preference_customer;
 
                     //if(response.data.detailingitem.etape == 11){
                         right_panel_cmp.value.setBaseCleaningPrice(response.data.detailingitem.pricecleaning);
@@ -457,7 +460,8 @@ export default {
             getStep,
             isuue_step,
             go_to_type,
-            removeSearch
+            removeSearch,
+            preference_customer
 
         };
     },
