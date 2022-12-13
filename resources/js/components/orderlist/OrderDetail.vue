@@ -276,7 +276,8 @@
                     </div>
                     hr v-if="(typeof ORDER['detail']!='undefined')"/>
                 -->
-        
+
+                
                 <div class="d-flex w-100 mt-3">
                     <div class="col">
                         <order-detail-sub-order-items-table 
