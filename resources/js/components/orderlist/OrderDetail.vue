@@ -56,7 +56,7 @@
                                 <image xlink:href="/images/pdficon.svg"  width="30" height="40"/>
                             </svg>
                             <div class="total-section mt-2">
-            
+
                                         <div class="total d-flex">
                                             <div class="col-8 px-2 text-end PriceTotal">{{formatPrice(ORDER.detail.Total)}}</div>
                                             <div class="col-4 px-2 d-flex align-items-center">Total</div>
@@ -85,7 +85,7 @@
                                 <span class="f14" v-else>Please enter new collection date</span>
                             </div>
                             <div class="col-5">
-            
+
                                 <date-picker v-model="suggested_date" name="suggested_date" :available-dates="availabledates" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
                             </div>
                             <div class="col-2">
@@ -121,7 +121,7 @@
                                 </div>
                         </div>
                     </transition>
-            
+
                     <transition name="popinout">
                         <div v-if="typeof ORDER['detail']!='undefined'&&!ORDER.detail.alreadypickuped&&ORDER.detail.Status=='LATE'&&ORDER.detail.suggestedDeliveryDate==null&&!hasRoles(['cc'])" class="section-late-production-op row">
                             <div class="col" style="padding-left:32px;">
@@ -130,7 +130,7 @@
                                 <span class="f14">Please enter new pickup date</span>
                             </div>
                             <div class="col-5">
-            
+
                                 <date-picker v-model="suggested_date" name="suggested_date" :available-dates="availabledates" :droppos="{top:'auto',right:'0',bottom:'auto',left:'auto',transformOrigin:'top right'}"></date-picker>
                             </div>
                             <div class="col-2">
@@ -162,7 +162,7 @@
                             <div class="col"><b>New delivery date: {{ORDER.detail.PromisedDate}}</b></div>
                         </div> -->
                     </transition>
-            
+
                     <div class="order-brief-info-section mt-2" v-if="(typeof ORDER['detail']!='undefined')">
                         <div class="d-flex">
                             <div class="col-6"  >
@@ -187,7 +187,7 @@
                     </div>
                     <hr v-if="(typeof ORDER['detail']!='undefined')" />
                 </div>
-                
+
                 <!-- <div  v-if="(typeof ORDER['detail']!='undefined')" class="row section4">
                     <div class="accordion-container">
                         <div class="accordion accordion-flush" id="accordionFlushExample">
@@ -205,8 +205,8 @@
                                             <tag  v-if="ORDER.detail.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
                                             <tag  v-else :name="'B2B'" ></tag>
                                       </div>
-        
-        
+
+
                                 </div>
                                 <div
                                     id="flush-collapseOne"
@@ -214,7 +214,7 @@
                                     :class="{ show: instAcc === true }"
                                 >
                                     <div class="accordion-body">
-        
+
                                             <div  v-if="(typeof ORDER['detail']!='undefined')" class="row section5">
                                                     <div class="col">
                                                         <AddressFormat :title="'Delivery address'" :address="ORDER.delivery" ></AddressFormat>
@@ -224,7 +224,7 @@
                                                     <AddressFormat :title="'Billing address'" v-else :address="ORDER.delivery" ></AddressFormat>
                                                 </div>
                                             </div>
-        
+
                                     <div v-if="(typeof ORDER['detail']!='undefined')" class="row section6">
                                         <div class="col" v-if="ORDER.detail.Phone!=''&&ORDER.detail.Phone!=null">
                                             <div class="row" v-for="(phone,index) in ORDER.detail.Phone" :key="index">
@@ -254,12 +254,12 @@
                                    </div>
                                 </div>
                             </div>
-        
+
                         </div>
                     </div>
-        
-        
-        
+
+
+
                     <div class="col">
                         <tag  v-if="ORDER.detail.TypeDelivery=='DELIVERY'" :name="'B2C'" ></tag>
                         <tag  v-else :name="'B2B'" ></tag>
@@ -273,7 +273,7 @@
                             <AddressFormat :title="'Billing address'"  v-if="ORDER.billing!=null" :address="ORDER.billing" ></AddressFormat>
                             <AddressFormat :title="'Billing address'" v-else :address="ORDER.delivery" ></AddressFormat>
                         </div>
-                    </div> 
+                    </div>
                     hr v-if="(typeof ORDER['detail']!='undefined')"/>
                 -->
         
@@ -299,18 +299,18 @@
                     <div class="col-4 options_btn">
                         <button class="btn btn-outline-dark body_medium" @click="openPrinterModal(ORDER['detail'].order_id)">Print ticket(s)</button>
                     </div>
-    
+
                     <div class="col-4 options_btn" v-if="ORDER['items'].length !== 0">
                         <button class="btn btn-outline-danger body_medium" @click="markaslate" v-if="ORDER['detail'].Status!='LATE'">Mark as late</button>
                     </div>
                     <div class="col-4 options_btn" v-if="ORDER['items'].length === 0 && (ORDER['detail'].Status =='RECURRING' || ORDER['detail'].Status =='SCHEDULED' )">
                         <button class="btn btn-outline-danger body_medium" @click="CancelBooking">Cancel booking</button>
-                    </div> 
+                    </div>
                     <div class="col-1 options_btn">
                         <button @click="openOptions()" class="btn btn-outline-dark body_medium menu"><span>...</span></button>
                         <OrderOptions v-if="show_options_btn" :user="ORDER['user']" :order="ORDER['detail']" :items="ORDER['items']"></OrderOptions>
                     </div>
-                </div>    
+                </div>
                 <div class="col-4 text-right">
                     <mini-checkout  :order_id="parseInt($route.params.order_id)" @reload-order-detail="reloadOrderDetail" v-if="showFulfillBtn"></mini-checkout>
                 </div>
@@ -945,7 +945,7 @@
     background: white;
     position: sticky;
     top: 99px;
-    z-index: 1000;
+    z-index: 100;
 }
 .section2,.section3{
     color:#47454B;
@@ -1149,7 +1149,7 @@ hr{
     font-size: 8px;
     line-height: 10px;
     color: #42A71E;
-}   
+}
 .order-sub-title{
     font-family: 'Gotham Rounded' !important;
     font-size: 12px;

@@ -1235,6 +1235,7 @@ export default {
 
                     if(amount_to_pay.value > 0 && cust.value.bycard==1 && !custcard.value){
                         err = true;
+                        no_payment_modal.value.makeVisible();
                         no_payment_modal.value.showModal();
                     }
 
@@ -1248,6 +1249,7 @@ export default {
                             console.log('by credit',credit_to_deduct.value);
 
                             if(parseFloat(credit_to_deduct.value)==0 && amount_to_pay.value > 0){
+                                no_payment_modal.value.makeVisible();
                                 no_payment_modal.value.showModal();
                             }else{
                                 completeCheckout(false);
@@ -1285,7 +1287,8 @@ export default {
         }
 
         function closePaymentAndShowLoading(){
-            closeNoPaymentModal();
+            //closeNoPaymentModal();
+            no_payment_modal.value.makeInvisible();
             awaiting_payment_modal.value.showModal();
         }
 
@@ -1465,6 +1468,8 @@ export default {
         }
 
         function cancelTerminalRequest(){
+            stripePay.value.cancelTerminalRequest();
+            /*
              axios.post('/cancel-terminal-request',{})
                 .then((res)=>{
                     console.log(res);
@@ -1473,6 +1478,7 @@ export default {
                 }).finally(()=>{
                     awaiting_payment_modal.value.closeModal();
                 })
+            */
         }
 
         const closePriceDeliveryNowModal=()=>{

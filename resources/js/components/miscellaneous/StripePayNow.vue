@@ -105,7 +105,7 @@ export default {
                         type: "danger",
                     });
                     err_terminal.value = true;
-               // context.emit('close-awaiting-payment');
+                context.emit('close-awaiting-payment');
                 } else {
                     selected_reader.value = connectResult.reader;
                     console.log('Connected to reader: ', connectResult.reader.label);
@@ -352,11 +352,28 @@ export default {
             */
         }
 
+        function cancelTerminalRequest(){
+            // console.log('stripepaynow')
+            // context.emit('close-awaiting-payment');
+
+            console.log('terminal status:',terminal.value.getPaymentStatus());
+            terminal.value.cancelCollectPaymentMethod()
+                .then((response)=>{
+                    console.log(response);
+                    //return Promise.resolve(response);
+                }).catch((error)=>{
+                    //return Promise.reject(error);
+                }).finally(()=>{
+                    context.emit('close-awaiting-payment');
+                });
+        }
+
         return {
             payNow,
             selected_reader,
             refundPayment,
             err_terminal,
+            cancelTerminalRequest,
         }
 
     },

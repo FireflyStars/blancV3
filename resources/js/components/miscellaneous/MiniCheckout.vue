@@ -29,6 +29,24 @@
             </div>
         </template>
     </modal>
+
+    <modal ref="awaiting_payment_modal">
+        <template #closebtn>
+            <span class="close" id="addon_modal_close" @click="closeAwaitingPaymentModal"></span>
+        </template>
+        <template #bheader>
+            <div class="bmodal-header py-5 text-center">Awaiting payment</div>
+        </template>
+        <template #mbuttons>
+            <div class="row justify-content-center">
+                <div class="col-8">
+                    <button class="btn btn-outline-danger w-100" id="cancelTerminalBtn" @click="cancelTerminalRequest">Cancel Terminal request</button>
+                </div>
+            </div>
+        </template>
+    </modal>
+
+
 </template>
 <script>
 
@@ -49,9 +67,10 @@ export default {
         const order = ref({});
         const store = useStore();
         const no_payment_modal = ref();
-        const stripepay = ref();
+        const stripePay = ref();
         const cur_user = ref({});
         const amount_to_pay = ref(0);
+        const awaiting_payment_modal = ref();
 
 
         const checkOrderToFulfill = async ()=>{
@@ -75,6 +94,7 @@ export default {
                         fulfillOrder();
                     }else{
                         console.log('order is unpaid');
+                        no_payment_modal.value.makeVisible();
                         no_payment_modal.value.showModal()
 
                     }
@@ -85,13 +105,11 @@ export default {
                 });
             }finally{
                 console.log('after order details');
-
-
             };
 
         }
 
-        const closeNoPaymentModal = ()=> no_payment_modal.value.closeModal();
+        const closeNoPaymentModal = ()=> no_payment_modal.value.makeInvisible();
 
         const fulfillOrder = (paid)=>{
 
@@ -134,12 +152,16 @@ export default {
 
 
         const closePaymentAndShowLoading = ()=>{
-            closeNoPaymentModal;
-
+            no_payment_modal.value.makeInvisible();
+            awaiting_payment_modal.value.showModal();
         }
 
         const closeAwaitingPaymentModal = ()=>{
+            awaiting_payment_modal.value.closeModal();
+        }
 
+        function cancelTerminalRequest(){
+            stripePay.value.cancelTerminalRequest();
         }
 
         return {
@@ -152,6 +174,9 @@ export default {
             order,
             closeAwaitingPaymentModal,
             closeNoPaymentModal,
+            awaiting_payment_modal,
+            cancelTerminalRequest,
+            stripePay,
         }
 
     },
