@@ -342,7 +342,7 @@
                                             <div class="col">
                                                 <h2 class="subtitle d-table" id="step_2_title">Order Details <a class="ml-3" id="edit_order_link" @click="changeStep(1)">Edit</a></h2>
 
-                                                <div id="order_exp_type" class="float-left d-table" v-if="deliverymethod=='in_store_collection' && order_express!=0">
+                                                <div id="order_exp_type" class="float-left d-table" v-if="order_express!=0">
                                                     <span v-if="order_express==1">Express 24</span>
                                                     <span v-if="order_express==6">Express 48</span>
                                                 </div>
@@ -1187,6 +1187,45 @@ import axios from 'axios';
                     time_diff =  (dt_to.getTime() - dt_from.getTime() - (minus_day*24*3600000)) / 3600000; //3600 * 1000 milliseconds
                 }
 
+                if(order.deliverymethod=='home_delivery'){
+                    let dt_from = new Date(cur_date.value);
+                    dt_from.setHours(18,0,0);
+
+                    let minus_day = 0;
+
+                        let hd_delivery_time = getTimeFromSlot(hd_delivery_timeslot.value);
+
+                        let dt_to = new Date(hd_delivery.value+' '+hd_delivery_time);
+
+                        time_diff =  (dt_to.getTime() - dt_from.getTime() - (minus_day*24*3600000)) / 3600000; //3600 * 1000 milliseconds
+
+                }
+
+                if(order.deliverymethod=='delivery_only'){
+                    let dt_from = new Date(cur_date.value);
+                    dt_from.setHours(18,0,0);
+
+                    let minus_day = 0;
+
+                        let do_delivery_time = getTimeFromSlot(do_delivery_timeslot.value);
+
+                        let dt_to = new Date(do_delivery.value+' '+ do_delivery_time);
+
+                        time_diff =  (dt_to.getTime() - dt_from.getTime() - (minus_day*24*3600000)) / 3600000; //3600 * 1000 milliseconds
+                }
+
+                if(order.deliverymethod=='shipping'){
+                    let dt_from = new Date(cur_date.value);
+                    dt_from.setHours(18,0,0);
+
+                    let minus_day = 0;
+
+                        let dt_to = new Date(shp_delivery.value);
+                        dt_to.setHours(18,0,0);
+
+                        time_diff =  (dt_to.getTime() - dt_from.getTime() - (minus_day*24*3600000)) / 3600000; //3600 * 1000 milliseconds
+
+                }
 
 
                 if(time_diff <=24){
