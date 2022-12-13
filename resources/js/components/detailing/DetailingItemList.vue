@@ -476,7 +476,7 @@ export default {
     line-height: 140%;
 }
 .main {
-    padding: 0px 0px 50px 61px;
+    padding: 65px 0px 50px 61px;
 }
 .breadcrumb {
     margin-bottom: 0;

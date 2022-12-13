@@ -3,7 +3,7 @@
             enter-active-class="animate__animated animate__fadeIn"
     >
         <div class="container-fluid h-100 bg-color" v-if="showcontainer">
-            <main-header></main-header>
+            <!-- <main-header></main-header> -->
             <div class="row d-flex align-content-stretch align-items-stretch flex-row hmax">
                 <side-bar></side-bar>
                 <div class="col  p-0 m-0">

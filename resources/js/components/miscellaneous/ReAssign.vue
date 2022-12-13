@@ -15,11 +15,11 @@
                         <h3>{{ customer.Name }}</h3> <a href="javascript:;" @click="editCustomer" class="customer-edit-btn ms-3">Edit</a>
                     </div>
                     <div class="d-flex mt-2">
-                        <div class="col-6">
+                        <div class="col-7">
                             <label for="">Email</label>
                             <p class="text-start fw-bold">{{ customer.EmailAddress }}</p>
                         </div>
-                        <div class="col-6">
+                        <div class="col-5">
                             <label for="">Phone number</label>
                             <p class="text-start fw-bold" v-for="phone in customer.Phone.slice(0,1)" :key="phone">+{{phone.replace('|',' ')}}</p>
                         </div>
@@ -103,8 +103,8 @@ export default {
             closeModal,
             openModal,
             confirm,
+            editCustomer,
             selectedCustomer,
-            // formatPhone
         }
     }
 };
