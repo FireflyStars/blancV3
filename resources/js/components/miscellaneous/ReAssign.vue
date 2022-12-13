@@ -12,16 +12,16 @@
                 </div>
                 <div class="customer-info w-100" v-else>
                     <div class="customer-name d-flex">
-                        <h3>{{ customer.name }}</h3> <a href="javascript:;" @click="editCustomer" class="customer-edit-btn ms-3">Edit</a>
+                        <h3>{{ customer.Name }}</h3> <a href="javascript:;" @click="editCustomer" class="customer-edit-btn ms-3">Edit</a>
                     </div>
                     <div class="d-flex mt-2">
                         <div class="col-6">
                             <label for="">Email</label>
-                            <p class="text-start fw-bold">{{ customer.email }}</p>
+                            <p class="text-start fw-bold">{{ customer.EmailAddress }}</p>
                         </div>
                         <div class="col-6">
                             <label for="">Phone number</label>
-                            <p class="text-start fw-bold">{{ customer.phone }}</p>
+                            <p class="text-start fw-bold" v-for="phone in customer.Phone.slice(0,1)" :key="phone">+{{phone.replace('|',' ')}}</p>
                         </div>
                     </div>
                 </div>
@@ -55,12 +55,7 @@ export default {
     setup(props, context){
         const store = useStore();
         const show_modal = ref(false);
-        const customer = ref({
-            name: 'Chanel, Coco',
-            email: 'c.chanel@gmail.com',
-            phone: '+44 208 004 2630',
-            customerId: '',
-        });
+        const customer = ref({});
         const subOrder = ref(null);
         const invoiceId = ref(null);
         const step = ref(1);
@@ -79,7 +74,7 @@ export default {
             var reAssaignUrl = '/reAssign';
             axios.post(reAssaignUrl,{ 
                 invoiceId:    invoiceId.value,
-                customerId:    customer.value.customerId,
+                customerId:    customer.value.CustomerID,
             }).then((res)=>{
                 if(res.data.status_code == 200){
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'Reassign Done.',ttl:5,type:'success'});
@@ -93,7 +88,8 @@ export default {
 
             })
         }
-        const selectedCustomer = ()=>{
+        const selectedCustomer = (cust)=>{
+            customer.value = cust;
             step.value = 2;
         }
         const editCustomer = ()=>{
@@ -108,6 +104,7 @@ export default {
             openModal,
             confirm,
             selectedCustomer,
+            // formatPhone
         }
     }
 };

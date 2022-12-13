@@ -99,13 +99,7 @@
                 }
             }
             const reAssign =()=>{
-                if(listItems.value.length == 0){
-                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'please select a item.',ttl:5,type:'danger'});
-                }else if(listItems.value.length > 1){
-                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'you can only select one item.',ttl:5,type:'danger'});
-                }else{
-                    context.emit('reAssign', props.suborder, props.invoice_id)
-                }                
+                context.emit('reAssign', props.suborder, props.invoice_id)
             }
             return {
                 show_split_conf,
