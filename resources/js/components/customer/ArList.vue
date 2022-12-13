@@ -1,7 +1,14 @@
 <template>
     <router-view />
+    <div class="row mx-0 py-2">
+        <div class="col-12" id="detailed_div">
+            <span class="d-flex">Detailed date:</span>
+            <div>
+                <date-picker v-model="detailed_date" :name="'detailed_date_input'" :droppos="{top:'auto',right:'auto',bottom:'auto',left:'0',transformOrigin:'bottom left'}" @update:modelValue="loadCustomer"></date-picker>
+            </div>
+        </div>
+    </div>
     <transition enter-active-class="animate__animated animate__fadeIn">
-
         <table class="table table-hover bg-white">
             <thead>
                 <tr>
@@ -126,12 +133,14 @@ import {
 import { useStore } from 'vuex';
 import CheckBox from '../miscellaneous/CheckBox';
 import Modal from '../miscellaneous/Modal.vue';
+import DatePicker from '../miscellaneous/DatePicker.vue';
 
 export default {
     name: 'ArList',
     components:{
         CheckBox,
-        Modal
+        Modal,
+        DatePicker
     },
     setup(){
         const store = useStore();
@@ -141,7 +150,11 @@ export default {
         const customerList = ref([]);
         const invoice_modal = ref();
         const sel_modal_type = ref('');
+        const detailed_date = ref('');
 
+        let date = new Date();
+
+        detailed_date.value = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
 
         const totalCustomerCount = ref(0);
         const currentLoadedCustomerCount = ref(99999);
@@ -263,7 +276,9 @@ export default {
                 "Loading Customer data....",
             ]);
 
-            axios.post('/get-ar-customers',{})
+            axios.post('/get-ar-customers',{
+                'detailed_at_date':detailed_date.value
+            })
                 .then((res)=>{
                     customerList.value = res.data.list;
                     totalCustomerCount.value = Object.values(res.data.list).length;
@@ -368,6 +383,7 @@ export default {
                     type:type,
                     has_rows:0,
                     row_ids:JSON.stringify([]),
+                    date_detailed_at:detailed_date.value,
                 }).then((res)=>{
                     if(type=='pdf'){
                         if(res.data.url){
@@ -445,6 +461,8 @@ export default {
             closeBatchInvoiceModal,
             generateInvoice,
             sel_modal_type,
+            detailed_date,
+            loadCustomer,
         }
     }
 }
@@ -582,5 +600,15 @@ export default {
 
     .bmodal-header.pdf{
         background: #f8f8f8;
+    }
+
+    #detailed_div > * {
+        float:left;
+    }
+
+    #detailed_div > span{
+        height:40px;
+        align-items: center;
+        margin-right:10px;
     }
 </style>

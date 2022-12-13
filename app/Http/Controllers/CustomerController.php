@@ -2392,6 +2392,8 @@ class CustomerController extends Controller
 
 
     public function getArCustomers(Request $request){
+        $detailed_at_date = $request->detailed_at_date;
+
         $customers = DB::table('infoCustomer')
             ->where('OnAccount',1)
             ->get();
@@ -2419,6 +2421,7 @@ class CustomerController extends Controller
             ->where('infoOrder.orderinvoiced',0)
             ->whereNotIn('infoInvoice.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
             ->whereIn('infoOrder.CustomerID',$bacs_cust_id)
+            ->whereRaw("DATE_FORMAT(infoOrder.detailed_at,'%Y-%m-%d') <= '".$detailed_at_date."'")
             ->get();
 
 
@@ -2536,6 +2539,7 @@ class CustomerController extends Controller
 
         return response()->json([
             'list'=>$list,
+            'post'=>$request->all(),
         ]);
     }
     public function setCustomerSmsDelivery(Request $request){
@@ -2573,7 +2577,7 @@ class CustomerController extends Controller
         ]);
     }
 
-    public static function logInfoOrderPrint($customer_ids,$emailed=false){
+    public static function logInfoOrderPrint($customer_ids,$emailed=false,$detailed_at_date){
         $all_customer_ids = [];
         $cust_master_ids = [];
         $map_master_id = [];
@@ -2617,6 +2621,7 @@ class CustomerController extends Controller
                 ->join('infoitems','infoitems.ItemTrackingKey','=','itemhistorique.ItemTrackingKey')
                 ->whereNotIn('infoOrder.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
                 ->where('infoOrder.orderinvoiced',0)
+                ->whereRaw("DATE_FORMAT(infoOrder.detailed_at,'%Y-%m-%d') <= '".$detailed_at_date."'")
                 ->whereIn('infoOrder.CustomerID',$all_customer_ids)
                 ->orderBy('infoOrder.detailed_at','ASC')
                 ->get();
@@ -2956,7 +2961,7 @@ class CustomerController extends Controller
         $row_ids = @json_decode($request->row_ids);
 
         if($has_rows==0){
-            $row_ids = CustomerController::logInfoOrderPrint($customer_ids,($type=='mail'?true:false));
+            $row_ids = CustomerController::logInfoOrderPrint($customer_ids,($type=='mail'?true:false),$detailed_at_date);
         }
 
 
