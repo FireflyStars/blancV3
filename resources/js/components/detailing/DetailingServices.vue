@@ -32,7 +32,7 @@
                     <!--
 (!detailingitem.cleaning_services && service.selected_default==1) ||
                         -->
-                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center position-relative" v-for="(service,id) in services" :class="{'sel_service': service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0, 'is_preference':service.cleaning_group==2 && service.modalpreference!=0 ,'service_add_ons':service.cleaning_group==1 , 'mb-4':service.cleaning_group==2, 'active_service': preference_customer && preference_customer.includes(service.id_preference)  && detailingitem.status != 'Completed' , 'cleaning': group=='Cleaning Add-on'}" :id="'sub_service_'+service.id" @click="checkSubService(service.id)" :data-cleaning-service-id="service.id">
+                    <div class="col-2 d-flex text-center each-sub-service justify-content-center cleaning-subservice align-items-center position-relative" v-for="(service,id) in services" :class="{'sel_service': service.cust_selected==1,'is_pref_disabled':service.cleaning_group==2 && service.isPrefActive==0, 'is_preference':service.cleaning_group==2 && service.modalpreference!=0 ,'service_add_ons':service.cleaning_group==1 , 'mb-4':service.cleaning_group==2 , 'cleaning': group=='Cleaning Add-on'}" :id="'sub_service_'+service.id" @click="checkSubService(service.id)" :data-cleaning-service-id="service.id">
                         <div class="d-block w-100 text-center">
                             {{service.name}}
                             <span v-if="service.cleaning_group==2 && service.perc == 0" class="text-center d-block w-100">(&#163;{{service.fixed_price}})</span>
@@ -252,6 +252,7 @@ export default {
         main_services:{},
         cleaning_services:{},
         tailoring_services:{},
+        preference_customer:[],
     },
     setup(props,context) {
          const store = useStore();
@@ -273,7 +274,6 @@ export default {
         const pricenow_describe_modal = ref();
         const price_now_value = ref('');
         const describe_job_value = ref('');
-        const preference_customer = ref([]);
         const price_value = ref('');
         const sel_tailoring_describe = ref('');
         const sel_clean_describe = ref('');
@@ -588,7 +588,7 @@ export default {
 
 
         function checkSelectedCleaning(on_click){
-            let selected_services = document.querySelectorAll('.cleaning-subservice.sel_service:not(.cleaning-prices), .active_service');
+            let selected_services = document.querySelectorAll('.cleaning-subservice.sel_service:not(.cleaning-prices)');
             let keys = Object.values(selected_services);
             let cleaning_services_id = [];
             let cleaning_pricing_type = "";
@@ -670,38 +670,19 @@ export default {
             context.emit("go-to-step", 10);
         }
 
-        function getPreference(){
-            if(props.detailingitem.status != 'Completed'){
 
-                axios.post('/getPreferenceCustomer',{
-                Customer_id: props.detailingitem.customer_id,
-                typeitem_id: props.detailingitem.typeitem_id
-               }).then((res)=>{
-                if(res.data.prefrenceActive != null){
-                       preference_customer.value = res.data.prefrenceActive  
+        watch(() =>(props.preference_customer), (current_val, previous_val) => {
+                var array3 = current_val.filter(function(obj) { return sel_cleaning_service_id.value.indexOf(obj) == -1; });
+                if(array3){
+                        context.emit("save-item-services", {
+                            step:11,
+                            detailingitem_id: props.detailingitem.id,
+                            cleaning_services: JSON.stringify(props.preference_customer),
+                            cleaning_price_type: sel_cleaning_price_type.value,
+                            tailoring_services: JSON.stringify(sel_tailoring_service_id.value),
+                            tailoring_price_type:sel_tailoring_price_type.value,
+                        });
                 }
-                    
-               }).catch((err)=>{
-
-               })
-            }
-            
-        }
-
-        watch(() => [preference_customer.value], (current_pref, previous_pred) => {
-            const list = []; 
-            current_pref.forEach(function(v,i){
-                   const list = JSON.parse(props.detailingitem.cleaning_services);
-                        if(list != null){
-                            if(!list.includes(v)){
-                                toggleSubService(v)
-                                checkSelectedCleaning(false);
-                            }
-                        }else{
-                            toggleSubService(v)
-                            checkSelectedCleaning(false);
-                        }                 
-            })  
         });
 
         onMounted(()=>{
@@ -729,10 +710,6 @@ export default {
 
             if(props.detailingitem.cleaning_services==null){
                checkSelectedCleaning(true);
-               getPreference()
-            }else{
-                checkSelectedCleaning(false);
-                getPreference()
             }
             
         });
@@ -1003,12 +980,10 @@ export default {
             closePriceNowAndDescribeModal,
             price_now_value,
             price_value,
-            preference_customer,
             describe_job_value,
             priceNowAndDescribe,
             sel_tailoring_describe,
             sel_clean_describe,
-            getPreference,
             calculateNegativPerc,
             service_perc
         };
