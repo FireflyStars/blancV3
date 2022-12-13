@@ -425,9 +425,9 @@ class CustomerController extends Controller
                     'return_url'=>$site_url."/confirm-card/?si=".$si->id,
                 ]);
 
-            if($three_d_res->status=='succeeded'){
+
                 //add a new record to cards table
-                $credit_card = [
+                $credit_card_arr = [
                     'CustomerID'        => $CustomerUUID,
                     'cardHolderName'    => $request->cardHolderName,
                     'type'              => $card->card->brand,
@@ -439,7 +439,14 @@ class CustomerController extends Controller
                     'created_at'        => now(),
                     'updated_at'        => now(),
                 ];
-                DB::table('cards')->insert($credit_card);
+                $card_id = DB::table('cards')->insertGetId($credit_card_arr);
+
+                if($three_d_res->status=='Succeeded'){
+                    DB::table('cards')->where('id',$card_id)->update(['three_d_secure'=>1]);
+                }else{
+                    return response()->json(['error'=> "3DS ERROR: Card saved but not valid for 3D secure"]);
+                }
+
                 //if addCredit is set, make payment with credit card
                 if($request->addCredit != 0){
                     // create a payment intent
@@ -455,9 +462,7 @@ class CustomerController extends Controller
                     if($payment_intent->status == 'succeeded')
                         DB::table('infoCustomer')->where('CustomerID', $CustomerUUID)->update(['credit'=> $request->addCredit]);
                 }
-            }else{
-                return response()->json(['error'=> "3DS ERROR: Ask customer to enter card details on app"]);
-            }
+
 
             }catch(\Stripe\Exception\CardException $e){
                 return response()->json(['error'=>$e->getError()->message." ".$e->getError()->decline_code]);
@@ -1914,7 +1919,7 @@ class CustomerController extends Controller
                 'return_url'=>$site_url."/confirm-card/?si=".$si->id,
             ]);
 
-            if($three_d_res->status=='succeeded'){
+
 
             //add a new record to cards table
                 $credit_card = [
@@ -1932,6 +1937,8 @@ class CustomerController extends Controller
                 ];
                 $credit_card_id = DB::table('cards')->insertGetId($credit_card);
                 return response()->json( $credit_card_id );
+            if($three_d_res->status=='succeeded'){
+                DB::table('cards')->where('id',$credit_card_id)->update(['three_d_secure'=>1]);
             }else{
                 return response()->json(['error_3ds'=>$three_d_res]);
             }
