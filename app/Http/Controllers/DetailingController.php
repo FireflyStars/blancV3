@@ -287,9 +287,11 @@ class DetailingController extends Controller
 
             foreach($cust_cleaning_services as $k=>$service){
                 foreach($service as $i=>$x){
-                   if($x->cust_selected == 1){
-                      $cust_service[] = (string)$x->id;
-                   }
+                   if(isset($x->cust_selected)){
+                    if($x->cust_selected == 1){
+                        $cust_service[] = (string)$x->id;
+                     }
+                   }  
                 }
             }
 
