@@ -465,7 +465,7 @@ class DetailingController extends Controller
         $tailoring_price = $request->post('tailoring_price');
         $tailoring_price_type = $request->post('tailoring_price_type');
         $search = $request->post('search');
-        $montant = $request->post('montant');
+        $montant = $request->post('montant') != null ? $request->post('montant') : 0;
 
         if (isset($dept_id)) {
             $detailingitem = DB::table('detailingitem')->where('id', '=', $detailingitem_id)->get();
