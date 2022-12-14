@@ -712,6 +712,18 @@ Route::get('/test-refund',function(){
 
 });
 
+Route::get('test-terminal-si',function(){
+    $si_id = 'seti_1MEXxqB2SbORtEDsYUVQ7pWy';
+
+    $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
+    $stripe = new \Stripe\StripeClient(env($stripe_key));
+
+    $si = $stripe->setupIntents->retrieve($si_id,[]);
+    echo "<pre>";
+    print_r($si);
+
+});
+
 Route::get('/test-create-card',function(){
     $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
     $stripe = new \Stripe\StripeClient(env($stripe_key));
@@ -1453,48 +1465,35 @@ Route::group(['prefix'=>'stripe-test'],function(){
     });
 
     Route::post('/create_setup_intent',function(){
-        $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
 
         $json_str = file_get_contents('php://input');
         $request = json_decode($json_str);
 
-        $cust = DB::table('infoCustomer')->where('id',3428)->first();
+        $cust = DB::table('infoCustomer')->where('id',22783)->first();
+
+        $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+        //$cust is our customer object
 
         $stripe_customer = $stripe->customers->create([
             'name'              => $cust->Name,//$cardholder_name,
             'email'             => $cust->EmailAddress,
-            //'payment_method'    => $card->id,
-            //'invoice_settings'  => ['default_payment_method' => $card->id],
             'metadata'          => [
                                         'CustomerID' => $cust->CustomerID
                                 ],
-/*
-            'address'           => [
-                                    'city'          => ($addr?$addr->Town:''),
-                                    'state'         => ($addr?$addr->County:''),
-                                    'country'       => ($addr?$addr->Country:''),
-                                    'postal_code'   => ($addr?$addr->postcode:''),
-                                    'line1'         => ($addr?$addr->address1:''),
-                                    'line2'         => ($addr?$addr->address2:''),
-                                ]
-            */
+
         ]);
 
         $si = $stripe->setupIntents->create([
             'customer'=>$stripe_customer->id,
             'payment_method_types' => ['card_present'],
+            'metadata'=>[
+                'CustomerID'=>$cust->CustomerID,
+            ]
         ]);
 
-        $stripe->terminal->readers->processSetupIntent(
-            'tmr_Eqz4ewJhXq5eu6', //Atelier terminal
-            [
-              'setup_intent' => $si->id,
-              'customer_consent_collected' => 'true',
-            ]
-          );
-
         echo json_encode($si);
-
 
     });
 
@@ -1527,7 +1526,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
 
 
-        } catch (Throwable $e) {
+        } catch (\Exception $e) {
             http_response_code(500);
             echo json_encode(['error' => $e->getMessage()]);
         }
@@ -1568,6 +1567,103 @@ Route::post('/cancel-terminal-request',function(){
         'output'=>$output,
     ]);
 });
+
+Route::get('/save_setup_intent',function(Request $request){
+
+    $stripe_test = false;
+    $err = false;
+    $err_txt = "";
+    $existing_card = null;
+
+    //if($isLoggedIn===true){
+        $si_id = $request->SetupIntent;
+
+
+        if(!isset($si_id) || $si_id==''){
+            //die('Parameter "?si=XXX" not set');
+            $err = true;
+            $err_txt = "Parameter ?SetupIntent=XXX not set";
+        }
+
+        $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
+
+
+        if($stripe_test){
+            $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
+        }
+
+        $stripe = new \Stripe\StripeClient(env($stripe_key));
+
+        $site_url = \Illuminate\Support\Facades\URL::to("/");
+
+        try{
+            $si = $stripe->setupIntents->retrieve($si_id);
+
+            $pm = $stripe->paymentMethods->retrieve($si->payment_method); //payment_method
+            $cust = $stripe->customers->retrieve($si->customer);
+
+            //if($si->status=='succeeded'){
+                $existing_card = DB::table('cards')
+                    //->where('setup_intent_id',$si->id)
+                    ->where('CustomerID',$cust->metadata->CustomerID)
+                    ->where('Actif',1)
+                    ->first();
+
+                if($existing_card){
+                    //die('You already have one active card');
+                    $err = true;
+                    $err_txt = "You already have one active card";
+                }else{
+                    $last4 = $pm->card->last4;
+                    $card_details = [
+                        'cardNumber'=>sprintf("%'*16d\n",$last4),
+                        'cardHolderName'=>$cust->name,
+                        'type'=>$pm->card->brand,
+                        'Actif'=>1,
+                        'dateexpiration'=>$pm->card->exp_month."/".substr($pm->card->exp_year,2),
+                        'stripe_customer_id'=>$cust->id,
+                        'stripe_card_id'=>$pm->id,
+                        'setup_intent_id'=>$si->id,
+                        'CustomerID'=>$cust->metadata->CustomerID,
+                        'app'=>(strpos($site_url,'blancapi') > -1?1:0),
+                        'created_at'=>date('Y-m-d H:i:s'),
+                    ];
+
+                    try{
+                        DB::table('cards')->insert($card_details);
+                        //echo "Card confirmation successful";
+                        $err = false;
+                    }catch(\Exception $e){
+                        //die("Unable to confirm card: ".$e->getMessage());
+                        $err = true;
+                        $err_txt = "Unable to confirm card: ".$e->getMessage();
+                    }
+                }
+            /*
+            }else{
+                //die('3D secure not completed');
+                $err = true;
+                $err_txt = "3D secure not completed";
+            }
+            */
+        }catch(\Exception $e){
+            //die("Invalid setupIntent id");
+            $err = true;
+            $err_txt = "Invalid setupIntent id";
+
+        }
+   // }
+
+    return response()->json([
+       // 'loggedIn'=>$isLoggedIn,
+        'err'=>$err,
+        'err_txt'=>$err_txt,
+        'existing_card'=>$existing_card,
+        'si'=>$si_id,
+    ]);
+
+});
+
 
 /**
  * END - Route for Stripe Terminal
@@ -1650,6 +1746,7 @@ Route::get('/unpaid-orders',function(Request $request){
         }
         */
 
+    $site_url = \Illuminate\Support\Facades\URL::to("/");
 
     foreach($order_totals as $k=>$v){
         if($v > 0){
@@ -1658,6 +1755,39 @@ Route::get('/unpaid-orders',function(Request $request){
             $order = DB::table('infoOrder')->where('id',$k)->first();
             $card = DB::table('cards')->where('CustomerID',$order->CustomerID)->where('Actif',1)->first();
             $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
+        if($card->three_d_secure==0){
+            $si_id = "";
+            if($card->setup_intent_id!=''){
+                $si_id = $card->setup_intent_id;
+            }else{
+                try{
+                    $si = $stripe->setupIntents->create([
+                        'customer' => $card->stripe_card_id,
+                        'payment_method'=>$card->stripe_customer_id,
+                        'payment_method_types' => ['card'],
+                        'usage'=>'off_session',
+                    ]);
+                    DB::table('cards')->where('id',$card->id)->update(['setup_intent_id'=>$si->id]);
+                    $si_id = $si->id;
+                }catch(\Exception $e){
+
+                }
+            }
+            try{
+                $three_d_res = $stripe->setupIntents->confirm($si->id,[
+                    'return_url'=>$site_url."/confirm-card",
+                ]);
+                if($three_d_res->status=='succeeded'){
+                    DB::table('cards')->where('id',$card->id)->update(['three_d_res'=>1]);
+                }else{
+
+                }
+
+            }catch(\Exception $e){
+
+            }
+        }
 
         if($order && $card && $cust){
             $payment_arr = [
