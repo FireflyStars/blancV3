@@ -971,6 +971,8 @@ Route::get('/unpaid-card-orders',function(Request $request){
         }
 
         $stripe = new \Stripe\StripeClient(env($stripe_key));
+        $site_url = \Illuminate\Support\Facades\URL::to("/");
+
 
         foreach($orders_to_charge as $k=>$v){
 
@@ -992,6 +994,36 @@ Route::get('/unpaid-card-orders',function(Request $request){
         }
 
         foreach($payment_intents as $k=>$pi){
+            $si_id = "";
+
+            $card = $card_details[$v['CustomerID']];
+            if($card->setup_intent_id!=''){
+                $si_id = $card->setup_intent_id;
+            }else{
+                try{
+                    $si = $stripe->setupIntents->create([
+                        'customer' => $card->stripe_customer_id,
+                        'payment_method'=>$card->stripe_card_id,
+                        'payment_method_types' => ['card'],
+                        'usage'=>'off_session',
+                    ]);
+                    $si_id = $si->id;
+                    DB::table('cards')->where('id',$card->id)->update(['setup_intent_id'=>$si_id]);
+
+                }catch(\Exception $e){}
+            }
+            try{
+                $three_d_res = $stripe->setupIntents->confirm($si->id,[
+                    'return_url'=>$site_url."/confirm-card",
+                ]);
+                if($three_d_res->status=='succeeded'){
+                    DB::table('cards')->where('id',$card->id)->update(['three_d_secure'=>1]);
+                }else{
+                    //To add SMS or MAIL
+                }
+
+            }catch(\Exception $e){}
+
             $order = DB::table('infoOrder')->where('id',$pi['description'])->first();
             $payment_id = DB::table('payments')->insertGetId([
                 'type'=>'card',
