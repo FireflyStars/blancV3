@@ -4,10 +4,11 @@
     </div>
     <br/>
 
-    <div>
-        <button @click="createPaymentIntent" class="btn btn-outline-success">Create intent</button>
+    <!-- <div>
+        <button @click="createPaymentIntent" class="btn btn-outline-success">Create payment intent</button>
     </div>
-    <br/>
+    <br/> -->
+
     <div>
         <button @click="cancelRequest" class="btn btn-outline-danger">Cancel terminal request</button>
     </div>
@@ -143,7 +144,7 @@ export default {
                         console.log('End calling selectReader');
 
                         if(typeof(selected_reader.value.id)!='undefined' && !err_terminal.value){
-                           await getClientSecret(100);
+                           await collectCardDetails();
 
                         }
 
@@ -159,70 +160,57 @@ export default {
         }
 
 
-        async function createPaymentIntent(){
-            await listReaders();
+        const collectCardDetails = ()=>{
+            fetchSetupIntentClientSecret().then((data)=>{
+                console.log('data',data);
 
-                if(readers.value.length > 0){
-                    let store_id = 1;
-
-                    if(typeof(readers_id[store_id]) !='undefined'){
-                        let reader_id = readers_id[store_id];
-
-                        let selected_index = readers.value.findIndex((z) => { return z.id === reader_id});
-                        selected_reader.value = readers.value[selected_index];
-
-                        console.log('calling selectReader');
-                        await selectReader(selected_reader.value);
-                        console.log('End calling selectReader');
-
-                        if(typeof(selected_reader.value.id)!='undefined' && !err_terminal.value){
-                           await getPaymentClientSecret(100);
-
-                        }
-
-
-                    }else{
+                terminal.value.collectSetupIntentPaymentMethod(data.client_secret,true).then((res)=>{
+                    console.log(res);
+                    if (res.error) {
+                        // Placeholder for handling result.error
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
-                            message: 'Store reader not set for user '+props.user.name,
-                            ttl: 5,
-                            type: "danger",
+                                message: JSON.stringify(res.error),
+                                ttl: 5,
+                                type: "danger",
+                            });
+
+                    } else {
+                        console.log('collection can start');
+                        console.log('setup intent',res);
+                        /*
+                        axios.get('/process_setup_intent/?SetupIntent='+res.setupIntent.id).then((result)=>{
+                            console.log(result);
+                        }).catch((err)=>{
+                            console.log(err);
                         });
+                        /*
+                        terminal.value.confirmSetupIntent(res.setupIntent).then((res2)=>{
+                            console.log('collection can start');
+                            console.log('setup intent',res2);
+
+                        }).catch((error)=>{
+                            console.log('error confirming',error);
+                        });
+                        */
+
                     }
-                }
-        }
-
-
-
-        const getClientSecret = (amount)=>{
-            fetchSetupIntentClientSecret(amount).then((data)=>{
-                console.log('data',data);
-
-                terminal.value.collectSetupIntentPaymentMethod(data.client_secret).then((res)=>{
-                    console.log(res);
-                });
-            });
-        }
-
-        const getPaymentClientSecret = (amount)=>{
-            fetchPaymentIntentClientSecret(amount).then((data)=>{
-                console.log('data',data);
-
-                terminal.value.collectPaymentMethod(data.client_secret).then((res)=>{
-                    console.log(res);
                 });
             });
         }
 
 
-        function fetchSetupIntentClientSecret(amount) {
+        function fetchSetupIntentClientSecret() {
 
-            const bodyContent = JSON.stringify({ amount: amount});
+            //const bodyContent = JSON.stringify({ amount: amount});
 
+            const bodyContent = JSON.stringify({
+                selected_reader:selected_reader.value,
+            });
             return fetch('/stripe-test/create_setup_intent', {
                 method: "POST",
                 headers: {
-                'Content-Type': 'application/json'
-            },
+                    'Content-Type': 'application/json'
+                },
             body: bodyContent
             })
             .then(function(response) {
@@ -236,42 +224,15 @@ export default {
         }
 
 
-        function fetchPaymentIntentClientSecret(amount){
-            const bodyContent = JSON.stringify({ amount: amount});
 
-            return fetch('/stripe-test/test_payment_intent', {
-                method: "POST",
-                headers: {
-                'Content-Type': 'application/json'
-            },
-            body: bodyContent
-            })
-            .then(function(response) {
-                return response.json();
-            })
-            .then(function(data) {
-                return data;
-            }).catch((err)=>{
-                console.log(err);
-            });
-        }
 
 
         const cancelRequest = ()=>{
-            console.log('selected_reader',selected_reader.value);
-
-
-
-            /*
-            selected_reader.value.disconnectReader().then((res)=>{
-                console.log(res);
-            });
-            */
+            console.log(selected_reader.value);
         }
 
         return {
             saveTerminalDetail,
-            createPaymentIntent,
             cancelRequest,
         }
 

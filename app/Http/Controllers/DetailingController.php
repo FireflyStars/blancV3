@@ -287,9 +287,11 @@ class DetailingController extends Controller
 
             foreach($cust_cleaning_services as $k=>$service){
                 foreach($service as $i=>$x){
-                   if($x->cust_selected == 1){
-                      $cust_service[] = (string)$x->id;
-                   }
+                   if(isset($x->cust_selected)){
+                    if($x->cust_selected == 1){
+                        $cust_service[] = (string)$x->id;
+                     }
+                   }  
                 }
             }
 
@@ -465,7 +467,7 @@ class DetailingController extends Controller
         $tailoring_price = $request->post('tailoring_price');
         $tailoring_price_type = $request->post('tailoring_price_type');
         $search = $request->post('search');
-        $montant = $request->post('montant');
+        $montant = $request->post('montant') != null ? $request->post('montant') : 0;
 
         if (isset($dept_id)) {
             $detailingitem = DB::table('detailingitem')->where('id', '=', $detailingitem_id)->get();

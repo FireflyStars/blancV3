@@ -714,6 +714,7 @@ Route::get('/test-refund',function(){
 
 });
 
+
 Route::get('/test-create-card',function(){
     $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
     $stripe = new \Stripe\StripeClient(env($stripe_key));
@@ -961,6 +962,8 @@ Route::get('/unpaid-card-orders',function(Request $request){
         }
 
         $stripe = new \Stripe\StripeClient(env($stripe_key));
+        $site_url = \Illuminate\Support\Facades\URL::to("/");
+
 
         foreach($orders_to_charge as $k=>$v){
 
@@ -982,6 +985,36 @@ Route::get('/unpaid-card-orders',function(Request $request){
         }
 
         foreach($payment_intents as $k=>$pi){
+            $si_id = "";
+
+            $card = $card_details[$v['CustomerID']];
+            if($card->setup_intent_id!=''){
+                $si_id = $card->setup_intent_id;
+            }else{
+                try{
+                    $si = $stripe->setupIntents->create([
+                        'customer' => $card->stripe_customer_id,
+                        'payment_method'=>$card->stripe_card_id,
+                        'payment_method_types' => ['card'],
+                        'usage'=>'off_session',
+                    ]);
+                    $si_id = $si->id;
+                    DB::table('cards')->where('id',$card->id)->update(['setup_intent_id'=>$si_id]);
+
+                }catch(\Exception $e){}
+            }
+            try{
+                $three_d_res = $stripe->setupIntents->confirm($si->id,[
+                    'return_url'=>$site_url."/confirm-card",
+                ]);
+                if($three_d_res->status=='succeeded'){
+                    DB::table('cards')->where('id',$card->id)->update(['three_d_secure'=>1]);
+                }else{
+                    //To add SMS or MAIL
+                }
+
+            }catch(\Exception $e){}
+
             $order = DB::table('infoOrder')->where('id',$pi['description'])->first();
             $payment_id = DB::table('payments')->insertGetId([
                 'type'=>'card',
@@ -1454,50 +1487,95 @@ Route::group(['prefix'=>'stripe-test'],function(){
         $stripe->refunds->create(['payment_intent' => $payment_intent_id]);
     });
 
-    Route::post('/create_setup_intent',function(){
+    Route::get('/test-si-terminal',function(){
+        $readers_id = [];
+        $readers_id[1] = 'tmr_Eqz4ewJhXq5eu6'; //Atelier
+        $readers_id[2] = 'tmr_Eq0HXA4Oj7Yjqo'; //Marylebone
+        $readers_id[3] = 'tmr_EqzSAXwuoVzKs0'; //Chelsea
+        $readers_id[4] = 'tmr_Eqz9KQMTISyB47'; //South Ken
+        $readers_id[5] = 'tmr_EqzjQIwM2PjDQy'; //Notting Hill
+
+        $cust = DB::table('infoCustomer')->where('id',22783)->first();
+
         $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
 
-        $json_str = file_get_contents('php://input');
-        $request = json_decode($json_str);
-
-        $cust = DB::table('infoCustomer')->where('id',3428)->first();
+        //$cust is our customer object
 
         $stripe_customer = $stripe->customers->create([
             'name'              => $cust->Name,//$cardholder_name,
             'email'             => $cust->EmailAddress,
-            //'payment_method'    => $card->id,
-            //'invoice_settings'  => ['default_payment_method' => $card->id],
             'metadata'          => [
                                         'CustomerID' => $cust->CustomerID
                                 ],
-/*
-            'address'           => [
-                                    'city'          => ($addr?$addr->Town:''),
-                                    'state'         => ($addr?$addr->County:''),
-                                    'country'       => ($addr?$addr->Country:''),
-                                    'postal_code'   => ($addr?$addr->postcode:''),
-                                    'line1'         => ($addr?$addr->address1:''),
-                                    'line2'         => ($addr?$addr->address2:''),
-                                ]
-            */
+
         ]);
+
 
         $si = $stripe->setupIntents->create([
             'customer'=>$stripe_customer->id,
             'payment_method_types' => ['card_present'],
+            'metadata'=>[
+                'CustomerID'=>$cust->CustomerID,
+            ]
         ]);
 
-        $stripe->terminal->readers->processSetupIntent(
-            'tmr_Eqz4ewJhXq5eu6', //Atelier terminal
-            [
-              'setup_intent' => $si->id,
-              'customer_consent_collected' => 'true',
-            ]
+        echo "<pre>";
+
+        try{
+            $res = $stripe->terminal->readers->processSetupIntent($readers_id[1],
+                ['setup_intent' => $si->id, 'customer_consent_collected' => true]
+            );
+
+        }catch(\Exception $e){
+            print_r($e->getMessage());
+        }
+
+        echo "SI";
+
+        print_r($si);
+
+    });
+
+    Route::post('/create_setup_intent',function(){
+
+
+        $json_str = file_get_contents('php://input');
+        $request = json_decode($json_str);
+
+        /*
+        $stripe->terminal->readers->cancelAction(
+            $sel_reader,
+            []
           );
 
+        $cust = DB::table('infoCustomer')->where('id',22783)->first();
+
+        $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+        //$cust is our customer object
+
+        $stripe_customer = $stripe->customers->create([
+            'name'              => $cust->Name,//$cardholder_name,
+            'email'             => $cust->EmailAddress,
+            'metadata'          => [
+                                        'CustomerID' => $cust->CustomerID
+                                ],
+
+        ]);
+
+
+        $si = $stripe->setupIntents->create([
+            'customer'=>$stripe_customer->id,
+            'payment_method_types' => ['card_present'],
+            'metadata'=>[
+                'CustomerID'=>$cust->CustomerID,
+            ]
+        ]);
+
         echo json_encode($si);
+        */
 
-
+        echo json_encode($request);
     });
 
 
@@ -1529,10 +1607,135 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
 
 
-        } catch (Throwable $e) {
+        } catch (\Exception $e) {
             http_response_code(500);
             echo json_encode(['error' => $e->getMessage()]);
         }
+    });
+
+    Route::post('/save-card-details',function(Request $request){
+        $user = Auth::user();
+
+        $readers_id = [];
+        $readers_id[1] = 'tmr_Eqz4ewJhXq5eu6'; //Atelier
+        $readers_id[2] = 'tmr_Eq0HXA4Oj7Yjqo'; //Marylebone
+        $readers_id[3] = 'tmr_EqzSAXwuoVzKs0'; //Chelsea
+        $readers_id[4] = 'tmr_Eqz9KQMTISyB47'; //South Ken
+        $readers_id[5] = 'tmr_EqzjQIwM2PjDQy'; //Notting Hill
+
+        $sel_reader = "";
+        $err_txt = "";
+        $order_id = $request->order_id;
+        $res = false;
+        $si = false;
+
+        if($user && isset($readers_id[$user->store])){
+            $sel_reader = $readers_id[$user->store];
+
+            $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+            $order = DB::table('infoOrder')->where('id',$order_id)->first();
+
+            $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
+            $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+            //$cust is our customer object
+
+            $stripe_customer = $stripe->customers->create([
+                'name'              => $cust->Name,//$cardholder_name,
+                'email'             => $cust->EmailAddress,
+                'metadata'          => [
+                                            'CustomerID' => $cust->CustomerID
+                                    ],
+
+            ]);
+
+
+            $si = $stripe->setupIntents->create([
+                'customer'=>$stripe_customer->id,
+                'payment_method_types' => ['card_present'],
+                'metadata'=>[
+                    'CustomerID'=>$cust->CustomerID,
+                ],
+            ]);
+
+            try{
+                $res = $stripe->terminal->readers->processSetupIntent($sel_reader,
+                    ['setup_intent' => $si->id, 'customer_consent_collected' => true]
+                );
+
+            }catch(\Exception $e){
+                $err_txt = $e->getMessage();
+            }
+
+        }else{
+            $err_txt = "Terminal user->store value not set";
+        }
+
+
+        return response()->json([
+            'post'=>$request->all(),
+            'err_txt'=>$err_txt,
+            'output'=>$res,
+            'si'=>$si,
+        ]);
+    });
+
+    Route::post('/retrieve-si',function(Request $request){
+
+        $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+        $si_id = $request->si_id;
+        $card_id = 0;
+        $card_details = [];
+        $pm = null;
+
+        try{
+            $si = $stripe->setupIntents->retrieve($si_id,[]);
+
+            if($si->payment_method!=''){
+                try{
+                    $pm = $stripe->paymentMethods->retrieve($si->payment_method); //payment_method
+                    $cust = $stripe->customers->retrieve($si->customer);
+                    $card = $pm->card_present;
+
+                    $last4 = $card->last4;
+                    $card_details = [
+                        'cardNumber'=>sprintf("%'*16d\n",$last4),
+                        'cardHolderName'=>$cust->name,
+                        'type'=>$card->brand,
+                        'Actif'=>1,
+                        'dateexpiration'=>$card->exp_month."/".substr($card->exp_year,2),
+                        'stripe_customer_id'=>$cust->id,
+                        'stripe_card_id'=>$pm->id,
+                        'setup_intent_id'=>$si->id,
+                        'CustomerID'=>$cust->metadata->CustomerID,
+                        'app'=>0,
+                        'created_at'=>date('Y-m-d H:i:s'),
+                        'three_d_secure'=>($si->status=='succeeded'?1:0),
+                    ];
+
+                    $card_id = DB::table('cards')->insertGetId($card_details);
+
+
+                }catch(\Exception $e){
+                    return response()->json(['error'=>$e->getMessage()]);
+                }
+
+            }
+
+        }catch(\Exception $e){
+            return response()->json([
+                'error'=>$e->getMessage(),
+            ]);
+        }
+        return response()->json([
+            'si'=>$si,
+            'card_id'=>$card_id,
+            'card_details'=>$card_details,
+            'pm'=>$pm,
+        ]);
     });
 
 
@@ -1570,6 +1773,114 @@ Route::post('/cancel-terminal-request',function(){
         'output'=>$output,
     ]);
 });
+
+
+Route::get('/save_setup_intent',function(Request $request){
+
+    $stripe_test = false;
+    $err = false;
+    $err_txt = "";
+    $existing_card = null;
+
+    //if($isLoggedIn===true){
+        $si_id = $request->SetupIntent;
+
+
+        if(!isset($si_id) || $si_id==''){
+            //die('Parameter "?si=XXX" not set');
+            $err = true;
+            $err_txt = "Parameter ?SetupIntent=XXX not set";
+        }
+
+        $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
+
+
+        if($stripe_test){
+            $stripe_key = 'STRIPE_TEST_SECURITY_KEY';
+        }
+
+        $stripe = new \Stripe\StripeClient(env($stripe_key));
+
+        $site_url = \Illuminate\Support\Facades\URL::to("/");
+
+        try{
+            $si = $stripe->setupIntents->retrieve($si_id);
+
+            $pm = $stripe->paymentMethods->retrieve($si->payment_method); //payment_method
+            $cust = $stripe->customers->retrieve($si->customer);
+
+            //if($si->status=='succeeded'){
+                $existing_card = DB::table('cards')
+                    //->where('setup_intent_id',$si->id)
+                    ->where('CustomerID',$cust->metadata->CustomerID)
+                    ->where('Actif',1)
+                    ->first();
+
+                if($existing_card){
+                    //die('You already have one active card');
+                    $err = true;
+                    $err_txt = "You already have one active card";
+                }else{
+                    $last4 = $pm->card->last4;
+                    $card_details = [
+                        'cardNumber'=>sprintf("%'*16d\n",$last4),
+                        'cardHolderName'=>$cust->name,
+                        'type'=>$pm->card->brand,
+                        'Actif'=>1,
+                        'dateexpiration'=>$pm->card->exp_month."/".substr($pm->card->exp_year,2),
+                        'stripe_customer_id'=>$cust->id,
+                        'stripe_card_id'=>$pm->id,
+                        'setup_intent_id'=>$si->id,
+                        'CustomerID'=>$cust->metadata->CustomerID,
+                        'app'=>(strpos($site_url,'blancapi') > -1?1:0),
+                        'created_at'=>date('Y-m-d H:i:s'),
+                    ];
+
+                    try{
+                        DB::table('cards')->insert($card_details);
+                        //echo "Card confirmation successful";
+                        $err = false;
+                    }catch(\Exception $e){
+                        //die("Unable to confirm card: ".$e->getMessage());
+                        $err = true;
+                        $err_txt = "Unable to confirm card: ".$e->getMessage();
+                    }
+                }
+            /*
+            }else{
+                //die('3D secure not completed');
+                $err = true;
+                $err_txt = "3D secure not completed";
+            }
+            */
+        }catch(\Exception $e){
+            //die("Invalid setupIntent id");
+            $err = true;
+            $err_txt = "Invalid setupIntent id";
+
+        }
+   // }
+
+    return response()->json([
+       // 'loggedIn'=>$isLoggedIn,
+        'err'=>$err,
+        'err_txt'=>$err_txt,
+        'existing_card'=>$existing_card,
+        'si'=>$si_id,
+    ]);
+
+});
+
+Route::get('/process_setup_intent',function(Request $request){
+    $si_id = $request->SetupIntent;
+
+
+
+    return response()->json([
+        'get'=>$request->all(),
+    ]);
+});
+
 
 /**
  * END - Route for Stripe Terminal
@@ -1652,6 +1963,7 @@ Route::get('/unpaid-orders',function(Request $request){
         }
         */
 
+    $site_url = \Illuminate\Support\Facades\URL::to("/");
 
     foreach($order_totals as $k=>$v){
         if($v > 0){
@@ -1660,6 +1972,39 @@ Route::get('/unpaid-orders',function(Request $request){
             $order = DB::table('infoOrder')->where('id',$k)->first();
             $card = DB::table('cards')->where('CustomerID',$order->CustomerID)->where('Actif',1)->first();
             $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+
+        if($card->three_d_secure==0){
+            $si_id = "";
+            if($card->setup_intent_id!=''){
+                $si_id = $card->setup_intent_id;
+            }else{
+                try{
+                    $si = $stripe->setupIntents->create([
+                        'customer' => $card->stripe_card_id,
+                        'payment_method'=>$card->stripe_customer_id,
+                        'payment_method_types' => ['card'],
+                        'usage'=>'off_session',
+                    ]);
+                    DB::table('cards')->where('id',$card->id)->update(['setup_intent_id'=>$si->id]);
+                    $si_id = $si->id;
+                }catch(\Exception $e){
+
+                }
+            }
+            try{
+                $three_d_res = $stripe->setupIntents->confirm($si->id,[
+                    'return_url'=>$site_url."/confirm-card",
+                ]);
+                if($three_d_res->status=='succeeded'){
+                    DB::table('cards')->where('id',$card->id)->update(['three_d_res'=>1]);
+                }else{
+
+                }
+
+            }catch(\Exception $e){
+
+            }
+        }
 
         if($order && $card && $cust){
             $payment_arr = [
