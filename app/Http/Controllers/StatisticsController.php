@@ -1360,7 +1360,7 @@ class StatisticsController extends Controller
                         ->select(
                             'revenu.*',
 
-                            'infoCustomer.btob', 
+                            'infoCustomer.btob', 'infoCustomer.CustomerIDMaster',
                             'infoCustomer.CustomerCategory', 'infoCustomer.CustomerNotes', 'infoCustomer.SignupDateOnline',
                             'infoCustomer.SignupDate', 'infoCustomer.CompanyName', 'infoCustomer.DeliveryMon', 'infoCustomer.DeliveryTu',
                             'infoCustomer.DeliveryWed', 'infoCustomer.DeliveryTh', 'infoCustomer.DeliveryFri', 'infoCustomer.DeliverySat',
@@ -1368,6 +1368,13 @@ class StatisticsController extends Controller
                             'infoCustomer.FirstName'
                         )
                         ->get();
+        foreach ($reportData as $item) {
+            if($item->CustomerIDMaster == ''){
+                $item->CustomerIDMaster = $item->Name;
+            }else{
+                $item->CustomerIDMaster = InfoCustomer::where('CustomerID', $item->CustomerIDMaster)->value('Name');
+            }
+        }
         return response()->json([
             'data'=>$reportData,
             'fileName'=>sprintf("All-Revenue-%s-%s", Carbon::parse($period[0])->format('Ymd'), Carbon::parse($period[1])->format('Ymd'))
