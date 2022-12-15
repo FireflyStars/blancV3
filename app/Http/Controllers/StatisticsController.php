@@ -1360,11 +1360,11 @@ class StatisticsController extends Controller
                         ->select(
                             'revenu.*',
 
-                            'infoCustomer.btob', 'infoCustomer.CustomerIDMaster',
+                            'infoCustomer.btob', 'infoCustomer.CustomerIDMaster', 'infoCustomer.Name',
                             'infoCustomer.CustomerCategory', 'infoCustomer.CustomerNotes', 'infoCustomer.SignupDateOnline',
                             'infoCustomer.SignupDate', 'infoCustomer.CompanyName', 'infoCustomer.DeliveryMon', 'infoCustomer.DeliveryTu',
                             'infoCustomer.DeliveryWed', 'infoCustomer.DeliveryTh', 'infoCustomer.DeliveryFri', 'infoCustomer.DeliverySat',
-                            'infoCustomer.DeliverybyDay', 'infoCustomer.Phone', 'infoCustomer.Name', 'infoCustomer.EmailAddress', 'infoCustomer.LastName',
+                            'infoCustomer.DeliverybyDay', 'infoCustomer.Phone', 'infoCustomer.EmailAddress', 'infoCustomer.LastName',
                             'infoCustomer.FirstName'
                         )
                         ->get();
