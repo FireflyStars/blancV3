@@ -3135,13 +3135,14 @@ class StatisticsController extends Controller
                             'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%d/%m") as prod'), 'infoitems.id AS item_id',
                             'infoitems.nextpost', 'infoitems.store', 'infoCustomer.Name as customer_name', 'postes.nom as location','infoitems.date_add',
                             'infoitems.idPartner', 'TypePost.bg_color as location_color',  'TypePost.process', 'TypePost.circle_color',
-                            // DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'),
+                            // DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'), 
                             DB::raw('IF(infoitems.PromisedDate > CURRENT_DATE(), IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")), DATE_FORMAT(infoitems.PromisedDate, "%d/%m")) as deliv'),
                             /* 'infoitems.idPartner', 'TypePost.bg_color as location_color',  'TypePost.process', 'TypePost.circle_color',
                             DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%m/%d") as deliv'), */
 
                             /* DB::raw('DATE_FORMAT(pickup.date,"%m/%d") as pickup_date'), */
                             /* DB::raw('DATE_FORMAT(deliveryask.date, "%m/%d") as deliveryask_date') */
+                            DB::raw('DATE_FORMAT(infoOrder.detailed_at,"%d/%m/%Y") as pickup_date')
                         );
         $arr = [0, 1, 2, 3, 4, 5, 6];
 
