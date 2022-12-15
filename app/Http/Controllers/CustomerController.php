@@ -2960,6 +2960,7 @@ class CustomerController extends Controller
             mkdir(storage_path('app/pdf'),0777);
         }
 
+        $detailed_at_date = $request->date_detailed_at;
 
         $customer_ids = @json_decode($request->customer_ids);
         $type = $request->type;

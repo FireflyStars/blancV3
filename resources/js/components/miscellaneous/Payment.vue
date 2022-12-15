@@ -26,11 +26,11 @@
      <div class="col-12" v-else-if="cust.OnAccount==0 && (cust.bycard==1 && !custcard) || editcard">
             <div class="row" id="credit_card_div">
             <div class="credit-card col-12">
-                <!--
+
                 <div class="row mb-3">
-                    <div class="col">  <button id="save_card_details_terminal" class="w-100 py-2" :class="{sel:save_card_details_terminal}" @click="toggleSaveCardDetailsInTerminal">Save Card Details In Terminal</button></div>
+                    <div class="col">  <button id="save_card_details_terminal" class="w-100 py-2" :class="{sel:save_card_details_terminal}" @click="SaveCardDetailsInTerminal">Save Card Details In Terminal</button></div>
                 </div>
-                -->
+
                 <div class="row mb-3">
                     <div class="form-group col-6 cardholder">
                         <label for="" class="payment-subtitle">Cardholder name</label>
@@ -81,6 +81,21 @@
         </div>
 
     </div>
+    <modal ref="save_card_modal">
+        <template #closebtn>
+            <span class="close" id="addon_modal_close" @click="closeSaveCardModal"></span>
+        </template>
+        <template #bheader>
+            <div class="bmodal-header py-5 text-center"><h5 id="terminal_save_txt">Please insert a card in the terminal</h5></div>
+        </template>
+        <template #mbuttons>
+            <div class="row justify-content-center">
+                <div class="col-6">
+                    <button class="btn btn-outline-danger w-100" id="cancelTerminalBtn" @click="cancelTerminalRequest">Cancel Terminal request</button>
+                </div>
+            </div>
+        </template>
+    </modal>
 </template>
 <script>
 import {ref,watch,inject,onUpdated} from 'vue';
@@ -94,9 +109,11 @@ import {
     TOASTER_MESSAGE,
 } from '../../store/types/types';
 
+import Modal from './Modal.vue';
+
 export default {
     name: "Payment",
-    components:{SelectOptions},
+    components:{SelectOptions,Modal},
     props: {
         custcard: Object || null,
         order_id: String,
@@ -111,6 +128,9 @@ export default {
             const paymentMethod = ref("");
             const store = useStore();
             const editcard = ref(false);
+            const save_card_modal = ref();
+            const fetch_si_interval_id = ref();
+            const cur_si_id = ref('');
 
             const form = ref({
                 cardHolderName: '',
@@ -322,11 +342,91 @@ export default {
                 }
                 */
             });
-            const toggleSaveCardDetailsInTerminal=()=>{
+
+            const retrieveSi = ()=>{
+                let date = new Date();
+                console.log(date.getHours()+":"+date.getMinutes()+":"+date.getSeconds());
+
+                axios.post('/stripe-test/retrieve-si',{
+                    si_id:cur_si_id.value
+                }).then((res)=>{
+                    console.log('result of setup intent',res);
+                    if(res.data.card_id!=0){
+                        clearInterval(fetch_si_interval_id.value);
+                        save_card_modal.value.closeModal();
+                        context.emit('reload-checkout');
+                    }
+                }).catch((err)=>{
+                    console.log(err);
+                }).finally(()=>{
+
+                });
+
+            }
+
+            const SaveCardDetailsInTerminal=()=>{
+                store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
+                    true,
+                    "Please wait....",
+                ]);
 
                 save_card_details_terminal.value=!save_card_details_terminal.value;
-                context.emit('require_save_card',save_card_details_terminal.value);
+                axios.post('/stripe-test/save-card-details',{
+                    order_id:props.order_id
+                }).then((res)=>{
+                    if(res.data.output && res.data.si){
+                        let process_output = res.data.output;
+
+                        cur_si_id.value = res.data.si.id;
+
+                        if(process_output.action.status=='in_progress'){
+                            save_card_modal.value.showModal();
+
+                            fetch_si_interval_id.value = setInterval(retrieveSi,4000);
+                        }
+                    }else{
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                        {
+                            message:"An error occur while processing the terminal",
+                            ttl:5,
+                            type:'danger',
+                        });
+                    }
+                }).catch((err)=>{
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                    {
+                        message:JSON.stringify(err),
+                        ttl:5,
+                        type:'danger',
+                    });
+
+                }).finally(()=>{
+                    store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+                });
+
+                //context.emit('require_save_card',save_card_details_terminal.value);
             }
+
+            const closeSaveCardModal = ()=>{
+                save_card_modal.value.closeModal();
+                cur_si_id.value = '';
+            }
+
+            const cancelTerminalRequest = ()=>{
+                clearInterval(fetch_si_interval_id.value);
+                axios.post('/cancel-terminal-request',{})
+                    .then((res)=>{
+                        console.log(res);
+                    }).catch((err)=>{
+
+                    }).finally(()=>{
+                        cur_si_id.value = '';
+                        save_card_details_terminal.value = false;
+                        save_card_modal.value.closeModal();
+                    });
+            }
+
+
 
             return {
                 paymentMethod,
@@ -337,7 +437,10 @@ export default {
                 editcard,
                 setEditCard,
                 save_card_details_terminal,
-                toggleSaveCardDetailsInTerminal
+                SaveCardDetailsInTerminal,
+                save_card_modal,
+                closeSaveCardModal,
+                cancelTerminalRequest,
             }
 
 
@@ -452,6 +555,10 @@ input.error:focus{
 #save_card_details:hover,#save_card_details_terminal.sel{
     background: #42A71E;
     color:#fff;
+}
+
+#terminal_save_txt{
+    color:#EB5757;
 }
 
 </style>

@@ -675,7 +675,7 @@ export default {
 
         watch(() =>(props.preference_customer), (current_val, previous_val) => {
                 var array3 = current_val.filter(function(obj) { return sel_cleaning_service_id.value.indexOf(obj) == -1; });
-                if(array3.length != 0){
+                if(array3.length != 0 && price_now_type.value != "tailoring"){
                         context.emit("save-item-services", {
                             step:11,
                             detailingitem_id: props.detailingitem.id,
@@ -683,6 +683,7 @@ export default {
                             cleaning_price_type: sel_cleaning_price_type.value,
                             tailoring_services: JSON.stringify(sel_tailoring_service_id.value),
                             tailoring_price_type:sel_tailoring_price_type.value,
+                            montant:montant_value.value
                         });
                 }
         });
@@ -831,7 +832,6 @@ export default {
 
         function priceNowAndDescribe(){
            let montant = price_value.value;
-           montant_value.value = montant
            let describeprixnow = describe_job_value.value
 
            if(describeprixnow == '' || montant=='' || parseFloat(montant)=='NaN'){
@@ -861,6 +861,7 @@ export default {
                     //console.log(res);
                     if(price_now_type.value == "cleaning" ){
                         sel_clean_describe.value = describe_job_value.value
+                        montant_value.value = montant
                     }else if(price_now_type.value == "tailoring" ){
                         sel_tailoring_describe.value = describe_job_value.value
                     }
@@ -888,7 +889,6 @@ export default {
         function priceNow(){
             
            let montant = price_now_value.value;
-           montant_value.value = montant
             if(montant=='' || parseFloat(montant)=='NaN'){
                     price_now_value.value = '';
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
@@ -906,6 +906,7 @@ export default {
                     //console.log(res);
                     if(price_now_type.value == "cleaning" ){
                         sel_clean_describe.value = describe_job_value.value
+                        montant_value.value = montant
                     }else if(price_now_type.value == "tailoring" ){
                         sel_tailoring_describe.value = describe_job_value.value
                     }
