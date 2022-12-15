@@ -1360,7 +1360,7 @@ class StatisticsController extends Controller
                         ->select(
                             'revenu.*',
 
-                            'infoCustomer.btob', 'infoCustomer.CustomerIDMaster', 'infoCustomer.Name',
+                            'infoCustomer.btob', 'infoCustomer.CustomerIDMaster as MainAccount', 'infoCustomer.Name',
                             'infoCustomer.CustomerCategory', 'infoCustomer.CustomerNotes', 'infoCustomer.SignupDateOnline',
                             'infoCustomer.SignupDate', 'infoCustomer.CompanyName', 'infoCustomer.DeliveryMon', 'infoCustomer.DeliveryTu',
                             'infoCustomer.DeliveryWed', 'infoCustomer.DeliveryTh', 'infoCustomer.DeliveryFri', 'infoCustomer.DeliverySat',
@@ -1369,10 +1369,10 @@ class StatisticsController extends Controller
                         )
                         ->get();
         foreach ($reportData as $item) {
-            if($item->CustomerIDMaster == ''){
-                $item->CustomerIDMaster = $item->Name;
+            if($item->MainAccount == ''){
+                $item->MainAccount = $item->Name;
             }else{
-                $item->CustomerIDMaster = InfoCustomer::where('CustomerID', $item->CustomerIDMaster)->value('Name');
+                $item->MainAccount = InfoCustomer::where('CustomerID', $item->MainAccount)->value('Name');
             }
         }
         return response()->json([
