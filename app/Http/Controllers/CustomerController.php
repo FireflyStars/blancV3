@@ -539,7 +539,8 @@ class CustomerController extends Controller
                 ])->leftJoin('users',function($join){
                     $join->on('users.id','=','infoOrderPrint.user_id');
                 })
-                ->where('infoOrderPrint.CustomerID','=',$CustomerID);
+                ->where('infoOrderPrint.CustomerID','=',$CustomerID)
+                ->where('infoOrderPrint.email', '!=', '');
 
 
 
