@@ -3142,7 +3142,7 @@ class StatisticsController extends Controller
 
                             /* DB::raw('DATE_FORMAT(pickup.date,"%m/%d") as pickup_date'), */
                             /* DB::raw('DATE_FORMAT(deliveryask.date, "%m/%d") as deliveryask_date') */
-                            DB::raw('DATE_FORMAT(infoOrder.detailed_at,"%d/%m/%Y")')
+                            DB::raw('DATE_FORMAT(infoOrder.detailed_at,"%d/%m/%Y") as detailed_at')
                         );
         $arr = [0, 1, 2, 3, 4, 5, 6];
 
