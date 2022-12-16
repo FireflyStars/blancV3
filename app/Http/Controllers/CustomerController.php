@@ -2354,7 +2354,7 @@ class CustomerController extends Controller
                     })
                     ->where('infoOrder.OrderID','!=','')
                     ->where('infoOrder.CustomerID', $customer->CustomerID)
-                    ->whereNotIn('infoOrder.Status', ['FULFILLED', 'DELIVERED', 'CANCEL', 'DELETE', 'VOID'])
+                    ->whereNotIn('infoOrder.Status', ['SCHEDULED', 'RECURRING'])
                     ->groupBy('infoOrder.id')
                     ->orderBy('infoitems.PromisedDate', 'DESC')
                     ->get();
