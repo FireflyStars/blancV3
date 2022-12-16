@@ -26,6 +26,7 @@ import {
     SET_OVERDUE_FLAG,
     SET_DUE_TODAY_FLAG,
     SET_DUE_TOMORROW_FLAG,
+    SET_ALL_ITEMS_FLAG,
 } from "../types/types";
 import axios from 'axios';
 
@@ -213,6 +214,11 @@ export const invoicelist= {
             state.filter.duetoday = false;
             state.filter.duetomorrow = false;
         },
+        [SET_ALL_ITEMS_FLAG]:(state)=>{
+            state.filter.overdue = false;
+            state.filter.duetoday = false;
+            state.filter.duetomorrow = false;
+        },
     },
     actions: {
         [SET_INVOICE_LIST]: async({ commit, dispatch, state }, payload )=>{
@@ -283,6 +289,9 @@ export const invoicelist= {
         },
         [SET_DUE_TOMORROW_FLAG]:({ commit })=>{
             commit(SET_DUE_TOMORROW_FLAG);
+        },
+        [SET_ALL_ITEMS_FLAG]:({ commit })=>{
+            commit(SET_ALL_ITEMS_FLAG);
         },
     },
     getters: {

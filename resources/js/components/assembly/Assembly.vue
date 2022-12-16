@@ -156,7 +156,7 @@
                     }else if(nav_val == 'OverDueInvoiceList'){
                         store.dispatch(`${INVOICE_MODULE}${SET_OVERDUE_FLAG}`)
                     }else{
-
+                        store.dispatch(`${INVOICE_MODULE}${SET_ALL_ITEMS_FLAG}`)
                     }
                 },
                 exportCSV,
