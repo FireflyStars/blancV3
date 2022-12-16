@@ -9,6 +9,7 @@ use App\Http\Controllers\BookingController;
 use App\Models\OrderRecurringCreator;
 use App\Models\Delivery;
 use App\Http\Controllers\DetailingController;
+use App\Models\Tranche;
 use Exception;
 use stdClass;
 
@@ -1637,5 +1638,71 @@ class OrderController extends Controller
 
     }
 
+    public function getDeliveyDateCustomer(Request $request){
+       
+       $CustomerID=$request->post('Customer');
 
+       $cust = DB::table('infoCustomer')->select('infoCustomer.Name' , 'infoCustomer.id' ,'infoCustomer.CustomerIDMaster',
+            DB::raw('IF(infoCustomer.CustomerIDMaster = "", "MAIN", "Sub") as account_type'),
+            DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as cust_type'),)
+            ->where('CustomerID',$CustomerID)->first();
+
+       $orders = [];
+       $orders_list = [];
+       $tranches_slots = Tranche::getDeliveryPlanningTranchesForApi();
+
+       if($cust){
+
+            if($cust->account_type == "Sub"){
+
+                $orders=DB::table('infoOrder')
+                ->select(['infoOrder.id AS order_id','infoOrder.Status','infoCustomer.Name','infoOrder.TypeDelivery','infoCustomer.id' , 'infoOrder.DeliveryaskID','infoOrder.DatePickup',
+                'infoOrder.DateDeliveryAsk','infoCustomer.OnAccount','infoCustomer.CustomerIDMaster',
+                    DB::raw('IF(infoOrder.DateDeliveryAsk ="2020-01-01" OR infoOrder.DateDeliveryAsk ="2000-01-01" OR infoOrder.DateDeliveryAsk ="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk , "%W %d %M")) as DateDelivery '),
+                    DB::raw('IF(infoOrder.DatePickup ="2020-01-01" OR infoOrder.DatePickup ="2000-01-01" OR infoOrder.DatePickup ="","--",DATE_FORMAT(infoOrder.DatePickup , " %W %d %M")) as DatePickup '),
+                    DB::raw('IF(infoCustomer.CustomerIDMaster = "", "MAIN", "Sub") as account_type'),
+                    DB::raw('CONCAT(deliveryask.trancheFrom,"_",deliveryask.trancheto) as order_time'),
+                ])
+                ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
+                ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
+                ->where('infoOrder.DateDeliveryAsk','>=', date('Y-m-d'))
+                ->where('deliveryask.status','!=', 'DEL')
+                ->where('infoOrder.CustomerID','=',$cust->CustomerIDMaster)->get();
+        
+            }else{
+                $orders=DB::table('infoOrder')
+                ->select(['infoOrder.id AS order_id','infoOrder.Status','infoCustomer.Name','infoOrder.TypeDelivery','infoCustomer.id' , 'infoOrder.DeliveryaskID','infoOrder.DatePickup',
+                'infoOrder.DateDeliveryAsk','infoCustomer.OnAccount','infoCustomer.CustomerIDMaster',
+                    DB::raw('IF(infoOrder.DateDeliveryAsk ="2020-01-01" OR infoOrder.DateDeliveryAsk ="2000-01-01" OR infoOrder.DateDeliveryAsk ="","--",DATE_FORMAT(infoOrder.DateDeliveryAsk , "%W %d %M")) as DateDelivery '),
+                    DB::raw('IF(infoCustomer.btob = 0, "B2C", "B2B") as cust_type'),
+                    DB::raw('IF(infoCustomer.CustomerIDMaster = "", "MAIN", "Sub") as account_type'),
+                    DB::raw('CONCAT(deliveryask.trancheFrom,"_",deliveryask.trancheto) as order_time'),
+                ])
+                ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
+                ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
+                ->where('infoOrder.DateDeliveryAsk','>=', date('Y-m-d'))
+                ->where('infoOrder.CustomerID','=',$CustomerID)->get();
+          
+            }
+        }
+        
+        foreach($orders as $k=>$order){
+
+            $tranche_left = $order->order_time;
+            $tranche_arr_left = explode("_",$tranche_left);
+            if(isset($tranche_arr_left[0]) && isset($tranche_arr_left[1])){
+                $slot = Tranche::getSlotFromTranche($tranche_arr_left[0],$tranche_arr_left[1]);
+                $timeslot = $tranches_slots[$slot];
+                $order->order_time = $timeslot;
+            }
+
+            if($order->order_time != null){
+                $orders_list[] = $order;
+            }
+        }
+
+        return response()->json([
+            'orders'=>$orders_list
+        ]);
+    }
 }

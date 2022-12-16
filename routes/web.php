@@ -82,6 +82,7 @@ Route::get('/preload-order-form-info',[OrderController::class, 'preloadOrderForm
 Route::get('/get_status_orders',[OrderListController::class, 'getStatusOrders'])->middleware('auth')->name('get_status_orders');
 Route::post('/deleteorder',[OrderController::class, 'deleteorder'])->middleware('auth')->name('deleteorder');
 Route::post('/getPayementOrder',[OrderController::class, 'getPayementOrder'])->middleware('auth')->name('getPayementOrder');
+Route::post('/get-deliverydate-customer',[OrderController::class,'getDeliveyDateCustomer'])->name('get-deliverydate-customer')->middleware('auth');
 
 
 Route::post('/create-customer',[CustomerController::class, 'createCustomer'])->middleware('auth')->name('create-customer');
