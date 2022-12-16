@@ -4,26 +4,26 @@
             <div class="suborder" v-for="(ITEMS,suborder) in ITEM_LIST" :key="suborder">
                 <transition-group tag="div" class="position-relative" name="list" appear>
                     <div class="suborderheader" v-if="Object.entries(ITEM_LIST).length !== 0">
-                            <span class="col-9  subordernum body_small_medium">
-                              Sub order {{suborder}}
-                            </span>
-                            <div class="col-3 list-options-suborder" >
-                                <div class='column1'  >
-                                    <img  class="img-arrow" src="/images/flesh.png" />
-                                </div>
-                                <div class='column2' >
-                                    <img  class="img-arrow" @click="setSubOrderFulfilled(ITEMS[0].InvoiceID , ITEMS[0].Invoice_Status)" src="/images/check.png" />
-                                </div>   
-                                <div class='column3' >
-                                   <img  class="img-arrow" src="/images/download.png" @click="openModal(ITEMS[0].InvoiceID)" />
-                                </div>
-                                <div class='column4' >
-                                   <img  class="img-arrow" @click="OpenSubOrderOptions(suborder)"  src="/images/menu.png"   :class="{ active: show === suborder }"/>   
-                                </div>
+                        <span class="col-9  subordernum body_small_medium">
+                            Sub order {{suborder}}
+                        </span>
+                        <div class="col-3 list-options-suborder" >
+                            <div class='column1'  >
+                                <img  class="img-arrow" src="/images/flesh.png" />
                             </div>
+                            <div class='column2' >
+                                <img  class="img-arrow" @click="setSubOrderFulfilled(ITEMS[0].InvoiceID , ITEMS[0].Invoice_Status)" src="/images/check.png" />
+                            </div>   
+                            <div class='column3' >
+                                <img  class="img-arrow" src="/images/download.png" @click="openModal(ITEMS[0].InvoiceID)" />
+                            </div>
+                            <div class='column4' >
+                                <img  class="img-arrow" @click="OpenSubOrderOptions(suborder)"  src="/images/menu.png"   :class="{ active: show === suborder }"/>   
+                            </div>
+                        </div>
                     </div>
 
-                    <SubOrderOptions  v-if="show === suborder && open_options" :suborder=suborder :user=user :items="Object.entries(ITEMS)" :item_selected="Object.entries(MULTI_CHECKED)" :invoice_id="ITEMS[0].InvoiceID" :invoice_Status="ITEMS[0].Invoice_Status" :ListTrackingKey="Object.entries(MULTI_HSL_CHECKED)"></SubOrderOptions>
+                    <SubOrderOptions @free-reclean="freeReClean" @re-assign="reAssign"  v-if="show === suborder && open_options" :suborder=suborder :user=user :items="Object.entries(ITEMS)" :item_selected="Object.entries(MULTI_CHECKED)" :invoice_id="ITEMS[0].InvoiceID" :invoice_Status="ITEMS[0].Invoice_Status" :ListTrackingKey="Object.entries(MULTI_HSL_CHECKED)"></SubOrderOptions>
                     
                         <header v-if="Object.entries(ITEM_LIST).length !== 0">
                             <div class="tcol noselect"  v-for="(col,index) in tabledef" :key="index" :style="{flex:col.flex,'text-align':col.header_align}" :class="{'sortable': col.sortable,'check-box': col.type=='checkbox'}" >{{col.name}}
@@ -95,6 +95,7 @@
         name: "OrderDetailSubOrderItemsTable",
         props:['tabledef',"tab","id" , "status" , "user" , "order"],
         components:{ColorTag, Tag,CheckBox, SubOrderOptions, QzPrint , FulfillConfirmation , ItemDetail},
+        emits: ['freeReclean', 'show_conf', 'close', 'reAssign'],
         setup(props,context){
             const router = useRouter();
             const store=useStore();
@@ -236,6 +237,14 @@
                   
             }
 
+            const freeReClean = (itemId, subOrder)=>{
+                open_options.value = false;
+                context.emit('freeReclean', itemId, subOrder);
+            }
+            const reAssign = (suborder, invoice_id)=>{
+                open_options.value = false;
+                context.emit('reAssign', suborder, invoice_id);
+            }
           
 
             return {
@@ -265,10 +274,9 @@
                 OpenitemDetails,
                 ItemId,
                 ListTrackingKey,
-                hideButton
-
-
-
+                hideButton,
+                freeReClean,
+                reAssign
             }
             
         },

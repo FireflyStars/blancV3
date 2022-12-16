@@ -2,7 +2,6 @@
 
     <div class="options position-absolute">
         <div class="row">
-
             <div  v-if="btn_split_show" class="col-12 row-option"  @click="selectSplit()" >
                 <img class="img-arrow" src="/images/split.png" />
                 <span>Split</span>
@@ -11,18 +10,18 @@
                 <img class="img-arrow" src="/images/offload.png" />
                 <span>Offload</span>
             </div>
-            <!-- <div class="col-12 row-option" @click="freeReclean">
+            <div class="col-12 row-option" @click="freeReclean">
                 <img class="img-arrow" src="/images/bubbles.svg" />
                 <span>Free reclean</span>
-            </div> -->
-            <div class="col-12 row-option" row-option>
+            </div>
+            <div class="col-12 row-option" @click="reAssign">
+                <img class="img-arrow" src="/images/reassign.svg" />
+                <span>Reassign</span>
+            </div>
+            <div class="col-12 row-option">
                 <img class="img-arrow" src="/images/link.svg" />
                 <span>Copy link</span>
             </div>
-             <!-- <div class="col-12 row-option" >
-                <img class="img-arrow" src="/images/arrow.png" />
-                <span>Reassign</span>
-            </div> -->
              <!-- <div class="col-12 row-option" >
                 <img class="img-arrow" src="/images/garbage.png" />
                 <span>Delete</span>
@@ -40,7 +39,12 @@
 
 <script>
     import {ref} from 'vue';
-    import {TOASTER_MODULE, TOASTER_MESSAGE} from "../../store/types/types";
+    import {
+        // ORDERDETAIL_MODULE, 
+        // ORDERDETAIL_GET_ALL_ITEMS_MULITCHECKED,
+        TOASTER_MODULE,
+        TOASTER_MESSAGE,
+    } from "../../store/types/types";
     import {useStore} from 'vuex';
     import NewSplitConfirmation from '../miscellaneous/NewSplitConfirmation';
     import VoidConfirmation from '../miscellaneous/VoidConfirmation';
@@ -48,18 +52,14 @@
         name: "SubOrderOptions",
         props:['items' ,'invoice_id','item_selected','suborder','invoice_Status','user' ,'ListTrackingKey'],
         components:{ NewSplitConfirmation , VoidConfirmation},
-        emits: ['freeReClean'],
+        emits: ['freeReclean', 'close', 'reAssign'],
         setup(props , context){
-           const store=useStore();
-           const btn_split_show = ref(false)
-           const show_split_conf=ref(false);
-           const show_void_conf=ref(false);
-           const listItems =ref([]);
-           const ListHSL =ref([]);
-
-
-
-
+            const store=useStore();
+            const btn_split_show = ref(false)
+            const show_split_conf=ref(false);
+            const show_void_conf=ref(false);
+            const listItems =ref([]);
+            const ListHSL =ref([]);
             props.item_selected.forEach(item => {
                 if (item[0] == props.suborder){
                    listItems.value.push(item[1])
@@ -90,18 +90,28 @@
               show_void_conf.value = true
             }
             const freeReclean =()=>{
-                context.emit('freeReClean')
+                if(listItems.value.length == 0){
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'please select a item.',ttl:5,type:'danger'});
+                }else if(listItems.value.length > 1){
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:'you can only select one item.',ttl:5,type:'danger'});
+                }else{
+                    context.emit('freeReclean', listItems.value[0][0], props.suborder)
+                }
+            }
+            const reAssign =()=>{
+                context.emit('reAssign', props.suborder, props.invoice_id)
             }
             return {
-               selectSplit,
-               show_split_conf,
-               btn_split_show,
-               listItems,
-               VoidSubOrder,
-               close,
-               show_void_conf,
-               ListHSL
-
+                show_split_conf,
+                btn_split_show,
+                listItems,
+                show_void_conf,
+                ListHSL,
+                VoidSubOrder,
+                selectSplit,
+                close,
+                freeReclean,
+                reAssign
             }
         }
     }
@@ -112,6 +122,7 @@
     .row-option{
         height: 56px;
         padding: 10px 32px;
+        cursor: pointer;
     }
     .row-option:hover{
         background-color: #EEEEEE;

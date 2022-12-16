@@ -547,11 +547,9 @@
                 });
             });
             const hideOnLate=((status,colname,order)=>{
-
-                    if(status==='LATE'&&order.suggestedDeliveryDate==null&&(colname=='subOrderCount'||colname=='Total'||colname=='numitems'||colname=='paid')&&!hasRoles(['cc']))
+                if(status==='LATE'&&order.suggestedDeliveryDate==null&&(colname=='subOrderCount'||colname=='Total'||colname=='numitems'||colname=='paid')&&!hasRoles(['cc']))
                     return false;
-
-                    return true;
+                return true;
             });
 
             const colspan=(colname,order)=>{

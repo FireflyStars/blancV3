@@ -642,7 +642,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="item-block py-3">
+                                            <!-- <div class="item-block py-3">
                                                 <div class="d-flex mt-3">
                                                     <div class="col-9">
                                                         <h4 class="sub-title col-12">Bi-Monthly VAT Invoices</h4>
@@ -652,7 +652,7 @@
                                                         <switch-btn class="ms-auto each-cust-pref" v-model="form.acceptMarketing"></switch-btn>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                         </div>
                                     </div>                                    
                                     <div class="blocks">

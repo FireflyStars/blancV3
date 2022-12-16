@@ -236,7 +236,7 @@ export default ({
             if(props.cust && !days_available.value.includes(index)){
                  store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
                 {
-                    message: "Slot not available for "+days[day],
+                    message: "No slots available on "+days[day],
                     ttl: 3,
                     type: 'danger'
                 });

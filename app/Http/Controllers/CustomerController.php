@@ -65,7 +65,7 @@ class CustomerController extends Controller
             'Phone'         => (!empty($phone_arr)?json_encode($phone_arr):""),
             'bycard'        => $request->paymentMethod == 'Credit Card' ? 1 : 0,
             'cardvip'       => $request->kioskNumber,
-            'discount'      => (intval($request->discountLevel) / 100),
+            'discount'      => intval($request->discountLevel),
             'credit'        => 0,
             'SignupDate'    => Carbon::now()->format('Y-m-d'),
             'AcceptMarketing'        => $request->acceptMarketing,

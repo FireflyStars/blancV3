@@ -65,6 +65,8 @@
                             &nbsp;&nbsp;<span class="d-block text-center" :style="{ width: 'calc( 100% - 12px )'}">{{ invoiceRow.location }}</span>
                         </div>
                     </td>
+                    <!-- Detailed Date -->
+                    <td class="text-capitalize fw-16">{{ invoiceRow.detailed_at }}</td>
                     <!-- Prod -->
                     <td class="text-capitalize fw-16">{{ invoiceRow.prod }}</td>
                     <!-- Deliv -->
@@ -155,6 +157,11 @@ export default {
                 {
                     label: 'Location',
                     key: 'location',
+                    thClass: 'text-uppercase invoice-table-th',
+                },
+                {
+                    label: 'DETAILED',
+                    key: 'detailed_at',
                     thClass: 'text-uppercase invoice-table-th',
                 },
                 {
