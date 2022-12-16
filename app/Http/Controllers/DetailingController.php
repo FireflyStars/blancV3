@@ -1017,6 +1017,7 @@ class DetailingController extends Controller
                 $item_base_price = $prev_type_item->pricecleaning;
             }
 
+            $duplicate_detailing_item['pricecleaning'] = $item_base_price;
 
             $pricecleaning = $item_base_price
                 + ($item_base_price * $previous_detailed_item->coefcleaningbrand)
@@ -1029,9 +1030,9 @@ class DetailingController extends Controller
                 $pricecleaning = DetailingController::calculateCleaningPrice($cs,$pricecleaning);
             }
 
-            $duplicate_detailing_item['pricecleaning'] = $previous_detailed_item->pricecleaning;
+            $duplicate_detailing_item['pricecleaning'] = $pricecleaning;
             $duplicate_detailing_item['cleaning_addon_price'] = $previous_detailed_item->cleaning_addon_price;
-            $duplicate_detailing_item['dry_cleaning_price'] = $previous_detailed_item->dry_cleaning_price;
+            $duplicate_detailing_item['dry_cleaning_price'] = $pricecleaning;
             $duplicate_detailing_item['tailoring_services'] = "[]";
 
 
