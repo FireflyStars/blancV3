@@ -1336,7 +1336,7 @@ class OrderListController extends Controller
             $billing_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=','BILLING')->first();
             $delivery_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=',$order->TypeDelivery)->first();
 
-            $infoitems=DB::table('itemhistorique')->select(['infoInvoice.NumInvoice','infoInvoice.InvoiceID' ,"infoInvoice.Status as Invoice_Status", 'infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','itemhistorique.ItemTrackingKey' , 'infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status', 'infoitems.id_items as itemproduction' , 'itemhistorique.ID_item as productionitem' , 'postes.nominterface as station'])
+            $infoitems=DB::table('itemhistorique')->select(['infoInvoice.NumInvoice','infoInvoice.InvoiceID' ,"infoInvoice.Status as Invoice_Status", 'infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','itemhistorique.ItemTrackingKey' , 'infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status', 'infoitems.id_items as itemproduction' , 'itemhistorique.ID_item as productionitem' , 'postes.nominterface as station', 'infoitems.conveyorSlot'])
             ->join('infoInvoice',function($join) use($order){
                 $join->on('infoInvoice.InvoiceID','=','itemhistorique.InvoiceID')
                 ->where('infoInvoice.OrderID','=',$order->OrderID);
@@ -1539,7 +1539,7 @@ class OrderListController extends Controller
                       ->select(
                           'infoitems.id', 'infoitems.ItemTrackingKey as item_key', 'infoitems.Colors as colors','infoInvoice.InvoiceID',
                           'infoitems.Fabrics as fabrics', 'infoitems.Patterns as patterns', 'infoitems.Size as size','infoitems.brand',
-                          'infoitems.StoreName as store_name', 'infoitems.store', 'infoitems.damage', 'infoitems.id_items',
+                          'infoitems.StoreName as store_name', 'infoitems.store', 'infoitems.damage', 'infoitems.id_items', 'infoitems.conveyorSlot',
                           'infoitems.typeitem as item_name', 'TypePost.bg_color as location_color', 'postes.nom as location', 'TypePost.circle_color', 'TypePost.process',
                           'infoCustomer.Name as customer_name', 'infoCustomer.CustomerIDMaster', 'infoCustomer.CustomerIDMasterAccount',
                           'infoCustomer.IsMaster', 'infoCustomer.IsMasterAccount', 'postes.id as poste_id', 'infoOrder.id as order_id','infoOrder.Status'
@@ -2048,7 +2048,7 @@ class OrderListController extends Controller
 
         $order=DB::table('infoOrder')->where('id','=',$infoOrder_id)->first();
 
-        $infoitems=DB::table('infoitems')->select(['infoInvoice.NumInvoice','infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status','TypePost.Name as station',])->join('infoInvoice',function($join) use($order){
+        $infoitems=DB::table('infoitems')->select(['infoInvoice.NumInvoice','infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status','TypePost.Name as station', 'infoitems.conveyorSlot'])->join('infoInvoice',function($join) use($order){
             $join->on('infoInvoice.SubOrderID','=','infoitems.SubOrderID')
                 ->where('infoInvoice.OrderID','=',$order->OrderID);
         })->leftJoin('postes','postes.id','=','infoitems.nextpost')

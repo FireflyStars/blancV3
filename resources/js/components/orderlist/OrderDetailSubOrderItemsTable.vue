@@ -34,7 +34,7 @@
                         <template v-for="(col,index) in tabledef" :key="index">
                             <div class="tcol"   :style="{flex:col.flex}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(ITEM.infoitems_id,index ,ITEMS[0].InvoiceID)"  >
                                 <check-box v-if="col.type=='checkbox'" :checked_checkbox="typeof MULTI_CHECKED[suborder]!=='undefined'&&MULTI_CHECKED[suborder].includes(ITEM.infoitems_id)" :id="ITEM.infoitems_id"   @checkbox-clicked="checkboxclicked" :name="suborder" :trackingkey="ITEM.ItemTrackingKey"></check-box>
-                                <tag v-else-if="col.type=='tag'" :name="ITEM[index]" :style="{backgroundColor:'transparent',border:'1px solid #000000',color:'#000000'}"></tag>
+                                <tag v-else-if="col.type=='tag'" :name="ITEM[index] =='Storage' ? ITEM[index] + '- ' + ITEM.conveyorSlot : ITEM[index]" :style="{backgroundColor:'transparent',border:'1px solid #000000',color:'#000000'}"></tag>
                                 <color-tag :style="col.css" v-else-if="col.type=='color'" :colors="ITEM[index].toLowerCase()"></color-tag>
                                 <span v-else :style="col.css" class="tool-tip"  :class="{body_small_medium:col.name=='',body_small:col.name!=''}" :data-tooltip="preprocess(col,ITEM[index])">{{preprocess(col,ITEM[index])}}</span>
                             </div>                         
