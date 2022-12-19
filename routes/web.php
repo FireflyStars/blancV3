@@ -1421,8 +1421,11 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
             $intent = $stripe->paymentIntents->create($pi);
 
-            echo json_encode(['pi'=>$intent,'si'=>$si,'res'=>$res]);
-
+            if($savecardinfo){
+                echo json_encode(['pi'=>$intent,'si'=>$si,'res'=>$res]);
+            }else{
+                echo json_encode($intent);
+            }
         } catch (Throwable $e) {
             http_response_code(500);
             echo json_encode(['error' => $e->getMessage()]);
