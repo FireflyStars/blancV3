@@ -108,6 +108,9 @@
     .text-right{
         text-align: right;
     }
+    .filters{
+        top: 43px;
+    }
     .filters .buttons button{
         width: 130px;
         height: 56px;
