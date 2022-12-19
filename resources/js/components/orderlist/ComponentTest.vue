@@ -8,6 +8,24 @@
             <side-bar></side-bar>
                 <div class="col main-view p-5">
                     <h2>Component library</h2>
+                    <div class="row pb-4 form-group">
+                        <div class="col-12 pb-3"><label>Electron print</label></div>
+                        <div class="col-2">
+                            <input type="text" class="form-control w-100" v-model="cur_id" placeholder="ID invoice/order"/>
+                        </div>
+                        <div class="col-2">
+                            <select v-model="print_type" class="form-control w-100">
+                                <option value="">Type print</option>
+                                <option value="invoice">Invoice</option>
+                                <option value="order">Order</option>
+                            </select>
+                        </div>
+                        <div class="col-2">
+                            <button class="btn btn-success w-100 py-1 text-white" @click="loadUrl" style="height:37.6px;">Electron print</button>
+                            <a href="#" id="electron_link" class="d-none">Link</a>
+                        </div>
+                    </div>
+
                     <div class="row my-4">
                         <div class="col-3">
                             <setup-intent></setup-intent>
@@ -325,6 +343,45 @@
             const available_slots = ref([]);
             const router = useRouter();
 
+            const cur_id = ref('');
+            const print_type = ref('');
+
+            const cur_user = ref('');
+
+            const fetchUser = ()=>{
+                axios.get('/get-current-user',{})
+                    .then((res)=>{
+                        cur_user.value = res.data.user;
+                        console.log('user',res.data.user);
+                    }).catch((err)=>{
+
+                    }).finally(()=>{
+
+                    });
+            }
+
+            fetchUser();
+
+            const loadUrl = ()=>{
+                if(print_type.value!='' && cur_id.value!='' && parseInt(cur_id.value)){
+
+                    let url = "electron-param://?type="+print_type.value+"&id="+cur_id.value+'&userid='+cur_user.value.id;
+                    console.log('url',url);
+
+                    let anchor = document.getElementById('electron_link');
+                    anchor.setAttribute('href',url);
+
+
+                    anchor.click();
+                }else{
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                        message: 'Please enter order/invoice id and print type',
+                        ttl: 3,
+                        type: 'danger'
+                    });
+                }
+            }
+
             watch(() => Scan.value, (current_val, previous_val) => {
               if(Scan.value == false) {
                   show_barcode.value= false;
@@ -573,6 +630,9 @@
                 bmodal,
                 showModal,
                 router,
+                cur_id,
+                print_type,
+                loadUrl,
             }
         },
 
