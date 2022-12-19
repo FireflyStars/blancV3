@@ -315,7 +315,7 @@
                                                 <div class="row" v-for="a,i in amount_paid_card" :key="i">
                                                     <div class="px-0 payment-desc-text" :class="{'col-7':a.is_admin==1,'col-9':cur_user.role_id!=1}">Paid by Card ({{ a.type[0].toUpperCase() + a.type.slice(1)}} {{a.cardNumber.slice(-7)}}) on <small>{{a.date}}</small>:</div>
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
-                                                    <div class="col-2" v-if="(a.is_admin==1)"><button class="btn btn-outline-dark inline-refund-btn py-0 px-1">Refund</button></div>
+                                                    <div class="col-2" v-if="(a.is_admin==1) && a.montant > 0"><button class="btn btn-outline-dark inline-refund-btn py-0 px-1" @click="loadCardRefundModal(a)">Refund</button></div>
                                                 </div>
                                             </div>
                                             <!--
@@ -348,7 +348,7 @@
                                                 <div class="row">
                                                     <div class="px-0 payment-desc-text" :class="{'col-7':a.is_admin==1,'col-9':cur_user.role_id!=1}">{{a.name}} on <small>{{a.date}}</small>:</div>
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
-                                                    <div class="col-2" v-if="(a.is_admin==1)"><button class="btn btn-outline-dark inline-refund-btn py-0 px-1">Refund</button></div>
+                                                    <div class="col-2" v-if="(a.is_admin==1) && a.montant > 0"><button class="btn btn-outline-dark inline-refund-btn py-0 px-1" @click="loadCardRefundModal(a)">Refund</button></div>
                                                 </div>
                                                 </div>
                                             </template>
@@ -752,7 +752,7 @@
                 <div class="col-10">
                     <div class="row justify-content-center mb-4">
                         <div class="col-6">
-                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="parseFloat(amount_to_pay)" @complete-checkout="completeCheckout(false)" @close-payment-modal="closePaymentAndShowLoading" @close-awaiting-payment="closeAwaitingPaymentModal" @set-terminal-pay="setTerminalPay" ref="stripePay"></stripe-pay-now>
+                            <stripe-pay-now :user="cur_user" :order="order" :amounttopay="parseFloat(amount_to_pay)" @complete-checkout="completeCheckout(false)" @close-payment-modal="closePaymentAndShowLoading" @close-awaiting-payment="closeAwaitingPaymentModal" @set-terminal-pay="setTerminalPay" ref="stripePay" @show-save-card-modal="showSaveCardModal" @set-terminal-php="setTerminalPhp"></stripe-pay-now>
                         </div>
                         <div class="col-6">
                             <button class="pay-btn w-100 py-3" @click="completeCheckout(true)">Pay later</button>
@@ -776,7 +776,7 @@
             <div class="bmodal-header py-5 text-center">Awaiting payment</div>
         </template>
         <template #mbuttons>
-            <div class="row justify-content-center">
+            <div class="row justify-content-center py-5">
                 <div class="col-8">
                     <button class="btn btn-outline-danger w-100" id="cancelTerminalBtn" @click="cancelTerminalRequest">Cancel Terminal request</button>
                 </div>
@@ -853,6 +853,43 @@
         </template>
 
     </modal>
+
+
+    <modal ref="card_refund_modal">
+        <template #closebtn>
+            <span class="close" id="price_delivery_now_modal_close" @click="closeCardRefundModal"></span>
+        </template>
+        <template #bheader>
+            <div id="modal-header-refund" class="py-5 text-center">Customer refund - Stripe</div>
+        </template>
+        <template #bcontent><div class="row py-5">
+            <div class="col-12">Your text here</div>
+        </div></template>
+        <template #mbuttons>
+
+        </template>
+
+    </modal>
+
+    <modal ref="save_card_modal" :id="'save_card_modal'">
+        <template #closebtn>
+            <span class="close" id="addon_modal_close" @click="closeSaveCardModal"></span>
+        </template>
+        <template #bheader>
+            <div class="bmodal-header py-5 text-center">Do you want to save<br/>card details to customer's account</div>
+        </template>
+        <template #mbuttons>
+            <div class="row justify-content-around py-5">
+                <div class="col-5 py-4">
+                    <button class="btn btn-outline-dark w-100 each-save-card-btn" @click="payNow(true)">YES, save details now</button>
+                </div>
+                <div class="col-5 py-4">
+                    <button class="btn btn-outline-dark w-100 each-save-card-btn" @click="payNow(false)">NO, just pay</button>
+                </div>
+            </div>
+        </template>
+    </modal>
+
 
 
 </template>
@@ -959,9 +996,24 @@ export default {
         ]);
 
         const refund_modal = ref();
+        const save_card_modal = ref();
 
         function closeRefundModal(){
             refund_modal.value.closeModal();
+        }
+
+        const showSaveCardModal = ()=>{
+            no_payment_modal.value.makeInvisible();
+            save_card_modal.value.showModal();
+        }
+
+        const closeSaveCardModal = ()=>{
+            save_card_modal.value.closeModal();
+        }
+
+        const is_terminal_php = ref(false);
+        const setTerminalPhp = ()=>{
+            is_terminal_php.value = true;
         }
 
 
@@ -1292,7 +1344,12 @@ export default {
             awaiting_payment_modal.value.showModal();
         }
 
+        function hidePaymentModal(){
+            no_payment_modal.value.makeInvisible();
+        }
+
         function closeAwaitingPaymentModal(){
+            is_terminal_php.value = false;
             awaiting_payment_modal.value.closeModal();
         }
 
@@ -1468,17 +1525,19 @@ export default {
         }
 
         function cancelTerminalRequest(){
-            stripePay.value.cancelTerminalRequest();
-            /*
-             axios.post('/cancel-terminal-request',{})
+            if(is_terminal_php.value){
+                axios.post('/cancel-terminal-request',{})
                 .then((res)=>{
                     console.log(res);
                 }).catch((err)=>{
 
                 }).finally(()=>{
-                    awaiting_payment_modal.value.closeModal();
+                    stripePay.value.resetRetrieveLoop();
+                    closeAwaitingPaymentModal();
                 })
-            */
+            }else{
+                stripePay.value.cancelTerminalRequest();
+            }
         }
 
         const closePriceDeliveryNowModal=()=>{
@@ -1570,6 +1629,28 @@ export default {
                  });
         }
 
+        const payNow =(savecard)=>{
+            save_card_modal.value.closeModal();
+            if(savecard){
+                console.log('Full php integration');
+                stripePay.value.saveCardAndPay();
+            }else{
+                stripePay.value.payNow();
+            }
+
+        }
+
+        const card_refund_modal = ref();
+
+        const loadCardRefundModal = (payment)=>{
+            console.log(payment);
+            card_refund_modal.value.showModal();
+        }
+
+        const closeCardRefundModal = ()=>{
+            card_refund_modal.value.closeModal();
+        }
+
         return {
             amountPaidCredit,
             order_id,
@@ -1659,6 +1740,15 @@ export default {
             refund_modal,
             closeRefundModal,
             creditAccount,
+            hidePaymentModal,
+            save_card_modal,
+            showSaveCardModal,
+            closeSaveCardModal,
+            payNow,
+            setTerminalPhp,
+            card_refund_modal,
+            loadCardRefundModal,
+            closeCardRefundModal,
         }
     },
 }
@@ -2178,4 +2268,16 @@ input[type=number] {
     font-size:13px;
     width:100%;
 }
+
+
+#save_card_modal .bmodal-header{
+        font:bold 22px "Gilroy";
+        color:#42A71E;
+        background:#D0E9c7;
+    }
+
+.each-save-card-btn{
+    font-family: "Gotham Rounded";
+}
+
 </style>

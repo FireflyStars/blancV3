@@ -641,25 +641,22 @@ Route::get('notify-test', function () {
 
 /* A REFAIRE */
 
-Route::get('/test-pi',function(){
+Route::get('/test-pi-si',function(){
+    $si_id = 'seti_1MGihOB2SbORtEDsljJDougu';
+    $pi_id = 'pi_3MGihQB2SbORtEDs04Z8epdT'; //pi_3MGihQB2SbORtEDs04Z8epdT
+    //pi_3MFcxBB2SbORtEDs0XHwQjx4
 
-    $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+    $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
+    $stripe = new \Stripe\StripeClient(env($stripe_key));
 
-    $reader = $stripe->terminal->readers->retrieve('tmr_Eqz4ewJhXq5eu6',[]);
+    $pi = $stripe->paymentIntents->retrieve($pi_id,[]);
 
-    $customer = $stripe->customers->retrieve('cus_MeaLJ5cY4usxnq',[]);
-
-    $si = $stripe->setupIntents->create([
-        'customer'=>$customer->id,
-        'payment_method_types' => ['card_present'],
-    ]);
-
-    $res = $stripe->terminal->readers->processSetupIntent('tmr_Eqz4ewJhXq5eu6',
-        ['setup_intent' => $si->id, 'customer_consent_collected' => true]
-    );
-
+    if($pi->payment_method!='' && $pi->customer!=''){
+        $pm = $stripe->paymentMethods->retrieve($pi->payment_method,[]);
+        $cust = $stripe->customers->retrieve($pi->customer,[]);
+    }
     echo "<pre>";
-    print_r($res);
+    print_r($pi);
 });
 
 
@@ -1768,69 +1765,76 @@ Route::group(['prefix'=>'stripe-test'],function(){
         $si = false;
         $pi = false;
         $user = Auth::user();
+        $capture_res = false;
+
 
         try{
 
-
+            $pi = $stripe->paymentIntents->retrieve($pi_id,[]);
             $si = $stripe->setupIntents->retrieve($si_id,[]);
 
-            $pi = $stripe->paymentIntents->retrieve($pi_id,[]);
-
-            if($pi->payment_method!=''){
-                $stripe->paymentIntents->confirm($pi->id);
+            if($pi && $pi->status=='requires_capture'){
+                try{
+                    $capture_res = $stripe->paymentIntents->capture(
+                        $pi_id,
+                        []
+                    );
+                }catch(\Exception $e){
+                    return response()->json(['error_capture'=>$e->getMessage()]);
+                }finally{
+                    $pi = $stripe->paymentIntents->retrieve($pi_id,[]);
+                }
             }
 
-            if($pi->status=='requires_capture'){
-                $pi = $stripe->paymentIntents->capture(
-                    $pi_id,
-                    []
-                );
-            }
 
-            //
+            if($pi && !empty($pi->charges->data) &&  $pi->status=='succeeded' && $pi->payment_method!='' && $pi->customer!=''){
+            //if($pi && $pi->charges->total_count > 0 &&  $pi->charges->data[0]->status=='succeeded' && $pi->payment_method!='' && $pi->customer!=''){
 
-            if($pi->status=='succeeded'){
+                try{
 
-                    try{
-                        $pm = $stripe->paymentMethods->retrieve($si->payment_method); //payment_method
-                        $cust = $stripe->customers->retrieve($si->customer);
-                        $card = $pm->card_present;
+                    $pm = $stripe->paymentMethods->retrieve($pi->payment_method); //payment_method
+                    $cust = $stripe->customers->retrieve($pi->customer);
+                    $card = $pm->card_present;
 
-                        $last4 = $card->last4;
-                        $card_details = [
-                            'cardNumber'=>sprintf("%'*16d\n",$last4),
-                            'cardHolderName'=>$cust->name,
-                            'type'=>$card->brand,
-                            'Actif'=>1,
-                            'dateexpiration'=>$card->exp_month."/".substr($card->exp_year,2),
-                            'stripe_customer_id'=>$cust->id,
-                            'stripe_card_id'=>$pm->id,
-                            'setup_intent_id'=>$si->id,
-                            'CustomerID'=>$cust->metadata->CustomerID,
-                            'app'=>0,
-                            'created_at'=>date('Y-m-d H:i:s'),
-                            'three_d_secure'=>($si->status=='succeeded'?1:0),
-                        ];
+                    $last4 = $card->last4;
+                    $card_details = [
+                        'cardNumber'=>sprintf("%'*16d\n",$last4),
+                        'cardHolderName'=>$cust->name,
+                        'type'=>$card->brand,
+                        'Actif'=>1,
+                        'dateexpiration'=>$card->exp_month."/".substr($card->exp_year,2),
+                        'stripe_customer_id'=>$cust->id,
+                        'stripe_card_id'=>$pm->id,
+                        'setup_intent_id'=>$si_id,
+                        'CustomerID'=>$cust->metadata->CustomerID,
+                        'app'=>0,
+                        'created_at'=>date('Y-m-d H:i:s'),
+                        'three_d_secure'=>($si->status=='succeeded'?1:0),
+                    ];
 
-                        $card_id = DB::table('cards')->insertGetId($card_details);
+                    $card_id = DB::table('cards')->insertGetId($card_details);
 
 
-                    }catch(\Exception $e){
-                        return response()->json(['error'=>$e->getMessage()]);
-                    }
+                }catch(\Exception $e){
+                    return response()->json(['error_card_saving'=>$e->getMessage()]);
+                }
             }
 
         }catch(\Exception $e){
             return response()->json([
-                'error'=>$e->getMessage(),
+                'error_pi_si'=>$e->getMessage(),
+                'pi_id'=>$pi_id,
+                'si_id'=>$si_id,
             ]);
         }
+
         return response()->json([
             'si'=>$si,
             'pi'=>$pi,
             'card_id'=>$card_id,
             'card_details'=>$card_details,
             'pm'=>$pm,
+            'capture_res'=>$capture_res,
         ]);
     });
 

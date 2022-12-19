@@ -263,7 +263,7 @@ class DetailingController extends Controller
                     ->where('department_id', $searched_item->department_id)
                     ->where('deleted_at' , '=' , NULL)
                     ->get();
-                }     
+                }
         }
 
         $detailingitem = DB::table('detailingitem')
@@ -283,15 +283,17 @@ class DetailingController extends Controller
         if(!empty($detailingitem)){
             $detailing_data = $this->getDetailingData($detailingitem['department_id'], $detailingitem['typeitem_id']);
             $cust_cleaning_services = DetailingController::getCustCleaningServices($detailingitem);
-            
 
-            foreach($cust_cleaning_services as $k=>$service){
-                foreach($service as $i=>$x){
-                   if(isset($x->cust_selected)){
-                    if($x->cust_selected == 1){
-                        $cust_service[] = (string)$x->id;
-                     }
-                   }  
+            if(!empty($cust_cleaning_services)){
+
+                foreach($cust_cleaning_services as $k=>$service){
+                    foreach($service as $i=>$x){
+                    if(isset($x->cust_selected)){
+                        if($x->cust_selected == 1){
+                            $cust_service[] = (string)$x->id;
+                        }
+                    }
+                    }
                 }
             }
 
@@ -421,9 +423,9 @@ class DetailingController extends Controller
         }
 
         if(!empty($prefrenceActive)){
-           
+
             $sel_cleaning_services =  array_merge($sel_cleaning_services , $prefrenceActive);
-            
+
         }
 
         if(!empty($sel_cleaning_services)){
@@ -2142,6 +2144,8 @@ class DetailingController extends Controller
                                 'type'=>$card->type,
                                 'card_id'=>$v->card_id,
                                 'is_admin'=>(Auth::user()->role_id==1?1:0),
+                                'refunded'=>$v->refunded,
+                                'possible_refund'=>$v->montant - $v->refunded,
                             ];
                         }
                     }else{
@@ -2150,6 +2154,8 @@ class DetailingController extends Controller
                             'date'=>date('F d, Y',strtotime($v->created_at))." at ".date('g:i A',strtotime($v->created_at)),
                             'name'=>ucfirst($v->type),
                             'is_admin'=>(Auth::user()->role_id==1?1:0),
+                            'refunded'=>$v->refunded,
+                            'possible_refund'=>$v->montant - $v->refunded,
                         ];
                     }
                 }
@@ -2227,7 +2233,7 @@ class DetailingController extends Controller
         if($cust){
             $cust->credit_to_deduct = number_format($credit_to_deduct,2,'.','');
             $cust_amount_diff =  DetailingController::getAmountToPay($order_id);
-            $cust->amount_diff =number_format($cust_amount_diff,2,'.','');
+            $cust->amount_diff = number_format($cust_amount_diff,2,'.','');
         }
 
         $has_invoices = [];

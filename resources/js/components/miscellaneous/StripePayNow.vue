@@ -1,5 +1,8 @@
 <template>
-    <button class="pay-btn w-100 py-3" @click="payNow">Pay now</button>
+    <button class="pay-btn w-100 py-3" @click="loadSaveCardModal">Pay now</button>
+
+
+
 </template>
 <script>
 import {ref,watch} from 'vue';
@@ -13,6 +16,8 @@ import {
     TOASTER_MODULE,
 } from '../../store/types/types';
 
+
+
 export default {
     name:"StripePayNow",
     props:{
@@ -20,7 +25,7 @@ export default {
         order: Object || null,
         amounttopay: Number,
     },
-    emits:['complete-checkout','close-payment-modal','set-terminal-pay','close-awaiting-payment'],
+    emits:['complete-checkout','close-payment-modal','set-terminal-pay','close-awaiting-payment','show-save-card-modal','set-terminal-php'],
     setup(props,context) {
         const store = useStore();
         const terminal = ref();
@@ -28,6 +33,16 @@ export default {
         const paymentIntentId = ref();
         const selected_reader = ref();
         const err_terminal = ref(false);
+        const save_card = ref(false);
+        const fetch_payment_interval_id = ref();
+        const cur_pi_id = ref('');
+        const cur_si_id = ref('');
+        const cur_terminal_name = ref('');
+
+        const loadSaveCardModal = ()=>{
+            context.emit('show-save-card-modal');
+        }
+
 
         let readers_id = {};
         readers_id[1] = 'tmr_Eqz4ewJhXq5eu6'; //Atelier
@@ -205,7 +220,7 @@ export default {
                             if (result.error) {
                                 //context.emit('close-awaiting-payment');
 
-                                 updateTerminalOrder(order_id,amount,'Failed',result);
+                                 updateTerminalOrder(order_id,amount,'Failed',result,selected_reader.value.label);
                                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
                                     message: "Payment declined",
                                     ttl: 5,
@@ -215,7 +230,7 @@ export default {
                                 //To add fetch for card details
                                 context.emit('set-terminal-pay');
 
-                                updateTerminalOrder(order_id,amount,'succeeded','',result.paymentIntent.id);
+                                updateTerminalOrder(order_id,amount,'succeeded','',result.paymentIntent.id,selected_reader.value.label);
                                 console.log('terminal.collectPaymentMethod', result.paymentIntent);
 
                                 paymentIntentId.value = result.paymentIntent.id;
@@ -243,7 +258,7 @@ export default {
 
         async function fetchPaymentIntentClientSecret(amount) {
             console.log('fetch amount',amount);
-            const bodyContent = JSON.stringify({ amount: amount,order_id:props.order.id });
+            const bodyContent = JSON.stringify({ amount: amount,order_id:props.order.id});
             return fetch('/stripe-test/create_payment_intent', {
                 method: "POST",
                 headers: {
@@ -255,7 +270,10 @@ export default {
                 return response.json();
             })
             .then(function(data) {
-                return data.client_secret;
+                console.log('data',data);
+                return data.pi.client_secret;
+            }).catch((err)=>{
+                console.log(err);
             });
         }
 
@@ -299,13 +317,13 @@ export default {
             }
         }
 
-        function updateTerminalOrder(order_id,amount,status,msg,payment_intent_id){
+        function updateTerminalOrder(order_id,amount,status,msg,payment_intent_id,terminal){
             console.log('update order started');
 
             const bodyContent = JSON.stringify({
                 order_id:order_id,
                 amount:amount.toFixed(2),
-                terminal:selected_reader.value.label,
+                terminal:terminal,
                 status:status,
                 info:msg,
                 payment_intent_id:payment_intent_id,
@@ -368,12 +386,130 @@ export default {
                 });
         }
 
+        function saveCardAndPay(){
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [
+                true,
+                "Please wait....",
+            ]);
+
+            save_card_details_terminal.value=!save_card_details_terminal.value;
+            axios.post('/stripe-test/save-card-details',{
+                order_id:props.order.id,
+                payment:true,
+                amount:props.amounttopay,
+            }).then((res)=>{
+                console.log('data',res.data);
+                if(res.data.output_si && res.data.output_pi){
+                    let output_si = res.data.output_si;
+                    let output_pi = res.data.output_pi;
+
+
+                    cur_si_id.value = res.data.si.id;
+                    cur_pi_id.value = res.data.pi.id;
+                    console.log('si:'+output_si.action.status,'pi:'+output_pi.action.status);
+
+
+                    if(output_si.action.status=='in_progress' && output_pi.action.status=='in_progress'){
+                        cur_terminal_name.value = output_pi.label;
+                        context.emit('set-terminal-php');
+                        context.emit('close-payment-modal');
+                        fetch_payment_interval_id.value = setInterval(retrievePaymentDetails,4000);
+                    }
+
+
+                }else{
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                    {
+                        message:(res.data.err_txt!=''?res.data.err_txt:"An error occur while processing the terminal"),
+                        ttl:5,
+                        type:'danger',
+                    });
+                }
+            }).catch((err)=>{
+                console.log('err',err);
+
+                /*
+                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
+                {
+                    message:JSON.stringify(err),
+                    ttl:5,
+                    type:'danger',
+                });
+                */
+
+            }).finally(()=>{
+                store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            });
+        }
+
+        const getCurTime = ()=>{
+            let date = new Date();
+            return date.getHours()+":"+date.getMinutes()+":"+date.getSeconds();
+        }
+
+        const retrievePaymentDetails = async ()=>{
+            try{
+
+                let time1 = getCurTime();
+            console.log('before calling retrieve',time1);
+
+
+            await axios.post('/stripe-test/retrieve-payment-details',{
+                    si_id:cur_si_id.value,
+                    pi_id:cur_pi_id.value,
+                }).then((res)=>{
+                    console.log(res);
+
+                    if(res.data.pi && res.data.pi.payment_method!='' && res.data.pi.charges.total_count > 0 && !['requires_payment_method','requires_capture'].includes(res.data.pi.status)){
+                        clearInterval(fetch_payment_interval_id.value);
+                        context.emit('close-awaiting-payment');
+
+                        updateTerminalOrder(props.order.id,props.amounttopay,res.data.pi.status,'',res.data.pi.id,cur_terminal_name.value);
+                        if(res.data.pi.status=='succeeded'){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                                message: "Payment of GBP "+(props.amounttopay/100).toFixed(2)+" received",
+                                ttl: 5,
+                                type: "success",
+                            });
+
+                            context.emit('complete-checkout');
+                        }else{
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                                message: "Payment error",
+                                ttl: 5,
+                                type: "danger",
+                            });
+                        }
+
+
+                        //context.emit('reload-checkout');
+                    }
+
+                }).catch((err)=>{
+                    console.log(err);
+                }).finally(()=>{
+
+                });
+            }finally{
+                let time2 = getCurTime();
+                console.log('end calling retrieve function',time2);
+            }
+        }
+
+        function resetRetrieveLoop(){
+            console.log('reset loop called');
+            clearInterval(fetch_payment_interval_id.value);
+        }
+
         return {
             payNow,
             selected_reader,
             refundPayment,
             err_terminal,
             cancelTerminalRequest,
+            loadSaveCardModal,
+            saveCardAndPay,
+            resetRetrieveLoop,
         }
 
     },
