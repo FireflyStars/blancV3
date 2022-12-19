@@ -46,6 +46,7 @@
         SET_DUE_TODAY_FLAG,
         SET_DUE_TOMORROW_FLAG,
         SET_OVERDUE_FLAG,
+        SET_ALL_ITEMS_FLAG,
         GET_INVOICE_LIST,
         GET_USER_ROLE
     } from "../../store/types/types";
@@ -156,7 +157,7 @@
                     }else if(nav_val == 'OverDueInvoiceList'){
                         store.dispatch(`${INVOICE_MODULE}${SET_OVERDUE_FLAG}`)
                     }else{
-
+                        store.dispatch(`${INVOICE_MODULE}${SET_ALL_ITEMS_FLAG}`)
                     }
                 },
                 exportCSV,

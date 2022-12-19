@@ -1,7 +1,7 @@
 <template>
 <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut">
     <div v-if="show_modal" class="bmodal-overlay" :class="{invisible:invisible}">
-        <div class="bmodal-container" id="myModal" v-if="show_modal">
+        <div class="bmodal-container" :id="(id?id:'myModal')" v-if="show_modal">
             <slot name="closebtn">
                  <span class="close" @click="closeModal"></span>
             </slot>
@@ -49,7 +49,8 @@ export default {
     name: "Modal",
     emits:['close-modal'],
     props:{
-        showBtn:Boolean
+        showBtn:Boolean,
+        id:String | false,
     },
     setup(props, context){
         const show_modal = ref(false);

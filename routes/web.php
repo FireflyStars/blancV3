@@ -39,6 +39,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\NotificationController;
 use Stripe\Exception\InvalidRequestException as ExceptionInvalidRequestException;
 use Stripe\Exception\OAuth\InvalidRequestException;
+use Symfony\Component\Console\Terminal;
 
 /*
 |--------------------------------------------------------------------------
@@ -640,25 +641,22 @@ Route::get('notify-test', function () {
 
 /* A REFAIRE */
 
-Route::get('/test-pi',function(){
+Route::get('/test-pi-si',function(){
+    $si_id = 'seti_1MGihOB2SbORtEDsljJDougu';
+    $pi_id = 'pi_3MGihQB2SbORtEDs04Z8epdT'; //pi_3MGihQB2SbORtEDs04Z8epdT
+    //pi_3MFcxBB2SbORtEDs0XHwQjx4
 
-    $stripe =  new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+    $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
+    $stripe = new \Stripe\StripeClient(env($stripe_key));
 
-    $reader = $stripe->terminal->readers->retrieve('tmr_Eqz4ewJhXq5eu6',[]);
+    $pi = $stripe->paymentIntents->retrieve($pi_id,[]);
 
-    $customer = $stripe->customers->retrieve('cus_MeaLJ5cY4usxnq',[]);
-
-    $si = $stripe->setupIntents->create([
-        'customer'=>$customer->id,
-        'payment_method_types' => ['card_present'],
-    ]);
-
-    $res = $stripe->terminal->readers->processSetupIntent('tmr_Eqz4ewJhXq5eu6',
-        ['setup_intent' => $si->id, 'customer_consent_collected' => true]
-    );
-
+    if($pi->payment_method!='' && $pi->customer!=''){
+        $pm = $stripe->paymentMethods->retrieve($pi->payment_method,[]);
+        $cust = $stripe->customers->retrieve($pi->customer,[]);
+    }
     echo "<pre>";
-    print_r($res);
+    print_r($pi);
 });
 
 
@@ -906,14 +904,36 @@ Route::get('/unpaid-card-orders',function(Request $request){
     $paid_orders = [];
     $paid_per_order = [];
     $orders_id = [];
+    $customers_with_cards = [];
+
+    $cards = DB::table('cards')
+    ->select('cards.*','infoCustomer.EmailAddress')
+    ->join('infoCustomer','cards.CustomerID','infoCustomer.CustomerID')
+    ->where('cards.Actif',1)
+    ->get();
+
+    if(count($cards) > 0){
+        foreach($cards as $k=>$v){
+            $card_details[$v->CustomerID] = $v;
+
+            if(!in_array($v->CustomerID,$customers_with_cards)){
+                array_push($customers_with_cards,$v->CustomerID);
+            }
+        }
+
+    }
+
 
     $orders = DB::table('infoOrder')
         ->select('infoOrder.id','infoOrder.TotalDue','infoOrder.CustomerID')
+        ->join('infoCustomer','infoOrder.CustomerID','infoCustomer.CustomerID')
         ->where('infoOrder.TypeDelivery','DELIVERY')
         ->where('infoOrder.deliverymethod','!=','')
         ->whereNotIn('infoOrder.Status',['DELETE','VOID','CANCEL','IN DETAILING','RECURRING','SCHEDULED'])
         ->where('infoOrder.Total','>',0)
         ->where('infoOrder.Paid',0)
+        ->whereIn('infoOrder.CustomerID',$customers_with_cards)
+        ->where('infoCustomer.OnAccount',0)
         ->get();
 
     if(count($orders) > 0){
@@ -942,17 +962,6 @@ Route::get('/unpaid-card-orders',function(Request $request){
 
         }
 
-        $cards = DB::table('cards')
-            ->select('cards.*','infoCustomer.EmailAddress')
-            ->join('infoCustomer','cards.CustomerID','infoCustomer.CustomerID')
-            ->where('cards.Actif',1)
-            ->get();
-
-        if(count($cards) > 0){
-            foreach($cards as $k=>$v){
-                $card_details[$v->CustomerID] = $v;
-            }
-        }
 
 
         $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
@@ -1267,14 +1276,24 @@ Route::post('/fulfill-order',[OrderController::class,'fulfillOrder'])->name('ful
  */
 
 Route::get('/electron-suborder-and-print',function(Request $request){
-	$invoice_id = $request->get('invoice_id');
+	$id = $request->get('id');
+    $type = $request->get('type');
+    $route = $request->get('route');
+    $userid = $request->get('userid');
 
-    $invoice = PosteController::electonGetSubOrderToPrint($invoice_id,'CustomerDetail');
-
+    $invoice = null;
+    $invoice = PosteController::getSubOrderDataToPrint($id,'CustomerDetail',false,$userid);
     return response()->json([
         'post'=>$request->all(),
         'invoice'=>$invoice,
     ]);
+});
+
+Route::get('/electron-order-and-print',[PosteController::class,'getOrderToPrint'])->name('electron-order-and-print');
+
+Route::get('/get-current-user',function(){
+    $user = Auth::user();
+    return response()->json(['user'=>$user]);
 });
 
 
@@ -1399,8 +1418,11 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
             $intent = $stripe->paymentIntents->create($pi);
 
-            echo json_encode(['pi'=>$intent,'si'=>$si,'res'=>$res]);
-
+            if($savecardinfo){
+                echo json_encode(['pi'=>$intent,'si'=>$si,'res'=>$res]);
+            }else{
+                echo json_encode($intent);
+            }
         } catch (Throwable $e) {
             http_response_code(500);
             echo json_encode(['error' => $e->getMessage()]);
@@ -1576,8 +1598,12 @@ Route::group(['prefix'=>'stripe-test'],function(){
         $sel_reader = "";
         $err_txt = "";
         $order_id = $request->order_id;
+        $payment = $request->payment;
+        $amount = $request->amount;
         $res = false;
         $si = false;
+        $pi = false;
+        $res_pi = false;
 
         if($user && isset($readers_id[$user->store])){
             $sel_reader = $readers_id[$user->store];
@@ -1608,7 +1634,9 @@ Route::group(['prefix'=>'stripe-test'],function(){
                 'metadata'=>[
                     'CustomerID'=>$cust->CustomerID,
                 ],
+
             ]);
+
 
             try{
                 $res = $stripe->terminal->readers->processSetupIntent($sel_reader,
@@ -1616,8 +1644,40 @@ Route::group(['prefix'=>'stripe-test'],function(){
                 );
 
             }catch(\Exception $e){
-                $err_txt = $e->getMessage();
+                $err_txt = "Setup Intent: ".$e->getMessage();
             }
+
+
+
+            if($payment){
+
+                $pi_arr = [
+                    'amount' => 100*$amount,
+                    'currency' => 'gbp',
+                    'payment_method_types' => [
+                                    'card_present',
+                                            ],
+                    'capture_method' => 'manual',
+                    'description'=>$order_id,
+                    "receipt_email"=>$cust->EmailAddress,
+
+                    'customer'=>$stripe_customer->id,
+
+                ];
+
+                $pi = $stripe->paymentIntents->create($pi_arr);
+
+
+                try{
+                    $res_pi = $stripe->terminal->readers->processPaymentIntent($sel_reader,['payment_intent'=>$pi->id]);
+
+                }catch(\Exception $e){
+                    $err_txt = "Payment Intent: ".$e->getMessage();
+                }
+            }
+
+
+
 
         }else{
             $err_txt = "Terminal user->store value not set";
@@ -1627,8 +1687,11 @@ Route::group(['prefix'=>'stripe-test'],function(){
         return response()->json([
             'post'=>$request->all(),
             'err_txt'=>$err_txt,
-            'output'=>$res,
+            'output_si'=>$res,
             'si'=>$si,
+            'pi'=>$pi,
+            'output_pi'=>$res_pi,
+            'user'=>$user,
         ]);
     });
 
@@ -1646,6 +1709,7 @@ Route::group(['prefix'=>'stripe-test'],function(){
 
             if($si->payment_method!=''){
                 try{
+
                     $pm = $stripe->paymentMethods->retrieve($si->payment_method); //payment_method
                     $cust = $stripe->customers->retrieve($si->customer);
                     $card = $pm->card_present;
@@ -1685,6 +1749,92 @@ Route::group(['prefix'=>'stripe-test'],function(){
             'card_id'=>$card_id,
             'card_details'=>$card_details,
             'pm'=>$pm,
+        ]);
+    });
+
+
+    Route::post('/retrieve-payment-details',function(Request $request){
+
+        $stripe = new \Stripe\StripeClient(env('STRIPE_LIVE_SECURITY_KEY'));
+
+        $si_id = $request->si_id;
+        $pi_id = $request->pi_id;
+        $card_id = 0;
+        $card_details = [];
+        $pm = null;
+        $si = false;
+        $pi = false;
+        $user = Auth::user();
+        $capture_res = false;
+
+
+        try{
+
+            $pi = $stripe->paymentIntents->retrieve($pi_id,[]);
+            $si = $stripe->setupIntents->retrieve($si_id,[]);
+
+            if($pi && $pi->status=='requires_capture'){
+                try{
+                    $capture_res = $stripe->paymentIntents->capture(
+                        $pi_id,
+                        []
+                    );
+                }catch(\Exception $e){
+                    return response()->json(['error_capture'=>$e->getMessage()]);
+                }finally{
+                    $pi = $stripe->paymentIntents->retrieve($pi_id,[]);
+                }
+            }
+
+
+            if($pi && !empty($pi->charges->data) &&  $pi->status=='succeeded' && $pi->payment_method!='' && $pi->customer!=''){
+            //if($pi && $pi->charges->total_count > 0 &&  $pi->charges->data[0]->status=='succeeded' && $pi->payment_method!='' && $pi->customer!=''){
+
+                try{
+
+                    $pm = $stripe->paymentMethods->retrieve($pi->payment_method); //payment_method
+                    $cust = $stripe->customers->retrieve($pi->customer);
+                    $card = $pm->card_present;
+
+                    $last4 = $card->last4;
+                    $card_details = [
+                        'cardNumber'=>sprintf("%'*16d\n",$last4),
+                        'cardHolderName'=>$cust->name,
+                        'type'=>$card->brand,
+                        'Actif'=>1,
+                        'dateexpiration'=>$card->exp_month."/".substr($card->exp_year,2),
+                        'stripe_customer_id'=>$cust->id,
+                        'stripe_card_id'=>$pm->id,
+                        'setup_intent_id'=>$si_id,
+                        'CustomerID'=>$cust->metadata->CustomerID,
+                        'app'=>0,
+                        'created_at'=>date('Y-m-d H:i:s'),
+                        'three_d_secure'=>($si->status=='succeeded'?1:0),
+                    ];
+
+                    $card_id = DB::table('cards')->insertGetId($card_details);
+
+
+                }catch(\Exception $e){
+                    return response()->json(['error_card_saving'=>$e->getMessage()]);
+                }
+            }
+
+        }catch(\Exception $e){
+            return response()->json([
+                'error_pi_si'=>$e->getMessage(),
+                'pi_id'=>$pi_id,
+                'si_id'=>$si_id,
+            ]);
+        }
+
+        return response()->json([
+            'si'=>$si,
+            'pi'=>$pi,
+            'card_id'=>$card_id,
+            'card_details'=>$card_details,
+            'pm'=>$pm,
+            'capture_res'=>$capture_res,
         ]);
     });
 
@@ -1758,7 +1908,7 @@ Route::get('/cancel-terminal-action',function(Request $request){
           );
 
     return response()->json([
-        'res'=>$res,
+        'res'=>$output,
     ]);
 });
 
