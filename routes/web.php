@@ -907,14 +907,36 @@ Route::get('/unpaid-card-orders',function(Request $request){
     $paid_orders = [];
     $paid_per_order = [];
     $orders_id = [];
+    $customers_with_cards = [];
+
+    $cards = DB::table('cards')
+    ->select('cards.*','infoCustomer.EmailAddress')
+    ->join('infoCustomer','cards.CustomerID','infoCustomer.CustomerID')
+    ->where('cards.Actif',1)
+    ->get();
+
+    if(count($cards) > 0){
+        foreach($cards as $k=>$v){
+            $card_details[$v->CustomerID] = $v;
+
+            if(!in_array($v->CustomerID,$customers_with_cards)){
+                array_push($customers_with_cards,$v->CustomerID);
+            }
+        }
+
+    }
+
 
     $orders = DB::table('infoOrder')
         ->select('infoOrder.id','infoOrder.TotalDue','infoOrder.CustomerID')
+        ->join('infoCustomer','infoOrder.CustomerID','infoCustomer.CustomerID')
         ->where('infoOrder.TypeDelivery','DELIVERY')
         ->where('infoOrder.deliverymethod','!=','')
         ->whereNotIn('infoOrder.Status',['DELETE','VOID','CANCEL','IN DETAILING','RECURRING','SCHEDULED'])
         ->where('infoOrder.Total','>',0)
         ->where('infoOrder.Paid',0)
+        ->whereIn('infoOrder.CustomerID',$customers_with_cards)
+        ->where('infoCustomer.OnAccount',0)
         ->get();
 
     if(count($orders) > 0){
@@ -943,17 +965,6 @@ Route::get('/unpaid-card-orders',function(Request $request){
 
         }
 
-        $cards = DB::table('cards')
-            ->select('cards.*','infoCustomer.EmailAddress')
-            ->join('infoCustomer','cards.CustomerID','infoCustomer.CustomerID')
-            ->where('cards.Actif',1)
-            ->get();
-
-        if(count($cards) > 0){
-            foreach($cards as $k=>$v){
-                $card_details[$v->CustomerID] = $v;
-            }
-        }
 
 
         $stripe_key = 'STRIPE_LIVE_SECURITY_KEY';
