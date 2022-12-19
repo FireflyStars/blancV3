@@ -283,8 +283,6 @@ class DetailingController extends Controller
         if(!empty($detailingitem)){
             $detailing_data = $this->getDetailingData($detailingitem['department_id'], $detailingitem['typeitem_id']);
             $cust_cleaning_services = DetailingController::getCustCleaningServices($detailingitem);
-            
-
             foreach($cust_cleaning_services as $k=>$service){
                 foreach($service as $i=>$x){
                    if(isset($x->cust_selected)){
@@ -294,6 +292,28 @@ class DetailingController extends Controller
                    }  
                 }
             }
+
+            // $cleaning_service = $cust_service ;
+
+            // if(isset($detailingitem['cleaning_services'])){
+                
+            //     $cleaning_services = array_unique(array_merge(@json_decode($detailingitem['cleaning_services']) ,$cust_service));
+
+            //     if(!empty($cleaning_services)){
+            //         foreach($cleaning_services as $k=>$service){
+            //             $cleaning_service[]= $service;
+            //         }
+                    
+            //     }
+            // }
+            
+           
+            //$cleaning_service = json_encode($cleaning_service);
+           // $detailingitem['cleaning_services'] = $cleaning_service;
+
+            
+       
+                    
 
 
             if ($search) {
@@ -389,28 +409,28 @@ class DetailingController extends Controller
         $prefrenceActive = [];
         $sel_cleaning_services = [];
 
-        if($detailingitem['status'] != "Completed"){
+        // if($detailingitem['status'] != "Completed"){
 
-            $cust = DB::table('infoCustomer')->where('infoCustomer.id' , '=' , $detailingitem['customer_id'])->first();
+        //     $cust = DB::table('infoCustomer')->where('infoCustomer.id' , '=' , $detailingitem['customer_id'])->first();
 
-            $prferenceIds = DB::table('InfoCustomerPreference')->select('InfoCustomerPreference.id_preference')
-            ->where('InfoCustomerPreference.CustomerID' , '=' , $cust->CustomerID)
-            ->where('InfoCustomerPreference.Value' , '=' , 1)
-            ->get();
+        //     $prferenceIds = DB::table('InfoCustomerPreference')->select('InfoCustomerPreference.id_preference')
+        //     ->where('InfoCustomerPreference.CustomerID' , '=' , $cust->CustomerID)
+        //     ->where('InfoCustomerPreference.Value' , '=' , 1)
+        //     ->get();
 
-            if(!empty($prferenceIds)){
+        //     if(!empty($prferenceIds)){
 
-                foreach($prferenceIds as $key=>$value){
-                    $prference = DB::table('preferencetypitem')
-                                    ->where('preferencetypitem.customerpreferences_id','=' ,$value->id_preference )
-                                    ->where('preferencetypitem.typitem_id','=' , $detailingitem['typeitem_id'] )->first();
-                    if($prference != null){
-                        $pref = DB::table('cleaningservices')->select("cleaningservices.id")->where('id_preference', $prference->customerpreferences_id)->first();
-                        $prefrenceActive [] =(string)$pref->id ;
-                    }
-                }
-            }
-        }
+        //         foreach($prferenceIds as $key=>$value){
+        //             $prference = DB::table('preferencetypitem')
+        //                             ->where('preferencetypitem.customerpreferences_id','=' ,$value->id_preference )
+        //                             ->where('preferencetypitem.typitem_id','=' , $detailingitem['typeitem_id'] )->first();
+        //             if($prference != null){
+        //                 $pref = DB::table('cleaningservices')->select("cleaningservices.id")->where('id_preference', $prference->customerpreferences_id)->first();
+        //                 $prefrenceActive [] =(string)$pref->id ;
+        //             }
+        //         }
+        //     }
+        // }
 
         $cust_cleaning_services = DetailingController::getCustomerServices($detailingitem['customer_id']);
 
@@ -420,11 +440,11 @@ class DetailingController extends Controller
             $sel_cleaning_services = [1,3]; //Cleaning & pressing
         }
 
-        if(!empty($prefrenceActive)){
+        // if(!empty($prefrenceActive)){
            
-            $sel_cleaning_services =  array_merge($sel_cleaning_services , $prefrenceActive);
+        //     $sel_cleaning_services =  array_merge($sel_cleaning_services , $prefrenceActive);
             
-        }
+        // }
 
         if(!empty($sel_cleaning_services)){
             foreach($cust_cleaning_services as $k=>$v){
@@ -467,7 +487,7 @@ class DetailingController extends Controller
         $tailoring_price = $request->post('tailoring_price');
         $tailoring_price_type = $request->post('tailoring_price_type');
         $search = $request->post('search');
-        $montant = $request->post('montant') != null ? $request->post('montant') : 0;
+        $montant = $request->post('montant_Clean') != null ? $request->post('montant_Clean') : 0;
 
         if (isset($dept_id)) {
             $detailingitem = DB::table('detailingitem')->where('id', '=', $detailingitem_id)->get();
