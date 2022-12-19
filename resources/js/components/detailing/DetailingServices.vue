@@ -251,8 +251,7 @@ export default {
         detailingitem: {},
         main_services:{},
         cleaning_services:{},
-        tailoring_services:{},
-        preference_customer:[],
+        tailoring_services:{}
     },
     setup(props,context) {
          const store = useStore();
@@ -283,6 +282,9 @@ export default {
         sel_tailoring_describe.value = props.detailingitem.describeprixnowtailoring;
         sel_clean_describe.value = props.detailingitem.describeprixnow;
 
+        if(props.detailingitem.cleaning_price_type == "PriceNow"){
+            montant_value.value = props.detailingitem.dry_cleaning_price;
+        }
         function toggleMainService(id){
             let el = document.getElementById('main_service_'+id);
             el.classList.toggle('sel_service');
@@ -452,7 +454,6 @@ export default {
                 //TO optimize
                 if(classes.includes('cleaning-prices')){
                     let cleaning_prices = document.querySelectorAll('.cleaning-prices:not(#sub_service_'+id+')');
-                    //console.log(cleaning_prices)
 
                     let keys = Object.keys(cleaning_prices);
 
@@ -547,7 +548,6 @@ export default {
             } 
 
             checkSelectedCleaning(false);
-            console.log(tailoring_services_id ,sel_tailoring_service_id.value )
 
             if(on_click){
                 //Update Detailing
@@ -557,7 +557,8 @@ export default {
                     tailoring_services: JSON.stringify(tailoring_services_id),
                     tailoring_price_type: sel_tailoring_price_type.value,
                     cleaning_services:JSON.stringify(sel_cleaning_service_id.value),
-                    cleaning_pricing_type:sel_cleaning_price_type.value,
+                    cleaning_price_type:sel_cleaning_price_type.value,
+                    montant_Clean: sel_cleaning_price_type.value == 'PriceNow' ? montant_value.value : 0
                 });
             }
         }
@@ -632,13 +633,13 @@ export default {
                     cleaning_price_type: sel_cleaning_price_type.value,
                     tailoring_services: JSON.stringify(sel_tailoring_service_id.value),
                     tailoring_price_type:sel_tailoring_price_type.value,
-                    montant:montant_value.value
+                    montant_Clean: sel_cleaning_price_type.value == 'PriceNow' ? montant_value.value : 0
                 });
             }
         }
 
 
-        function checkCleaningGroup(){           
+        function checkCleaningGroup(){     
             let cs = props.cleaning_services;
             let gp = Object.keys(cs);
             let sel_cleaning_gp = [];
@@ -672,22 +673,6 @@ export default {
             context.emit("go-to-step", 10);
         }
 
-
-        watch(() =>(props.preference_customer), (current_val, previous_val) => {
-                var array3 = current_val.filter(function(obj) { return sel_cleaning_service_id.value.indexOf(obj) == -1; });
-                if(array3.length != 0 && price_now_type.value != "tailoring"){
-                        context.emit("save-item-services", {
-                            step:11,
-                            detailingitem_id: props.detailingitem.id,
-                            cleaning_services: JSON.stringify(props.preference_customer),
-                            cleaning_price_type: sel_cleaning_price_type.value,
-                            tailoring_services: JSON.stringify(sel_tailoring_service_id.value),
-                            tailoring_price_type:sel_tailoring_price_type.value,
-                            montant:montant_value.value
-                        });
-                }
-        });
-
         onMounted(()=>{
             sel_cleaning_price_type.value = 'Standard';
             sel_tailoring_price_type.value = 'Standard';
@@ -712,9 +697,9 @@ export default {
 
 
             if(props.detailingitem.cleaning_services==null){
-               checkSelectedCleaning(true);
+              checkSelectedCleaning(true);
             }
-            
+            getPreference()
         });
 
 
@@ -954,6 +939,32 @@ export default {
                     service_perc.value = total_price_cleaning
         }
 
+        function getPreference(){
+            const list = [];
+             if(props.detailingitem.status != 'Completed'){
+                 axios.post('/getPreferenceCustomer',{
+                 Customer_id: props.detailingitem.customer_id,
+                 typeitem_id: props.detailingitem.typeitem_id
+                }).then((res)=>{            
+                   let clean_array = JSON.parse(props.detailingitem.cleaning_services)
+                   console.log("clean_array" , clean_array)
+                   console.log("list" , res.data.prefrenceActive )
+                   res.data.prefrenceActive.forEach(function(v,i){
+                        if(clean_array!= null){
+                             if(!clean_array.includes(v)){
+                                 toggleSubService(v)
+                             }
+                         }else{
+                             toggleSubService(v)
+                        }
+                    });
+              }).catch((err)=>{
+
+              })            
+               
+            }
+        }
+
         return {
             back,
             //main_services,
@@ -990,7 +1001,8 @@ export default {
             sel_clean_describe,
             calculateNegativPerc,
             service_perc,
-            montant_value
+            montant_value,
+            getPreference
         };
     },
 }

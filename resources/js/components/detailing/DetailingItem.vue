@@ -110,7 +110,6 @@
                                     :main_services="main_services"
                                     :cleaning_services="cust_cleaning_services"
                                     :tailoring_services="tailoring_services"
-                                    :preference_customer="preference_customer"
                                     @save-item-services="saveItemDetails"
                                     @go-to-step="backPreviousStep"
                                     @init-detailing="initDetailing"

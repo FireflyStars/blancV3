@@ -343,24 +343,35 @@ export default {
                 */
             });
 
-            const retrieveSi = ()=>{
+            const getCurTime = ()=>{
                 let date = new Date();
-                console.log(date.getHours()+":"+date.getMinutes()+":"+date.getSeconds());
+                return date.getHours()+":"+date.getMinutes()+":"+date.getSeconds();
+            }
 
-                axios.post('/stripe-test/retrieve-si',{
-                    si_id:cur_si_id.value
-                }).then((res)=>{
-                    console.log('result of setup intent',res);
-                    if(res.data.card_id!=0){
-                        clearInterval(fetch_si_interval_id.value);
-                        save_card_modal.value.closeModal();
-                        context.emit('reload-checkout');
-                    }
-                }).catch((err)=>{
-                    console.log(err);
-                }).finally(()=>{
+            const retrieveSi = async ()=>{
+                try{
+                    let time1 = getCurTime();
+                    console.log('Before retrieving SI',time1);
 
-                });
+                    await axios.post('/stripe-test/retrieve-si',{
+                        si_id:cur_si_id.value,
+                        payment:false,
+                    }).then((res)=>{
+                        console.log('result of setup intent',res);
+                        if(res.data.card_id!=0){
+                            clearInterval(fetch_si_interval_id.value);
+                            save_card_modal.value.closeModal();
+                            context.emit('reload-checkout');
+                        }
+                    }).catch((err)=>{
+                        console.log(err);
+                    }).finally(()=>{
+
+                    });
+                }finally{
+                    let time2 = getCurTime();
+                    console.log('After retrieving SI',time2);
+                }
 
             }
 
@@ -372,10 +383,11 @@ export default {
 
                 save_card_details_terminal.value=!save_card_details_terminal.value;
                 axios.post('/stripe-test/save-card-details',{
-                    order_id:props.order_id
+                    order_id:props.order_id,
+                    payment:false,
                 }).then((res)=>{
-                    if(res.data.output && res.data.si){
-                        let process_output = res.data.output;
+                    if(res.data.output_si && res.data.si){
+                        let process_output = res.data.output_si;
 
                         cur_si_id.value = res.data.si.id;
 
@@ -385,9 +397,10 @@ export default {
                             fetch_si_interval_id.value = setInterval(retrieveSi,4000);
                         }
                     }else{
+                        console.log(res.data.err_txt);
                         store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,
                         {
-                            message:"An error occur while processing the terminal",
+                            message:(res.data.err_txt!=''?res.data.err_txt:"An error occur while processing the terminal"),
                             ttl:5,
                             type:'danger',
                         });
