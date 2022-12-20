@@ -1750,7 +1750,7 @@ class OrderListController extends Controller
                     ->select('infoCustomer.id AS customer_id','infoCustomer.*','address.*')
                     ->join('address','infoCustomer.CustomerID','address.CustomerID')
                     ->where('infoCustomer.CustomerID',$infoOrder->CustomerID)
-                    ->whereColumn('address.status','=','DELIVERY')
+                    ->where('address.status','=','DELIVERY')
                     ->first();
                 if($cust_details==null)
                     return response()->json(['updated'=>$update,'message'=>'Customer or address not found.']);
