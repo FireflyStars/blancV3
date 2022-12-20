@@ -271,7 +271,7 @@ export default {
             })
             .then(function(data) {
                 console.log('data',data);
-                return data.pi.client_secret;
+                return data.client_secret;
             }).catch((err)=>{
                 console.log(err);
             });
