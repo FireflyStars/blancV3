@@ -258,7 +258,7 @@
                                             <div class="col-3 text-align-right"><span v-if="order.OrderDiscount > 0">-</span>{{formatPrice(order.OrderDiscount)}}</div>
                                         </div>
 
-                                        <div class="row px-0 mt-2 sub-total-text align-items-center" v-if="parseFloat(cust.discount) > 0 || parseFloat(order.AccountDiscount) > 0">
+                                        <div class="row px-0 mt-2 sub-total-text align-items-center" v-if="parseFloat(order.AccountDiscount) > 0">
                                             <div class="col-4">Account Discount</div>
                                             <div class="col-5 sub-total-desc"> <span v-if="cust.discount > 0">{{cust.discount}}% (applied)</span></div>
                                             <div class="col-3 text-align-right"><span v-if="order.AccountDiscount > 0">-</span>{{formatPrice(order.AccountDiscount)}}</div>
@@ -591,6 +591,16 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
+                                                                <!--Free delivery button-->
+                                                                <div class="col-12" v-if="category=='Delivery'">
+                                                                    <div class="row">
+                                                                        <div class="col-6">
+                                                                            <button class="each-addon-btn w-100 py-2">
+                                                                                <span>Free delivery (&#163;0)</span>
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -724,7 +734,7 @@
                                         <a  v-if= "disabled_btn_with_status"  href="javascript:void(0)" @click="redirectToDetailingList">Previous</a>
                                     </div>
                                     <div class="col-6 px-4">
-                                        <button id="closeBtn" @click="redirectToOrderDetail" class="w-100 py-3" v-if="amount_diff<=0 && Object.keys(has_invoices).length > 0">Close</button>
+                                        <button id="closeBtn" @click="redirectToOrderDetail" class="w-100 py-3" v-if="(amount_diff<=0 && Object.keys(has_invoices).length > 0) || (cust.OnAccount==1 && has_invoices.length > 0)">Close</button>
                                         <button v-else id="completeBtn" class="w-100 py-3" @click="validatePayment" :disabled="editcard">Proceed</button>
                                     </div>
                                 </div>
