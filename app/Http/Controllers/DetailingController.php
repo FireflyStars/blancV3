@@ -2009,6 +2009,7 @@ class DetailingController extends Controller
                         $items[$k]->detailed_services[] = [
                             'name'=>"Dry cleaning (".implode(",",$dc).")",
                             'price'=>$c_price,
+                            'describe'=>$v->describeprixnow
                         ];
                     }
                 }
@@ -2041,11 +2042,23 @@ class DetailingController extends Controller
                             $t_arr = [
                                 'name'=>$group,
                                 'price'=>$t_price,
+                                'describe'=>$v->describeprixnowtailoring
                             ];
 
                             $items[$k]->detailed_services[] = $t_arr;
                         }
                     }
+                } else {
+                    if($v->tailoring_price_type=='PriceNow'){
+                        $t_arr = [
+                            'name'=>"Services",
+                            'price'=>$t_price = 'Price now',
+                            'describe'=>$v->describeprixnowtailoring
+                        ];
+    
+                        $items[$k]->detailed_services[] = $t_arr;
+                    }
+                    
                 }
 
             }
