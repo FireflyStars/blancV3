@@ -621,7 +621,14 @@ export default {
 
             }else{
                 document.getElementById('main_service_1').classList.remove('main_selected');
-                    sel_cleaning_service_id.value = cleaning_services_id;  
+                    sel_cleaning_service_id.value = cleaning_services_id; 
+
+                    let selected_pricing = document.querySelectorAll('.cleaning-prices.sel_service');
+                    let pricing_el = Object.values(selected_pricing);
+                    if(pricing_el.length == 1){
+                        cleaning_pricing_type = pricing_el[0].getAttribute('data-cleaning-price-type');
+                        sel_cleaning_price_type.value = cleaning_pricing_type;
+                    }
             }
 
             if(on_click){
@@ -699,7 +706,11 @@ export default {
             if(props.detailingitem.cleaning_services==null){
               checkSelectedCleaning(true);
             }
-            getPreference()
+            setTimeout(function(){  
+                getPreference()
+               }  
+              , 1)
+            
         });
 
 
