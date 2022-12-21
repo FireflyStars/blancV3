@@ -2651,6 +2651,16 @@ class CustomerController extends Controller
         foreach($orders as $k=>$v){
             $total_per_order[$v->order_id] = $v->Total;
 
+            $priceTotal = 0;
+            $Price = DB::table('detailingitem')->select(['detailingitem.dry_cleaning_price' , 'detailingitem.cleaning_addon_price' , 'detailingitem.tailoring_price' ])
+            ->where('detailingitem.InvoiceID','=',$v->InvoiceID)
+            ->where('detailingitem.tracking','=',$v->ItemTrackingKey)->first();
+            if(!empty($Price)){
+                $priceTotal = $Price->dry_cleaning_price + $Price->cleaning_addon_price + $Price->tailoring_price ;
+            } else {
+                $priceTotal = $v->priceTotal;
+            }
+
             if(!in_array($v->order_id,$all_orders)){
                 array_push($all_orders,$v->order_id);
             }
@@ -2663,7 +2673,7 @@ class CustomerController extends Controller
                                                                                 'Department'=>$v->DepartmentName,
                                                                                 'Description'=>$v->typeitem,
                                                                                 'brand'=>$v->brand,
-                                                                                'priceTotal'=>$v->priceTotal,
+                                                                                'priceTotal'=>$priceTotal,
                                                                                 'CustomerID'=>$v->CustomerID,
                                                                                 'order_id'=>$v->order_id,
                                                                                 'TotalDue'=>$v->TotalDue,
