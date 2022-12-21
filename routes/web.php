@@ -798,6 +798,15 @@ Route::get('/test-create-card',function(){
 
 });
 
+Route::get('/test-pdf-ar',function(){
+   $details = DB::table('infoOrderPrint')->where('id',20)->first();
+
+   $data = CustomerController::getArPDFData($details);
+
+
+
+});
+
 
 /* END TEST ROUTES */
 

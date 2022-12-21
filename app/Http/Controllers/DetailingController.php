@@ -300,24 +300,24 @@ class DetailingController extends Controller
             // $cleaning_service = $cust_service ;
 
             // if(isset($detailingitem['cleaning_services'])){
-                
+
             //     $cleaning_services = array_unique(array_merge(@json_decode($detailingitem['cleaning_services']) ,$cust_service));
 
             //     if(!empty($cleaning_services)){
             //         foreach($cleaning_services as $k=>$service){
             //             $cleaning_service[]= $service;
             //         }
-                    
+
             //     }
             // }
-            
-           
+
+
             //$cleaning_service = json_encode($cleaning_service);
            // $detailingitem['cleaning_services'] = $cleaning_service;
 
-            
-       
-                    
+
+
+
 
 
             if ($search) {
@@ -445,9 +445,9 @@ class DetailingController extends Controller
         }
 
         // if(!empty($prefrenceActive)){
-           
+
         //     $sel_cleaning_services =  array_merge($sel_cleaning_services , $prefrenceActive);
-            
+
         // }
 
         if(!empty($sel_cleaning_services)){
@@ -1471,6 +1471,7 @@ class DetailingController extends Controller
             'Total'=>number_format($_TOTAL,2,'.',''),
             'TotalDue'=>number_format($_TOTAL_DUE,2,'.',''),
             'AutoDeliveryFee'=>number_format($_AUTO_DELIVERY_FEE,2,'.',''),//
+            'DeliveryNowFee'=>number_format($_DELIVERY_NOW_FEE,2,'.',''),
             'ExpressCharge'=>number_format($_EXPRESS_CHARGES_PRICE,2,'.',''),
             'FailedDeliveryCharge'=>number_format($_FAILED_DELIVERY_PRICE,2,'.',''),//
             'TotalExcVat'=>number_format($_TOTAL_EXC_VAT,2,'.',''),//
@@ -1481,7 +1482,7 @@ class DetailingController extends Controller
 
 
 
-        if($order->detailed_at=='0000-00-00 00:00:00' || $_SUBTOTAL==0){
+        if($order->detailed_at=='0000-00-00 00:00:00' || $_SUBTOTAL==0  || $force){
             $values['AccountDiscount'] = number_format($_ACCOUNT_DISCOUNT,2,'.','');
             $values['AccountDiscountPerc'] = $cust->discount;
         }
@@ -1490,7 +1491,9 @@ class DetailingController extends Controller
         print_r($values);
         die();
 */
-        DB::table('infoOrder')->where('id',$order_id)->update($values);
+        if(!$force){
+            DB::table('infoOrder')->where('id',$order_id)->update($values);
+        }
 
        return $values;
     }
@@ -2055,10 +2058,10 @@ class DetailingController extends Controller
                             'price'=>$t_price = 'Price now',
                             'describe'=>$v->describeprixnowtailoring
                         ];
-    
+
                         $items[$k]->detailed_services[] = $t_arr;
                     }
-                    
+
                 }
 
             }
