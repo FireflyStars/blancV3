@@ -2420,17 +2420,24 @@ class CustomerController extends Controller
         $custid_with_orders = [];
         $master_cust = [];
 
-        $orders = DB::table('infoOrder')
+        $orders_qry = DB::table('infoOrder')
             ->select('infoOrder.id as order_id','infoOrder.created_at','infoOrder.Total','infoOrder.CustomerID','infoOrder.OrderDiscount')
             ->join('detailingitem','infoOrder.id','detailingitem.order_id')
-            ->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
+            //->join('NewInvoice','NewInvoice.order_id','infoOrder.id')
             ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
             ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
             ->where('infoOrder.orderinvoiced',0)
             ->whereNotIn('infoInvoice.Status',['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])
             ->whereIn('infoOrder.CustomerID',$bacs_cust_id)
-            ->whereRaw("DATE_FORMAT(infoOrder.detailed_at,'%Y-%m-%d') <= '".$detailed_at_date."'")
-            ->get();
+            ->whereRaw("DATE_FORMAT(infoOrder.detailed_at,'%Y-%m-%d') <= '".$detailed_at_date."'");
+
+        $orders_qry->whereIn('infoInvoice.InvoiceID',function($query){
+            $query->select("itemhistorique.InvoiceID")
+            ->from('itemhistorique')
+            ->join('infoitems','itemhistorique.ItemTrackingKey','infoitems.ItemTrackingKey');
+        });
+
+        $orders = $orders_qry->get();
 
 
         foreach($orders as $k=>$v){
