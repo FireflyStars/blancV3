@@ -1586,7 +1586,12 @@ class OrderController extends Controller
             $refund = $stripe->refunds->create([
                 'charge'=>$charge->id,
                 'amount'=>$amount*100,
+                'reason'=>'requested_by_customer', //duplicate, fraudulent, or requested_by_customer
+                'metadata'=>[
+                    'description'=>'this is a test refund'
+                ],
             ]);
+
 
             $chargeAfterRefund = $stripe->charges->retrieve($charge->id,[]);
 
@@ -1635,11 +1640,12 @@ class OrderController extends Controller
         // print_r($chargeAfterRefund);
 
         return $err_txt;
+        //*/
 
     }
 
     public function getDeliveyDateCustomer(Request $request){
-       
+
        $CustomerID=$request->post('Customer');
 
        $cust = DB::table('infoCustomer')->select('infoCustomer.Name' , 'infoCustomer.id' ,'infoCustomer.CustomerIDMaster',
@@ -1668,7 +1674,7 @@ class OrderController extends Controller
                 ->where('infoOrder.DateDeliveryAsk','>=', date('Y-m-d'))
                 ->where('deliveryask.status','!=', 'DEL')
                 ->where('infoOrder.CustomerID','=',$cust->CustomerIDMaster)->get();
-        
+
             }else{
                 $orders=DB::table('infoOrder')
                 ->select(['infoOrder.id AS order_id','infoOrder.Status','infoCustomer.Name','infoOrder.TypeDelivery','infoCustomer.id' , 'infoOrder.DeliveryaskID','infoOrder.DatePickup',
@@ -1682,10 +1688,10 @@ class OrderController extends Controller
                 ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
                 ->where('infoOrder.DateDeliveryAsk','>=', date('Y-m-d'))
                 ->where('infoOrder.CustomerID','=',$CustomerID)->get();
-          
+
             }
         }
-        
+
         foreach($orders as $k=>$order){
 
             $tranche_left = $order->order_time;

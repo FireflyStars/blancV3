@@ -709,7 +709,7 @@ Route::get('/test-create-pi',function(){
 Route::get('/test-refund',function(){
     //Create payment Intent
 
-    OrderController::logRefund(1,5);
+    OrderController::logRefund(1,1);
 
 });
 
