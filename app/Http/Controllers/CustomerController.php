@@ -2785,6 +2785,7 @@ class CustomerController extends Controller
 
         $facture_net = [];
         $facture_amount_net = 0;
+        $facture_total = [];
 
         $orderids = [];
 
