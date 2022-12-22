@@ -204,7 +204,7 @@
                 }).catch((error)=>{
                     store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{message:`An error has occured: ${error.response.status} ${error.response.statusText}`,ttl:5,type:'danger'});
                 });
-*/
+                */
             });
 
             function EditOrder(){
@@ -245,7 +245,10 @@
                 open_options.value = false;
                 context.emit('reAssign', suborder, invoice_id);
             }
-          
+            const openModal = (InvoiceID)=> {
+                OpenitemDetails.value = false
+                qz_printer.value.loadPrinterModal(InvoiceID , ".odv");
+            }          
 
             return {
                 route,
@@ -276,18 +279,11 @@
                 ListTrackingKey,
                 hideButton,
                 freeReClean,
-                reAssign
+                reAssign,
+                openModal
             }
             
-        },
-
-        methods:{
-        openModal(InvoiceID){
-            this.OpenitemDetails = false
-            this.$refs.qz_printer.loadPrinterModal(InvoiceID , ".odv")
         }
-    },   
- 
     }
 </script>
 
