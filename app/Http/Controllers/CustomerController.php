@@ -1113,6 +1113,12 @@ class CustomerController extends Controller
         if($request->selected_nav == 'B2C' || $request->customer_type == 'B2C'){
             $customers = $customers->where('infoCustomer.btob', 0);
         }
+        if($request->selected_nav == 'CurrentBookings'){
+            $customers = $customers->where('infoOrder.Status', 'SCHEDULED');
+        }
+        if($request->selected_nav == 'RecurringBookings'){
+            $customers = $customers->where('infoOrder.Status', 'RECURRING');
+        }
         if( $request->customer_location !='' ){
             $customers = $customers->where('infoCustomer.TypeDelivery', $request->customer_location);
         }

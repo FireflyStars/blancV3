@@ -473,10 +473,14 @@ export default {
     border-radius: 4px;
     padding: 10px;
     margin: 10px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    display: flex;
+    text-align: center;
+    font-size: 12px;
     color: #c3c3c3;
+    /* white-space: nowrap;
+    text-overflow: ellipsis; */
 }
 .stain-type:hover {
     background-color: #d3e7cc;

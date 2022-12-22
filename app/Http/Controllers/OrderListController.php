@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\Holiday;
+use App\Models\User;
 
 class OrderListController extends Controller
 {
@@ -228,7 +229,7 @@ class OrderListController extends Controller
                         });
                     }
                 }
-                else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod' && $colname !='infoOrder.Paid'){
+                else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod' && $colname !='infoOrder.Paid' && $colname != 'infoCustomer.btob'){
                     if(!empty($values))
                     $orderlist=$orderlist->whereIn($colname, $values);
                 }
@@ -277,8 +278,14 @@ class OrderListController extends Controller
                     }
 
                 }
-                else{
-
+                else if($colname == 'infoCustomer.btob'){
+                    if(!empty($values)){
+                        $custType = [];
+                        foreach ($values as $value) {
+                            $custType[] = $value == 'B2B' ? 1 : 0;
+                        }
+                        $orderlist=$orderlist->whereIn($colname, $custType);
+                    }
                 }
             }
         }
@@ -809,7 +816,7 @@ class OrderListController extends Controller
                     }
                     if(!empty($express))
                         $orderlist=$orderlist->whereIn($colname,$express);
-                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod' && $colname !='infoOrder.Paid'){
+                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod' && $colname !='infoOrder.Paid' && $colname != 'infoCustomer.btob'){
                     if(!empty($values))
                     $orderlist=$orderlist->whereIn($colname, $values);
                 }else if($colname == 'infoitems.ProdDate' && !empty($values)){
@@ -842,8 +849,14 @@ class OrderListController extends Controller
                         }
                     }
 
-                }else{
-
+                }else if($colname == 'infoCustomer.btob'){
+                    if(!empty($values)){
+                        $custType = [];
+                        foreach ($values as $value) {
+                            $custType[] = $value == 'B2B' ? 1 : 0;
+                        }
+                        $orderlist=$orderlist->whereIn($colname, $custType);
+                    }
                 }
             }
 
@@ -1336,7 +1349,7 @@ class OrderListController extends Controller
             $billing_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=','BILLING')->first();
             $delivery_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=',$order->TypeDelivery)->first();
 
-            $infoitems=DB::table('itemhistorique')->select(['infoInvoice.NumInvoice','infoInvoice.InvoiceID' ,"infoInvoice.Status as Invoice_Status", 'infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','itemhistorique.ItemTrackingKey' , 'infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status', 'infoitems.id_items as itemproduction' , 'itemhistorique.ID_item as productionitem' , 'postes.nominterface as station'])
+            $infoitems=DB::table('itemhistorique')->select(['infoInvoice.NumInvoice','infoInvoice.InvoiceID' ,"infoInvoice.Status as Invoice_Status", 'infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','itemhistorique.ItemTrackingKey' , 'infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status', 'infoitems.id_items as itemproduction' , 'itemhistorique.ID_item as productionitem' , 'postes.nominterface as station', 'infoitems.conveyorSlot'])
             ->join('infoInvoice',function($join) use($order){
                 $join->on('infoInvoice.InvoiceID','=','itemhistorique.InvoiceID')
                 ->where('infoInvoice.OrderID','=',$order->OrderID);
@@ -1345,7 +1358,6 @@ class OrderListController extends Controller
                 ->leftJoin('TypePost','TypePost.id','=','postes.TypePost')
                 ->distinct('infoitems.id')
                 ->orderBy('infoInvoice.NumInvoice')->get();
-
         $items=[];
         $infoitems->each(function ($item) use(&$items , $order) {
 
@@ -1539,7 +1551,7 @@ class OrderListController extends Controller
                       ->select(
                           'infoitems.id', 'infoitems.ItemTrackingKey as item_key', 'infoitems.Colors as colors','infoInvoice.InvoiceID',
                           'infoitems.Fabrics as fabrics', 'infoitems.Patterns as patterns', 'infoitems.Size as size','infoitems.brand',
-                          'infoitems.StoreName as store_name', 'infoitems.store', 'infoitems.damage', 'infoitems.id_items',
+                          'infoitems.StoreName as store_name', 'infoitems.store', 'infoitems.damage', 'infoitems.id_items', 'infoitems.conveyorSlot',
                           'infoitems.typeitem as item_name', 'TypePost.bg_color as location_color', 'postes.nom as location', 'TypePost.circle_color', 'TypePost.process',
                           'infoCustomer.Name as customer_name', 'infoCustomer.CustomerIDMaster', 'infoCustomer.CustomerIDMasterAccount',
                           'infoCustomer.IsMaster', 'infoCustomer.IsMasterAccount', 'postes.id as poste_id', 'infoOrder.id as order_id','infoOrder.Status'
@@ -1690,7 +1702,7 @@ class OrderListController extends Controller
     public function suggestdate(Request $request){
             $infoOrder_id=$request->post('infoOrder_id');
             $suggested_delivery_date=$request->post('suggested_delivery_date');
-            $user=Auth::user();
+            $user= User::find(Auth::id());
             $update=false;
             if($user->hasRoles(['admin','Blanc Admin','user','Super Admin'])){ // cc cannot suggest a date
                 $update= DB::table('infoOrder')->where('id','=',$infoOrder_id)->update(
@@ -1836,7 +1848,7 @@ class OrderListController extends Controller
 
         $infoOrder=DB::table('infoOrder')->select(['CustomerID','PickupID','DeliveryaskID'])->where('id','=',$infoOrder_id)->first();
                 if($infoOrder==null)
-                    return response()->json(['updated'=>$update,'message'=>'Order not found.']);
+                    return response()->json(['updated'=>false, 'message'=>'Order not found.']);
 
         $pickup=DB::table('pickup')->where('PickupID','=',$infoOrder->PickupID)->first();
 
@@ -2048,7 +2060,7 @@ class OrderListController extends Controller
 
         $order=DB::table('infoOrder')->where('id','=',$infoOrder_id)->first();
 
-        $infoitems=DB::table('infoitems')->select(['infoInvoice.NumInvoice','infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status','TypePost.Name as station',])->join('infoInvoice',function($join) use($order){
+        $infoitems=DB::table('infoitems')->select(['infoInvoice.NumInvoice','infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status','TypePost.Name as station', 'infoitems.conveyorSlot'])->join('infoInvoice',function($join) use($order){
             $join->on('infoInvoice.SubOrderID','=','infoitems.SubOrderID')
                 ->where('infoInvoice.OrderID','=',$order->OrderID);
         })->leftJoin('postes','postes.id','=','infoitems.nextpost')
@@ -2211,7 +2223,7 @@ class OrderListController extends Controller
                     }
                     if(!empty($express))
                         $orderlist=$orderlist->whereIn($colname,$express);
-                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod' && $colname !='infoOrder.Paid'){
+                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod' && $colname !='infoOrder.Paid' && $colname != 'infoCustomer.btob'){
                     if(!empty($values))
                     $orderlist=$orderlist->whereIn($colname, $values);
                 }else if($colname == 'infoitems.ProdDate' && !empty($values)){
@@ -2244,8 +2256,14 @@ class OrderListController extends Controller
                         }
                     }
 
-                }else{
-
+                }else if($colname == 'infoCustomer.btob'){
+                    if(!empty($values)){
+                        $custType = [];
+                        foreach ($values as $value) {
+                            $custType[] = $value == 'B2B' ? 1 : 0;
+                        }
+                        $orderlist=$orderlist->whereIn($colname, $custType);
+                    }
                 }
             }
 

@@ -242,7 +242,7 @@
         width:458px;
         min-height:445px;
         max-height: 800px;
-        overflow-y: auto;        
+        /* overflow-y: auto; */
         top:-8px;
         z-index: 2;
         transform-origin: top center;

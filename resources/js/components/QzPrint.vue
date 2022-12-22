@@ -238,6 +238,9 @@
                 toPrint += '<p style="text-align: center"><span style="font-size:9pt">www.blancliving.co&nbsp;&nbsp;&nbsp;&nbsp;Email: info@blancliving.co</span><br/><span style="font-size:11pt;">Vat Reg. No. 124 0369 45</span></p>';
                 toPrint += '<div style="display:table; margin:auto; padding:10px; border:thin solid #000000;">'+inv.StoreName+'</div>';
                 toPrint += '<p style="text-align: center;font-size:20pt;">'+inv.NumInvoice+'</p>';
+                if(inv.order){
+                    toPrint += '<p style="text-align: center;font-size:20pt;">ORDER '+inv.order.id+'</p>';
+                }
 
                 var number = inv.storecode+inv.NumInvoice;
                 JsBarcode("#barcode", number, {
