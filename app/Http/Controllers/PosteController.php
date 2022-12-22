@@ -675,4 +675,20 @@ class PosteController extends Controller
             'FooterTicket' => $Footer_ticket,
         ]);
     }
+
+    /**
+     * Get Customer info to print ticket
+     */
+    public function getCustomerToPrint(Request $request){
+        $customer = DB::table('infoCustomer')->where('CustomerID', $request->CustomerID)
+                    ->select('Name', 'Phone', 'commentDelivery', 'TypeDelivery','CompanyName', 'EmailAddress')
+                    ->first();
+        $customer->address = DB::table('address')->where('CustomerID', $request->CustomerID)
+                    ->select('County', 'Town', 'postcode', 'address1', 'address2', 'name')->first();
+        $customer->deliveryPreference = DB::table('DeliveryPreference')->where('CustomerID', $request->CustomerID)
+                    ->select('TypeDelivery', 'CodeCountry', 'PhoneNumber', 'OtherInstruction', 'Name')->first();
+        $customer->user = auth()->user()->name;
+        $customer->date = now()->format('d/m/Y H:i');
+        return response()->json($customer);
+    }
 }

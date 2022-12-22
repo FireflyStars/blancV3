@@ -29,8 +29,8 @@
                        <div class="col-3">
                           <span class="body_medium"><a class = "text_wrap" href="javascript:void(0)" @click="goCustomerView(customer.id)" >{{customer.Name}}</a></span>
                           <div class="col-2">
-                            <tag   v-if="customer.cust_type=='B2C'" :name="'B2C'" ></tag>
-                            <tag   v-else :name="'B2B'" ></tag>
+                            <tag v-if="customer.cust_type=='B2C'" :name="'B2C'" ></tag>
+                            <tag v-else :name="'B2B'" ></tag>
                           </div>
                        </div>
                       <div class="col-3">
@@ -49,8 +49,10 @@
                        <div class="col-2" >
                            <b class ="body_regular text_wrap">{{customer.CompanyName}}</b>
                         </div>
-                       <div class="col-2" style="text-align: end;" >
-                            <!-- <tag   :name="'Orders'" ></tag> -->
+                        <div class="col-1">
+                          <print-bag-tag :CustomerID="customer.CustomerID"></print-bag-tag>
+                        </div>
+                       <div class="col-1" style="text-align: end;" >
                             <button class="btn btn-white body_medium text-nowrap btn-new-orders" @click="goToNewOrder(customer)"> New order</button>
                         </div>
                         <div class="col-2" style="text-align: end;">
@@ -186,40 +188,41 @@
  </transition>
 </template>
 <script>
-   import WaveLoader from '../WaveLoader';
-    import {useRouter, useRoute} from 'vue-router'
-    import {ref,computed,watch, nextTick } from 'vue';
-    import Tag from  '../miscellaneous/Tag'
-       import {
-        TOASTER_MODULE,
-        TOASTER_MESSAGE,
-        CUSTOMERLIST_MODULE,
-        CUSTOMER_LOAD_LIST,
-        CUSTOMER_GET_LIST,
-        CUSTOMEREMAILS_GET_LIST,
-        CUSTOMERORDERS_GET_LIST,
-        ORDERLIST_MODULE,
-        ORDERLIST_SELECT_CURRENT,
-        LOADER_MODULE,
-        DISPLAY_LOADER,
-        HIDE_LOADER,
-        ORDERLIST_FILTER,
-        CUSTOMER_MODULE,
-        SET_CUSTOMER_FILTER,
-        FILTER_CUSTOMER_LIST,
-        CUSTOMERITEMS_GET_LIST,
-        ORDERLIST_LOAD_LIST,
-        ASSEMBLY_HOME_MODULE,
-        INVOICE_MODULE,
-        SET_INVOICE_LIST,
-        SET_SELECTED_NAV 
-    } from "../../store/types/types";
-    import {formatDate} from "../helpers/helpers";
-    import {useStore} from 'vuex';
-import templateBuilder from '@babel/template';
+  import WaveLoader from '../WaveLoader';
+  import PrintBagTag from './PrintBagTag.vue';
+  import {useRouter, useRoute} from 'vue-router'
+  import {ref,computed,watch, nextTick } from 'vue';
+  import Tag from  './Tag'
+      import {
+      TOASTER_MODULE,
+      TOASTER_MESSAGE,
+      CUSTOMERLIST_MODULE,
+      CUSTOMER_LOAD_LIST,
+      CUSTOMER_GET_LIST,
+      CUSTOMEREMAILS_GET_LIST,
+      CUSTOMERORDERS_GET_LIST,
+      ORDERLIST_MODULE,
+      ORDERLIST_SELECT_CURRENT,
+      LOADER_MODULE,
+      DISPLAY_LOADER,
+      HIDE_LOADER,
+      ORDERLIST_FILTER,
+      CUSTOMER_MODULE,
+      SET_CUSTOMER_FILTER,
+      FILTER_CUSTOMER_LIST,
+      CUSTOMERITEMS_GET_LIST,
+      ORDERLIST_LOAD_LIST,
+      ASSEMBLY_HOME_MODULE,
+      INVOICE_MODULE,
+      SET_INVOICE_LIST,
+      SET_SELECTED_NAV 
+  } from "../../store/types/types";
+  import {formatDate} from "../helpers/helpers";
+  import {useStore} from 'vuex';
+  import templateBuilder from '@babel/template';
 export default({
      name: "SearchCustomer",
-     components:{Tag,WaveLoader},
+     components:{Tag, WaveLoader, PrintBagTag},
        setup(){
            const router = useRouter();
            const route = useRoute();
