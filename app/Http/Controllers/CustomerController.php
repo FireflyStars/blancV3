@@ -2822,6 +2822,29 @@ class CustomerController extends Controller
 
         $orderids = [];
 
+        $all_order_ids = [];
+        $items_per_order = [];
+        $items_price_per_order = [];
+
+
+        foreach($grouped_by_customer as $customerid=>$orders){
+            foreach($orders as $orderid=>$invoices){
+                if(!in_array($orderid,$all_order_ids)){
+                    array_push($all_order_ids,$orderid);
+                }
+            }
+        }
+
+        $detailingitems = DB::table('detailingitem')->whereIn('order_id',$all_order_ids)->where('status','Completed')->where('InvoiceID','!=','')->get();
+
+        foreach($detailingitems as $k=>$item){
+            $items_per_order[$item->order_id][] = $item->dry_cleaning_price+$item->cleaning_addon_price+$item->tailoring_price;
+        }
+
+        foreach($items_per_order as $orderid=>$v){
+            $items_price_per_order[$orderid] = number_format(array_sum($v),2);
+        }
+
 
         foreach($grouped_by_customer as $customerid=>$orders){
 
@@ -2833,6 +2856,7 @@ class CustomerController extends Controller
             $subtotal_per_order = [];
             $orderids_per_customer = [];
             $batch_data = [];
+            $totaldue_per_customer = [];
 
 
            foreach($orders as $orderid=>$invoices){
@@ -2842,7 +2866,7 @@ class CustomerController extends Controller
 
                 $order_net = 0;
                 $order_vat = 0;
-                $order_total = 0;
+                $items_total = 0;
 
                 $orderids[] = $orderid;
 
@@ -2885,7 +2909,7 @@ class CustomerController extends Controller
                             return strtotime($b) - strtotime($a);
                         });
 
-                        $order_total += $total;
+                        $items_total += $total;
 
 
                         $net = $total/1.2;
@@ -2906,14 +2930,18 @@ class CustomerController extends Controller
 
 
                 $ctrl = new DetailingController();
-                $total_ext_discount_per_order[$orderid] = $order_total;
+
                 $checkout_data[$orderid] = $ctrl->calculateCheckout($orderid,false);
-               $discount_and_fees_per_order[$orderid] = $checkout_data[$orderid]['Total'] - $checkout_data[$orderid]['itemsTotal'];
+
+                $total_ext_discount_per_order[$orderid] = $items_price_per_order[$orderid];
+                $discount_and_fees_per_order[$orderid] = $checkout_data[$orderid]['Total'] - number_format($items_total,2);
+
 
            }
 
            $batch_data = CustomerController::calculateBatchOrderTotal($orderids_per_customer);
            $totaldue_per_order[] = $batch_data['TotalDue'];
+           $totaldue_per_customer[$customerid] = $batch_data['TotalDue'];
 
 
            foreach($order_details as $customerid=>$invoices){
@@ -2938,9 +2966,11 @@ class CustomerController extends Controller
             $discount_per_customer += $oc->OrderDiscount;
            }
            */
+          /*
             foreach($total_ext_discount_per_order as $order_id=>$order_amount){
                 $discount_per_customer += $order_amount - (isset($subtotal_per_order[$order_id])?$subtotal_per_order[$order_id]:0);
             }
+            */
 
 
            $order_total_exc_discount = array_sum($total_ext_discount_per_order);
@@ -2959,12 +2989,13 @@ class CustomerController extends Controller
 
            $order_totals[$customerid]['order_net'] = number_format($order_net,2);
            $order_totals[$customerid]['order_vat'] = number_format($order_vat,2);
-            $order_totals[$customerid]['order_total'] = number_format($order_total2,2);
+            $order_totals[$customerid]['order_total'] = number_format($totaldue_per_customer[$customerid],2);
 
            $order_totals[$customerid]['discount'] = number_format($order_discount,2);
 
          //  $order_totals[$customerid]['order_without_discount'] = number_format($order_total_exc_discount,2);
             $order_totals[$customerid]['items_total'] =  number_format($order_total2,2);
+            $order_totals[$customerid]['orders'] = implode(",",$orderids_per_customer);
 
         }
 
@@ -3002,7 +3033,6 @@ class CustomerController extends Controller
            'facture_total'=>number_format($facture_amount_total,2),
            'date_due'=>date('d/m/Y',strtotime('+15day')),
         ];
-
 
         return $data;
 
@@ -3500,6 +3530,8 @@ class CustomerController extends Controller
         ->join('infoOrder','detailingitem.order_id','infoOrder.id')
         //->join('typeitem','detailingitem.typeitem_id','typeitem.id')
         ->whereIn('infoOrder.id',$order_ids)
+        ->where('detailingitem.InvoiceID','!=','')
+        ->where('detailingitem.status','Completed')
         ->get();
 
         if(count($items) > 0){
