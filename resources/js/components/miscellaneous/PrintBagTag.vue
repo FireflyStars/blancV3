@@ -40,6 +40,7 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: contain;
+    cursor: pointer;
 }
 .print-bag-tag-label{
     margin-left: 10px;
@@ -50,5 +51,6 @@
     font-weight: 400;
     font-size: 16px;
     line-height: 19px;
+    cursor: pointer;
 }
 </style>

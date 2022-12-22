@@ -46,13 +46,13 @@
 
                              <b class ="body_regular">{{customer.EmailAddress}}</b>
                        </div>
-                       <div class="col-2" >
+                       <div class="col-1" >
                            <b class ="body_regular text_wrap">{{customer.CompanyName}}</b>
                         </div>
                         <div class="col-1">
                           <print-bag-tag :CustomerID="customer.CustomerID"></print-bag-tag>
                         </div>
-                       <div class="col-1" style="text-align: end;" >
+                       <div class="col-2" style="text-align: end;" >
                             <button class="btn btn-white body_medium text-nowrap btn-new-orders" @click="goToNewOrder(customer)"> New order</button>
                         </div>
                         <div class="col-2" style="text-align: end;">

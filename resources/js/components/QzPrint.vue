@@ -626,11 +626,15 @@
             }
             const printCustomerTicket = (printer, customer)=>{
                 // Create a default config for the found printer
+                if(customer.address == null){
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message: "Customer doesn't have a address info",ttl:5, type:'danger'},{ root: true });
+                    return;
+                }
                 console.log('Customer Ticket printing started');
                 var config = qz.configs.create(printer);
                 var rawHtml = '<html><head></head><body style="font-family:Arial, Helvetica, sans-serif; text-align:center; width:90%; margin: auto;"><table border="0" width="375px" style="margin: auto; padding: 25px;">';
                 rawHtml +=  '<tr>';
-                rawHtml +=      '<td width="80%">';
+                rawHtml +=      '<td width="75%">';
                 rawHtml +=          '<table border="0" width="100%">';
                 rawHtml +=              '<tr>';
                 rawHtml +=                  '<td width="24px">';
@@ -647,7 +651,7 @@
                 // Customer Name
                 rawHtml +=              '<tr><td colspan="3" style="font-size:28px; font-weight: bold;">'+customer.Name+'</td></tr>';
                 // Customer Company
-                rawHtml +=              '<tr><td colspan="3" style="font-size:18px; color: #47454B;">'+customer.CompanyName+'</td></tr>';
+                rawHtml +=              '<tr><td colspan="3" style="font-size:18px; color: #47454B;">'+(customer.CompanyName != null ? customer.CompanyName : "") +'</td></tr>';
                 rawHtml +=          '</table>';
                 rawHtml +=      '</td>';
 
@@ -670,7 +674,7 @@
                 rawHtml +=              '</tr>';
                 rawHtml +=              '<tr>';
                 rawHtml +=                  '<td style="color: #868686;">Phone</td>';
-                rawHtml +=                  '<td style="font-weight: bold; color: #47454B;">+'+customer.Phone+'</td>';
+                rawHtml +=                  '<td style="font-weight: bold; color: #47454B;">'+formatPhone(customer.Phone)+'</td>';
                 rawHtml +=              '</tr>';
                 rawHtml +=          '</table>';
                 rawHtml +=      '</td>';
@@ -688,7 +692,9 @@
                 // address1
                 rawHtml +=  '<tr><td colspan="2" style="font-size: 16px;">'+customer.address.address1+'</td></tr>';
                 // postcode
-                rawHtml +=  '<tr><td colspan="2" style="font-size: 16px;">'+customer.address.town+' '+ customer.address.postcode +'</td></tr>';
+                rawHtml +=  '<tr><td colspan="2" style="font-size: 16px;">'+customer.address.Town+' '+ customer.address.postcode +'</td></tr>';
+                // line break
+                rawHtml +=  '<tr><td colspan="2" style="height: 1px;"></td></tr>';
                 // delivery instruction
                 rawHtml += '<tr>'+
                                 '<td colspan="2" style="padding: 15px; background-color: #F8F8F8; border-radius: 8px;">'+
@@ -698,7 +704,7 @@
                                         '</tr>'+
                                         '<tr>'+
                                             '<td style="vertical-align: top; height: 45px;">'+
-                                                '<p style="font-size: 14px; color: #47454B;">'+customer.commentDelivery+'</p>'+
+                                                '<p style="font-size: 14px; color: #47454B;">'+ (customer.commentDelivery != null ? customer.commentDelivery : "") +'</p>'+
                                             '</td>'+
                                         '</tr>'+
                                         '<tr>'+
@@ -715,7 +721,7 @@
                                     '<table border="0" width="100%">'+
                                         '<tr>'+
                                             '<td width="50%" style="color: #868686; font-size: 14px;">Alternate contact</td>'+
-                                            '<td style="color: #47454B; font-size: 14px; font-weight: 600;">'+customer.deliveryPreference.Name+'</td>'+
+                                            '<td style="color: #47454B; font-size: 14px; font-weight: 600;">'+(customer.deliveryPreference.Name != null ? customer.deliveryPreference.Name : "") +'</td>'+
                                         '</tr>'+
                                     '</table>'+
                                 '</td>'+
@@ -726,7 +732,7 @@
                                     '<table border="0" width="100%">'+
                                         '<tr>'+
                                             '<td width="50%" style="color: #868686; font-size: 14px;">Phone</td>'+
-                                            '<td style="color: #47454B; font-size: 14px; font-weight: 600;">+'+customer.deliveryPreference.CodeCountry+ customer.deliveryPreference.PhoneNumber+'</td>'+
+                                            '<td style="color: #47454B; font-size: 14px; font-weight: 600;">'+customer.deliveryPreference.CodeCountry + ' ' + customer.deliveryPreference.PhoneNumber+'</td>'+
                                         '</tr>'+
                                     '</table>'+
                                 '</td>'+
@@ -793,7 +799,7 @@
                     flavor: 'plain', // or 'file' if the data is file
                     data: rawHtml
                 }];
-                return qz.print(config, data);                
+                return qz.print(config, data);
             }
             const formatPrice=price=>{
                 if(typeof price!="undefined" && price!=null)
@@ -801,7 +807,20 @@
                 return '';
             };
 
-
+            const formatPhone = (phoneString)=>{
+                if(phoneString != ""){
+                    var phone = phoneString.split('"')[1];
+                    if(phone.split("|").length > 1){
+                        var area_code = phone.split("|")[0];
+                        var number = phone.split("|")[1];
+                        console.log("number" , number)
+                        return '+' + area_code.replace(/\D/g, '') + ' ' + number.replace(/ /g, '').replace(/(\d{3})(\d{3})(\d{3,4})/, "$1 $2 $3").replace(']' , '');
+                    }else
+                        return phone.replace(/\D/g, '').replace(/(\d{2})(\d{3})(\d{3})(\d{3,4})/, "+$1 $2 $3 $3").replace(']' , '');
+                }else{
+                    return '--';
+                }
+            }
             return {
                 route,
                 printer_name,
@@ -822,7 +841,9 @@
                 printOrderReceiptQz,
                 formatPrice,
                 printReceiptOrder,
-                loadPrinterOrderModal
+                loadPrinterOrderModal,
+                loadPrinterCustomer,
+                formatPhone
             }
         }
     }
