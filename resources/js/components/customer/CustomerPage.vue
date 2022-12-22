@@ -59,7 +59,7 @@ export default {
 
         const setNav = (nav)=>{
             store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_SELECTED_TAB}`, nav);
-            if(nav == 'B2B' || nav == 'B2C' || nav == 'CustomerList'){
+            if(nav == 'B2B' || nav == 'B2C' || nav == 'CustomerList' || nav == 'CurrentBookings' || nav == 'RecurringBookings'){
                 store.dispatch(`${CUSTOMER_MODULE}${SET_CUSTOMER_LIST}`);
                 component.value = 'CustomerList';
             }else if(nav=='AR'){
