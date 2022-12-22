@@ -1261,6 +1261,7 @@ class DetailingController extends Controller
         ];
     }
 
+
     public function calculateCheckout($order_id,$force=false){
         $order = DB::table('infoOrder')->where('id',$order_id)->first();
         if(in_array($order->Status,["FULFILLED",'DELETE','VOID','CANCEL','CANCELLED']) && $order->orderinvoiced==1 && !$force)
@@ -1285,7 +1286,7 @@ class DetailingController extends Controller
             ->get();
         if(count($items) > 0)
         foreach($items as $it){
-            if($it->cleaning_services==null && $it->cleaning_price_type='Standard' && $it->tailoring_price_type='Standard' && $it->tailoring_services='[]' && $it->status = 'Completed'){
+            if($it->cleaning_services==null && $it->cleaning_price_type='Standard' && $it->tailoring_price_type='Standard' && $it->tailoring_services='[]' && $it->status = 'Completed' && !$force){
                 DB::table('detailingitem')->where('id','=',$it->id)->update([
                     'cleaning_services'=>'["1","3"]'
                 ]);
@@ -1373,7 +1374,7 @@ class DetailingController extends Controller
         }
 
 
-        if(in_array($order->express,[1,6])){
+        if(in_array($order->express,[1,6]) && !$force){
             $mapped_id = [1=>1,6=>2];
             $upcharge_id = $mapped_id[$order->express];
 

@@ -799,12 +799,9 @@ Route::get('/test-create-card',function(){
 });
 
 Route::get('/test-pdf-ar',function(){
-   $details = DB::table('infoOrderPrint')->where('id',20)->first();
+    $details = DB::table('infoOrderPrint')->where('id',12)->first();
 
-   $data = CustomerController::getArPDFData($details);
-
-
-
+    $data = CustomerController::getArPDFData($details);
 });
 
 
