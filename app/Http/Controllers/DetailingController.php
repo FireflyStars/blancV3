@@ -1374,7 +1374,7 @@ class DetailingController extends Controller
         }
 
 
-        if(in_array($order->express,[1,6])){
+        if(in_array($order->express,[1,6]) && !$force){
             $mapped_id = [1=>1,6=>2];
             $upcharge_id = $mapped_id[$order->express];
 
