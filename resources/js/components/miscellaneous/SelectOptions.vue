@@ -65,7 +65,7 @@
                 }else{
                     current.value=index;
                     context.emit("update:modelValue",props.options[index].value);
-                }   
+                }
                 store.commit(`${SELECT_MODULE}${SET_CURRENT_SELECT}`,'');
             }
 
@@ -260,5 +260,9 @@
     }
     .select.disabled:before, .select.disabled:after{
         background-color: #C3C3C3;
+    }
+
+    .refund_select{
+        height:37px !important;
     }
 </style>

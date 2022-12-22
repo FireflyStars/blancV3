@@ -178,7 +178,8 @@
                                 </p>
                                     <p class="mb-0" v-if="!updatedelverydate">{{ORDER.detail.order_right_date }}</p>
                                     <p class="mb-0" v-if="updatedelverydate">{{formatOrderDate(cc_new_delivery_date)}}</p>
-                                    <p class="mb-0" >{{ORDER.detail.order_right_time}}</p>
+                                    <p class="mb-0" v-if="!updatedelverytime">{{ORDER.detail.order_right_time}}</p>
+                                    <p class="mb-0" v-if="updatedelverytime">{{cc_new_delivery_timeslot}}</p>
                             </div>
                         </div>
                     </div>
@@ -446,6 +447,43 @@
                     css:"text-align:right;"
                 }
             });
+            const timeslot=ref([
+                {
+                    value:1,
+                    display:'8-10 am',
+                    available:false
+                },
+                {
+                    value:3,
+                    display:'10-12 pm',
+                    available:false
+                },
+                {
+                    value:5,
+                    display:'12-2 pm',
+                    available:false
+                },
+                {
+                    value:7,
+                    display:'2-4 pm',
+                    available:false
+                },
+                {
+                    value:9,
+                    display:'4-6 pm',
+                    available:false
+                },
+                {
+                    value:11,
+                    display:'6-8 pm',
+                    available:false
+                },
+                {
+                    value:13,
+                    display:'8-8 pm',
+                    available:true
+                }
+            ]);
             const CURRENT_SELECTED=computed(()=>{
                 return store.getters[`${ORDERLIST_MODULE}${ORDERLIST_GET_CURRENT_SELECTED}`];
             });
@@ -538,6 +576,8 @@
             const cc_new_delivery_date=ref('');
             const cc_new_pickup_date=ref('');
             const updatedelverydate=ref(false)
+            const cc_new_delivery_timeslot=ref('');
+            const updatedelverytime=ref(false)
 
             watch(() => cc_new_delivery_date.value, (current_val, previous_val) => {
                 console.log(current_val != previous_val)
@@ -553,6 +593,13 @@
                 }
 
 
+            });
+
+            watch(() => cc_new_delivery_timeslot.value, (current_val, previous_val) => {
+                console.log(current_val != previous_val)
+                if(current_val != previous_val ){
+                        updatedelverytime.value = true
+                }
             });
 
             watch(() => cc_new_pickup_date.value, (current_val, previous_val) => {
@@ -613,6 +660,14 @@
                             infoOrder_id: ORDER.value.detail.order_id,
                             PromisedDate: formatDate(cc_new_delivery_date.value)
                         });
+
+                        //time slot delivery
+                        timeslot.value.forEach(v => {
+                            console.log(suggest_timeslot.value ,v.value )
+                            if(suggest_timeslot.value == v.value){
+                                cc_new_delivery_timeslot.value = v.display
+                            }
+                            });
                        /* store.commit(`${ORDERLIST_MODULE}${ORDERLIST_UPDATE_STATUS}`, {
                             orderids: [ORDER.value.detail.id],
                             status: "IN PROCESS"
@@ -873,6 +928,8 @@
                 reloadOrderDetail,
                 order,
                 showFulfillBtn,
+                cc_new_delivery_timeslot,
+                updatedelverytime
             }
         },
     }

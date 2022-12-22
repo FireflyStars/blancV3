@@ -258,7 +258,7 @@
                                             <div class="col-3 text-align-right"><span v-if="order.OrderDiscount > 0">-</span>{{formatPrice(order.OrderDiscount)}}</div>
                                         </div>
 
-                                        <div class="row px-0 mt-2 sub-total-text align-items-center" v-if="parseFloat(cust.discount) > 0 || parseFloat(order.AccountDiscount) > 0">
+                                        <div class="row px-0 mt-2 sub-total-text align-items-center" v-if="parseFloat(order.AccountDiscount) > 0">
                                             <div class="col-4">Account Discount</div>
                                             <div class="col-5 sub-total-desc"> <span v-if="cust.discount > 0">{{cust.discount}}% (applied)</span></div>
                                             <div class="col-3 text-align-right"><span v-if="order.AccountDiscount > 0">-</span>{{formatPrice(order.AccountDiscount)}}</div>
@@ -591,6 +591,16 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
+                                                                <!--Free delivery button-->
+                                                                <div class="col-12" v-if="category=='Delivery'">
+                                                                    <div class="row">
+                                                                        <div class="col-6">
+                                                                            <button class="each-addon-btn w-100 py-2">
+                                                                                <span>Free delivery (&#163;0)</span>
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -724,7 +734,7 @@
                                         <a  v-if= "disabled_btn_with_status"  href="javascript:void(0)" @click="redirectToDetailingList">Previous</a>
                                     </div>
                                     <div class="col-6 px-4">
-                                        <button id="closeBtn" @click="redirectToOrderDetail" class="w-100 py-3" v-if="amount_diff<=0 && Object.keys(has_invoices).length > 0">Close</button>
+                                        <button id="closeBtn" @click="redirectToOrderDetail" class="w-100 py-3" v-if="(amount_diff<=0 && Object.keys(has_invoices).length > 0) || (cust.OnAccount==1 && has_invoices.length > 0)">Close</button>
                                         <button v-else id="completeBtn" class="w-100 py-3" @click="validatePayment" :disabled="editcard">Proceed</button>
                                     </div>
                                 </div>
@@ -840,14 +850,36 @@
         <template #bheader>
             <div id="modal-header-refund" class="py-5 text-center">Customer refund</div>
         </template>
-        <template #bcontent><div class="row py-5"></div></template>
+        <template #bcontent><div class="row py-5 justify-content-center">
+            <div class="col-12">
+                <div class="row form-group align-items-center">
+                    <div class="col-3 refund-input-label text-align-right">Refund</div>
+                    <div class="col-5" id="refund_amount_div">
+                        <input type="text" v-model="refund_amount" class="form-control refund-input" placeholder="0.00"/>
+                        <span>GBP</span>
+                    </div>
+                </div>
+                <div class="row py-4 align-items-center">
+                    <div class="col-3 refund-input-label text-align-right">Reason</div>
+                    <div class="col-5" id="refund_reasons">
+                        <select-options v-model="refund_reason" :options="refund_reasons" :placeholder="'Select reason'" :classnames="'refund_select'" :name="'refund_reasons'"></select-options>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-3"></div>
+                    <div class="col-7 form-group">
+                        <textarea class="form-control refund-input" v-model="refund_reason_desc" :disabled="refund_desc_disabled" placeholder="Describe reason for refund"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div></template>
         <template #mbuttons>
             <div class="row justify-content-center pb-5 mb-4">
                 <div class="col-4"><button class="btn btn-outline-dark refund-btn w-100" id="credit_acc_btn" @click="creditAccount">Credit Account</button></div>
-                <div class="col-1" v-if="(cur_user.role_id!=1)"></div>
-                <div class="col-4" v-if="(cur_user.role_id!=1)">
-                    <!-- <button v-if="(cur_user.role_id==1)" class="btn btn-outline-dark refund-btn w-100">Refund card</button> -->
-                    <button class="btn btn-outline-dark refund-btn">Request refund</button>
+                <div class="col-1"></div>
+                <div class="col-4">
+                    <button  v-if="(cur_user.role_id==1)" class="btn btn-outline-dark refund-btn w-100">Refund card</button>
+                    <button v-else class="btn btn-outline-dark refund-btn w-100">Request refund</button>
                 </div>
             </div>
         </template>
@@ -912,10 +944,11 @@ import {
 import Payment from '../miscellaneous/Payment.vue';
 import Modal from '../miscellaneous/Modal.vue';
 import StripePayNow from '../miscellaneous/StripePayNow.vue';
+import SelectOptions from "../miscellaneous/SelectOptions.vue";
 
 export default {
     name: "Checkout",
-    components: { BreadCrumb, SideBar, MainHeader,Payment,Modal,StripePayNow},
+    components: { BreadCrumb, SideBar, MainHeader,Payment,Modal,StripePayNow,SelectOptions},
     setup() {
         const router = useRouter();
         const route = useRoute();
@@ -988,6 +1021,27 @@ export default {
             terminal_pay.value = 1;
         }
 
+        const refund_amount = ref('');
+        const refund_reason = ref('');
+        const refund_reason_desc = ref();
+
+        const refund_desc_disabled = ref(false);
+
+        //duplicate, fraudulent, or requested_by_customer
+
+        watch(()=>refund_reason.value,(Currentvalue,OldValue)=>{
+            if(Currentvalue=='')
+                refund_desc_disabled.value = false
+            else
+                refund_desc_disabled.value = true;
+        })
+
+        const refund_reasons = [
+            {"value":"","display":"Other"}, //Not in stripe
+            {"value":"duplicate","display":"Duplicate"},
+            {"value":"fraudulent","display":"Fraudulent"},
+            {"value":"requested_by_customer","display":"Requested by customer"},
+        ];
 
         const paths = ref([
             { name: "Order", route: "LandingPage" },
@@ -1096,7 +1150,7 @@ export default {
 
             }).finally(()=>{
                 if(order.value.TotalDue < 0){
-                    refund_modal.value.showModal();
+                    //refund_modal.value.showModal();
                 }
 
             });
@@ -1749,6 +1803,11 @@ export default {
             card_refund_modal,
             loadCardRefundModal,
             closeCardRefundModal,
+            refund_amount,
+            refund_reason,
+            refund_reasons,
+            refund_reason_desc,
+            refund_desc_disabled,
         }
     },
 }
@@ -2279,5 +2338,31 @@ input[type=number] {
 .each-save-card-btn{
     font-family: "Gotham Rounded";
 }
+
+#refund_amount_div{
+    position: relative;
+    display:flex;
+    align-items: center;
+}
+
+#refund_amount_div input[type="text"]{
+    height:37px;
+}
+
+.refund-input{
+    border:0.5px solid #E0E0E0;
+    border-radius:5px;
+}
+
+#refund_amount_div span{
+    position:absolute;
+    right:20px;
+    font:normal 16px "Gotham Rounded";
+}
+
+.refund-input-label{
+    font:normal 16px "Gotham Rounded";
+}
+
 
 </style>

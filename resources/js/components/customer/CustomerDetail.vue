@@ -231,31 +231,15 @@ export default {
         const newOrder =(customer)=>{
             store.commit(`${NEWORDER_MODULE}${NEWORDER_PRELOAD_ORDER_CUSTOMER_SET}`,null);
             let customerId = customer.CustomerID
-            if(customer.type_delivery != 'DELIVERY'){
+
               router.push({
                     name:'NewOrder',
                     params: {
                        customerId,
                     },
                 })
-            }
-            if(customer.type_delivery == 'DELIVERY' &&  customer.first_order == null ){
-              router.push({
-                    name:'NewOrder',
-                    params: {
-                       customerId,
-                    },
-                })
-            }
-            if(customer.type_delivery == 'DELIVERY' && customer.first_order != null ){
-                  router.push({
-                    name:'DetailingItemList',
-                    params: {
-                      order_id:customer.first_order.orde_id,
-                    },
-                })
-            }   
         }
+        
         if(showCustomerDetail) {
             nextTick(() => {
                 store.dispatch(`${CUSTOMER_MODULE}${LOAD_CUSTOMER_DETAIL}`, CURRENT_SELECTED.value).then((res)=>{

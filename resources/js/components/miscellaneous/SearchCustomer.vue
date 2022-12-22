@@ -51,7 +51,7 @@
                         </div>
                        <div class="col-2" style="text-align: end;" >
                             <!-- <tag   :name="'Orders'" ></tag> -->
-                            <!-- <button class="btn btn-white body_medium text-nowrap btn-new-orders" @click="goToNewOrder(customer)"> New order</button> -->
+                            <button class="btn btn-white body_medium text-nowrap btn-new-orders" @click="goToNewOrder(customer)"> New order</button>
                         </div>
                         <div class="col-2" style="text-align: end;">
                             <button class="btn btn-white body_medium text-nowrap btn-all-orders"  @click="goToOrderList(customer.CustomerID)"> All Orders</button>
@@ -418,30 +418,12 @@ export default({
             let customerId = customer.CustomerID
             showSearch.value = false;
             show_loader.value= false;
-            if(customer.TypeDelivery != 'DELIVERY'){
               router.push({
                     name:'NewOrder',
                     params: {
                        customerId,
                     },
                 })
-            }
-            if(customer.TypeDelivery == 'DELIVERY' && customer.Pickup.length == 0 && customer.LastOrder == null ){
-              router.push({
-                    name:'NewOrder',
-                    params: {
-                       customerId,
-                    },
-                })
-            }
-            if(customer.TypeDelivery == 'DELIVERY' && customer.LastOrder != null ){
-                  router.push({
-                    name:'DetailingItemList',
-                    params: {
-                      order_id:customer.LastOrder.orde_id,
-                    },
-                })
-            }   
           }
 
           function goCustomerView(customerId){

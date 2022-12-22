@@ -709,7 +709,7 @@ Route::get('/test-create-pi',function(){
 Route::get('/test-refund',function(){
     //Create payment Intent
 
-    OrderController::logRefund(1,5);
+    OrderController::logRefund(1,1);
 
 });
 
@@ -795,6 +795,15 @@ Route::get('/test-create-card',function(){
     }catch(\Exception $e){
         echo $e->getMessage();
     }
+
+});
+
+Route::get('/test-pdf-ar',function(){
+   $details = DB::table('infoOrderPrint')->where('id',20)->first();
+
+   $data = CustomerController::getArPDFData($details);
+
+
 
 });
 
