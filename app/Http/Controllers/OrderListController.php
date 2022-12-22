@@ -1358,7 +1358,6 @@ class OrderListController extends Controller
                 ->leftJoin('TypePost','TypePost.id','=','postes.TypePost')
                 ->distinct('infoitems.id')
                 ->orderBy('infoInvoice.NumInvoice')->get();
-             return response()->json($infoitems);
         $items=[];
         $infoitems->each(function ($item) use(&$items , $order) {
 
