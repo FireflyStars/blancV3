@@ -277,8 +277,11 @@ class OrderListController extends Controller
                     }
 
                 }
-                else{
-
+                else if($colname == 'infoCustomer.btob'){
+                    foreach ($values as $value) {
+                        $value = $value == 'B2B' ? 1 : 0;
+                    }
+                    $orderlist=$orderlist->whereIn($colname, $values);
                 }
             }
         }
@@ -842,8 +845,11 @@ class OrderListController extends Controller
                         }
                     }
 
-                }else{
-
+                }else if($colname == 'infoCustomer.btob'){
+                    foreach ($values as $value) {
+                        $value = $value == 'B2B' ? 1 : 0;
+                    }
+                    $orderlist=$orderlist->whereIn($colname, $values);
                 }
             }
 
@@ -2245,7 +2251,10 @@ class OrderListController extends Controller
                     }
 
                 }else{
-
+                    foreach ($values as $value) {
+                        $value = $value == 'B2B' ? 1 : 0;
+                    }
+                    $orderlist=$orderlist->whereIn($colname, $values);
                 }
             }
 
