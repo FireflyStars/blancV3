@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\Holiday;
+use App\Models\User;
 
 class OrderListController extends Controller
 {
@@ -1702,7 +1703,7 @@ class OrderListController extends Controller
     public function suggestdate(Request $request){
             $infoOrder_id=$request->post('infoOrder_id');
             $suggested_delivery_date=$request->post('suggested_delivery_date');
-            $user=Auth::user();
+            $user= User::find(Auth::id());
             $update=false;
             if($user->hasRoles(['admin','Blanc Admin','user','Super Admin'])){ // cc cannot suggest a date
                 $update= DB::table('infoOrder')->where('id','=',$infoOrder_id)->update(
@@ -1848,7 +1849,7 @@ class OrderListController extends Controller
 
         $infoOrder=DB::table('infoOrder')->select(['CustomerID','PickupID','DeliveryaskID'])->where('id','=',$infoOrder_id)->first();
                 if($infoOrder==null)
-                    return response()->json(['updated'=>$update,'message'=>'Order not found.']);
+                    return response()->json(['updated'=>false, 'message'=>'Order not found.']);
 
         $pickup=DB::table('pickup')->where('PickupID','=',$infoOrder->PickupID)->first();
 
