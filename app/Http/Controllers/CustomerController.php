@@ -2438,9 +2438,11 @@ class CustomerController extends Controller
 
 
         foreach($orders as $k=>$v){
+            //$ctrl = new DetailingController();
+            //$checkout_data = $ctrl->calculateCheckout($v->order_id,true);
 
 
-            $grouped_by_cust_id[$v->CustomerID][$v->order_id] = $v->Total;
+            $grouped_by_cust_id[$v->CustomerID][$v->order_id] = $v->TotalDue;
             $grouped_by_cust_order_date[$v->CustomerID][] = $v->created_at;
 
             if(!in_array($v->CustomerID,$custid_with_orders)){
@@ -3455,5 +3457,218 @@ class CustomerController extends Controller
         return response()->json([
             'list'=>$list,
         ]);
+    }
+
+
+    public static function calculateBatchOrderTotal($order_ids){
+        $order = DB::table('infoOrder')->whereIn('id',$order_ids)->get();
+
+        die();
+
+        $cust = DB::table('infoCustomer')->where('CustomerID',$order->CustomerID)->first();
+        $_SUBTOTAL=0;
+        $_SUBTOTAL_WITH_DISCOUNT=0;
+        $_ITEMS_TOTAL = 0;
+
+        $all_typeitems = [];
+        $count_by_typeitem = [];
+
+        $all_services = [];
+        $count_by_service = [];
+
+            $items  = DB::table('detailingitem')
+            ->select('detailingitem.*','detailingitem.id AS detailingitem_id','typeitem.pricecleaning as baseprice')
+            ->join('infoOrder','detailingitem.order_id','infoOrder.id')
+            ->join('typeitem','detailingitem.typeitem_id','typeitem.id')
+            ->whereIn('infoOrder.id',$order_ids)
+            ->get();
+        if(count($items) > 0)
+        foreach($items as $it){
+            if($it->cleaning_services==null && $it->cleaning_price_type='Standard' && $it->tailoring_price_type='Standard' && $it->tailoring_services='[]' && $it->status = 'Completed'){
+                DB::table('detailingitem')->where('id','=',$it->id)->update([
+                    'cleaning_services'=>'["1","3"]'
+                ]);
+            }
+        }
+
+        $items = DB::table('detailingitem')
+        ->select('detailingitem.*','detailingitem.id AS detailingitem_id','typeitem.pricecleaning as baseprice')
+        ->join('infoOrder','detailingitem.order_id','infoOrder.id')
+        ->join('typeitem','detailingitem.typeitem_id','typeitem.id')
+        ->where('infoOrder.id',$order_ids)
+        ->get();
+
+        if(count($items) > 0){
+            foreach($items as $k=>$v){
+                $_ITEMS_TOTAL += $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+                $all_typeitems[] = $v->typeitem_id;
+
+                $services = @json_decode($v->cleaning_services);
+
+                if(is_array($services) && !empty($services)){
+                    foreach($services as $index=>$service){
+                        $all_services[] = $service;
+                    }
+                }
+            }
+
+            $count_by_typeitem = array_count_values($all_typeitems);
+            $count_by_service = array_count_values($all_services);
+        }
+
+
+        /*
+        $_SUBTOTAL = $_ITEMS_TOTAL;
+
+        $_BUNDLES_DISCOUNT=0;
+
+        $bundles_id = DetailingController::checkOrderBundles($order_id);
+
+        if(!empty($bundles_id)){
+            $bundles = DB::table('bundles')->whereIn('id',$bundles_id)->get();
+
+            foreach($bundles as $k=>$v){
+                $bundle_type = $v->type;
+                if(isset(${"count_by_".$bundle_type}[$v->bundles_id]) && ${"count_by_".$bundle_type}[$v->bundles_id]>=$v->qty)
+                    $_BUNDLES_DISCOUNT += $v->discountbyitem*${"count_by_".$bundle_type}[$v->bundles_id];
+
+            }
+        }
+
+        $_VOUCHER_DISCOUNT=0;
+        $voucher_codes = [];
+
+        $order_vouchers = DB::table('vouchers_histories')->where('order_id',$order_id)->get();
+
+        if(count($order_vouchers) > 0){
+            foreach($order_vouchers as $k=>$v){
+                $voucher_codes[$v->id] = $v->code;
+                $_VOUCHER_DISCOUNT+= $v->amount;
+            }
+
+
+
+        }
+
+        $_EXPRESS_CHARGES_PRICE = 0;
+        $_FAILED_DELIVERY_PRICE = 0;
+        $_DELIVERY_NOW_FEE=$order->DeliveryNowFee;
+        $_AUTO_DELIVERY_FEE=0;
+
+        if($order->TypeDelivery=='DELIVERY' && $order->FailedDelivery===1){
+            $_FAILED_DELIVERY_PRICE = 5;
+        }
+
+
+        if(in_array($order->express,[1,6])){
+            $mapped_id = [1=>1,6=>2];
+            $upcharge_id = $mapped_id[$order->express];
+
+            $has_upcharge = DB::table('order_upcharges')->where('order_id',$order_id)->where('upcharges_id',$upcharge_id)->where('amount','>',0)->first();
+            if(!$has_upcharge){
+                DetailingController::setExpressUpcharge($upcharge_id,$order->id,$_ITEMS_TOTAL);
+                DetailingController::logUpcharge($order->id,$upcharge_id,1);
+            }
+
+        }
+
+        $upcharges = DB::table('order_upcharges')->where('order_id',$order_id)->get();
+        if(count($upcharges) > 0){
+            foreach($upcharges as $k=>$v){
+                if($v->upcharges_id==1||$v->upcharges_id==2){
+                    $_EXPRESS_CHARGES_PRICE += $v->amount;
+                }
+            }
+        }
+
+
+        $_SUBTOTAL = $_SUBTOTAL - $_BUNDLES_DISCOUNT-$_VOUCHER_DISCOUNT+$_EXPRESS_CHARGES_PRICE;
+
+        $_ACCOUNT_DISCOUNT  =  $order->AccountDiscount;
+        $_ORDER_DISCOUNT = 0;
+
+        if($_SUBTOTAL==0){
+            $_ACCOUNT_DISCOUNT = 0;
+        }
+
+        $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
+
+        $_ACCOUNT_DISCOUNT = number_format($_ACCOUNT_DISCOUNT,2,'.','');
+        $_ORDER_DISCOUNT = number_format($_ORDER_DISCOUNT,2,'.','');
+
+
+        $payments = DB::table('payments')->where('order_id',$order->id)->where('status','succeeded')->get();
+        $_AMOUNT_PAID=0;
+
+        if(count($payments) > 0)
+        foreach($payments as $k=>$v){
+            $_AMOUNT_PAID += $v->montant;
+        }
+
+       //SubTotal inc Discount = SubTotal (excl Discount) - Account Discount - Order Discount - Bundles + Express Charge - voucher
+
+        $_SUBTOTAL_WITH_DISCOUNT=$_SUBTOTAL-$_ACCOUNT_DISCOUNT-$_ORDER_DISCOUNT;
+
+
+
+        if($order->TypeDelivery=='DELIVERY'&&$_SUBTOTAL_WITH_DISCOUNT<25){
+            if(is_null($order->DeliveryNowFee)){
+                $_AUTO_DELIVERY_FEE=25-$_SUBTOTAL_WITH_DISCOUNT;
+            }
+        }
+
+
+        if($_DELIVERY_NOW_FEE>=0&&$_DELIVERY_NOW_FEE!==NULL)
+            $_AUTO_DELIVERY_FEE=0;// Si on a un price Delivery now >> cela efface le Auto Delivery
+
+
+
+
+        //Total = SubTotal inc Discount + Failed delivery + DeliveryNowFee + AutoDeliveryFee
+
+
+        $_TOTAL=$_SUBTOTAL_WITH_DISCOUNT+$_FAILED_DELIVERY_PRICE+(!is_null($_DELIVERY_NOW_FEE)?$_DELIVERY_NOW_FEE:0)+$_AUTO_DELIVERY_FEE;
+
+          //TotalDue = Total - SUM(payements)
+        $_TOTAL_DUE=$_TOTAL-$_AMOUNT_PAID;
+
+        $_TOTAL_EXC_VAT=$_TOTAL/1.2;
+
+        $_TAX_AMOUNT=$_TOTAL-$_TOTAL_EXC_VAT;
+
+
+        if($cust->credit > 0){
+            if($cust->credit >= $_TOTAL_DUE){
+                $_TOTAL_DUE = 0;
+            }else{
+                $_TOTAL_DUE = $_TOTAL_DUE - $cust->credit;
+            }
+        }
+
+
+        $values=array(
+            'Subtotal'=>number_format($_SUBTOTAL,2,'.',''),
+            'SubtotalWithDiscount'=>number_format($_SUBTOTAL_WITH_DISCOUNT,2,'.',''),//
+            'bundles'=>number_format($_BUNDLES_DISCOUNT,2,'.',''),
+            'itemsTotal'=>number_format($_ITEMS_TOTAL,2,'.',''),
+            'Total'=>number_format($_TOTAL,2,'.',''),
+            'TotalDue'=>number_format($_TOTAL_DUE,2,'.',''),
+            'AutoDeliveryFee'=>number_format($_AUTO_DELIVERY_FEE,2,'.',''),//
+            'DeliveryNowFee'=>number_format($_DELIVERY_NOW_FEE,2,'.',''),
+            'ExpressCharge'=>number_format($_EXPRESS_CHARGES_PRICE,2,'.',''),
+            'FailedDeliveryCharge'=>number_format($_FAILED_DELIVERY_PRICE,2,'.',''),//
+            'TotalExcVat'=>number_format($_TOTAL_EXC_VAT,2,'.',''),//
+            'TaxAmount'=> number_format($_TAX_AMOUNT,2,'.',''),//
+            'OrderDiscount' => number_format($_ORDER_DISCOUNT,2,'.',''),
+            'VoucherDiscount' => number_format($_VOUCHER_DISCOUNT,2,'.',''),
+        );
+
+
+
+        if($order->detailed_at=='0000-00-00 00:00:00' || $_SUBTOTAL==0  || $force){
+            $values['AccountDiscount'] = number_format($_ACCOUNT_DISCOUNT,2,'.','');
+            $values['AccountDiscountPerc'] = $cust->discount;
+        }
+        //*/
     }
 }
