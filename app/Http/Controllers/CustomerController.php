@@ -2891,7 +2891,7 @@ class CustomerController extends Controller
                 }
 
                 $ctrl = new DetailingController();
-                $checkout_data = $ctrl->calculateCheckout($orderid,false);
+                $checkout_data = $ctrl->calculateCheckout($orderid,true);
 
                 $calculated_data[$orderid] = $checkout_data;
 
