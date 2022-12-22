@@ -2933,7 +2933,7 @@ class CustomerController extends Controller
 
                 $checkout_data[$orderid] = $ctrl->calculateCheckout($orderid,false);
 
-                $total_ext_discount_per_order[$orderid] = $items_price_per_order[$orderid];
+                $total_ext_discount_per_order[$orderid] = (isset($items_price_per_order[$orderid])?$items_price_per_order[$orderid]:0);
                 $discount_and_fees_per_order[$orderid] = $checkout_data[$orderid]['Total'] - number_format($items_total,2);
 
 
