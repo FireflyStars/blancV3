@@ -228,7 +228,7 @@ class OrderListController extends Controller
                         });
                     }
                 }
-                else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod' && $colname !='infoOrder.Paid'){
+                else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod' && $colname !='infoOrder.Paid' && $colname != 'infoCustomer.btob'){
                     if(!empty($values))
                     $orderlist=$orderlist->whereIn($colname, $values);
                 }
@@ -278,10 +278,13 @@ class OrderListController extends Controller
 
                 }
                 else if($colname == 'infoCustomer.btob'){
-                    foreach ($values as $value) {
-                        $value = $value == 'B2B' ? 1 : 0;
+                    if(!empty($values)){
+                        $custType = [];
+                        foreach ($values as $value) {
+                            $custType[] = $value == 'B2B' ? 1 : 0;
+                        }
+                        $orderlist=$orderlist->whereIn($colname, $custType);
                     }
-                    $orderlist=$orderlist->whereIn($colname, $values);
                 }
             }
         }
@@ -812,7 +815,7 @@ class OrderListController extends Controller
                     }
                     if(!empty($express))
                         $orderlist=$orderlist->whereIn($colname,$express);
-                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod' && $colname !='infoOrder.Paid'){
+                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod' && $colname !='infoOrder.Paid' && $colname != 'infoCustomer.btob'){
                     if(!empty($values))
                     $orderlist=$orderlist->whereIn($colname, $values);
                 }else if($colname == 'infoitems.ProdDate' && !empty($values)){
@@ -846,10 +849,13 @@ class OrderListController extends Controller
                     }
 
                 }else if($colname == 'infoCustomer.btob'){
-                    foreach ($values as $value) {
-                        $value = $value == 'B2B' ? 1 : 0;
+                    if(!empty($values)){
+                        $custType = [];
+                        foreach ($values as $value) {
+                            $custType[] = $value == 'B2B' ? 1 : 0;
+                        }
+                        $orderlist=$orderlist->whereIn($colname, $custType);
                     }
-                    $orderlist=$orderlist->whereIn($colname, $values);
                 }
             }
 
@@ -2217,7 +2223,7 @@ class OrderListController extends Controller
                     }
                     if(!empty($express))
                         $orderlist=$orderlist->whereIn($colname,$express);
-                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod' && $colname !='infoOrder.Paid'){
+                }else if( $colname !='infoitems.express' && $colname != 'infoitems.ProdDate' && $colname != 'infoitems.DelivDate' && $colname != 'infoOrder.DetDate' && $colname !='infoOrder.deliverymethod' && $colname !='infoOrder.Paid' && $colname != 'infoCustomer.btob'){
                     if(!empty($values))
                     $orderlist=$orderlist->whereIn($colname, $values);
                 }else if($colname == 'infoitems.ProdDate' && !empty($values)){
@@ -2250,11 +2256,14 @@ class OrderListController extends Controller
                         }
                     }
 
-                }else{
-                    foreach ($values as $value) {
-                        $value = $value == 'B2B' ? 1 : 0;
+                }else if($colname == 'infoCustomer.btob'){
+                    if(!empty($values)){
+                        $custType = [];
+                        foreach ($values as $value) {
+                            $custType[] = $value == 'B2B' ? 1 : 0;
+                        }
+                        $orderlist=$orderlist->whereIn($colname, $custType);
                     }
-                    $orderlist=$orderlist->whereIn($colname, $values);
                 }
             }
 

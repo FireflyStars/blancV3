@@ -248,8 +248,8 @@
                             name:"Customer Type",
                             type: 'select',
                             options:{
-                                '1' :'B2B',
-                                '0' :'B2C',
+                                1 :'B2B',
+                                0 :'B2C',
                             }
                         },
                         'infoOrder.Status':{
