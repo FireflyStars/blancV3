@@ -25,7 +25,7 @@
                         <div class="panel-wrapper row">
 
                             <div class="panel-col-1 col">
-                                <customer-details-panel @setcustomerid="setCustomerID"></customer-details-panel>
+                                <customer-details-panel @setcustomerid="setCustomerID" @setcustomerdetails="setCustomerDetails"></customer-details-panel>
                                 <div class="panel">
                                     <h2 class="subtitle">Payment</h2>
                                         <div class="col-12" v-if="cur_cust && card_details && card_details.id">
@@ -536,6 +536,41 @@
                                     </div>
                                 </template>
                             </modal>
+
+                            <modal ref="deliveryDate_modal">
+                                <template #closebtn>
+                                    <span class="close" id="deliveryDate_modal_close" @click="ClosedeliveryDateModal"></span>
+                                </template>
+                                <template #bheader>
+                                    <div class="bmodal-delivery-header py-4 pt-5 text-center">
+                                        <span class="name_title">{{customer_details.Name}}</span>
+                                        <br>
+                                        <span>Please choose delivery date from availble visits</span>
+                                    </div>
+                                </template>
+                                <template #bcontent>
+                                    <div class="column list_delivery_date py-5" >  
+                                        <check-box class="py-2" v-for="(orderDate , index) in ordersCustomer" :checked_checkbox="(order_checked != null && order_checked.order_id == orderDate.order_id && new_slot == false )" name="myCheckbox" :key="index" :id="index" :order="orderDate"  @checkbox-clicked="checkboxclicked">
+                                            <slot>
+                                                <div class="date_Delivery pt-2">{{orderDate.DateDelivery}}</div>
+                                                <div class="slot_Delivery">{{orderDate.order_time ? orderDate.order_time : " " }}</div>
+                                          </slot>
+                                        </check-box>
+                                        <check-box class="py-2" name="newSolt" :checked_checkbox="(new_slot == true)" @checkbox-clicked="checkboxclicked">
+                                            <slot>
+                                                <div class="date_Delivery pt-2">Choose new slot</div>
+                                          </slot>
+                                        </check-box>
+                                    </div>
+                                </template>
+                                <template #mbuttons>
+                                    <div class="row mx-0 justify-content-center mt-3 mb-5">
+                                        <div class="col-5">
+                                            <button class="btn btn-outline-dark w-100" @click="submitOrder(order_checked , new_slot)" >Confirm</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </modal>
                         </div>
                     </div>
 
@@ -563,6 +598,7 @@
     import { useRouter, useRoute } from 'vue-router';
 
     import {ref,onMounted,nextTick,computed,watch,inject} from 'vue';
+    import CheckBox from '../miscellaneous/CheckBox';
 
     import {
         NEWORDER_GET_CUSTOMER,
@@ -588,13 +624,16 @@ import RecurringForm from '../miscellaneous/RecurringForm.vue';
 import axios from 'axios';
     export default {
         name: "NewOrder",
-        components:{BreadCrumb,SideBar,SelectOptions,SwitchBtn,DatePicker,TimeSlotPicker,CustomerDetailsPanel,RecurringForm,Modal, PrintBagTag},
+        components:{BreadCrumb,SideBar,SelectOptions,SwitchBtn,DatePicker,TimeSlotPicker,CustomerDetailsPanel,RecurringForm,Modal,CheckBox, PrintBagTag},
         setup(props,context){
             const router = useRouter();
 
             const showcontainer=ref(false);
             const deliverymethod =ref('');
             const delivery_modal = ref();
+            const deliveryDate_modal = ref();
+            const order_checked = ref();
+            const new_slot=ref(false);
 
             //isc : in store collection
             //const isc_dropoff =ref('');
@@ -687,6 +726,7 @@ import axios from 'axios';
             const card_details = ref({});
 
             const d = new Date();
+            const deliverydateModal =ref(false);
             //console.log(d.getHours());
 
             d.setDate(d.getDate() - 1);
@@ -699,6 +739,7 @@ import axios from 'axios';
 
             //New ORDER object
             const new_order_obj = ref({});
+            const confirm_order = ref(false);
 
             yesterday.value = yyyy+'-'+mm+'-'+dd;
 
@@ -736,6 +777,8 @@ import axios from 'axios';
             const storenames = ref([]);
             const store_name = ref('');
             let stores = ['CHELSEA','MARYLEBONE','NOTTING HILL','SOUTH KEN'];
+            const customer_details = ref({});
+            const ordersCustomer = ref([]);
 
             stores.forEach(function(v,i){
                 let key = {};
@@ -814,6 +857,18 @@ import axios from 'axios';
 
                     isc_pickup_timeslot.value = 11;
                 }
+            // if(CustomerID.value){
+            //     axios.post('/get-deliverydate-customer',{
+            //         Customer : CustomerID.value
+            //         }).then((res)=>{       
+            //             if(res.data.orders.length != 0){
+            //                 deliveryDate_modal.value.showModal(); 
+            //                 ordersCustomer.value =  res.data.orders;
+            //                 deliverydateModal.value = true;
+            //             }       
+            //         }).catch((err)=>{
+            //     });
+            // }
             });
 
 
@@ -1374,7 +1429,7 @@ import axios from 'axios';
 
 
             function setCustomerID(val){
-                if(CustomerID.value !=''){
+                if(CustomerID !=''){
                      if(isRecurring.value && recur_form.value){
 
                         recur_form.value.returnedData([]);
@@ -1385,6 +1440,10 @@ import axios from 'axios';
                 if(val==''){
                     process_step.value=1;
                 }
+            }
+
+            function setCustomerDetails(cust){
+                customer_details.value = cust;
             }
 
             //Filters
@@ -1788,6 +1847,164 @@ import axios from 'axios';
               delivery_modal.value.closeModal();
               validateDetails()
            }
+           function ClosedeliveryDateModal(){
+            deliveryDate_modal.value.closeModal();
+           }
+
+           const checkboxclicked = ( check, id, name , order )=>{
+              if(name == "newSolt"){
+                order_checked.value = "" 
+                new_slot.value = true
+              }else{
+                order_checked.value = order
+                new_slot.value = false
+              }   
+           }
+
+           function submitOrder(order , newslot){
+
+                let date = new Date();
+                 confirm_order.value = true
+
+                if(newslot){
+                    deliveryDate_modal.value.closeModal();
+                }else if(!newslot){
+                    
+                    if(order.account_type = "MAIN"){
+                        
+                        if(order.Status != "RECURRING" && order.Status != "SCHEDULED" ){
+                            // cree un order with this day 
+                            if(deliverymethod.value == "home_delivery"){
+
+                                hd_pickup.value = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
+                                hd_delivery.value = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
+                            }
+                            if(deliverymethod.value == "delivery_only"){
+
+                                do_delivery.value = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
+                                do_delivery_timeslot.value =getTimeSlot(order.order_time)
+                                
+                            }
+                            if(deliverymethod.value == 'in_store_collection'){
+                                isc_pickup.value = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
+                            }
+                            // process_step.value = 2
+                            validateDetailCustomer(order);
+                            deliveryDate_modal.value.closeModal();
+                        }else if(order.Status == "RECURRING" || order.Status == "SCHEDULED"){
+
+                                router.push({
+                                    name:'DetailingItemList',
+                                    params: {
+                                    order_id:order.order_id,
+                                    },
+                                })
+                        }
+                    }
+                    if(order.account_type = "Sub"){
+                        
+                        if(order.Status != "RECURRING" && order.Status != "SCHEDULED" ){
+                            // cree un order with this day 
+                            if(deliverymethod.value == "home_delivery"){
+
+                                hd_pickup.value = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
+                                hd_delivery.value = order.DateDeliveryAsk;
+                            }
+                            if(deliverymethod.value == "delivery_only"){
+
+                                do_delivery.value = order.DateDeliveryAsk;
+
+                            }
+                            if(deliverymethod.value == 'in_store_collection'){
+                                isc_pickup.value = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
+                            }
+                            validateDetailCustomer(order);
+                            deliveryDate_modal.value.closeModal();
+                        
+                        }else if(order.Status == "RECURRING" || order.Status == "SCHEDULED"){
+
+                                router.push({
+                                    name:'DetailingItemList',
+                                    params: {
+                                    order_id:order.order_id,
+                                    },
+                                })
+                        }
+                    }
+                }
+                
+           }
+
+           function validateDetailCustomer(order){
+            const new_order = {};
+                    new_order.CustomerID = CustomerID.value;
+                    new_order.AddressID = cur_cust.value.AddressID;
+                    new_order.deliverymethod = deliverymethod.value;
+                    new_order.address1 = shp_address1.value;
+                    new_order.postcode = shp_postcode.value;
+                    new_order.town = shp_town.value;
+                    new_order.store_name = store_name.value;
+                    new_order.payment_method = paymentMethod.value;
+                    new_order.DeliveryaskID = order.DeliveryaskID;
+
+                    let arr = [];
+
+                    arr['in_store_collection'] = ['isc_pickup','isc_pickup_timeslot'];
+
+                    arr['delivery_only'] = ['do_delivery','do_delivery_timeslot','customer_instructions','alternate_contact','save_instruction_check'];
+
+                    arr['home_delivery'] = ['hd_pickup','hd_pickup_timeslot','hd_delivery','hd_delivery_timeslot','customer_instructions','alternate_contact','save_instruction_check'];
+
+                    arr['shipping'] = ['shp_delivery','shipping_partner_id'];
+
+
+
+                    if(typeof(arr[deliverymethod.value])!='undefined'){
+                        new_order['delivery_params'] = JSON.stringify(arr[deliverymethod.value]);
+
+                        arr[deliverymethod.value].forEach(function(v,i){
+                            const var_tmp = eval(v);
+                            new_order[v] = var_tmp.value;
+                        });
+                    }
+
+                    if(isRecurring.value){
+                        new_order.deliverymethod = 'recurring';
+                        new_order.recurring_data = JSON.stringify(recurring_data.value);
+                        new_order['delivery_params'] = '';
+                    }
+
+                    new_order.dropoff_stamp = formatDateToDb(cur_date.value);
+
+                    new_order['sub_account_cust'] = false;
+                    new_order['sub_account_booking_id'] = 0;
+                    new_order['sub_account_booking_type'] = '';
+
+
+                    if(cur_cust.value.main_account && cur_cust.value.main_account.recent_deliveryask){
+                        new_order['sub_account_cust'] = true;
+                        new_order['sub_account_booking_id'] = cur_cust.value.main_account.recent_deliveryask.id;
+                        new_order['sub_account_booking_type'] = cur_cust.value.main_account.recent_deliveryask.type;
+                    }
+
+
+                    new_order_obj.value = new_order;
+
+                   evaluateOrderExpress(new_order);
+
+                    process_step.value=2;
+           }
+
+           function getTimeSlot(slot){
+
+              let time_slot = null
+                all_timeslots_def.forEach(function(v,i){
+                  if(slot == v.display){
+                    time_slot = all_timeslots_def[i].value
+                  }
+               });
+               return time_slot;
+           }
 
             return {
                 showcontainer,
@@ -1881,7 +2098,20 @@ import axios from 'axios';
                 deliveryAddOnModal,
                 delivery_modal,
                 CreateOrderWithoutDeliveryDate,
-                no_delivery_date
+                no_delivery_date,
+                setCustomerDetails,
+                customer_details,
+                ordersCustomer,
+                deliverydateModal,
+                ClosedeliveryDateModal,
+                deliveryDate_modal,
+                checkboxclicked,
+                submitOrder,
+                order_checked,
+                new_slot,
+                getTimeSlot,
+                confirm_order,
+                validateDetailCustomer
         }
     },
         data(){
@@ -2105,6 +2335,55 @@ input.error:focus{
 #select_div::after{
     transform: rotate(-40deg);
     right: 13px;
+}
+.bmodal-delivery-header{
+    background: #F8F8F8;
+    // font: normal 17px "Gilroy Extra bold";
+    display: flex;
+    font-size: 15px;
+    color: #47454b;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-flow: column;
+}
+.list_delivery_date{
+    display: flex;
+    width:660px;
+    flex-wrap: wrap;
+    padding: 15%;
+}
+.chkbox_wrap.d-flex.align-items-center {
+    width: 50%;
+    justify-content: flex-start;
+}
+.span.chkbox{
+    margin: 0 10px 0 0 !important;
+}
+.date_Delivery{
+    color: #868686;
+    font-family: 'Gotham Rounded Book';
+    font-size: 14px;
+    line-height: 14px;
+}
+.slot_Delivery{
+    color: #0a0a0a;
+    font-family: 'Gotham Rounded Book';
+    font-size: 14px;
+    line-height: 25px;
+    font-weight: 600;
+    height: 25px;
+}
+.name_title{
+    font-size: 21px;
+    line-height: 140%;
+    color: #52575a;
+    font-family: "Gotham Rounded";
+    font-style: normal;
+    font-weight: 600;
+    transform: translateY(8px);
+}
+.chkbox_wrap label {
+    margin: 0 0 0 20px !important;
 }
 
 

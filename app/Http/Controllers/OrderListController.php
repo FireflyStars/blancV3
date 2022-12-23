@@ -1331,8 +1331,10 @@ class OrderListController extends Controller
             $tranche_arr_left = explode("_",$tranche_left);
             if(isset($tranche_arr_left[0]) && isset($tranche_arr_left[1])){
                 $slot = Tranche::getSlotFromTranche($tranche_arr_left[0],$tranche_arr_left[1]);
-                $timeslot = $tranches_slots[$slot];
-                $order->order_left_time = $timeslot;
+                if(!is_null($slot)){
+                    $timeslot = $tranches_slots[$slot];
+                    $order->order_left_time = $timeslot;
+                } 
             }
 
             $tranche_right = $order->order_right_time;

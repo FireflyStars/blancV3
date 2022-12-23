@@ -59,8 +59,8 @@
             if(route.params.customerId != null){
 
                 store.dispatch(`${NEWORDER_MODULE}${NEWORDER_GET_CUSTOMER}`,{CustomerID:route.params.customerId}).then((res)=>{
-                    console.log('res',res);
                     edit_customer.value=false;
+                    context.emit('setcustomerdetails',res.data.customer);
 
                 }).finally(()=>{
                    context.emit('setcustomerid',route.params.customerId);
@@ -73,6 +73,7 @@
                 store.dispatch(`${NEWORDER_MODULE}${NEWORDER_GET_CUSTOMER}`,{CustomerID:current_val}).then((res)=>{
                     console.log('res',res);
                     edit_customer.value=false;
+                    context.emit('setcustomerdetails',res.data.customer);
 
                 }).finally(()=>{
                    context.emit('setcustomerid',current_val);

@@ -1305,6 +1305,8 @@ class CustomerController extends Controller
                                                              if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $current_orders[$k][$i][$key]->order_right_time = $timeslot;
+                                                             }else{
+                                                                $current_orders[$k][$i][$key]->order_right_time = "--";
                                                              }
                                                          }
                                                      //leftTime
@@ -1315,6 +1317,8 @@ class CustomerController extends Controller
                                                              if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $current_orders[$k][$i][$key]->order_left_time = $timeslot;
+                                                             }else{
+                                                                $current_orders[$k][$i][$key]->order_left_time = "--";
                                                              }
                                                          }
                                                      //}
@@ -1433,6 +1437,8 @@ class CustomerController extends Controller
                                                              if($slot){
                                                                 $timeslot = $tranches_slots[$slot];
                                                                 $past_orders[$k][$i][$key]->order_right_time = $timeslot;
+                                                             }else{
+                                                                $past_orders[$k][$i][$key]->order_right_time = "--";
                                                              }
                                                          }
                                                          //leftTime
@@ -1443,6 +1449,8 @@ class CustomerController extends Controller
                                                              if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $past_orders[$k][$i][$key]->order_left_time = $timeslot;
+                                                             }else{
+                                                                $past_orders[$k][$i][$key]->order_left_time = "--";
                                                              }
                                                          }
                                                      //}
@@ -1551,6 +1559,8 @@ class CustomerController extends Controller
                                                              if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $scheduled_orders[$k][$i][$key]->order_right_time = $timeslot;
+                                                             }else{
+                                                                $scheduled_orders[$k][$i][$key]->order_right_time = "--";
                                                              }
                                                          }
                                                          //leftTime
@@ -1561,6 +1571,8 @@ class CustomerController extends Controller
                                                              if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $scheduled_orders[$k][$i][$key]->order_left_time = $timeslot;
+                                                             }else{
+                                                                $scheduled_orders[$k][$i][$key]->order_left_time = "--";
                                                              }
                                                          }
                                                      //}

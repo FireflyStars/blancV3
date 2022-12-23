@@ -108,9 +108,10 @@ class OrderController extends Controller
                 $order_to_insert['TypeDelivery'] = 'DELIVERY';
             }
 
-            // if($new_order['deliverymethod'] == 'delivery_only'){
-            //     $order_to_insert['express'] = 0;
-            // }else{
+            if(isset($new_order['DeliveryaskID'])){
+                $order_to_insert['DeliveryaskID'] = $new_order['DeliveryaskID'];
+            }
+            //else{
             //     $order_to_insert['express'] = 1;
             // }
             $new_order_id = DB::table('infoOrder')
@@ -156,7 +157,7 @@ class OrderController extends Controller
                 }elseif($main_account_booking_type=='deliveryask'){
                     $id_booking = $main_account_booking_id;
                 }
-            }else{
+            }else if(!isset($new_order['DeliveryaskID'])){
                 $delivery_arr = [
                     'PhoneNumber'=>(!empty($phones)?implode(",",$phones):""),
                     'CodeCountry'=>$code_country,
@@ -187,6 +188,15 @@ class OrderController extends Controller
                     'DeliveryaskID'=>$booking_do->DeliveryaskID,
                     'DateDeliveryAsk'=>$new_order['do_delivery']
                 ]);
+            }
+
+            if(isset($new_order['DeliveryaskID'])){
+                if(!is_null($new_order['DeliveryaskID'])){
+                    DB::table('infoOrder')->where('id',$new_order_id)->update([
+                        'DeliveryaskID'=>$new_order['DeliveryaskID'],
+                        'DateDeliveryAsk'=>$new_order['do_delivery']
+                    ]);
+             }
             }
 
             if($id_master_pickup !=0){
@@ -252,37 +262,43 @@ class OrderController extends Controller
 
             $delivery_slot = $new_order['hd_delivery_timeslot'];
             $tranche_delivery = BookingController::getBookingDetailFromSlot($delivery_slot);
-
-            $delivery_arr = [
-                'PhoneNumber'=>(!empty($phones)?implode(",",$phones):""),
-                'CodeCountry'=>$code_country,
-                'TypeDelivery'=>'', //A confirmer
-                'AddressID'=>$address_uuid,
-                'CustomerID'=>$customerid,
-                'DeliveryAskID'=>'',
-                'id_customer'=>0,
-                'created_at'=>date('Y-m-d H:i:s'),
-                'comment'=>(!is_null($new_order['customer_instructions'])?$new_order['customer_instructions']:''),
-                'trancheFrom'=>$tranche_delivery['tranchefrom'],
-                'trancheto'=>$tranche_delivery['trancheto'],
-                'address_id'=>($address?$address->id:0),
-                'date'=>$new_order['hd_delivery'],
-                'status'=>'NEW',//'PMS'
-                'order_id'=>$new_order_id,
-
-            ];
-
-            $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
-            $booking_hd_delivery = DB::table('deliveryask')->where('id',$id_booking)->first();
-
-            DB::table('infoOrder')->where('id',$new_order_id)->update([
-                'DeliveryaskID'=>$booking_hd_delivery->DeliveryaskID,
-                'DateDeliveryAsk'=>$new_order['hd_delivery']
-            ]);
+            if(isset($new_order['DeliveryaskID'])){
+                if(!is_null($new_order['DeliveryaskID'])){
+                    DB::table('infoOrder')->where('id',$new_order_id)->update([
+                        'DeliveryaskID'=>$new_order['DeliveryaskID'],
+                        'DateDeliveryAsk'=>$new_order['hd_delivery']
+                    ]);
+                }
+            }else{
+                $delivery_arr = [
+                    'PhoneNumber'=>(!empty($phones)?implode(",",$phones):""),
+                    'CodeCountry'=>$code_country,
+                    'TypeDelivery'=>'', //A confirmer
+                    'AddressID'=>$address_uuid,
+                    'CustomerID'=>$customerid,
+                    'DeliveryAskID'=>'',
+                    'id_customer'=>0,
+                    'created_at'=>date('Y-m-d H:i:s'),
+                    'comment'=>(!is_null($new_order['customer_instructions'])?$new_order['customer_instructions']:''),
+                    'trancheFrom'=>$tranche_delivery['tranchefrom'],
+                    'trancheto'=>$tranche_delivery['trancheto'],
+                    'address_id'=>($address?$address->id:0),
+                    'date'=>$new_order['hd_delivery'],
+                    'status'=>'NEW',//'PMS'
+                    'order_id'=>$new_order_id,
+    
+                ];
+               
+                $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
+                $booking_hd_delivery = DB::table('deliveryask')->where('id',$id_booking)->first();
+    
+                DB::table('infoOrder')->where('id',$new_order_id)->update([
+                    'DeliveryaskID'=>$booking_hd_delivery->DeliveryaskID,
+                    'DateDeliveryAsk'=>$new_order['hd_delivery']
+                ]);
+            }
+            
          }
-
-
-
             //Notification
 
         }
@@ -1672,6 +1688,7 @@ class OrderController extends Controller
                 ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                 ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
                 ->where('infoOrder.DateDeliveryAsk','>=', date('Y-m-d'))
+                ->whereNotIn('infoOrder.Status', ['VOIDED', 'FULFILLED', 'VOID', 'DELETE'])
                 ->where('deliveryask.status','!=', 'DEL')
                 ->where('infoOrder.CustomerID','=',$cust->CustomerIDMaster)->get();
 
@@ -1686,6 +1703,7 @@ class OrderController extends Controller
                 ])
                 ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                 ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
+                ->whereNotIn('infoOrder.Status', ['VOIDED', 'FULFILLED', 'VOID', 'DELETE'])
                 ->where('infoOrder.DateDeliveryAsk','>=', date('Y-m-d'))
                 ->where('infoOrder.CustomerID','=',$CustomerID)->get();
 
@@ -1694,21 +1712,22 @@ class OrderController extends Controller
 
         foreach($orders as $k=>$order){
 
-            $tranche_left = $order->order_time;
-            $tranche_arr_left = explode("_",$tranche_left);
-            if(isset($tranche_arr_left[0]) && isset($tranche_arr_left[1])){
-                $slot = Tranche::getSlotFromTranche($tranche_arr_left[0],$tranche_arr_left[1]);
-                $timeslot = $tranches_slots[$slot];
-                $order->order_time = $timeslot;
-            }
-
             if($order->order_time != null){
-                $orders_list[] = $order;
+                $tranche_left = $order->order_time;
+                $tranche_arr_left = explode("_",$tranche_left);
+                if(isset($tranche_arr_left[0]) && isset($tranche_arr_left[1])){
+                    $slot = Tranche::getSlotFromTranche($tranche_arr_left[0],$tranche_arr_left[1]);
+                    if($slot){
+                        $timeslot = $tranches_slots[$slot];
+                        $order->order_time = $timeslot;
+                    }
+                   
+                }
             }
         }
 
         return response()->json([
-            'orders'=>$orders_list
+            'orders'=>$orders
         ]);
     }
 }
