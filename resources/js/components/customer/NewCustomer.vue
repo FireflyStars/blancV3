@@ -1494,14 +1494,14 @@ import axios from 'axios';
                                             router.push({
                                                 name: 'NewOrder',
                                                 params:{
-                                                    customer_id: response.data
+                                                    customerId: response.data.CustomerID
                                                 }
                                             });
                                         } else {
                                             router.push({
                                                 name: 'CustomerDetail',
                                                 params:{
-                                                    customer_id: response.data
+                                                    customer_id: response.data.id
                                                 }
                                             });
                                         }
@@ -1542,14 +1542,14 @@ import axios from 'axios';
                                             router.push({
                                                 name: 'NewOrder',
                                                 params:{
-                                                    customer_id: response.data
+                                                    customerId: response.data.CustomerID
                                                 }
                                             });
                                         } else {
                                             router.push({
                                                 name: 'CustomerDetail',
                                                 params:{
-                                                    customer_id: response.data
+                                                    customer_id: response.data.id
                                                 }
                                             });
                                         }

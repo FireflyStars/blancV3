@@ -520,7 +520,7 @@ class CustomerController extends Controller
                  }
                 }
             }
-        return response()->json($custId);
+        return response()->json($customer);
     }
     public function getInvoiceHistories(Request $request){
 
