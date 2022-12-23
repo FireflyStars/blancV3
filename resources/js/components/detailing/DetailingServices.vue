@@ -149,7 +149,7 @@
         <template #mbuttons>
             <div class="row mx-0 justify-content-center mt-3 mb-5">
                 <div class="col-5">
-                    <button class="btn btn-outline-dark w-100" @click="changeCustomerPreference(sel_addon_id)">Change preferences</button>
+                    <button class="btn btn-success text-white w-100" @click="changeCustomerPreference(sel_addon_id)">Change preferences</button>
                 </div>
                 <div class="col-1"></div>
                 <div class="col-5">
@@ -414,6 +414,7 @@ export default {
                 if(res.data.updated){
                     toggleSubService(id);
                     closeAddOnModal();
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, { message: 'Preference changed', ttl:5, type:'success' });
                 }
             }).catch((err)=>{
 
