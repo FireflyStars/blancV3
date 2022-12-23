@@ -1998,7 +1998,9 @@ class DetailingController extends Controller
                     $dc_arr = @json_decode($v->cleaning_services);
 
                     foreach($dc_arr as $id=>$val){
-                        $dc[] = $cs[$val];
+                        if(isset($cs[$val])){
+                            $dc[] = $cs[$val];
+                        }
                     }
 
                     $c_price = number_format($v->dry_cleaning_price + $v->cleaning_addon_price,2,'.','');
@@ -2281,6 +2283,9 @@ class DetailingController extends Controller
             $has_invoices = DB::table('infoInvoice')->where('OrderID',$order->OrderID)->get();
         }
 
+        $paid_by_card = DB::table('payments')->where('order_id',$order_id)->where('status','succeeded')->where('payment_intent_id',
+        '!=','')->get();
+
         return response()->json([
             'post'=>$request->all(),
             'items'=>$items,
@@ -2323,6 +2328,7 @@ class DetailingController extends Controller
             'order_bundles'=>$order_bundles,
             'has_invoices'=>$has_invoices,
             'amount_paid_other'=>$amount_paid_other,
+            'paid_by_card'=>$paid_by_card,
         ]);
     }
 

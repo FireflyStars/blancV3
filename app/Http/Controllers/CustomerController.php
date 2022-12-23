@@ -2850,6 +2850,7 @@ class CustomerController extends Controller
         $all_order_ids = [];
         $items_per_order = [];
         $items_price_per_order = [];
+        $invoice_prices = [];
 
 
         foreach($grouped_by_customer as $customerid=>$orders){
@@ -2860,10 +2861,15 @@ class CustomerController extends Controller
             }
         }
 
-        $detailingitems = DB::table('detailingitem')->whereIn('order_id',$all_order_ids)->where('status','Completed')->where('InvoiceID','!=','')->get();
+        $invoices = DB::table('infoInvoice')
+            ->select('infoOrder.id AS order_id','infoInvoice.InvoiceID','infoInvoice.price')
+            ->join('infoOrder','infoInvoice.OrderID','infoOrder.OrderID')
+            ->whereIn('infoOrder.id',$all_order_ids)
+            ->get();
 
-        foreach($detailingitems as $k=>$item){
-            $items_per_order[$item->order_id][] = $item->dry_cleaning_price+$item->cleaning_addon_price+$item->tailoring_price;
+        foreach($invoices as $k=>$inv){
+            $items_per_order[$inv->order_id][] = $inv->price;
+            $invoice_prices[$inv->InvoiceID] = $inv->price;
         }
 
         foreach($items_per_order as $orderid=>$v){
@@ -2899,6 +2905,8 @@ class CustomerController extends Controller
                     array_push($orderids_per_customer,$orderid);
                 }
 
+
+
                 foreach($invoices as $invoiceid=>$items){
 
                     $inv = DB::table('infoInvoice')->where('InvoiceID',$invoiceid)->first();
@@ -2912,6 +2920,8 @@ class CustomerController extends Controller
                     $promised_dates = [];
                     $items_per_dept = [];
 
+                    $total = $invoice_prices[$invoiceid];
+
                     if($inv && !in_array($inv->Status,['DELETE', 'DELETED', 'VOID', 'VOIDED', 'CANCEL', 'CANCELED'])){
                         foreach($items as $k=>$v){
                             $promised_dates[] = $v->PromisedDate;
@@ -2919,10 +2929,11 @@ class CustomerController extends Controller
                             $item_txt = $v->brand." ".str_replace(' ',' ',$v->Description);
 
                             $dept[$v->Department][] = $item_txt;
-                            $total += $v->priceTotal;
+                            //$total += $v->priceTotal;
                             // $totaldue_per_order[$v->order_id] = $v->TotalDue;
                             // $total_ext_discount_per_order[$v->order_id] = $v->Total;
                             // $subtotal_per_order[$v->order_id] = $v->Subtotal;
+
                         }
 
                         foreach($dept as $k=>$v){
@@ -3552,18 +3563,28 @@ class CustomerController extends Controller
         $_ACCOUNT_DISCOUNT = 0;
 
 
-        $items = DB::table('detailingitem')
-        ->select('detailingitem.*','detailingitem.id AS detailingitem_id')
-        ->join('infoOrder','detailingitem.order_id','infoOrder.id')
-        //->join('typeitem','detailingitem.typeitem_id','typeitem.id')
-        ->whereIn('infoOrder.id',$order_ids)
-        ->where('detailingitem.InvoiceID','!=','')
-        ->where('detailingitem.status','Completed')
-        ->get();
+        // $items = DB::table('detailingitem')
+        // ->select('detailingitem.*','detailingitem.id AS detailingitem_id')
+        // ->join('infoOrder','detailingitem.order_id','infoOrder.id')
+        // ->whereIn('infoOrder.id',$order_ids)
+        // ->where('detailingitem.InvoiceID','!=','')
+        // ->where('detailingitem.status','Completed')
+        // ->get();
+
+        $items = DB::table('infoInvoice')
+            ->select('infoInvoice.price')
+            ->join('infoOrder','infoInvoice.OrderID','infoOrder.OrderID')
+            ->whereIn('infoOrder.id',$order_ids)
+            ->get();
+
 
         if(count($items) > 0){
             foreach($items as $k=>$v){
-                $_ITEMS_TOTAL += $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+                // if($v->price > 0){
+                    $_ITEMS_TOTAL += $v->price;
+                // }else{
+                //     $_ITEMS_TOTAL += $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
+                // }
             }
 
             $count_by_typeitem = array_count_values($all_typeitems);
