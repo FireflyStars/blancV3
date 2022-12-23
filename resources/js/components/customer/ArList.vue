@@ -47,6 +47,7 @@
                     <td class="fw-16" valign="middle">{{ customer.last_order_date ? customer.last_order_date : "--" }}</td>
                     <!--  total spent-->
                     <td class="fw-16 fw-bold" valign="middle">{{ customer.order_total ? ('-£'+customer.order_total.toFixed(2)) : "--" }}</td>
+                    <td class="fw-16 fw-bold" valign="middle">£{{customer.revenue.toFixed(2)}}</td>
                 </tr>
             </transition-group>
             <tr v-if="customerList.length == 0">
@@ -226,6 +227,12 @@ export default {
                 {
                     label: 'Uninvoiced',
                     key: 'order_total',
+                    thClass: 'customer-table-th text-nowrap',
+                    tdClass: 'fw-16',
+                },
+                {
+                    label: 'Revenue',
+                    key: 'revenue',
                     thClass: 'customer-table-th text-nowrap',
                     tdClass: 'fw-16',
                 },

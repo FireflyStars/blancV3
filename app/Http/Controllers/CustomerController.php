@@ -2481,13 +2481,21 @@ class CustomerController extends Controller
             $grouped_orders_per_customer[$k] = array_unique($v);
         }
 
+        $revenue_by_line = [];
+
         foreach($grouped_orders_per_customer as $k=>$orders){
             $data = CustomerController::calculateBatchOrderTotal($orders);
 
+            $revenue = CustomerController::getBatchRevenue($orders);
+            //$revenue_by_line[$k] = $revenue;
+
+
             if(isset($master_cust[$k])){
                 $list[$master_cust[$k]]['order_total'][] = $data['TotalDue'];
+                $list[$master_cust[$k]]['revenue'][] = $revenue;
             }else{
                 $list[$k]['order_total'][] = $data['TotalDue'];
+                $list[$k]['revenue'][] = $revenue;
             }
         }
 
@@ -2536,6 +2544,8 @@ class CustomerController extends Controller
                     } else if ($v->IsMasterAccount== 1){
                         $list[$v->CustomerID]['level'] = "Master";
                     }
+
+
                 }
             }
         }
@@ -2553,6 +2563,9 @@ class CustomerController extends Controller
         foreach($list as $k=>$v){
         $order_total = $list[$k]['order_total'];
         $list[$k]['order_total'] = array_sum($order_total);
+
+        $revenues = $list[$k]['revenue'];
+        $list[$k]['revenue'] = array_sum($revenues);
 
         usort($list[$k]['order_date'],function($a, $b) {
                 return strtotime($b) - strtotime($a);
@@ -2934,7 +2947,9 @@ class CustomerController extends Controller
                 $checkout_data[$orderid] = $ctrl->calculateCheckout($orderid,false);
 
                 $total_ext_discount_per_order[$orderid] = (isset($items_price_per_order[$orderid])?$items_price_per_order[$orderid]:0);
-                $discount_and_fees_per_order[$orderid] = $checkout_data[$orderid]['Total'] - number_format($items_total,2);
+
+
+                $discount_and_fees_per_order[$orderid] = (isset($checkout_data[$orderid]) ? $checkout_data[$orderid]['Total'] - number_format($items_total,2):0);
 
 
            }
@@ -3695,6 +3710,21 @@ class CustomerController extends Controller
         //*/
 
         return $values;
+
+    }
+
+    public static function getBatchRevenue($order_ids){
+        $total_revenue = 0;
+
+        $revenues = DB::table('revenu')->whereIn('order_id',$order_ids)->get();
+
+        if(count($revenues) > 0){
+            foreach($revenues as $k=>$v){
+                $total_revenue += $v->Total;
+            }
+        }
+
+        return $total_revenue;
 
     }
 }
