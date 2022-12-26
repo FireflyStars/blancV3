@@ -24,7 +24,7 @@ class Tranche extends Model
 
     public static function getDeliveryPlanningTranches(){
         return [
-            1=>'8am-10am',3=>'10am-12pm',5=>'12pm-2pm',7=>'2pm-4pm',9=>'4pm-6pm',11=>'6pm-8pm'
+            1=>'8am - 10am',3=>'10am - 12pm',5=>'12pm - 2pm',7=>'2pm - 4pm',9=>'4pm - 6pm',11=>'6pm - 8pm'
         ];
     }
 

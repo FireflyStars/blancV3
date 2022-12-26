@@ -616,6 +616,7 @@
         TOASTER_GET_ALL,
         TOASTER_REMOVE_TOAST,
         NEWORDER_GET_ALL_TIMESLOTS,
+        NEWORDER_GET_ALL_TIMESLOTS_DELIVERY,
         LOADER_MODULE,
         DISPLAY_LOADER,
         HIDE_LOADER,
@@ -709,6 +710,7 @@ import axios from 'axios';
 
 
             const all_timeslots_def = store.getters[`${NEWORDER_MODULE}${NEWORDER_GET_ALL_TIMESLOTS}`];
+            const all_timeslots_delivery = store.getters[`${NEWORDER_MODULE}${NEWORDER_GET_ALL_TIMESLOTS_DELIVERY}`];
 
             const all_timeslots = ref([]);
             const all_timeslots_arr = [];
@@ -1998,9 +2000,9 @@ import axios from 'axios';
            function getTimeSlot(slot){
 
               let time_slot = null
-                all_timeslots_def.forEach(function(v,i){
+                  all_timeslots_delivery.forEach(function(v,i){
                   if(slot == v.display){
-                    time_slot = all_timeslots_def[i].value
+                    time_slot = all_timeslots_delivery[i].value
                   }
                });
                return time_slot;

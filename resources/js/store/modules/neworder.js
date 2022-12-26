@@ -10,6 +10,7 @@ import {
     NEWORDER_PRELOAD_ORDER_GET,
     NEWORDER_CUR_CUSTOMER,
     NEWORDER_GET_ALL_TIMESLOTS,
+    NEWORDER_GET_ALL_TIMESLOTS_DELIVERY,
     NEW_ORDER_GET_TRANCHE_POSTCODE,
     NEW_ORDER_TRANCHE_POSTCODE,
     NEW_ORDER_SET_TRANCHE_POSTCODE,
@@ -63,6 +64,38 @@ export const neworder= {
                 value:13,
                 display:'8-8 pm',
                 available:true
+            }
+        ],
+        timeslot_delivery_date:[
+            {
+                value:1,
+                display:'8am - 10am',
+                available:false
+            },
+            {
+                value:3,
+                display:'10am - 12pm',
+                available:false
+            },
+            {
+                value:5,
+                display:'12pm - 2pm',
+                available:false
+            },
+            {
+                value:7,
+                display:'2pm - 4pm',
+                available:false
+            },
+            {
+                value:9,
+                display:'4pm - 6pm',
+                available:false
+            },
+            {
+                value:11,
+                display:'6pm - 8pm',
+                available:false
             }
         ],
         tranches:[],
@@ -136,5 +169,6 @@ export const neworder= {
         [NEWORDER_CUR_CUSTOMER]:state=>state.order.infoCustomer,
         [NEWORDER_GET_ALL_TIMESLOTS]:state=>state.timeslot_def,
         [NEW_ORDER_GET_TRANCHE_POSTCODE]:state=>state.tranches,
+        [NEWORDER_GET_ALL_TIMESLOTS_DELIVERY]:state=>state.timeslot_delivery_date,
     }
 }

@@ -1671,7 +1671,7 @@ class OrderController extends Controller
 
        $orders = [];
        $orders_list = [];
-       $tranches_slots = Tranche::getDeliveryPlanningTranchesForApi();
+       $tranches_slots = Tranche::getDeliveryPlanningTranches();
 
        if($cust){
 
