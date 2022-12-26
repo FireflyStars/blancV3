@@ -734,7 +734,7 @@
                                         <a  v-if= "disabled_btn_with_status"  href="javascript:void(0)" @click="redirectToDetailingList">Previous</a>
                                     </div>
                                     <div class="col-6 px-4">
-                                        <button id="closeBtn" @click="redirectToOrderDetail" class="w-100 py-3" v-if="(amount_diff<=0 && Object.keys(has_invoices).length > 0) || (cust.OnAccount==1 && has_invoices.length > 0)">Close</button>
+                                        <button id="closeBtn" @click="redirectToOrderDetail" class="w-100 py-3" v-if="(amount_diff<=0 && Object.keys(has_invoices).length > 0)">Close</button>
                                         <button v-else id="completeBtn" class="w-100 py-3" @click="validatePayment" :disabled="editcard">Proceed</button>
                                     </div>
                                 </div>
@@ -862,7 +862,7 @@
                 <div class="row py-4 align-items-center">
                     <div class="col-3 refund-input-label text-align-right">Reason</div>
                     <div class="col-5" id="refund_reasons">
-                        <select-options v-model="refund_reason" :options="refund_reasons" :placeholder="'Select reason'" :classnames="'refund_select'" :name="'refund_reasons'"></select-options>
+                        <select-options v-model="refund_reason" :options="refund_reasons" :placeholder="'Select reason'" :classnames="'refund_select'" :name="'refund_reasons'" :readonly="paid_by_card.length==0"></select-options>
                     </div>
                 </div>
                 <div class="row">
@@ -876,8 +876,8 @@
         <template #mbuttons>
             <div class="row justify-content-center pb-5 mb-4">
                 <div class="col-4"><button class="btn btn-outline-dark refund-btn w-100" id="credit_acc_btn" @click="creditAccount">Credit Account</button></div>
-                <div class="col-1"></div>
-                <div class="col-4">
+                <div class="col-1" v-if="paid_by_card.length > 0"></div>
+                <div class="col-4"  v-if="paid_by_card.length > 0">
                     <button  v-if="(cur_user.role_id==1)" class="btn btn-outline-dark refund-btn w-100">Refund card</button>
                     <button v-else class="btn btn-outline-dark refund-btn w-100">Request refund</button>
                 </div>
@@ -1070,6 +1070,7 @@ export default {
             is_terminal_php.value = true;
         }
 
+        const paid_by_card = ref([]);
 
         const getCheckoutItems =  async()=>{
 
@@ -1146,6 +1147,7 @@ export default {
                 order_bundles.value = res.data.order_bundles;
                 has_invoices.value = res.data.has_invoices;
                 amount_paid_other.value = res.data.amount_paid_other;
+                paid_by_card.value = res.data.paid_by_card;
             }).catch((err)=>{
 
             }).finally(()=>{
@@ -1808,6 +1810,7 @@ export default {
             refund_reasons,
             refund_reason_desc,
             refund_desc_disabled,
+            paid_by_card,
         }
     },
 }
