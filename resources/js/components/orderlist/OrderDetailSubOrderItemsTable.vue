@@ -12,7 +12,7 @@
                                 <img  class="img-arrow" src="/images/flesh.png" />
                             </div>
                             <div class='column2' >
-                                <img  class="img-arrow" @click="setSubOrderFulfilled(ITEMS[0].InvoiceID , ITEMS[0].Invoice_Status)" src="/images/check.png" />
+                                <img  class="img-arrow" @click="setSubOrderFulfilled(ITEMS[0].InvoiceID , ITEMS[0].Invoice_Status , ITEMS[0].NumInvoice)" src="/images/check.png" />
                             </div>   
                             <div class='column3' >
                                 <img  class="img-arrow" src="/images/download.png" @click="openModal(ITEMS[0].InvoiceID)" />
@@ -51,6 +51,7 @@
             <div class=" batch-actions" v-if="Object.entries(MULTI_CHECKED).length !== 0"><button class="btn btn-outline-dark body_medium"  @click="show_split_conf">Split</button><button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Delete items')">Delete</button></div>
         </transition> -->
          <FulfillConfirmation  :invoice_id= [invoiceId] :show_conf="show_model_Fulfil" @close="show_model_Fulfil=false"></FulfillConfirmation>
+         <!-- <FulfillSuborderWarning :num_invoice = "invoiceNum" :invoice_id= [invoiceId] :show_conf="show_model_Fulfil" @close="show_model_Fulfil=false"></FulfillSuborderWarning> -->
     </div>
     <ItemDetail @close="OpenitemDetails = false" class="modal-item" v-if = "OpenitemDetails" :item_id = ItemId :invoiceId = invoiceId ></ItemDetail>
     <qz-print ref="qz_printer"></qz-print>
@@ -90,11 +91,12 @@
     import SubOrderOptions from "../miscellaneous/SubOrderOptions";
     import FulfillConfirmation from "../miscellaneous/FulfillConfirmation";
     import ItemDetail from "../assembly/ItemDetail";
+    import FulfillSuborderWarning from "../miscellaneous/FulfillSuborderWarning";
 
     export default {
         name: "OrderDetailSubOrderItemsTable",
         props:['tabledef',"tab","id" , "status" , "user" , "order"],
-        components:{ColorTag, Tag,CheckBox, SubOrderOptions, QzPrint , FulfillConfirmation , ItemDetail},
+        components:{ColorTag, Tag,CheckBox, SubOrderOptions, QzPrint , FulfillConfirmation , ItemDetail, FulfillSuborderWarning},
         emits: ['freeReclean', 'show_conf', 'close', 'reAssign'],
         setup(props,context){
             const router = useRouter();
@@ -109,6 +111,7 @@
             const ItemId = ref('');
             const ListTrackingKey = ref([]);
             const OpenitemDetails = ref(false);
+            const invoiceNum = ref('');
 
             const ITEM_LIST=computed(()=>{
                 return store.getters[`${ORDERDETAIL_MODULE}${ORDERDETAIL_GET_DETAILS}`].items;
@@ -216,7 +219,7 @@
                 context.emit("show_conf");
             }
         
-            function setSubOrderFulfilled(suborderid , Invoice_Status){
+            function setSubOrderFulfilled(suborderid , Invoice_Status , NumInvoice){
                 if(Invoice_Status == "FULFILLED"){
                     show_model_Fulfil.value = false
                 }else {
@@ -224,6 +227,7 @@
                 }
                   
                   invoiceId.value = suborderid
+                  invoiceNum.value = NumInvoice
             }
 
             function OpenSubOrderOptions(idx){
@@ -280,7 +284,8 @@
                 hideButton,
                 freeReClean,
                 reAssign,
-                openModal
+                openModal,
+                invoiceNum
             }
             
         }
