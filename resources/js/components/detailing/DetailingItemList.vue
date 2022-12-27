@@ -12,9 +12,9 @@
                     <span class="order-no">Order n°{{ order_id }} - {{ customer_name }}</span>
                     <h1 class="title">Basket Content</h1>
                     <div class="content">
-                        <button class="btn-shopify">
+                        <!-- <button class="btn-shopify">
                             <i class="bi bi-bag p-2"></i>Add from Shopify
-                        </button>
+                        </button> -->
 
                         <table class="detailing-table">
                             <thead class="detailing-header">
