@@ -520,7 +520,7 @@ class CustomerController extends Controller
                  }
                 }
             }
-        return response()->json($customer);
+        return response()->json($custId);
     }
     public function getInvoiceHistories(Request $request){
 
@@ -1305,8 +1305,6 @@ class CustomerController extends Controller
                                                              if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $current_orders[$k][$i][$key]->order_right_time = $timeslot;
-                                                             }else{
-                                                                $current_orders[$k][$i][$key]->order_right_time = "--";
                                                              }
                                                          }
                                                      //leftTime
@@ -1317,8 +1315,6 @@ class CustomerController extends Controller
                                                              if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $current_orders[$k][$i][$key]->order_left_time = $timeslot;
-                                                             }else{
-                                                                $current_orders[$k][$i][$key]->order_left_time = "--";
                                                              }
                                                          }
                                                      //}
@@ -1437,8 +1433,6 @@ class CustomerController extends Controller
                                                              if($slot){
                                                                 $timeslot = $tranches_slots[$slot];
                                                                 $past_orders[$k][$i][$key]->order_right_time = $timeslot;
-                                                             }else{
-                                                                $past_orders[$k][$i][$key]->order_right_time = "--";
                                                              }
                                                          }
                                                          //leftTime
@@ -1449,8 +1443,6 @@ class CustomerController extends Controller
                                                              if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $past_orders[$k][$i][$key]->order_left_time = $timeslot;
-                                                             }else{
-                                                                $past_orders[$k][$i][$key]->order_left_time = "--";
                                                              }
                                                          }
                                                      //}
@@ -1559,8 +1551,6 @@ class CustomerController extends Controller
                                                              if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $scheduled_orders[$k][$i][$key]->order_right_time = $timeslot;
-                                                             }else{
-                                                                $scheduled_orders[$k][$i][$key]->order_right_time = "--";
                                                              }
                                                          }
                                                          //leftTime
@@ -1571,8 +1561,6 @@ class CustomerController extends Controller
                                                              if($slot){
                                                              $timeslot = $tranches_slots[$slot];
                                                              $scheduled_orders[$k][$i][$key]->order_left_time = $timeslot;
-                                                             }else{
-                                                                $scheduled_orders[$k][$i][$key]->order_left_time = "--";
                                                              }
                                                          }
                                                      //}
@@ -2453,13 +2441,14 @@ class CustomerController extends Controller
         foreach($orders as $k=>$v){
             $grouped_orders_per_customer[$v->CustomerID][] = $v->order_id;
 
-            $grouped_by_cust_id[$v->CustomerID][$v->order_id] = $v->TotalDue;
+            $grouped_by_cust_id[$v->CustomerID][$v->order_id] = $v->Total;
             $grouped_by_cust_order_date[$v->CustomerID][] = $v->created_at;
 
             if(!in_array($v->CustomerID,$custid_with_orders)){
                 array_push($custid_with_orders,$v->CustomerID);
             }
         }
+
 
 
         foreach($grouped_by_cust_order_date as $k=>$v){
@@ -2479,15 +2468,20 @@ class CustomerController extends Controller
             }
         }
 
-        /*
+
         foreach($grouped_by_cust_id as $k=>$v){
+            $order_ids = $grouped_orders_per_customer[$k];
+            $revenue = CustomerController::getBatchRevenue($order_ids);
+
             if(isset($master_cust[$k])){
                 $list[$master_cust[$k]]['order_total'][] = array_sum($v);
+                $list[$master_cust[$k]]['revenue'][] = $revenue;
             }else{
                 $list[$k]['order_total'][] = array_sum($v);
+                $list[$k]['revenue'][] = $revenue;
             }
         }
-        */
+
 
         foreach($grouped_orders_per_customer as $k=>$v){
             $grouped_orders_per_customer[$k] = array_unique($v);
@@ -2495,6 +2489,7 @@ class CustomerController extends Controller
 
         $revenue_by_line = [];
 
+        /*
         foreach($grouped_orders_per_customer as $k=>$orders){
             $data = CustomerController::calculateBatchOrderTotal($orders);
 
@@ -2503,14 +2498,14 @@ class CustomerController extends Controller
 
 
             if(isset($master_cust[$k])){
-                $list[$master_cust[$k]]['order_total'][] = $data['TotalDue'];
+                $list[$master_cust[$k]]['order_total'][] = $data['Total'];
                 $list[$master_cust[$k]]['revenue'][] = $revenue;
             }else{
-                $list[$k]['order_total'][] = $data['TotalDue'];
+                $list[$k]['order_total'][] = $data['Total'];
                 $list[$k]['revenue'][] = $revenue;
             }
         }
-
+        */
 
         foreach($grouped_by_cust_order_date as $k=>$v){
             if(isset($master_cust[$k])){
@@ -2977,9 +2972,9 @@ class CustomerController extends Controller
 
            }
 
-           $batch_data = CustomerController::calculateBatchOrderTotal($orderids_per_customer);
-           $totaldue_per_order[] = $batch_data['TotalDue'];
-           $totaldue_per_customer[$customerid] = $batch_data['TotalDue'];
+           $batch_total = CustomerController::calculateBatchOrderTotal($orderids_per_customer);
+           $totaldue_per_order[] = $batch_total;
+           $totaldue_per_customer[$customerid] = $batch_total;
 
 
            foreach($order_details as $customerid=>$invoices){
@@ -2996,19 +2991,6 @@ class CustomerController extends Controller
 
 
            $discount_per_customer = 0;
-
-           /*
-           $orders_per_cust = DB::table('infoOrder')->whereIn('id',$orderid_per_customer)->get();
-
-           foreach($orders_per_cust as $ok=>$oc){
-            $discount_per_customer += $oc->OrderDiscount;
-           }
-           */
-          /*
-            foreach($total_ext_discount_per_order as $order_id=>$order_amount){
-                $discount_per_customer += $order_amount - (isset($subtotal_per_order[$order_id])?$subtotal_per_order[$order_id]:0);
-            }
-            */
 
 
            $order_total_exc_discount = array_sum($total_ext_discount_per_order);
@@ -3550,200 +3532,12 @@ class CustomerController extends Controller
     public static function calculateBatchOrderTotal($order_ids){
         $orders = DB::table('infoOrder')->whereIn('id',$order_ids)->get();
 
-        $_SUBTOTAL=0;
-        $_SUBTOTAL_WITH_DISCOUNT=0;
-        $_ITEMS_TOTAL = 0;
-
-        $all_typeitems = [];
-        $count_by_typeitem = [];
-
-        $all_services = [];
-        $count_by_service = [];
-        $_ORDER_DISCOUNT = 0;
-        $_ACCOUNT_DISCOUNT = 0;
-
-
-        // $items = DB::table('detailingitem')
-        // ->select('detailingitem.*','detailingitem.id AS detailingitem_id')
-        // ->join('infoOrder','detailingitem.order_id','infoOrder.id')
-        // ->whereIn('infoOrder.id',$order_ids)
-        // ->where('detailingitem.InvoiceID','!=','')
-        // ->where('detailingitem.status','Completed')
-        // ->get();
-
-        $items = DB::table('infoInvoice')
-            ->select('infoInvoice.price')
-            ->join('infoOrder','infoInvoice.OrderID','infoOrder.OrderID')
-            ->whereIn('infoOrder.id',$order_ids)
-            ->get();
-
-
-        if(count($items) > 0){
-            foreach($items as $k=>$v){
-                // if($v->price > 0){
-                    $_ITEMS_TOTAL += $v->price;
-                // }else{
-                //     $_ITEMS_TOTAL += $v->dry_cleaning_price+$v->cleaning_addon_price+$v->tailoring_price;
-                // }
-            }
-
-            $count_by_typeitem = array_count_values($all_typeitems);
-            $count_by_service = array_count_values($all_services);
+        $total = 0;
+        foreach($orders as $k=>$v){
+            $total += $v->Total;
         }
 
-        $_SUBTOTAL = $_ITEMS_TOTAL;
-
-
-        $_BUNDLES_DISCOUNT=0;
-
-        foreach($order_ids as $key=>$order_id){
-            $bundles_id = DetailingController::checkOrderBundles($order_id);
-
-            if(!empty($bundles_id)){
-                $bundles = DB::table('bundles')->whereIn('id',$bundles_id)->get();
-
-                foreach($bundles as $k=>$v){
-                    $bundle_type = $v->type;
-                    if(isset(${"count_by_".$bundle_type}[$v->bundles_id]) && ${"count_by_".$bundle_type}[$v->bundles_id]>=$v->qty)
-                        $_BUNDLES_DISCOUNT += $v->discountbyitem*${"count_by_".$bundle_type}[$v->bundles_id];
-
-                }
-            }
-        }
-
-        $_VOUCHER_DISCOUNT=0;
-        $voucher_codes = [];
-
-        $order_vouchers = DB::table('vouchers_histories')->whereIn('order_id',$order_ids)->get();
-
-        if(count($order_vouchers) > 0){
-            foreach($order_vouchers as $k=>$v){
-                $voucher_codes[$v->id] = $v->code;
-                $_VOUCHER_DISCOUNT+= $v->amount;
-            }
-        }
-
-
-        foreach($orders as $key=>$order){
-            $_EXPRESS_CHARGES_PRICE = 0;
-            $_FAILED_DELIVERY_PRICE = 0;
-            $_DELIVERY_NOW_FEE=$order->DeliveryNowFee;
-            $_AUTO_DELIVERY_FEE=0;
-
-            if($order->TypeDelivery=='DELIVERY' && $order->FailedDelivery===1){
-                $_FAILED_DELIVERY_PRICE = 5;
-            }
-        }
-
-        $upcharges = DB::table('order_upcharges')->whereIn('order_id',$order_ids)->get();
-        if(count($upcharges) > 0){
-            foreach($upcharges as $k=>$v){
-                if($v->upcharges_id==1||$v->upcharges_id==2){
-                    $_EXPRESS_CHARGES_PRICE += $v->amount;
-                }
-            }
-        }
-
-
-        $_SUBTOTAL = $_SUBTOTAL - $_BUNDLES_DISCOUNT-$_VOUCHER_DISCOUNT+$_EXPRESS_CHARGES_PRICE;
-
-        foreach($orders as $k=>$order){
-
-            $_ACCOUNT_DISCOUNT  =  $order->AccountDiscount;
-
-
-            if($_SUBTOTAL==0){
-                $_ACCOUNT_DISCOUNT = 0;
-            }
-
-            $_ORDER_DISCOUNT=($order->DiscountPerc/100) * $_SUBTOTAL;
-
-            $_ACCOUNT_DISCOUNT = number_format($_ACCOUNT_DISCOUNT,2,'.','');
-            $_ORDER_DISCOUNT = number_format($_ORDER_DISCOUNT,2,'.','');
-        }
-
-
-        $payments = DB::table('payments')->whereIn('order_id',$order_ids)->where('status','succeeded')->get();
-        $_AMOUNT_PAID=0;
-
-        if(count($payments) > 0)
-        foreach($payments as $k=>$v){
-            $_AMOUNT_PAID += $v->montant;
-        }
-
-       //SubTotal inc Discount = SubTotal (excl Discount) - Account Discount - Order Discount - Bundles + Express Charge - voucher
-
-        $_SUBTOTAL_WITH_DISCOUNT=$_SUBTOTAL-$_ACCOUNT_DISCOUNT-$_ORDER_DISCOUNT;
-
-        foreach($orders as $k=>$order){
-
-            if($order->TypeDelivery=='DELIVERY'&&$_SUBTOTAL_WITH_DISCOUNT<25){
-                if(is_null($order->DeliveryNowFee)){
-                    $_AUTO_DELIVERY_FEE=25-$_SUBTOTAL_WITH_DISCOUNT;
-                }
-            }
-        }
-
-
-        if($_DELIVERY_NOW_FEE>=0&&$_DELIVERY_NOW_FEE!==NULL){
-            $_AUTO_DELIVERY_FEE=0;// Si on a un price Delivery now >> cela efface le Auto Delivery
-        }
-
-
-
-        //Total = SubTotal inc Discount + Failed delivery + DeliveryNowFee + AutoDeliveryFee
-
-
-        $_TOTAL=$_SUBTOTAL_WITH_DISCOUNT+$_FAILED_DELIVERY_PRICE+(!is_null($_DELIVERY_NOW_FEE)?$_DELIVERY_NOW_FEE:0)+$_AUTO_DELIVERY_FEE;
-
-          //TotalDue = Total - SUM(payements)
-        $_TOTAL_DUE=$_TOTAL-$_AMOUNT_PAID;
-
-        $_TOTAL_EXC_VAT=$_TOTAL/1.2;
-
-        $_TAX_AMOUNT=$_TOTAL-$_TOTAL_EXC_VAT;
-
-
-        // echo "<pre>";
-        // print_r($order_ids);
-        // echo "<br/>".implode(",",$order_ids);
-        // echo "<br/>Items total:".$_ITEMS_TOTAL;
-        // echo "<br/>Express charge:".$_EXPRESS_CHARGES_PRICE;
-        // echo "<br/>Sub total:".$_SUBTOTAL;
-        // echo "<br/>Bundles:".$_BUNDLES_DISCOUNT;
-        // echo "<br/>Voucher:".$_VOUCHER_DISCOUNT;
-        // echo "<br/>Subtotal with discount:".$_SUBTOTAL_WITH_DISCOUNT;
-        // echo "<br/>Total:".$_TOTAL;
-
-
-        $values=array(
-            'orders'=>$order_ids,
-            'Subtotal'=>number_format($_SUBTOTAL,2,'.',''),
-            'SubtotalWithDiscount'=>number_format($_SUBTOTAL_WITH_DISCOUNT,2,'.',''),//
-            'bundles'=>number_format($_BUNDLES_DISCOUNT,2,'.',''),
-            'itemsTotal'=>number_format($_ITEMS_TOTAL,2,'.',''),
-            'Total'=>number_format($_TOTAL,2,'.',''),
-            'TotalDue'=>number_format($_TOTAL_DUE,2,'.',''),
-            'AutoDeliveryFee'=>number_format($_AUTO_DELIVERY_FEE,2,'.',''),//
-            'DeliveryNowFee'=>number_format($_DELIVERY_NOW_FEE,2,'.',''),
-            'ExpressCharge'=>number_format($_EXPRESS_CHARGES_PRICE,2,'.',''),
-            'FailedDeliveryCharge'=>number_format($_FAILED_DELIVERY_PRICE,2,'.',''),//
-            'TotalExcVat'=>number_format($_TOTAL_EXC_VAT,2,'.',''),//
-            'TaxAmount'=> number_format($_TAX_AMOUNT,2,'.',''),//
-            'OrderDiscount' => number_format($_ORDER_DISCOUNT,2,'.',''),
-            'VoucherDiscount' => number_format($_VOUCHER_DISCOUNT,2,'.',''),
-        );
-
-
-
-        if($order->detailed_at=='0000-00-00 00:00:00' || $_SUBTOTAL==0){
-            $values['AccountDiscount'] = number_format($_ACCOUNT_DISCOUNT,2,'.','');
-            //$values['AccountDiscountPerc'] = $cust->discount;
-        }
-        //*/
-
-        return $values;
-
+        return $total;
     }
 
     public static function getBatchRevenue($order_ids){
