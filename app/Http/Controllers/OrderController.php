@@ -1704,6 +1704,7 @@ class OrderController extends Controller
                 ->join('infoCustomer','infoOrder.CustomerID','=','infoCustomer.CustomerID')
                 ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
                 ->whereNotIn('infoOrder.Status', ['VOIDED', 'FULFILLED', 'VOID', 'DELETE'])
+                ->where('deliveryask.status','!=', 'DEL')
                 ->where('infoOrder.DateDeliveryAsk','>=', date('Y-m-d'))
                 ->where('infoOrder.CustomerID','=',$CustomerID)->get();
 
@@ -1724,6 +1725,11 @@ class OrderController extends Controller
                    
                 }
             }
+            if($order->order_time == "00:00:00_00:00:00"){
+                $order->order_time = null;
+            }
+            $order->account = $cust->account_type;
+
         }
 
         return response()->json([

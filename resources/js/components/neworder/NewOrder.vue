@@ -1872,7 +1872,7 @@ import axios from 'axios';
                     deliveryDate_modal.value.closeModal();
                 }else if(!newslot){
                     
-                    if(order.account_type = "MAIN"){
+                    if(order.account == "MAIN"){
                         
                         if(order.Status != "RECURRING" && order.Status != "SCHEDULED" ){
                             // cree un order with this day 
@@ -1903,7 +1903,7 @@ import axios from 'axios';
                                 })
                         }
                     }
-                    if(order.account_type = "Sub"){
+                    if(order.account == "Sub"){
                         
                         if(order.Status != "RECURRING" && order.Status != "SCHEDULED" ){
                             // cree un order with this day 
@@ -1947,7 +1947,9 @@ import axios from 'axios';
                     new_order.town = shp_town.value;
                     new_order.store_name = store_name.value;
                     new_order.payment_method = paymentMethod.value;
-                    new_order.DeliveryaskID = order.DeliveryaskID;
+                    if(order.account == "Sub"){
+                        new_order.DeliveryaskID = order.DeliveryaskID;
+                    }
 
                     let arr = [];
 
