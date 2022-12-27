@@ -955,13 +955,21 @@ class DetailingController extends Controller
         $tracking = $request->tracking;
         $customer_id = $request->customer_id;
         $order_id = $request->order_id;
+        $err = '';
 
         $cust = DB::table('infoCustomer')->where('CustomerID',$customer_id)->first();
         $duplicate_detailing_item = false;
 
+        $current_detailing_item = DB::table('detailingitem')->where('tracking',$tracking)
+            ->where('order_id',$order_id)
+            ->first();
+
+        if($current_detailing_item){
+            $err = "HSL $tracking is exist in this order";
+        }
+
         $item = DB::table('infoitems')->where('ItemTrackingKey',$tracking)->first();
         $has_detailing_order = false;
-        $err = '';
 
         $detailingitem_id = 0;
 
@@ -1075,9 +1083,6 @@ class DetailingController extends Controller
         }
     }
 
-        $current_detailing_item = DB::table('detailingitem')->where('tracking',$tracking)
-            ->where('order_id',$order_id)
-            ->first();
 
         if(!$previous_detailed_item && $current_detailing_item){
             $err = "HSL $tracking is already being detailed.";
