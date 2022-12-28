@@ -45,7 +45,10 @@
                 <div class="order-logistic-detail w-100">
                     <div v-if="(typeof ORDER['detail']!='undefined')"  class="row section2 align-items-center">
                         <div v-if="(typeof ORDER['detail']!='undefined')" class=" col-7 section1">
-                            <h2 >&numero; {{ORDER.detail.order_id}}<button v-if="ORDER['detailingitemlist'].length !== 0" type="button" class="btn-link-green body_regular"  @click='EditOrder(ORDER.detail.order_id)'>Edit</button></h2>
+                            <h2 >&numero; {{ORDER.detail.order_id}}
+                                <button v-if="ORDER['detailingitemlist'].length !== 0" type="button" class="btn-link-green body_regular"  @click='EditOrder(ORDER.detail.order_id)'>Edit</button>
+                                <button v-if="ORDER['detailingitemlist'].length === 0" type="button" class="btn-link-green body_regular"  @click='EditOrderWithoutItem(ORDER.detail.order_id)'>Edit</button>
+                            </h2>
                             <div class=" text-center">
                                 <tag :name="ORDER.detail.Status" style="margin-right: 10px;"></tag>
                                 <tag :name="ORDER.detail.paid"></tag>
@@ -777,6 +780,14 @@
                 orderId.value = order_id
                 router.push('/checkout/'+orderId.value);
             }
+            function EditOrderWithoutItem(order_id){
+                router.push({
+                        name:'DetailingItemList',
+                        params: {
+                            order_id:order_id,
+                        },
+                    });
+            }
              function openAccordionclick(i) {
 
                 instAcc.value = !instAcc.value;
@@ -929,7 +940,8 @@
                 order,
                 showFulfillBtn,
                 cc_new_delivery_timeslot,
-                updatedelverytime
+                updatedelverytime,
+                EditOrderWithoutItem
             }
         },
     }
