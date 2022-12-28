@@ -1334,7 +1334,10 @@ class OrderListController extends Controller
                 if(!is_null($slot)){
                     $timeslot = $tranches_slots[$slot];
                     $order->order_left_time = $timeslot;
-                } 
+                }
+                if($order->order_left_time == "00:00:00_00:00:00"){
+                    $order->order_left_time = null;
+                }
             }
 
             $tranche_right = $order->order_right_time;
@@ -1345,6 +1348,9 @@ class OrderListController extends Controller
                 if(!is_null($slot)){
                     $timeslot = $tranches_slots[$slot];
                     $order->order_right_time = $timeslot;
+                }
+                if($order->order_right_time == "00:00:00_00:00:00"){
+                    $order->order_right_time = null;
                 }
             }
 
