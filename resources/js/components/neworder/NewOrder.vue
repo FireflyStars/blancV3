@@ -859,18 +859,18 @@ import axios from 'axios';
 
                     isc_pickup_timeslot.value = 11;
                 }
-            // if(CustomerID.value){
-            //     axios.post('/get-deliverydate-customer',{
-            //         Customer : CustomerID.value
-            //         }).then((res)=>{       
-            //             if(res.data.orders.length != 0){
-            //                 deliveryDate_modal.value.showModal(); 
-            //                 ordersCustomer.value =  res.data.orders;
-            //                 deliverydateModal.value = true;
-            //             }       
-            //         }).catch((err)=>{
-            //     });
-            // }
+            if(CustomerID.value){
+                axios.post('/get-deliverydate-customer',{
+                    Customer : CustomerID.value
+                    }).then((res)=>{       
+                        if(res.data.orders.length != 0){
+                            deliveryDate_modal.value.showModal(); 
+                            ordersCustomer.value =  res.data.orders;
+                            deliverydateModal.value = true;
+                        }       
+                    }).catch((err)=>{
+                });
+            }
             });
 
 
