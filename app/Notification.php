@@ -39,7 +39,7 @@ class Notification extends Model
                 if($this->email_attachements!=null&&$this->email_attachements!=''){
                     $attachments=json_decode($this->email_attachements);
                     foreach($attachments as $attachment){
-                        $filecontent=file_get_contents(urlencode($attachment->url));
+                        $filecontent = file_get_contents($attachment->url);
                         if($filecontent!==false){
                             $email->addAttachment($filecontent,$attachment->mime_type,$attachment->nom);
                         }else{
