@@ -859,18 +859,19 @@ import axios from 'axios';
 
                     isc_pickup_timeslot.value = 11;
                 }
-            if(CustomerID.value){
-                axios.post('/get-deliverydate-customer',{
-                    Customer : CustomerID.value
-                    }).then((res)=>{       
-                        if(res.data.orders.length != 0){
-                            deliveryDate_modal.value.showModal(); 
-                            ordersCustomer.value =  res.data.orders;
-                            deliverydateModal.value = true;
-                        }       
-                    }).catch((err)=>{
-                });
-            }
+
+                if(CustomerID.value && (val=='home_delivery' || val == "delivery_only")){
+                    axios.post('/get-deliverydate-customer',{
+                        Customer : CustomerID.value
+                        }).then((res)=>{   
+                            if(res.data.orders.length != 0){
+                                deliveryDate_modal.value.showModal();
+                                ordersCustomer.value =  res.data.orders;
+                                deliverydateModal.value = true;
+                            }   
+                        }).catch((err)=>{
+                    });
+                }
             });
 
 
@@ -1887,9 +1888,6 @@ import axios from 'axios';
                                 do_delivery_timeslot.value =getTimeSlot(order.order_time)
                                 
                             }
-                            if(deliverymethod.value == 'in_store_collection'){
-                                isc_pickup.value = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
-                            }
                             // process_step.value = 2
                             validateDetailCustomer(order);
                             deliveryDate_modal.value.closeModal();
@@ -1916,9 +1914,6 @@ import axios from 'axios';
 
                                 do_delivery.value = order.DateDeliveryAsk;
 
-                            }
-                            if(deliverymethod.value == 'in_store_collection'){
-                                isc_pickup.value = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
                             }
                             validateDetailCustomer(order);
                             deliveryDate_modal.value.closeModal();
