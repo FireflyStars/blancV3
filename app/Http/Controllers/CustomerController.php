@@ -3276,13 +3276,22 @@ class CustomerController extends Controller
                     $recipients[] = $email;
                 }
 
+
+                $request = Request::create(route('inv-pdf'), 'GET',['id'=>$v->FactureID,'getfile'=>1]);
+
+                $response = app()->handle($request);
+
+                $pdf_file = $response->getContent();
+
+                $filename = storage_path('app/pdf/attachments/'.$pdf_file);
+
                 $attachment = new stdClass;
-                $attachment->url = \Illuminate\Support\Facades\URL::to("/inv-pdf")."?id=".$v->FactureID;
+                $attachment->url = $filename;//\Illuminate\Support\Facades\URL::to("/inv-pdf")."?id=".$v->FactureID;
                 $attachment->nom = 'INV'.date('Ymd').'-'.sprintf('%04d', $v->id);
                 $attachment->mime_type = 'application/pdf';
                 $attachment_arr = (array) $attachment;
 
-                $attachments = [$attachment_arr];
+                $attachments = [$attachment];
 
                 if(!empty($recipients)){
                     foreach($recipients as $key=>$val){
