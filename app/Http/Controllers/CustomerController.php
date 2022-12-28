@@ -3276,7 +3276,6 @@ class CustomerController extends Controller
                     $recipients[] = $email;
                 }
 
-                $recipients = ['rushdi@vpc-direct-service.com'];
 
                 $request = Request::create(route('inv-pdf'), 'GET',['id'=>$v->FactureID,'getfile'=>1]);
 
