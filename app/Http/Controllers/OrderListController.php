@@ -1357,7 +1357,7 @@ class OrderListController extends Controller
             $billing_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=','BILLING')->first();
             $delivery_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=',$order->TypeDelivery)->first();
 
-            $infoitems=DB::table('itemhistorique')->select(['infoInvoice.NumInvoice','infoInvoice.InvoiceID' ,"infoInvoice.Status as Invoice_Status", 'infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','itemhistorique.ItemTrackingKey' , 'infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status', 'infoitems.id_items as itemproduction' , 'itemhistorique.ID_item as productionitem' , 'postes.nominterface as station', 'infoitems.conveyorSlot'])
+            $infoitems=DB::table('itemhistorique')->select(['infoInvoice.NumInvoice','infoInvoice.InvoiceID' ,"infoInvoice.Status as Invoice_Status", 'infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','itemhistorique.ItemTrackingKey' , 'infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status', 'infoitems.id_items as itemproduction' , 'itemhistorique.ID_item as productionitem' , 'postes.nominterface as station', 'infoitems.conveyorSlot' , 'infoitems.nextpost'])
             ->join('infoInvoice',function($join) use($order){
                 $join->on('infoInvoice.InvoiceID','=','itemhistorique.InvoiceID')
                 ->where('infoInvoice.OrderID','=',$order->OrderID);

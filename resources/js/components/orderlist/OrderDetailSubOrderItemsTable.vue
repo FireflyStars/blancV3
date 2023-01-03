@@ -12,7 +12,7 @@
                                 <img  class="img-arrow" src="/images/flesh.png" />
                             </div>
                             <div class='column2' >
-                                <img  class="img-arrow" @click="setSubOrderFulfilled(ITEMS[0].InvoiceID , ITEMS[0].Invoice_Status , ITEMS[0].NumInvoice)" src="/images/check.png" />
+                                <img  class="img-arrow" @click="setSubOrderFulfilled(ITEMS[0].InvoiceID , ITEMS[0].Invoice_Status , ITEMS[0].NumInvoice , ITEMS)" src="/images/check.png" />
                             </div>   
                             <div class='column3' >
                                 <img  class="img-arrow" src="/images/download.png" @click="openModal(ITEMS[0].InvoiceID)" />
@@ -51,7 +51,7 @@
             <div class=" batch-actions" v-if="Object.entries(MULTI_CHECKED).length !== 0"><button class="btn btn-outline-dark body_medium"  @click="show_split_conf">Split</button><button class="btn btn-outline-dark body_medium"  @click="featureunavailable('Delete items')">Delete</button></div>
         </transition> -->
          <FulfillConfirmation  :invoice_id= [invoiceId] :show_conf="show_model_Fulfil" @close="show_model_Fulfil=false"></FulfillConfirmation>
-         <!-- <FulfillSuborderWarning :num_invoice = "invoiceNum" :invoice_id= [invoiceId] :show_conf="show_model_Fulfil" @close="show_model_Fulfil=false"></FulfillSuborderWarning> -->
+         <FulfillSuborderWarning :num_invoice = "invoiceNum" :invoice_id= [invoiceId] :show_conf="show_model_Fulfil_Store" @close="show_model_Fulfil_Store=false"></FulfillSuborderWarning>
     </div>
     <ItemDetail @close="OpenitemDetails = false" class="modal-item" v-if = "OpenitemDetails" :item_id = ItemId :invoiceId = invoiceId ></ItemDetail>
     <qz-print ref="qz_printer"></qz-print>
@@ -112,6 +112,7 @@
             const ListTrackingKey = ref([]);
             const OpenitemDetails = ref(false);
             const invoiceNum = ref('');
+            const show_model_Fulfil_Store = ref(false);      
 
             const ITEM_LIST=computed(()=>{
                 return store.getters[`${ORDERDETAIL_MODULE}${ORDERDETAIL_GET_DETAILS}`].items;
@@ -219,8 +220,18 @@
                 context.emit("show_conf");
             }
         
-            function setSubOrderFulfilled(suborderid , Invoice_Status , NumInvoice){
-                if(Invoice_Status == "FULFILLED"){
+            function setSubOrderFulfilled(suborderid , Invoice_Status , NumInvoice , items){
+                const nextPostitems = [];
+                let nextpost = [49,50,52,53,55,56,58,61,62,64,65,67,68,69,70,71,72,73,74,75,76,81,82];
+
+                items.forEach(function(v,i){
+                       nextPostitems.push(v.nextpost);
+                       if(!nextpost.includes(v.nextpost) && props.order.TypeDelivery != "DELIVERY" ){
+                         show_model_Fulfil_Store.value = true
+                       }
+                });
+
+                if(Invoice_Status == "FULFILLED" || show_model_Fulfil_Store.value == true  ){
                     show_model_Fulfil.value = false
                 }else {
                     show_model_Fulfil.value = true
@@ -285,7 +296,8 @@
                 freeReClean,
                 reAssign,
                 openModal,
-                invoiceNum
+                invoiceNum,
+                show_model_Fulfil_Store
             }
             
         }
