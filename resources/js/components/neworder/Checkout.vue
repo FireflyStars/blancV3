@@ -51,7 +51,7 @@
                                             <div class="col-10">
                                                 <div class="item-desc-heading mb-3">
                                                     <span>Description</span>
-                                                    <a href="javascript:void(0)"  v-if= "disabled_btn_with_status" @click="goToDetailing(item.order_id,item.detailingitem_id,2)">Edit</a>
+                                                    <a href="javascript:void(0)"  v-if= "disabled_btn_with_status && item.typeitem_id != '426' " @click="goToDetailing(item.order_id,item.detailingitem_id,2)">Edit</a>
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-6">
@@ -117,7 +117,7 @@
                                             <div class="col-10">
                                                 <div class="item-desc-heading mb-3">
                                                     <span>Issues</span>
-                                                    <a href="javascript:void(0)" v-if= "disabled_btn_with_status" @click="goToDetailing(item.order_id,item.detailingitem_id,10)">Edit</a>
+                                                    <a href="javascript:void(0)"  v-if= "disabled_btn_with_status && item.typeitem_id != '426' " @click="goToDetailing(item.order_id,item.detailingitem_id,10)">Edit</a>
                                                 </div>
                                                 <div class="row" v-if="((item.stains && item.stains.length > 0) || (item.stainsissue && item.stainsissue.length > 0) || item.stainstext != null) || ((item.damages && item.damages.length > 0) || (item.damagesissues && item.damagesissues.length > 0) || item.damagestext != null )">
                                                     <div class="col-6" v-if="(item.stains && item.stains.length > 0) || (item.stainsissue && item.stainsissue.length > 0) || item.stainstext != null">
@@ -188,7 +188,7 @@
                                             <div class="col-10">
                                                 <div class="item-desc-heading mb-3">
                                                     <span>Services</span>
-                                                    <a  v-if= "disabled_btn_with_status" href="javascript:void(0)" @click="goToDetailing(item.order_id,item.detailingitem_id,11)">Edit</a>
+                                                    <a  v-if= "disabled_btn_with_status && item.typeitem_id != '426' " href="javascript:void(0)" @click="goToDetailing(item.order_id,item.detailingitem_id,11)">Edit</a>
                                                 </div>
                                                 <div class="row each-desc-row mb-2 each-detailed-service-row py-1" v-for="ds in item.detailed_services">
                                                     <div class="col-10">
