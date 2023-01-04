@@ -27,6 +27,7 @@ import {
     SET_DUE_TODAY_FLAG,
     SET_DUE_TOMORROW_FLAG,
     SET_ALL_ITEMS_FLAG,
+    SET_INVOICE_MINI_SEARCH
 } from "../types/types";
 import axios from 'axios';
 
@@ -168,6 +169,9 @@ export const invoicelist= {
             state.filter.duetoday = false;
             state.filter.duetomorrow = false;
         },
+        [SET_INVOICE_MINI_SEARCH]: (state, payload) => {
+            state.filter.mini_search = payload;
+        },
         [FILTER_INVOICE_LIST]: (state, payload) => {
             state.invoice_list = payload.invoices;
             state.total_invoice_count = payload.total_count;
@@ -240,6 +244,9 @@ export const invoicelist= {
         },
         [SET_INVOICE_FILTER]: async({ commit }, payload )=>{
             commit(SET_INVOICE_FILTER, payload )
+        },
+        [SET_INVOICE_MINI_SEARCH]: async({ commit }, payload )=>{
+            commit(SET_INVOICE_MINI_SEARCH, payload )
         },
         [FILTER_INVOICE_LIST]: async({ commit, dispatch, state } )=>{
             dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Filtering data...'], {root: true});

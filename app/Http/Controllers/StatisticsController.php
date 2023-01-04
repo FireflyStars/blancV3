@@ -3227,6 +3227,24 @@ class StatisticsController extends Controller
         }else if($request->overdue){
             $invoices = $invoices->where('infoitems.PromisedDate', '<=',Carbon::today()->toDateTimeString());
         }
+        $mini_search = $request->mini_search;
+        if(!empty($mini_search)){
+            if($mini_search['customerName'] !=''){
+                $invoices = $invoices->where('infoCustomer.Name','like', '%'.$mini_search['customerName'].'%');
+            }
+            if($mini_search['itemName'] !=''){
+                $invoices = $invoices->where('infoitems.typeitem','like', '%'.$mini_search['itemName'].'%');
+            }
+            if($mini_search['orderNo'] !=''){
+                $invoices = $invoices->where('infoitems.id','like', '%'.$mini_search['orderNo'].'%');
+            }
+            if($mini_search['ticketNo'] !=''){
+                $invoices = $invoices->where('infoInvoice.NumInvoice','like', '%'.$mini_search['ticketNo'].'%');
+            }
+            if($mini_search['hsl'] !=''){
+                $invoices = $invoices->where('infoitems.ItemTrackingKey','like', '%'.$mini_search['hsl'].'%');
+            }
+        }        
         $total_invoice_count = $invoices->count();
         $invoices   =  $invoices->skip($request->skip ? $request->skip : 0)
                                 ->take(20)

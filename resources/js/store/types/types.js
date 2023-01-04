@@ -218,6 +218,7 @@ export const INVOICE_MODULE = 'INVOICE_MODULE/'; //namespace
 export const SET_INVOICE_LIST = 'SET_INVOICE_LIST'; //action
 export const SET_INVOICE_FILTER_FLAG = 'SET_INVOICE_FILTER_FLAG'; //action
 export const SET_INVOICE_FILTER = 'SET_INVOICE_FILTER'; //action
+export const SET_INVOICE_MINI_SEARCH = 'SET_INVOICE_MINI_SEARCH'; //action
 export const FILTER_INVOICE_LIST = 'FILTER_INVOICE_LIST'; //action
 export const LOAD_MORE_INVOICE = 'LOAD_MORE_INVOICE'; //action
 export const ADD_MORE_INVOICE_TO_LIST = 'ADD_MORE_INVOICE_TO_LIST'; //mutation
