@@ -1122,7 +1122,31 @@ class CustomerController extends Controller
         if( $request->last_order_start !='' && $request->last_order_end ){
             $customers = $customers->whereBetween('infoOrder.created_at', [$request->last_order_start, $request->last_order_end]);
         }
-
+        // added mini search
+        $mini_search = $request->mini_search;
+        if(!empty($mini_search)){
+            if($mini_search['accountName'] !=''){
+                $customers = $customers->where('infoCustomer.CompanyName','like', '%'.$mini_search['accountName'].'%');
+            }
+            if($mini_search['customerName'] !=''){
+                $customers = $customers->where('infoCustomer.Name','like', '%'.$mini_search['customerName'].'%');
+            }
+            if($mini_search['phoneNumber'] !=''){
+                $customers = $customers->where('infoCustomer.Phone','like', '%'.$mini_search['phoneNumber'].'%');
+            }
+            if($mini_search['orderNo'] !=''){
+                $customers = $customers->where('infoOrder.id','like', '%'.$mini_search['orderNo'].'%');
+            }
+            if($mini_search['ticketNo'] !=''){
+                $customers = $customers->join('infoInvoice', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID');
+                $customers = $customers->where('infoInvoice.NumInvoice','like', '%'.$mini_search['ticketNo'].'%');
+            }
+            if($mini_search['hsl'] !=''){
+                $customers = $customers->join('infoInvoice', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID');
+                $customers = $customers->join('infoitems', 'infoInvoice.InvoiceID', '=', 'infoitems.InvoiceID');
+                $customers = $customers->where('infoitems.ItemTrackingKey','like', '%'.$mini_search['hsl'].'%');
+            }
+        }
         if( $request->total_spent !='' ){
             $customers =  $customers->get()
                                 ->where('total_spent', '>=', explode(',', $request->total_spent)[0])

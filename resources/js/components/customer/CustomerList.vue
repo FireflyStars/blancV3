@@ -1,5 +1,6 @@
 <template>
     <router-view />
+    <CustomerMiniSearch></CustomerMiniSearch>
     <transition enter-active-class="animate__animated animate__fadeIn">
         <table class="table table-hover mb-5 bg-white">
             <thead>
@@ -79,10 +80,12 @@ import {
 } from "../../store/types/types";
 import { useStore } from 'vuex';
 import CheckBox from '../miscellaneous/CheckBox';
+import CustomerMiniSearch from './CustomerMiniSearch';
 export default {
     name: 'CustomerList',
     components:{
-        CheckBox
+        CheckBox,
+        CustomerMiniSearch
     },
     setup(){
         const store = useStore();

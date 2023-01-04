@@ -152,6 +152,7 @@ export const SET_CUSTOMER_FILTER = 'SET_CUSTOMER_FILTER'; //action
 export const REMOVE_CUSTOMER_FILTER = 'REMOVE_CUSTOMER_FILTER'; //action
 export const FILTER_CUSTOMER_LIST = 'FILTER_CUSTOMER_LIST'; //action
 export const LOAD_CUSTOMER_DETAIL = 'LOAD_CUSTOMER_DETAIL'; //action
+export const CUSTOMER_SET_MINI_SEARCH = 'CUSTOMER_SET_MINI_SEARCH'; //action
 // end all customer page
 
 export const CUSTOMEREMAILS_GET_LIST='CUSTOMEREMAILS_GET_LIST'//getters
