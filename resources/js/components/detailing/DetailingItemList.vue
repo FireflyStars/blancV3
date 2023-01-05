@@ -37,15 +37,15 @@
                                     >{{ det.NoBag }}</td>
                                     <td
                                         class="body_medium td-text"
-                                        @click="openDetailing(det.item_number)"
+                                        @click="openDetailing(det.item_number , det.typeitem_id)"
                                     >{{ det.typeitem_name }}</td>
                                     <td
                                         class="body_regular td-text"
-                                        @click="openDetailing(det.item_number)"
+                                        @click="openDetailing(det.item_number , det.typeitem_id)"
                                     >{{ det.tracking }}</td>
                                     <td
                                         class="td-status"
-                                        @click="openDetailing(det.item_number)"
+                                        @click="openDetailing(det.item_number , det.typeitem_id)"
                                     >
                                         <tag v-if="det.status=='In Process' && (det.etape === 1||det.etape === 2)" name="To be detailed"></tag>
                                         <tag v-else-if="det.status=='Completed'" name="Detailed"></tag>
@@ -53,11 +53,11 @@
                                     </td>
                                     <td
                                         class="body_medium td-suborder"
-                                        @click="openDetailing(det.item_number)"
+                                        @click="openDetailing(det.item_number , det.typeitem_id)"
                                     >{{ det.sub_order }}</td>
                                     <td
                                         class="body_regular td-text"
-                                        @click="openDetailing(det.item_number)"
+                                        @click="openDetailing(det.item_number , det.typeitem_id)"
                                     >£{{ det.price.toFixed(2) }}</td>
                                     <td v-if="count_has_invoices==0" @click="loadRemoveItemModal(det.tracking,det.item_number)"><img src="/images/garbage.svg"/></td>
                                 </tr>
@@ -266,8 +266,8 @@ export default {
             return flitered_list.findIndex(x => x.item_number === item_id) === 0;
 
         }
-        function openDetailing(item_id) {
-            if(orderStatus.value != "DELIVERED" && orderStatus.value != "VOID" && orderStatus.value != "FULFILLED" && orderStatus.value != "DELETE" ){  
+        function openDetailing(item_id , typeitem_id) {
+            if(orderStatus.value != "DELIVERED" && orderStatus.value != "VOID" && orderStatus.value != "DELETE" && typeitem_id != '426' ){  
               router.push('/detailing_item/' + order_id.value + '/' + item_id);
             }
         }
@@ -298,11 +298,30 @@ export default {
                 if(value=='' || ! value.match(/\d{8}/) || value.length !=8){
                     err = true;
 
-                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                    if(value.length == 13){
+                        axios.post('/check-product',{
+                            tracking:value,
+                            customer_id:cur_customer.value.CustomerID,
+                            order_id:order_id.value,
+                        }).then((res)=>{
+                            console.log("response " , res)
+                            if(res.data.err != "" ){
+                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                                    message: res.data.err,
+                                    ttl: 5,
+                                    type: "danger",
+                                })
+                            }else{
+                               location.reload();
+                            }
+                        })
+                    }else{
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
                         message: "Invalid HSL",
                         ttl: 5,
                         type: "danger",
                     });
+                    }
                 }
 
                 if(!err){

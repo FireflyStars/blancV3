@@ -49,6 +49,8 @@ export const ORDER_SET_STATUS='ORDER_SET_STATUS'//action
 export const ORDERLIST_SET_TOTAL_COUNT='ORDERLIST_SET_TOTAL_COUNT'//action
 export const ORDERLIST_GET_TOTAL_COUNT='ORDERLIST_GET_TOTAL_COUNT'//action
 
+export const ORDERLIST_SET_MINI_SEARCH='ORDERLIST_SET_MINI_SEARCH'//action
+
 
 export const TOASTER_MODULE='TOASTER_MODULE/';//namespace
 export const TOASTER_ADD_TOAST='TOASTER_ADD_TOAST';//mutations
@@ -150,6 +152,7 @@ export const SET_CUSTOMER_FILTER = 'SET_CUSTOMER_FILTER'; //action
 export const REMOVE_CUSTOMER_FILTER = 'REMOVE_CUSTOMER_FILTER'; //action
 export const FILTER_CUSTOMER_LIST = 'FILTER_CUSTOMER_LIST'; //action
 export const LOAD_CUSTOMER_DETAIL = 'LOAD_CUSTOMER_DETAIL'; //action
+export const CUSTOMER_SET_MINI_SEARCH = 'CUSTOMER_SET_MINI_SEARCH'; //action
 // end all customer page
 
 export const CUSTOMEREMAILS_GET_LIST='CUSTOMEREMAILS_GET_LIST'//getters
@@ -215,6 +218,7 @@ export const INVOICE_MODULE = 'INVOICE_MODULE/'; //namespace
 export const SET_INVOICE_LIST = 'SET_INVOICE_LIST'; //action
 export const SET_INVOICE_FILTER_FLAG = 'SET_INVOICE_FILTER_FLAG'; //action
 export const SET_INVOICE_FILTER = 'SET_INVOICE_FILTER'; //action
+export const SET_INVOICE_MINI_SEARCH = 'SET_INVOICE_MINI_SEARCH'; //action
 export const FILTER_INVOICE_LIST = 'FILTER_INVOICE_LIST'; //action
 export const LOAD_MORE_INVOICE = 'LOAD_MORE_INVOICE'; //action
 export const ADD_MORE_INVOICE_TO_LIST = 'ADD_MORE_INVOICE_TO_LIST'; //mutation

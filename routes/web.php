@@ -1242,6 +1242,7 @@ Route::post('/getPreferenceCustomer',[DetailingController::class,'getPreferenceC
 
 Route::post('/check-detailing-tracking',[DetailingController::class,'checkDetailingTracking'])->name('check-detailing-item')->middleware('auth');
 Route::post('/create-order-items',[DetailingController::class,'createOrderItems'])->name('create-order-items')->middleware('auth');
+Route::post('/check-product',[DetailingController::class,'checkProduct'])->name('check-product')->middleware('auth');
 
 
 /**

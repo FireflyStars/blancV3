@@ -156,6 +156,16 @@
                                                 </select>
                                                
                                             </div>
+                                            <div id="select_div" v-if="isRecurring">
+                                                
+                                                <select id="method_select" v-model="deliverymethod" >
+                                                    <option value="" disabled hidden>Select </option>
+                                                    <option v-for="(method,index) in deliverymethods" :value="method.value" :disabled="method.disabled" style="font-family: Verdana;">
+                                                        {{method.display}}
+                                                    </option>
+                                                </select>
+                                               
+                                            </div>
 
                                             <!--
                                                 :disabled="deliverymethod_disabled"
@@ -167,7 +177,7 @@
                                                 <div class="col-12 mb-4">
                                                     <div class="row">
                                                         <div class="col">
-                                                            <select-options v-model="store_name" id="isc_store_name" :disabled="store_name_disabled" :options="storenames" label="Choose a store" placeholder="Choose store" classnames="storenames"></select-options>
+                                                            <select-options v-model="store_name" :disabled="store_name_disabled" :options="storenames" label="Choose a store" placeholder="Choose store" :name="'storename'" classnames="storenames"></select-options>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -492,7 +502,7 @@
                                 <template #bheader>
                                     <div class="bmodal-header py-5 d-flex w-100 justify-content-center align-items-center">
                                         <div id="order_created_txt">Order n<sup>o</sup> {{neworder_id}} created</div>
-                                        <img src="/images/check.svg"/>
+                                        <img src="../../../img/check.svg"/>
                                     </div>
                                 </template>
                                 <template #bcontent>
@@ -756,12 +766,12 @@ import axios from 'axios';
                 {
                     value:'in_store_collection',
                     display:'Collect from Store',
-                    disabled: false
+                    disabled: deliverymethod_disabled
                 },
                 {
                     value:'home_delivery',
                     display:'Pickup & Delivery',
-                    disabled: deliverymethod_disabled,
+                    disabled: false,
                 },
                 {
                     value:'delivery_only',
@@ -2020,7 +2030,7 @@ import axios from 'axios';
                 do_delivery_disabled,
                 store_name_disabled,
                 proceedtodetailing_disabled,
-                deliverymethod_disabled,
+                // deliverymethod_disabled,
                 isc_pickup_timeslot,
                 isc_pickup_timeslot_disabled,
                 isc_pickup_tranche,

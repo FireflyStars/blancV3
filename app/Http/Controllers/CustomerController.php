@@ -1122,7 +1122,31 @@ class CustomerController extends Controller
         if( $request->last_order_start !='' && $request->last_order_end ){
             $customers = $customers->whereBetween('infoOrder.created_at', [$request->last_order_start, $request->last_order_end]);
         }
-
+        // added mini search
+        $mini_search = $request->mini_search;
+        if(!empty($mini_search)){
+            if($mini_search['accountName'] !=''){
+                $customers = $customers->where('infoCustomer.CompanyName','like', '%'.$mini_search['accountName'].'%');
+            }
+            if($mini_search['customerName'] !=''){
+                $customers = $customers->where('infoCustomer.Name','like', '%'.$mini_search['customerName'].'%');
+            }
+            if($mini_search['phoneNumber'] !=''){
+                $customers = $customers->where('infoCustomer.Phone','like', '%'.$mini_search['phoneNumber'].'%');
+            }
+            if($mini_search['orderNo'] !=''){
+                $customers = $customers->where('infoOrder.id','like', '%'.$mini_search['orderNo'].'%');
+            }
+            if($mini_search['ticketNo'] !=''){
+                $customers = $customers->join('infoInvoice', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID');
+                $customers = $customers->where('infoInvoice.NumInvoice','like', '%'.$mini_search['ticketNo'].'%');
+            }
+            if($mini_search['hsl'] !=''){
+                $customers = $customers->join('infoInvoice', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID');
+                $customers = $customers->join('infoitems', 'infoInvoice.InvoiceID', '=', 'infoitems.InvoiceID');
+                $customers = $customers->where('infoitems.ItemTrackingKey','like', '%'.$mini_search['hsl'].'%');
+            }
+        }
         if( $request->total_spent !='' ){
             $customers =  $customers->get()
                                 ->where('total_spent', '>=', explode(',', $request->total_spent)[0])
@@ -2332,18 +2356,20 @@ class CustomerController extends Controller
                     ->select(
                         'infoOrder.id as order_id',
                         DB::raw('if(infoOrder.Paid=0,"unpaid","paid") as paid'), 'infoOrder.Total as total',
-                        DB::raw('DATE_FORMAT(infoOrder.created_at, "%d/%m/%Y") as items_received'),
+                        DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%d/%m/%Y") as detailed_at'),
                         'infoOrder.underquote', 'infoOrder.TypeDelivery as destination', 'infoOrder.Status as status',
                         DB::raw('IF(
                             infoitems.PromisedDate > CURRENT_DATE(),
                             IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")),
                             DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y")) as deliv'),
-                            DB::raw('count(distinct(infoitems.id)) as items'),
-                            'TypePost.bg_color as location_color', 'postes.nom as location',
-                            'TypePost.process', 'TypePost.circle_color',
+                        DB::raw('count(distinct(infoitems.id)) as items'),
+                        'TypePost.bg_color as location_color', 'postes.nom as location',
+                        'TypePost.process', 'TypePost.circle_color',
+                        'users.name as detailer'
                     )
                     ->leftJoin('pickup', 'pickup.PickupID', '=', 'infoOrder.PickupID')
                     ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
+                    ->leftJoin('users', 'infoOrder.detailuser_id', '=', 'users.id')
                     ->join('postes', 'infoOrder.Status', '=', 'postes.nominterface')
                     ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
                     ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')
@@ -2365,18 +2391,20 @@ class CustomerController extends Controller
                     ->select(
                         'infoOrder.id as order_id',
                         DB::raw('if(infoOrder.Paid=0,"unpaid","paid")as paid'), 'infoOrder.Total as total',
-                        DB::raw('DATE_FORMAT(infoOrder.created_at, "%d/%m/%Y") as items_received'),
+                        DB::raw('DATE_FORMAT(infoOrder.detailed_at, "%d/%m/%Y") as detailed_at'),
                         'infoOrder.underquote', 'infoOrder.TypeDelivery as destination', 'infoOrder.Status as status',
                         DB::raw('IF(
                             infoitems.PromisedDate > CURRENT_DATE(),
                             IF(pickup.date > deliveryask.date, DATE_FORMAT(deliveryask.date, "%d/%m"), DATE_FORMAT(pickup.date, "%d/%m")),
                             DATE_FORMAT(infoitems.PromisedDate, "%d/%m/%Y")) as deliv'),
-                            DB::raw('count(distinct(infoitems.id)) as items'),
-                            'TypePost.bg_color as location_color', 'postes.nom as location',
-                            'TypePost.process', 'TypePost.circle_color',
+                        DB::raw('count(distinct(infoitems.id)) as items'),
+                        'TypePost.bg_color as location_color', 'postes.nom as location',
+                        'TypePost.process', 'TypePost.circle_color',
+                        'users.name as detailer'
                     )
                     ->leftJoin('pickup', 'pickup.PickupID', '=', 'infoOrder.PickupID')
                     ->leftJoin('deliveryask', 'deliveryask.DeliveryaskID', '=', 'infoOrder.DeliveryaskID')
+                    ->leftJoin('users', 'infoOrder.detailuser_id', '=', 'users.id')
                     ->join('postes', 'infoOrder.Status', '=', 'postes.nominterface')
                     ->join('TypePost', 'TypePost.id', '=', 'postes.TypePost')
                     ->join('infoInvoice','infoOrder.OrderID','infoInvoice.OrderID')

@@ -455,19 +455,19 @@
                                     </div>
                                 </div>
                                 <div class="discount-credit-panel">
-                                    <h3 class="title d-flex">Discounts and credit</h3>
+                                    <h3 class="title d-flex">Discounts and credit<span  class="gotham-rounded-book primary-color ms-3 font-16 cursor-pointer text-decoration-underline" @click="toggleDiscount()">Edit</span></h3>
                                     <div class="page-section">
                                         <div class="d-flex">
                                             <div class="col-4">
                                                 <div class="form-group mb-0 payment-method">
                                                     <label for="discount_credit">Discount Level (%)</label>
-                                                    <!--
-                                                    <div class="w-100 py-2 bg-color px-3 rounded-3">
+                                                    
+                                                    <div v-if="!descountAndCredit" class="w-100 py-2 bg-color px-3 rounded-3">
                                                         {{ form.discountLevel }}%
                                                     </div>
-                                                    -->
-                                                    <div class="form-group">
-                                                        <input :disabled="current_user && ![1,4].includes(current_user.role_id)"  type="text" class="form-control w-auto" v-model="form.discountLevel" @keyup="setCustomerDiscount"/>
+                                                   
+                                                    <div v-else class="form-group">
+                                                        <input :disabled="current_user && ![1,4].includes(current_user.role_id)"  type="text" class="form-control w-auto" v-model="form.discountLevel" />
                                                     </div>
                                                 </div>
                                             </div>
@@ -479,14 +479,20 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-4" v-if="current_user && [1,4].includes(current_user.role_id)">
+                                            <div class="col-4" v-if="descountAndCredit && current_user && [1,4].includes(current_user.role_id)">
                                                 <div class="form-group col-6">
                                                     <label for="add_credit">Add credit</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text fw-bold">£</span>
-                                                        <input :disabled="current_user && ![1,4].includes(current_user.role_id)" type="text" v-model="credit_to_add"  class="form-control" id="add_credit" placeholder="0.00" @keyup="addCustomerCredit">
+                                                        <input :disabled="current_user && ![1,4].includes(current_user.role_id)" type="text" v-model="credit_to_add"  class="form-control" id="add_credit" placeholder="0.00">
                                                     </div>
                                                 </div>
+                                            </div>
+                                            
+                                        </div>
+                                        <div class="row justify-content-end mt-4" v-if="descountAndCredit">
+                                            <div class="col-2">
+                                                <button class="btn btn-dark w-100" @click="AddDiscountAndCreditCustomer()">Save</button>
                                             </div>
                                         </div>
                                     </div>
@@ -661,20 +667,22 @@
                                         <tr>
                                             <th>Order N°</th>
                                             <th>Destination</th>
-                                            <th>Created on</th>
+                                            <th>Detailed on</th>
+                                            <th>Detailer name</th>
                                             <th>By</th>
                                             <th>Delivery date</th>
                                             <th>Items</th>
                                             <th>Order Status</th>
                                             <th>Total</th>
-                                            <th class="text-center">E-Reciept</th>
+                                            <th class="text-center">Reciept</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr v-for="(item, index) in currentOrders" :key="index" @click="selectrow(item)">
                                             <td valign="middle">{{ item.order_id }}</td>
                                             <td valign="middle">{{ item.destination }}</td>
-                                            <td valign="middle">{{ item.items_received }}</td>
+                                            <td valign="middle">{{ item.detailed_at }}</td>
+                                            <td valign="middle">{{ item.detailer }}</td>
                                             <td></td>
                                             <td valign="middle" class="fw-bold">{{ item.deliv }}</td>
                                             <td valign="middle">{{ item.items }}</td>
@@ -707,19 +715,21 @@
                                         <tr>
                                             <th>Order N°</th>
                                             <th>Destination</th>
-                                            <th>Items accepted</th>
+                                            <th>Items Detailed on</th>
+                                            <th>Detailer name</th>
                                             <th>Delivery date</th>
                                             <th>Items</th>
                                             <th>Order Status</th>
                                             <th>Total</th>
-                                            <th class="text-center">VAT Invoice</th>
+                                            <th class="text-center">Reciept</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr v-for="(item, index) in pastOrders" :key="index" @click="selectrow(item)">
                                             <td valign="middle">{{ item.order_id }}</td>
                                             <td valign="middle">{{ item.destination }}</td>
-                                            <td valign="middle">{{ item.items_received }}</td>
+                                            <td valign="middle">{{ item.detailed_at }}</td>
+                                            <td valign="middle">{{ item.detailer }}</td>
                                             <td valign="middle">{{ item.deliv }}</td>
                                             <td valign="middle">{{ item.items }}</td>
                                             <td valign="middle">
@@ -1215,6 +1225,7 @@
             const showcontainer=ref(false);
             const searchCustomer=ref(false);
             const creditCardCustomer=ref(false);
+            const descountAndCredit=ref(false);
             const currentOrders=ref([]);
             const pastOrders=ref([]);
             const timeout =ref('');
@@ -1783,6 +1794,9 @@
             function toggleCreditCard(){
                 this.add_payement = !this.add_payement;
             }
+            function toggleDiscount(){
+                this.descountAndCredit = !this.descountAndCredit;
+            }
 
 
             function AddCreditCardCustomer(){
@@ -1847,8 +1861,7 @@
                 })
             }
 
-            function addCustomerCredit(event){
-                if(event.keyCode==13){
+            function addCustomerCredit(){
                     if(parseInt(credit_to_add.value)){
                         axios.post('/add-credit-customer', { credit :credit_to_add.value , customer_id : route.params.customer_id } ).then((response)=>{
 
@@ -1867,18 +1880,17 @@
                                 console.log(errors);
                             })
                     }
-                }
             }
 
 
-            function setCustomerDiscount(event){
-                if(event.keyCode==13){
+            function setCustomerDiscount(){
                     if(parseInt(form.value.discountLevel)){
                         axios.post('/set-customer-discount',{
                             discount:form.value.discountLevel,
                             customer_id:route.params.customer_id
                         }).then((res)=>{
                             if(res.data.updated==1 || res.data.updated==0){
+                                descountAndCredit.value = false
                                 store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
                                     message:"Customer discount updated",
                                         ttl: 3,
@@ -1891,7 +1903,7 @@
 
                         });
                     }
-                }
+                
             }
 
             function validateAndSaveContactDetails(){
@@ -2434,6 +2446,10 @@
                 return yyyy+'-'+mm+'-'+dd;
 
             }
+            function AddDiscountAndCreditCustomer(){
+                setCustomerDiscount()
+                addCustomerCredit()
+            }
 
             return {
                 fdate,
@@ -2498,7 +2514,10 @@
                 timeslot_def,
                 getSlotDisplay,
                 getCurDateTime,
-                validateAndSaveInvoiceDetails
+                validateAndSaveInvoiceDetails,
+                toggleDiscount,
+                descountAndCredit,
+                AddDiscountAndCreditCustomer
             }
 
         },

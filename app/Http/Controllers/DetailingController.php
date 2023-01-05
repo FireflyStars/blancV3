@@ -379,6 +379,12 @@ class DetailingController extends Controller
 
         $detailingitem['customer_instructions'] = $customer_instructions;
 
+        // $order = DB::table('infoOrder')
+        // ->select('infoOrder.Status')
+        // ->where('infoOrder.id', $order_id)
+        // ->first();
+        // $detailingitem['order_status'] = $order->Status;
+
         $categories = [
             'Garment'=>'Garment Care',
             'Tailor'=>'Tailoring',
@@ -720,6 +726,12 @@ class DetailingController extends Controller
         /* CLEANING SERVICES */
 
         $cust_cleaning_services = DetailingController::getCustCleaningServices($detailingitem);
+
+        //     $order = DB::table('infoOrder')
+        //     ->select('infoOrder.Status')
+        //     ->where('infoOrder.id', $detailingitem['order_id'])
+        //     ->first();
+        // $detailingitem['order_status'] = $order->Status;
 
         return response()->json(
             [
@@ -1672,7 +1684,9 @@ class DetailingController extends Controller
 
                         $booking_details['pickup_date'] = date('d/m',$pickup_stamp);
                         $booking_details['pickup_day'] = $days[$pickup_day_index];
-                        $booking_details['pickup_time'] = $tranches[$pickup_slot];
+                        if($pickup_slot){
+                            $booking_details['pickup_time'] = $tranches[$pickup_slot];
+                        }
                     }
 
                 }
@@ -3171,6 +3185,59 @@ class DetailingController extends Controller
         ]);
 
 
+    }
+
+    public function checkProduct(Request $request){
+
+        $tracking = $request->tracking;
+        $customer_id = $request->customer_id;
+        $order_id = $request->order_id;
+        $err = "";
+        $item_product = [];
+
+        $cust = DB::table('infoCustomer')->where('CustomerID',$customer_id)->first();
+
+        $current_detailing_item = DB::table('typeitem')->where('ean13',$tracking)->first();
+
+        $current_item = DB::table('detailingitem')->where('tracking',$tracking)
+            ->where('order_id',$order_id)
+            ->first();
+
+        if($current_item){
+            $err = "Product $tracking is exist in this order";
+        }
+        if(!$current_detailing_item){
+            $err = "Invalid Product";
+        }
+
+            if($current_detailing_item && !$err){
+
+                $item_product = DB::table('detailingitem')->insertGetId([
+                    'id' =>  '',
+                    'order_id' => $order_id,
+                    'tracking' =>  $tracking,
+                    'customer_id' =>  $cust->id,
+                    'etape' =>  11,
+                    'status'=>  'Completed',
+                    'typeitem_id' =>  $current_detailing_item->id,
+                    'describeprixnow'=>  "produit",
+                    'dry_cleaning_price' =>  $current_detailing_item->pricecleaning,
+                    'cleaning_price_type' =>  "PriceNow",
+                    'pricecleaning' => $current_detailing_item->pricecleaning,
+                    'department_id' => $current_detailing_item->department_id,
+                    'category_id'=>  $current_detailing_item->category_id,
+                    'cleaning_services' => '[]',
+                    'tailoring_services'=> '[]',
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
+                    
+                ]); 
+            }
+
+            return response()->json([
+                'item' => $item_product,
+                'err'=>$err
+            ]);
     }
 
 }

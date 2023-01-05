@@ -23,6 +23,7 @@ import {
     GET_LOADER_CLASS,
     SET_LOADER_CLASS,
     GET_CUSTOMER_SELECTED_TAB,
+    CUSTOMER_SET_MINI_SEARCH
 }
 from '../types/types';
 export const Customer = {
@@ -47,7 +48,8 @@ export const Customer = {
             last_order_start: '',
             last_order_end: '',
             Customername :'',
-        }
+            mini_search: {}
+        },
     },
     mutations:{
         [ADD_MORE_CUSTOMER_TO_LIST]: (state, payload)=>{
@@ -66,6 +68,9 @@ export const Customer = {
         },
         [SET_CUSTOMER_SELECTED_TAB]: (state, payload)=>{
             state.filter.selected_nav = payload;
+        },
+        [CUSTOMER_SET_MINI_SEARCH]: (state, payload)=>{
+            state.filter.mini_search = payload;
         },
         [SET_CUSTOMER_FILTER]: (state, payload)=>{
             state.filter.skip = 0; 
@@ -123,6 +128,9 @@ export const Customer = {
         },
         [SET_CURRENT_SELECTED_CUSTOMER]: ({ commit }, payload)=>{
             commit(SET_CURRENT_SELECTED_CUSTOMER, payload);
+        },
+        [CUSTOMER_SET_MINI_SEARCH]: ({ commit }, payload)=>{
+            commit(CUSTOMER_SET_MINI_SEARCH, payload);
         },
         [SET_CUSTOMER_SELECTED_TAB]: ( { commit }, payload)=>{
             commit(SET_CUSTOMER_SELECTED_TAB, payload)

@@ -61,6 +61,7 @@ class OrderListController extends Controller
         $current_tab=$request->get('current_tab');
         $sort=$request->get('sort');
         $filters=$request->get('filters');
+        $mini_search=$request->get('mini_search');
         $filter_cols = [];
 
         if(count($filters) > 0){
@@ -205,6 +206,32 @@ class OrderListController extends Controller
         */
         //$orderlist=$orderlist->groupBy('infoOrder.id');
 
+        // mini search
+        if(!empty($mini_search)){
+            if($mini_search['orderNo'] != ''){
+                $orderlist = $orderlist->where('infoOrder.id','like', '%'.$mini_search['orderNo'].'%');
+            }
+            if($mini_search['ticketNo'] !=''){
+                $orderlist = $orderlist->join('infoInvoice', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID');
+                $orderlist = $orderlist->where('infoInvoice.NumInvoice','like', '%'.$mini_search['ticketNo'].'%');
+                $orderlist = $orderlist->groupBy('infoOrder.id');
+            }
+            if($mini_search['hsl'] !=''){
+                $orderlist = $orderlist->join('infoInvoice', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID');
+                $orderlist = $orderlist->join('infoitems', 'infoInvoice.InvoiceID', '=', 'infoitems.InvoiceID');
+                $orderlist = $orderlist->where('infoitems.ItemTrackingKey','like', '%'.$mini_search['hsl'].'%');
+                $orderlist = $orderlist->groupBy('infoOrder.id');
+            }
+            if($mini_search['accountName'] != ''){
+                $orderlist = $orderlist->where('infoCustomer.CompanyName','like', '%'.$mini_search['accountName'].'%');
+            }
+            if($mini_search['customerName'] != ''){
+                $orderlist = $orderlist->where('infoCustomer.Name','like', '%'.$mini_search['customerName'].'%');
+            }
+            if($mini_search['phoneNumber'] != ''){
+                $orderlist = $orderlist->where('infoCustomer.Phone','like', '%'.$mini_search['phoneNumber'].'%');
+            }
+        }
 
         if(!empty($filters)){
             foreach($filters as $colname => $values){
@@ -1357,7 +1384,7 @@ class OrderListController extends Controller
             $billing_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=','BILLING')->first();
             $delivery_add=DB::table('address')->where('CustomerID','=',$order->CustomerID)->where('status','=',$order->TypeDelivery)->first();
 
-            $infoitems=DB::table('itemhistorique')->select(['infoInvoice.NumInvoice','infoInvoice.InvoiceID' ,"infoInvoice.Status as Invoice_Status", 'infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','itemhistorique.ItemTrackingKey' , 'infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status', 'infoitems.id_items as itemproduction' , 'itemhistorique.ID_item as productionitem' , 'postes.nominterface as station', 'infoitems.conveyorSlot'])
+            $infoitems=DB::table('itemhistorique')->select(['infoInvoice.NumInvoice','infoInvoice.InvoiceID' ,"infoInvoice.Status as Invoice_Status", 'infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','itemhistorique.ItemTrackingKey' , 'infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status', 'infoitems.id_items as itemproduction' , 'itemhistorique.ID_item as productionitem' , 'postes.nominterface as station', 'infoitems.conveyorSlot' , 'infoitems.nextpost'])
             ->join('infoInvoice',function($join) use($order){
                 $join->on('infoInvoice.InvoiceID','=','itemhistorique.InvoiceID')
                 ->where('infoInvoice.OrderID','=',$order->OrderID);
