@@ -492,7 +492,7 @@
                                 <template #bheader>
                                     <div class="bmodal-header py-5 d-flex w-100 justify-content-center align-items-center">
                                         <div id="order_created_txt">Order n<sup>o</sup> {{neworder_id}} created</div>
-                                        <img src="/images/check.svg"/>
+                                        <img src="../../../img/check.svg"/>
                                     </div>
                                 </template>
                                 <template #bcontent>
