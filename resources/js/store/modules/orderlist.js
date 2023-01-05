@@ -43,6 +43,7 @@ import {
     ORDER_SET_STATUS,
     ORDERLIST_GET_TOTAL_COUNT,
     ORDERLIST_SET_TOTAL_COUNT,
+    ORDERLIST_SET_MINI_SEARCH
 } from "../types/types";
 import {PERMISSIONS} from "../types/permission_types";
 import {usePermission} from "../../components/helpers/helpers";
@@ -64,6 +65,7 @@ export const orderlist= {
                 sort:[],//sort col
                 filters:{},//filters
                 total_count: 0,
+                mini_search: {},
             },
             due_tomorrow:{
                 currently_selected:'',//currently selected line for displaying order detail
@@ -74,6 +76,7 @@ export const orderlist= {
                 sort:[],//sort col
                 filters:{},//filters
                 total_count: 0,
+                mini_search: {},
             },
             all_orders:{
                 currently_selected:'',//currently selected line for displaying order detail
@@ -84,6 +87,7 @@ export const orderlist= {
                 sort:[],//sort col
                 filters:{},//filters
                 total_count: 0,
+                mini_search: {},
             },
             customer_care:{
                 currently_selected:'',//currently selected line for displaying order detail
@@ -94,6 +98,7 @@ export const orderlist= {
                 sort:[],//sort col
                 filters:{},//filters
                 total_count: 0,
+                mini_search: {},
             },
             with_partner:{
                 currently_selected:'',//currently selected line for displaying order detail
@@ -104,6 +109,7 @@ export const orderlist= {
                 sort:[],//sort col
                 filters:{},//filters
                 total_count: 0,
+                mini_search: {},
             },
             unfulfilled:{
                 currently_selected:'',//currently selected line for displaying order detail
@@ -114,6 +120,7 @@ export const orderlist= {
                 sort:[],//sort col
                 filters:{},//filters
                 total_count: 0,
+                mini_search: {},
             },
             without_delivery_date:{
                 currently_selected:'',//currently selected line for displaying order detail
@@ -124,11 +131,12 @@ export const orderlist= {
                 sort:[],//sort col
                 filters:{},//filters
                 total_count: 0,
+                mini_search: {},
             },
             status:{}
     },
     mutations: {
-         [ORDERLIST_ADD_TO_LIST]: (state, payload) => state[state.current_tab].order_list=state[state.current_tab].order_list.concat(payload),
+        [ORDERLIST_ADD_TO_LIST]: (state, payload) => state[state.current_tab].order_list=state[state.current_tab].order_list.concat(payload),
         [ORDERLIST_SHOWMORE_LIST]:(state, payload) =>{
              state[state.current_tab].skip=payload.skip;
         },
@@ -182,6 +190,9 @@ export const orderlist= {
         [ORDERLIST_SET_TOTAL_COUNT]:(state, payload)=>{
             state[state.current_tab].total_count=payload;
         },
+        [ORDERLIST_SET_MINI_SEARCH]:(state, payload)=>{
+            state[state.current_tab].mini_search = payload;
+        },
         [ORDERLIST_UPDATE_SUGGESTED_DELIVERY_DATE]:(state,payload)=>{
             state[state.current_tab].order_list.find(order=>{
                 if(order.id==payload.infoOrder_id)
@@ -211,6 +222,7 @@ export const orderlist= {
                     sort:state[state.current_tab].sort,
                     filters:state[state.current_tab].filters,
                     search_value : payload.search,
+                    mini_search : state[state.current_tab].mini_search,
                 })
                     .then(function (response) {
                         commit(ORDERLIST_ADD_TO_LIST, response.data.orderlist);
@@ -231,6 +243,7 @@ export const orderlist= {
                 current_tab:state.current_tab,
                 sort:state[state.current_tab].sort,
                 filters:state[state.current_tab].filters,
+                mini_search : state[state.current_tab].mini_search,
             })
                 .then(function (response) {
                     commit(ORDERLIST_ADD_TO_LIST, response.data.orderlist);
@@ -244,6 +257,9 @@ export const orderlist= {
                 dispatch(`${LOADER_MODULE}${HIDE_LOADER}`,{},{ root: true });
             });
            }
+        },
+        [ORDERLIST_SET_MINI_SEARCH]:({commit}, payload)=>{
+            commit(ORDERLIST_SET_MINI_SEARCH,payload);
         },
         [ORDERLIST_SELECT_CURRENT]:({commit}, payload)=>{
             commit(ORDERLIST_SET_CURRENT_SELECTED,payload);

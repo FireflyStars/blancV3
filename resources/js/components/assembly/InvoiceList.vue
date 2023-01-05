@@ -1,4 +1,5 @@
 <template>
+    <InvoiceMiniSearch></InvoiceMiniSearch>
     <transition enter-active-class="animate__animated animate__fadeIn">
         <table class="table table-hover mb-0 bg-white">
             <thead>
@@ -107,11 +108,13 @@ import {
 } from "../../store/types/types";
 import { useStore } from 'vuex';
 import CheckBox from '../miscellaneous/CheckBox';
+import InvoiceMiniSearch from './InvoiceMiniSearch';
 
 export default {
     name: 'InvoiceList',
     components:{
         CheckBox,
+        InvoiceMiniSearch
     },
     setup(){
         const store = useStore();

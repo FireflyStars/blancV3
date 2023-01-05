@@ -1,6 +1,7 @@
 <template>
     <div class="container-fluid position-relative p-0">
         <filters :filterDef="filterDef" :data="data"></filters>
+        <OrderMiniSearch></OrderMiniSearch>
         <table class="orderlist-table" v-if="ORDER_LIST.length>0">
             <thead>
                 <tr>
@@ -89,10 +90,11 @@
     import ExpressIcon  from '../miscellaneous/ExpressIcon'
     import SortArrows from '../miscellaneous/SortArrows'
     import Filters from '../miscellaneous/Filters'
+    import OrderMiniSearch from './OrderMiniSearch.vue';
     export default {
         name: "OrderListTable",
         props:['tabledef',"tab","id","customer_id","search_value"],
-        components:{Filters, Tag,CheckBox,ExpressIcon,SortArrows},
+        components:{Filters, Tag,CheckBox,ExpressIcon,SortArrows, OrderMiniSearch},
         setup(props){
             const router = useRouter();
             const store=useStore();
