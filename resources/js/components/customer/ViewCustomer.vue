@@ -668,6 +668,7 @@
                                             <th>Order N°</th>
                                             <th>Destination</th>
                                             <th>Detailed on</th>
+                                            <th>Detailer name</th>
                                             <th>By</th>
                                             <th>Delivery date</th>
                                             <th>Items</th>
@@ -680,7 +681,8 @@
                                         <tr v-for="(item, index) in currentOrders" :key="index" @click="selectrow(item)">
                                             <td valign="middle">{{ item.order_id }}</td>
                                             <td valign="middle">{{ item.destination }}</td>
-                                            <td valign="middle">{{ item.items_received }}</td>
+                                            <td valign="middle">{{ item.detailed_at }}</td>
+                                            <td valign="middle">{{ item.detailer }}</td>
                                             <td></td>
                                             <td valign="middle" class="fw-bold">{{ item.deliv }}</td>
                                             <td valign="middle">{{ item.items }}</td>
@@ -714,6 +716,7 @@
                                             <th>Order N°</th>
                                             <th>Destination</th>
                                             <th>Items Detailed on</th>
+                                            <th>Detailer name</th>
                                             <th>Delivery date</th>
                                             <th>Items</th>
                                             <th>Order Status</th>
@@ -725,7 +728,8 @@
                                         <tr v-for="(item, index) in pastOrders" :key="index" @click="selectrow(item)">
                                             <td valign="middle">{{ item.order_id }}</td>
                                             <td valign="middle">{{ item.destination }}</td>
-                                            <td valign="middle">{{ item.items_received }}</td>
+                                            <td valign="middle">{{ item.detailed_at }}</td>
+                                            <td valign="middle">{{ item.detailer }}</td>
                                             <td valign="middle">{{ item.deliv }}</td>
                                             <td valign="middle">{{ item.items }}</td>
                                             <td valign="middle">
