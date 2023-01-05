@@ -286,18 +286,18 @@ class OrderController extends Controller
                     'date'=>$new_order['hd_delivery'],
                     'status'=>'NEW',//'PMS'
                     'order_id'=>$new_order_id,
-    
+
                 ];
-               
+
                 $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
                 $booking_hd_delivery = DB::table('deliveryask')->where('id',$id_booking)->first();
-    
+
                 DB::table('infoOrder')->where('id',$new_order_id)->update([
                     'DeliveryaskID'=>$booking_hd_delivery->DeliveryaskID,
                     'DateDeliveryAsk'=>$new_order['hd_delivery']
                 ]);
             }
-            
+
          }
             //Notification
 
@@ -1575,7 +1575,7 @@ class OrderController extends Controller
             ]);
      }
 
-     public static function logRefund($payment_id,$amount){
+     public static function logRefund($payment_id,$amount,$reason=''){
         $user = Auth::user();
         $err_txt = "";
 
@@ -1590,8 +1590,8 @@ class OrderController extends Controller
 
         $stripe = new \Stripe\StripeClient(env($stripe_key));
 
-        //$payment_intent_id = $payment->payment_intent_id;
-        $payment_intent_id = 'pi_3MCNkJB2SbORtEDs1mcg2D9j';
+        $payment_intent_id = $payment->payment_intent_id;
+        //$payment_intent_id = 'pi_3MCNkJB2SbORtEDs1mcg2D9j';
 
         $payment_intent = $stripe->paymentIntents->retrieve($payment_intent_id,[]);
 
@@ -1722,7 +1722,7 @@ class OrderController extends Controller
                         $timeslot = $tranches_slots[$slot];
                         $order->order_time = $timeslot;
                     }
-                   
+
                 }
             }
             if($order->order_time == "00:00:00_00:00:00"){
