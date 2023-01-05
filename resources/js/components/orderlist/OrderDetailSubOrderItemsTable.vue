@@ -34,7 +34,7 @@
                         <template v-for="(col,index) in tabledef" :key="index">
                             <div class="tcol"   :style="{flex:col.flex}" :class="{'check-box': col.type=='checkbox',[index]:true}"  @click="selectrow(ITEM.infoitems_id,index ,ITEMS[0].InvoiceID)"  >
                                 <check-box v-if="col.type=='checkbox'" :checked_checkbox="typeof MULTI_CHECKED[suborder]!=='undefined'&&MULTI_CHECKED[suborder].includes(ITEM.infoitems_id)" :id="ITEM.infoitems_id"   @checkbox-clicked="checkboxclicked" :name="suborder" :trackingkey="ITEM.ItemTrackingKey"></check-box>
-                                <tag v-else-if="col.type=='tag'" :name="ITEM[index] == 'Storage' ? ITEM[index] + ' - ' + ITEM.conveyorSlot : ITEM[index]" :style="{backgroundColor:'transparent',border:'1px solid #000000',color:'#000000'}"></tag>
+                                <tag v-else-if="col.type=='tag'" :name="converySlotPostes.includes(ITEM.poste_id) ? ITEM[index] + ' - ' + ITEM.conveyorSlot : ITEM[index]" :style="{backgroundColor:'transparent',border:'1px solid #000000',color:'#000000'}"></tag>
                                 <color-tag :style="col.css" v-else-if="col.type=='color'" :colors="ITEM[index].toLowerCase()"></color-tag>
                                 <span v-else :style="col.css" class="tool-tip"  :class="{body_small_medium:col.name=='',body_small:col.name!=''}" :data-tooltip="preprocess(col,ITEM[index])">{{preprocess(col,ITEM[index])}}</span>
                             </div>                         
@@ -113,7 +113,7 @@
             const OpenitemDetails = ref(false);
             const invoiceNum = ref('');
             const show_model_Fulfil_Store = ref(false);      
-
+            const converySlotPostes = ref([36,49,52,55,58,61,64,67,69,70,71,72,73,74,75,76,81,82]);
             const ITEM_LIST=computed(()=>{
                 return store.getters[`${ORDERDETAIL_MODULE}${ORDERDETAIL_GET_DETAILS}`].items;
             });
@@ -271,7 +271,7 @@
                 MULTI_CHECKED,
                 MULTI_HSL_CHECKED,
                 ITEM_LIST,
-
+                converySlotPostes,
                 preprocess,
                 selectrow,
                 checkboxclicked,
