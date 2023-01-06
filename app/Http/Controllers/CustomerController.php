@@ -3248,9 +3248,8 @@ class CustomerController extends Controller
 
                 $contact = false;
 
-                if($addr){
-                    $contact = DB::table('contacts')->where('address_id',$addr->id)->first();
-                }
+
+                $contact = DB::table('contacts')->where('CustomerID',$cust->CustomerID)->first();
 
 
                 $info = @json_decode($v->info);
@@ -3302,6 +3301,12 @@ class CustomerController extends Controller
 
                 }else{
                     $recipients[] = $email;
+                }
+
+                foreach($recipients as $key=>$m){
+                    if(trim($m)==''){
+                        unset($recipients[$key]);
+                    }
                 }
 
 
