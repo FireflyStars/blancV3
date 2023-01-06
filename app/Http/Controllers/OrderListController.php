@@ -217,10 +217,16 @@ class OrderListController extends Controller
                 $orderlist = $orderlist->groupBy('infoOrder.id');
             }
             if($mini_search['hsl'] !=''){
-                $orderlist = $orderlist->join('infoInvoice', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID');
-                $orderlist = $orderlist->join('infoitems', 'infoInvoice.InvoiceID', '=', 'infoitems.InvoiceID');
-                $orderlist = $orderlist->where('infoitems.ItemTrackingKey','like', '%'.$mini_search['hsl'].'%');
-                $orderlist = $orderlist->groupBy('infoOrder.id');
+                if($mini_search['ticketNo'] !=''){
+                    $orderlist = $orderlist->join('infoitems', 'infoInvoice.InvoiceID', '=', 'infoitems.InvoiceID');
+                    $orderlist = $orderlist->where('infoitems.ItemTrackingKey','like', '%'.$mini_search['hsl'].'%');
+                    $orderlist = $orderlist->groupBy('infoOrder.id');
+                }else{
+                    $orderlist = $orderlist->join('infoInvoice', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID');
+                    $orderlist = $orderlist->join('infoitems', 'infoInvoice.InvoiceID', '=', 'infoitems.InvoiceID');
+                    $orderlist = $orderlist->where('infoitems.ItemTrackingKey','like', '%'.$mini_search['hsl'].'%');
+                    $orderlist = $orderlist->groupBy('infoOrder.id');
+                }
             }
             if($mini_search['accountName'] != ''){
                 $orderlist = $orderlist->where('infoCustomer.CompanyName','like', '%'.$mini_search['accountName'].'%');
