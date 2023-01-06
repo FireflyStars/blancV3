@@ -975,21 +975,20 @@ class DetailingController extends Controller
             if($inv){
 
                 if($cust->CustomerID != $inv->CustomerID){
-
+					
+					
+					// CustomerID different
+					
                     $sub_cust = DB::table('infoCustomer')
-                                ->where('CustomerIDMaster',$cust->CustomerID)
-                                ->where('CustomerID',$inv->CustomerID)
+                                ->where('CustomerIDMaster',$inv->CustomerID)
+                                ->where('CustomerID',$cust->CustomerID)
                                 ->first();
 
                         if(!$sub_cust){
-                            $main_cust = DB::table('infoCustomer')
-                                        ->where('CustomerID',$inv->CustomerID)
-                                        ->where('CustomerIDMaster','')
-                                        ->get();
-                            if(!$main_cust){
+
                                 $err = "HSL $tracking already linked with another customer.";
                                 $is_cust_inv = false;
-                            }
+                            
                         }
                 }
             }
