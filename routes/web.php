@@ -21,6 +21,7 @@ use App\Http\Controllers\PosteController;
 use Illuminate\Support\Facades\DB;
 use TCG\Voyager\Facades\Voyager;
 use App\Http\Controllers\CategoryTailoringController;
+use App\Http\Controllers\Controller;
 use App\Http\Controllers\StripeTerminalController;
 use App\Models\DetailingServices;
 use App\Models\Infoitem;
@@ -40,6 +41,8 @@ use App\Http\Controllers\NotificationController;
 use Stripe\Exception\InvalidRequestException as ExceptionInvalidRequestException;
 use Stripe\Exception\OAuth\InvalidRequestException;
 use Symfony\Component\Console\Terminal;
+use App\Notification;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -557,6 +560,7 @@ Route::get('test-stripe-terminal',function(Request $request){
 
 Route::get('inv-pdf',function(Request $request){
     $facture_id = $request->id;
+    $get_file_name = $request->getfile;
 
     if(!isset($facture_id) || $facture_id ==''){
         die('Facture not set');
@@ -773,21 +777,13 @@ Route::get('/test-create-card',function(){
 
         ]);
 
-        $site_url = \Illuminate\Support\Facades\URL::to("/");
-
         $si = $stripe->setupIntents->create([
             'customer' => $stripe_customer->id,
             'payment_method'=>$card->id,
             'payment_method_types' => ['card'],
-
-            /*
-            'payment_method_options'=>[
-                'card'=>[
-                    'request_three_d_secure'=>'any'
-                ]
-            ],
-            */
         ]);
+
+        $site_url = \Illuminate\Support\Facades\URL::to("/");
 
         $res = $stripe->setupIntents->confirm($si->id,[
             'return_url'=>$site_url.'/confirm-card/?si='.$si->id,
@@ -814,9 +810,81 @@ Route::get('/test-create-card',function(){
 });
 
 Route::get('/test-pdf-ar',function(){
-    $details = DB::table('infoOrderPrint')->where('id',12)->first();
+    $all_details = DB::table('infoOrderPrint')->where('id',485)->get();
 
-    $data = CustomerController::getArPDFData($details);
+    echo "<pre>";
+
+    foreach($all_details as $k=>$v){
+        $cust = DB::table('infoCustomer')->where('CustomerID',$v->CustomerID)->first();
+
+        $addr = Delivery::getAddressByCustomerUUID($cust->CustomerID,true);
+
+        $contact = false;
+
+        $contact = DB::table('contacts')->where('CustomerID',$cust->CustomerID)->first();
+
+        $info = @json_decode($v->info);
+
+        $orderid = 0;
+        $i = 0;
+        foreach($info as $order_id=>$invoices){
+            if($i==0){
+                $orderid = $order_id;
+            }
+            $i++;
+        }
+
+
+        $order_url = "http://app.blancliving.co/order-store?email=".$cust->EmailAddress."&Id=".$cust->CustomerID."&orderId=".$orderid;
+
+        if($cust){
+            $mail_vars = [
+                'FirstName'=>$cust->FirstName,
+                'url_invoice'=>\Illuminate\Support\Facades\URL::to("/inv-pdf")."?id=".$v->FactureID,
+                'url_order'=>$order_url,
+            ];
+        }
+
+        $email = $cust->EmailAddress;
+        $email2 = "";
+        $recipients = [];
+        $notification_ids = [];
+
+        if($contact){
+
+            if($contact->email!=''){
+                $recipients = explode("\r\n",$contact->email);
+            }
+
+        }else{
+            $recipients[] = $email;
+        }
+
+        foreach($recipients as $key=>$m){
+            if(trim($m)==''){
+                unset($recipients[$key]);
+            }
+        }
+
+        echo "<pre>";
+        print_r($recipients);
+
+        $request = Request::create(route('inv-pdf'), 'GET',['id'=>$v->FactureID,'getfile'=>1]);
+
+        $response = app()->handle($request);
+
+        $pdf_file = $response->getContent();
+
+        $filename = storage_path('app/pdf/attachments/'.$pdf_file);
+
+        $attachment = new stdClass;
+        $attachment->url = $filename;//\Illuminate\Support\Facades\URL::to("/inv-pdf")."?id=".$v->FactureID;
+        $attachment->nom = 'INV'.date('Ymd').'-'.sprintf('%04d', $v->id);
+        $attachment->mime_type = 'application/pdf';
+        $attachment_arr = (array) $attachment;
+
+        $attachments = [$attachment];
+    }
 });
 
 
