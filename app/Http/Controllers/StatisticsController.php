@@ -3038,7 +3038,7 @@ class StatisticsController extends Controller
             ->select(
                 'infoInvoice.CustomerID', 'infoInvoice.NumInvoice AS sub_order', 'infoitems.ItemTrackingKey as barcode',
                 'infoitems.typeitem as iteminfo', DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%d/%m/%Y") as prod'), 'infoitems.id AS item_id',
-                'infoitems.nextpost', 'infoCustomer.TypeDelivery as store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
+                'infoitems.nextpost', 'infoOrder.TypeDelivery as store', 'infoCustomer.Name as customer_name', 'postes.nom as location',
                 'infoitems.idPartner', 'TypePost.bg_color as location_color', 'TypePost.process','TypePost.circle_color',
                 DB::raw('DATE_FORMAT(infoitems.PromisedDate,"%d/%m/%Y") as deliv'),
                 'infoitems.idPartner', 'TypePost.bg_color as location_color', 'TypePost.process','TypePost.circle_color',
@@ -3097,7 +3097,7 @@ class StatisticsController extends Controller
         $invoices   =   $invoices->where('infoitems.Actif',1)
                                 ->whereIn('infoitems.express', $arr)
                                 ->join('infoInvoice', 'infoitems.SubOrderID', '=', 'infoInvoice.SubOrderID')
-                                // ->join('infoOrder', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID')
+                                ->join('infoOrder', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID')
                                 // ->join('pickup', 'infoOrder.PickupID', '=', 'pickup.PickupID')
                                 // ->join('deliveryask', 'infoOrder.DeliveryaskID', '=', 'deliveryask.DeliveryaskID')
                                 ->join('infoCustomer', 'infoInvoice.CustomerID', '=', 'infoCustomer.CustomerID')
