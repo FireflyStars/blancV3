@@ -1890,11 +1890,12 @@ import axios from 'axios';
                             if(deliverymethod.value == "home_delivery"){
 
                                 hd_pickup.value = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
-                                hd_delivery.value = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
+                                hd_delivery.value = order.DateDeliveryAsk;
+                                hd_delivery_timeslot.value = getTimeSlot(order.order_time)
                             }
                             if(deliverymethod.value == "delivery_only"){
 
-                                do_delivery.value = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
+                                do_delivery.value = order.DateDeliveryAsk;
                                 do_delivery_timeslot.value =getTimeSlot(order.order_time)
                                 
                             }
@@ -1952,9 +1953,7 @@ import axios from 'axios';
                     new_order.town = shp_town.value;
                     new_order.store_name = store_name.value;
                     new_order.payment_method = paymentMethod.value;
-                    if(order.account == "Sub"){
-                        new_order.DeliveryaskID = order.DeliveryaskID;
-                    }
+                    new_order.DeliveryaskID = order.DeliveryaskID;
 
                     let arr = [];
 
