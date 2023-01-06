@@ -14,7 +14,7 @@
                         @click="detailingitem.status == 'In Process'?show_pause_popup = true:pauseDetailling()"
                         v-if="detailingitem.status == 'In Process' || detailingitem.status == 'Pause'"
                     >{{ detailingitem.status == 'In Process' ? 'Pause detailing' : 'Resume detailing' }}</button>
-                    <button class="finish-detailing-btn" v-if="detailingitem.brand_id && detailingitem.typeitem_id && detailingitem.color_id"  @click="backPreviousStep(11)">Finish detailing</button>
+                    <button class="finish-detailing-btn" v-if="detailingitem.brand_id && detailingitem.typeitem_id && detailingitem.color_id"  @click="FinishDetailling(detailingitem.etape)">Finish detailing</button>
                     <div class="row container-detailing">
                         <div class="col-8 left-panel">
                             <div class="new-order-text">New order n°{{ order_id }}</div>
@@ -113,6 +113,7 @@
                                     @save-item-services="saveItemDetails"
                                     @go-to-step="backPreviousStep"
                                     @init-detailing="initDetailing"
+                                    ref="service_detailling_cmp"
                                 ></detailing-services>
                             </div>
                         </div>
@@ -210,6 +211,7 @@ export default {
         const isuue_step = ref();
         const go_to_type = ref();
         const preference_customer = ref([]);
+        const service_detailling_cmp = ref();
 
         store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`, [true, 'Please wait....']);
 
@@ -425,6 +427,14 @@ export default {
         function removeSearch(){
             search.value =""
         }
+
+        function FinishDetailling(etape){
+            if(etape == 11 ){
+                service_detailling_cmp.value.validateServices()
+            }else{
+                backPreviousStep(11)
+            }
+        }
         return {
             paths,
             user,
@@ -460,7 +470,9 @@ export default {
             isuue_step,
             go_to_type,
             removeSearch,
-            preference_customer
+            preference_customer,
+            service_detailling_cmp,
+            FinishDetailling
 
         };
     },
