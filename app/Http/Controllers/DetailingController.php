@@ -975,10 +975,10 @@ class DetailingController extends Controller
             if($inv){
 
                 if($cust->CustomerID != $inv->CustomerID){
-					
-					
+
+
 					// CustomerID different
-					
+
                     $sub_cust = DB::table('infoCustomer')
                                 ->where('CustomerIDMaster',$inv->CustomerID)
                                 ->where('CustomerID',$cust->CustomerID)
@@ -988,7 +988,7 @@ class DetailingController extends Controller
 
                                 $err = "HSL $tracking already linked with another customer.";
                                 $is_cust_inv = false;
-                            
+
                         }
                 }
             }
@@ -2955,8 +2955,10 @@ class DetailingController extends Controller
             }
 
             $ts = @json_decode($v->tailoring_services);
-            foreach($ts as $id=>$idservice){
-                $grouped_by_tailoring_service[$idservice][] = $v->id;
+            if(is_array($ts)){
+                foreach($ts as $id=>$idservice){
+                    $grouped_by_tailoring_service[$idservice][] = $v->id;
+                }
             }
         }
 

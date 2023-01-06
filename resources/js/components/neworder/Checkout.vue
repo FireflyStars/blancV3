@@ -313,9 +313,11 @@
 
                                             <div class="col-12" v-if="amount_paid_card.length > 0">
                                                 <div class="row" v-for="a,i in amount_paid_card" :key="i">
-                                                    <div class="px-0 payment-desc-text" :class="{'col-7':a.is_admin==1,'col-9':cur_user.role_id!=1}">Paid by Card ({{ a.type[0].toUpperCase() + a.type.slice(1)}} {{a.cardNumber.slice(-7)}}) on <small>{{a.date}}</small>:</div>
+                                                    <div class="px-0 payment-desc-text col-9">Paid by Card ({{ a.type[0].toUpperCase() + a.type.slice(1)}} {{a.cardNumber.slice(-7)}}) on <small>{{a.date}}</small>:</div>
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
+                                                    <!--
                                                     <div class="col-2" v-if="(a.is_admin==1) && a.montant > 0"><button class="btn btn-outline-dark inline-refund-btn py-0 px-1" @click="loadCardRefundModal(a)">Refund</button></div>
+                                                    -->
                                                 </div>
                                             </div>
                                             <!--
@@ -346,9 +348,11 @@
                                             <template v-for="a,i in amount_paid_other" :key="i">
                                                 <div class="col-12">
                                                 <div class="row">
-                                                    <div class="px-0 payment-desc-text" :class="{'col-7':a.is_admin==1,'col-9':cur_user.role_id!=1}">{{a.name}} on <small>{{a.date}}</small>:</div>
+                                                    <div class="px-0 payment-desc-text col-9">{{a.name}} on <small>{{a.date}}</small>:</div>
                                                     <div class="col-3 text-align-right">&#163;{{a.montant}}</div>
+                                                    <!--
                                                     <div class="col-2" v-if="(a.is_admin==1) && a.montant > 0"><button class="btn btn-outline-dark inline-refund-btn py-0 px-1" @click="loadCardRefundModal(a)">Refund</button></div>
+                                                    -->
                                                 </div>
                                                 </div>
                                             </template>
@@ -1071,6 +1075,7 @@ export default {
         }
 
         const paid_by_card = ref([]);
+        const amount_refunded = ref(0);
 
         const getCheckoutItems =  async()=>{
 
@@ -1148,11 +1153,12 @@ export default {
                 has_invoices.value = res.data.has_invoices;
                 amount_paid_other.value = res.data.amount_paid_other;
                 paid_by_card.value = res.data.paid_by_card;
+                amount_refunded.value = res.data.amount_refunded;
             }).catch((err)=>{
 
             }).finally(()=>{
-                if(order.value.TotalDue < 0){
-                    //refund_modal.value.showModal();
+                if(order.value.TotalDue < 0 && amount_paid.value > 0 && amount_paid.value > amount_refunded.value){
+                    refund_modal.value.showModal();
                 }
 
             });

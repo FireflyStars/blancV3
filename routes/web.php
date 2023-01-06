@@ -594,13 +594,27 @@ Route::get('inv-pdf',function(Request $request){
 
         $canvas->page_text($x, $y, $text , $font, 10, array(0, 0, 0));
 
-        return $pdf->download('invoice'.$details->CustomerID.'.pdf');
+        if(isset($get_file_name)){
+            if(!is_dir(storage_path('app/pdf/attachments'))){
+                mkdir(storage_path('app/pdf/attachments'),0777);
+            }
 
+            $filename = 'invoice_'.$details->id.'_'.strtotime('now').'.pdf';
+
+
+            $pdfstr=$pdf->output();
+            Storage::disk('local')->put('pdf'.DIRECTORY_SEPARATOR.'attachments'.DIRECTORY_SEPARATOR.$filename, $pdfstr);
+
+            return $filename;
+
+        }else{
+            return $pdf->download('invoice'.$details->CustomerID.'.pdf');
+        }
 
     }else{
         die("Invoice has no valid items");
     }
-});
+})->name('inv-pdf');
 
 Route::get('notify-test', function () {
     $row_ids = [58];
@@ -759,6 +773,7 @@ Route::get('/test-create-card',function(){
 
         ]);
 
+        $site_url = \Illuminate\Support\Facades\URL::to("/");
 
         $si = $stripe->setupIntents->create([
             'customer' => $stripe_customer->id,
