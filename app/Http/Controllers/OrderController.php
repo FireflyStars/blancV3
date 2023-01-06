@@ -728,7 +728,7 @@ class OrderController extends Controller
                 $err_payment = "Payment unsuccessful";
 
                 return response([
-                    'error_stripe'=>"Stripe error: ".$e->getError()->code,
+                    'error_stripe'=>"Stripe error: ".$e->getMessage(),
                 ]);
 
               }catch (\Stripe\Exception\InvalidRequestException $e) {
@@ -738,7 +738,7 @@ class OrderController extends Controller
                 $err_payment = "Payment unsuccessful";
 
                 return response([
-                    'error_stripe'=>"Stripe error: ".$e->getError()->code,
+                    'error_stripe'=>"Stripe error: ".$e->getMessage(),
                 ]);
               }catch (Exception $e) {
                 OrderController::logErrorPayment($payment_id,$e);
@@ -746,7 +746,7 @@ class OrderController extends Controller
                 $err_payment = "Payment unsuccessful";
 
                 return response([
-                    'error_stripe'=>"Another problem occurred, maybe unrelated to Stripe",
+                    'error_stripe'=>"Another problem occurred, maybe unrelated to Stripe: ".$e->getMessage(),
                 ]);
               }
         }
