@@ -379,12 +379,6 @@ class DetailingController extends Controller
 
         $detailingitem['customer_instructions'] = $customer_instructions;
 
-        // $order = DB::table('infoOrder')
-        // ->select('infoOrder.Status')
-        // ->where('infoOrder.id', $order_id)
-        // ->first();
-        // $detailingitem['order_status'] = $order->Status;
-
         $categories = [
             'Garment'=>'Garment Care',
             'Tailor'=>'Tailoring',
@@ -727,12 +721,6 @@ class DetailingController extends Controller
 
         $cust_cleaning_services = DetailingController::getCustCleaningServices($detailingitem);
 
-        //     $order = DB::table('infoOrder')
-        //     ->select('infoOrder.Status')
-        //     ->where('infoOrder.id', $detailingitem['order_id'])
-        //     ->first();
-        // $detailingitem['order_status'] = $order->Status;
-
         return response()->json(
             [
                 'detailingitem' => $detailingitem,
@@ -967,21 +955,13 @@ class DetailingController extends Controller
         $tracking = $request->tracking;
         $customer_id = $request->customer_id;
         $order_id = $request->order_id;
-        $err = '';
 
         $cust = DB::table('infoCustomer')->where('CustomerID',$customer_id)->first();
         $duplicate_detailing_item = false;
 
-        $current_detailing_item = DB::table('detailingitem')->where('tracking',$tracking)
-            ->where('order_id',$order_id)
-            ->first();
-
-        if($current_detailing_item){
-            $err = "HSL $tracking is exist in this order";
-        }
-
         $item = DB::table('infoitems')->where('ItemTrackingKey',$tracking)->first();
         $has_detailing_order = false;
+        $err = '';
 
         $detailingitem_id = 0;
 
@@ -995,26 +975,25 @@ class DetailingController extends Controller
             if($inv){
 
                 if($cust->CustomerID != $inv->CustomerID){
-
+					
+					
+					// CustomerID different
+					
                     $sub_cust = DB::table('infoCustomer')
-                                ->where('CustomerIDMaster',$cust->CustomerID)
-                                ->where('CustomerID',$inv->CustomerID)
+                                ->where('CustomerIDMaster',$inv->CustomerID)
+                                ->where('CustomerID',$cust->CustomerID)
                                 ->first();
 
                         if(!$sub_cust){
-                            $main_cust = DB::table('infoCustomer')
-                                        ->where('CustomerID',$inv->CustomerID)
-                                        ->where('CustomerIDMaster','')
-                                        ->get();
-                            if(!$main_cust){
+
                                 $err = "HSL $tracking already linked with another customer.";
                                 $is_cust_inv = false;
-                            }
+                            
                         }
                 }
             }
 
-            if($is_cust_inv && !in_array($item->nextpost,[28,34,39,47,43,44,46])){
+            if($is_cust_inv && !in_array($item->nextpost,[28,29,34,39,47,43,44,46])){
                 $err = "HSL $tracking is active. Please change its station";
             }
 
@@ -1095,6 +1074,9 @@ class DetailingController extends Controller
         }
     }
 
+        $current_detailing_item = DB::table('detailingitem')->where('tracking',$tracking)
+            ->where('order_id',$order_id)
+            ->first();
 
         if(!$previous_detailed_item && $current_detailing_item){
             $err = "HSL $tracking is already being detailed.";
@@ -1684,9 +1666,7 @@ class DetailingController extends Controller
 
                         $booking_details['pickup_date'] = date('d/m',$pickup_stamp);
                         $booking_details['pickup_day'] = $days[$pickup_day_index];
-                        if($pickup_slot){
-                            $booking_details['pickup_time'] = $tranches[$pickup_slot];
-                        }
+                        $booking_details['pickup_time'] = $tranches[$pickup_slot];
                     }
 
                 }
@@ -3185,59 +3165,6 @@ class DetailingController extends Controller
         ]);
 
 
-    }
-
-    public function checkProduct(Request $request){
-
-        $tracking = $request->tracking;
-        $customer_id = $request->customer_id;
-        $order_id = $request->order_id;
-        $err = "";
-        $item_product = [];
-
-        $cust = DB::table('infoCustomer')->where('CustomerID',$customer_id)->first();
-
-        $current_detailing_item = DB::table('typeitem')->where('ean13',$tracking)->first();
-
-        $current_item = DB::table('detailingitem')->where('tracking',$tracking)
-            ->where('order_id',$order_id)
-            ->first();
-
-        if($current_item){
-            $err = "Product $tracking is exist in this order";
-        }
-        if(!$current_detailing_item){
-            $err = "Invalid Product";
-        }
-
-            if($current_detailing_item && !$err){
-
-                $item_product = DB::table('detailingitem')->insertGetId([
-                    'id' =>  '',
-                    'order_id' => $order_id,
-                    'tracking' =>  $tracking,
-                    'customer_id' =>  $cust->id,
-                    'etape' =>  11,
-                    'status'=>  'Completed',
-                    'typeitem_id' =>  $current_detailing_item->id,
-                    'describeprixnow'=>  "produit",
-                    'dry_cleaning_price' =>  $current_detailing_item->pricecleaning,
-                    'cleaning_price_type' =>  "PriceNow",
-                    'pricecleaning' => $current_detailing_item->pricecleaning,
-                    'department_id' => $current_detailing_item->department_id,
-                    'category_id'=>  $current_detailing_item->category_id,
-                    'cleaning_services' => '[]',
-                    'tailoring_services'=> '[]',
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'updated_at' => date('Y-m-d H:i:s')
-                    
-                ]); 
-            }
-
-            return response()->json([
-                'item' => $item_product,
-                'err'=>$err
-            ]);
     }
 
 }

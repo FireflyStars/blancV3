@@ -252,7 +252,7 @@
                         <div class="d-flex align-items-center">
                             <div class="w-13"></div>
                             <div class="w-87">
-                                <div class="d-flex justify-content-between total_row">
+                                <div class="d-flex justify-content-between">
                                     <div v-for="(a, index) in groupedPostes" :style="{width:groupedPosteWidth+'%'}" class="text-center" :key="index">
                                         <span class="w-100 each-poste-stats ps-xl-2 pe-xl-2 fw-bold">{{assemblyStatsTotal[a.group_name]}}</span>
                                     </div>
@@ -776,7 +776,7 @@
     line-height: 14px;
     background: rgba(241, 210, 164, 0.7);;
     color: #000000;
-    max-width: 113px;
+    /* max-width: 113px; */
 }
 .on-van{
     background: rgba(234, 214, 247, 0.7);
