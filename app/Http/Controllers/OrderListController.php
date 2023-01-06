@@ -2095,7 +2095,7 @@ class OrderListController extends Controller
 
         $order=DB::table('infoOrder')->where('id','=',$infoOrder_id)->first();
 
-        $infoitems=DB::table('infoitems')->select(['infoInvoice.NumInvoice','infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status','TypePost.Name as station', 'infoitems.conveyorSlot'])->join('infoInvoice',function($join) use($order){
+        $infoitems=DB::table('infoitems')->select(['infoInvoice.NumInvoice','infoitems.id as infoitems_id','infoitems.brand','infoitems.ItemTrackingKey','infoitems.colors','infoitems.typeitem','infoitems.priceTotal','infoitems.status','TypePost.Name as station', 'infoitems.conveyorSlot', 'postes.id as poste_id'])->join('infoInvoice',function($join) use($order){
             $join->on('infoInvoice.SubOrderID','=','infoitems.SubOrderID')
                 ->where('infoInvoice.OrderID','=',$order->OrderID);
         })->leftJoin('postes','postes.id','=','infoitems.nextpost')

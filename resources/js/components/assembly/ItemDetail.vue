@@ -69,10 +69,10 @@
                 </div>
                 <div class="toggle-panel-content" :class="{ 'd-none': !production_panel }">
                     <div class="d-flex">
-                        <div class="col-9 location-title">
+                        <div class="col-7 location-title">
                             Current location
                         </div>
-                        <div class="col-3">
+                        <div class="col-5">
                             <div class="invoice-location rounded-pill" :style="{'background': ITEM.breif_info.location_color }">
                                 <svg v-if="ITEM.breif_info.process != 0" width="12" height="12" viewBox="0 0 12 12" :fill="'#'+ITEM.breif_info.circle_color" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" :fill="'#'+ITEM.breif_info.circle_color"/>
@@ -82,15 +82,15 @@
                                     <path d="M10.9318 6.23315H1.35156C1.35156 8.06699 2.26215 11.6588 5.90449 11.3552C9.54684 11.0517 10.7737 7.81405 10.9318 6.23315Z" :fill="'#'+ITEM.breif_info.circle_color"/>
                                     <circle cx="6" cy="6" r="5" :stroke="'#'+ITEM.breif_info.circle_color" stroke-width="2"/>
                                 </svg>                                
-                            &nbsp;&nbsp;<span class="d-block text-center" :style="{ width: 'calc( 100% - 12px )'}"> {{ ITEM.breif_info.location != 'Storage' ?  ITEM.breif_info.location : ITEM.breif_info.location + ' - ' + ITEM.breif_info.conveyorSlot}}</span>
+                            &nbsp;&nbsp;<span class="d-block text-center" :style="{ width: 'calc( 100% - 12px )'}"> {{ converySlotPostes.includes(ITEM.breif_info.poste_id) ? ITEM.breif_info.location + ' - ' + ITEM.breif_info.conveyorSlot : ITEM.breif_info.location }}</span>
                         </div>
                         </div>
                     </div>
                     <div class="d-flex mt-2">
-                        <div class="col-9 location-title">
+                        <div class="col-7 location-title">
                             Previous Locations
                         </div>
-                        <div class="col-3"></div>
+                        <div class="col-5"></div>
                     </div>
                     <div class="d-flex mt-2" v-for="(history, index) in ITEM.location_history" :key="index">
                         <div class="col-3 previous-location-item-title d-flex align-items-center">
@@ -240,6 +240,7 @@ import ColorTag from "../miscellaneous/ColorTag";
 export default {
     name: "ItemDetail",
     props:['item_id' , 'invoiceId'],
+    emits: ['close'],
     components:{
         QzPrint,
         ColorTag
@@ -256,6 +257,7 @@ export default {
         const item_history_panel = ref(false);
         const itemId = ref('');
         const invoiceId = ref('');
+        const converySlotPostes = ref([36,49,52,55,58,61,64,67,69,70,71,72,73,74,75,76,81,82]);
         const itemIdFromRoute = route.params.item_id;
 
         if(itemIdFromRoute> 0){ 
@@ -333,6 +335,7 @@ export default {
             services_panel,
             item_history_panel,
             itemIdFromRoute,
+            converySlotPostes,
             getStainZone,
             markaslate,
             close: ()=>{
