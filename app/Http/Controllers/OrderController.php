@@ -248,15 +248,15 @@ class OrderController extends Controller
                 'status'=>'NEW',//'PMS'
                 'order_id'=>$new_order_id,
             ];
+            if(!isset($new_order['DeliveryaskID'])){
+                $id_booking_pickup = DB::table('pickup')->insertGetId($pickup_arr);
+                $booking_hd_pickup = DB::table('pickup')->where('id',$id_booking_pickup)->first();
 
-            $id_booking_pickup = DB::table('pickup')->insertGetId($pickup_arr);
-            $booking_hd_pickup = DB::table('pickup')->where('id',$id_booking_pickup)->first();
-
-            DB::table('infoOrder')->where('id',$new_order_id)->update([
-                'PickupID'=>$booking_hd_pickup->PickupID,
-                'DatePickup'=>$new_order['hd_pickup']
-            ]);
-
+                DB::table('infoOrder')->where('id',$new_order_id)->update([
+                    'PickupID'=>$booking_hd_pickup->PickupID,
+                    'DatePickup'=>$new_order['hd_pickup']
+                ]);
+            }
 
          if($new_order['hd_delivery']){
 
@@ -288,14 +288,15 @@ class OrderController extends Controller
                     'order_id'=>$new_order_id,
 
                 ];
+                if(!isset($new_order['DeliveryaskID'])){
+                    $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
+                    $booking_hd_delivery = DB::table('deliveryask')->where('id',$id_booking)->first();
 
-                $id_booking = DB::table('deliveryask')->insertGetId($delivery_arr);
-                $booking_hd_delivery = DB::table('deliveryask')->where('id',$id_booking)->first();
-
-                DB::table('infoOrder')->where('id',$new_order_id)->update([
-                    'DeliveryaskID'=>$booking_hd_delivery->DeliveryaskID,
-                    'DateDeliveryAsk'=>$new_order['hd_delivery']
-                ]);
+                    DB::table('infoOrder')->where('id',$new_order_id)->update([
+                        'DeliveryaskID'=>$booking_hd_delivery->DeliveryaskID,
+                        'DateDeliveryAsk'=>$new_order['hd_delivery']
+                    ]);
+                }
             }
 
          }
@@ -1721,6 +1722,7 @@ class OrderController extends Controller
                     if($slot){
                         $timeslot = $tranches_slots[$slot];
                         $order->order_time = $timeslot;
+                        $order->order_dates = "$order->DateDeliveryAsk _ $timeslot";
                     }
 
                 }
@@ -1730,10 +1732,12 @@ class OrderController extends Controller
             }
             $order->account = $cust->account_type;
 
+            if($order->order_time){
+               $orders_list[] = $order;
+            }
         }
-
         return response()->json([
-            'orders'=>$orders
+            'orders'=>$orders_list
         ]);
     }
 }
