@@ -1666,7 +1666,9 @@ class DetailingController extends Controller
 
                         $booking_details['pickup_date'] = date('d/m',$pickup_stamp);
                         $booking_details['pickup_day'] = $days[$pickup_day_index];
-                        $booking_details['pickup_time'] = $tranches[$pickup_slot];
+                        if($pickup_slot){
+                            $booking_details['pickup_time'] = $tranches[$pickup_slot];
+                        } 
                     }
 
                 }
