@@ -807,7 +807,7 @@
     import MultipleEmail from '../test/MultipleEmail';
     import CheckBox from '../miscellaneous/CheckBox';
     import { phoneCountryCode as phoneCodes } from '../../static/PhoneCountryCodes';
-    import SwitchBtn from '../miscellaneous/SwitchNumberBtn';
+    import SwitchBtn from '../miscellaneous/SwitchBtn';
     import Search from './Search';
     import AccountImportModal from './AccountImportModal';
     import Swal from 'sweetalert2';

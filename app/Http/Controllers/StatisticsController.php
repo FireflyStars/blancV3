@@ -3244,6 +3244,15 @@ class StatisticsController extends Controller
             if($mini_search['hsl'] !=''){
                 $invoices = $invoices->where('infoitems.ItemTrackingKey','like', '%'.$mini_search['hsl'].'%');
             }
+            if($mini_search['type'] !=''){
+                $invoices = $invoices->where('infoitems.DepartmentName','like', '%'.$mini_search['type'].'%');
+            }
+            if($mini_search['brand'] !=''){
+                $invoices = $invoices->where('infoitems.brand','like', '%'.$mini_search['brand'].'%');
+            }
+            if($mini_search['color'] !=''){
+                $invoices = $invoices->where('infoitems.Colors','like', '%'.$mini_search['color'].'%');
+            }
         }        
         $total_invoice_count = $invoices->count();
         $invoices   =  $invoices->skip($request->skip ? $request->skip : 0)

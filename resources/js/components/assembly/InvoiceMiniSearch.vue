@@ -5,6 +5,9 @@
         <input type="text" @keyup.enter="searchInvoice" class="mini-search-input" v-model="miniSearch.hsl" placeholder="Search by HSL">
         <input type="text" @keyup.enter="searchInvoice" class="mini-search-input" v-model="miniSearch.itemName" placeholder="Search by item name">
         <input type="text" @keyup.enter="searchInvoice" class="mini-search-input" v-model="miniSearch.customerName" placeholder="Search by customer name">
+        <input type="text" @keyup.enter="searchInvoice" class="mini-search-input" v-model="miniSearch.type" placeholder="Search by type">
+        <input type="text" @keyup.enter="searchInvoice" class="mini-search-input" v-model="miniSearch.brand" placeholder="Search by brand">
+        <input type="text" @keyup.enter="searchInvoice" class="mini-search-input" v-model="miniSearch.color" placeholder="Search by color">
     </div>
 </template>
 <script>
@@ -25,6 +28,9 @@ export default{
             hsl: '',
             itemName: '',
             customerName: '',
+            type: '',
+            brand: '',
+            color: '',
         })
         const searchInvoice = ()=>{
             store.dispatch(`${INVOICE_MODULE}${SET_INVOICE_MINI_SEARCH}`, miniSearch.value)
