@@ -875,8 +875,9 @@ import axios from 'axios';
                         Customer : CustomerID.value
                         }).then((res)=>{   
                             if(res.data.orders.length != 0){
+                                const result = res.data.orders.filter((v,i,a)=>a.findIndex(v2=>(v2.order_dates===v.order_dates))===i)
                                 deliveryDate_modal.value.showModal();
-                                ordersCustomer.value =  res.data.orders;
+                                ordersCustomer.value =  result;
                                 deliverydateModal.value = true;
                             }   
                         }).catch((err)=>{
