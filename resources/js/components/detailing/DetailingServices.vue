@@ -57,7 +57,18 @@
                 class="accordion-collapse collapse"
                 id="acdpanel_otherpricings" :class="{'show':detailingitem.cleaning_price_type!=null}"
             >
-                <div class="accordion-body row mt-3">
+               <!-- orderfullfill -->
+               <div v-if="detailingitem.order_status == 'FULFILLED'"  class="accordion-body row mt-3">
+                   
+                     <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center" id="pricenow_cleaning" @click="loadPriceNowModal('cleaning')" :class="{'sel_service':detailingitem.cleaning_price_type=='PriceNow' && !detailingitem.describeprixnow}">Price now</div>
+                     <div class="col-2 d-flex text-center each-sub-service py-4 justify-content-center cleaning-subservice cleaning-prices" :id="'sub_service_'+type_prices[1].replace(' ','')" @click="toggleSubService(type_prices[1].replace(' ',''))" :data-cleaning-price-type="type_prices[1]" :class="{'sel_service':detailingitem.cleaning_price_type==type_prices[1]}">
+                       {{type_prices[1]}}
+                    </div>
+                     <div class="col-2 d-flex text-center each-price-now-btn py-4 justify-content-center cleaning-subservice" id="free_reclean_cleaning" @click="FreeReclean()" :class="{'sel_service':detailingitem.cleaning_price_type=='PriceNow'  && detailingitem.describeprixnow}">Free reclean</div>
+
+                </div>
+
+                <div v-else class="accordion-body row mt-3">
                     <div class="col-2 d-flex text-center each-sub-service py-4 justify-content-center cleaning-subservice cleaning-prices" v-for="name in type_prices" :id="'sub_service_'+name.replace(' ','')" @click="toggleSubService(name.replace(' ',''))" :data-cleaning-price-type="name" :class="{'sel_service':detailingitem.cleaning_price_type==name}">
                        {{name}}
                     </div>
@@ -602,7 +613,9 @@ export default {
                 let i;
                 for(i in keys){
                     let id = selected_services[i].getAttribute('data-cleaning-service-id');
-                    cleaning_services_id.push(id);
+                    if(id != null){
+                        cleaning_services_id.push(id);
+                    }
                 }
 
                 sel_cleaning_service_id.value = cleaning_services_id;
@@ -630,6 +643,9 @@ export default {
                         cleaning_pricing_type = pricing_el[0].getAttribute('data-cleaning-price-type');
                         sel_cleaning_price_type.value = cleaning_pricing_type;
                     }
+            }
+            if(sel_cleaning_price_type.value == 'PriceNow' && props.detailingitem.describeprixnow == 'Free reclean' && props.detailingitem.order_status == "FULFILLED" ){
+                montant_value.value = 0
             }
 
             if(on_click){
@@ -767,7 +783,9 @@ export default {
         function loadPriceNowModal(type){
 
             let pricedescribebtn= document.getElementById('pricenow_describe_'+type);
-               pricedescribebtn.classList.remove('sel_service');
+            if(pricedescribebtn != null){
+                pricedescribebtn.classList.remove('sel_service');
+            }
 
             let el = document.getElementById('pricenow_'+type);
             el.classList.toggle('sel_service');
@@ -976,6 +994,43 @@ export default {
                
             }
         }
+        function FreeReclean(){
+
+            let freebtn= document.getElementById('free_reclean_cleaning');
+                  freebtn.classList.toggle('sel_service');
+
+                let elc = Object.values(document.querySelectorAll('.cleaning-prices'));
+                    elc.forEach(function(v,i){
+                        v.classList.remove('sel_service');
+                });
+
+            let classes = Object.values(freebtn.classList);
+
+            if(classes.includes('sel_service')){
+                    sel_cleaning_price_type.value = 'PriceNow';  
+                }
+                price_now_type.value = 'cleaning';
+
+                axios.post('/set-describe-price-now',{
+                    id:props.detailingitem.id,
+                    type:"cleaning",
+                    montant:"0",
+                    describeprixnow : "Free reclean"
+                }).then((res)=>{
+                    if(res.data.updated){
+                        context.emit('init-detailing');
+                        store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`, {
+                            message: 'Item describe and price updated',
+                            ttl: 5,
+                            type: 'success'
+                        });
+                    }
+                }).catch((err)=>{
+                    console.log(err);
+                }).finally(()=>{
+
+                });
+            }
 
         return {
             back,
@@ -1014,7 +1069,8 @@ export default {
             calculateNegativPerc,
             service_perc,
             montant_value,
-            getPreference
+            getPreference,
+            FreeReclean
         };
     },
 }
