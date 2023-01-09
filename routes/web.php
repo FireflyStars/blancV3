@@ -1351,6 +1351,7 @@ Route::post('/set-checkout-credit-refund',[DetailingController::class,'setChecko
 */
 Route::post('/get-ar-customers',[CustomerController::class,'getArCustomers'])->name('get-ar-customers')->middleware('auth');
 Route::post('/get-ar-invoiced-customers',[CustomerController::class,'getArInvoicedCustomers'])->name('get-ar-invoiced-customers')->middleware('auth');
+Route::post('/get-ar-paid-customers',[CustomerController::class,'getArPaidCustomers'])->name('get-ar-paid-customers')->middleware('auth');
 Route::post('/mail-invoice-customer',[CustomerController::class,'mailInvoiceCustomer'])->name('mail-invoice-customer')->middleware('auth');
 Route::post('/generate-ar-invoice',[CustomerController::class,'generateArInvoice'])->name('generate-ar-invoice')->middleware('auth');
 Route::post('/mark-as-paid',[CustomerController::class,'markAsPaid'])->name('mark.as.paid')->middleware('auth');

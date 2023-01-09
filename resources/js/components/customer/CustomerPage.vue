@@ -10,6 +10,7 @@
                         <ul class="tab-nav list-inline mb-0">
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" v-if="current_user && current_user.role_id==1" :class="selected_nav == 'AR' ? 'active' : ''" @click="setNav('AR')">A/R</li>
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" v-if="current_user && current_user.role_id==1" :class="selected_nav == 'ARInvoiced' ? 'active' : ''" @click="setNav('ARInvoiced')">A/R invoiced</li>
+                            <li class="tab-nav-item font-16 list-inline-item px-3 py-2" v-if="current_user && current_user.role_id==1" :class="selected_nav == 'ARPaid' ? 'active' : ''" @click="setNav('ARPaid')">A/R Paid</li>
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'CustomerList' ? 'active' : ''" @click="setNav('CustomerList')">All Customers</li>
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'B2B' ? 'active' : ''" @click="setNav('B2B')">B2B</li>
                             <li class="tab-nav-item font-16 list-inline-item px-3 py-2" :class="selected_nav == 'B2C' ? 'active' : ''" @click="setNav('B2C')">B2C</li>
@@ -35,6 +36,7 @@ import CustomerFilter from '../miscellaneous/CustomerFilter';
 import CustomerList from './CustomerList';
 import ArList from './ArList';
 import ArInvoiced from './ArInvoiced.vue';
+import ArPaid from './ArPaid';
 
 import { CUSTOMER_MODULE, SET_CUSTOMER_SELECTED_TAB, SET_CUSTOMER_LIST, GET_CUSTOMER_SELECTED_TAB } from '../../store/types/types';
 export default {
@@ -46,6 +48,7 @@ export default {
         CustomerList,
         ArList,
         ArInvoiced,
+        ArPaid,
     },
     setup(){
         const store = useStore();
@@ -66,6 +69,8 @@ export default {
                 component.value = 'ArList';
             }else if(nav=='ARInvoiced'){
                 component.value = 'ArInvoiced';
+            }else if(nav=='ARPaid'){
+                component.value = 'ArPaid';
             }else{
                 component.value = nav;
             }
