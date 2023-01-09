@@ -217,16 +217,12 @@ class OrderListController extends Controller
                 $orderlist = $orderlist->groupBy('infoOrder.id');
             }
             if($mini_search['hsl'] !=''){
-                if($mini_search['ticketNo'] !=''){
-                    $orderlist = $orderlist->join('infoitems', 'infoInvoice.InvoiceID', '=', 'infoitems.InvoiceID');
-                    $orderlist = $orderlist->where('infoitems.ItemTrackingKey','like', '%'.$mini_search['hsl'].'%');
-                    $orderlist = $orderlist->groupBy('infoOrder.id');
-                }else{
+                if($mini_search['ticketNo'] == ''){
                     $orderlist = $orderlist->join('infoInvoice', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID');
-                    $orderlist = $orderlist->join('infoitems', 'infoInvoice.InvoiceID', '=', 'infoitems.InvoiceID');
-                    $orderlist = $orderlist->where('infoitems.ItemTrackingKey','like', '%'.$mini_search['hsl'].'%');
-                    $orderlist = $orderlist->groupBy('infoOrder.id');
                 }
+                $orderlist = $orderlist->join('infoitems', 'infoInvoice.InvoiceID', '=', 'infoitems.InvoiceID');
+                $orderlist = $orderlist->where('infoitems.ItemTrackingKey','like', '%'.$mini_search['hsl'].'%');
+                $orderlist = $orderlist->groupBy('infoOrder.id');
             }
             if($mini_search['accountName'] != ''){
                 $orderlist = $orderlist->where('infoCustomer.CompanyName','like', '%'.$mini_search['accountName'].'%');
@@ -253,7 +249,7 @@ class OrderListController extends Controller
                         $express=array_merge($express,[6]);
                     }
                     if(!empty($express)){
-                        $orderlist->whereIn('OrderID',function($query) use($express){
+                        $orderlist->whereIn('infoOrder.OrderID',function($query) use($express){
                             $query->select('infoInvoice.OrderID')
                                 ->from('infoInvoice')
                                 ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
@@ -267,7 +263,7 @@ class OrderListController extends Controller
                     $orderlist=$orderlist->whereIn($colname, $values);
                 }
                 else if($colname == 'infoitems.ProdDate' && !empty($values)){
-                    $orderlist->whereIn('OrderID',function($query) use($values){
+                    $orderlist->whereIn('infoOrder.OrderID',function($query) use($values){
                         $query->select('infoInvoice.OrderID')
                             ->from('infoInvoice')
                             ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
@@ -276,7 +272,7 @@ class OrderListController extends Controller
                     });
                 }
                 else if($colname == 'infoitems.DelivDate' && !empty($values)){
-                    $orderlist->whereIn('OrderID',function($query) use($values){
+                    $orderlist->whereIn('infoOrder.OrderID',function($query) use($values){
                         $query->select('infoInvoice.OrderID')
                             ->from('infoInvoice')
                             ->join('infoitems','infoInvoice.InvoiceID','infoitems.InvoiceID')
