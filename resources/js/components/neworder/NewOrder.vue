@@ -2281,7 +2281,7 @@ import axios from 'axios';
     }
 
 </style>
-<style lang="scss">
+<style lang="scss" scoped>
 .form-group{
     .error{
         small{
