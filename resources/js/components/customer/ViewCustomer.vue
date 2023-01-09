@@ -44,7 +44,7 @@
                                 <div class="account-details-header d-flex mb-5">
                                     <div class="name-section">
                                         <h1 class="gilory-extra-bold font-36">{{form.Name}}</h1>
-                                        <div class="d-flex align-items-center mt-3">
+                                        <div class="d-flex align-items-center">
                                             <div class="booking-icon rounded-pill d-flex align-items-center justify-content-center">
                                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" >
                                                     <path d="M5.37598 11.5244C5.37598 15.1009 8.15655 18.0002 11.5866 18.0002C14.2001 18.0002 16.4366 16.3169 17.3532 13.9334" stroke="#42A71E" stroke-linecap="round"/>
@@ -54,7 +54,7 @@
                                                 </svg>
                                                 {{ form.booking }}
                                             </div>
-                                            <div class="customer-type py-2 bg-color rounded-3">
+                                            <div class="customer-type bg-color rounded-3">
                                                 <span class="d-flex align-items-center justify-content-center rounded-pill programme-icon ms-3">
                                                     {{ form.accountType }}
                                                 </span>
