@@ -3368,6 +3368,19 @@ class CustomerController extends Controller
         ]);
     }
 
+    /**
+     * Mark as paid
+     * @param ids of infoOrderPrint
+     */
+    public function markAsPaid(Request $request){
+        $ids = $request->ids;
+        foreach ($ids as $infoOrderPrintId) {
+            DB::table('infoOrderPrint')->where('id', $infoOrderPrintId)->update(['Paid'=>1]);
+            $infoOrderIds = json_decode(DB::table('infoOrderPrint')->where('id', $infoOrderPrintId)->value('infoOrder_id'));
+            DB::table('infoOrder')->where('id', $infoOrderIds)->update(['Paid'=>1]);
+        }
+        return response()->json(true);
+    }
     public function downloadArPdf(Request $request){
         $filename=$request->get('filename');
         return Storage::download($filename);
@@ -3474,7 +3487,8 @@ class CustomerController extends Controller
         $customers = DB::table('infoOrderPrint')
         ->select('*','infoOrderPrint.id as row_id')
         ->join('infoCustomer','infoOrderPrint.CustomerID','infoCustomer.CustomerID')
-        ->where('infoOrderPrint.email','!=','')->get();
+        ->where('infoOrderPrint.email','!=','')
+        ->where('infoOrderPrint.Paid', 0)->get();
 
 
     $list = [];

@@ -1,5 +1,5 @@
 import {
-    LOADER_MODULE, 
+    LOADER_MODULE,
     DISPLAY_LOADER,
     HIDE_LOADER,
     GET_CUSTOMER_LIST,
@@ -23,7 +23,13 @@ import {
     GET_LOADER_CLASS,
     SET_LOADER_CLASS,
     GET_CUSTOMER_SELECTED_TAB,
-    CUSTOMER_SET_MINI_SEARCH
+    CUSTOMER_SET_MINI_SEARCH,
+    // GET_AR_PAID,
+    // SET_AR_PAID,
+    ADD_TO_AR_UNPAID_LIST,
+    REMOVE_FROM_AR_UNPAID_LIST,
+    GET_AR_UNPAID_LIST,
+    FORMAT_AR_UNPAID_LIST,
 }
 from '../types/types';
 export const Customer = {
@@ -33,10 +39,12 @@ export const Customer = {
         customer_list: [],
         total_customer_count: '',
         current_selected: '',
-        multi_selected: [],      
+        multi_selected: [],
+        ar_unpaid: [],
+        ar_paid: [],
         customer_detail: {
             name: ''
-        },  
+        },
         loader: 'animate40',
         filter: {
             skip: 0,
@@ -61,7 +69,7 @@ export const Customer = {
         [SET_CUSTOMER_LIST]: (state, payload)=>{
             state.total_customer_count = payload.total_count;
             state.customer_list = payload.customers;
-            state.filter.skip = state.customer_list.length;    
+            state.filter.skip = state.customer_list.length;
         },
         [SET_CURRENT_SELECTED_CUSTOMER]: (state, payload)=>{
             state.current_selected = payload;
@@ -73,7 +81,7 @@ export const Customer = {
             state.filter.mini_search = payload;
         },
         [SET_CUSTOMER_FILTER]: (state, payload)=>{
-            state.filter.skip = 0; 
+            state.filter.skip = 0;
             if(payload.Customername){
                 state.filter.Customername = payload.Customername.value;
             }else {
@@ -83,19 +91,30 @@ export const Customer = {
                 state.filter.total_spent = payload.total_spent.value;
                 state.filter.last_order_start = payload.last_order.value.start;
                 state.filter.last_order_end = payload.last_order.value.end;
-            } 
+            }
         },
-        [REMOVE_CUSTOMER_FILTER]: (state, payload)=>{    
+        [REMOVE_CUSTOMER_FILTER]: (state, payload)=>{
 
                 state.filter.customer_type = '';
                 state.filter.customer_location = '';
                 state.filter.invoice_preference = '';
                 state.filter.total_spent = '';
                 state.filter.last_order_start = '';
-                state.filter.last_order_end = '';    
+                state.filter.last_order_end = '';
         },
         [SET_CUSTOMER_DETAIL]:(state, payload)=>{
             state.customer_detail = payload;
+        },
+        [ADD_TO_AR_UNPAID_LIST]:(state, payload)=>{
+            state.ar_unpaid = [ ... state.ar_unpaid, payload];
+        },
+        [REMOVE_FROM_AR_UNPAID_LIST]:(state, payload)=>{
+            state.ar_unpaid = state.ar_unpaid.filter(item=>{
+                return item != payload
+            });
+        },
+        [FORMAT_AR_UNPAID_LIST]:(state)=>{
+            state.ar_unpaid = [];
         },
         [SET_LOADER_CLASS]: (state, payload) => state.loader = payload,
     },
@@ -154,7 +173,7 @@ export const Customer = {
             });
         },
         [SET_CUSTOMER_DETAIL]: ( {commit} , payload)=>{
-            
+
             commit(SET_CUSTOMER_DETAIL, payload);
         },
         [LOAD_CUSTOMER_DETAIL]: async ( {commit, dispatch}, payload )=>{
@@ -169,7 +188,16 @@ export const Customer = {
             }).finally(()=>{
                 commit(SET_LOADER_CLASS,'animate40 animate100');
             });
-        }
+        },
+        [ADD_TO_AR_UNPAID_LIST]: ( {commit} , payload)=>{
+            commit(ADD_TO_AR_UNPAID_LIST, payload);
+        },        
+        [REMOVE_FROM_AR_UNPAID_LIST]: ( {commit} , payload)=>{
+            commit(REMOVE_FROM_AR_UNPAID_LIST, payload);
+        },        
+        [FORMAT_AR_UNPAID_LIST]: ( {commit})=>{
+            commit(FORMAT_AR_UNPAID_LIST);
+        },        
     },
     getters:{
         [GET_CUSTOMER_LIST]: state => state.customer_list,
@@ -180,5 +208,6 @@ export const Customer = {
         [GET_CUSTOMER_DETAIL]: state => state.customer_detail,
         [GET_LOADER_CLASS]: state => state.loader,
         [GET_CUSTOMER_SELECTED_TAB]: state => state.filter.selected_nav,
+        [GET_AR_UNPAID_LIST]: state => state.ar_unpaid,
     }
 }

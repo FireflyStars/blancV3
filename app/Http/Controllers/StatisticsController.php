@@ -3190,7 +3190,7 @@ class StatisticsController extends Controller
             $invoices   = $invoices->whereIn('infoitems.Status', $request->status);
         }
         if(count($request->dest)){
-            $invoices   = $invoices->whereIn('infoitems.store', $request->dest);
+            $invoices   = $invoices->whereIn('infoOrder.TypeDelivery', $request->dest);
         }
         if(count($request->location)){
             $invoices   = $invoices->whereIn('postes.nom', $request->location);

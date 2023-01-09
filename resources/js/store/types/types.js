@@ -153,6 +153,13 @@ export const REMOVE_CUSTOMER_FILTER = 'REMOVE_CUSTOMER_FILTER'; //action
 export const FILTER_CUSTOMER_LIST = 'FILTER_CUSTOMER_LIST'; //action
 export const LOAD_CUSTOMER_DETAIL = 'LOAD_CUSTOMER_DETAIL'; //action
 export const CUSTOMER_SET_MINI_SEARCH = 'CUSTOMER_SET_MINI_SEARCH'; //action
+export const ADD_TO_AR_UNPAID_LIST = 'ADD_TO_AR_UNPAID_LIST'; //action
+export const REMOVE_FROM_AR_UNPAID_LIST = 'REMOVE_FROM_AR_UNPAID_LIST'; //action
+export const GET_AR_UNPAID_LIST = 'GET_AR_UNPAID_LIST'; //action
+export const FORMAT_AR_UNPAID_LIST = 'FORMAT_AR_UNPAID_LIST'; //action
+export const ADD_AR_PAID_LIST = 'ADD_AR_UNPAID_LIST'; //action
+export const RMOVE_FROM_AR_PAID_LIST = 'RMOVE_FROM_AR_PAID_LIST'; //action
+export const GET_AR_PAID_LIST = 'GET_AR_PAID_LIST'; //action
 // end all customer page
 
 export const CUSTOMEREMAILS_GET_LIST='CUSTOMEREMAILS_GET_LIST'//getters

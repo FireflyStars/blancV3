@@ -17,7 +17,7 @@
                 >
                     <!-- checkbox column -->
                     <td valign="middle" align="center">
-                        <check-box :id="customer.id" @checkbox-clicked="checkboxclicked"></check-box>
+                        <check-box :id="customer.id" :checked_checkbox="AR_UNPAID_LIST.includes(customer.id)" @checkbox-clicked="checkboxclicked"></check-box>
                     </td>
                     <td>{{customer.NumFact}}</td>
                     <!-- Customer Type -->
@@ -56,30 +56,24 @@
             </tfoot>
         </table>
     </transition>
-    <button class="ar-btn" v-if="Object.values(customerList).length > 0" @click="batchPdf">Batch Pdf</button>
+    <button class="ar-btn" v-if="AR_UNPAID_LIST.length" @click="batchPdf">Batch Pdf</button>
+    <button class="mark-as-paid" v-if="AR_UNPAID_LIST.length" @click="markAsPaid">Mark As Paid</button>
 </template>
 <script>
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
     CUSTOMER_MODULE,
-    GET_ALL_SELECTED_CUSTOMER,
-    GET_CURRENT_SELECTED_CUSTOMER,
-    GET_CUSTOMER_LIST,
-    GET_LOADED_CUSTOMER_COUNT,
-    GET_TOTAL_CUSTOMER_COUNT,
     LOAD_MORE_CUSTOMER,
-    SET_CURRENT_SELECTED_CUSTOMER,
-    SET_CUSTOMER_DETAIL,
-    SET_CUSTOMER_LIST,
-    SET_CUSTOMER_FILTER,
-    FILTER_CUSTOMER_LIST,
     LOADER_MODULE,
     DISPLAY_LOADER,
     HIDE_LOADER,
     TOASTER_MODULE,
     TOASTER_MESSAGE,
-
+    ADD_TO_AR_UNPAID_LIST,
+    REMOVE_FROM_AR_UNPAID_LIST,
+    FORMAT_AR_UNPAID_LIST,
+    GET_AR_UNPAID_LIST,
 } from "../../store/types/types";
 import { useStore } from 'vuex';
 import CheckBox from '../miscellaneous/CheckBox';
@@ -155,7 +149,7 @@ export default {
                     thClass: 'customer-table-th',
                     tdClass: 'fw-16',
                 },
-*/
+                */
                 {
                     label: 'Email',
                     key: 'email',
@@ -182,11 +176,11 @@ export default {
             ];
 
 
-        const CURRENT_SELECTED=computed(()=>{
-            return store.getters[`${CUSTOMER_MODULE}${GET_CURRENT_SELECTED_CUSTOMER}`];
-        });
-        const MULTI_SELECTED=computed(()=>{
-            return store.getters[`${CUSTOMER_MODULE}${GET_ALL_SELECTED_CUSTOMER}`];
+        // const CURRENT_SELECTED=computed(()=>{
+        //     return store.getters[`${CUSTOMER_MODULE}${GET_CURRENT_SELECTED_CUSTOMER}`];
+        // });
+        const AR_UNPAID_LIST=computed(()=>{
+            return store.getters[`${CUSTOMER_MODULE}${GET_AR_UNPAID_LIST}`];
         });
         const loadMoreCustomer = ()=>{
             store.dispatch(`${CUSTOMER_MODULE}${LOAD_MORE_CUSTOMER}`);
@@ -198,7 +192,7 @@ export default {
         function loadCustomer(){
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
                 true,
-                "Loading Customer data....",
+                "Loading A/R invoiced data....",
             ]);
 
             axios.post('/get-ar-invoiced-customers',{})
@@ -227,81 +221,70 @@ export default {
         }
 
         const checkboxclicked = ( check, id)=>{
-            let row = document.getElementById('row_'+id);
-
             if(check){
-                row.classList.add('current_sel');
+                store.dispatch(`${CUSTOMER_MODULE}${REMOVE_FROM_AR_UNPAID_LIST}`, id);
             }else{
-                row.classList.remove('current_sel');
+                store.dispatch(`${CUSTOMER_MODULE}${ADD_TO_AR_UNPAID_LIST}`, id);
             }
         }
 
-        const selectrow = (customerID)=>{
-            let el = document.getElementById('row_'+customerID);
-            el.classList.toggle('current_sel');
+        const selectrow = (rowId)=>{
 
-            let classes = Object.values(el.classList);
-
-            let checkbox = document.querySelector('#row_'+customerID+' .chkbox');
-
-            if(classes.includes('current_sel')){
-                checkbox.classList.add('checked');
+            if(AR_UNPAID_LIST.value.includes(rowId)){
+                store.dispatch(`${CUSTOMER_MODULE}${REMOVE_FROM_AR_UNPAID_LIST}`, rowId);
             }else{
-                checkbox.classList.remove('checked');
+                store.dispatch(`${CUSTOMER_MODULE}${ADD_TO_AR_UNPAID_LIST}`, rowId);
             }
         }
 
         function batchPdf(){
-            let els = Object.values(document.querySelectorAll('.current_sel'));
-            let row_ids = [];
-
-            if(els.length==0){
-                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
-                    message:"No customer selected",
-                    ttl:5,
-                    type:'danger'
-                });
-            }else{
-                els.forEach((v,i)=>{
-                    let id = v.getAttribute('id').replace('row_','');
-                    row_ids.push(id);
-                });
-
-                 store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[
-                        true,
-                        "Generating PDF....",
-                    ]);
-
-                axios.post('/generate-ar-invoice',{
-                    customer_ids:JSON.stringify([]),
-                    type:'pdf',
-                    has_rows:1,
-                    row_ids:JSON.stringify(row_ids),
-                }).then((res)=>{
-                        if(res.data.url){
-                            window.location = res.data.url;
-                        }else{
-                            if(type=='pdf' && res.data.details_per_cust.length==0){
-                                store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
-                                    message:"No valid invoices available",
-                                    ttl:5,
-                                    type:'danger'
-                                });
-                            }
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[ true, "Generating PDF...."]);
+            axios.post('/generate-ar-invoice',{
+                customer_ids:JSON.stringify([]),
+                type:'pdf',
+                has_rows:1,
+                row_ids:JSON.stringify(AR_UNPAID_LIST.value),
+            }).then((res)=>{
+                    if(res.data.url){
+                        window.location = res.data.url;
+                    }else{
+                        if(type=='pdf' && res.data.details_per_cust.length==0){
+                            store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{
+                                message:"No valid invoices available",
+                                ttl:5,
+                                type:'danger'
+                            });
                         }
-                }).catch((err)=>{
-                    console.log(err);
-                }).finally(()=>{
-                     store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
-                });
-            }
-
+                    }
+            }).catch((err)=>{
+                console.log(err);
+            }).finally(()=>{
+                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            });                
         }
-
+        const markAsPaid = ()=>{
+            store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[ true, "Marking as Paid....",]);
+            axios.post('/mark-as-paid',{
+                ids: AR_UNPAID_LIST.value
+            }).then((res)=>{
+                if(res.data){
+                    customerList.value = customerList.value.filter(item=>{
+                        return ! AR_UNPAID_LIST.value.includes(item.id);
+                    })
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message:"Marked as Paid for selected invoices", ttl:5, type:'success' });
+                    store.dispatch(`${CUSTOMER_MODULE}${FORMAT_AR_UNPAID_LIST}`);
+                }else{
+                    store.dispatch(`${TOASTER_MODULE}${TOASTER_MESSAGE}`,{ message:"server error", ttl:5, type:'danger' });
+                }
+            }).catch((err)=>{
+                console.log(err);
+            }).finally(()=>{
+                 store.dispatch(`${LOADER_MODULE}${HIDE_LOADER}`);
+            });     
+        }
         return {
             route,
-            CURRENT_SELECTED,
-            MULTI_SELECTED,
+            AR_UNPAID_LIST,
             customerList,
             totalCustomerCount,
             currentLoadedCustomerCount,
@@ -310,11 +293,8 @@ export default {
             loadMoreCustomer,
             checkboxclicked,
             selectrow,
-            showlayer: computed( ()=> {
-                return (route.params.customer_id > 0 && CURRENT_SELECTED.value != '');
-                // return false;
-            }),
             batchPdf,
+            markAsPaid
         }
     }
 }
@@ -445,5 +425,12 @@ export default {
 
     .each-email-line img{
         margin-left:5px;
+    }
+    .mark-as-paid{
+        padding:0.5rem 1rem;
+        border-radius:4px;
+        border:thin solid red;
+        font: normal 16px "Gotham Rounded";
+        color: red;
     }
 </style>
