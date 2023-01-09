@@ -379,6 +379,12 @@ class DetailingController extends Controller
 
         $detailingitem['customer_instructions'] = $customer_instructions;
 
+        $order = DB::table('infoOrder')
+        ->select('infoOrder.Status')
+        ->where('infoOrder.id', $order_id)
+        ->first();
+        $detailingitem['order_status'] = $order->Status;
+
         $categories = [
             'Garment'=>'Garment Care',
             'Tailor'=>'Tailoring',
@@ -720,6 +726,12 @@ class DetailingController extends Controller
         /* CLEANING SERVICES */
 
         $cust_cleaning_services = DetailingController::getCustCleaningServices($detailingitem);
+
+        $order = DB::table('infoOrder')
+        ->select('infoOrder.Status')
+        ->where('infoOrder.id',  $detailingitem['order_id'])
+        ->first();
+        $detailingitem['order_status'] = $order->Status;
 
         return response()->json(
             [
@@ -1860,6 +1872,7 @@ class DetailingController extends Controller
             $grouped_tailoring_services[$v->id] = [
                 'group'=>$v->group_service,
                 'price'=>$v->price,
+                'name'=>$v->name,
             ];
         }
 
@@ -2026,12 +2039,14 @@ class DetailingController extends Controller
                 if($v->tailoring_services !='' && !is_null($v->tailoring_services) && is_array(@json_decode($v->tailoring_services)) && !empty(@json_decode($v->tailoring_services))){
                     $group_by_tailoring_service = [];
                     $tailoing_services_price_by_group = [];
+                    $dt = [];
 
                     $ts = @json_decode($v->tailoring_services);
 
                     foreach($ts as $id=>$val){
                         if(isset($grouped_tailoring_services[$val])){
                             $gp = $grouped_tailoring_services[$val];
+                            $dt[] = $gp['name'];
                             $group_by_tailoring_service[$gp['group']][] = $gp['price'];
                         }
                     }
@@ -2047,7 +2062,7 @@ class DetailingController extends Controller
 
 
                             $t_arr = [
-                                'name'=>$group,
+                                'name'=>"Tailoring (".implode(",",$dt).")",
                                 'price'=>$t_price,
                                 'describe'=>$v->describeprixnowtailoring
                             ];
