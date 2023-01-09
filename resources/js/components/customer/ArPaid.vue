@@ -169,9 +169,9 @@ export default {
         // const CURRENT_SELECTED=computed(()=>{
         //     return store.getters[`${CUSTOMER_MODULE}${GET_CURRENT_SELECTED_CUSTOMER}`];
         // });
-        const AR_UNPAID_LIST=computed(()=>{
-            return store.getters[`${CUSTOMER_MODULE}${GET_AR_UNPAID_LIST}`];
-        });
+        // const AR_UNPAID_LIST=computed(()=>{
+        //     return store.getters[`${CUSTOMER_MODULE}${GET_AR_UNPAID_LIST}`];
+        // });
         const loadMoreCustomer = ()=>{
             store.dispatch(`${CUSTOMER_MODULE}${LOAD_MORE_CUSTOMER}`);
         }
@@ -224,13 +224,11 @@ export default {
 
         return {
             route,
-            AR_UNPAID_LIST,
+            // AR_PAID_LIST,
             customerList,
             totalCustomerCount,
             currentLoadedCustomerCount,
             tableColumnsDef,
-            batchPdf,
-            markAsPaid,
             formatPhone,
             loadMoreCustomer,
             checkboxclicked,
