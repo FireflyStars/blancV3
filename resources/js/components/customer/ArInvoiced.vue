@@ -417,4 +417,8 @@ export default {
         font: normal 16px "Gotham Rounded";
         color: red;
     }
+    .mark-as-paid:hover{
+        background-color: red;
+        color: white;
+    }
 </style>
