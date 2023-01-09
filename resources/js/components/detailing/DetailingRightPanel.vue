@@ -277,7 +277,7 @@
                                 <div class="row mb-1" v-for="(services,gpService) in grouped_cleaning_services">
                                     <div class="col-9 pr-0">
                                         <span>{{gpService}}</span>
-                                        (<span v-for="(service,index) in services">{{service.name}}<span v-if="index+1 < services.length">, </span></span>)
+                                        (<span v-for="(service,index) in services">{{service.name}}<span v-if="index+1 < services.length">, </span></span><span v-if="detailingitem.describeprixnow == 'Free reclean' && gpService == 'Dry cleaning' && detailingitem.order_status == 'FULFILLED'"> , Free reclean</span>)
                                     </div>
                                     <div class="col-3 pl-0 text-right">
                                         <span v-if="grouped_cleaning_price[gpService] || detailingitem.cleaning_price_type=='PriceNow' " class="float-right">
