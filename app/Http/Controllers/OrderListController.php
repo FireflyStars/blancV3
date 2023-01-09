@@ -423,7 +423,10 @@ class OrderListController extends Controller
             if($order->TypeDelivery == "DELIVERY" && ($order->Status == "RECURRING" || $order->Status == "SCHEDULED")  && $order->deliverymethod == '' ){
                 if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
 
-                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                    if($current_tab == 'customer_care')
+                        $order->Deliv = now()->lt(Carbon::parse($order->DateDeliveryAsk)) ? date('d/m/Y',strtotime($order->DateDeliveryAsk)): '--';
+                    else
+                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
 
                 } else {
@@ -448,7 +451,10 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
 
-                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                    if($current_tab == 'customer_care')
+                        $order->Deliv = now()->lt(Carbon::parse($order->DateDeliveryAsk)) ? date('d/m/Y',strtotime($order->DateDeliveryAsk)): '--';
+                    else
+                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                     //dateProd
                     $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
 
@@ -462,10 +468,16 @@ class OrderListController extends Controller
 
                                 if($pickupDate <  $DeliveryDate){
 
-                                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                                    if($current_tab == 'customer_care')
+                                        $order->Deliv = now()->lt(Carbon::parse($order->DateDeliveryAsk)) ? date('d/m/Y',strtotime($order->DateDeliveryAsk)): '--';
+                                    else
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                     $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                 } else if ($pickupDate >  $DeliveryDate){
-                                    $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));;
+                                    if($current_tab == 'customer_care')
+                                        $order->Deliv = now()->lt(Carbon::parse($order->DatePickup)) ? date('d/m/Y',strtotime($order->DatePickup)): '--';
+                                    else
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                     $order->Prod  = date('d/m/Y',strtotime($order->DatePickup));
                                 }
                         } else {
@@ -484,7 +496,10 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01"   && !is_null($order->DateDeliveryAsk) ){
 
-                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));;
+                    if($current_tab == 'customer_care')
+                        $order->Deliv = now()->lt(Carbon::parse($order->DateDeliveryAsk)) ? date('d/m/Y',strtotime($order->DateDeliveryAsk)): '--';
+                    else
+                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
 
                 } else {
@@ -497,10 +512,16 @@ class OrderListController extends Controller
 
                                 if($pickupDate <  $DeliveryDate){
 
-                                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                                    if($current_tab == 'customer_care')
+                                        $order->Deliv = now()->lt(Carbon::parse($order->DateDeliveryAsk)) ? date('d/m/Y',strtotime($order->DateDeliveryAsk)): '--';
+                                    else
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
                                 } else if ($pickupDate >  $DeliveryDate){
-                                    $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
+                                    if($current_tab == 'customer_care')
+                                        $order->Deliv = now()->lt(Carbon::parse($order->DatePickup)) ? date('d/m/Y',strtotime($order->DatePickup)): '--';
+                                    else
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
                                 }
                         } else {
@@ -519,7 +540,10 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01"   && !is_null($order->DateDeliveryAsk) ){
 
-                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                    if($current_tab == 'customer_care')
+                        $order->Deliv = now()->lt(Carbon::parse($order->DateDeliveryAsk)) ? date('d/m/Y',strtotime($order->DateDeliveryAsk)): '--';
+                    else
+                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
 
                 } else {
@@ -532,10 +556,16 @@ class OrderListController extends Controller
 
                                 if($pickupDate <  $DeliveryDate){
 
-                                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                                    if($current_tab == 'customer_care')
+                                        $order->Deliv = now()->lt(Carbon::parse($order->DateDeliveryAsk)) ? date('d/m/Y',strtotime($order->DateDeliveryAsk)): '--';
+                                    else
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
                                 } else if ($pickupDate >  $DeliveryDate){
-                                    $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
+                                    if($current_tab == 'customer_care')
+                                        $order->Deliv = now()->lt(Carbon::parse($order->DatePickup)) ? date('d/m/Y',strtotime($order->DatePickup)): '--';
+                                    else
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
                                 }
                         } else {
@@ -553,14 +583,20 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01"   && !is_null($order->DateDeliveryAsk) ){
 
-                            $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                            $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                    if($current_tab == 'customer_care')
+                        $order->Deliv = now()->lt(Carbon::parse($order->DateDeliveryAsk)) ? date('d/m/Y',strtotime($order->DateDeliveryAsk)): '--';
+                    else
+                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                    $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
 
                 } else {
                     if(!is_null($order->PromisedDate)){
 
                         $promisedDate = date('Y-m-d',strtotime($order->PromisedDate));
-                        $order->Deliv = date('d/m/Y',strtotime($order->PromisedDate));
+                        if($current_tab == 'customer_care')
+                            $order->Deliv = now()->lt(Carbon::parse($order->PromisedDate)) ? date('d/m/Y',strtotime($order->PromisedDate)): '--';
+                        else
+                            $order->Deliv = date('d/m/Y',strtotime($order->PromisedDate));
                         $order->Prod  = date('d/m/Y',strtotime($promisedDate));
 
                     } else {
@@ -579,7 +615,10 @@ class OrderListController extends Controller
 
                 if($order->DateDeliveryAsk != "2020-01-01"  && !is_null($order->DateDeliveryAsk) ){
 
-                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk)); ;
+                    if($current_tab == 'customer_care')
+                        $order->Deliv = now()->lt(Carbon::parse($order->DateDeliveryAsk)) ? date('d/m/Y',strtotime($order->DateDeliveryAsk)): '--';
+                    else
+                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
 
 
@@ -592,10 +631,16 @@ class OrderListController extends Controller
                             $DeliveryDate = strtotime($order->DateDeliveryAsk);
 
                                 if($pickupDate <  $DeliveryDate){
-                                    $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                                    if($current_tab == 'customer_care')
+                                        $order->Deliv = now()->lt(Carbon::parse($order->DateDeliveryAsk)) ? date('d/m/Y',strtotime($order->DateDeliveryAsk)): '--';
+                                    else
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
                                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DateDeliveryAsk)));
                                 } else if ($pickupDate >  $DeliveryDate){
-                                    $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
+                                    if($current_tab == 'customer_care')
+                                        $order->Deliv = now()->lt(Carbon::parse($order->DatePickup)) ? date('d/m/Y',strtotime($order->DatePickup)): '--';
+                                    else
+                                        $order->Deliv = date('d/m/Y',strtotime($order->DatePickup));
                                     $order->Prod  = date('d/m/Y',strtotime($this->PreviousDate($order->DatePickup)));
                                 }
 
@@ -617,29 +662,36 @@ class OrderListController extends Controller
                     $order->Prod  = date('d/m/Y',strtotime($order->Orderdatesold));
                 }else{
                     if($order->DateDeliveryAsk != null){
+                        if($current_tab == 'customer_care')
+                            $order->Deliv = now()->lt(Carbon::parse($order->DateDeliveryAsk)) ? date('d/m/Y',strtotime($order->DateDeliveryAsk)): '--';
+                        else
                             $order->Deliv = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                            $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
-                        }else {
-                            $order->Deliv = '--' ;
-                            $order->Prod  = '--';
-                        }
+                        $order->Prod  = date('d/m/Y',strtotime($order->DateDeliveryAsk));
+                    }else {
+                        $order->Deliv = '--' ;
+                        $order->Prod  = '--';
+                    }
                 }
 
                 if($order->deliverymethod == '' && $order->Orderdatesold != '2020-01-01' && !is_null($order->Orderdatesold)){
 
-                    $order->Deliv = date('d/m/Y',strtotime($order->Orderdatesold)) ;
+                    if($current_tab == 'customer_care')
+                        $order->Deliv = now()->lt(Carbon::parse($order->Orderdatesold)) ? date('d/m/Y',strtotime($order->Orderdatesold)): '--';
+                    else
+                        $order->Deliv = date('d/m/Y',strtotime($order->Orderdatesold));
                     $order->Prod  = date('d/m/Y',strtotime($order->Orderdatesold));
 
                     } else {
                         if($order->PromisedDate != null){
-                            $order->Deliv =  date('d/m/Y',strtotime($order->PromisedDate)) ;
+                            if($current_tab == 'customer_care')
+                                $order->Deliv = now()->lt(Carbon::parse($order->PromisedDate)) ? date('d/m/Y',strtotime($order->PromisedDate)): '--';
+                            else
+                                $order->Deliv = date('d/m/Y',strtotime($order->PromisedDate));
                             $order->Prod  = date('d/m/Y',strtotime($order->PromisedDate)) ;
                         }else {
                             $order->Deliv = '--' ;
                             $order->Prod  = '--';
                         }
-
-
                     }
             }
             //VOID && DELETE
@@ -2671,5 +2723,5 @@ class OrderListController extends Controller
             'status_code'   =>  $statusCode,
             'status_message'=>  $statusText
         ]);
-    }    
+    }
 }
