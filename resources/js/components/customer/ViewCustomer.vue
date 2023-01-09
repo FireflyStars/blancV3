@@ -55,7 +55,7 @@
                                                 {{ form.booking }}
                                             </div>
                                             <div class="customer-type bg-color rounded-3">
-                                                <span class="d-flex align-items-center justify-content-center rounded-pill programme-icon ms-3">
+                                                <span class="d-flex align-items-center justify-content-center rounded-pill account-type-icon ms-3">
                                                     {{ form.accountType }}
                                                 </span>
                                             </div>
@@ -2665,6 +2665,17 @@ color: #FFF;
     line-height: 140%;
     background: #DBBA44;
     color: #FFF;
+}
+.account-type-icon{
+    width: 83px;
+    height: 25px;
+    font-family: 'Gotham Rounded';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 140%;
+    background: #E0E0E0;
+    color: #868686;
 }
 .b2b-icon{
 background: #4E58E7;
