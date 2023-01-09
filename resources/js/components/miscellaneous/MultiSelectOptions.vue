@@ -72,7 +72,7 @@
             const tickAllOptions = (options)=>{
                 selectedOptions.value = [];
                 for (const key in options) {
-                    selectedOptions.value.push(key);
+                    selectedOptions.value.push(options[key]);
                 }
                 context.emit('update:modelValue', selectedOptions);
             }
