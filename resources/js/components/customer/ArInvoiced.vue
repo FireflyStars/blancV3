@@ -56,7 +56,7 @@
             </tfoot>
         </table>
     </transition>
-    <button class="ar-btn" v-if="AR_UNPAID_LIST.length" @click="batchPdf">Batch Pdf</button>
+    <button class="ar-btn" v-if="AR_UNPAID_LIST.length" @click="downloadInvoices">Download Invoices</button>
     <button class="mark-as-paid" v-if="AR_UNPAID_LIST.length" @click="markAsPaid">Mark As Paid</button>
 </template>
 <script>
@@ -163,10 +163,6 @@ export default {
                 },
             ];
 
-
-        // const CURRENT_SELECTED=computed(()=>{
-        //     return store.getters[`${CUSTOMER_MODULE}${GET_CURRENT_SELECTED_CUSTOMER}`];
-        // });
         const AR_UNPAID_LIST=computed(()=>{
             return store.getters[`${CUSTOMER_MODULE}${GET_AR_UNPAID_LIST}`];
         });
@@ -225,7 +221,7 @@ export default {
             }
         }
 
-        function batchPdf(){
+        function downloadInvoices(){
             store.dispatch(`${LOADER_MODULE}${DISPLAY_LOADER}`,[ true, "Generating PDF...."]);
             axios.post('/generate-ar-invoice',{
                 customer_ids:JSON.stringify([]),
@@ -281,7 +277,7 @@ export default {
             loadMoreCustomer,
             checkboxclicked,
             selectrow,
-            batchPdf,
+            downloadInvoices,
             markAsPaid
         }
     }
