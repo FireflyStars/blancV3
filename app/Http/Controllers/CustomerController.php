@@ -2820,6 +2820,10 @@ class CustomerController extends Controller
             //To add notification
 
             DB::table('infoOrderPrint')->where('id',$row_id)->update(['NumFact'=>$num_facture]);
+            if($emailed && !empty($orders)){
+                foreach($orders as $order_id )
+                DB::table('infoOrder')->where('id',$order_id)->update(['infoOrderPrint_id'=>$row_id]);
+             }
 
         }
 
