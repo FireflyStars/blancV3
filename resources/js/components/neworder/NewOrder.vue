@@ -870,7 +870,7 @@ import axios from 'axios';
                     isc_pickup_timeslot.value = 11;
                 }
 
-                if(CustomerID.value && (val=='home_delivery' || val == "delivery_only")){
+                if(CustomerID.value &&  val == "delivery_only"){
                     axios.post('/get-deliverydate-customer',{
                         Customer : CustomerID.value
                         }).then((res)=>{   
@@ -1888,12 +1888,12 @@ import axios from 'axios';
                         
                         if(order.Status != "RECURRING" && order.Status != "SCHEDULED" ){
                             // cree un order with this day 
-                            if(deliverymethod.value == "home_delivery"){
+                            // if(deliverymethod.value == "home_delivery"){
 
-                                hd_pickup.value = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
-                                hd_delivery.value = order.DateDeliveryAsk;
-                                hd_delivery_timeslot.value = getTimeSlot(order.order_time)
-                            }
+                            //     hd_pickup.value = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
+                            //     hd_delivery.value = order.DateDeliveryAsk;
+                            //     hd_delivery_timeslot.value = getTimeSlot(order.order_time)
+                            // }
                             if(deliverymethod.value == "delivery_only"){
 
                                 do_delivery.value = order.DateDeliveryAsk;
@@ -1917,11 +1917,11 @@ import axios from 'axios';
                         
                         if(order.Status != "RECURRING" && order.Status != "SCHEDULED" ){
                             // cree un order with this day 
-                            if(deliverymethod.value == "home_delivery"){
+                            // if(deliverymethod.value == "home_delivery"){
 
-                                hd_pickup.value = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
-                                hd_delivery.value = order.DateDeliveryAsk;
-                            }
+                            //     hd_pickup.value = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
+                            //     hd_delivery.value = order.DateDeliveryAsk;
+                            // }
                             if(deliverymethod.value == "delivery_only"){
 
                                 do_delivery.value = order.DateDeliveryAsk;
