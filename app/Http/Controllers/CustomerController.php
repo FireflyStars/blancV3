@@ -1113,6 +1113,12 @@ class CustomerController extends Controller
         if($request->selected_nav == 'B2C' || $request->customer_type == 'B2C'){
             $customers = $customers->where('infoCustomer.btob', 0);
         }
+        if($request->selected_nav == 'CurrentBookings'){
+            $customers = $customers->where('infoOrder.status', 'SCHEDULED');
+        }
+        if($request->selected_nav == 'RecurringBookings'){
+            $customers = $customers->where('infoOrder.status', 'RECURRING');
+        }
         if( $request->customer_location !='' ){
             $customers = $customers->where('infoCustomer.TypeDelivery', $request->customer_location);
         }
@@ -1142,7 +1148,9 @@ class CustomerController extends Controller
                 $customers = $customers->where('infoInvoice.NumInvoice','like', '%'.$mini_search['ticketNo'].'%');
             }
             if($mini_search['hsl'] !=''){
-                $customers = $customers->join('infoInvoice', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID');
+                if($mini_search['ticketNo'] == '')
+                    $customers = $customers->join('infoInvoice', 'infoOrder.OrderID', '=', 'infoInvoice.OrderID');
+                
                 $customers = $customers->join('infoitems', 'infoInvoice.InvoiceID', '=', 'infoitems.InvoiceID');
                 $customers = $customers->where('infoitems.ItemTrackingKey','like', '%'.$mini_search['hsl'].'%');
             }
@@ -2812,6 +2820,10 @@ class CustomerController extends Controller
             //To add notification
 
             DB::table('infoOrderPrint')->where('id',$row_id)->update(['NumFact'=>$num_facture]);
+            if($emailed && !empty($orders)){
+                foreach($orders as $order_id )
+                DB::table('infoOrder')->where('id',$order_id)->update(['infoOrderPrint_id'=>$row_id]);
+             }
 
         }
 

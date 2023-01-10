@@ -121,7 +121,7 @@
                         <b class = "body_small">{{order.TypeDelivery}}</b>
                         </div>
                         <div class=" col-2 ">
-                            <b class ="body_small">{{formatDate(order.DateDeliveryAsk)}}</b>
+                            <b class ="body_small">{{formatDate(order.DateDeliveryAsk, 'DD/MM/YYYY')}}</b>
                         </div>
 
                         <div class=" col-2">
