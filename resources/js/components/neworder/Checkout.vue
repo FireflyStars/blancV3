@@ -598,11 +598,11 @@
                                                                 <!--Free delivery button-->
                                                                 <div class="col-12" v-if="category=='Delivery'">
                                                                     <div class="row">
-                                                                        <div class="col-6">
+                                                                        <!-- <div class="col-6">
                                                                             <button class="each-addon-btn w-100 py-2">
                                                                                 <span>Free delivery (&#163;0)</span>
                                                                             </button>
-                                                                        </div>
+                                                                        </div> -->
                                                                     </div>
                                                                 </div>
                                                             </div>
