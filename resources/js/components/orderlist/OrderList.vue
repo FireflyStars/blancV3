@@ -126,7 +126,7 @@
                     sortable:false
                 },
                 AccountName:{
-                    name:"Account Name",
+                    name:"Main Account",
                     width:"18%",
                     sortable:false
                 },
