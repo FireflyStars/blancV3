@@ -4,7 +4,7 @@
         <table class="table table-hover mb-0 bg-white">
             <thead>
                 <tr>
-                    <th v-for="(item, index) in tableColumnsDef" :class="item.thClass" :key="index" style="border-bottom: 2px solid #dee2e6 !important">
+                    <th v-for="(item, index) in tableColumnsDef" :class="item.thClass" :key="index" :style="{borderBottom: '2px solid #dee2e6 !important', width: item.width}">
                         <check-box v-if="item.key == 'selected' && invoiceList.length" :checked_checkbox="(invoiceList.length==MULTI_SELECTED.length)" @checkbox-clicked="checkboxallclicked"></check-box>
                         <span v-else>{{ item.label }}</span>
                     </th>
@@ -30,16 +30,16 @@
 
                     <!-- Customer Name -->
                     <td class="text-capitalize fw-16">{{ invoiceRow.customer_name }}</td>
-                    
+
                     <!-- Destination -->
                     <td class="text-capitalize fw-16">{{ invoiceRow.store }}</td>
-                    
+
                     <!-- sub order -->
                     <td class="text-capitalize fw-16" v-if="invoiceRow.sub_order == 'xxx'">
                         <svg width="11" height="11" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="6.5" cy="6.5" r="6.5" fill="#9E44F2"/>
                         </svg>
-                        &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>                                                            
+                        &nbsp;&nbsp;<span>{{ invoiceRow.sub_order }}</span>
                     </td>
                     <td class="text-capitalize fw-16 text-nowrap" v-else>
                         <svg width="11" height="11" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -47,7 +47,7 @@
                         </svg>
                         &nbsp;&nbsp;<span class="text-nowrap">{{ invoiceRow.sub_order }}</span>
                     </td>
-                    
+
                     <!-- Item -->
                     <td class="text-capitalize fw-16">{{ invoiceRow.iteminfo }}</td>
                     <!-- BarCode -->
@@ -91,12 +91,12 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter, useRoute } from 'vue-router'
 import {
-    INVOICE_MODULE, 
+    INVOICE_MODULE,
     SET_INVOICE_LIST,
-    GET_INVOICE_LIST, 
-    GET_TOTAL_INVOICE_COUNT, 
-    GET_LOADED_INVOICE_COUNT, 
-    LOAD_MORE_INVOICE,     
+    GET_INVOICE_LIST,
+    GET_TOTAL_INVOICE_COUNT,
+    GET_LOADED_INVOICE_COUNT,
+    LOAD_MORE_INVOICE,
     INVOICELIST_GET_CURRENT_SELECTED,
     INVOICELIST_GET_ALL_SELECTED,
     INVOICELIST_SET_CURRENT_SELECTED,
@@ -123,59 +123,70 @@ export default {
         const tableColumnsDef = ref( [
                 {
                     key: 'selected',
+                    width:"3%",
                 },
                 {
                     label: 'Order N°',
                     key: 'item_id',
                     thClass: 'text-uppercase invoice-table-th',
+                    width:"7%",
 
                 },
                 {
                     label: 'Customer',
                     key: 'customer_name',
                     thClass: 'text-uppercase invoice-table-th',
-                    tdClass: 'text-capitalize fw-16',                        
+                    tdClass: 'text-capitalize fw-16',
+                    width:"14%",
                 },
                 {
                     label: 'Destination',
                     key: 'store',
                     thClass: 'text-uppercase invoice-table-th',
+                    width:"8%",
                 },
 
                 {
                     label: 'Sub Order',
                     key: 'sub_order',
                     thClass: 'text-uppercase invoice-table-th',
+                    width:"8%",
                 },
                 {
                     label: 'Item',
                     key: 'iteminfo',
                     thClass: 'text-uppercase invoice-table-th',
+                    width:"15%",
                 },
                 {
                     label: 'Barcode',
                     key: 'barcode',
                     thClass: 'text-uppercase invoice-table-th',
+                    width:"8%",
                 },
                 {
                     label: 'Location',
                     key: 'location',
                     thClass: 'text-uppercase invoice-table-th',
+                    width:"16%",
                 },
                 {
                     label: 'DETAILED',
                     key: 'detailed_at',
                     thClass: 'text-uppercase invoice-table-th',
+                    width:"7%",
                 },
                 {
                     label: 'Prod',
                     key: 'prod',
                     thClass: 'text-uppercase invoice-table-th',
+                    width:"7%",
                 },
                 {
                     label: 'Deliv',
                     key: 'deliv',
                     thClass: 'text-uppercase invoice-table-th',
+                    width:"7%",
                 },
             ]);
         const invoiceList = computed(()=>{
@@ -186,7 +197,7 @@ export default {
         });
         const MULTI_SELECTED=computed(()=>{
             return store.getters[`${INVOICE_MODULE}${INVOICELIST_GET_ALL_SELECTED}`];
-        });        
+        });
         const currentLoadedInvoiceCount = computed(()=>{
             return store.getters[`${INVOICE_MODULE}${GET_LOADED_INVOICE_COUNT}`];
         });
@@ -205,12 +216,12 @@ export default {
             if(CURRENT_SELECTED.value == id && check == false){
 
                 store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`,'');
-                store.commit(`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_SET_DETAIL}`, { 
+                store.commit(`${ITEM_DETAIL_MODULE}${ITEM_DETAIL_SET_DETAIL}`, {
                     breif_info: {
                         id: ''
                     },
                     location_history: []
-                });                
+                });
                 router.back();
             }
             if(check == true){
@@ -226,7 +237,7 @@ export default {
             if(check){
                 const list=_.cloneDeep(invoiceList.value);
                 list.forEach(item => store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_ALL_SELECTED}`, item.item_id));
-            }            
+            }
         }
         const selectrow = (item_id)=>{
             store.dispatch(`${INVOICE_MODULE}${INVOICELIST_SET_CURRENT_SELECTED}`, item_id);
@@ -263,7 +274,7 @@ export default {
     .trow.multi{
         transition: background-color 300ms ease-out;
         background: #F8F8F8;
-    }    
+    }
     .current_sel{
         position: relative;
         z-index: 10000;
@@ -298,15 +309,15 @@ export default {
     }
     .list-move{
         transition:all 0.9s ease;
-    } 
- 
+    }
+
 </style>
 <style>
     .trow span.chkbox {
         border: 2px solid #FFF;
         transition: border-color 300ms ease-out;
-    }    
-    .trow:hover span.chkbox, 
+    }
+    .trow:hover span.chkbox,
     .trow.multi span.chkbox {
         border-color: #868686;
         transition: border-color 300ms ease-out;

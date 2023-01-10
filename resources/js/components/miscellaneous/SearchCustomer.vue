@@ -132,8 +132,6 @@
                             <tag   v-else :name="'B2B'" ></tag>
                          </div>
                      </div>
-
-
                     </div>
                </li>
              </ul>
